@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.Block;
 
 public abstract class ItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
    private final CompletableFuture<TagsProvider.TagLookup<Block>> blockTags;
-   private final Map<TagKey<Block>, TagKey<Item>> tagsToCopy = new HashMap();
+   private final Map<TagKey<Block>, TagKey<Item>> tagsToCopy = new HashMap<>();
 
    public ItemTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2, CompletableFuture<TagsProvider.TagLookup<Block>> var3) {
       super(var1, Registries.ITEM, var2, var0 -> var0.builtInRegistryHolder().key());
@@ -39,11 +39,11 @@ public abstract class ItemTagsProvider extends IntrinsicHolderTagsProvider<Item>
    protected CompletableFuture<HolderLookup.Provider> createContentsProvider() {
       return super.createContentsProvider().thenCombineAsync(this.blockTags, (var1, var2) -> {
          this.tagsToCopy.forEach((var2x, var3) -> {
-            TagBuilder var4 = this.getOrCreateRawBuilder(var3);
-            Optional var5 = var2.apply(var2x);
+            TagBuilder var4 = this.getOrCreateRawBuilder((TagKey<Item>)var3);
+            Optional var5 = var2.apply((TagKey<? super TagKey<Block>>)var2x);
             ((TagBuilder)var5.orElseThrow(() -> new IllegalStateException("Missing block tag " + var3.location()))).build().forEach(var4::add);
          });
-         return var1;
+         return (HolderLookup.Provider)var1;
       });
    }
 }

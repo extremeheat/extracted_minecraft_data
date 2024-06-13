@@ -4,14 +4,11 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DataResult.PartialResult;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class RenameEnchantmentsFix extends DataFix {
    final String name;
@@ -44,14 +41,12 @@ public class RenameEnchantmentsFix extends DataFix {
                               "id",
                               var2x -> (Dynamic)var2x.asString()
                                     .map(var2xx -> var1xxx.createString(this.renames.getOrDefault(var2xx, var2xx)))
-                                    .get()
-                                    .map(Function.identity(), var1xxxxx -> var2x)
+                                    .mapOrElse(Function.identity(), var1xxxxx -> var2x)
                            )
                      )
                )
                .map(var1x::createList)
-               .get()
-               .map(Function.identity(), var1xx -> var1x)
+               .mapOrElse(Function.identity(), var1xx -> var1x)
       );
    }
 }

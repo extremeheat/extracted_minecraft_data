@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
@@ -11,7 +10,6 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.DebugPackets;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.level.pathfinder.Path;
@@ -36,11 +34,9 @@ public class DebugPathCommand {
    }
 
    private static int fillBlocks(CommandSourceStack var0, BlockPos var1) throws CommandSyntaxException {
-      Entity var2 = var0.getEntity();
-      if (!(var2 instanceof Mob)) {
+      if (!(var0.getEntity() instanceof Mob var3)) {
          throw ERROR_NOT_MOB.create();
       } else {
-         Mob var3 = (Mob)var2;
          GroundPathNavigation var4 = new GroundPathNavigation(var3, var0.getLevel());
          Path var5 = var4.createPath(var1, 0);
          DebugPackets.sendPathFindingPacket(var0.getLevel(), var3, var5, var4.getMaxDistanceToWaypoint());

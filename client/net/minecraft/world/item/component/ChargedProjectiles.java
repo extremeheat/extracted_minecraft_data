@@ -13,13 +13,13 @@ public final class ChargedProjectiles {
    public static final ChargedProjectiles EMPTY = new ChargedProjectiles(List.of());
    public static final Codec<ChargedProjectiles> CODEC = ItemStack.CODEC.listOf().xmap(ChargedProjectiles::new, var0 -> var0.items);
    public static final StreamCodec<RegistryFriendlyByteBuf, ChargedProjectiles> STREAM_CODEC = ItemStack.STREAM_CODEC
-      .<List<ItemStack>>apply(ByteBufCodecs.list())
+      .apply(ByteBufCodecs.list())
       .map(ChargedProjectiles::new, var0 -> var0.items);
    private final List<ItemStack> items;
 
    private ChargedProjectiles(List<ItemStack> var1) {
       super();
-      this.items = var1;
+      this.items = (List<ItemStack>)var1;
    }
 
    public static ChargedProjectiles of(ItemStack var0) {
@@ -31,7 +31,7 @@ public final class ChargedProjectiles {
    }
 
    public boolean contains(Item var1) {
-      for(ItemStack var3 : this.items) {
+      for (ItemStack var3 : this.items) {
          if (var3.is(var1)) {
             return true;
          }

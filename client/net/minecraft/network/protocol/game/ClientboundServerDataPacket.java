@@ -9,9 +9,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundServerDataPacket(Component b, Optional<byte[]> c) implements Packet<ClientGamePacketListener> {
-   private final Component motd;
-   private final Optional<byte[]> iconBytes;
+public record ClientboundServerDataPacket(Component motd, Optional<byte[]> iconBytes) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundServerDataPacket> STREAM_CODEC = StreamCodec.composite(
       ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC,
       ClientboundServerDataPacket::motd,
@@ -20,10 +18,10 @@ public record ClientboundServerDataPacket(Component b, Optional<byte[]> c) imple
       ClientboundServerDataPacket::new
    );
 
-   public ClientboundServerDataPacket(Component var1, Optional<byte[]> var2) {
+   public ClientboundServerDataPacket(Component motd, Optional<byte[]> iconBytes) {
       super();
-      this.motd = var1;
-      this.iconBytes = var2;
+      this.motd = motd;
+      this.iconBytes = iconBytes;
    }
 
    @Override

@@ -36,7 +36,7 @@ public class Cursor3D {
          int var1 = this.index / this.width;
          this.y = var1 % this.height;
          this.z = var1 / this.height;
-         ++this.index;
+         this.index++;
          return true;
       }
    }
@@ -56,15 +56,15 @@ public class Cursor3D {
    public int getNextType() {
       int var1 = 0;
       if (this.x == 0 || this.x == this.width - 1) {
-         ++var1;
+         var1++;
       }
 
       if (this.y == 0 || this.y == this.height - 1) {
-         ++var1;
+         var1++;
       }
 
       if (this.z == 0 || this.z == this.depth - 1) {
-         ++var1;
+         var1++;
       }
 
       return var1;

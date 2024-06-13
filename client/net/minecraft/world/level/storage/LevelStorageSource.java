@@ -125,7 +125,7 @@ public class LevelStorageSource {
    }
 
    public static WorldDataConfiguration readDataConfig(Dynamic<?> var0) {
-      return (WorldDataConfiguration)WorldDataConfiguration.CODEC.parse(var0).resultOrPartial(LOGGER::error).orElse(WorldDataConfiguration.DEFAULT);
+      return WorldDataConfiguration.CODEC.parse(var0).resultOrPartial(LOGGER::error).orElse(WorldDataConfiguration.DEFAULT);
    }
 
    public static WorldLoader.PackConfig getPackConfig(Dynamic<?> var0, PackRepository var1, boolean var2) {
@@ -137,7 +137,7 @@ public class LevelStorageSource {
    ) {
       Dynamic var4 = RegistryOps.injectRegistryContext(var0, var3);
       Dynamic var5 = var4.get("WorldGenSettings").orElseEmptyMap();
-      WorldGenSettings var6 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var5).getOrThrow(false, Util.prefix("WorldGenSettings: ", LOGGER::error));
+      WorldGenSettings var6 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var5).getOrThrow();
       LevelSettings var7 = LevelSettings.parse(var4, var1);
       WorldDimensions.Complete var8 = var6.dimensions().bake(var2);
       Lifecycle var9 = var8.lifecycle().add(var3.allRegistriesLifecycle());
@@ -173,7 +173,7 @@ public class LevelStorageSource {
    public CompletableFuture<List<LevelSummary>> loadLevelSummaries(LevelStorageSource.LevelCandidates var1) {
       ArrayList var2 = new ArrayList(var1.levels.size());
 
-      for(LevelStorageSource.LevelDirectory var4 : var1.levels) {
+      for (LevelStorageSource.LevelDirectory var4 : var1.levels) {
          var2.add(CompletableFuture.supplyAsync(() -> {
             boolean var2x;
             try {
@@ -188,11 +188,11 @@ public class LevelStorageSource {
             } catch (OutOfMemoryError var12) {
                MemoryReserve.release();
                System.gc();
-               String var4xx = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
-               LOGGER.error(LogUtils.FATAL_MARKER, var4xx);
+               String var4x = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
+               LOGGER.error(LogUtils.FATAL_MARKER, var4x);
                OutOfMemoryError var5 = new OutOfMemoryError("Ran out of memory reading level data");
                var5.initCause(var12);
-               CrashReport var6 = CrashReport.forThrowable(var5, var4xx);
+               CrashReport var6 = CrashReport.forThrowable(var5, var4x);
                CrashReportCategory var7 = var6.addCategory("World details");
                var7.setDetail("Folder Name", var4.directoryName());
 
@@ -232,8 +232,6 @@ public class LevelStorageSource {
       return var5.set("WorldGenSettings", var9);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private LevelSummary readLevelSummary(LevelStorageSource.LevelDirectory var1, boolean var2) {
       Path var3 = var1.dataFile();
       if (Files.exists(var3)) {
@@ -246,8 +244,7 @@ public class LevelStorageSource {
                }
             }
 
-            Tag var10 = readLightweightData(var3);
-            if (var10 instanceof CompoundTag var5) {
+            if (readLightweightData(var3) instanceof CompoundTag var5) {
                CompoundTag var6 = var5.getCompound("Data");
                int var7 = NbtUtils.getDataVersion(var6, -1);
                Dynamic var8 = DataFixTypes.LEVEL.updateToCurrentVersion(this.fixerUpper, new Dynamic(NbtOps.INSTANCE, var6), var7);
@@ -363,12 +360,11 @@ public class LevelStorageSource {
       return this.worldDirValidator;
    }
 
-   public static record LevelCandidates(List<LevelStorageSource.LevelDirectory> a) implements Iterable<LevelStorageSource.LevelDirectory> {
-      final List<LevelStorageSource.LevelDirectory> levels;
+   public static record LevelCandidates(List<LevelStorageSource.LevelDirectory> levels) implements Iterable<LevelStorageSource.LevelDirectory> {
 
-      public LevelCandidates(List<LevelStorageSource.LevelDirectory> var1) {
+      public LevelCandidates(List<LevelStorageSource.LevelDirectory> levels) {
          super();
-         this.levels = var1;
+         this.levels = levels;
       }
 
       public boolean isEmpty() {
@@ -381,12 +377,11 @@ public class LevelStorageSource {
       }
    }
 
-   public static record LevelDirectory(Path a) {
-      final Path path;
+   public static record LevelDirectory(Path path) {
 
-      public LevelDirectory(Path var1) {
+      public LevelDirectory(Path path) {
          super();
-         this.path = var1;
+         this.path = path;
       }
 
       public String directoryName() {
@@ -540,7 +535,7 @@ public class LevelStorageSource {
          final Path var1 = this.levelDirectory.lockFile();
          LevelStorageSource.LOGGER.info("Deleting level {}", this.levelId);
 
-         for(int var2 = 1; var2 <= 5; ++var2) {
+         for (int var2 = 1; var2 <= 5; var2++) {
             LevelStorageSource.LOGGER.info("Attempt {}...", var2);
 
             try {

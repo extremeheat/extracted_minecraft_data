@@ -6,7 +6,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 public abstract class ParseState<S> {
-   private final Map<ParseState.CacheKey<?>, ParseState.CacheEntry<?>> ruleCache = new HashMap();
+   private final Map<ParseState.CacheKey<?>, ParseState.CacheEntry<?>> ruleCache = new HashMap<>();
    private final Dictionary<S> dictionary;
    private final ErrorCollector<S> errorCollector;
 
@@ -62,25 +62,20 @@ public abstract class ParseState<S> {
 
    public abstract void restore(int var1);
 
-   static record CacheEntry<T>(Optional<T> a, int b) {
-      final Optional<T> value;
-      private final int mark;
+   static record CacheEntry<T>(Optional<T> value, int mark) {
 
-      CacheEntry(Optional<T> var1, int var2) {
+      CacheEntry(Optional<T> value, int mark) {
          super();
-         this.value = var1;
-         this.mark = var2;
+         this.value = value;
+         this.mark = mark;
       }
    }
 
-   static record CacheKey<T>(Atom<T> a, int b) {
-      private final Atom<T> name;
-      private final int mark;
-
-      CacheKey(Atom<T> var1, int var2) {
+   static record CacheKey<T>(Atom<T> name, int mark) {
+      CacheKey(Atom<T> name, int mark) {
          super();
-         this.name = var1;
-         this.mark = var2;
+         this.name = name;
+         this.mark = mark;
       }
    }
 }

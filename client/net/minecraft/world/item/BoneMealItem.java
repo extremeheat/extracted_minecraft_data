@@ -16,10 +16,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseCoralWallFanBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
@@ -60,12 +58,9 @@ public class BoneMealItem extends Item {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static boolean growCrop(ItemStack var0, Level var1, BlockPos var2) {
       BlockState var3 = var1.getBlockState(var2);
-      Block var5 = var3.getBlock();
-      if (var5 instanceof BonemealableBlock var4 && var4.isValidBonemealTarget(var1, var2, var3)) {
+      if (var3.getBlock() instanceof BonemealableBlock var4 && var4.isValidBonemealTarget(var1, var2, var3)) {
          if (var1 instanceof ServerLevel) {
             if (var4.isBonemealSuccess(var1, var1.random, var2, var3)) {
                var4.performBonemeal((ServerLevel)var1, var1.random, var2, var3);
@@ -88,11 +83,11 @@ public class BoneMealItem extends Item {
             RandomSource var4 = var1.getRandom();
 
             label78:
-            for(int var5 = 0; var5 < 128; ++var5) {
+            for (int var5 = 0; var5 < 128; var5++) {
                BlockPos var6 = var2;
                BlockState var7 = Blocks.SEAGRASS.defaultBlockState();
 
-               for(int var8 = 0; var8 < var5 / 16; ++var8) {
+               for (int var8 = 0; var8 < var5 / 16; var8++) {
                   var6 = var6.offset(var4.nextInt(3) - 1, (var4.nextInt(3) - 1) * var4.nextInt(3) / 2, var4.nextInt(3) - 1);
                   if (var1.getBlockState(var6).isCollisionShapeFullBlock(var1, var6)) {
                      continue label78;
@@ -118,7 +113,7 @@ public class BoneMealItem extends Item {
                }
 
                if (var7.is(BlockTags.WALL_CORALS, var0x -> var0x.hasProperty(BaseCoralWallFanBlock.FACING))) {
-                  for(int var9 = 0; !var7.canSurvive(var1, var6) && var9 < 4; ++var9) {
+                  for (int var9 = 0; !var7.canSurvive(var1, var6) && var9 < 4; var9++) {
                      var7 = var7.setValue(BaseCoralWallFanBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(var4));
                   }
                }
@@ -141,14 +136,11 @@ public class BoneMealItem extends Item {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static void addGrowthParticles(LevelAccessor var0, BlockPos var1, int var2) {
       BlockState var3 = var0.getBlockState(var1);
-      Block var5 = var3.getBlock();
-      if (var5 instanceof BonemealableBlock var4) {
+      if (var3.getBlock() instanceof BonemealableBlock var4) {
          BlockPos var6 = var4.getParticlePos(var1);
-         switch(var4.getType()) {
+         switch (var4.getType()) {
             case NEIGHBOR_SPREADER:
                ParticleUtils.spawnParticles(var0, var6, var2 * 3, 3.0, 1.0, false, ParticleTypes.HAPPY_VILLAGER);
                break;

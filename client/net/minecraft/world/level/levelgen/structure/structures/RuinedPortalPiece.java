@@ -5,13 +5,11 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -79,7 +77,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       this.verticalPlacement = RuinedPortalPiece.VerticalPlacement.byName(var2.getString("VerticalPlacement"));
       this.properties = (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC
          .parse(new Dynamic(NbtOps.INSTANCE, var2.get("Properties")))
-         .getOrThrow(true, LOGGER::error);
+         .getPartialOrThrow();
    }
 
    @Override
@@ -102,9 +100,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          Rotation.valueOf(var1.getString("Rotation")),
          RuinedPortalPiece.VerticalPlacement.byName(var1.getString("VerticalPlacement")),
          var4,
-         (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties")))
-            .getOrThrow(true, LOGGER::error)
+         (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties"))).getPartialOrThrow()
       );
    }
 
@@ -113,25 +109,21 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    ) {
       BlockIgnoreProcessor var5 = var4.airPocket ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
       ArrayList var6 = Lists.newArrayList();
-      if (!var4.potato) {
-         var6.add(getBlockReplaceRule(Blocks.GOLD_BLOCK, 0.3F, Blocks.AIR));
-         var6.add(getLavaProcessorRule(var2, var4));
-         if (!var4.cold) {
-            var6.add(getBlockReplaceRule(Blocks.NETHERRACK, 0.07F, Blocks.MAGMA_BLOCK));
-         }
+      var6.add(getBlockReplaceRule(Blocks.GOLD_BLOCK, 0.3F, Blocks.AIR));
+      var6.add(getLavaProcessorRule(var2, var4));
+      if (!var4.cold) {
+         var6.add(getBlockReplaceRule(Blocks.NETHERRACK, 0.07F, Blocks.MAGMA_BLOCK));
       }
 
-      StructurePlaceSettings var7 = new StructurePlaceSettings().setRotation(var1).setMirror(var0).setRotationPivot(var3).addProcessor(var5);
-      if (!var6.isEmpty()) {
-         var7.addProcessor(new RuleProcessor(var6));
-      }
-
-      var7.addProcessor(new BlockAgeProcessor(var4.mossiness, var4.potato));
-      var7.addProcessor(new ProtectedBlockProcessor(BlockTags.FEATURES_CANNOT_REPLACE));
-      if (var4.potato) {
-         var7.addProcessor(new LavaSubmergedBlockProcessor());
-      }
-
+      StructurePlaceSettings var7 = new StructurePlaceSettings()
+         .setRotation(var1)
+         .setMirror(var0)
+         .setRotationPivot(var3)
+         .addProcessor(var5)
+         .addProcessor(new RuleProcessor(var6))
+         .addProcessor(new BlockAgeProcessor(var4.mossiness))
+         .addProcessor(new ProtectedBlockProcessor(BlockTags.FEATURES_CANNOT_REPLACE))
+         .addProcessor(new LavaSubmergedBlockProcessor());
       if (var4.replaceWithBlackstone) {
          var7.addProcessor(BlackstoneReplaceProcessor.INSTANCE);
       }
@@ -189,18 +181,16 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    }
 
    private void maybeAddLeavesAbove(RandomSource var1, LevelAccessor var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3);
-      if (var1.nextFloat() < 0.5F && (var4.is(Blocks.NETHERRACK) || var4.is(Blocks.TERREDEPOMME)) && var2.getBlockState(var3.above()).isAir()) {
+      if (var1.nextFloat() < 0.5F && var2.getBlockState(var3).is(Blocks.NETHERRACK) && var2.getBlockState(var3.above()).isAir()) {
          var2.setBlock(var3.above(), Blocks.JUNGLE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, Boolean.valueOf(true)), 3);
       }
    }
 
    private void addNetherrackDripColumnsBelowPortal(RandomSource var1, LevelAccessor var2) {
-      for(int var3 = this.boundingBox.minX() + 1; var3 < this.boundingBox.maxX(); ++var3) {
-         for(int var4 = this.boundingBox.minZ() + 1; var4 < this.boundingBox.maxZ(); ++var4) {
+      for (int var3 = this.boundingBox.minX() + 1; var3 < this.boundingBox.maxX(); var3++) {
+         for (int var4 = this.boundingBox.minZ() + 1; var4 < this.boundingBox.maxZ(); var4++) {
             BlockPos var5 = new BlockPos(var3, this.boundingBox.minY(), var4);
-            BlockState var6 = var2.getBlockState(var5);
-            if (var6.is(Blocks.NETHERRACK) || var6.is(Blocks.TERREDEPOMME)) {
+            if (var2.getBlockState(var5).is(Blocks.NETHERRACK)) {
                this.addNetherrackDripColumn(var1, var2, var5.below());
             }
          }
@@ -212,9 +202,9 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       this.placeNetherrackOrMagma(var1, var2, var4);
       int var5 = 8;
 
-      while(var5 > 0 && var1.nextFloat() < 0.5F) {
+      while (var5 > 0 && var1.nextFloat() < 0.5F) {
          var4.move(Direction.DOWN);
-         --var5;
+         var5--;
          this.placeNetherrackOrMagma(var1, var2, var4);
       }
    }
@@ -229,11 +219,11 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       int var8 = var7.length;
       int var9 = (this.boundingBox.getXSpan() + this.boundingBox.getZSpan()) / 2;
       int var10 = var1.nextInt(Math.max(1, 8 - var9 / 2));
-      boolean var11 = true;
+      byte var11 = 3;
       BlockPos.MutableBlockPos var12 = BlockPos.ZERO.mutable();
 
-      for(int var13 = var5 - var8; var13 <= var5 + var8; ++var13) {
-         for(int var14 = var6 - var8; var14 <= var6 + var8; ++var14) {
+      for (int var13 = var5 - var8; var13 <= var5 + var8; var13++) {
+         for (int var14 = var6 - var8; var14 <= var6 + var8; var14++) {
             int var15 = Math.abs(var13 - var5) + Math.abs(var14 - var6);
             int var16 = Math.max(0, var15 + var10);
             if (var16 < var8) {
@@ -265,14 +255,10 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    }
 
    private void placeNetherrackOrMagma(RandomSource var1, LevelAccessor var2, BlockPos var3) {
-      if (this.properties.potato) {
-         var2.setBlock(var3, Blocks.TERREDEPOMME.defaultBlockState(), 3);
+      if (!this.properties.cold && var1.nextFloat() < 0.07F) {
+         var2.setBlock(var3, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
       } else {
-         if (!this.properties.cold && var1.nextFloat() < 0.07F) {
-            var2.setBlock(var3, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
-         } else {
-            var2.setBlock(var3, Blocks.NETHERRACK.defaultBlockState(), 3);
-         }
+         var2.setBlock(var3, Blocks.NETHERRACK.defaultBlockState(), 3);
       }
    }
 
@@ -300,8 +286,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
                   Codec.BOOL.fieldOf("air_pocket").forGetter(var0x -> var0x.airPocket),
                   Codec.BOOL.fieldOf("overgrown").forGetter(var0x -> var0x.overgrown),
                   Codec.BOOL.fieldOf("vines").forGetter(var0x -> var0x.vines),
-                  Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(var0x -> var0x.replaceWithBlackstone),
-                  Codec.BOOL.optionalFieldOf("potato", false).forGetter(var0x -> var0x.potato)
+                  Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(var0x -> var0x.replaceWithBlackstone)
                )
                .apply(var0, RuinedPortalPiece.Properties::new)
       );
@@ -311,13 +296,12 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       public boolean overgrown;
       public boolean vines;
       public boolean replaceWithBlackstone;
-      public boolean potato;
 
       public Properties() {
          super();
       }
 
-      public Properties(boolean var1, float var2, boolean var3, boolean var4, boolean var5, boolean var6, boolean var7) {
+      public Properties(boolean var1, float var2, boolean var3, boolean var4, boolean var5, boolean var6) {
          super();
          this.cold = var1;
          this.mossiness = var2;
@@ -325,7 +309,6 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          this.overgrown = var4;
          this.vines = var5;
          this.replaceWithBlackstone = var6;
-         this.potato = var7;
       }
    }
 

@@ -1,6 +1,5 @@
 package net.minecraft.data.advancements.packs;
 
-import com.google.common.collect.BiMap;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +32,6 @@ import net.minecraft.advancements.critereon.PickedUpItemTrigger;
 import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.StartRidingTrigger;
 import net.minecraft.advancements.critereon.TameAnimalTrigger;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.advancements.AdvancementSubProvider;
@@ -102,10 +100,6 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
       Items.POTATO,
       Items.BAKED_POTATO,
       Items.POISONOUS_POTATO,
-      Items.POISONOUS_POTATO_STICKS,
-      Items.POISONOUS_POTATO_SLICES,
-      Items.POISONOUS_POTATO_FRIES,
-      Items.POISONOUS_POTATO_CHIPS,
       Items.GOLDEN_CARROT,
       Items.PUMPKIN_PIE,
       Items.RABBIT,
@@ -334,7 +328,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "wax_on",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(((BiMap)HoneycombItem.WAXABLES.get()).keySet())),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(HoneycombItem.WAXABLES.get().keySet())),
                ItemPredicate.Builder.item().of(Items.HONEYCOMB)
             )
          )
@@ -354,7 +348,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "wax_off",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).keySet())),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(HoneycombItem.WAX_OFF_BY_BLOCK.get().keySet())),
                ItemPredicate.Builder.item().of(WAX_SCRAPING_TOOLS)
             )
          )
@@ -597,7 +591,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder addFood(Advancement.Builder var0) {
-      for(Item var4 : EDIBLE_ITEMS) {
+      for (Item var4 : EDIBLE_ITEMS) {
          var0.addCriterion(BuiltInRegistries.ITEM.getKey(var4).getPath(), ConsumeItemTrigger.TriggerInstance.usedItem(var4));
       }
 
@@ -607,15 +601,16 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    private static Advancement.Builder addBreedable(Advancement.Builder var0, Stream<EntityType<?>> var1, Stream<EntityType<?>> var2) {
       var1.forEach(
          var1x -> var0.addCriterion(
-               EntityType.getKey(var1x).toString(), BredAnimalsTrigger.TriggerInstance.bredAnimals(EntityPredicate.Builder.entity().of(var1x))
+               EntityType.getKey((EntityType<?>)var1x).toString(),
+               BredAnimalsTrigger.TriggerInstance.bredAnimals(EntityPredicate.Builder.entity().of((EntityType<?>)var1x))
             )
       );
       var2.forEach(
          var1x -> var0.addCriterion(
-               EntityType.getKey(var1x).toString(),
+               EntityType.getKey((EntityType<?>)var1x).toString(),
                BredAnimalsTrigger.TriggerInstance.bredAnimals(
-                  Optional.of(EntityPredicate.Builder.entity().of(var1x).build()),
-                  Optional.of(EntityPredicate.Builder.entity().of(var1x).build()),
+                  Optional.of(EntityPredicate.Builder.entity().of((EntityType<?>)var1x).build()),
+                  Optional.of(EntityPredicate.Builder.entity().of((EntityType<?>)var1x).build()),
                   Optional.empty()
                )
             )
@@ -624,7 +619,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder addFishBuckets(Advancement.Builder var0) {
-      for(Item var4 : FISH_BUCKETS) {
+      for (Item var4 : FISH_BUCKETS) {
          var0.addCriterion(
             BuiltInRegistries.ITEM.getKey(var4).getPath(), FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(var4))
          );
@@ -634,7 +629,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder addFish(Advancement.Builder var0) {
-      for(Item var4 : FISH) {
+      for (Item var4 : FISH) {
          var0.addCriterion(
             BuiltInRegistries.ITEM.getKey(var4).getPath(),
             FishingRodHookedTrigger.TriggerInstance.fishedItem(Optional.empty(), Optional.empty(), Optional.of(ItemPredicate.Builder.item().of(var4).build()))

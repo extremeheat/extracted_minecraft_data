@@ -99,7 +99,7 @@ public class StriderModel<T extends Strider> extends HierarchicalModel<T> {
       float var7 = 1.5F;
       this.body.zRot = 0.1F * Mth.sin(var2 * 1.5F) * 4.0F * var3;
       this.body.y = 2.0F;
-      this.body.y -= 2.0F * Mth.cos(var2 * 1.5F) * 2.0F * var3;
+      this.body.y = this.body.y - 2.0F * Mth.cos(var2 * 1.5F) * 2.0F * var3;
       this.leftLeg.xRot = Mth.sin(var2 * 1.5F * 0.5F) * 2.0F * var3;
       this.rightLeg.xRot = Mth.sin(var2 * 1.5F * 0.5F + 3.1415927F) * 2.0F * var3;
       this.leftLeg.zRot = 0.17453292F * Mth.cos(var2 * 1.5F * 0.5F) * var3;
@@ -121,12 +121,12 @@ public class StriderModel<T extends Strider> extends HierarchicalModel<T> {
       this.leftBottomBristle.zRot += var8 * 1.3F;
       float var9 = 1.0F;
       float var10 = 1.0F;
-      this.rightBottomBristle.zRot += 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
-      this.rightMiddleBristle.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
-      this.rightTopBristle.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
-      this.leftTopBristle.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
-      this.leftMiddleBristle.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
-      this.leftBottomBristle.zRot += 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
+      this.rightBottomBristle.zRot = this.rightBottomBristle.zRot + 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
+      this.rightMiddleBristle.zRot = this.rightMiddleBristle.zRot + 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
+      this.rightTopBristle.zRot = this.rightTopBristle.zRot + 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
+      this.leftTopBristle.zRot = this.leftTopBristle.zRot + 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
+      this.leftMiddleBristle.zRot = this.leftMiddleBristle.zRot + 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
+      this.leftBottomBristle.zRot = this.leftBottomBristle.zRot + 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
    }
 
    @Override

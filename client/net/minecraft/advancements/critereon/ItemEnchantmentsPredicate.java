@@ -25,7 +25,7 @@ public abstract class ItemEnchantmentsPredicate implements SingleComponentItemPr
    }
 
    public boolean matches(ItemStack var1, ItemEnchantments var2) {
-      for(EnchantmentPredicate var4 : this.enchantments) {
+      for (EnchantmentPredicate var4 : this.enchantments) {
          if (!var4.containedIn(var2)) {
             return false;
          }

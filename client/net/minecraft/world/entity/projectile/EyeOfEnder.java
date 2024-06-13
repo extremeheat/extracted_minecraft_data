@@ -124,7 +124,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
       float var21 = 0.25F;
       if (this.isInWater()) {
-         for(int var11 = 0; var11 < 4; ++var11) {
+         for (int var11 = 0; var11 < 4; var11++) {
             this.level().addParticle(ParticleTypes.BUBBLE, var2 - var1.x * 0.25, var4 - var1.y * 0.25, var6 - var1.z * 0.25, var1.x, var1.y, var1.z);
          }
       } else {
@@ -142,7 +142,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
       if (!this.level().isClientSide) {
          this.setPos(var2, var4, var6);
-         ++this.life;
+         this.life++;
          if (this.life > 80 && !this.level().isClientSide) {
             this.playSound(SoundEvents.ENDER_EYE_DEATH, 1.0F, 1.0F);
             this.discard();

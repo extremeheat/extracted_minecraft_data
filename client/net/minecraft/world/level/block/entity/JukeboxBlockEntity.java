@@ -35,8 +35,8 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("RecordItem", 10)) {
          this.item = ItemStack.parse(var2, var1.getCompound("RecordItem")).orElse(ItemStack.EMPTY);
       } else {
@@ -89,21 +89,18 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    }
 
    private void tick(Level var1, BlockPos var2, BlockState var3) {
-      ++this.ticksSinceLastEvent;
-      if (this.isRecordPlaying()) {
-         Item var5 = this.getTheItem().getItem();
-         if (var5 instanceof RecordItem var4) {
-            if (this.shouldRecordStopPlaying((RecordItem)var4)) {
-               this.stopPlaying();
-            } else if (this.shouldSendJukeboxPlayingEvent()) {
-               this.ticksSinceLastEvent = 0;
-               var1.gameEvent(GameEvent.JUKEBOX_PLAY, var2, GameEvent.Context.of(var3));
-               this.spawnMusicParticles(var1, var2);
-            }
+      this.ticksSinceLastEvent++;
+      if (this.isRecordPlaying() && this.getTheItem().getItem() instanceof RecordItem var4) {
+         if (this.shouldRecordStopPlaying(var4)) {
+            this.stopPlaying();
+         } else if (this.shouldSendJukeboxPlayingEvent()) {
+            this.ticksSinceLastEvent = 0;
+            var1.gameEvent(GameEvent.JUKEBOX_PLAY, var2, GameEvent.Context.of(var3));
+            this.spawnMusicParticles(var1, var2);
          }
       }
 
-      ++this.tickCount;
+      this.tickCount++;
    }
 
    private boolean shouldRecordStopPlaying(RecordItem var1) {
@@ -162,8 +159,6 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
       return var1.hasAnyMatching(ItemStack::isEmpty);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void spawnMusicParticles(Level var1, BlockPos var2) {
       if (var1 instanceof ServerLevel var3) {
          Vec3 var4 = Vec3.atBottomCenterOf(var2).add(0.0, 1.2000000476837158, 0.0);

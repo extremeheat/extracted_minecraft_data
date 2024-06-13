@@ -51,7 +51,7 @@ public class ParserUtils {
       Object var5;
       try {
          JsonElement var4 = Streams.parse(var3);
-         var5 = Util.getOrThrow(var2.parse(var0.createSerializationContext(JsonOps.INSTANCE), var4), JsonParseException::new);
+         var5 = var2.parse(var0.createSerializationContext(JsonOps.INSTANCE), var4).getOrThrow(JsonParseException::new);
       } catch (StackOverflowError var9) {
          throw new JsonParseException(var9);
       } finally {
@@ -64,7 +64,7 @@ public class ParserUtils {
    public static String readWhile(StringReader var0, CharPredicate var1) {
       int var2 = var0.getCursor();
 
-      while(var0.canRead() && var1.test(var0.peek())) {
+      while (var0.canRead() && var1.test(var0.peek())) {
          var0.skip();
       }
 

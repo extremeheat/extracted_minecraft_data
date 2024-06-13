@@ -12,7 +12,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
@@ -39,7 +38,7 @@ public class TagNetworkSerialization {
          HolderSet var3 = (HolderSet)var2.getSecond();
          IntArrayList var4 = new IntArrayList(var3.size());
 
-         for(Holder var6 : var3) {
+         for (Holder var6 : var3) {
             if (var6.kind() != Holder.Kind.REFERENCE) {
                throw new IllegalStateException("Can't serialize unregistered value " + var6);
             }

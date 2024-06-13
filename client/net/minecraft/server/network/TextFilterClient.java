@@ -109,38 +109,38 @@ public class TextFilterClient implements AutoCloseable {
                URL var13 = getEndpoint(var2, var9, "join", "v1/join");
                URL var14 = getEndpoint(var2, var9, "leave", "v1/leave");
                TextFilterClient.JoinOrLeaveEncoder var15 = var2x -> {
-                  JsonObject var3xx = new JsonObject();
-                  var3xx.addProperty("server", var5);
-                  var3xx.addProperty("room", var6);
-                  var3xx.addProperty("user_id", var2x.getId().toString());
-                  var3xx.addProperty("user_display_name", var2x.getName());
-                  return var3xx;
+                  JsonObject var3x = new JsonObject();
+                  var3x.addProperty("server", var5);
+                  var3x.addProperty("room", var6);
+                  var3x.addProperty("user_id", var2x.getId().toString());
+                  var3x.addProperty("user_display_name", var2x.getName());
+                  return var3x;
                };
                TextFilterClient.MessageEncoder var16;
                if (var11) {
                   var16 = (var3x, var4x) -> {
-                     JsonObject var5xx = new JsonObject();
-                     var5xx.addProperty("rule", var4);
-                     var5xx.addProperty("server", var5);
-                     var5xx.addProperty("room", var6);
-                     var5xx.addProperty("player", var3x.getId().toString());
-                     var5xx.addProperty("player_display_name", var3x.getName());
-                     var5xx.addProperty("text", var4x);
-                     var5xx.addProperty("language", "*");
-                     return var5xx;
+                     JsonObject var5x = new JsonObject();
+                     var5x.addProperty("rule", var4);
+                     var5x.addProperty("server", var5);
+                     var5x.addProperty("room", var6);
+                     var5x.addProperty("player", var3x.getId().toString());
+                     var5x.addProperty("player_display_name", var3x.getName());
+                     var5x.addProperty("text", var4x);
+                     var5x.addProperty("language", "*");
+                     return var5x;
                   };
                } else {
                   String var17 = String.valueOf(var4);
                   var16 = (var3x, var4x) -> {
-                     JsonObject var5xx = new JsonObject();
-                     var5xx.addProperty("rule_id", var17);
-                     var5xx.addProperty("category", var5);
-                     var5xx.addProperty("subcategory", var6);
-                     var5xx.addProperty("user_id", var3x.getId().toString());
-                     var5xx.addProperty("user_display_name", var3x.getName());
-                     var5xx.addProperty("text", var4x);
-                     var5xx.addProperty("language", "*");
-                     return var5xx;
+                     JsonObject var5x = new JsonObject();
+                     var5x.addProperty("rule_id", var17);
+                     var5x.addProperty("category", var5);
+                     var5x.addProperty("subcategory", var6);
+                     var5x.addProperty("user_id", var3x.getId().toString());
+                     var5x.addProperty("user_display_name", var3x.getName());
+                     var5x.addProperty("text", var4x);
+                     var5x.addProperty("language", "*");
+                     return var5x;
                   };
                }
 
@@ -157,10 +157,10 @@ public class TextFilterClient implements AutoCloseable {
 
    void processJoinOrLeave(GameProfile var1, URL var2, TextFilterClient.JoinOrLeaveEncoder var3, Executor var4) {
       var4.execute(() -> {
-         JsonObject var4xx = var3.encode(var1);
+         JsonObject var4x = var3.encode(var1);
 
          try {
-            this.processRequest(var4xx, var2);
+            this.processRequest(var4x, var2);
          } catch (Exception var6) {
             LOGGER.warn("Failed to send join/leave packet to {} for player {}", new Object[]{var2, var1, var6});
          }
@@ -169,10 +169,10 @@ public class TextFilterClient implements AutoCloseable {
 
    CompletableFuture<FilteredText> requestMessageProcessing(GameProfile var1, String var2, TextFilterClient.IgnoreStrategy var3, Executor var4) {
       return var2.isEmpty() ? CompletableFuture.completedFuture(FilteredText.EMPTY) : CompletableFuture.supplyAsync(() -> {
-         JsonObject var4xx = this.chatEncoder.encode(var1, var2);
+         JsonObject var4x = this.chatEncoder.encode(var1, var2);
 
          try {
-            JsonObject var5 = this.processRequestResponse(var4xx, this.chatEndpoint);
+            JsonObject var5 = this.processRequestResponse(var4x, this.chatEndpoint);
             boolean var6 = GsonHelper.getAsBoolean(var5, "response", false);
             if (var6) {
                return FilteredText.passThrough(var2);
@@ -201,7 +201,7 @@ public class TextFilterClient implements AutoCloseable {
       } else {
          FilterMask var4 = new FilterMask(var1.length());
 
-         for(int var5 = 0; var5 < var2.size(); ++var5) {
+         for (int var5 = 0; var5 < var2.size(); var5++) {
             var4.setFiltered(var2.get(var5).getAsInt());
          }
 
@@ -217,7 +217,7 @@ public class TextFilterClient implements AutoCloseable {
    private void drainStream(InputStream var1) throws IOException {
       byte[] var2 = new byte[1024];
 
-      while(var1.read(var2) != -1) {
+      while (var1.read(var2) != -1) {
       }
    }
 
@@ -311,7 +311,7 @@ public class TextFilterClient implements AutoCloseable {
       }
 
       static TextFilterClient.IgnoreStrategy select(int var0) {
-         return switch(var0) {
+         return switch (var0) {
             case -1 -> NEVER_IGNORE;
             case 0 -> IGNORE_FULLY_FILTERED;
             default -> ignoreOverThreshold(var0);
@@ -357,7 +357,7 @@ public class TextFilterClient implements AutoCloseable {
          List var2 = var1.stream()
             .map(var1x -> TextFilterClient.this.requestMessageProcessing(this.profile, var1x, TextFilterClient.this.chatIgnoreStrategy, this.streamExecutor))
             .collect(ImmutableList.toImmutableList());
-         return Util.sequenceFailFast(var2).exceptionally(var0 -> ImmutableList.of());
+         return Util.<FilteredText>sequenceFailFast(var2).exceptionally(var0 -> ImmutableList.of());
       }
 
       @Override

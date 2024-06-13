@@ -86,10 +86,10 @@ public class WorldOpenFlows {
             WorldStem var10 = this.loadWorldDataBlocking(
                var9,
                var3x -> {
-                  WorldDimensions.Complete var4xx = ((WorldDimensions)var4.apply(var3x.datapackWorldgen()))
+                  WorldDimensions.Complete var4x = ((WorldDimensions)var4.apply(var3x.datapackWorldgen()))
                      .bake(var3x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM));
                   return new WorldLoader.DataLoadOutput<>(
-                     new PrimaryLevelData(var2, var3, var4xx.specialWorldProperty(), var4xx.lifecycle()), var4xx.dimensionsRegistryAccess()
+                     new PrimaryLevelData(var2, var3, var4x.specialWorldProperty(), var4x.lifecycle()), var4x.dimensionsRegistryAccess()
                   );
                },
                WorldStem::new
@@ -132,9 +132,9 @@ public class WorldOpenFlows {
    public WorldStem loadWorldStem(Dynamic<?> var1, boolean var2, PackRepository var3) throws Exception {
       WorldLoader.PackConfig var4 = LevelStorageSource.getPackConfig(var1, var3, var2);
       return this.loadWorldDataBlocking(var4, var1x -> {
-         Registry var2xx = var1x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
-         LevelDataAndDimensions var3xx = LevelStorageSource.getLevelDataAndDimensions(var1, var1x.dataConfiguration(), var2xx, var1x.datapackWorldgen());
-         return new WorldLoader.DataLoadOutput<>(var3xx.worldData(), var3xx.dimensions().dimensionsRegistryAccess());
+         Registry var2x = var1x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
+         LevelDataAndDimensions var3x = LevelStorageSource.getLevelDataAndDimensions(var1, var1x.dataConfiguration(), var2x, var1x.datapackWorldgen());
+         return new WorldLoader.DataLoadOutput<>(var3x.worldData(), var3x.dimensions().dimensionsRegistryAccess());
       }, WorldStem::new);
    }
 
@@ -142,13 +142,24 @@ public class WorldOpenFlows {
       PackRepository var2 = ServerPacksSource.createPackRepository(var1);
       Dynamic var3 = var1.getDataTag();
       WorldLoader.PackConfig var4 = LevelStorageSource.getPackConfig(var3, var2, false);
+
+      record 1Data(LevelSettings levelSettings, WorldOptions options, Registry<LevelStem> existingDimensions) {
+
+         _Data/* $VF was: 1Data*/(LevelSettings levelSettings, WorldOptions options, Registry<LevelStem> existingDimensions) {
+            super();
+            this.levelSettings = levelSettings;
+            this.options = options;
+            this.existingDimensions = existingDimensions;
+         }
+      }
+
       return this.loadWorldDataBlocking(
          var4,
          var1x -> {
-            Registry var2xx = new MappedRegistry(Registries.LEVEL_STEM, Lifecycle.stable()).freeze();
-            LevelDataAndDimensions var3xx = LevelStorageSource.getLevelDataAndDimensions(var3, var1x.dataConfiguration(), var2xx, var1x.datapackWorldgen());
-            return new WorldLoader.DataLoadOutput(
-               new 1Data(var3xx.worldData().getLevelSettings(), var3xx.worldData().worldGenOptions(), var3xx.dimensions().dimensions()),
+            Registry var2x = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.stable()).freeze();
+            LevelDataAndDimensions var3x = LevelStorageSource.getLevelDataAndDimensions(var3, var1x.dataConfiguration(), var2x, var1x.datapackWorldgen());
+            return new WorldLoader.DataLoadOutput<>(
+               new 1Data(var3x.worldData().getLevelSettings(), var3x.worldData().worldGenOptions(), var3x.dimensions().dimensions()),
                var1x.datapackDimensions()
             );
          },
@@ -160,20 +171,6 @@ public class WorldOpenFlows {
             );
          }
       );
-
-      record 1Data(LevelSettings a, WorldOptions b, Registry<LevelStem> c) {
-         final LevelSettings levelSettings;
-         final WorldOptions options;
-         final Registry<LevelStem> existingDimensions;
-
-         _Data/* $VF was: 1Data*/(LevelSettings var1, WorldOptions var2, Registry<LevelStem> var3) {
-            super();
-            this.levelSettings = var1;
-            this.options = var2;
-            this.existingDimensions = var3;
-         }
-      }
-
    }
 
    private <D, R> R loadWorldDataBlocking(WorldLoader.PackConfig var1, WorldLoader.WorldDataSupplier<D> var2, WorldLoader.ResultFactory<D, R> var3) throws Exception {

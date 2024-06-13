@@ -12,7 +12,6 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -410,19 +409,19 @@ public class ItemStackTheFlatteningFix extends DataFix {
       OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var3 = var1.findField("tag");
       return this.fixTypeEverywhereTyped("ItemInstanceTheFlatteningFix", var1, var2x -> {
-         Optional var3xx = var2x.getOptional(var2);
-         if (var3xx.isEmpty()) {
+         Optional var3x = var2x.getOptional(var2);
+         if (var3x.isEmpty()) {
             return var2x;
          } else {
             Typed var4 = var2x;
             Dynamic var5 = (Dynamic)var2x.get(DSL.remainderFinder());
             int var6 = var5.get("Damage").asInt(0);
-            String var7 = updateItem((String)((Pair)var3xx.get()).getSecond(), var6);
+            String var7 = updateItem((String)((Pair)var3x.get()).getSecond(), var6);
             if (var7 != null) {
                var4 = var2x.set(var2, Pair.of(References.ITEM_NAME.typeName(), var7));
             }
 
-            if (DAMAGE_IDS.contains(((Pair)var3xx.get()).getSecond())) {
+            if (DAMAGE_IDS.contains(((Pair)var3x.get()).getSecond())) {
                Typed var8 = var2x.getOrCreateTyped(var3);
                Dynamic var9 = (Dynamic)var8.get(DSL.remainderFinder());
                var9 = var9.set("Damage", var9.createInt(var6));

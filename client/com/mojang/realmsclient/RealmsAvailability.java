@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
@@ -37,34 +39,33 @@ public class RealmsAvailability {
    }
 
    private static CompletableFuture<RealmsAvailability.Result> check() {
-      return CompletableFuture.supplyAsync(
-         () -> {
-            RealmsClient var0 = RealmsClient.create();
-   
-            try {
-               if (var0.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
-                  return new RealmsAvailability.Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
-               } else {
-                  return !var0.hasParentalConsent()
-                     ? new RealmsAvailability.Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT)
-                     : new RealmsAvailability.Result(RealmsAvailability.Type.SUCCESS);
+      User var0 = Minecraft.getInstance().getUser();
+      return var0.getType() != User.Type.MSA
+         ? CompletableFuture.completedFuture(new RealmsAvailability.Result(RealmsAvailability.Type.AUTHENTICATION_ERROR))
+         : CompletableFuture.supplyAsync(
+            () -> {
+               RealmsClient var0x = RealmsClient.create();
+
+               try {
+                  if (var0x.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
+                     return new RealmsAvailability.Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
+                  } else {
+                     return !var0x.hasParentalConsent()
+                        ? new RealmsAvailability.Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT)
+                        : new RealmsAvailability.Result(RealmsAvailability.Type.SUCCESS);
+                  }
+               } catch (RealmsServiceException var2) {
+                  LOGGER.error("Couldn't connect to realms", var2);
+                  return var2.realmsError.errorCode() == 401
+                     ? new RealmsAvailability.Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)
+                     : new RealmsAvailability.Result(var2);
                }
-            } catch (RealmsServiceException var2) {
-               LOGGER.error("Couldn't connect to realms", var2);
-               return var2.realmsError.errorCode() == 401
-                  ? new RealmsAvailability.Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)
-                  : new RealmsAvailability.Result(var2);
-            }
-         },
-         Util.ioPool()
-      );
+            },
+            Util.ioPool()
+         );
    }
 
-   public static record Result(RealmsAvailability.Type a, @Nullable RealmsServiceException b) {
-      private final RealmsAvailability.Type type;
-      @Nullable
-      private final RealmsServiceException exception;
-
+   public static record Result(RealmsAvailability.Type type, @Nullable RealmsServiceException exception) {
       public Result(RealmsAvailability.Type var1) {
          this(var1, null);
       }
@@ -73,15 +74,15 @@ public class RealmsAvailability {
          this(RealmsAvailability.Type.UNEXPECTED_ERROR, var1);
       }
 
-      public Result(RealmsAvailability.Type var1, @Nullable RealmsServiceException var2) {
+      public Result(RealmsAvailability.Type type, @Nullable RealmsServiceException exception) {
          super();
-         this.type = var1;
-         this.exception = var2;
+         this.type = type;
+         this.exception = exception;
       }
 
       @Nullable
       public Screen createErrorScreen(Screen var1) {
-         return (Screen)(switch(this.type) {
+         return (Screen)(switch (this.type) {
             case SUCCESS -> null;
             case INCOMPATIBLE_CLIENT -> new RealmsClientOutdatedScreen(var1);
             case NEEDS_PARENTAL_CONSENT -> new RealmsParentalConsentScreen(var1);

@@ -43,12 +43,7 @@ public class Rotations {
 
    @Override
    public boolean equals(Object var1) {
-      if (!(var1 instanceof Rotations)) {
-         return false;
-      } else {
-         Rotations var2 = (Rotations)var1;
-         return this.x == var2.x && this.y == var2.y && this.z == var2.z;
-      }
+      return !(var1 instanceof Rotations var2) ? false : this.x == var2.x && this.y == var2.y && this.z == var2.z;
    }
 
    public float getX() {

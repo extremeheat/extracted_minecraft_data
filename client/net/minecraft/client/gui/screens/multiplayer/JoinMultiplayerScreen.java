@@ -85,24 +85,24 @@ public class JoinMultiplayerScreen extends Screen {
          this.minecraft.setScreen(new EditServerScreen(this, this::addServerCallback, this.editingServer));
       }).width(100).build());
       this.editButton = this.addRenderableWidget(Button.builder(Component.translatable("selectServer.edit"), var1x -> {
-         ServerSelectionList.Entry var2xx = this.serverSelectionList.getSelected();
-         if (var2xx instanceof ServerSelectionList.OnlineServerEntry) {
-            ServerData var3xx = ((ServerSelectionList.OnlineServerEntry)var2xx).getServerData();
-            this.editingServer = new ServerData(var3xx.name, var3xx.ip, ServerData.Type.OTHER);
-            this.editingServer.copyFrom(var3xx);
+         ServerSelectionList.Entry var2x = this.serverSelectionList.getSelected();
+         if (var2x instanceof ServerSelectionList.OnlineServerEntry) {
+            ServerData var3x = ((ServerSelectionList.OnlineServerEntry)var2x).getServerData();
+            this.editingServer = new ServerData(var3x.name, var3x.ip, ServerData.Type.OTHER);
+            this.editingServer.copyFrom(var3x);
             this.minecraft.setScreen(new EditServerScreen(this, this::editServerCallback, this.editingServer));
          }
       }).width(74).build());
       this.deleteButton = this.addRenderableWidget(Button.builder(Component.translatable("selectServer.delete"), var1x -> {
-         ServerSelectionList.Entry var2xx = this.serverSelectionList.getSelected();
-         if (var2xx instanceof ServerSelectionList.OnlineServerEntry) {
-            String var3xx = ((ServerSelectionList.OnlineServerEntry)var2xx).getServerData().name;
-            if (var3xx != null) {
-               MutableComponent var4xx = Component.translatable("selectServer.deleteQuestion");
-               MutableComponent var5xx = Component.translatable("selectServer.deleteWarning", var3xx);
-               MutableComponent var6xx = Component.translatable("selectServer.deleteButton");
-               Component var7xx = CommonComponents.GUI_CANCEL;
-               this.minecraft.setScreen(new ConfirmScreen(this::deleteCallback, var4xx, var5xx, var6xx, var7xx));
+         ServerSelectionList.Entry var2x = this.serverSelectionList.getSelected();
+         if (var2x instanceof ServerSelectionList.OnlineServerEntry) {
+            String var3x = ((ServerSelectionList.OnlineServerEntry)var2x).getServerData().name;
+            if (var3x != null) {
+               MutableComponent var4x = Component.translatable("selectServer.deleteQuestion");
+               MutableComponent var5x = Component.translatable("selectServer.deleteWarning", var3x);
+               MutableComponent var6x = Component.translatable("selectServer.deleteButton");
+               Component var7x = CommonComponents.GUI_CANCEL;
+               this.minecraft.setScreen(new ConfirmScreen(this::deleteCallback, var4x, var5x, var6x, var7x));
             }
          }
       }).width(74).build());

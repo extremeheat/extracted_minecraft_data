@@ -54,7 +54,7 @@ public class GhostRecipe {
          this.time += var6;
       }
 
-      for(int var7 = 0; var7 < this.ingredients.size(); ++var7) {
+      for (int var7 = 0; var7 < this.ingredients.size(); var7++) {
          GhostRecipe.GhostIngredient var8 = this.ingredients.get(var7);
          int var9 = var8.getX() + var3;
          int var10 = var8.getY() + var4;

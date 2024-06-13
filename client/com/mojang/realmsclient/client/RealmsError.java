@@ -44,13 +44,12 @@ public interface RealmsError {
       }
    }
 
-   public static record AuthenticationError(String d) implements RealmsError {
-      private final String message;
+   public static record AuthenticationError(String message) implements RealmsError {
       public static final int ERROR_CODE = 401;
 
-      public AuthenticationError(String var1) {
+      public AuthenticationError(String message) {
          super();
-         this.message = var1;
+         this.message = message;
       }
 
       @Override
@@ -69,17 +68,14 @@ public interface RealmsError {
       }
    }
 
-   public static record CustomError(int e, @Nullable Component f) implements RealmsError {
-      private final int httpCode;
-      @Nullable
-      private final Component payload;
+   public static record CustomError(int httpCode, @Nullable Component payload) implements RealmsError {
       public static final RealmsError.CustomError SERVICE_BUSY = new RealmsError.CustomError(429, Component.translatable("mco.errorMessage.serviceBusy"));
       public static final Component RETRY_MESSAGE = Component.translatable("mco.errorMessage.retry");
 
-      public CustomError(int var1, @Nullable Component var2) {
+      public CustomError(int httpCode, @Nullable Component payload) {
          super();
-         this.httpCode = var1;
-         this.payload = var2;
+         this.httpCode = httpCode;
+         this.payload = payload;
       }
 
       public static RealmsError.CustomError unknownCompatibilityResponse(String var0) {
@@ -116,20 +112,13 @@ public interface RealmsError {
       }
    }
 
-   public static record ErrorWithJsonPayload(int c, int d, @Nullable String e, @Nullable String f) implements RealmsError {
-      private final int httpCode;
-      private final int code;
-      @Nullable
-      private final String reason;
-      @Nullable
-      private final String message;
-
-      public ErrorWithJsonPayload(int var1, int var2, @Nullable String var3, @Nullable String var4) {
+   public static record ErrorWithJsonPayload(int httpCode, int code, @Nullable String reason, @Nullable String message) implements RealmsError {
+      public ErrorWithJsonPayload(int httpCode, int code, @Nullable String reason, @Nullable String message) {
          super();
-         this.httpCode = var1;
-         this.code = var2;
-         this.reason = var3;
-         this.message = var4;
+         this.httpCode = httpCode;
+         this.code = code;
+         this.reason = reason;
+         this.message = message;
       }
 
       @Override
@@ -160,14 +149,11 @@ public interface RealmsError {
       }
    }
 
-   public static record ErrorWithRawPayload(int c, String d) implements RealmsError {
-      private final int httpCode;
-      private final String payload;
-
-      public ErrorWithRawPayload(int var1, String var2) {
+   public static record ErrorWithRawPayload(int httpCode, String payload) implements RealmsError {
+      public ErrorWithRawPayload(int httpCode, String payload) {
          super();
-         this.httpCode = var1;
-         this.payload = var2;
+         this.httpCode = httpCode;
+         this.payload = payload;
       }
 
       @Override

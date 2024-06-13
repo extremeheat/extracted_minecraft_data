@@ -77,11 +77,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    }
 
    public boolean isSlotDisabled(int var1) {
-      if (var1 >= 0 && var1 < 9) {
-         return this.containerData.get(var1) == 1;
-      } else {
-         return false;
-      }
+      return var1 >= 0 && var1 < 9 ? this.containerData.get(var1) == 1 : false;
    }
 
    @Override
@@ -93,16 +89,14 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
          int var4 = var3.getCount();
          if (var4 >= var3.getMaxStackSize()) {
             return false;
-         } else if (var3.isEmpty()) {
-            return true;
          } else {
-            return !this.smallerStackExist(var4, var3, var1);
+            return var3.isEmpty() ? true : !this.smallerStackExist(var4, var3, var1);
          }
       }
    }
 
    private boolean smallerStackExist(int var1, ItemStack var2, int var3) {
-      for(int var4 = var3 + 1; var4 < 9; ++var4) {
+      for (int var4 = var3 + 1; var4 < 9; var4++) {
          if (!this.isSlotDisabled(var4)) {
             ItemStack var5 = this.getItem(var4);
             if (var5.isEmpty() || var5.getCount() < var1 && ItemStack.isSameItemSameComponents(var5, var2)) {
@@ -115,8 +109,8 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.craftingTicksRemaining = var1.getInt("crafting_ticks_remaining");
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
@@ -125,11 +119,11 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
 
       int[] var3 = var1.getIntArray("disabled_slots");
 
-      for(int var4 = 0; var4 < 9; ++var4) {
+      for (int var4 = 0; var4 < 9; var4++) {
          this.containerData.set(var4, 0);
       }
 
-      for(int var7 : var3) {
+      for (int var7 : var3) {
          if (this.slotCanBeDisabled(var7)) {
             this.containerData.set(var7, 1);
          }
@@ -157,7 +151,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
 
    @Override
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
+      for (ItemStack var2 : this.items) {
          if (!var2.isEmpty()) {
             return false;
          }
@@ -207,7 +201,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
 
    @Override
    public void fillStackedContents(StackedContents var1) {
-      for(ItemStack var3 : this.items) {
+      for (ItemStack var3 : this.items) {
          var1.accountSimpleStack(var3);
       }
    }
@@ -215,7 +209,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    private void addDisabledSlots(CompoundTag var1) {
       IntArrayList var2 = new IntArrayList();
 
-      for(int var3 = 0; var3 < 9; ++var3) {
+      for (int var3 = 0; var3 < 9; var3++) {
          if (this.isSlotDisabled(var3)) {
             var2.add(var3);
          }
@@ -254,10 +248,10 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    public int getRedstoneSignal() {
       int var1 = 0;
 
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
+      for (int var2 = 0; var2 < this.getContainerSize(); var2++) {
          ItemStack var3 = this.getItem(var2);
          if (!var3.isEmpty() || this.isSlotDisabled(var2)) {
-            ++var1;
+            var1++;
          }
       }
 

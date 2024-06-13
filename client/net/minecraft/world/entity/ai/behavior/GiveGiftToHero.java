@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,7 +70,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
       if (!this.isHeroVisible(var2)) {
          return false;
       } else if (this.timeUntilNextGift > 0) {
-         --this.timeUntilNextGift;
+         this.timeUntilNextGift--;
          return false;
       } else {
          return true;
@@ -111,7 +110,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
    }
 
    private void throwGift(Villager var1, LivingEntity var2) {
-      for(ItemStack var5 : this.getItemToThrow(var1)) {
+      for (ItemStack var5 : this.getItemToThrow(var1)) {
          BehaviorUtils.throwItem(var1, var5, var2.position());
       }
    }

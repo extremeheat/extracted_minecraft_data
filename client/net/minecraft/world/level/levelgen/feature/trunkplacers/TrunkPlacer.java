@@ -54,21 +54,12 @@ public abstract class TrunkPlacer {
    }
 
    private static boolean isDirt(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(
-         var1,
-         var0x -> Feature.isDirt(var0x)
-               && !var0x.is(Blocks.GRASS_BLOCK)
-               && !var0x.is(Blocks.PEELGRASS_BLOCK)
-               && !var0x.is(Blocks.CORRUPTED_PEELGRASS_BLOCK)
-               && !var0x.is(Blocks.MYCELIUM)
-      );
+      return var0.isStateAtPosition(var1, var0x -> Feature.isDirt(var0x) && !var0x.is(Blocks.GRASS_BLOCK) && !var0x.is(Blocks.MYCELIUM));
    }
 
    protected static void setDirtAt(LevelSimulatedReader var0, BiConsumer<BlockPos, BlockState> var1, RandomSource var2, BlockPos var3, TreeConfiguration var4) {
-      if (!var0.isPotato()) {
-         if (var4.forceDirt || !isDirt(var0, var3)) {
-            var1.accept(var3, var4.dirtProvider.getState(var2, var3));
-         }
+      if (var4.forceDirt || !isDirt(var0, var3)) {
+         var1.accept(var3, var4.dirtProvider.getState(var2, var3));
       }
    }
 

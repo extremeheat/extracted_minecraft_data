@@ -11,7 +11,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
@@ -143,7 +142,7 @@ public abstract class StructurePiece {
       if (var3 == null) {
          return var1;
       } else {
-         switch(var3) {
+         switch (var3) {
             case NORTH:
             case SOUTH:
                return this.boundingBox.minX() + var1;
@@ -166,7 +165,7 @@ public abstract class StructurePiece {
       if (var3 == null) {
          return var2;
       } else {
-         switch(var3) {
+         switch (var3) {
             case NORTH:
                return this.boundingBox.maxZ() - var2;
             case SOUTH:
@@ -216,17 +215,13 @@ public abstract class StructurePiece {
 
    protected boolean isInterior(LevelReader var1, int var2, int var3, int var4, BoundingBox var5) {
       BlockPos.MutableBlockPos var6 = this.getWorldPos(var2, var3 + 1, var4);
-      if (!var5.isInside(var6)) {
-         return false;
-      } else {
-         return var6.getY() < var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, var6.getX(), var6.getZ());
-      }
+      return !var5.isInside(var6) ? false : var6.getY() < var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, var6.getX(), var6.getZ());
    }
 
    protected void generateAirBox(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      for(int var9 = var4; var9 <= var7; ++var9) {
-         for(int var10 = var3; var10 <= var6; ++var10) {
-            for(int var11 = var5; var11 <= var8; ++var11) {
+      for (int var9 = var4; var9 <= var7; var9++) {
+         for (int var10 = var3; var10 <= var6; var10++) {
+            for (int var11 = var5; var11 <= var8; var11++) {
                this.placeBlock(var1, Blocks.AIR.defaultBlockState(), var10, var9, var11, var2);
             }
          }
@@ -236,9 +231,9 @@ public abstract class StructurePiece {
    protected void generateBox(
       WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, BlockState var10, boolean var11
    ) {
-      for(int var12 = var4; var12 <= var7; ++var12) {
-         for(int var13 = var3; var13 <= var6; ++var13) {
-            for(int var14 = var5; var14 <= var8; ++var14) {
+      for (int var12 = var4; var12 <= var7; var12++) {
+         for (int var13 = var3; var13 <= var6; var13++) {
+            for (int var14 = var5; var14 <= var8; var14++) {
                if (!var11 || !this.getBlock(var1, var13, var12, var14, var2).isAir()) {
                   if (var12 != var4 && var12 != var7 && var13 != var3 && var13 != var6 && var14 != var5 && var14 != var8) {
                      this.placeBlock(var1, var10, var13, var12, var14, var2);
@@ -268,9 +263,9 @@ public abstract class StructurePiece {
       RandomSource var10,
       StructurePiece.BlockSelector var11
    ) {
-      for(int var12 = var4; var12 <= var7; ++var12) {
-         for(int var13 = var3; var13 <= var6; ++var13) {
-            for(int var14 = var5; var14 <= var8; ++var14) {
+      for (int var12 = var4; var12 <= var7; var12++) {
+         for (int var13 = var3; var13 <= var6; var13++) {
+            for (int var14 = var5; var14 <= var8; var14++) {
                if (!var9 || !this.getBlock(var1, var13, var12, var14, var2).isAir()) {
                   var11.next(var10, var13, var12, var14, var12 == var4 || var12 == var7 || var13 == var3 || var13 == var6 || var14 == var5 || var14 == var8);
                   this.placeBlock(var1, var11.getNext(), var13, var12, var14, var2);
@@ -300,9 +295,9 @@ public abstract class StructurePiece {
       boolean var13,
       boolean var14
    ) {
-      for(int var15 = var6; var15 <= var9; ++var15) {
-         for(int var16 = var5; var16 <= var8; ++var16) {
-            for(int var17 = var7; var17 <= var10; ++var17) {
+      for (int var15 = var6; var15 <= var9; var15++) {
+         for (int var16 = var5; var16 <= var8; var16++) {
+            for (int var17 = var7; var17 <= var10; var17++) {
                if (!(var3.nextFloat() > var4)
                   && (!var13 || !this.getBlock(var1, var16, var15, var17, var2).isAir())
                   && (!var14 || this.isInterior(var1, var16, var15, var17, var2))) {
@@ -332,13 +327,13 @@ public abstract class StructurePiece {
       float var14 = (float)var3 + var11 / 2.0F;
       float var15 = (float)var5 + var13 / 2.0F;
 
-      for(int var16 = var4; var16 <= var7; ++var16) {
+      for (int var16 = var4; var16 <= var7; var16++) {
          float var17 = (float)(var16 - var4) / var12;
 
-         for(int var18 = var3; var18 <= var6; ++var18) {
+         for (int var18 = var3; var18 <= var6; var18++) {
             float var19 = ((float)var18 - var14) / (var11 * 0.5F);
 
-            for(int var20 = var5; var20 <= var8; ++var20) {
+            for (int var20 = var5; var20 <= var8; var20++) {
                float var21 = ((float)var20 - var15) / (var13 * 0.5F);
                if (!var10 || !this.getBlock(var1, var18, var16, var20, var2).isAir()) {
                   float var22 = var19 * var19 + var17 * var17 + var21 * var21;
@@ -354,7 +349,7 @@ public abstract class StructurePiece {
    protected void fillColumnDown(WorldGenLevel var1, BlockState var2, int var3, int var4, int var5, BoundingBox var6) {
       BlockPos.MutableBlockPos var7 = this.getWorldPos(var3, var4, var5);
       if (var6.isInside(var7)) {
-         while(this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinBuildHeight() + 1) {
+         while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinBuildHeight() + 1) {
             var1.setBlock(var7, var2, 2);
             var7.move(Direction.DOWN);
          }
@@ -372,7 +367,7 @@ public abstract class StructurePiece {
    public static BlockState reorient(BlockGetter var0, BlockPos var1, BlockState var2) {
       Direction var3 = null;
 
-      for(Direction var5 : Direction.Plane.HORIZONTAL) {
+      for (Direction var5 : Direction.Plane.HORIZONTAL) {
          BlockPos var6 = var1.relative(var5);
          BlockState var7 = var0.getBlockState(var6);
          if (var7.is(Blocks.CHEST)) {
@@ -461,7 +456,7 @@ public abstract class StructurePiece {
 
    @Nullable
    public static StructurePiece findCollisionPiece(List<StructurePiece> var0, BoundingBox var1) {
-      for(StructurePiece var3 : var0) {
+      for (StructurePiece var3 : var0) {
          if (var3.getBoundingBox().intersects(var1)) {
             return var3;
          }
@@ -481,7 +476,7 @@ public abstract class StructurePiece {
          this.rotation = Rotation.NONE;
          this.mirror = Mirror.NONE;
       } else {
-         switch(var1) {
+         switch (var1) {
             case SOUTH:
                this.mirror = Mirror.LEFT_RIGHT;
                this.rotation = Rotation.NONE;

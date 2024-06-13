@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -35,7 +34,7 @@ public class MoveToSkySeeingSpot {
       RandomSource var2 = var1.getRandom();
       BlockPos var3 = var1.blockPosition();
 
-      for(int var4 = 0; var4 < 10; ++var4) {
+      for (int var4 = 0; var4 < 10; var4++) {
          BlockPos var5 = var3.offset(var2.nextInt(20) - 10, var2.nextInt(6) - 3, var2.nextInt(20) - 10);
          if (hasNoBlocksAbove(var0, var1, var5)) {
             return Vec3.atBottomCenterOf(var5);

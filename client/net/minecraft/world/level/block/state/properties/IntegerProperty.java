@@ -22,7 +22,7 @@ public class IntegerProperty extends Property<Integer> {
          this.max = var3;
          HashSet var4 = Sets.newHashSet();
 
-         for(int var5 = var2; var5 <= var3; ++var5) {
+         for (int var5 = var2; var5 <= var3; var5++) {
             var4.add(var5);
          }
 
@@ -35,8 +35,6 @@ public class IntegerProperty extends Property<Integer> {
       return this.values;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean equals(Object var1) {
       if (this == var1) {

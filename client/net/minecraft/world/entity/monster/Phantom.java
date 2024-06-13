@@ -36,7 +36,6 @@ import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -141,7 +140,7 @@ public class Phantom extends FlyingMob implements Enemy {
 
    @Override
    public void aiStep() {
-      if (this.isAlive() && this.isSunBurnTick() && (!this.level().getBiome(this.blockPosition()).is(Biomes.CORRUPTION) || this.getTarget() instanceof Player)) {
+      if (this.isAlive() && this.isSunBurnTick()) {
          this.igniteForSeconds(8);
       }
 
@@ -240,7 +239,7 @@ public class Phantom extends FlyingMob implements Enemy {
       @Override
       public boolean canUse() {
          if (this.nextScanTick > 0) {
-            --this.nextScanTick;
+            this.nextScanTick--;
             return false;
          } else {
             this.nextScanTick = reducedTickDelay(60);
@@ -248,7 +247,7 @@ public class Phantom extends FlyingMob implements Enemy {
             if (!var1.isEmpty()) {
                var1.sort(Comparator.<Entity, Double>comparing(Entity::getY).reversed());
 
-               for(Player var3 : var1) {
+               for (Player var3 : var1) {
                   if (Phantom.this.canAttack(var3, TargetingConditions.DEFAULT)) {
                      Phantom.this.setTarget(var3);
                      return true;
@@ -297,7 +296,7 @@ public class Phantom extends FlyingMob implements Enemy {
       @Override
       public void tick() {
          if (Phantom.this.attackPhase == Phantom.AttackPhase.CIRCLE) {
-            --this.nextSweepTick;
+            this.nextSweepTick--;
             if (this.nextSweepTick <= 0) {
                Phantom.this.attackPhase = Phantom.AttackPhase.SWOOP;
                this.setAnchorAboveTarget();
@@ -357,7 +356,7 @@ public class Phantom extends FlyingMob implements Enemy {
          }
 
          if (Phantom.this.random.nextInt(this.adjustedTickDelay(250)) == 0) {
-            ++this.distance;
+            this.distance++;
             if (this.distance > 15.0F) {
                this.distance = 5.0F;
                this.clockwise = -this.clockwise;
@@ -389,7 +388,7 @@ public class Phantom extends FlyingMob implements Enemy {
             Phantom.this.anchorPoint = Phantom.this.blockPosition();
          }
 
-         this.angle += this.clockwise * 15.0F * 0.017453292F;
+         this.angle = this.angle + this.clockwise * 15.0F * 0.017453292F;
          Phantom.this.moveTargetPoint = Vec3.atLowerCornerOf(Phantom.this.anchorPoint)
             .add((double)(this.distance * Mth.cos(this.angle)), (double)(-4.0F + this.height), (double)(this.distance * Mth.sin(this.angle)));
       }
@@ -498,7 +497,7 @@ public class Phantom extends FlyingMob implements Enemy {
                   List var5 = Phantom.this.level()
                      .getEntitiesOfClass(Cat.class, Phantom.this.getBoundingBox().inflate(16.0), EntitySelector.ENTITY_STILL_ALIVE);
 
-                  for(Cat var4 : var5) {
+                  for (Cat var4 : var5) {
                      var4.hiss();
                   }
 

@@ -59,15 +59,15 @@ public class PlayerChunkSender {
                List var5 = this.collectChunksToSend(var4, var1.chunkPosition());
                if (!var5.isEmpty()) {
                   ServerGamePacketListenerImpl var6 = var1.connection;
-                  ++this.unacknowledgedBatches;
+                  this.unacknowledgedBatches++;
                   var6.send(ClientboundChunkBatchStartPacket.INSTANCE);
 
-                  for(LevelChunk var8 : var5) {
+                  for (LevelChunk var8 : var5) {
                      sendChunk(var6, var3, var8);
                   }
 
                   var6.send(new ClientboundChunkBatchFinishedPacket(var5.size()));
-                  this.batchQuota -= (float)var5.size();
+                  this.batchQuota = this.batchQuota - (float)var5.size();
                }
             }
          }
@@ -101,7 +101,7 @@ public class PlayerChunkSender {
             .toList();
       }
 
-      for(LevelChunk var6 : var3) {
+      for (LevelChunk var6 : var3) {
          this.pendingChunks.remove(var6.getPos().toLong());
       }
 
@@ -109,7 +109,7 @@ public class PlayerChunkSender {
    }
 
    public void onChunkBatchReceivedByClient(float var1) {
-      --this.unacknowledgedBatches;
+      this.unacknowledgedBatches--;
       this.desiredChunksPerTick = Double.isNaN((double)var1) ? 0.01F : Mth.clamp(var1, 0.01F, 64.0F);
       if (this.unacknowledgedBatches == 0) {
          this.batchQuota = 1.0F;

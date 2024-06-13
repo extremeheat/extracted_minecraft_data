@@ -31,10 +31,10 @@ public class TextRenderingUtils {
       int var2 = 0;
       ArrayList var3 = Lists.newArrayList();
 
-      for(String var5 : var0) {
+      for (String var5 : var0) {
          ArrayList var6 = Lists.newArrayList();
 
-         for(String var9 : split(var5, "%link")) {
+         for (String var9 : split(var5, "%link")) {
             if ("%link".equals(var9)) {
                var6.add((TextRenderingUtils.LineSegment)var1.get(var2++));
             } else {
@@ -53,15 +53,16 @@ public class TextRenderingUtils {
          throw new IllegalArgumentException("Delimiter cannot be the empty string");
       } else {
          ArrayList var2 = Lists.newArrayList();
+         int var3 = 0;
 
-         int var3;
          int var4;
-         for(var3 = 0; (var4 = var0.indexOf(var1, var3)) != -1; var3 = var4 + var1.length()) {
+         while ((var4 = var0.indexOf(var1, var3)) != -1) {
             if (var4 > var3) {
                var2.add(var0.substring(var3, var4));
             }
 
             var2.add(var1);
+            var3 = var4 + var1.length();
          }
 
          if (var3 < var0.length()) {

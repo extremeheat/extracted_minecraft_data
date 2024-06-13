@@ -18,7 +18,7 @@ public class GustSeedParticle extends NoRenderParticle {
    @Override
    public void tick() {
       if (this.age % (this.tickDelayInBetween + 1) == 0) {
-         for(int var1 = 0; var1 < 3; ++var1) {
+         for (int var1 = 0; var1 < 3; var1++) {
             double var2 = this.x + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;
             double var4 = this.y + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;
             double var6 = this.z + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;

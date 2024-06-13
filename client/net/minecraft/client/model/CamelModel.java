@@ -145,11 +145,11 @@ public class CamelModel<T extends Camel> extends HierarchicalModel<T> {
       boolean var2 = var1.isSaddled();
       boolean var3 = var1.isVehicle();
 
-      for(ModelPart var7 : this.saddleParts) {
+      for (ModelPart var7 : this.saddleParts) {
          var7.visible = var2;
       }
 
-      for(ModelPart var11 : this.ridingParts) {
+      for (ModelPart var11 : this.ridingParts) {
          var11.visible = var3 && var2;
       }
    }

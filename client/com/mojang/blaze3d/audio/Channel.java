@@ -137,7 +137,7 @@ public class Channel {
    private void pumpBuffers(int var1) {
       if (this.stream != null) {
          try {
-            for(int var2 = 0; var2 < var1; ++var2) {
+            for (int var2 = 0; var2 < var1; var2++) {
                ByteBuffer var3 = this.stream.read(this.streamingBufferSize);
                if (var3 != null) {
                   new SoundBuffer(var3, this.stream.getFormat()).releaseAlBuffer().ifPresent(var1x -> AL10.alSourceQueueBuffers(this.source, new int[]{var1x}));

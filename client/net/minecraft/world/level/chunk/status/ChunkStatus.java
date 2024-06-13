@@ -95,9 +95,9 @@ public class ChunkStatus {
    private static final IntList RANGE_BY_STATUS = Util.make(new IntArrayList(getStatusList().size()), var0 -> {
       int var1 = 0;
 
-      for(int var2 = getStatusList().size() - 1; var2 >= 0; --var2) {
-         while(var1 + 1 < STATUS_BY_RANGE.size() && var2 <= STATUS_BY_RANGE.get(var1 + 1).getIndex()) {
-            ++var1;
+      for (int var2 = getStatusList().size() - 1; var2 >= 0; var2--) {
+         while (var1 + 1 < STATUS_BY_RANGE.size() && var2 <= STATUS_BY_RANGE.get(var1 + 1).getIndex()) {
+            var1++;
          }
 
          var0.add(0, var1);
@@ -129,7 +129,7 @@ public class ChunkStatus {
       ArrayList var0 = Lists.newArrayList();
 
       ChunkStatus var1;
-      for(var1 = FULL; var1.getParent() != var1; var1 = var1.getParent()) {
+      for (var1 = FULL; var1.getParent() != var1; var1 = var1.getParent()) {
          var0.add(var1);
       }
 
@@ -186,15 +186,15 @@ public class ChunkStatus {
       ChunkAccess var5 = (ChunkAccess)var4.get(var4.size() / 2);
       ProfiledDuration var6 = JvmProfiler.INSTANCE.onChunkGenerate(var5.getPos(), var1.level().dimension(), this.toString());
       return this.generationTask.doWork(var1, this, var2, var3, var4, var5).thenApply(var2x -> {
-         if (var2x instanceof ProtoChunk var3xx && !var3xx.getStatus().isOrAfter(this)) {
-            var3xx.setStatus(this);
+         if (var2x instanceof ProtoChunk var3x && !var3x.getStatus().isOrAfter(this)) {
+            var3x.setStatus(this);
          }
 
          if (var6 != null) {
             var6.finish();
          }
 
-         return var2x;
+         return (ChunkAccess)var2x;
       });
    }
 

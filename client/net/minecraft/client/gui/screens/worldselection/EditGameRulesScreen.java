@@ -61,6 +61,7 @@ public class EditGameRulesScreen extends Screen {
       this.doneButton = var1.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.exitCallback.accept(Optional.of(this.gameRules))).build());
       var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }

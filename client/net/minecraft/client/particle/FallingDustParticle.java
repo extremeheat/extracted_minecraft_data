@@ -49,7 +49,7 @@ public class FallingDustParticle extends TextureSheetParticle {
       } else {
          this.setSpriteFromAge(this.sprites);
          this.oRoll = this.roll;
-         this.roll += 3.1415927F * this.rotSpeed * 2.0F;
+         this.roll = this.roll + 3.1415927F * this.rotSpeed * 2.0F;
          if (this.onGround) {
             this.oRoll = this.roll = 0.0F;
          }

@@ -1,8 +1,7 @@
 package net.minecraft.world.item.crafting;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -68,7 +67,7 @@ public class SmithingTransformRecipe implements SmithingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<SmithingTransformRecipe> {
-      private static final Codec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.create(
+      private static final MapCodec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   Ingredient.CODEC.fieldOf("template").forGetter(var0x -> var0x.template),
                   Ingredient.CODEC.fieldOf("base").forGetter(var0x -> var0x.base),
@@ -86,7 +85,7 @@ public class SmithingTransformRecipe implements SmithingRecipe {
       }
 
       @Override
-      public Codec<SmithingTransformRecipe> codec() {
+      public MapCodec<SmithingTransformRecipe> codec() {
          return CODEC;
       }
 

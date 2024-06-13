@@ -44,7 +44,6 @@ import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -128,11 +127,13 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.SONIC_BOOM, SonicBoomParticle.Provider::new);
       this.register(ParticleTypes.FALLING_DUST, FallingDustParticle.Provider::new);
       this.register(ParticleTypes.GUST, GustParticle.Provider::new);
+      this.register(ParticleTypes.SMALL_GUST, GustParticle.SmallProvider::new);
       this.register(ParticleTypes.GUST_EMITTER_LARGE, new GustSeedParticle.Provider(3.0, 7, 0));
       this.register(ParticleTypes.GUST_EMITTER_SMALL, new GustSeedParticle.Provider(1.0, 3, 2));
       this.register(ParticleTypes.FIREWORK, FireworkParticles.SparkProvider::new);
       this.register(ParticleTypes.FISHING, WakeParticle.Provider::new);
       this.register(ParticleTypes.FLAME, FlameParticle.Provider::new);
+      this.register(ParticleTypes.INFESTED, SpellParticle.Provider::new);
       this.register(ParticleTypes.SCULK_SOUL, SoulParticle.EmissiveProvider::new);
       this.register(ParticleTypes.SCULK_CHARGE, SculkChargeParticle.Provider::new);
       this.register(ParticleTypes.SCULK_CHARGE_POP, SculkChargePopParticle.Provider::new);
@@ -144,6 +145,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.INSTANT_EFFECT, SpellParticle.InstantProvider::new);
       this.register(ParticleTypes.ITEM, new BreakingItemParticle.Provider());
       this.register(ParticleTypes.ITEM_SLIME, new BreakingItemParticle.SlimeProvider());
+      this.register(ParticleTypes.ITEM_COBWEB, new BreakingItemParticle.CobwebProvider());
       this.register(ParticleTypes.ITEM_SNOWBALL, new BreakingItemParticle.SnowballProvider());
       this.register(ParticleTypes.LARGE_SMOKE, LargeSmokeParticle.Provider::new);
       this.register(ParticleTypes.LAVA, LavaParticle.Provider::new);
@@ -151,7 +153,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.NAUTILUS, FlyTowardsPositionParticle.NautilusProvider::new);
       this.register(ParticleTypes.NOTE, NoteParticle.Provider::new);
       this.register(ParticleTypes.POOF, ExplodeParticle.Provider::new);
-      this.register(ParticleTypes.PORTAL, var0 -> new PortalParticle.Provider(var0, 0.9F, 0.3F, 1.0F));
+      this.register(ParticleTypes.PORTAL, PortalParticle.Provider::new);
       this.register(ParticleTypes.RAIN, WaterDropParticle.Provider::new);
       this.register(ParticleTypes.SMOKE, SmokeParticle.Provider::new);
       this.register(ParticleTypes.WHITE_SMOKE, WhiteSmokeParticle.Provider::new);
@@ -168,7 +170,6 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.FALLING_HONEY, DripParticle::createHoneyFallParticle);
       this.register(ParticleTypes.LANDING_HONEY, DripParticle::createHoneyLandParticle);
       this.register(ParticleTypes.FALLING_NECTAR, DripParticle::createNectarFallParticle);
-      this.register(ParticleTypes.FALLING_POISON, DripParticle::createPoisonFallParticle);
       this.register(ParticleTypes.FALLING_SPORE_BLOSSOM, DripParticle::createSporeBlossomFallParticle);
       this.register(ParticleTypes.SPORE_BLOSSOM_AIR, SuspendedParticle.SporeBlossomAirProvider::new);
       this.register(ParticleTypes.ASH, AshParticle.Provider::new);
@@ -177,9 +178,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, DripParticle::createObsidianTearHangParticle);
       this.register(ParticleTypes.FALLING_OBSIDIAN_TEAR, DripParticle::createObsidianTearFallParticle);
       this.register(ParticleTypes.LANDING_OBSIDIAN_TEAR, DripParticle::createObsidianTearLandParticle);
-      this.register(ParticleTypes.REVERSE_PORTAL, var0 -> new ReversePortalParticle.ReversePortalProvider(var0, 0.9F, 0.3F, 1.0F));
-      this.register(ParticleTypes.REVERSE_POTATO_LIGHTNING, var0 -> new ReversePortalParticle.ReversePortalProvider(var0, 0.6F, 1.0F, 0.2F));
-      this.register(ParticleTypes.POTATO_LIGHTNING, var0 -> new PortalParticle.Provider(var0, 0.6F, 1.0F, 0.2F));
+      this.register(ParticleTypes.REVERSE_PORTAL, ReversePortalParticle.ReversePortalProvider::new);
       this.register(ParticleTypes.WHITE_ASH, WhiteAshParticle.Provider::new);
       this.register(ParticleTypes.SMALL_FLAME, FlameParticle.SmallFlameProvider::new);
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterHangParticle);
@@ -195,11 +194,15 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.ELECTRIC_SPARK, GlowParticle.ElectricSparkProvider::new);
       this.register(ParticleTypes.SCRAPE, GlowParticle.ScrapeProvider::new);
       this.register(ParticleTypes.SHRIEK, ShriekParticle.Provider::new);
-      this.register(ParticleTypes.FOOTSTEP, FootprintParticle.Provider::new);
       this.register(ParticleTypes.EGG_CRACK, SuspendedTownParticle.EggCrackProvider::new);
       this.register(ParticleTypes.DUST_PLUME, DustPlumeParticle.Provider::new);
-      this.register(ParticleTypes.TRIAL_SPAWNER_DETECTION, TrialSpawnerDetectionParticle.Provider::new);
+      this.register(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER, TrialSpawnerDetectionParticle.Provider::new);
+      this.register(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS, TrialSpawnerDetectionParticle.Provider::new);
       this.register(ParticleTypes.VAULT_CONNECTION, FlyTowardsPositionParticle.VaultConnectionProvider::new);
+      this.register(ParticleTypes.DUST_PILLAR, new TerrainParticle.DustPillarProvider());
+      this.register(ParticleTypes.RAID_OMEN, SpellParticle.Provider::new);
+      this.register(ParticleTypes.TRIAL_OMEN, SpellParticle.Provider::new);
+      this.register(ParticleTypes.OMINOUS_SPAWNING, FlyStraightTowardsParticle.OminousSpawnProvider::new);
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {
@@ -227,14 +230,22 @@ public class ParticleEngine implements PreparableReloadListener {
    public CompletableFuture<Void> reload(
       PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
    ) {
+      record 1ParticleDefinition(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
+         _ParticleDefinition/* $VF was: 1ParticleDefinition*/(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
+            super();
+            this.id = id;
+            this.sprites = sprites;
+         }
+      }
+
       CompletableFuture var7 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var2), var5)
          .thenCompose(var2x -> {
-            ArrayList var3xx = new ArrayList(var2x.size());
+            ArrayList var3x = new ArrayList(var2x.size());
             var2x.forEach((var3xx, var4x) -> {
-               ResourceLocation var5xx = PARTICLE_LISTER.fileToId(var3xx);
+               ResourceLocation var5x = PARTICLE_LISTER.fileToId(var3xx);
                var3x.add(CompletableFuture.supplyAsync(() -> new 1ParticleDefinition(var5x, this.loadParticleDescription(var5x, var4x)), var5));
             });
-            return Util.sequence(var3xx);
+            return Util.sequence(var3x);
          });
       CompletableFuture var8 = SpriteLoader.create(this.textureAtlas)
          .loadAndStitch(var2, PARTICLES_ATLAS_INFO, 0, var5)
@@ -243,52 +254,40 @@ public class ParticleEngine implements PreparableReloadListener {
          this.clearParticles();
          var4.startTick();
          var4.push("upload");
-         SpriteLoader.Preparations var5xx = (SpriteLoader.Preparations)var8.join();
-         this.textureAtlas.upload(var5xx);
+         SpriteLoader.Preparations var5x = (SpriteLoader.Preparations)var8.join();
+         this.textureAtlas.upload(var5x);
          var4.popPush("bindSpriteSets");
-         HashSet var6xx = new HashSet();
-         TextureAtlasSprite var7xx = var5xx.missing();
+         HashSet var6x = new HashSet();
+         TextureAtlasSprite var7x = var5x.missing();
          ((List)var7.join()).forEach(var4xx -> {
-            Optional var5xxx = var4xx.sprites();
-            if (!var5xxx.isEmpty()) {
-               ArrayList var6xxx = new ArrayList();
+            Optional var5xx = var4xx.sprites();
+            if (!var5xx.isEmpty()) {
+               ArrayList var6xx = new ArrayList();
 
-               for(ResourceLocation var8xx : (List)var5xxx.get()) {
-                  TextureAtlasSprite var9 = var5x.regions().get(var8xx);
+               for (ResourceLocation var8x : (List)var5xx.get()) {
+                  TextureAtlasSprite var9 = var5x.regions().get(var8x);
                   if (var9 == null) {
-                     var6x.add(var8xx);
-                     var6xxx.add(var7x);
+                     var6x.add(var8x);
+                     var6xx.add(var7x);
                   } else {
-                     var6xxx.add(var9);
+                     var6xx.add(var9);
                   }
                }
 
-               if (var6xxx.isEmpty()) {
-                  var6xxx.add(var7x);
+               if (var6xx.isEmpty()) {
+                  var6xx.add(var7x);
                }
 
-               this.spriteSets.get(var4xx.id()).rebind(var6xxx);
+               this.spriteSets.get(var4xx.id()).rebind(var6xx);
             }
          });
-         if (!var6xx.isEmpty()) {
-            LOGGER.warn("Missing particle sprites: {}", var6xx.stream().sorted().map(ResourceLocation::toString).collect(Collectors.joining(",")));
+         if (!var6x.isEmpty()) {
+            LOGGER.warn("Missing particle sprites: {}", var6x.stream().sorted().map(ResourceLocation::toString).collect(Collectors.joining(",")));
          }
 
          var4.pop();
          var4.endTick();
       }, var6);
-
-      record 1ParticleDefinition(ResourceLocation a, Optional<List<ResourceLocation>> b) {
-         private final ResourceLocation id;
-         private final Optional<List<ResourceLocation>> sprites;
-
-         _ParticleDefinition/* $VF was: 1ParticleDefinition*/(ResourceLocation var1, Optional<List<ResourceLocation>> var2) {
-            super();
-            this.id = var1;
-            this.sprites = var2;
-         }
-      }
-
    }
 
    public void close() {
@@ -360,7 +359,7 @@ public class ParticleEngine implements PreparableReloadListener {
       if (!this.trackingEmitters.isEmpty()) {
          ArrayList var1 = Lists.newArrayList();
 
-         for(TrackingEmitter var3 : this.trackingEmitters) {
+         for (TrackingEmitter var3 : this.trackingEmitters) {
             var3.tick();
             if (!var3.isAlive()) {
                var1.add(var3);
@@ -372,7 +371,7 @@ public class ParticleEngine implements PreparableReloadListener {
 
       Particle var4;
       if (!this.particlesToAdd.isEmpty()) {
-         while((var4 = this.particlesToAdd.poll()) != null) {
+         while ((var4 = this.particlesToAdd.poll()) != null) {
             this.particles.computeIfAbsent(var4.getRenderType(), var0 -> EvictingQueue.create(16384)).add(var4);
          }
       }
@@ -382,7 +381,7 @@ public class ParticleEngine implements PreparableReloadListener {
       if (!var1.isEmpty()) {
          Iterator var2 = var1.iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             Particle var3 = (Particle)var2.next();
             this.tickParticle(var3);
             if (!var3.isAlive()) {
@@ -413,7 +412,7 @@ public class ParticleEngine implements PreparableReloadListener {
       var1.turnOnLightLayer();
       RenderSystem.enableDepthTest();
 
-      for(ParticleRenderType var5 : RENDER_ORDER) {
+      for (ParticleRenderType var5 : RENDER_ORDER) {
          Iterable var6 = this.particles.get(var5);
          if (var6 != null) {
             RenderSystem.setShader(GameRenderer::getParticleShader);
@@ -421,7 +420,7 @@ public class ParticleEngine implements PreparableReloadListener {
             BufferBuilder var8 = var7.getBuilder();
             var5.begin(var8, this.textureManager);
 
-            for(Particle var10 : var6) {
+            for (Particle var10 : var6) {
                try {
                   var10.render(var8, var2, var3);
                } catch (Throwable var14) {
@@ -460,10 +459,10 @@ public class ParticleEngine implements PreparableReloadListener {
                int var21 = Math.max(2, Mth.ceil(var15 / 0.25));
                int var22 = Math.max(2, Mth.ceil(var17 / 0.25));
                int var23 = Math.max(2, Mth.ceil(var19 / 0.25));
-   
-               for(int var24 = 0; var24 < var21; ++var24) {
-                  for(int var25 = 0; var25 < var22; ++var25) {
-                     for(int var26 = 0; var26 < var23; ++var26) {
+
+               for (int var24 = 0; var24 < var21; var24++) {
+                  for (int var25 = 0; var25 < var22; var25++) {
+                     for (int var26 = 0; var26 < var23; var26++) {
                         double var27 = ((double)var24 + 0.5) / (double)var21;
                         double var29 = ((double)var25 + 0.5) / (double)var22;
                         double var31 = ((double)var26 + 0.5) / (double)var23;

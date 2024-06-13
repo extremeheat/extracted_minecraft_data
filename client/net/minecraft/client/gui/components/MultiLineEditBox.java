@@ -113,7 +113,7 @@ public class MultiLineEditBox extends AbstractScrollWidget {
          int var10 = 0;
          int var11 = this.getY() + this.innerPadding();
 
-         for(MultilineTextField.StringView var13 : this.textField.iterateLines()) {
+         for (MultilineTextField.StringView var13 : this.textField.iterateLines()) {
             boolean var14 = this.withinContentAreaTopBottom(var11, var11 + 9);
             if (var7 && var8 && var6 >= var13.beginIndex() && var6 <= var13.endIndex()) {
                if (var14) {
@@ -142,7 +142,7 @@ public class MultiLineEditBox extends AbstractScrollWidget {
             int var20 = this.getX() + this.innerPadding();
             var11 = this.getY() + this.innerPadding();
 
-            for(MultilineTextField.StringView var15 : this.textField.iterateLines()) {
+            for (MultilineTextField.StringView var15 : this.textField.iterateLines()) {
                if (var19.beginIndex() > var15.endIndex()) {
                   var11 += 9;
                } else {

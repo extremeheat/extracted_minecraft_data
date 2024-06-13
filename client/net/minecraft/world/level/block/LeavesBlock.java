@@ -98,7 +98,7 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
       int var3 = 7;
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
 
-      for(Direction var8 : Direction.values()) {
+      for (Direction var8 : Direction.values()) {
          var4.setWithOffset(var2, var8);
          var3 = Math.min(var3, getDistanceAt(var1.getBlockState(var4)) + 1);
          if (var3 == 1) {

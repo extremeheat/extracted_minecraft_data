@@ -38,10 +38,10 @@ public class BegGoal extends Goal {
    public boolean canContinueToUse() {
       if (!this.player.isAlive()) {
          return false;
-      } else if (this.wolf.distanceToSqr(this.player) > (double)(this.lookDistance * this.lookDistance)) {
-         return false;
       } else {
-         return this.lookTime > 0 && this.playerHoldingInteresting(this.player);
+         return this.wolf.distanceToSqr(this.player) > (double)(this.lookDistance * this.lookDistance)
+            ? false
+            : this.lookTime > 0 && this.playerHoldingInteresting(this.player);
       }
    }
 
@@ -60,11 +60,11 @@ public class BegGoal extends Goal {
    @Override
    public void tick() {
       this.wolf.getLookControl().setLookAt(this.player.getX(), this.player.getEyeY(), this.player.getZ(), 10.0F, (float)this.wolf.getMaxHeadXRot());
-      --this.lookTime;
+      this.lookTime--;
    }
 
    private boolean playerHoldingInteresting(Player var1) {
-      for(InteractionHand var5 : InteractionHand.values()) {
+      for (InteractionHand var5 : InteractionHand.values()) {
          ItemStack var6 = var1.getItemInHand(var5);
          if (this.wolf.isTame() && var6.is(Items.BONE)) {
             return true;

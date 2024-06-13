@@ -18,7 +18,7 @@ public class LlamaRenderer extends MobRenderer<Llama, LlamaModel<Llama>> {
    }
 
    public ResourceLocation getTextureLocation(Llama var1) {
-      return switch(var1.getVariant()) {
+      return switch (var1.getVariant()) {
          case CREAMY -> CREAMY;
          case WHITE -> WHITE;
          case BROWN -> BROWN;

@@ -13,13 +13,9 @@ import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
-public record ClientboundMapItemDataPacket(MapId b, byte c, boolean d, Optional<List<MapDecoration>> e, Optional<MapItemSavedData.MapPatch> f)
-   implements Packet<ClientGamePacketListener> {
-   private final MapId mapId;
-   private final byte scale;
-   private final boolean locked;
-   private final Optional<List<MapDecoration>> decorations;
-   private final Optional<MapItemSavedData.MapPatch> colorPatch;
+public record ClientboundMapItemDataPacket(
+   MapId mapId, byte scale, boolean locked, Optional<List<MapDecoration>> decorations, Optional<MapItemSavedData.MapPatch> colorPatch
+) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMapItemDataPacket> STREAM_CODEC = StreamCodec.composite(
       MapId.STREAM_CODEC,
       ClientboundMapItemDataPacket::mapId,
@@ -38,13 +34,15 @@ public record ClientboundMapItemDataPacket(MapId b, byte c, boolean d, Optional<
       this(var1, var2, var3, var4 != null ? Optional.of(List.copyOf(var4)) : Optional.empty(), Optional.ofNullable(var5));
    }
 
-   public ClientboundMapItemDataPacket(MapId var1, byte var2, boolean var3, Optional<List<MapDecoration>> var4, Optional<MapItemSavedData.MapPatch> var5) {
+   public ClientboundMapItemDataPacket(
+      MapId mapId, byte scale, boolean locked, Optional<List<MapDecoration>> decorations, Optional<MapItemSavedData.MapPatch> colorPatch
+   ) {
       super();
-      this.mapId = var1;
-      this.scale = var2;
-      this.locked = var3;
-      this.decorations = var4;
-      this.colorPatch = var5;
+      this.mapId = mapId;
+      this.scale = scale;
+      this.locked = locked;
+      this.decorations = decorations;
+      this.colorPatch = colorPatch;
    }
 
    @Override

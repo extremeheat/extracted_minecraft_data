@@ -47,7 +47,7 @@ public class EndGatewayBlock extends BaseEntityBlock {
       if (var5 instanceof TheEndGatewayBlockEntity) {
          int var6 = ((TheEndGatewayBlockEntity)var5).getParticleAmount();
 
-         for(int var7 = 0; var7 < var6; ++var7) {
+         for (int var7 = 0; var7 < var6; var7++) {
             double var8 = (double)var3.getX() + var4.nextDouble();
             double var10 = (double)var3.getY() + var4.nextDouble();
             double var12 = (double)var3.getZ() + var4.nextDouble();

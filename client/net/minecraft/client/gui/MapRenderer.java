@@ -57,7 +57,7 @@ public class MapRenderer implements AutoCloseable {
    public void resetData() {
       ObjectIterator var1 = this.maps.values().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          MapRenderer.MapInstance var2 = (MapRenderer.MapInstance)var1.next();
          var2.close();
       }
@@ -95,8 +95,8 @@ public class MapRenderer implements AutoCloseable {
       }
 
       private void updateTexture() {
-         for(int var1 = 0; var1 < 128; ++var1) {
-            for(int var2 = 0; var2 < 128; ++var2) {
+         for (int var1 = 0; var1 < 128; var1++) {
+            for (int var2 = 0; var2 < 128; var2++) {
                int var3 = var2 + var1 * 128;
                this.texture.getPixels().setPixelRGBA(var2, var1, MapColor.getColorFromPackedId(this.data.colors[var3]));
             }
@@ -122,7 +122,7 @@ public class MapRenderer implements AutoCloseable {
          var9.vertex(var8, 0.0F, 0.0F, -0.01F).color(255, 255, 255, 255).uv(0.0F, 0.0F).uv2(var4).endVertex();
          int var10 = 0;
 
-         for(MapDecoration var12 : this.data.getDecorations()) {
+         for (MapDecoration var12 : this.data.getDecorations()) {
             if (!var3 || var12.renderOnFrame()) {
                var1.pushPose();
                var1.translate(0.0F + (float)var12.x() / 2.0F + 64.0F, 0.0F + (float)var12.y() / 2.0F + 64.0F, -0.02F);
@@ -155,7 +155,7 @@ public class MapRenderer implements AutoCloseable {
                   var1.popPose();
                }
 
-               ++var10;
+               var10++;
             }
          }
       }

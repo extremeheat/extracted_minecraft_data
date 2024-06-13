@@ -25,11 +25,11 @@ public enum Mirror implements StringRepresentable {
    public int mirror(int var1, int var2) {
       int var3 = var2 / 2;
       int var4 = var1 > var3 ? var1 - var2 : var1;
-      switch(this) {
-         case FRONT_BACK:
-            return (var2 - var4) % var2;
+      switch (this) {
          case LEFT_RIGHT:
             return (var3 - var4 + var2) % var2;
+         case FRONT_BACK:
+            return (var2 - var4) % var2;
          default:
             return var1;
       }

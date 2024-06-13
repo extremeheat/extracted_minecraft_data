@@ -59,7 +59,7 @@ public class AttributeInstance {
 
    @Nullable
    public AttributeModifier getModifier(UUID var1) {
-      return (AttributeModifier)this.modifierById.get(var1);
+      return this.modifierById.get(var1);
    }
 
    public boolean hasModifier(AttributeModifier var1) {
@@ -67,7 +67,7 @@ public class AttributeInstance {
    }
 
    private void addModifier(AttributeModifier var1) {
-      AttributeModifier var2 = (AttributeModifier)this.modifierById.putIfAbsent(var1.id(), var1);
+      AttributeModifier var2 = this.modifierById.putIfAbsent(var1.id(), var1);
       if (var2 != null) {
          throw new IllegalArgumentException("Modifier is already applied on this attribute!");
       } else {
@@ -77,7 +77,7 @@ public class AttributeInstance {
    }
 
    public void addOrUpdateTransientModifier(AttributeModifier var1) {
-      AttributeModifier var2 = (AttributeModifier)this.modifierById.put(var1.id(), var1);
+      AttributeModifier var2 = this.modifierById.put(var1.id(), var1);
       if (var1 != var2) {
          this.getModifiers(var1.operation()).put(var1.id(), var1);
          this.setDirty();
@@ -103,7 +103,7 @@ public class AttributeInstance {
    }
 
    public void removeModifier(UUID var1) {
-      AttributeModifier var2 = (AttributeModifier)this.modifierById.remove(var1);
+      AttributeModifier var2 = this.modifierById.remove(var1);
       if (var2 != null) {
          this.getModifiers(var2.operation()).remove(var1);
          this.permanentModifiers.remove(var1);
@@ -112,7 +112,7 @@ public class AttributeInstance {
    }
 
    public boolean removePermanentModifier(UUID var1) {
-      AttributeModifier var2 = (AttributeModifier)this.permanentModifiers.remove(var1);
+      AttributeModifier var2 = this.permanentModifiers.remove(var1);
       if (var2 == null) {
          return false;
       } else {
@@ -124,7 +124,7 @@ public class AttributeInstance {
    }
 
    public void removeModifiers() {
-      for(AttributeModifier var2 : this.getModifiers()) {
+      for (AttributeModifier var2 : this.getModifiers()) {
          this.removeModifier(var2);
       }
    }
@@ -141,17 +141,17 @@ public class AttributeInstance {
    private double calculateValue() {
       double var1 = this.getBaseValue();
 
-      for(AttributeModifier var4 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE)) {
+      for (AttributeModifier var4 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE)) {
          var1 += var4.amount();
       }
 
       double var7 = var1;
 
-      for(AttributeModifier var6 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_BASE)) {
+      for (AttributeModifier var6 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_BASE)) {
          var7 += var1 * var6.amount();
       }
 
-      for(AttributeModifier var9 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
+      for (AttributeModifier var9 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
          var7 *= 1.0 + var9.amount();
       }
 
@@ -169,7 +169,7 @@ public class AttributeInstance {
       this.permanentModifiers.clear();
       this.permanentModifiers.putAll(var1.permanentModifiers);
       this.modifiersByOperation.clear();
-      var1.modifiersByOperation.forEach((var1x, var2) -> this.getModifiers(var1x).putAll(var2));
+      var1.modifiersByOperation.forEach((var1x, var2) -> this.getModifiers(var1x).putAll((Map<? extends UUID, ? extends AttributeModifier>)var2));
       this.setDirty();
    }
 
@@ -181,7 +181,7 @@ public class AttributeInstance {
       if (!this.permanentModifiers.isEmpty()) {
          ListTag var3 = new ListTag();
 
-         for(AttributeModifier var5 : this.permanentModifiers.values()) {
+         for (AttributeModifier var5 : this.permanentModifiers.values()) {
             var3.add(var5.save());
          }
 
@@ -196,7 +196,7 @@ public class AttributeInstance {
       if (var1.contains("Modifiers", 9)) {
          ListTag var2 = var1.getList("Modifiers", 10);
 
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
+         for (int var3 = 0; var3 < var2.size(); var3++) {
             AttributeModifier var4 = AttributeModifier.load(var2.getCompound(var3));
             if (var4 != null) {
                this.modifierById.put(var4.id(), var4);

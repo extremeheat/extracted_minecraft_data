@@ -44,7 +44,7 @@ public class AttributeMap {
 
    @Nullable
    public AttributeInstance getInstance(Holder<Attribute> var1) {
-      return this.attributes.computeIfAbsent(var1, var1x -> this.supplier.createInstance(this::onAttributeModified, var1x));
+      return this.attributes.computeIfAbsent(var1, var1x -> this.supplier.createInstance(this::onAttributeModified, (Holder<Attribute>)var1x));
    }
 
    public boolean hasAttribute(Holder<Attribute> var1) {
@@ -83,7 +83,7 @@ public class AttributeMap {
    public ListTag save() {
       ListTag var1 = new ListTag();
 
-      for(AttributeInstance var3 : this.attributes.values()) {
+      for (AttributeInstance var3 : this.attributes.values()) {
          var1.add(var3.save());
       }
 
@@ -91,15 +91,15 @@ public class AttributeMap {
    }
 
    public void load(ListTag var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
+      for (int var2 = 0; var2 < var1.size(); var2++) {
          CompoundTag var3 = var1.getCompound(var2);
          String var4 = var3.getString("Name");
          ResourceLocation var5 = ResourceLocation.tryParse(var4);
          if (var5 != null) {
             Util.ifElse(BuiltInRegistries.ATTRIBUTE.getHolder(var5), var2x -> {
-               AttributeInstance var3xx = this.getInstance(var2x);
-               if (var3xx != null) {
-                  var3xx.load(var3);
+               AttributeInstance var3x = this.getInstance(var2x);
+               if (var3x != null) {
+                  var3x.load(var3);
                }
             }, () -> LOGGER.warn("Ignoring unknown attribute '{}'", var5));
          } else {

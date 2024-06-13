@@ -100,15 +100,15 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
       BlockPos.MutableBlockPos var5 = var2.mutable();
       int var6 = 0;
 
-      while(var6 < var4 && canPlaceAt(var0, var5, var0.getBlockState(var5))) {
-         ++var6;
+      while (var6 < var4 && canPlaceAt(var0, var5, var0.getBlockState(var5))) {
+         var6++;
          var5.move(Direction.UP);
       }
 
       int var7 = var2.getY() + var6 - 1;
       var5.setY(var2.getY());
 
-      while(var5.getY() < var7) {
+      while (var5.getY() < var7) {
          BigDripleafStemBlock.place(var0, var5, var0.getFluidState(var5), var3);
          var5.move(Direction.UP);
       }

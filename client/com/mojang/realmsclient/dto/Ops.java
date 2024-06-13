@@ -22,7 +22,7 @@ public class Ops extends ValueObject {
          JsonObject var4 = var3.getAsJsonObject();
          JsonElement var5 = var4.get("ops");
          if (var5.isJsonArray()) {
-            for(JsonElement var7 : var5.getAsJsonArray()) {
+            for (JsonElement var7 : var5.getAsJsonArray()) {
                var1.ops.add(var7.getAsString());
             }
          }

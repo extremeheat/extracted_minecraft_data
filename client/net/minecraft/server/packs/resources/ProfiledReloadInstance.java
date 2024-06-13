@@ -24,13 +24,13 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
          ActiveProfiler var8 = new ActiveProfiler(Util.timeSource, () -> 0, false);
          ActiveProfiler var9 = new ActiveProfiler(Util.timeSource, () -> 0, false);
          CompletableFuture var10 = var3x.reload(var1x, var2x, var8, var9, var2xx -> var4x.execute(() -> {
-               long var2xxxx = Util.getNanos();
+               long var2xxx = Util.getNanos();
                var2xx.run();
-               var6.addAndGet(Util.getNanos() - var2xxxx);
+               var6.addAndGet(Util.getNanos() - var2xxx);
             }), var2xx -> var5x.execute(() -> {
-               long var2xxxx = Util.getNanos();
+               long var2xxx = Util.getNanos();
                var2xx.run();
-               var7.addAndGet(Util.getNanos() - var2xxxx);
+               var7.addAndGet(Util.getNanos() - var2xxx);
             }));
          return var10.thenApplyAsync(var5xx -> {
             LOGGER.debug("Finished reloading " + var3x.getName());
@@ -46,7 +46,7 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
       long var2 = 0L;
       LOGGER.info("Resource reload finished after {} ms", this.total.elapsed(TimeUnit.MILLISECONDS));
 
-      for(ProfiledReloadInstance.State var5 : var1) {
+      for (ProfiledReloadInstance.State var5 : var1) {
          ProfileResults var6 = var5.preparationResult;
          ProfileResults var7 = var5.reloadResult;
          long var8 = TimeUnit.NANOSECONDS.toMillis(var5.preparationNanos.get());

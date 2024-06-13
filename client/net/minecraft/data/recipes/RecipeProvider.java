@@ -1,6 +1,5 @@
 package net.minecraft.data.recipes;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
@@ -36,11 +34,9 @@ import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.PotatoRefinementRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
@@ -121,7 +117,7 @@ public abstract class RecipeProvider implements DataProvider {
             return Advancement.Builder.recipeAdvancement().parent(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT);
          }
       });
-      return CompletableFuture.allOf(var4.toArray(var0 -> new CompletableFuture[var0]));
+      return CompletableFuture.allOf(var4.toArray(CompletableFuture[]::new));
    }
 
    protected CompletableFuture<?> buildAdvancement(CachedOutput var1, HolderLookup.Provider var2, AdvancementHolder var3) {
@@ -166,7 +162,7 @@ public abstract class RecipeProvider implements DataProvider {
       String var8,
       String var9
    ) {
-      for(ItemLike var11 : var3) {
+      for (ItemLike var11 : var3) {
          SimpleCookingRecipeBuilder.generic(Ingredient.of(var11), var4, var5, var6, var7, var1, var2)
             .group(var8)
             .unlockedBy(getHasName(var11), has(var11))
@@ -207,10 +203,6 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    protected static void planksFromLogs(RecipeOutput var0, ItemLike var1, TagKey<Item> var2, int var3) {
-      ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, var1, var3).requires(var2).group("planks").unlockedBy("has_logs", has(var2)).save(var0);
-   }
-
-   protected static void planksFromLogs(RecipeOutput var0, ItemLike var1, ItemLike var2, int var3) {
       ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, var1, var3).requires(var2).group("planks").unlockedBy("has_logs", has(var2)).save(var0);
    }
 
@@ -308,7 +300,7 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    protected static void colorBlockWithDye(RecipeOutput var0, List<Item> var1, List<Item> var2, String var3) {
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
+      for (int var4 = 0; var4 < var1.size(); var4++) {
          Item var5 = (Item)var1.get(var4);
          Item var6 = (Item)var2.get(var4);
          ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, var6)
@@ -465,28 +457,6 @@ public abstract class RecipeProvider implements DataProvider {
          .save(var0, getConversionRecipeName(var2, var3) + "_stonecutting");
    }
 
-   protected static void poisonousPotatoCutterResultFromBase(RecipeOutput var0, RecipeCategory var1, ItemLike var2, ItemLike var3, int var4) {
-      SingleItemRecipeBuilder.poisonous_potato_cutting(Ingredient.of(var3), var1, var2, var4)
-         .unlockedBy(getHasName(var3), has(var3))
-         .save(var0, getConversionRecipeName(var2, var3) + "_poisonous_potato_cutting");
-   }
-
-   protected static void potatoRefinement(RecipeOutput var0, ItemStack var1, ItemLike var2, ItemStack var3, float var4) {
-      potatoRefinement(var0, var1, var2, Ingredient.of(var3), var4);
-   }
-
-   protected static void potatoRefinement(RecipeOutput var0, ItemStack var1, ItemLike var2, ItemLike var3, float var4) {
-      potatoRefinement(var0, var1, var2, Ingredient.of(var3), var4);
-   }
-
-   protected static void potatoRefinement(RecipeOutput var0, ItemStack var1, ItemLike var2, Ingredient var3, float var4) {
-      var0.accept(
-         new ResourceLocation(getPotatoRefinementRecipeName(var1)),
-         new PotatoRefinementRecipe(Ingredient.of(var2), var3, var1, 0.1F, (int)(var4 * 100.0F)),
-         null
-      );
-   }
-
    private static void smeltingResultFromBase(RecipeOutput var0, ItemLike var1, ItemLike var2) {
       SimpleCookingRecipeBuilder.smelting(Ingredient.of(var2), RecipeCategory.BUILDING_BLOCKS, var1, 0.1F, 200)
          .unlockedBy(getHasName(var2), has(var2))
@@ -566,8 +536,6 @@ public abstract class RecipeProvider implements DataProvider {
       simpleCookingRecipe(var0, var1, var2, var3, var4, Items.MUTTON, Items.COOKED_MUTTON, 0.35F);
       simpleCookingRecipe(var0, var1, var2, var3, var4, Items.PORKCHOP, Items.COOKED_PORKCHOP, 0.35F);
       simpleCookingRecipe(var0, var1, var2, var3, var4, Items.POTATO, Items.BAKED_POTATO, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.POISONOUS_POTATO_STICKS, Items.POISONOUS_POTATO_FRIES, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.POISONOUS_POTATO_SLICES, Items.POISONOUS_POTATO_CHIPS, 0.35F);
       simpleCookingRecipe(var0, var1, var2, var3, var4, Items.RABBIT, Items.COOKED_RABBIT, 0.35F);
    }
 
@@ -580,7 +548,8 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    protected static void waxRecipes(RecipeOutput var0, FeatureFlagSet var1) {
-      ((BiMap)HoneycombItem.WAXABLES.get())
+      HoneycombItem.WAXABLES
+         .get()
          .forEach(
             (var2, var3) -> {
                if (var3.requiredFeatures().isSubsetOf(var1)) {
@@ -666,7 +635,7 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    private static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate.Builder... var0) {
-      return inventoryTrigger(Arrays.stream(var0).map(ItemPredicate.Builder::build).toArray(var0x -> new ItemPredicate[var0x]));
+      return inventoryTrigger(Arrays.stream(var0).map(ItemPredicate.Builder::build).toArray(ItemPredicate[]::new));
    }
 
    private static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate... var0) {
@@ -696,17 +665,6 @@ public abstract class RecipeProvider implements DataProvider {
 
    protected static String getBlastingRecipeName(ItemLike var0) {
       return getItemName(var0) + "_from_blasting";
-   }
-
-   protected static String getPotatoRefinementRecipeName(ItemStack var0) {
-      Item var1 = var0.getItem();
-      PotionContents var2 = var0.get(DataComponents.POTION_CONTENTS);
-      String var3 = "_from_potato_refinement";
-      return var2 != null ? getItemName(var1) + "_with_" + getPotionName(var2) + "_from_potato_refinement" : getItemName(var1) + "_from_potato_refinement";
-   }
-
-   private static String getPotionName(PotionContents var0) {
-      return new ResourceLocation(var0.potion().get().getRegisteredName()).getPath();
    }
 
    @Override

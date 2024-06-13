@@ -23,11 +23,11 @@ public class ScatteredOreFeature extends Feature<OreConfiguration> {
       int var6 = var3.nextInt(var4.size + 1);
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
 
-      for(int var8 = 0; var8 < var6; ++var8) {
+      for (int var8 = 0; var8 < var6; var8++) {
          this.offsetTargetPos(var7, var3, var5, Math.min(var8, 7));
          BlockState var9 = var2.getBlockState(var7);
 
-         for(OreConfiguration.TargetBlockState var11 : var4.targetStates) {
+         for (OreConfiguration.TargetBlockState var11 : var4.targetStates) {
             if (OreFeature.canPlaceOre(var9, var2::getBlockState, var3, var4, var11, var7)) {
                var2.setBlock(var7, var11.state, 2);
                break;

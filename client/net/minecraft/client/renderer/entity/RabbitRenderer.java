@@ -25,7 +25,7 @@ public class RabbitRenderer extends MobRenderer<Rabbit, RabbitModel<Rabbit>> {
       if ("Toast".equals(var2)) {
          return RABBIT_TOAST_LOCATION;
       } else {
-         return switch(var1.getVariant()) {
+         return switch (var1.getVariant()) {
             case BROWN -> RABBIT_BROWN_LOCATION;
             case WHITE -> RABBIT_WHITE_LOCATION;
             case BLACK -> RABBIT_BLACK_LOCATION;

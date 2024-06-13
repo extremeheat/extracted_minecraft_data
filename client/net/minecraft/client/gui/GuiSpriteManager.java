@@ -27,6 +27,6 @@ public class GuiSpriteManager extends TextureAtlasHolder {
    }
 
    private GuiMetadataSection getMetadata(TextureAtlasSprite var1) {
-      return (GuiMetadataSection)var1.contents().metadata().getSection(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT);
+      return var1.contents().metadata().getSection(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT);
    }
 }

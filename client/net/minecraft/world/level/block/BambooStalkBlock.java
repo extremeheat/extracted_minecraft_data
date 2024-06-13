@@ -174,7 +174,7 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       int var7 = var5 + var6 + 1;
       int var8 = 1 + var2.nextInt(2);
 
-      for(int var9 = 0; var9 < var8; ++var9) {
+      for (int var9 = 0; var9 < var8; var9++) {
          BlockPos var10 = var3.above(var5);
          BlockState var11 = var1.getBlockState(var10);
          if (var7 >= 16 || var11.getValue(STAGE) == 1 || !var1.isEmptyBlock(var10.above())) {
@@ -182,8 +182,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
          }
 
          this.growBamboo(var11, var1, var10, var2, var7);
-         ++var5;
-         ++var7;
+         var5++;
+         var7++;
       }
    }
 
@@ -219,8 +219,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    protected int getHeightAboveUpToMax(BlockGetter var1, BlockPos var2) {
       int var3 = 0;
 
-      while(var3 < 16 && var1.getBlockState(var2.above(var3 + 1)).is(Blocks.BAMBOO)) {
-         ++var3;
+      while (var3 < 16 && var1.getBlockState(var2.above(var3 + 1)).is(Blocks.BAMBOO)) {
+         var3++;
       }
 
       return var3;
@@ -229,8 +229,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    protected int getHeightBelowUpToMax(BlockGetter var1, BlockPos var2) {
       int var3 = 0;
 
-      while(var3 < 16 && var1.getBlockState(var2.below(var3 + 1)).is(Blocks.BAMBOO)) {
-         ++var3;
+      while (var3 < 16 && var1.getBlockState(var2.below(var3 + 1)).is(Blocks.BAMBOO)) {
+         var3++;
       }
 
       return var3;

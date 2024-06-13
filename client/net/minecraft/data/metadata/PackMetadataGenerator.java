@@ -35,7 +35,7 @@ public class PackMetadataGenerator implements DataProvider {
    @Override
    public CompletableFuture<?> run(CachedOutput var1) {
       JsonObject var2 = new JsonObject();
-      this.elements.forEach((var1x, var2x) -> var2.add(var1x, (JsonElement)var2x.get()));
+      this.elements.forEach((var1x, var2x) -> var2.add(var1x, var2x.get()));
       return DataProvider.saveStable(var1, var2, this.output.getOutputFolder().resolve("pack.mcmeta"));
    }
 

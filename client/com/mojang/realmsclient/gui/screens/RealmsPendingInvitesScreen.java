@@ -37,8 +37,8 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
    private final CompletableFuture<List<PendingInvite>> pendingInvites = CompletableFuture.supplyAsync(() -> {
       try {
          return RealmsClient.create().pendingInvites().pendingInvites;
-      } catch (RealmsServiceException var1xx) {
-         LOGGER.error("Couldn't list invites", var1xx);
+      } catch (RealmsServiceException var1x) {
+         LOGGER.error("Couldn't list invites", var1x);
          return List.of();
       }
    }, Util.ioPool());
@@ -90,16 +90,16 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          String var3 = this.pendingInvitationSelectionList.children().get(var1).pendingInvite.invitationId;
          CompletableFuture.<Boolean>supplyAsync(() -> {
             try {
-               RealmsClient var2xx = RealmsClient.create();
+               RealmsClient var2x = RealmsClient.create();
                if (var2) {
-                  var2xx.acceptInvitation(var3);
+                  var2x.acceptInvitation(var3);
                } else {
-                  var2xx.rejectInvitation(var3);
+                  var2x.rejectInvitation(var3);
                }
 
                return true;
-            } catch (RealmsServiceException var3xx) {
-               LOGGER.error("Couldn't handle invite", var3xx);
+            } catch (RealmsServiceException var3x) {
+               LOGGER.error("Couldn't handle invite", var3x);
                return false;
             }
          }, Util.ioPool()).thenAcceptAsync(var3x -> {

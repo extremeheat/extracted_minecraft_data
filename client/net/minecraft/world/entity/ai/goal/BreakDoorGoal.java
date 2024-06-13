@@ -31,10 +31,10 @@ public class BreakDoorGoal extends DoorInteractGoal {
    public boolean canUse() {
       if (!super.canUse()) {
          return false;
-      } else if (!this.mob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-         return false;
       } else {
-         return this.isValidDifficulty(this.mob.level().getDifficulty()) && !this.isOpen();
+         return !this.mob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
+            ? false
+            : this.isValidDifficulty(this.mob.level().getDifficulty()) && !this.isOpen();
       }
    }
 
@@ -68,7 +68,7 @@ public class BreakDoorGoal extends DoorInteractGoal {
          }
       }
 
-      ++this.breakTime;
+      this.breakTime++;
       int var1 = (int)((float)this.breakTime / (float)this.getDoorBreakTime() * 10.0F);
       if (var1 != this.lastBreakProgress) {
          this.mob.level().destroyBlockProgress(this.mob.getId(), this.doorPos, var1);

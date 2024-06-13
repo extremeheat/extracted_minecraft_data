@@ -36,12 +36,11 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
 
    @Override
    public void init() {
-      UnsupportedGraphicsWarningScreen.ButtonOption var2;
-      for(UnmodifiableIterator var1 = this.buttonOptions.iterator();
-         var1.hasNext();
-         this.buttonWidth = Math.max(this.buttonWidth, 20 + this.font.width(var2.message) + 20)
-      ) {
-         var2 = (UnsupportedGraphicsWarningScreen.ButtonOption)var1.next();
+      UnmodifiableIterator var1 = this.buttonOptions.iterator();
+
+      while (var1.hasNext()) {
+         UnsupportedGraphicsWarningScreen.ButtonOption var2 = (UnsupportedGraphicsWarningScreen.ButtonOption)var1.next();
+         this.buttonWidth = Math.max(this.buttonWidth, 20 + this.font.width(var2.message) + 20);
       }
 
       int var8 = 5 + this.buttonWidth + 5;
@@ -52,7 +51,7 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
       int var4 = this.contentTop + var3 + 9 * 2;
       int var5 = (int)((double)this.width / 2.0 - (double)var9 / 2.0);
 
-      for(UnmodifiableIterator var6 = this.buttonOptions.iterator(); var6.hasNext(); var5 += var8) {
+      for (UnmodifiableIterator var6 = this.buttonOptions.iterator(); var6.hasNext(); var5 += var8) {
          UnsupportedGraphicsWarningScreen.ButtonOption var7 = (UnsupportedGraphicsWarningScreen.ButtonOption)var6.next();
          this.addRenderableWidget(Button.builder(var7.message, var7.onPress).bounds(var5, var4, this.buttonWidth, 20).build());
       }

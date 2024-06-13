@@ -73,7 +73,7 @@ public class FilePackResources extends AbstractPackResources {
          HashSet var4 = Sets.newHashSet();
          String var5 = this.addPrefix(var1.getDirectory() + "/");
 
-         while(var3.hasMoreElements()) {
+         while (var3.hasMoreElements()) {
             ZipEntry var6 = (ZipEntry)var3.nextElement();
             String var7 = var6.getName();
             String var8 = extractNamespace(var5, var7);
@@ -114,7 +114,7 @@ public class FilePackResources extends AbstractPackResources {
          String var7 = this.addPrefix(var1.getDirectory() + "/" + var2 + "/");
          String var8 = var7 + var3 + "/";
 
-         while(var6.hasMoreElements()) {
+         while (var6.hasMoreElements()) {
             ZipEntry var9 = (ZipEntry)var6.nextElement();
             if (!var9.isDirectory()) {
                String var10 = var9.getName();
@@ -160,7 +160,7 @@ public class FilePackResources extends AbstractPackResources {
          } else {
             ArrayList var6 = new ArrayList(var5.size());
 
-            for(String var8 : var5) {
+            for (String var8 : var5) {
                var6.add(new FilePackResources(var1, var3, var8));
             }
 

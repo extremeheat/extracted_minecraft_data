@@ -45,7 +45,7 @@ public class DripParticle extends TextureSheetParticle {
       this.zo = this.z;
       this.preMoveUpdate();
       if (!this.removed) {
-         this.yd -= (double)this.gravity;
+         this.yd = this.yd - (double)this.gravity;
          this.move(this.xd, this.yd, this.zd);
          this.postMoveUpdate();
          if (!this.removed) {
@@ -179,16 +179,6 @@ public class DripParticle extends TextureSheetParticle {
       var14.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
       var14.gravity = 0.007F;
       var14.setColor(0.92F, 0.782F, 0.72F);
-      return var14;
-   }
-
-   public static TextureSheetParticle createPoisonFallParticle(
-      SimpleParticleType var0, ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12
-   ) {
-      DripParticle.FallingParticle var14 = new DripParticle.FallingParticle(var1, var2, var4, var6, Fluids.EMPTY);
-      var14.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
-      var14.gravity = 0.007F;
-      var14.setColor(0.69F, 0.78F, 0.22F);
       return var14;
    }
 

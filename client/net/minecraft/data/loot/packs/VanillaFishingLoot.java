@@ -18,7 +18,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.functions.EnchantWithLevelsFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
@@ -76,17 +75,17 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Blocks.TRIPWIRE_HOOK).setWeight(10))
                   .add(LootItem.lootTableItem(Items.ROTTEN_FLESH).setWeight(10))
                   .add(
-                     ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Blocks.BAMBOO)
-                           .when(
-                              LocationCheck.checkLocation(
-                                 LocationPredicate.Builder.location()
-                                    .setBiomes(
-                                       HolderSet.direct(
-                                          var3.getOrThrow(Biomes.JUNGLE), var3.getOrThrow(Biomes.SPARSE_JUNGLE), var3.getOrThrow(Biomes.BAMBOO_JUNGLE)
-                                       )
+                     LootItem.lootTableItem(Blocks.BAMBOO)
+                        .when(
+                           LocationCheck.checkLocation(
+                              LocationPredicate.Builder.location()
+                                 .setBiomes(
+                                    HolderSet.direct(
+                                       var3.getOrThrow(Biomes.JUNGLE), var3.getOrThrow(Biomes.SPARSE_JUNGLE), var3.getOrThrow(Biomes.BAMBOO_JUNGLE)
                                     )
-                              )
-                           ))
+                                 )
+                           )
+                        )
                         .setWeight(10)
                   )
             )

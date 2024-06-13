@@ -14,7 +14,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DataResult.PartialResult;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -117,6 +116,10 @@ public class Util {
       return Collectors.toMap(Entry::getKey, Entry::getValue);
    }
 
+   public static <T> Collector<T, ?, List<T>> toMutableList() {
+      return Collectors.toCollection(Lists::newArrayList);
+   }
+
    public static <T extends Comparable<T>> String getPropertyName(Property<T> var0, Object var1) {
       return var0.getName((T)var1);
    }
@@ -149,7 +152,7 @@ public class Util {
       } else {
          AtomicInteger var3 = new AtomicInteger(1);
          var2 = new ForkJoinPool(var1, var2x -> {
-            ForkJoinWorkerThread var3xx = new ForkJoinWorkerThread(var2x) {
+            ForkJoinWorkerThread var3x = new ForkJoinWorkerThread(var2x) {
                @Override
                protected void onTermination(Throwable var1) {
                   if (var1 != null) {
@@ -161,8 +164,8 @@ public class Util {
                   super.onTermination(var1);
                }
             };
-            var3xx.setName("Worker-" + var0 + "-" + var3.getAndIncrement());
-            return var3xx;
+            var3x.setName("Worker-" + var0 + "-" + var3.getAndIncrement());
+            return var3x;
          }, Util::onThreadException, true);
       }
 
@@ -234,8 +237,6 @@ public class Util {
       throw var0 instanceof RuntimeException ? (RuntimeException)var0 : new RuntimeException(var0);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void onThreadException(Thread var0, Throwable var1) {
       pauseInIde(var1);
       if (var1 instanceof CompletionException) {
@@ -312,12 +313,12 @@ public class Util {
    public static <T> Predicate<T> allOf(List<? extends Predicate<T>> var0) {
       List var1 = List.copyOf(var0);
 
-      return switch(var1.size()) {
+      return switch (var1.size()) {
          case 0 -> var0x -> true;
          case 1 -> (Predicate)var1.get(0);
          case 2 -> ((Predicate)var1.get(0)).and((Predicate<? super T>)var1.get(1));
          default -> var1x -> {
-         for(Predicate var3 : var1) {
+         for (Predicate var3 : var1) {
             if (!var3.test(var1x)) {
                return false;
             }
@@ -331,12 +332,12 @@ public class Util {
    public static <T> Predicate<T> anyOf(List<? extends Predicate<T>> var0) {
       List var1 = List.copyOf(var0);
 
-      return switch(var1.size()) {
+      return switch (var1.size()) {
          case 0 -> var0x -> false;
          case 1 -> (Predicate)var1.get(0);
          case 2 -> ((Predicate)var1.get(0)).or((Predicate<? super T>)var1.get(1));
          default -> var1x -> {
-         for(Predicate var3 : var1) {
+         for (Predicate var3 : var1) {
             if (var3.test(var1x)) {
                return true;
             }
@@ -379,7 +380,7 @@ public class Util {
       if (var1 != null) {
          Object var4 = var3;
 
-         while(var4 != var1) {
+         while (var4 != var1) {
             if (var2.hasNext()) {
                var4 = var2.next();
             }
@@ -395,17 +396,18 @@ public class Util {
 
    public static <T> T findPreviousInIterable(Iterable<T> var0, @Nullable T var1) {
       Iterator var2 = var0.iterator();
+      Object var3 = null;
 
-      Object var3;
-      Object var4;
-      for(var3 = null; var2.hasNext(); var3 = var4) {
-         var4 = var2.next();
+      while (var2.hasNext()) {
+         Object var4 = var2.next();
          if (var4 == var1) {
             if (var3 == null) {
                var3 = var2.hasNext() ? Iterators.getLast(var2) : var1;
             }
             break;
          }
+
+         var3 = var4;
       }
 
       return (T)var3;
@@ -440,7 +442,7 @@ public class Util {
       CompletableFuture var1 = new CompletableFuture();
       return fallibleSequence(var0, var2 -> {
          if (var1.completeExceptionally(var2)) {
-            for(CompletableFuture var4 : var0) {
+            for (CompletableFuture var4 : var0) {
                var4.cancel(true);
             }
          }
@@ -611,7 +613,7 @@ public class Util {
    }
 
    private static boolean executeInSequence(BooleanSupplier... var0) {
-      for(BooleanSupplier var4 : var0) {
+      for (BooleanSupplier var4 : var0) {
          if (!var4.getAsBoolean()) {
             LOGGER.warn("Failed to execute {}", var4);
             return false;
@@ -622,7 +624,7 @@ public class Util {
    }
 
    private static boolean runWithRetries(int var0, String var1, BooleanSupplier... var2) {
-      for(int var3 = 0; var3 < var0; ++var3) {
+      for (int var3 = 0; var3 < var0; var3++) {
          if (executeInSequence(var2)) {
             return true;
          }
@@ -654,16 +656,16 @@ public class Util {
    public static int offsetByCodepoints(String var0, int var1, int var2) {
       int var3 = var0.length();
       if (var2 >= 0) {
-         for(int var4 = 0; var1 < var3 && var4 < var2; ++var4) {
+         for (int var4 = 0; var1 < var3 && var4 < var2; var4++) {
             if (Character.isHighSurrogate(var0.charAt(var1++)) && var1 < var3 && Character.isLowSurrogate(var0.charAt(var1))) {
-               ++var1;
+               var1++;
             }
          }
       } else {
-         for(int var5 = var2; var1 > 0 && var5 < 0; ++var5) {
-            --var1;
+         for (int var5 = var2; var1 > 0 && var5 < 0; var5++) {
+            var1--;
             if (Character.isLowSurrogate(var0.charAt(var1)) && var1 > 0 && Character.isHighSurrogate(var0.charAt(var1 - 1))) {
-               --var1;
+               var1--;
             }
          }
       }
@@ -708,7 +710,7 @@ public class Util {
       Thread var0 = new Thread("Timer hack thread") {
          @Override
          public void run() {
-            while(true) {
+            while (true) {
                try {
                   Thread.sleep(2147483647L);
                } catch (InterruptedException var2) {
@@ -782,7 +784,7 @@ public class Util {
       IntArrayList var2 = IntArrayList.wrap(var0.toArray());
       int var3 = var2.size();
 
-      for(int var4 = var3; var4 > 1; --var4) {
+      for (int var4 = var3; var4 > 1; var4--) {
          int var5 = var1.nextInt(var4);
          var2.set(var4 - 1, var2.set(var5, var2.getInt(var4 - 1)));
       }
@@ -805,7 +807,7 @@ public class Util {
    public static <T> void shuffle(List<T> var0, RandomSource var1) {
       int var2 = var0.size();
 
-      for(int var3 = var2; var3 > 1; --var3) {
+      for (int var3 = var2; var3 > 1; var3--) {
          int var4 = var1.nextInt(var3);
          var0.set(var3 - 1, var0.set(var4, var0.get(var3 - 1)));
       }
@@ -819,7 +821,7 @@ public class Util {
       LinkedBlockingQueue var2 = new LinkedBlockingQueue();
       Object var3 = var0.apply(var2::add);
 
-      while(!var1.test(var3)) {
+      while (!var1.test(var3)) {
          try {
             Runnable var4 = (Runnable)var2.poll(100L, TimeUnit.MILLISECONDS);
             if (var4 != null) {
@@ -847,7 +849,7 @@ public class Util {
          Object2IntOpenHashMap var2 = new Object2IntOpenHashMap(var1);
          var2.defaultReturnValue(-1);
 
-         for(int var3 = 0; var3 < var1; ++var3) {
+         for (int var3 = 0; var3 < var1; var3++) {
             var2.put(var0.get(var3), var3);
          }
 
@@ -864,7 +866,7 @@ public class Util {
          Reference2IntOpenHashMap var2 = new Reference2IntOpenHashMap(var1);
          var2.defaultReturnValue(-1);
 
-         for(int var3 = 0; var3 < var1; ++var3) {
+         for (int var3 = 0; var3 < var1; var3++) {
             var2.put(var0.get(var3), var3);
          }
 
@@ -872,33 +874,9 @@ public class Util {
       }
    }
 
-   public static <T, E extends Throwable> T getOrThrow(DataResult<T> var0, Function<String, E> var1) throws E {
-      Optional var2 = var0.error();
-      if (var2.isPresent()) {
-         throw (Throwable)var1.apply(((PartialResult)var2.get()).message());
-      } else {
-         return (T)var0.result().orElseThrow();
-      }
-   }
-
-   public static <T, E extends Throwable> T getPartialOrThrow(DataResult<T> var0, Function<String, E> var1) throws E {
-      Optional var2 = var0.error();
-      if (var2.isPresent()) {
-         Optional var3 = var0.resultOrPartial(var0x -> {
-         });
-         if (var3.isPresent()) {
-            return (T)var3.get();
-         } else {
-            throw (Throwable)var1.apply(((PartialResult)var2.get()).message());
-         }
-      } else {
-         return (T)var0.result().orElseThrow();
-      }
-   }
-
    public static <A, B> Typed<B> writeAndReadTypedOrThrow(Typed<A> var0, Type<B> var1, UnaryOperator<Dynamic<?>> var2) {
-      Dynamic var3 = getOrThrow(var0.write(), IllegalStateException::new);
-      return readTypedOrThrow(var1, (Dynamic<?>)var2.apply(var3), true);
+      Dynamic var3 = (Dynamic)var0.write().getOrThrow();
+      return readTypedOrThrow(var1, var2.apply(var3), true);
    }
 
    public static <T> Typed<T> readTypedOrThrow(Type<T> var0, Dynamic<?> var1) {
@@ -909,7 +887,7 @@ public class Util {
       DataResult var3 = var0.readTyped(var1).map(Pair::getFirst);
 
       try {
-         return var2 ? getPartialOrThrow(var3, IllegalStateException::new) : getOrThrow(var3, IllegalStateException::new);
+         return var2 ? (Typed)var3.getPartialOrThrow(IllegalStateException::new) : (Typed)var3.getOrThrow(IllegalStateException::new);
       } catch (IllegalStateException var7) {
          CrashReport var5 = CrashReport.forThrowable(var7, "Reading type");
          CrashReportCategory var6 = var5.addCategory("Info");

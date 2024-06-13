@@ -14,7 +14,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -70,7 +69,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    public AbstractContainerScreen(T var1, Inventory var2, Component var3) {
       super(var3);
-      this.menu = var1;
+      this.menu = (T)var1;
       this.playerInventoryTitle = var2.getDisplayName();
       this.skipNextRelease = true;
       this.titleLabelX = 8;
@@ -95,23 +94,18 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       var1.pose().translate((float)var5, (float)var6, 0.0F);
       this.hoveredSlot = null;
 
-      for(int var7 = 0; var7 < this.menu.slots.size(); ++var7) {
+      for (int var7 = 0; var7 < this.menu.slots.size(); var7++) {
          Slot var8 = this.menu.slots.get(var7);
-         ItemStack var9 = var8.getItem();
-         if (var9.has(DataComponents.HOVERED)) {
-            var9.set(DataComponents.HOVERED, this.isHovering(var8, (double)var2, (double)var3) && var8.isHighlightable());
-         }
-
          if (var8.isActive()) {
             this.renderSlot(var1, var8);
          }
 
          if (this.isHovering(var8, (double)var2, (double)var3) && var8.isActive()) {
             this.hoveredSlot = var8;
-            int var10 = var8.x;
-            int var11 = var8.y;
-            if (this.hoveredSlot.isHighlightable() && !var9.has(DataComponents.HOVERED)) {
-               renderSlotHighlight(var1, var10, var11, 0);
+            int var9 = var8.x;
+            int var10 = var8.y;
+            if (this.hoveredSlot.isHighlightable()) {
+               renderSlotHighlight(var1, var9, var10, 0);
             }
          }
       }
@@ -119,7 +113,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       this.renderLabels(var1, var2, var3);
       ItemStack var13 = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
       if (!var13.isEmpty()) {
-         boolean var14 = true;
+         byte var14 = 8;
          int var16 = this.draggingItem.isEmpty() ? 8 : 16;
          String var18 = null;
          if (!this.draggingItem.isEmpty() && this.isSplittingStack) {
@@ -143,9 +137,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
          int var17 = this.snapbackEnd.x - this.snapbackStartX;
          int var19 = this.snapbackEnd.y - this.snapbackStartY;
-         int var20 = this.snapbackStartX + (int)((float)var17 * var15);
+         int var11 = this.snapbackStartX + (int)((float)var17 * var15);
          int var12 = this.snapbackStartY + (int)((float)var19 * var15);
-         this.renderFloatingItem(var1, this.snapbackItem, var20, var12, null);
+         this.renderFloatingItem(var1, this.snapbackItem, var11, var12, null);
       }
 
       var1.pose().popPose();
@@ -173,7 +167,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return getTooltipFromItem(this.minecraft, var1);
    }
 
-   protected void renderFloatingItem(GuiGraphics var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
+   private void renderFloatingItem(GuiGraphics var1, ItemStack var2, int var3, int var4, String var5) {
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 232.0F);
       var1.renderItem(var2, var3, var4);
@@ -181,15 +175,8 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       var1.pose().popPose();
    }
 
-   protected void renderFloatingItem(GuiGraphics var1, ItemStack var2, float var3, float var4, float var5) {
-      var1.pose().pushPose();
-      var1.pose().translate(0.0F, 0.0F, 232.0F);
-      var1.renderItem(null, null, var2, var3, var4, var5, 0, 0);
-      var1.pose().popPose();
-   }
-
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      var1.drawString(this.font, this.getTitle(), this.titleLabelX, this.titleLabelY, 4210752, false);
+      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
       var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
    }
 
@@ -264,7 +251,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          } else {
             this.quickCraftingRemainder = var1.getCount();
 
-            for(Slot var3 : this.quickCraftSlots) {
+            for (Slot var3 : this.quickCraftSlots) {
                ItemStack var4 = var3.getItem();
                int var5 = var4.isEmpty() ? 0 : var4.getCount();
                int var6 = Math.min(var1.getMaxStackSize(), var3.getMaxStackSize(var1));
@@ -277,7 +264,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    @Nullable
    private Slot findSlot(double var1, double var3) {
-      for(int var5 = 0; var5 < this.menu.slots.size(); ++var5) {
+      for (int var5 = 0; var5 < this.menu.slots.size(); var5++) {
          Slot var6 = this.menu.slots.get(var5);
          if (this.isHovering(var6, var1, var3) && var6.isActive()) {
             return var6;
@@ -378,7 +365,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             return;
          }
 
-         for(int var2 = 0; var2 < 9; ++var2) {
+         for (int var2 = 0; var2 < 9; var2++) {
             if (this.minecraft.options.keyHotbarSlots[var2].matchesMouse(var1)) {
                this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, var2, ClickType.SWAP);
             }
@@ -448,7 +435,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       if (this.doubleclick && var6 != null && var5 == 0 && this.menu.canTakeItemForPickAll(ItemStack.EMPTY, var6)) {
          if (hasShiftDown()) {
             if (!this.lastQuickMoved.isEmpty()) {
-               for(Slot var16 : this.menu.slots) {
+               for (Slot var16 : this.menu.slots) {
                   if (var16 != null
                      && var16.mayPickup(this.minecraft.player)
                      && var16.hasItem()
@@ -510,7 +497,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          } else if (this.isQuickCrafting && !this.quickCraftSlots.isEmpty()) {
             this.slotClicked(null, -999, AbstractContainerMenu.getQuickcraftMask(0, this.quickCraftingType), ClickType.QUICK_CRAFT);
 
-            for(Slot var12 : this.quickCraftSlots) {
+            for (Slot var12 : this.quickCraftSlots) {
                this.slotClicked(var12, var12.index, AbstractContainerMenu.getQuickcraftMask(1, this.quickCraftingType), ClickType.QUICK_CRAFT);
             }
 
@@ -598,7 +585,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             return true;
          }
 
-         for(int var3 = 0; var3 < 9; ++var3) {
+         for (int var3 = 0; var3 < 9; var3++) {
             if (this.minecraft.options.keyHotbarSlots[var3].matches(var1, var2)) {
                this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, var3, ClickType.SWAP);
                return true;

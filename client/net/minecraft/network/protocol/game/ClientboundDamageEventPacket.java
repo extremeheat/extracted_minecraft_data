@@ -15,12 +15,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public record ClientboundDamageEventPacket(int b, Holder<DamageType> c, int d, int e, Optional<Vec3> f) implements Packet<ClientGamePacketListener> {
-   private final int entityId;
-   private final Holder<DamageType> sourceType;
-   private final int sourceCauseId;
-   private final int sourceDirectId;
-   private final Optional<Vec3> sourcePosition;
+public record ClientboundDamageEventPacket(int entityId, Holder<DamageType> sourceType, int sourceCauseId, int sourceDirectId, Optional<Vec3> sourcePosition)
+   implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDamageEventPacket> STREAM_CODEC = Packet.codec(
       ClientboundDamageEventPacket::write, ClientboundDamageEventPacket::new
    );
@@ -48,13 +44,13 @@ public record ClientboundDamageEventPacket(int b, Holder<DamageType> c, int d, i
       );
    }
 
-   public ClientboundDamageEventPacket(int var1, Holder<DamageType> var2, int var3, int var4, Optional<Vec3> var5) {
+   public ClientboundDamageEventPacket(int entityId, Holder<DamageType> sourceType, int sourceCauseId, int sourceDirectId, Optional<Vec3> sourcePosition) {
       super();
-      this.entityId = var1;
-      this.sourceType = var2;
-      this.sourceCauseId = var3;
-      this.sourceDirectId = var4;
-      this.sourcePosition = var5;
+      this.entityId = entityId;
+      this.sourceType = sourceType;
+      this.sourceCauseId = sourceCauseId;
+      this.sourceDirectId = sourceDirectId;
+      this.sourcePosition = sourcePosition;
    }
 
    private static void writeOptionalEntityId(FriendlyByteBuf var0, int var1) {

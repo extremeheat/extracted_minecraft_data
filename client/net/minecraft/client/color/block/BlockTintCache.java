@@ -51,8 +51,8 @@ public class BlockTintCache {
       try {
          this.lock.writeLock().lock();
 
-         for(int var3 = -1; var3 <= 1; ++var3) {
-            for(int var4 = -1; var4 <= 1; ++var4) {
+         for (int var3 = -1; var3 <= 1; var3++) {
+            for (int var4 = -1; var4 <= 1; var4++) {
                long var5 = ChunkPos.asLong(var1 + var3, var2 + var4);
                BlockTintCache.CacheData var7 = (BlockTintCache.CacheData)this.cache.remove(var5);
                if (var7 != null) {
@@ -90,11 +90,11 @@ public class BlockTintCache {
 
       this.lock.writeLock().lock();
 
-      BlockTintCache.CacheData var16;
+      BlockTintCache.CacheData var6;
       try {
          BlockTintCache.CacheData var15 = (BlockTintCache.CacheData)this.cache.get(var3);
          if (var15 == null) {
-            var16 = new BlockTintCache.CacheData();
+            var6 = new BlockTintCache.CacheData();
             if (this.cache.size() >= 256) {
                BlockTintCache.CacheData var7 = (BlockTintCache.CacheData)this.cache.removeFirst();
                if (var7 != null) {
@@ -102,16 +102,16 @@ public class BlockTintCache {
                }
             }
 
-            this.cache.put(var3, var16);
-            return var16;
+            this.cache.put(var3, var6);
+            return var6;
          }
 
-         var16 = var15;
+         var6 = var15;
       } finally {
          this.lock.writeLock().unlock();
       }
 
-      return var16;
+      return var6;
    }
 
    static class CacheData {

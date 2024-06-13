@@ -96,7 +96,7 @@ public class Sound implements Weighted<Sound> {
 
       @Nullable
       public static Sound.Type getByName(String var0) {
-         for(Sound.Type var4 : values()) {
+         for (Sound.Type var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }

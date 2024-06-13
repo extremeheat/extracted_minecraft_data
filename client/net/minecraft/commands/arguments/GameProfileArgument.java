@@ -51,14 +51,14 @@ public class GameProfileArgument implements ArgumentType<GameProfileArgument.Res
       } else {
          int var2 = var1.getCursor();
 
-         while(var1.canRead() && var1.peek() != ' ') {
+         while (var1.canRead() && var1.peek() != ' ') {
             var1.skip();
          }
 
          String var3 = var1.getString().substring(var2, var1.getCursor());
          return var1x -> {
-            Optional var2xx = var1x.getServer().getProfileCache().get(var3);
-            return Collections.singleton((GameProfile)var2xx.orElseThrow(ERROR_UNKNOWN_PLAYER::create));
+            Optional var2x = var1x.getServer().getProfileCache().get(var3);
+            return Collections.singleton((GameProfile)var2x.orElseThrow(ERROR_UNKNOWN_PLAYER::create));
          };
       }
    }
@@ -107,7 +107,7 @@ public class GameProfileArgument implements ArgumentType<GameProfileArgument.Res
          } else {
             ArrayList var3 = Lists.newArrayList();
 
-            for(ServerPlayer var5 : var2) {
+            for (ServerPlayer var5 : var2) {
                var3.add(var5.getGameProfile());
             }
 

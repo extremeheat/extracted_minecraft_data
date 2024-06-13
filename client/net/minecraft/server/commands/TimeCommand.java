@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.TimeArgument;
@@ -77,7 +76,7 @@ public class TimeCommand {
    }
 
    public static int setTime(CommandSourceStack var0, int var1) {
-      for(ServerLevel var3 : var0.getServer().getAllLevels()) {
+      for (ServerLevel var3 : var0.getServer().getAllLevels()) {
          var3.setDayTime((long)var1);
       }
 
@@ -86,7 +85,7 @@ public class TimeCommand {
    }
 
    public static int addTime(CommandSourceStack var0, int var1) {
-      for(ServerLevel var3 : var0.getServer().getAllLevels()) {
+      for (ServerLevel var3 : var0.getServer().getAllLevels()) {
          var3.setDayTime(var3.getDayTime() + (long)var1);
       }
 

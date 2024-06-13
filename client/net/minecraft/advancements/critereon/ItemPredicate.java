@@ -3,7 +3,6 @@ package net.minecraft.advancements.critereon;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.HolderSet;
@@ -13,34 +12,34 @@ import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
-public record ItemPredicate(Optional<HolderSet<Item>> b, MinMaxBounds.Ints c, DataComponentPredicate d, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> e) {
-   private final Optional<HolderSet<Item>> items;
-   private final MinMaxBounds.Ints count;
-   private final DataComponentPredicate components;
-   private final Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates;
+public record ItemPredicate(
+   Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentPredicate components, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates
+) {
    public static final Codec<ItemPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.ITEM), "items").forGetter(ItemPredicate::items),
-               ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count),
-               ExtraCodecs.strictOptionalField(DataComponentPredicate.CODEC, "components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components),
-               ExtraCodecs.strictOptionalField(ItemSubPredicate.CODEC, "predicates", Map.of()).forGetter(ItemPredicate::subPredicates)
+               RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items),
+               MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count),
+               DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components),
+               ItemSubPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(ItemPredicate::subPredicates)
             )
             .apply(var0, ItemPredicate::new)
    );
 
    public ItemPredicate(
-      Optional<HolderSet<Item>> var1, MinMaxBounds.Ints var2, DataComponentPredicate var3, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> var4
+      Optional<HolderSet<Item>> items,
+      MinMaxBounds.Ints count,
+      DataComponentPredicate components,
+      Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates
    ) {
       super();
-      this.items = var1;
-      this.count = var2;
-      this.components = var3;
-      this.subPredicates = var4;
+      this.items = items;
+      this.count = count;
+      this.components = components;
+      this.subPredicates = subPredicates;
    }
 
    public boolean matches(ItemStack var1) {
@@ -51,7 +50,7 @@ public record ItemPredicate(Optional<HolderSet<Item>> b, MinMaxBounds.Ints c, Da
       } else if (!this.components.test((DataComponentHolder)var1)) {
          return false;
       } else {
-         for(ItemSubPredicate var3 : this.subPredicates.values()) {
+         for (ItemSubPredicate var3 : this.subPredicates.values()) {
             if (!var3.matches(var1)) {
                return false;
             }

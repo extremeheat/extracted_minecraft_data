@@ -66,7 +66,7 @@ public class WorldPresets {
    }
 
    public static LevelStem getNormalOverworld(RegistryAccess var0) {
-      return (LevelStem)var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value().overworld().orElseThrow();
+      return var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value().overworld().orElseThrow();
    }
 
    static class Bootstrap {
@@ -79,7 +79,6 @@ public class WorldPresets {
       private final Holder<DimensionType> overworldDimensionType;
       private final LevelStem netherStem;
       private final LevelStem endStem;
-      private final LevelStem potatoStem;
 
       Bootstrap(BootstrapContext<WorldPreset> var1) {
          super();
@@ -98,10 +97,6 @@ public class WorldPresets {
          Holder.Reference var6 = var2.getOrThrow(BuiltinDimensionTypes.END);
          Holder.Reference var7 = this.noiseSettings.getOrThrow(NoiseGeneratorSettings.END);
          this.endStem = new LevelStem(var6, new NoiseBasedChunkGenerator(TheEndBiomeSource.create(this.biomes), var7));
-         Holder.Reference var8 = var2.getOrThrow(BuiltinDimensionTypes.POTATO);
-         Holder.Reference var9 = this.noiseSettings.getOrThrow(NoiseGeneratorSettings.POTATO);
-         Holder.Reference var10 = this.multiNoiseBiomeSourceParameterLists.getOrThrow(MultiNoiseBiomeSourceParameterLists.POTATO);
-         this.potatoStem = new LevelStem(var8, new NoiseBasedChunkGenerator(MultiNoiseBiomeSource.createFromPreset(var10), var9));
       }
 
       private LevelStem makeOverworld(ChunkGenerator var1) {
@@ -113,9 +108,7 @@ public class WorldPresets {
       }
 
       private WorldPreset createPresetWithCustomOverworld(LevelStem var1) {
-         return new WorldPreset(
-            Map.of(LevelStem.OVERWORLD, var1, LevelStem.NETHER, this.netherStem, LevelStem.END, this.endStem, LevelStem.POTATO, this.potatoStem)
-         );
+         return new WorldPreset(Map.of(LevelStem.OVERWORLD, var1, LevelStem.NETHER, this.netherStem, LevelStem.END, this.endStem));
       }
 
       private void registerCustomOverworldPreset(ResourceKey<WorldPreset> var1, LevelStem var2) {

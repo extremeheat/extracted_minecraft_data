@@ -36,6 +36,9 @@ public class Slot {
    protected void onSwapCraft(int var1) {
    }
 
+   protected void checkTakeAchievements(ItemStack var1) {
+   }
+
    public void onTake(Player var1, ItemStack var2) {
       this.setChanged();
    }

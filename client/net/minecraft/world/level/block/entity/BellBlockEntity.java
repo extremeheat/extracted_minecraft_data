@@ -55,7 +55,7 @@ public class BellBlockEntity extends BlockEntity {
 
    private static void tick(Level var0, BlockPos var1, BlockState var2, BellBlockEntity var3, BellBlockEntity.ResonationEndAction var4) {
       if (var3.shaking) {
-         ++var3.ticks;
+         var3.ticks++;
       }
 
       if (var3.ticks >= 50) {
@@ -70,7 +70,7 @@ public class BellBlockEntity extends BlockEntity {
 
       if (var3.resonating) {
          if (var3.resonationTicks < 40) {
-            ++var3.resonationTicks;
+            var3.resonationTicks++;
          } else {
             var4.run(var0, var1, var3.nearbyEntities);
             var3.resonating = false;
@@ -107,7 +107,7 @@ public class BellBlockEntity extends BlockEntity {
       }
 
       if (!this.level.isClientSide) {
-         for(LivingEntity var3 : this.nearbyEntities) {
+         for (LivingEntity var3 : this.nearbyEntities) {
             if (var3.isAlive() && !var3.isRemoved() && var1.closerToCenterThan(var3.position(), 32.0)) {
                var3.getBrain().setMemory(MemoryModuleType.HEARD_BELL_TIME, this.level.getGameTime());
             }
@@ -116,7 +116,7 @@ public class BellBlockEntity extends BlockEntity {
    }
 
    private static boolean areRaidersNearby(BlockPos var0, List<LivingEntity> var1) {
-      for(LivingEntity var3 : var1) {
+      for (LivingEntity var3 : var1) {
          if (var3.isAlive() && !var3.isRemoved() && var0.closerToCenterThan(var3.position(), 32.0) && var3.getType().is(EntityTypeTags.RAIDERS)) {
             return true;
          }
@@ -144,8 +144,8 @@ public class BellBlockEntity extends BlockEntity {
                double var8 = (double)((float)var1.getX() + 0.5F) + 1.0 / var6 * (var4x.getX() - (double)var1.getX());
                double var10 = (double)((float)var1.getZ() + 0.5F) + 1.0 / var6 * (var4x.getZ() - (double)var1.getZ());
                int var12 = Mth.clamp((var4 - 21) / -2, 3, 15);
-      
-               for(int var13 = 0; var13 < var12; ++var13) {
+
+               for (int var13 = 0; var13 < var12; var13++) {
                   int var14 = var3.addAndGet(5);
                   var0.addParticle(
                      ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var14), var8, (double)((float)var1.getY() + 0.5F), var10, 0.0, 0.0, 0.0

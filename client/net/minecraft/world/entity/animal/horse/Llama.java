@@ -28,7 +28,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -342,7 +341,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
          Llama var4 = (Llama)var2;
          int var5 = this.random.nextInt(Math.max(this.getStrength(), var4.getStrength())) + 1;
          if (this.random.nextFloat() < 0.03F) {
-            ++var5;
+            var5++;
          }
 
          var3.setStrength(var5);
@@ -395,7 +394,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
          if (var1 >= 6.0F) {
             this.hurt(var3, (float)var4);
             if (this.isVehicle()) {
-               for(Entity var6 : this.getIndirectPassengers()) {
+               for (Entity var6 : this.getIndirectPassengers()) {
                   var6.hurt(var3, (float)var4);
                }
             }
@@ -494,12 +493,9 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
          super(var1);
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public boolean canContinueToUse() {
-         Mob var2 = this.mob;
-         if (var2 instanceof Llama var1 && var1.didSpit) {
+         if (this.mob instanceof Llama var1 && var1.didSpit) {
             var1.setDidSpit(false);
             return false;
          }

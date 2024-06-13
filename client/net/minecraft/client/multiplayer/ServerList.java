@@ -38,7 +38,7 @@ public class ServerList {
 
          ListTag var2 = var1.getList("servers", 10);
 
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
+         for (int var3 = 0; var3 < var2.size(); var3++) {
             CompoundTag var4 = var2.getCompound(var3);
             ServerData var5 = ServerData.read(var4);
             if (var4.getBoolean("hidden")) {
@@ -56,13 +56,13 @@ public class ServerList {
       try {
          ListTag var1 = new ListTag();
 
-         for(ServerData var3 : this.serverList) {
+         for (ServerData var3 : this.serverList) {
             CompoundTag var4 = var3.write();
             var4.putBoolean("hidden", false);
             var1.add(var4);
          }
 
-         for(ServerData var10 : this.hiddenServerList) {
+         for (ServerData var10 : this.hiddenServerList) {
             CompoundTag var12 = var10.write();
             var12.putBoolean("hidden", true);
             var1.add(var12);
@@ -87,13 +87,13 @@ public class ServerList {
 
    @Nullable
    public ServerData get(String var1) {
-      for(ServerData var3 : this.serverList) {
+      for (ServerData var3 : this.serverList) {
          if (var3.ip.equals(var1)) {
             return var3;
          }
       }
 
-      for(ServerData var5 : this.hiddenServerList) {
+      for (ServerData var5 : this.hiddenServerList) {
          if (var5.ip.equals(var1)) {
             return var5;
          }
@@ -104,7 +104,7 @@ public class ServerList {
 
    @Nullable
    public ServerData unhide(String var1) {
-      for(int var2 = 0; var2 < this.hiddenServerList.size(); ++var2) {
+      for (int var2 = 0; var2 < this.hiddenServerList.size(); var2++) {
          ServerData var3 = this.hiddenServerList.get(var2);
          if (var3.ip.equals(var1)) {
             this.hiddenServerList.remove(var2);
@@ -126,7 +126,7 @@ public class ServerList {
       if (var2) {
          this.hiddenServerList.add(0, var1);
 
-         while(this.hiddenServerList.size() > 16) {
+         while (this.hiddenServerList.size() > 16) {
             this.hiddenServerList.remove(this.hiddenServerList.size() - 1);
          }
       } else {
@@ -150,7 +150,7 @@ public class ServerList {
    }
 
    private static boolean set(ServerData var0, List<ServerData> var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
+      for (int var2 = 0; var2 < var1.size(); var2++) {
          ServerData var3 = (ServerData)var1.get(var2);
          if (var3.name.equals(var0.name) && var3.ip.equals(var0.ip)) {
             var1.set(var2, var0);

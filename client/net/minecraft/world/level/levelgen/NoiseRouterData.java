@@ -203,9 +203,9 @@ public class NoiseRouterData {
 
    private static DensityFunction noodle(HolderGetter<DensityFunction> var0, HolderGetter<NormalNoise.NoiseParameters> var1) {
       DensityFunction var2 = getFunction(var0, Y);
-      boolean var3 = true;
-      boolean var4 = true;
-      boolean var5 = true;
+      byte var3 = -64;
+      byte var4 = -60;
+      short var5 = 320;
       DensityFunction var6 = yLimitedInterpolatable(var2, DensityFunctions.noise(var1.getOrThrow(Noises.NOODLE), 1.0, 1.0), -60, 320, -1);
       DensityFunction var7 = yLimitedInterpolatable(
          var2, DensityFunctions.mappedNoise(var1.getOrThrow(Noises.NOODLE_THICKNESS), 1.0, 1.0, -0.05, -0.1), -60, 320, 0
@@ -336,37 +336,8 @@ public class NoiseRouterData {
       );
    }
 
-   private static NoiseRouter noNewCavesWithExtraZing(HolderGetter<DensityFunction> var0, HolderGetter<NormalNoise.NoiseParameters> var1, DensityFunction var2) {
-      DensityFunction var3 = getFunction(var0, SHIFT_X);
-      DensityFunction var4 = getFunction(var0, SHIFT_Z);
-      DensityFunction var5 = DensityFunctions.shiftedNoise2d(var3, var4, 0.25, var1.getOrThrow(Noises.TEMPERATURE));
-      DensityFunction var6 = DensityFunctions.shiftedNoise2d(var3, var4, 0.25, var1.getOrThrow(Noises.VEGETATION));
-      DensityFunction var7 = postProcess(var2);
-      return new NoiseRouter(
-         DensityFunctions.zero(),
-         DensityFunctions.zero(),
-         DensityFunctions.zero(),
-         DensityFunctions.zero(),
-         var5,
-         var6,
-         getFunction(var0, CONTINENTS),
-         DensityFunctions.zero(),
-         DensityFunctions.zero(),
-         DensityFunctions.zero(),
-         DensityFunctions.zero(),
-         var7,
-         DensityFunctions.zero(),
-         DensityFunctions.zero(),
-         DensityFunctions.zero()
-      );
-   }
-
    private static DensityFunction slideOverworld(boolean var0, DensityFunction var1) {
       return slide(var1, -64, 384, var0 ? 16 : 80, var0 ? 0 : 64, -0.078125, 0, 24, var0 ? 0.4 : 0.1171875);
-   }
-
-   private static DensityFunction slidePotato(HolderGetter<DensityFunction> var0) {
-      return slide(getFunction(var0, BASE_3D_NOISE_END), 0, 256, 192, 96, -0.12, 5, 32, -0.1);
    }
 
    private static DensityFunction slideNetherLike(HolderGetter<DensityFunction> var0, int var1, int var2) {
@@ -387,10 +358,6 @@ public class NoiseRouterData {
 
    protected static NoiseRouter floatingIslands(HolderGetter<DensityFunction> var0, HolderGetter<NormalNoise.NoiseParameters> var1) {
       return noNewCaves(var0, var1, slideEndLike(getFunction(var0, BASE_3D_NOISE_END), 0, 256));
-   }
-
-   protected static NoiseRouter potato(HolderGetter<DensityFunction> var0, HolderGetter<NormalNoise.NoiseParameters> var1) {
-      return noNewCavesWithExtraZing(var0, var1, slidePotato(var0));
    }
 
    private static DensityFunction slideEnd(DensityFunction var0) {

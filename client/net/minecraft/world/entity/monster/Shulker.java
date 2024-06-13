@@ -178,7 +178,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
       if (this.level().isClientSide) {
          if (this.clientSideTeleportInterpolation > 0) {
-            --this.clientSideTeleportInterpolation;
+            this.clientSideTeleportInterpolation--;
          } else {
             this.clientOldAttachPosition = null;
          }
@@ -229,7 +229,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       Direction var3 = this.getAttachFace().getOpposite();
       float var4 = (var1 - var2) * this.getScale();
       if (!(var4 <= 0.0F)) {
-         for(Entity var7 : this.level()
+         for (Entity var7 : this.level()
             .getEntities(
                this,
                getProgressDeltaAabb(this.getScale(), var3, var2, var1).move(this.getX() - 0.5, this.getY(), this.getZ() - 0.5),
@@ -339,7 +339,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    @Nullable
    protected Direction findAttachableSurface(BlockPos var1) {
-      for(Direction var5 : Direction.values()) {
+      for (Direction var5 : Direction.values()) {
          if (this.canStayAt(var1, var5)) {
             return var5;
          }
@@ -376,7 +376,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       if (!this.isNoAi() && this.isAlive()) {
          BlockPos var1 = this.blockPosition();
 
-         for(int var2 = 0; var2 < 5; ++var2) {
+         for (int var2 = 0; var2 < 5; var2++) {
             BlockPos var3 = var1.offset(
                Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8)
             );
@@ -568,11 +568,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       @Override
       public boolean canUse() {
          LivingEntity var1 = Shulker.this.getTarget();
-         if (var1 != null && var1.isAlive()) {
-            return Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL;
-         } else {
-            return false;
-         }
+         return var1 != null && var1.isAlive() ? Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL : false;
       }
 
       @Override
@@ -594,7 +590,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       @Override
       public void tick() {
          if (Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL) {
-            --this.attackTime;
+            this.attackTime--;
             LivingEntity var1 = Shulker.this.getTarget();
             if (var1 != null) {
                Shulker.this.getLookControl().setLookAt(var1, 180.0F, 180.0F);
@@ -734,7 +730,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
       @Override
       public void tick() {
-         --this.peekTime;
+         this.peekTime--;
       }
    }
 }

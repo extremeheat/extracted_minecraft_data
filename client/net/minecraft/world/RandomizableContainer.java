@@ -13,7 +13,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -43,11 +42,8 @@ public interface RandomizableContainer extends Container {
    @Nullable
    Level getLevel();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    static void setBlockEntityLootTable(BlockGetter var0, RandomSource var1, BlockPos var2, ResourceKey<LootTable> var3) {
-      BlockEntity var4 = var0.getBlockEntity(var2);
-      if (var4 instanceof RandomizableContainer var5) {
+      if (var0.getBlockEntity(var2) instanceof RandomizableContainer var5) {
          var5.setLootTable(var3, var1.nextLong());
       }
    }

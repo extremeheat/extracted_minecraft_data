@@ -135,7 +135,7 @@ public class EntitySelector {
          ServerPlayer var8 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
          return (List<? extends Entity>)(var8 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var8}));
       } else if (this.entityUUID != null) {
-         for(ServerLevel var9 : var1.getServer().getAllLevels()) {
+         for (ServerLevel var9 : var1.getServer().getAllLevels()) {
             Entity var10 = var9.getEntity(this.entityUUID);
             if (var10 != null) {
                return Lists.newArrayList(new Entity[]{var10});
@@ -155,7 +155,7 @@ public class EntitySelector {
             if (this.isWorldLimited()) {
                this.addEntities(var4, var1.getLevel(), var2, var3);
             } else {
-               for(ServerLevel var6 : var1.getServer().getAllLevels()) {
+               for (ServerLevel var6 : var1.getServer().getAllLevels()) {
                   this.addEntities(var4, var6, var2, var3);
                }
             }
@@ -202,9 +202,8 @@ public class EntitySelector {
          Vec3 var2 = this.position.apply(var1.getPosition());
          Predicate var3 = this.getPredicate(var2);
          if (this.currentEntity) {
-            Entity var11 = var1.getEntity();
-            if (var11 instanceof ServerPlayer var10 && var3.test(var10)) {
-               return Lists.newArrayList(new ServerPlayer[]{(ServerPlayer)var10});
+            if (var1.getEntity() instanceof ServerPlayer var10 && var3.test(var10)) {
+               return Lists.newArrayList(new ServerPlayer[]{var10});
             }
 
             return Collections.emptyList();
@@ -216,7 +215,7 @@ public class EntitySelector {
             } else {
                var4 = Lists.newArrayList();
 
-               for(ServerPlayer var7 : var1.getServer().getPlayerList().getPlayers()) {
+               for (ServerPlayer var7 : var1.getServer().getPlayerList().getPlayers()) {
                   if (var3.test(var7)) {
                      var4.add(var7);
                      if (var4.size() >= var5) {

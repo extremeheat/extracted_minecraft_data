@@ -29,7 +29,7 @@ public class ThrownEgg extends ThrowableItemProjectile {
       if (var1 == 3) {
          double var2 = 0.08;
 
-         for(int var4 = 0; var4 < 8; ++var4) {
+         for (int var4 = 0; var4 < 8; var4++) {
             this.level()
                .addParticle(
                   new ItemParticleOption(ParticleTypes.ITEM, this.getItem()),
@@ -60,7 +60,7 @@ public class ThrownEgg extends ThrowableItemProjectile {
                var2 = 4;
             }
 
-            for(int var3 = 0; var3 < var2; ++var3) {
+            for (int var3 = 0; var3 < var2; var3++) {
                Chicken var4 = EntityType.CHICKEN.create(this.level());
                if (var4 != null) {
                   var4.setAge(-24000);

@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +35,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       );
    public static final Codec<AdvancementProgress> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(CRITERIA_CODEC, "criteria", Map.of()).forGetter(var0x -> var0x.criteria),
+               CRITERIA_CODEC.optionalFieldOf("criteria", Map.of()).forGetter(var0x -> var0x.criteria),
                Codec.BOOL.fieldOf("done").orElse(true).forGetter(AdvancementProgress::isDone)
             )
             .apply(var0, (var0x, var1) -> new AdvancementProgress(new HashMap<>(var0x)))
@@ -58,7 +57,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       Set var2 = var1.names();
       this.criteria.entrySet().removeIf(var1x -> !var2.contains(var1x.getKey()));
 
-      for(String var4 : var2) {
+      for (String var4 : var2) {
          this.criteria.putIfAbsent(var4, new CriterionProgress());
       }
 
@@ -70,7 +69,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    }
 
    public boolean hasProgress() {
-      for(CriterionProgress var2 : this.criteria.values()) {
+      for (CriterionProgress var2 : this.criteria.values()) {
          if (var2.isDone()) {
             return true;
          }
@@ -155,7 +154,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    public Iterable<String> getRemainingCriteria() {
       ArrayList var1 = Lists.newArrayList();
 
-      for(Entry var3 : this.criteria.entrySet()) {
+      for (Entry var3 : this.criteria.entrySet()) {
          if (!((CriterionProgress)var3.getValue()).isDone()) {
             var1.add((String)var3.getKey());
          }
@@ -167,7 +166,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    public Iterable<String> getCompletedCriteria() {
       ArrayList var1 = Lists.newArrayList();
 
-      for(Entry var3 : this.criteria.entrySet()) {
+      for (Entry var3 : this.criteria.entrySet()) {
          if (((CriterionProgress)var3.getValue()).isDone()) {
             var1.add((String)var3.getKey());
          }

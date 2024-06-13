@@ -86,7 +86,7 @@ public class RealmsServer extends ValueObject {
       int var3 = 0;
       MinecraftSessionService var4 = Minecraft.getInstance().getMinecraftSessionService();
 
-      for(UUID var6 : var1.players) {
+      for (UUID var6 : var1.players) {
          if (!Minecraft.getInstance().isLocalPlayer(var6)) {
             try {
                ProfileResult var7 = var4.fetchProfile(var6, false);
@@ -94,7 +94,7 @@ public class RealmsServer extends ValueObject {
                   var2.add(var7.profile().getName());
                }
 
-               ++var3;
+               var3++;
             } catch (Exception var8) {
                LOGGER.error("Could not get name for {}", var6, var8);
             }
@@ -161,7 +161,7 @@ public class RealmsServer extends ValueObject {
    private static List<PlayerInfo> parseInvited(JsonArray var0) {
       ArrayList var1 = Lists.newArrayList();
 
-      for(JsonElement var3 : var0) {
+      for (JsonElement var3 : var0) {
          try {
             JsonObject var4 = var3.getAsJsonObject();
             PlayerInfo var5 = new PlayerInfo();
@@ -181,7 +181,7 @@ public class RealmsServer extends ValueObject {
    private static Map<Integer, RealmsWorldOptions> parseSlots(JsonArray var0) {
       HashMap var1 = Maps.newHashMap();
 
-      for(JsonElement var3 : var0) {
+      for (JsonElement var3 : var0) {
          try {
             JsonObject var5 = var3.getAsJsonObject();
             JsonParser var6 = new JsonParser();
@@ -199,7 +199,7 @@ public class RealmsServer extends ValueObject {
          }
       }
 
-      for(int var10 = 1; var10 <= 3; ++var10) {
+      for (int var10 = 1; var10 <= 3; var10++) {
          if (!var1.containsKey(var10)) {
             var1.put(var10, RealmsWorldOptions.createEmptyDefaults());
          }
@@ -320,7 +320,7 @@ public class RealmsServer extends ValueObject {
    public Map<Integer, RealmsWorldOptions> cloneSlots(Map<Integer, RealmsWorldOptions> var1) {
       HashMap var2 = Maps.newHashMap();
 
-      for(Entry var4 : var1.entrySet()) {
+      for (Entry var4 : var1.entrySet()) {
          var2.put((Integer)var4.getKey(), ((RealmsWorldOptions)var4.getValue()).clone());
       }
 

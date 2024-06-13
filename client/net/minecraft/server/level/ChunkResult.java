@@ -25,7 +25,7 @@ public interface ChunkResult<T> {
 
    @Nullable
    static <R> R orElse(ChunkResult<? extends R> var0, @Nullable R var1) {
-      Object var2 = var0.orElse((T)null);
+      Object var2 = var0.orElse(null);
       return (R)(var2 != null ? var2 : var1);
    }
 
@@ -38,12 +38,10 @@ public interface ChunkResult<T> {
 
    <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E;
 
-   public static record Fail<T>(Supplier<String> a) implements ChunkResult<T> {
-      private final Supplier<String> error;
-
-      public Fail(Supplier<String> var1) {
+   public static record Fail<T>(Supplier<String> error) implements ChunkResult<T> {
+      public Fail(Supplier<String> error) {
          super();
-         this.error = var1;
+         this.error = error;
       }
 
       @Override
@@ -69,7 +67,7 @@ public interface ChunkResult<T> {
 
       @Override
       public <R> ChunkResult<R> map(Function<T, R> var1) {
-         return new ChunkResult.Fail<>(this.error);
+         return new ChunkResult.Fail(this.error);
       }
 
       @Override
@@ -78,12 +76,10 @@ public interface ChunkResult<T> {
       }
    }
 
-   public static record Success<T>(T a) implements ChunkResult<T> {
-      private final T value;
-
-      public Success(T var1) {
+   public static record Success<T>(T value) implements ChunkResult<T> {
+      public Success(T value) {
          super();
-         this.value = (T)var1;
+         this.value = (T)value;
       }
 
       @Override
@@ -110,7 +106,7 @@ public interface ChunkResult<T> {
 
       @Override
       public <R> ChunkResult<R> map(Function<T, R> var1) {
-         return new ChunkResult.Success<>((R)var1.apply(this.value));
+         return (ChunkResult<R>)(new ChunkResult.Success<>(var1.apply(this.value)));
       }
 
       @Override

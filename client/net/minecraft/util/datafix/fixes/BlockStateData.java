@@ -33,7 +33,7 @@ public class BlockStateData {
          BLOCK_DEFAULTS[var4] = var3;
       }
 
-      for(String var8 : var2) {
+      for (String var8 : var2) {
          Dynamic var9 = parse(var8);
          String var10 = var9.get("Name").asString("");
          ID_BY_OLD_NAME.putIfAbsent(var10, var0);
@@ -42,7 +42,7 @@ public class BlockStateData {
    }
 
    private static void finalizeMaps() {
-      for(int var0 = 0; var0 < MAP.length; ++var0) {
+      for (int var0 = 0; var0 < MAP.length; var0++) {
          if (MAP[var0] == null) {
             MAP[var0] = BLOCK_DEFAULTS[var0 >> 4];
          }

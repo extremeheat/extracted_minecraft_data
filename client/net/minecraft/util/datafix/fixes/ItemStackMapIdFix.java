@@ -23,8 +23,8 @@ public class ItemStackMapIdFix extends DataFix {
       OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var3 = var1.findField("tag");
       return this.fixTypeEverywhereTyped("ItemInstanceMapIdFix", var1, var2x -> {
-         Optional var3xx = var2x.getOptional(var2);
-         if (var3xx.isPresent() && Objects.equals(((Pair)var3xx.get()).getSecond(), "minecraft:filled_map")) {
+         Optional var3x = var2x.getOptional(var2);
+         if (var3x.isPresent() && Objects.equals(((Pair)var3x.get()).getSecond(), "minecraft:filled_map")) {
             Dynamic var4 = (Dynamic)var2x.get(DSL.remainderFinder());
             Typed var5 = var2x.getOrCreateTyped(var3);
             Dynamic var6 = (Dynamic)var5.get(DSL.remainderFinder());

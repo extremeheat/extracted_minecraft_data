@@ -32,10 +32,8 @@ public abstract class AbstractIllager extends Raider {
    public boolean isAlliedTo(Entity var1) {
       if (super.isAlliedTo(var1)) {
          return true;
-      } else if (!var1.getType().is(EntityTypeTags.ILLAGER_FRIENDS)) {
-         return false;
       } else {
-         return this.getTeam() == null && var1.getTeam() == null;
+         return !var1.getType().is(EntityTypeTags.ILLAGER_FRIENDS) ? false : this.getTeam() == null && var1.getTeam() == null;
       }
    }
 

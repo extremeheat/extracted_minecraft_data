@@ -92,7 +92,7 @@ public class MatrixUtil {
       Matrix3f var3 = new Matrix3f();
       Quaternionf var4 = new Quaternionf();
 
-      for(int var5 = 0; var5 < var1; ++var5) {
+      for (int var5 = 0; var5 < var1; var5++) {
          stepJacobi(var0, var3, var4, var2);
       }
 

@@ -52,8 +52,8 @@ public class CactusBlock extends Block {
       if (var2.isEmptyBlock(var5)) {
          int var6 = 1;
 
-         while(var2.getBlockState(var3.below(var6)).is(this)) {
-            ++var6;
+         while (var2.getBlockState(var3.below(var6)).is(this)) {
+            var6++;
          }
 
          if (var6 < 3) {
@@ -91,7 +91,7 @@ public class CactusBlock extends Block {
 
    @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      for(Direction var5 : Direction.Plane.HORIZONTAL) {
+      for (Direction var5 : Direction.Plane.HORIZONTAL) {
          BlockState var6 = var2.getBlockState(var3.relative(var5));
          if (var6.isSolid() || var2.getFluidState(var3.relative(var5)).is(FluidTags.LAVA)) {
             return false;

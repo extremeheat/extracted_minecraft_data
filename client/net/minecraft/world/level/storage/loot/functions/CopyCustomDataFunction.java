@@ -4,8 +4,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -26,7 +26,7 @@ import net.minecraft.world.level.storage.loot.providers.nbt.NbtProviders;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public class CopyCustomDataFunction extends LootItemConditionalFunction {
-   public static final Codec<CopyCustomDataFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<CopyCustomDataFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(
                var0.group(
@@ -120,10 +120,7 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
       }
    }
 
-   static record CopyOperation(NbtPathArgument.NbtPath b, NbtPathArgument.NbtPath c, CopyCustomDataFunction.MergeStrategy d) {
-      private final NbtPathArgument.NbtPath sourcePath;
-      private final NbtPathArgument.NbtPath targetPath;
-      private final CopyCustomDataFunction.MergeStrategy op;
+   static record CopyOperation(NbtPathArgument.NbtPath sourcePath, NbtPathArgument.NbtPath targetPath, CopyCustomDataFunction.MergeStrategy op) {
       public static final Codec<CopyCustomDataFunction.CopyOperation> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   NbtPathArgument.NbtPath.CODEC.fieldOf("source").forGetter(CopyCustomDataFunction.CopyOperation::sourcePath),
@@ -133,11 +130,11 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
                .apply(var0, CopyCustomDataFunction.CopyOperation::new)
       );
 
-      CopyOperation(NbtPathArgument.NbtPath var1, NbtPathArgument.NbtPath var2, CopyCustomDataFunction.MergeStrategy var3) {
+      CopyOperation(NbtPathArgument.NbtPath sourcePath, NbtPathArgument.NbtPath targetPath, CopyCustomDataFunction.MergeStrategy op) {
          super();
-         this.sourcePath = var1;
-         this.targetPath = var2;
-         this.op = var3;
+         this.sourcePath = sourcePath;
+         this.targetPath = targetPath;
+         this.op = op;
       }
 
       public void apply(Supplier<Tag> var1, Tag var2) {

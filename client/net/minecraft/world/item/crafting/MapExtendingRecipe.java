@@ -33,10 +33,8 @@ public class MapExtendingRecipe extends ShapedRecipe {
             MapItemSavedData var4 = MapItem.getSavedData(var3, var2);
             if (var4 == null) {
                return false;
-            } else if (var4.isExplorationMap()) {
-               return false;
             } else {
-               return var4.scale < 4;
+               return var4.isExplorationMap() ? false : var4.scale < 4;
             }
          }
       }
@@ -50,7 +48,7 @@ public class MapExtendingRecipe extends ShapedRecipe {
    }
 
    private static ItemStack findFilledMap(CraftingContainer var0) {
-      for(int var1 = 0; var1 < var0.getContainerSize(); ++var1) {
+      for (int var1 = 0; var1 < var0.getContainerSize(); var1++) {
          ItemStack var2 = var0.getItem(var1);
          if (var2.is(Items.FILLED_MAP)) {
             return var2;

@@ -164,19 +164,19 @@ public class Evoker extends SpellcasterIllager {
          double var4 = Math.max(var1.getY(), Evoker.this.getY()) + 1.0;
          float var6 = (float)Mth.atan2(var1.getZ() - Evoker.this.getZ(), var1.getX() - Evoker.this.getX());
          if (Evoker.this.distanceToSqr(var1) < 9.0) {
-            for(int var7 = 0; var7 < 5; ++var7) {
+            for (int var7 = 0; var7 < 5; var7++) {
                float var8 = var6 + (float)var7 * 3.1415927F * 0.4F;
                this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var8) * 1.5, Evoker.this.getZ() + (double)Mth.sin(var8) * 1.5, var2, var4, var8, 0);
             }
 
-            for(int var11 = 0; var11 < 8; ++var11) {
+            for (int var11 = 0; var11 < 8; var11++) {
                float var13 = var6 + (float)var11 * 3.1415927F * 2.0F / 8.0F + 1.2566371F;
                this.createSpellEntity(
                   Evoker.this.getX() + (double)Mth.cos(var13) * 2.5, Evoker.this.getZ() + (double)Mth.sin(var13) * 2.5, var2, var4, var13, 3
                );
             }
          } else {
-            for(int var12 = 0; var12 < 16; ++var12) {
+            for (int var12 = 0; var12 < 16; var12++) {
                double var14 = 1.25 * (double)(var12 + 1);
                int var10 = 1 * var12;
                this.createSpellEntity(
@@ -208,7 +208,7 @@ public class Evoker extends SpellcasterIllager {
             }
 
             var11 = var11.below();
-         } while(var11.getY() >= Mth.floor(var5) - 1);
+         } while (var11.getY() >= Mth.floor(var5) - 1);
 
          if (var12) {
             Evoker.this.level().addFreshEntity(new EvokerFangs(Evoker.this.level(), var1, (double)var11.getY() + var13, var3, var9, var10, Evoker.this));
@@ -274,7 +274,7 @@ public class Evoker extends SpellcasterIllager {
          ServerLevel var1 = (ServerLevel)Evoker.this.level();
          PlayerTeam var2 = Evoker.this.getTeam();
 
-         for(int var3 = 0; var3 < 3; ++var3) {
+         for (int var3 = 0; var3 < 3; var3++) {
             BlockPos var4 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
             Vex var5 = EntityType.VEX.create(Evoker.this.level());
             if (var5 != null) {

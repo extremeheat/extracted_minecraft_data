@@ -80,8 +80,8 @@ public class GameRules {
    public static final GameRules.Key<GameRules.BooleanValue> RULE_REDUCEDDEBUGINFO = register(
       "reducedDebugInfo", GameRules.Category.MISC, GameRules.BooleanValue.create(false, (var0, var1) -> {
          int var2 = var1.get() ? 22 : 23;
-   
-         for(ServerPlayer var4 : var0.getPlayerList().getPlayers()) {
+
+         for (ServerPlayer var4 : var0.getPlayerList().getPlayers()) {
             var4.connection.send(new ClientboundEntityEventPacket(var4, (byte)var2));
          }
       })
@@ -103,7 +103,7 @@ public class GameRules {
    );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_LIMITED_CRAFTING = register(
       "doLimitedCrafting", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
-         for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
+         for (ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.LIMITED_CRAFTING, var1.get() ? 1.0F : 0.0F));
          }
       })
@@ -117,9 +117,6 @@ public class GameRules {
    public static final GameRules.Key<GameRules.IntegerValue> RULE_COMMAND_MODIFICATION_BLOCK_LIMIT = register(
       "commandModificationBlockLimit", GameRules.Category.MISC, GameRules.IntegerValue.create(32768)
    );
-   public static final GameRules.Key<GameRules.IntegerValue> RULE_FLOATATER_SIZE_LIMIT = register(
-      "floataterSizeLimit", GameRules.Category.MISC, GameRules.IntegerValue.create(32)
-   );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_ANNOUNCE_ADVANCEMENTS = register(
       "announceAdvancements", GameRules.Category.CHAT, GameRules.BooleanValue.create(true)
    );
@@ -131,7 +128,7 @@ public class GameRules {
    );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_DO_IMMEDIATE_RESPAWN = register(
       "doImmediateRespawn", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
-         for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
+         for (ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.IMMEDIATE_RESPAWN, var1.get() ? 1.0F : 0.0F));
          }
       })
@@ -205,9 +202,6 @@ public class GameRules {
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       })
    );
-   public static final GameRules.Key<GameRules.BooleanValue> RULE_NEVER_EAT_ARMOR = register(
-      "neverEatArmor", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false)
-   );
    private final Map<GameRules.Key<?>, GameRules.Value<?>> rules;
 
    private static <T extends GameRules.Value<T>> GameRules.Key<T> register(String var0, GameRules.Category var1, GameRules.Type<T> var2) {
@@ -248,7 +242,7 @@ public class GameRules {
    }
 
    private void loadFromTag(DynamicLike<?> var1) {
-      this.rules.forEach((var1x, var2) -> var1.get(var1x.id).asString().result().ifPresent(var2::deserialize));
+      this.rules.forEach((var1x, var2) -> var1.get(var1x.id).asString().ifSuccess(var2::deserialize));
    }
 
    public GameRules copy() {
@@ -258,7 +252,7 @@ public class GameRules {
    }
 
    public static void visitGameRuleTypes(GameRules.GameRuleTypeVisitor var0) {
-      GAME_RULE_TYPES.forEach((var1, var2) -> callVisitorCap(var0, var1, var2));
+      GAME_RULE_TYPES.forEach((var1, var2) -> callVisitorCap(var0, (GameRules.Key<?>)var1, (GameRules.Type<?>)var2));
    }
 
    private static <T extends GameRules.Value<T>> void callVisitorCap(GameRules.GameRuleTypeVisitor var0, GameRules.Key<?> var1, GameRules.Type<?> var2) {
@@ -267,7 +261,7 @@ public class GameRules {
    }
 
    public void assignFrom(GameRules var1, @Nullable MinecraftServer var2) {
-      var1.rules.keySet().forEach(var3 -> this.assignCap(var3, var1, var2));
+      var1.rules.keySet().forEach(var3 -> this.assignCap((GameRules.Key<?>)var3, var1, var2));
    }
 
    private <T extends GameRules.Value<T>> void assignCap(GameRules.Key<T> var1, GameRules var2, @Nullable MinecraftServer var3) {
@@ -428,7 +422,7 @@ public class GameRules {
       public boolean tryDeserialize(String var1) {
          try {
             StringReader var2 = new StringReader(var1);
-            this.value = ((ArgumentType)this.type.argument.get()).parse(var2);
+            this.value = (Integer)this.type.argument.get().parse(var2);
             return !var2.canRead();
          } catch (CommandSyntaxException var3) {
             return false;
@@ -483,11 +477,7 @@ public class GameRules {
 
       @Override
       public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else {
-            return var1 instanceof GameRules.Key && ((GameRules.Key)var1).id.equals(this.id);
-         }
+         return this == var1 ? true : var1 instanceof GameRules.Key && ((GameRules.Key)var1).id.equals(this.id);
       }
 
       @Override

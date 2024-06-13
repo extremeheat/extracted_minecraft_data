@@ -33,7 +33,6 @@ public class OptimizeWorldScreen extends Screen {
       var0.put(Level.OVERWORLD, -13408734);
       var0.put(Level.NETHER, -10075085);
       var0.put(Level.END, -8943531);
-      var0.put(Level.POTATO, -559038737);
       var0.defaultReturnValue(-2236963);
    });
    private final BooleanConsumer callback;
@@ -110,7 +109,7 @@ public class OptimizeWorldScreen extends Screen {
          var1.drawString(this.font, Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks()), var5, 40 + (9 + 3) * 2, 10526880);
          int var9 = 0;
 
-         for(ResourceKey var11 : this.upgrader.levels()) {
+         for (ResourceKey var11 : this.upgrader.levels()) {
             int var12 = Mth.floor(this.upgrader.dimensionProgress(var11) * (float)(var6 - var5));
             var1.fill(var5 + var9, var7, var5 + var9 + var12, var8, DIMENSION_COLORS.applyAsInt(var11));
             var9 += var12;

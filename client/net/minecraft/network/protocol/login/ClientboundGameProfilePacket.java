@@ -7,14 +7,13 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundGameProfilePacket(GameProfile b) implements Packet<ClientLoginPacketListener> {
-   private final GameProfile gameProfile;
+public record ClientboundGameProfilePacket(GameProfile gameProfile) implements Packet<ClientLoginPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundGameProfilePacket> STREAM_CODEC = ByteBufCodecs.GAME_PROFILE
       .map(ClientboundGameProfilePacket::new, ClientboundGameProfilePacket::gameProfile);
 
-   public ClientboundGameProfilePacket(GameProfile var1) {
+   public ClientboundGameProfilePacket(GameProfile gameProfile) {
       super();
-      this.gameProfile = var1;
+      this.gameProfile = gameProfile;
    }
 
    @Override

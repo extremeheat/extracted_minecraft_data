@@ -124,14 +124,14 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
 
       if (var1.shouldAuthenticate()) {
          Util.ioPool().submit(() -> {
-            Component var5xx = this.authenticateServer(var4);
-            if (var5xx != null) {
+            Component var5x = this.authenticateServer(var4);
+            if (var5x != null) {
                if (this.serverData == null || !this.serverData.isLan()) {
-                  this.connection.disconnect(var5xx);
+                  this.connection.disconnect(var5x);
                   return;
                }
 
-               LOGGER.warn(var5xx.getString());
+               LOGGER.warn(var5x.getString());
             }
 
             this.setEncryption(var5, var2, var3);
@@ -186,7 +186,8 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
                   null,
                   this.serverData,
                   this.parent,
-                  this.cookies
+                  this.cookies,
+                  null
                )
             )
          );

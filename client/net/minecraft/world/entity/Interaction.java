@@ -1,10 +1,8 @@
 package net.minecraft.world.entity;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -12,7 +10,6 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -89,11 +86,11 @@ public class Interaction extends Entity implements Attackable, Targeting {
       var1.putFloat("width", this.getWidth());
       var1.putFloat("height", this.getHeight());
       if (this.attack != null) {
-         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.attack).result().ifPresent(var1x -> var1.put("attack", var1x));
+         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.attack).ifSuccess(var1x -> var1.put("attack", var1x));
       }
 
       if (this.interaction != null) {
-         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.interaction).result().ifPresent(var1x -> var1.put("interaction", var1x));
+         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.interaction).ifSuccess(var1x -> var1.put("interaction", var1x));
       }
 
       var1.putBoolean("response", this.getResponse());
@@ -127,14 +124,12 @@ public class Interaction extends Entity implements Attackable, Targeting {
       return true;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean skipAttackInteraction(Entity var1) {
       if (var1 instanceof Player var2) {
          this.attack = new Interaction.PlayerAction(var2.getUUID(), this.level().getGameTime());
          if (var2 instanceof ServerPlayer var3) {
-            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)var3, this, var2.damageSources().generic(), 1.0F, 1.0F, false);
+            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var3, this, var2.damageSources().generic(), 1.0F, 1.0F, false);
          }
 
          return !this.getResponse();
@@ -207,9 +202,7 @@ public class Interaction extends Entity implements Attackable, Targeting {
       return this.getDimensions().makeBoundingBox(this.position());
    }
 
-   static record PlayerAction(UUID b, long c) {
-      private final UUID player;
-      private final long timestamp;
+   static record PlayerAction(UUID player, long timestamp) {
       public static final Codec<Interaction.PlayerAction> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   UUIDUtil.CODEC.fieldOf("player").forGetter(Interaction.PlayerAction::player),
@@ -218,10 +211,10 @@ public class Interaction extends Entity implements Attackable, Targeting {
                .apply(var0, Interaction.PlayerAction::new)
       );
 
-      PlayerAction(UUID var1, long var2) {
+      PlayerAction(UUID player, long timestamp) {
          super();
-         this.player = var1;
-         this.timestamp = (long)var2;
+         this.player = player;
+         this.timestamp = timestamp;
       }
    }
 }

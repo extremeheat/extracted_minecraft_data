@@ -64,7 +64,7 @@ public class UpgradeData {
       if (var1.contains("Indices", 10)) {
          CompoundTag var3 = var1.getCompound("Indices");
 
-         for(int var4 = 0; var4 < this.index.length; ++var4) {
+         for (int var4 = 0; var4 < this.index.length; var4++) {
             String var5 = String.valueOf(var4);
             if (var3.contains(var5, 11)) {
                this.index[var4] = var3.getIntArray(var5);
@@ -74,7 +74,7 @@ public class UpgradeData {
 
       int var8 = var1.getInt("Sides");
 
-      for(Direction8 var7 : Direction8.values()) {
+      for (Direction8 var7 : Direction8.values()) {
          if ((var8 & 1 << var7.ordinal()) != 0) {
             this.sides.add(var7);
          }
@@ -96,7 +96,7 @@ public class UpgradeData {
 
    private static <T> void loadTicks(CompoundTag var0, String var1, Function<String, Optional<T>> var2, List<SavedTick<T>> var3) {
       if (var0.contains(var1, 9)) {
-         for(Tag var6 : var0.getList(var1, 10)) {
+         for (Tag var6 : var0.getList(var1, 10)) {
             SavedTick.loadTick((CompoundTag)var6, var2).ifPresent(var3::add);
          }
       }
@@ -105,17 +105,17 @@ public class UpgradeData {
    public void upgrade(LevelChunk var1) {
       this.upgradeInside(var1);
 
-      for(Direction8 var5 : DIRECTIONS) {
+      for (Direction8 var5 : DIRECTIONS) {
          upgradeSides(var1, var5);
       }
 
       Level var6 = var1.getLevel();
       this.neighborBlockTicks.forEach(var1x -> {
-         Block var2 = var1x.type() == Blocks.AIR ? var6.getBlockState(var1x.pos()).getBlock() : (Block)var1x.type();
+         Block var2 = var1x.type() == Blocks.AIR ? var6.getBlockState(var1x.pos()).getBlock() : var1x.type();
          var6.scheduleTick(var1x.pos(), var2, var1x.delay(), var1x.priority());
       });
       this.neighborFluidTicks.forEach(var1x -> {
-         Fluid var2 = var1x.type() == Fluids.EMPTY ? var6.getFluidState(var1x.pos()).getType() : (Fluid)var1x.type();
+         Fluid var2 = var1x.type() == Fluids.EMPTY ? var6.getFluidState(var1x.pos()).getType() : var1x.type();
          var6.scheduleTick(var1x.pos(), var2, var1x.delay(), var1x.priority());
       });
       CHUNKY_FIXERS.forEach(var1x -> var1x.processChunk(var6));
@@ -126,7 +126,7 @@ public class UpgradeData {
       if (var0.getUpgradeData().sides.remove(var1)) {
          Set var3 = var1.getDirections();
          boolean var4 = false;
-         boolean var5 = true;
+         byte var5 = 15;
          boolean var6 = var3.contains(Direction.EAST);
          boolean var7 = var3.contains(Direction.WEST);
          boolean var8 = var3.contains(Direction.SOUTH);
@@ -140,11 +140,11 @@ public class UpgradeData {
          Direction[] var16 = Direction.values();
          BlockPos.MutableBlockPos var17 = new BlockPos.MutableBlockPos();
 
-         for(BlockPos var19 : BlockPos.betweenClosed(var12, var2.getMinBuildHeight(), var14, var13, var2.getMaxBuildHeight() - 1, var15)) {
+         for (BlockPos var19 : BlockPos.betweenClosed(var12, var2.getMinBuildHeight(), var14, var13, var2.getMaxBuildHeight() - 1, var15)) {
             BlockState var20 = var2.getBlockState(var19);
             BlockState var21 = var20;
 
-            for(Direction var25 : var16) {
+            for (Direction var25 : var16) {
                var17.setWithOffset(var19, var25);
                var21 = updateState(var21, var25, var2, var19, var17);
             }
@@ -164,7 +164,7 @@ public class UpgradeData {
       ChunkPos var4 = var1.getPos();
       Level var5 = var1.getLevel();
 
-      for(int var6 = 0; var6 < this.index.length; ++var6) {
+      for (int var6 = 0; var6 < this.index.length; var6++) {
          LevelChunkSection var7 = var1.getSection(var6);
          int[] var8 = this.index[var6];
          this.index[var6] = null;
@@ -174,7 +174,7 @@ public class UpgradeData {
             int var11 = var1.getSectionYFromSectionIndex(var6);
             int var12 = SectionPos.sectionToBlockCoord(var11);
 
-            for(int var16 : var8) {
+            for (int var16 : var8) {
                int var17 = var16 & 15;
                int var18 = var16 >> 8 & 15;
                int var19 = var16 >> 4 & 15;
@@ -182,7 +182,7 @@ public class UpgradeData {
                BlockState var20 = (BlockState)var10.get(var16);
                BlockState var21 = var20;
 
-               for(Direction var25 : var9) {
+               for (Direction var25 : var9) {
                   var3.setWithOffset(var2, var25);
                   if (SectionPos.blockToSectionCoord(var2.getX()) == var4.x && SectionPos.blockToSectionCoord(var2.getZ()) == var4.z) {
                      var21 = updateState(var21, var25, var5, var2, var3);
@@ -194,7 +194,7 @@ public class UpgradeData {
          }
       }
 
-      for(int var26 = 0; var26 < this.index.length; ++var26) {
+      for (int var26 = 0; var26 < this.index.length; var26++) {
          if (this.index[var26] != null) {
             LOGGER.warn("Discarding update data for section {} for chunk ({} {})", new Object[]{var5.getSectionYFromSectionIndex(var26), var4.x, var4.z});
          }
@@ -204,7 +204,7 @@ public class UpgradeData {
    }
 
    public boolean isEmpty() {
-      for(int[] var4 : this.index) {
+      for (int[] var4 : this.index) {
          if (var4 != null) {
             return false;
          }
@@ -217,7 +217,7 @@ public class UpgradeData {
       CompoundTag var1 = new CompoundTag();
       CompoundTag var2 = new CompoundTag();
 
-      for(int var3 = 0; var3 < this.index.length; ++var3) {
+      for (int var3 = 0; var3 < this.index.length; var3++) {
          String var4 = String.valueOf(var3);
          if (this.index[var3] != null && this.index[var3].length != 0) {
             var2.putIntArray(var4, this.index[var3]);
@@ -230,7 +230,7 @@ public class UpgradeData {
 
       int var6 = 0;
 
-      for(Direction8 var5 : this.sides) {
+      for (Direction8 var5 : this.sides) {
          var6 |= 1 << var5.ordinal();
       }
 
@@ -283,7 +283,6 @@ public class UpgradeData {
          Blocks.DRAGON_EGG,
          Blocks.GRAVEL,
          Blocks.SAND,
-         Blocks.GRAVTATER,
          Blocks.RED_SAND,
          Blocks.OAK_SIGN,
          Blocks.SPRUCE_SIGN,
@@ -350,7 +349,6 @@ public class UpgradeData {
       },
       LEAVES(
          true,
-         Blocks.POTATO_LEAVES,
          Blocks.ACACIA_LEAVES,
          Blocks.CHERRY_LEAVES,
          Blocks.BIRCH_LEAVES,
@@ -368,7 +366,7 @@ public class UpgradeData {
                int var8 = var7.getValue(BlockStateProperties.DISTANCE);
                List var9 = this.queue.get();
                if (var9.isEmpty()) {
-                  for(int var10 = 0; var10 < 7; ++var10) {
+                  for (int var10 = 0; var10 < 7; var10++) {
                      var9.add(new ObjectOpenHashSet());
                   }
                }
@@ -384,19 +382,19 @@ public class UpgradeData {
             BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
             List var3 = this.queue.get();
 
-            for(int var4 = 2; var4 < var3.size(); ++var4) {
+            for (int var4 = 2; var4 < var3.size(); var4++) {
                int var5 = var4 - 1;
                ObjectSet var6 = (ObjectSet)var3.get(var5);
                ObjectSet var7 = (ObjectSet)var3.get(var4);
                ObjectIterator var8 = var6.iterator();
 
-               while(var8.hasNext()) {
+               while (var8.hasNext()) {
                   BlockPos var9 = (BlockPos)var8.next();
                   BlockState var10 = var1.getBlockState(var9);
                   if (var10.getValue(BlockStateProperties.DISTANCE) >= var5) {
                      var1.setBlock(var9, var10.setValue(BlockStateProperties.DISTANCE, Integer.valueOf(var5)), 18);
                      if (var4 != 7) {
-                        for(Direction var14 : DIRECTIONS) {
+                        for (Direction var14 : DIRECTIONS) {
                            var2.setWithOffset(var9, var14);
                            BlockState var15 = var1.getBlockState(var2);
                            if (var15.hasProperty(BlockStateProperties.DISTANCE) && var10.getValue(BlockStateProperties.DISTANCE) > var4) {
@@ -434,7 +432,7 @@ public class UpgradeData {
       }
 
       BlockFixers(boolean var3, Block... var4) {
-         for(Block var8 : var4) {
+         for (Block var8 : var4) {
             UpgradeData.MAP.put(var8, this);
          }
 

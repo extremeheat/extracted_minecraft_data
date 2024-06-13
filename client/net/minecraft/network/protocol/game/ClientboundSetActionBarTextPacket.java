@@ -7,15 +7,14 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundSetActionBarTextPacket(Component b) implements Packet<ClientGamePacketListener> {
-   private final Component text;
+public record ClientboundSetActionBarTextPacket(Component text) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetActionBarTextPacket> STREAM_CODEC = StreamCodec.composite(
       ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundSetActionBarTextPacket::text, ClientboundSetActionBarTextPacket::new
    );
 
-   public ClientboundSetActionBarTextPacket(Component var1) {
+   public ClientboundSetActionBarTextPacket(Component text) {
       super();
-      this.text = var1;
+      this.text = text;
    }
 
    @Override

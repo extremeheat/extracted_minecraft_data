@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
@@ -24,12 +23,12 @@ public class MsgCommand {
       LiteralCommandNode var1 = var0.register(
          (LiteralArgumentBuilder)Commands.literal("msg")
             .then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("message", MessageArgument.message()).executes(var0x -> {
-               Collection var1xx = EntityArgument.getPlayers(var0x, "targets");
-               if (!var1xx.isEmpty()) {
+               Collection var1x = EntityArgument.getPlayers(var0x, "targets");
+               if (!var1x.isEmpty()) {
                   MessageArgument.resolveChatMessage(var0x, "message", var2 -> sendMessage((CommandSourceStack)var0x.getSource(), var1x, var2));
                }
-      
-               return var1xx.size();
+
+               return var1x.size();
             })))
       );
       var0.register((LiteralArgumentBuilder)Commands.literal("tell").redirect(var1));
@@ -41,7 +40,7 @@ public class MsgCommand {
       OutgoingChatMessage var4 = OutgoingChatMessage.create(var2);
       boolean var5 = false;
 
-      for(ServerPlayer var7 : var1) {
+      for (ServerPlayer var7 : var1) {
          ChatType.Bound var8 = ChatType.bind(ChatType.MSG_COMMAND_OUTGOING, var0).withTargetName(var7.getDisplayName());
          var0.sendChatMessage(var4, false, var8);
          boolean var9 = var0.shouldFilterMessageTo(var7);

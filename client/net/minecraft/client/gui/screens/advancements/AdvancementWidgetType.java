@@ -34,7 +34,7 @@ public enum AdvancementWidgetType {
    }
 
    public ResourceLocation frameSprite(AdvancementType var1) {
-      return switch(var1) {
+      return switch (var1) {
          case TASK -> this.taskFrameSprite;
          case CHALLENGE -> this.challengeFrameSprite;
          case GOAL -> this.goalFrameSprite;

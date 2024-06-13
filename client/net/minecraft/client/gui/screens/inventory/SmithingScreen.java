@@ -12,7 +12,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.SmithingMenu;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
 import org.joml.Quaternionf;
@@ -78,14 +77,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    private Optional<SmithingTemplateItem> getTemplateItem() {
       ItemStack var1 = this.menu.getSlot(0).getItem();
-      if (!var1.isEmpty()) {
-         Item var3 = var1.getItem();
-         if (var3 instanceof SmithingTemplateItem var2) {
-            return Optional.of((SmithingTemplateItem)var2);
-         }
-      }
-
-      return Optional.empty();
+      return !var1.isEmpty() && var1.getItem() instanceof SmithingTemplateItem var2 ? Optional.of(var2) : Optional.empty();
    }
 
    @Override
@@ -112,18 +104,15 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void updateArmorStandPreview(ItemStack var1) {
       if (this.armorStandPreview != null) {
-         for(EquipmentSlot var5 : EquipmentSlot.values()) {
+         for (EquipmentSlot var5 : EquipmentSlot.values()) {
             this.armorStandPreview.setItemSlot(var5, ItemStack.EMPTY);
          }
 
          if (!var1.isEmpty()) {
             ItemStack var6 = var1.copy();
-            Item var8 = var1.getItem();
-            if (var8 instanceof ArmorItem var7) {
+            if (var1.getItem() instanceof ArmorItem var7) {
                this.armorStandPreview.setItemSlot(var7.getEquipmentSlot(), var6);
             } else {
                this.armorStandPreview.setItemSlot(EquipmentSlot.OFFHAND, var6);
@@ -139,8 +128,6 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void renderOnboardingTooltips(GuiGraphics var1, int var2, int var3) {
       Optional var4 = Optional.empty();
       if (this.hasRecipeError() && this.isHovering(65, 46, 28, 21, (double)var2, (double)var3)) {
@@ -154,14 +141,11 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
             if (this.hoveredSlot.index == 0) {
                var4 = Optional.of(MISSING_TEMPLATE_TOOLTIP);
             }
-         } else {
-            Item var8 = var5.getItem();
-            if (var8 instanceof SmithingTemplateItem var7 && var6.isEmpty()) {
-               if (this.hoveredSlot.index == 1) {
-                  var4 = Optional.of(var7.getBaseSlotDescription());
-               } else if (this.hoveredSlot.index == 2) {
-                  var4 = Optional.of(var7.getAdditionSlotDescription());
-               }
+         } else if (var5.getItem() instanceof SmithingTemplateItem var7 && var6.isEmpty()) {
+            if (this.hoveredSlot.index == 1) {
+               var4 = Optional.of(var7.getBaseSlotDescription());
+            } else if (this.hoveredSlot.index == 2) {
+               var4 = Optional.of(var7.getAdditionSlotDescription());
             }
          }
       }

@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -21,7 +20,7 @@ public class SaveOnCommand {
          CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
          boolean var2 = false;
 
-         for(ServerLevel var4 : var1.getServer().getAllLevels()) {
+         for (ServerLevel var4 : var1.getServer().getAllLevels()) {
             if (var4 != null && var4.noSave) {
                var4.noSave = false;
                var2 = true;

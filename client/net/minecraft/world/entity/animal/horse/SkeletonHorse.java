@@ -46,11 +46,9 @@ public class SkeletonHorse extends AbstractHorse {
    public static boolean checkSkeletonHorseSpawnRules(
       EntityType<? extends Animal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
    ) {
-      if (!MobSpawnType.isSpawner(var2)) {
-         return Animal.checkAnimalSpawnRules(var0, var1, var2, var3, var4);
-      } else {
-         return MobSpawnType.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
-      }
+      return !MobSpawnType.isSpawner(var2)
+         ? Animal.checkAnimalSpawnRules(var0, var1, var2, var3, var4)
+         : MobSpawnType.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
    }
 
    @Override
@@ -84,7 +82,7 @@ public class SkeletonHorse extends AbstractHorse {
             return SoundEvents.SKELETON_HORSE_STEP_WATER;
          }
 
-         ++this.gallopSoundCounter;
+         this.gallopSoundCounter++;
          if (this.gallopSoundCounter > 5 && this.gallopSoundCounter % 3 == 0) {
             return SoundEvents.SKELETON_HORSE_GALLOP_WATER;
          }

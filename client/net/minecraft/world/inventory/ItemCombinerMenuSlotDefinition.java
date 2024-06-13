@@ -29,7 +29,7 @@ public class ItemCombinerMenuSlotDefinition {
    }
 
    public ItemCombinerMenuSlotDefinition.SlotDefinition getSlot(int var1) {
-      return (ItemCombinerMenuSlotDefinition.SlotDefinition)this.slots.get(var1);
+      return this.slots.get(var1);
    }
 
    public ItemCombinerMenuSlotDefinition.SlotDefinition getResultSlot() {
@@ -53,7 +53,7 @@ public class ItemCombinerMenuSlotDefinition {
    }
 
    public static class Builder {
-      private final List<ItemCombinerMenuSlotDefinition.SlotDefinition> slots = new ArrayList();
+      private final List<ItemCombinerMenuSlotDefinition.SlotDefinition> slots = new ArrayList<>();
       private ItemCombinerMenuSlotDefinition.SlotDefinition resultSlot = ItemCombinerMenuSlotDefinition.SlotDefinition.EMPTY;
 
       public Builder() {
@@ -75,19 +75,15 @@ public class ItemCombinerMenuSlotDefinition {
       }
    }
 
-   public static record SlotDefinition(int a, int b, int c, Predicate<ItemStack> d) {
-      private final int slotIndex;
-      private final int x;
-      private final int y;
-      private final Predicate<ItemStack> mayPlace;
+   public static record SlotDefinition(int slotIndex, int x, int y, Predicate<ItemStack> mayPlace) {
       static final ItemCombinerMenuSlotDefinition.SlotDefinition EMPTY = new ItemCombinerMenuSlotDefinition.SlotDefinition(0, 0, 0, var0 -> true);
 
-      public SlotDefinition(int var1, int var2, int var3, Predicate<ItemStack> var4) {
+      public SlotDefinition(int slotIndex, int x, int y, Predicate<ItemStack> mayPlace) {
          super();
-         this.slotIndex = var1;
-         this.x = var2;
-         this.y = var3;
-         this.mayPlace = var4;
+         this.slotIndex = slotIndex;
+         this.x = x;
+         this.y = y;
+         this.mayPlace = mayPlace;
       }
    }
 }

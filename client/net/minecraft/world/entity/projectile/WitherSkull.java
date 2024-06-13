@@ -47,22 +47,19 @@ public class WitherSkull extends AbstractHurtingProjectile {
       return this.isDangerous() && WitherBoss.canDestroy(var4) ? Math.min(0.8F, var6) : var6;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       if (!this.level().isClientSide) {
          Entity var2 = var1.getEntity();
-         Entity var3 = this.getOwner();
          boolean var4;
-         if (var3 instanceof LivingEntity var5) {
-            var4 = var2.hurt(this.damageSources().witherSkull(this, (Entity)var5), 8.0F);
+         if (this.getOwner() instanceof LivingEntity var5) {
+            var4 = var2.hurt(this.damageSources().witherSkull(this, var5), 8.0F);
             if (var4) {
                if (var2.isAlive()) {
-                  this.doEnchantDamageEffects((LivingEntity)var5, var2);
+                  this.doEnchantDamageEffects(var5, var2);
                } else {
-                  ((LivingEntity)var5).heal(5.0F);
+                  var5.heal(5.0F);
                }
             }
          } else {

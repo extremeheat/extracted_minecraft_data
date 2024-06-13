@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,13 +30,13 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       )
       .collect(Collectors.toMap(ApplyBonusCount.FormulaType::id, Function.identity()));
    private static final Codec<ApplyBonusCount.FormulaType> FORMULA_TYPE_CODEC = ResourceLocation.CODEC.comapFlatMap(var0 -> {
-      ApplyBonusCount.FormulaType var1 = (ApplyBonusCount.FormulaType)FORMULAS.get(var0);
+      ApplyBonusCount.FormulaType var1 = FORMULAS.get(var0);
       return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "No formula type with id: '" + var0 + "'");
    }, ApplyBonusCount.FormulaType::id);
    private static final MapCodec<ApplyBonusCount.Formula> FORMULA_CODEC = ExtraCodecs.dispatchOptionalValue(
       "formula", "parameters", FORMULA_TYPE_CODEC, ApplyBonusCount.Formula::getType, ApplyBonusCount.FormulaType::codec
    );
-   public static final Codec<ApplyBonusCount> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<ApplyBonusCount> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(
                var0.group(
@@ -94,9 +93,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       return simpleBuilder(var2 -> new ApplyBonusCount(var2, var0.builtInRegistryHolder(), new ApplyBonusCount.UniformBonusCount(var1)));
    }
 
-   static record BinomialWithBonusCount(int b, float c) implements ApplyBonusCount.Formula {
-      private final int extraRounds;
-      private final float probability;
+   static record BinomialWithBonusCount(int extraRounds, float probability) implements ApplyBonusCount.Formula {
       private static final Codec<ApplyBonusCount.BinomialWithBonusCount> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Codec.INT.fieldOf("extra").forGetter(ApplyBonusCount.BinomialWithBonusCount::extraRounds),
@@ -106,17 +103,17 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       );
       public static final ApplyBonusCount.FormulaType TYPE = new ApplyBonusCount.FormulaType(new ResourceLocation("binomial_with_bonus_count"), CODEC);
 
-      BinomialWithBonusCount(int var1, float var2) {
+      BinomialWithBonusCount(int extraRounds, float probability) {
          super();
-         this.extraRounds = var1;
-         this.probability = var2;
+         this.extraRounds = extraRounds;
+         this.probability = probability;
       }
 
       @Override
       public int calculateNewCount(RandomSource var1, int var2, int var3) {
-         for(int var4 = 0; var4 < var3 + this.extraRounds; ++var4) {
+         for (int var4 = 0; var4 < var3 + this.extraRounds; var4++) {
             if (var1.nextFloat() < this.probability) {
-               ++var2;
+               var2++;
             }
          }
 
@@ -135,14 +132,11 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       ApplyBonusCount.FormulaType getType();
    }
 
-   static record FormulaType(ResourceLocation a, Codec<? extends ApplyBonusCount.Formula> b) {
-      private final ResourceLocation id;
-      private final Codec<? extends ApplyBonusCount.Formula> codec;
-
-      FormulaType(ResourceLocation var1, Codec<? extends ApplyBonusCount.Formula> var2) {
+   static record FormulaType(ResourceLocation id, Codec<? extends ApplyBonusCount.Formula> codec) {
+      FormulaType(ResourceLocation id, Codec<? extends ApplyBonusCount.Formula> codec) {
          super();
-         this.id = var1;
-         this.codec = var2;
+         this.id = id;
+         this.codec = codec;
       }
    }
 
@@ -174,17 +168,16 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
    }
 
-   static record UniformBonusCount(int c) implements ApplyBonusCount.Formula {
-      private final int bonusMultiplier;
+   static record UniformBonusCount(int bonusMultiplier) implements ApplyBonusCount.Formula {
       public static final Codec<ApplyBonusCount.UniformBonusCount> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(Codec.INT.fieldOf("bonusMultiplier").forGetter(ApplyBonusCount.UniformBonusCount::bonusMultiplier))
                .apply(var0, ApplyBonusCount.UniformBonusCount::new)
       );
       public static final ApplyBonusCount.FormulaType TYPE = new ApplyBonusCount.FormulaType(new ResourceLocation("uniform_bonus_count"), CODEC);
 
-      UniformBonusCount(int var1) {
+      UniformBonusCount(int bonusMultiplier) {
          super();
-         this.bonusMultiplier = var1;
+         this.bonusMultiplier = bonusMultiplier;
       }
 
       @Override

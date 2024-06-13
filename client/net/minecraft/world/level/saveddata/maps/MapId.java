@@ -5,14 +5,13 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-public record MapId(int c) {
-   private final int id;
+public record MapId(int id) {
    public static final Codec<MapId> CODEC = Codec.INT.xmap(MapId::new, MapId::id);
    public static final StreamCodec<ByteBuf, MapId> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(MapId::new, MapId::id);
 
-   public MapId(int var1) {
+   public MapId(int id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public String key() {

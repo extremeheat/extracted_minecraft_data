@@ -26,7 +26,7 @@ public class ArgumentUtils {
    }
 
    public static int createNumberFlags(boolean var0, boolean var1) {
-      int var2 = 0;
+      byte var2 = 0;
       if (var0) {
          var2 |= 1;
       }
@@ -67,8 +67,6 @@ public class ArgumentUtils {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static <S> JsonObject serializeNodeToJson(CommandDispatcher<S> var0, CommandNode<S> var1) {
       JsonObject var2 = new JsonObject();
       if (var1 instanceof RootCommandNode) {
@@ -84,7 +82,7 @@ public class ArgumentUtils {
 
       JsonObject var8 = new JsonObject();
 
-      for(CommandNode var5 : var1.getChildren()) {
+      for (CommandNode var5 : var1.getChildren()) {
          var8.add(var5.getName(), serializeNodeToJson(var0, var5));
       }
 
@@ -101,7 +99,7 @@ public class ArgumentUtils {
          if (!var9.isEmpty()) {
             JsonArray var10 = new JsonArray();
 
-            for(String var7 : var9) {
+            for (String var7 : var9) {
                var10.add(var7);
             }
 
@@ -119,8 +117,6 @@ public class ArgumentUtils {
       return var2;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static <T> void findUsedArgumentTypes(CommandNode<T> var0, Set<ArgumentType<?>> var1, Set<CommandNode<T>> var2) {
       if (var2.add(var0)) {
          if (var0 instanceof ArgumentCommandNode var3) {

@@ -41,7 +41,7 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
    public ObjectiveCriteria parse(StringReader var1) throws CommandSyntaxException {
       int var2 = var1.getCursor();
 
-      while(var1.canRead() && var1.peek() != ' ') {
+      while (var1.canRead() && var1.peek() != ' ') {
          var1.skip();
       }
 
@@ -55,8 +55,8 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
       ArrayList var3 = Lists.newArrayList(ObjectiveCriteria.getCustomCriteriaNames());
 
-      for(StatType var5 : BuiltInRegistries.STAT_TYPE) {
-         for(Object var7 : var5.getRegistry()) {
+      for (StatType var5 : BuiltInRegistries.STAT_TYPE) {
+         for (Object var7 : var5.getRegistry()) {
             String var8 = this.getName(var5, var7);
             var3.add(var8);
          }

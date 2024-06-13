@@ -91,7 +91,7 @@ public final class Shapes {
    @VisibleForTesting
    protected static int findBits(double var0, double var2) {
       if (!(var0 < -1.0E-7) && !(var2 > 1.0000001)) {
-         for(int var4 = 0; var4 <= 3; ++var4) {
+         for (int var4 = 0; var4 <= 3; var4++) {
             int var5 = 1 << var4;
             double var6 = var0 * (double)var5;
             double var8 = var2 * (double)var5;
@@ -163,7 +163,7 @@ public final class Shapes {
                boolean var5 = var2.apply(true, false);
                boolean var6 = var2.apply(false, true);
 
-               for(Direction.Axis var10 : AxisCycle.AXIS_VALUES) {
+               for (Direction.Axis var10 : AxisCycle.AXIS_VALUES) {
                   if (var0.max(var10) < var1.min(var10) - 1.0E-7) {
                      return var5 || var6;
                   }
@@ -197,7 +197,7 @@ public final class Shapes {
    }
 
    public static double collide(Direction.Axis var0, AABB var1, Iterable<VoxelShape> var2, double var3) {
-      for(VoxelShape var6 : var2) {
+      for (VoxelShape var6 : var2) {
          if (Math.abs(var3) < 1.0E-7) {
             return 0.0;
          }
@@ -271,10 +271,8 @@ public final class Shapes {
    public static boolean faceShapeOccludes(VoxelShape var0, VoxelShape var1) {
       if (var0 == block() || var1 == block()) {
          return true;
-      } else if (var0.isEmpty() && var1.isEmpty()) {
-         return false;
       } else {
-         return !joinIsNotEmpty(block(), joinUnoptimized(var0, var1, BooleanOp.OR), BooleanOp.ONLY_FIRST);
+         return var0.isEmpty() && var1.isEmpty() ? false : !joinIsNotEmpty(block(), joinUnoptimized(var0, var1, BooleanOp.OR), BooleanOp.ONLY_FIRST);
       }
    }
 

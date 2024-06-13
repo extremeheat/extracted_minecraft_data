@@ -65,16 +65,16 @@ public class SonicBoom extends Behavior<Warden> {
             .filter(var2::canTargetEntity)
             .filter(var1x -> var2.closerThan(var1x, 15.0, 20.0))
             .ifPresent(var2x -> {
-               Vec3 var3xx = var2.position().add(var2.getAttachments().get(EntityAttachment.WARDEN_CHEST, 0, var2.getYRot()));
-               Vec3 var4 = var2x.getEyePosition().subtract(var3xx);
+               Vec3 var3x = var2.position().add(var2.getAttachments().get(EntityAttachment.WARDEN_CHEST, 0, var2.getYRot()));
+               Vec3 var4 = var2x.getEyePosition().subtract(var3x);
                Vec3 var5 = var4.normalize();
                int var6 = Mth.floor(var4.length()) + 7;
-   
-               for(int var7 = 1; var7 < var6; ++var7) {
-                  Vec3 var8 = var3xx.add(var5.scale((double)var7));
+
+               for (int var7 = 1; var7 < var6; var7++) {
+                  Vec3 var8 = var3x.add(var5.scale((double)var7));
                   var1.sendParticles(ParticleTypes.SONIC_BOOM, var8.x, var8.y, var8.z, 1, 0.0, 0.0, 0.0, 0.0);
                }
-   
+
                var2.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
                var2x.hurt(var1.damageSources().sonicBoom(var2), 10.0F);
                double var11 = 0.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));

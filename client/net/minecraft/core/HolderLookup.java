@@ -4,7 +4,6 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,17 +43,13 @@ public interface HolderLookup<T> extends HolderGetter<T> {
          return new HolderGetter.Provider() {
             @Override
             public <T> Optional<HolderGetter<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-               return Provider.this.lookup(var1).map(var0 -> var0);
+               return Provider.this.lookup(var1).map(var0 -> (HolderGetter<T>)var0);
             }
          };
       }
 
       static HolderLookup.Provider create(Stream<HolderLookup.RegistryLookup<?>> var0) {
-         final Map var1 = var0.collect(
-            Collectors.toUnmodifiableMap(
-               HolderLookup.RegistryLookup::key, (Function<? super HolderLookup.RegistryLookup, ? extends HolderLookup.RegistryLookup>)(var0x -> var0x)
-            )
-         );
+         final Map var1 = var0.collect(Collectors.toUnmodifiableMap(HolderLookup.RegistryLookup::key, var0x -> (HolderLookup.RegistryLookup)var0x));
          return new HolderLookup.Provider() {
             @Override
             public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {

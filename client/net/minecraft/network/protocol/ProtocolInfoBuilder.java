@@ -17,7 +17,7 @@ import net.minecraft.network.codec.StreamCodec;
 public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
    private final ConnectionProtocol protocol;
    private final PacketFlow flow;
-   private final List<ProtocolInfoBuilder.CodecEntry<T, ?, B>> codecs = new ArrayList();
+   private final List<ProtocolInfoBuilder.CodecEntry<T, ?, B>> codecs = new ArrayList<>();
    @Nullable
    private BundlerInfo bundlerInfo;
 
@@ -28,7 +28,7 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
    }
 
    public <P extends Packet<? super T>> ProtocolInfoBuilder<T, B> addPacket(PacketType<P> var1, StreamCodec<? super B, P> var2) {
-      this.codecs.add(new ProtocolInfoBuilder.CodecEntry(var1, var2));
+      this.codecs.add(new ProtocolInfoBuilder.CodecEntry<>(var1, var2));
       return this;
    }
 
@@ -37,7 +37,7 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
    ) {
       StreamCodec var4 = StreamCodec.unit(var3);
       PacketType var5 = var3.type();
-      this.codecs.add(new ProtocolInfoBuilder.CodecEntry(var5, var4));
+      this.codecs.add(new ProtocolInfoBuilder.CodecEntry<>(var5, var4));
       this.bundlerInfo = BundlerInfo.createForPacket(var1, var2, var3);
       return this;
    }
@@ -45,7 +45,7 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
    private StreamCodec<ByteBuf, Packet<? super T>> buildPacketCodec(Function<ByteBuf, B> var1, List<ProtocolInfoBuilder.CodecEntry<T, ?, B>> var2) {
       ProtocolCodecBuilder var3 = new ProtocolCodecBuilder(this.flow);
 
-      for(ProtocolInfoBuilder.CodecEntry var5 : var2) {
+      for (ProtocolInfoBuilder.CodecEntry var5 : var2) {
          var5.addToBuilder(var3, var1);
       }
 
@@ -102,14 +102,11 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
       return protocolUnbound(var0, PacketFlow.CLIENTBOUND, var1);
    }
 
-   static record CodecEntry<T extends PacketListener, P extends Packet<? super T>, B extends ByteBuf>(PacketType<P> a, StreamCodec<? super B, P> b) {
-      private final PacketType<P> type;
-      private final StreamCodec<? super B, P> serializer;
-
-      CodecEntry(PacketType<P> var1, StreamCodec<? super B, P> var2) {
+   static record CodecEntry<T extends PacketListener, P extends Packet<? super T>, B extends ByteBuf>(PacketType<P> type, StreamCodec<? super B, P> serializer) {
+      CodecEntry(PacketType<P> type, StreamCodec<? super B, P> serializer) {
          super();
-         this.type = var1;
-         this.serializer = var2;
+         this.type = type;
+         this.serializer = serializer;
       }
 
       public void addToBuilder(ProtocolCodecBuilder<ByteBuf, T> var1, Function<ByteBuf, B> var2) {
@@ -119,20 +116,14 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
    }
 
    static record Implementation<L extends PacketListener>(
-      ConnectionProtocol a, PacketFlow b, StreamCodec<ByteBuf, Packet<? super L>> c, @Nullable BundlerInfo d
+      ConnectionProtocol id, PacketFlow flow, StreamCodec<ByteBuf, Packet<? super L>> codec, @Nullable BundlerInfo bundlerInfo
    ) implements ProtocolInfo<L> {
-      private final ConnectionProtocol id;
-      private final PacketFlow flow;
-      private final StreamCodec<ByteBuf, Packet<? super L>> codec;
-      @Nullable
-      private final BundlerInfo bundlerInfo;
-
-      Implementation(ConnectionProtocol var1, PacketFlow var2, StreamCodec<ByteBuf, Packet<? super L>> var3, @Nullable BundlerInfo var4) {
+      Implementation(ConnectionProtocol id, PacketFlow flow, StreamCodec<ByteBuf, Packet<? super L>> codec, @Nullable BundlerInfo bundlerInfo) {
          super();
-         this.id = var1;
-         this.flow = var2;
-         this.codec = var3;
-         this.bundlerInfo = var4;
+         this.id = id;
+         this.flow = flow;
+         this.codec = codec;
+         this.bundlerInfo = bundlerInfo;
       }
    }
 }

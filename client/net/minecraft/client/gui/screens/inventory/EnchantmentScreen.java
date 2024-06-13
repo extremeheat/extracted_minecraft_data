@@ -70,7 +70,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       int var6 = (this.width - this.imageWidth) / 2;
       int var7 = (this.height - this.imageHeight) / 2;
 
-      for(int var8 = 0; var8 < 3; ++var8) {
+      for (int var8 = 0; var8 < 3; var8++) {
          double var9 = var1 - (double)(var6 + 60);
          double var11 = var3 - (double)(var7 + 14 + 19 * var8);
          if (var9 >= 0.0 && var11 >= 0.0 && var9 < 108.0 && var11 < 19.0 && this.menu.clickMenuButton(this.minecraft.player, var8)) {
@@ -91,7 +91,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       EnchantmentNames.getInstance().initSeed((long)this.menu.getEnchantmentSeed());
       int var7 = this.menu.getGoldCount();
 
-      for(int var8 = 0; var8 < 3; ++var8) {
+      for (int var8 = 0; var8 < 3; var8++) {
          int var9 = var5 + 60;
          int var10 = var9 + 20;
          int var11 = this.menu.costs[var8];
@@ -158,7 +158,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       boolean var5 = this.minecraft.player.getAbilities().instabuild;
       int var6 = this.menu.getGoldCount();
 
-      for(int var7 = 0; var7 < 3; ++var7) {
+      for (int var7 = 0; var7 < 3; var7++) {
          int var8 = this.menu.costs[var7];
          Enchantment var9 = Enchantment.byId(this.menu.enchantClue[var7]);
          int var10 = this.menu.levelClue[var7];
@@ -202,16 +202,16 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
          this.last = var1;
 
          do {
-            this.flipT += (float)(this.random.nextInt(4) - this.random.nextInt(4));
-         } while(this.flip <= this.flipT + 1.0F && this.flip >= this.flipT - 1.0F);
+            this.flipT = this.flipT + (float)(this.random.nextInt(4) - this.random.nextInt(4));
+         } while (this.flip <= this.flipT + 1.0F && this.flip >= this.flipT - 1.0F);
       }
 
-      ++this.time;
+      this.time++;
       this.oFlip = this.flip;
       this.oOpen = this.open;
       boolean var2 = false;
 
-      for(int var3 = 0; var3 < 3; ++var3) {
+      for (int var3 = 0; var3 < 3; var3++) {
          if (this.menu.costs[var3] != 0) {
             var2 = true;
          }
@@ -227,7 +227,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       float var5 = (this.flipT - this.flip) * 0.4F;
       float var4 = 0.2F;
       var5 = Mth.clamp(var5, -0.2F, 0.2F);
-      this.flipA += (var5 - this.flipA) * 0.9F;
-      this.flip += this.flipA;
+      this.flipA = this.flipA + (var5 - this.flipA) * 0.9F;
+      this.flip = this.flip + this.flipA;
    }
 }

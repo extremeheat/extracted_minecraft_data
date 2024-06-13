@@ -50,11 +50,11 @@ public class BoatModel extends ListModel<Boat> implements WaterPatchModel {
    }
 
    public static void createChildren(PartDefinition var0) {
-      boolean var1 = true;
-      boolean var2 = true;
-      boolean var3 = true;
-      boolean var4 = true;
-      boolean var5 = true;
+      byte var1 = 32;
+      byte var2 = 6;
+      byte var3 = 20;
+      byte var4 = 4;
+      byte var5 = 28;
       var0.addOrReplaceChild(
          "bottom",
          CubeListBuilder.create().texOffs(0, 0).addBox(-14.0F, -9.0F, -3.0F, 28.0F, 16.0F, 3.0F),
@@ -76,9 +76,9 @@ public class BoatModel extends ListModel<Boat> implements WaterPatchModel {
          PartPose.offsetAndRotation(0.0F, 4.0F, -9.0F, 0.0F, 3.1415927F, 0.0F)
       );
       var0.addOrReplaceChild("left", CubeListBuilder.create().texOffs(0, 43).addBox(-14.0F, -7.0F, -1.0F, 28.0F, 6.0F, 2.0F), PartPose.offset(0.0F, 4.0F, 9.0F));
-      boolean var6 = true;
-      boolean var7 = true;
-      boolean var8 = true;
+      byte var6 = 20;
+      byte var7 = 7;
+      byte var8 = 6;
       float var9 = -5.0F;
       var0.addOrReplaceChild(
          "left_paddle",

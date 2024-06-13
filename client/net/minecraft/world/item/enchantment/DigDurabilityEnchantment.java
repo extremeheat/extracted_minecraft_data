@@ -10,10 +10,6 @@ public class DigDurabilityEnchantment extends Enchantment {
    }
 
    public static boolean shouldIgnoreDurabilityDrop(ItemStack var0, int var1, RandomSource var2) {
-      if (var0.getItem() instanceof ArmorItem && var2.nextFloat() < 0.6F) {
-         return false;
-      } else {
-         return var2.nextInt(var1 + 1) > 0;
-      }
+      return var0.getItem() instanceof ArmorItem && var2.nextFloat() < 0.6F ? false : var2.nextInt(var1 + 1) > 0;
    }
 }

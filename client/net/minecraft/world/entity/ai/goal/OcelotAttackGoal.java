@@ -30,10 +30,8 @@ public class OcelotAttackGoal extends Goal {
    public boolean canContinueToUse() {
       if (!this.target.isAlive()) {
          return false;
-      } else if (this.mob.distanceToSqr(this.target) > 225.0) {
-         return false;
       } else {
-         return !this.mob.getNavigation().isDone() || this.canUse();
+         return this.mob.distanceToSqr(this.target) > 225.0 ? false : !this.mob.getNavigation().isDone() || this.canUse();
       }
    }
 

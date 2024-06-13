@@ -17,8 +17,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import org.slf4j.Logger;
 
-public record PiecesContainer(List<StructurePiece> a) {
-   private final List<StructurePiece> pieces;
+public record PiecesContainer(List<StructurePiece> pieces) {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final ResourceLocation JIGSAW_RENAME = new ResourceLocation("jigsaw");
    private static final Map<ResourceLocation, ResourceLocation> RENAMES = ImmutableMap.builder()
@@ -28,9 +27,9 @@ public record PiecesContainer(List<StructurePiece> a) {
       .put(new ResourceLocation("runtime"), JIGSAW_RENAME)
       .build();
 
-   public PiecesContainer(List<StructurePiece> var1) {
+   public PiecesContainer(List<StructurePiece> pieces) {
       super();
-      this.pieces = List.copyOf(var1);
+      this.pieces = List.copyOf(pieces);
    }
 
    public boolean isEmpty() {
@@ -38,7 +37,7 @@ public record PiecesContainer(List<StructurePiece> a) {
    }
 
    public boolean isInsidePiece(BlockPos var1) {
-      for(StructurePiece var3 : this.pieces) {
+      for (StructurePiece var3 : this.pieces) {
          if (var3.getBoundingBox().isInside(var1)) {
             return true;
          }
@@ -50,7 +49,7 @@ public record PiecesContainer(List<StructurePiece> a) {
    public Tag save(StructurePieceSerializationContext var1) {
       ListTag var2 = new ListTag();
 
-      for(StructurePiece var4 : this.pieces) {
+      for (StructurePiece var4 : this.pieces) {
          var2.add(var4.createTag(var1));
       }
 
@@ -60,7 +59,7 @@ public record PiecesContainer(List<StructurePiece> a) {
    public static PiecesContainer load(ListTag var0, StructurePieceSerializationContext var1) {
       ArrayList var2 = Lists.newArrayList();
 
-      for(int var3 = 0; var3 < var0.size(); ++var3) {
+      for (int var3 = 0; var3 < var0.size(); var3++) {
          CompoundTag var4 = var0.getCompound(var3);
          String var5 = var4.getString("id").toLowerCase(Locale.ROOT);
          ResourceLocation var6 = new ResourceLocation(var5);

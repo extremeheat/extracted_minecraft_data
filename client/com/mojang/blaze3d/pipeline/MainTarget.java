@@ -55,7 +55,7 @@ public class MainTarget extends RenderTarget {
       this.depthBufferId = TextureUtil.generateTextureId();
       MainTarget.AttachmentState var3 = MainTarget.AttachmentState.NONE;
 
-      for(MainTarget.Dimension var5 : MainTarget.Dimension.listWithFallback(var1, var2)) {
+      for (MainTarget.Dimension var5 : MainTarget.Dimension.listWithFallback(var1, var2)) {
          var3 = MainTarget.AttachmentState.NONE;
          if (this.allocateColorAttachment(var5)) {
             var3 = var3.with(MainTarget.AttachmentState.COLOR);

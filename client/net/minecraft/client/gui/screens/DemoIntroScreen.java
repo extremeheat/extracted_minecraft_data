@@ -19,7 +19,7 @@ public class DemoIntroScreen extends Screen {
 
    @Override
    protected void init() {
-      boolean var1 = true;
+      byte var1 = -16;
       this.addRenderableWidget(Button.builder(Component.translatable("demo.help.buy"), var0 -> {
          var0.active = false;
          Util.getPlatform().openUri("https://aka.ms/BuyMinecraftJava");

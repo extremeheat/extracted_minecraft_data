@@ -8,7 +8,6 @@ import java.util.Map;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.KnownPack;
-import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
@@ -33,7 +32,7 @@ public class KnownPacksManager {
       ArrayList var2 = new ArrayList(var1.size());
       ArrayList var3 = new ArrayList(var1.size());
 
-      for(KnownPack var5 : var1) {
+      for (KnownPack var5 : var1) {
          String var6 = this.knownPackToId.get(var5);
          if (var6 != null) {
             var3.add(var6);

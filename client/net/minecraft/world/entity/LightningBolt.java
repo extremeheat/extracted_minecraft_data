@@ -113,7 +113,7 @@ public class LightningBolt extends Entity {
          }
       }
 
-      --this.life;
+      this.life--;
       if (this.life < 0) {
          if (this.flashes == 0) {
             if (this.level() instanceof ServerLevel) {
@@ -124,14 +124,14 @@ public class LightningBolt extends Entity {
                      var1x -> var1x.isAlive() && !this.hitEntities.contains(var1x)
                   );
 
-               for(ServerPlayer var3 : ((ServerLevel)this.level()).getPlayers(var1x -> var1x.distanceTo(this) < 256.0F)) {
+               for (ServerPlayer var3 : ((ServerLevel)this.level()).getPlayers(var1x -> var1x.distanceTo(this) < 256.0F)) {
                   CriteriaTriggers.LIGHTNING_STRIKE.trigger(var3, this, var4);
                }
             }
 
             this.discard();
          } else if (this.life < -this.random.nextInt(10)) {
-            --this.flashes;
+            this.flashes--;
             this.life = 1;
             this.seed = this.random.nextLong();
             this.spawnFire(0);
@@ -149,7 +149,7 @@ public class LightningBolt extends Entity {
                   Entity::isAlive
                );
 
-            for(Entity var7 : var5) {
+            for (Entity var7 : var5) {
                var7.thunderHit((ServerLevel)this.level(), this);
             }
 
@@ -172,15 +172,15 @@ public class LightningBolt extends Entity {
          BlockState var3 = BaseFireBlock.getState(this.level(), var2);
          if (this.level().getBlockState(var2).isAir() && var3.canSurvive(this.level(), var2)) {
             this.level().setBlockAndUpdate(var2, var3);
-            ++this.blocksSetOnFire;
+            this.blocksSetOnFire++;
          }
 
-         for(int var4 = 0; var4 < var1; ++var4) {
+         for (int var4 = 0; var4 < var1; var4++) {
             BlockPos var5 = var2.offset(this.random.nextInt(3) - 1, this.random.nextInt(3) - 1, this.random.nextInt(3) - 1);
             var3 = BaseFireBlock.getState(this.level(), var5);
             if (this.level().getBlockState(var5).isAir() && var3.canSurvive(this.level(), var5)) {
                this.level().setBlockAndUpdate(var5, var3);
-               ++this.blocksSetOnFire;
+               this.blocksSetOnFire++;
             }
          }
       }
@@ -203,7 +203,7 @@ public class LightningBolt extends Entity {
          BlockPos.MutableBlockPos var5 = var1.mutable();
          int var6 = var0.random.nextInt(3) + 3;
 
-         for(int var7 = 0; var7 < var6; ++var7) {
+         for (int var7 = 0; var7 < var6; var7++) {
             int var8 = var0.random.nextInt(8) + 1;
             randomWalkCleaningCopper(var0, var3, var5, var8);
          }
@@ -213,7 +213,7 @@ public class LightningBolt extends Entity {
    private static void randomWalkCleaningCopper(Level var0, BlockPos var1, BlockPos.MutableBlockPos var2, int var3) {
       var2.set(var1);
 
-      for(int var4 = 0; var4 < var3; ++var4) {
+      for (int var4 = 0; var4 < var3; var4++) {
          Optional var5 = randomStepCleaningCopper(var0, var2);
          if (var5.isEmpty()) {
             break;
@@ -224,7 +224,7 @@ public class LightningBolt extends Entity {
    }
 
    private static Optional<BlockPos> randomStepCleaningCopper(Level var0, BlockPos var1) {
-      for(BlockPos var3 : BlockPos.randomInCube(var0.random, 10, var1, 1)) {
+      for (BlockPos var3 : BlockPos.randomInCube(var0.random, 10, var1, 1)) {
          BlockState var4 = var0.getBlockState(var3);
          if (var4.getBlock() instanceof WeatheringCopper) {
             WeatheringCopper.getPrevious(var4).ifPresent(var2 -> var0.setBlockAndUpdate(var3, var2));

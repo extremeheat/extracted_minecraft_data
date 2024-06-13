@@ -34,7 +34,7 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
    }
 
    public static <A> CrudeIncrementalIntIdentityHashBiMap<A> create(int var0) {
-      return new CrudeIncrementalIntIdentityHashBiMap<>((int)((float)var0 / 0.8F));
+      return new CrudeIncrementalIntIdentityHashBiMap((int)((float)var0 / 0.8F));
    }
 
    @Override
@@ -67,8 +67,8 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
    }
 
    private int nextId() {
-      while(this.nextId < this.byId.length && this.byId[this.nextId] != null) {
-         ++this.nextId;
+      while (this.nextId < this.byId.length && this.byId[this.nextId] != null) {
+         this.nextId++;
       }
 
       return this.nextId;
@@ -79,7 +79,7 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
       int[] var3 = this.values;
       CrudeIncrementalIntIdentityHashBiMap var4 = new CrudeIncrementalIntIdentityHashBiMap(var1);
 
-      for(int var5 = 0; var5 < var2.length; ++var5) {
+      for (int var5 = 0; var5 < var2.length; var5++) {
          if (var2[var5] != null) {
             var4.addMapping(var2[var5], var3[var5]);
          }
@@ -97,7 +97,7 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
       if ((float)var3 >= (float)this.keys.length * 0.8F) {
          int var4 = this.keys.length << 1;
 
-         while(var4 < var2) {
+         while (var4 < var2) {
             var4 <<= 1;
          }
 
@@ -108,9 +108,9 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
       this.keys[var5] = (K)var1;
       this.values[var5] = var2;
       this.byId[var2] = (K)var1;
-      ++this.size;
+      this.size++;
       if (var2 == this.nextId) {
-         ++this.nextId;
+         this.nextId++;
       }
    }
 
@@ -119,7 +119,7 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
    }
 
    private int indexOf(@Nullable K var1, int var2) {
-      for(int var3 = var2; var3 < this.keys.length; ++var3) {
+      for (int var3 = var2; var3 < this.keys.length; var3++) {
          if (this.keys[var3] == var1) {
             return var3;
          }
@@ -129,7 +129,7 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
          }
       }
 
-      for(int var4 = 0; var4 < var2; ++var4) {
+      for (int var4 = 0; var4 < var2; var4++) {
          if (this.keys[var4] == var1) {
             return var4;
          }
@@ -143,13 +143,13 @@ public class CrudeIncrementalIntIdentityHashBiMap<K> implements IdMap<K> {
    }
 
    private int findEmpty(int var1) {
-      for(int var2 = var1; var2 < this.keys.length; ++var2) {
+      for (int var2 = var1; var2 < this.keys.length; var2++) {
          if (this.keys[var2] == EMPTY_SLOT) {
             return var2;
          }
       }
 
-      for(int var3 = 0; var3 < var1; ++var3) {
+      for (int var3 = 0; var3 < var1; var3++) {
          if (this.keys[var3] == EMPTY_SLOT) {
             return var3;
          }

@@ -33,7 +33,7 @@ public class RandomStandGoal extends Goal {
 
    @Override
    public boolean canUse() {
-      ++this.nextStand;
+      this.nextStand++;
       if (this.nextStand > 0 && this.horse.getRandom().nextInt(1000) < this.nextStand) {
          this.resetStandInterval(this.horse);
          return !this.horse.isImmobile() && this.horse.getRandom().nextInt(10) == 0;

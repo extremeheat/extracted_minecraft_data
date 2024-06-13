@@ -7,12 +7,10 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortList;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class ChunkToProtochunkFix extends DataFix {
    private static final int NUM_SECTIONS = 16;
@@ -51,7 +49,7 @@ public class ChunkToProtochunkFix extends DataFix {
       return var0.update("Biomes", var1 -> (Dynamic)DataFixUtils.orElse(var1.asByteBufferOpt().result().map(var1x -> {
             int[] var2 = new int[256];
 
-            for(int var3 = 0; var3 < var2.length; ++var3) {
+            for (int var3 = 0; var3 < var2.length; var3++) {
                if (var3 < var1x.capacity()) {
                   var2[var3] = var1x.get(var3) & 255;
                }
@@ -70,10 +68,10 @@ public class ChunkToProtochunkFix extends DataFix {
                var1 -> {
                   List var2 = IntStream.range(0, 16).mapToObj(var0xx -> new ShortArrayList()).collect(Collectors.toList());
                   var1.forEach(var1x -> {
-                     int var2xx = var1x.get("x").asInt(0);
+                     int var2x = var1x.get("x").asInt(0);
                      int var3 = var1x.get("y").asInt(0);
                      int var4 = var1x.get("z").asInt(0);
-                     short var5 = packOffsetCoordinates(var2xx, var3, var4);
+                     short var5 = packOffsetCoordinates(var2x, var3, var4);
                      ((ShortList)var2.get(var3 >> 4)).add(var5);
                   });
                   return var0.remove("TileTicks")

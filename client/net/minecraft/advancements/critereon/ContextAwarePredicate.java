@@ -29,7 +29,7 @@ public class ContextAwarePredicate {
    }
 
    public void validate(ValidationContext var1) {
-      for(int var2 = 0; var2 < this.conditions.size(); ++var2) {
+      for (int var2 = 0; var2 < this.conditions.size(); var2++) {
          LootItemCondition var3 = this.conditions.get(var2);
          var3.validate(var1.forChild("[" + var2 + "]"));
       }

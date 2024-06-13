@@ -70,7 +70,7 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
             double var2;
             do {
                var2 = (double)((float)var1.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-            } while(var2 < (double)var1.getY());
+            } while (var2 < (double)var1.getY());
 
             this.targetLocation = new Vec3((double)var1.getX(), var2, (double)var1.getZ());
          }

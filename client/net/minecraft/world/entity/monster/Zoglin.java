@@ -198,9 +198,10 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       boolean var3 = super.hurt(var1, var2);
       if (this.level().isClientSide) {
          return false;
-      } else if (var3 && var1.getEntity() instanceof LivingEntity var4) {
-         if (this.canAttack((LivingEntity)var4) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, (LivingEntity)var4, 4.0)) {
-            this.setAttackTarget((LivingEntity)var4);
+      } else if (var3 && var1.getEntity() instanceof LivingEntity) {
+         LivingEntity var4 = (LivingEntity)var1.getEntity();
+         if (this.canAttack(var4) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, var4, 4.0)) {
+            this.setAttackTarget(var4);
          }
 
          return var3;
@@ -216,7 +217,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
 
    @Override
    public Brain<Zoglin> getBrain() {
-      return super.getBrain();
+      return (Brain<Zoglin>)super.getBrain();
    }
 
    protected void updateActivity() {
@@ -254,7 +255,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
    @Override
    public void aiStep() {
       if (this.attackAnimationRemainingTicks > 0) {
-         --this.attackAnimationRemainingTicks;
+         this.attackAnimationRemainingTicks--;
       }
 
       super.aiStep();

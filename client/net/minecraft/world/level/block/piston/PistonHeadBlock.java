@@ -62,11 +62,11 @@ public class PistonHeadBlock extends DirectionalBlock {
    }
 
    private static VoxelShape[] makeShapes(boolean var0) {
-      return Arrays.stream(Direction.values()).map(var1 -> calculateShape(var1, var0)).toArray(var0x -> new VoxelShape[var0x]);
+      return Arrays.stream(Direction.values()).map(var1 -> calculateShape(var1, var0)).toArray(VoxelShape[]::new);
    }
 
    private static VoxelShape calculateShape(Direction var0, boolean var1) {
-      switch(var0) {
+      switch (var0) {
          case DOWN:
          default:
             return Shapes.or(DOWN_AABB, var1 ? SHORT_DOWN_ARM_AABB : DOWN_ARM_AABB);

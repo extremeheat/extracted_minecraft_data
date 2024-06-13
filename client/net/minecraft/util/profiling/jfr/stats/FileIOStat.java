@@ -7,17 +7,12 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-public record FileIOStat(Duration a, @Nullable String b, long c) {
-   private final Duration duration;
-   @Nullable
-   private final String path;
-   private final long bytes;
-
-   public FileIOStat(Duration var1, @Nullable String var2, long var3) {
+public record FileIOStat(Duration duration, @Nullable String path, long bytes) {
+   public FileIOStat(Duration duration, @Nullable String path, long bytes) {
       super();
-      this.duration = var1;
-      this.path = var2;
-      this.bytes = var3;
+      this.duration = duration;
+      this.path = path;
+      this.bytes = bytes;
    }
 
    public static FileIOStat.Summary summary(Duration var0, List<FileIOStat> var1) {
@@ -33,29 +28,36 @@ public record FileIOStat(Duration a, @Nullable String b, long c) {
             .collect(Collectors.groupingBy(var0x -> var0x.path, Collectors.summingLong(var0x -> var0x.bytes)))
             .entrySet()
             .stream()
-            .sorted(Entry.comparingByValue().reversed())
-            .map(var0x -> Pair.of((String)var0x.getKey(), (Long)var0x.getValue()))
+            .sorted(Entry.<String, Long>comparingByValue().reversed())
+            .map(var0x -> Pair.of(var0x.getKey(), var0x.getValue()))
             .limit(10L)
             .toList()
       );
    }
 
-   public static record Summary(long a, double b, long c, double d, Duration e, List<Pair<String, Long>> f) {
-      private final long totalBytes;
-      private final double bytesPerSecond;
-      private final long counts;
-      private final double countsPerSecond;
-      private final Duration timeSpentInIO;
-      private final List<Pair<String, Long>> topTenContributorsByTotalBytes;
-
-      public Summary(long var1, double var3, long var5, double var7, Duration var9, List<Pair<String, Long>> var10) {
+   public static record Summary(
+      long totalBytes,
+      double bytesPerSecond,
+      long counts,
+      double countsPerSecond,
+      Duration timeSpentInIO,
+      List<Pair<String, Long>> topTenContributorsByTotalBytes
+   ) {
+      public Summary(
+         long totalBytes,
+         double bytesPerSecond,
+         long counts,
+         double countsPerSecond,
+         Duration timeSpentInIO,
+         List<Pair<String, Long>> topTenContributorsByTotalBytes
+      ) {
          super();
-         this.totalBytes = var1;
-         this.bytesPerSecond = var3;
-         this.counts = var5;
-         this.countsPerSecond = var7;
-         this.timeSpentInIO = var9;
-         this.topTenContributorsByTotalBytes = var10;
+         this.totalBytes = totalBytes;
+         this.bytesPerSecond = bytesPerSecond;
+         this.counts = counts;
+         this.countsPerSecond = countsPerSecond;
+         this.timeSpentInIO = timeSpentInIO;
+         this.topTenContributorsByTotalBytes = topTenContributorsByTotalBytes;
       }
    }
 }

@@ -7,12 +7,8 @@ import java.util.Map.Entry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record TypedDataComponent<T>(DataComponentType<T> b, T c) {
-   private final DataComponentType<T> type;
-   private final T value;
-   public static final StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>> STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>>(
-      
-   ) {
+public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
+   public static final StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>> STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>>() {
       public TypedDataComponent<?> decode(RegistryFriendlyByteBuf var1) {
          DataComponentType var2 = DataComponentType.STREAM_CODEC.decode(var1);
          return decodeTyped(var1, var2);
@@ -32,10 +28,10 @@ public record TypedDataComponent<T>(DataComponentType<T> b, T c) {
       }
    };
 
-   public TypedDataComponent(DataComponentType<T> var1, T var2) {
+   public TypedDataComponent(DataComponentType<T> type, T value) {
       super();
-      this.type = var1;
-      this.value = (T)var2;
+      this.type = type;
+      this.value = (T)value;
    }
 
    static TypedDataComponent<?> fromEntryUnchecked(Entry<DataComponentType<?>, Object> var0) {

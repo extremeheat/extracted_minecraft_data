@@ -18,7 +18,7 @@ public class LevelLoadStatusManager {
    }
 
    public void tick() {
-      switch(this.status) {
+      switch (this.status) {
          case WAITING_FOR_PLAYER_CHUNK:
             BlockPos var1 = this.player.blockPosition();
             boolean var2 = this.level.isOutsideBuildHeight(var1.getY());

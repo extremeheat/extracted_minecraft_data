@@ -2,8 +2,8 @@ package net.minecraft.world.level.storage.loot.predicates;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,10 +12,8 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record LootItemRandomChanceWithLootingCondition(float b, float c) implements LootItemCondition {
-   private final float percent;
-   private final float lootingMultiplier;
-   public static final Codec<LootItemRandomChanceWithLootingCondition> CODEC = RecordCodecBuilder.create(
+public record LootItemRandomChanceWithLootingCondition(float percent, float lootingMultiplier) implements LootItemCondition {
+   public static final MapCodec<LootItemRandomChanceWithLootingCondition> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Codec.FLOAT.fieldOf("chance").forGetter(LootItemRandomChanceWithLootingCondition::percent),
                Codec.FLOAT.fieldOf("looting_multiplier").forGetter(LootItemRandomChanceWithLootingCondition::lootingMultiplier)
@@ -23,10 +21,10 @@ public record LootItemRandomChanceWithLootingCondition(float b, float c) impleme
             .apply(var0, LootItemRandomChanceWithLootingCondition::new)
    );
 
-   public LootItemRandomChanceWithLootingCondition(float var1, float var2) {
+   public LootItemRandomChanceWithLootingCondition(float percent, float lootingMultiplier) {
       super();
-      this.percent = var1;
-      this.lootingMultiplier = var2;
+      this.percent = percent;
+      this.lootingMultiplier = lootingMultiplier;
    }
 
    @Override

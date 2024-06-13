@@ -20,14 +20,14 @@ public class EffectProgram extends Program {
 
    public void attachToEffect(Effect var1) {
       RenderSystem.assertOnRenderThread();
-      ++this.references;
+      this.references++;
       this.attachToShader(var1);
    }
 
    @Override
    public void close() {
       RenderSystem.assertOnRenderThread();
-      --this.references;
+      this.references--;
       if (this.references <= 0) {
          super.close();
       }

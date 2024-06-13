@@ -5,20 +5,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.stats.Stats;
 import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.level.GameRules;
@@ -50,10 +46,10 @@ public class Raids extends SavedData {
    }
 
    public void tick() {
-      ++this.tick;
+      this.tick++;
       Iterator var1 = this.raidMap.values().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          Raid var2 = (Raid)var1.next();
          if (this.level.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
             var2.stop();
@@ -75,65 +71,47 @@ public class Raids extends SavedData {
    }
 
    public static boolean canJoinRaid(Raider var0, Raid var1) {
-      if (var0 != null && var1 != null && var1.getLevel() != null) {
-         return var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400 && var0.level().dimensionType() == var1.getLevel().dimensionType();
-      } else {
-         return false;
-      }
+      return var0 != null && var1 != null && var1.getLevel() != null
+         ? var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400 && var0.level().dimensionType() == var1.getLevel().dimensionType()
+         : false;
    }
 
    @Nullable
-   public Raid createOrExtendRaid(ServerPlayer var1) {
+   public Raid createOrExtendRaid(ServerPlayer var1, BlockPos var2) {
       if (var1.isSpectator()) {
          return null;
       } else if (this.level.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
          return null;
       } else {
-         DimensionType var2 = var1.level().dimensionType();
-         if (!var2.hasRaids()) {
+         DimensionType var3 = var1.level().dimensionType();
+         if (!var3.hasRaids()) {
             return null;
          } else {
-            BlockPos var3 = var1.blockPosition();
-            List var5 = this.level.getPoiManager().getInRange(var0 -> var0.is(PoiTypeTags.VILLAGE), var3, 64, PoiManager.Occupancy.IS_OCCUPIED).toList();
-            int var6 = 0;
-            Vec3 var7 = Vec3.ZERO;
+            List var4 = this.level.getPoiManager().getInRange(var0 -> var0.is(PoiTypeTags.VILLAGE), var2, 64, PoiManager.Occupancy.IS_OCCUPIED).toList();
+            int var5 = 0;
+            Vec3 var6 = Vec3.ZERO;
 
-            for(PoiRecord var9 : var5) {
-               BlockPos var10 = var9.getPos();
-               var7 = var7.add((double)var10.getX(), (double)var10.getY(), (double)var10.getZ());
-               ++var6;
+            for (PoiRecord var8 : var4) {
+               BlockPos var9 = var8.getPos();
+               var6 = var6.add((double)var9.getX(), (double)var9.getY(), (double)var9.getZ());
+               var5++;
             }
 
-            BlockPos var4;
-            if (var6 > 0) {
-               var7 = var7.scale(1.0 / (double)var6);
-               var4 = BlockPos.containing(var7);
+            BlockPos var11;
+            if (var5 > 0) {
+               var6 = var6.scale(1.0 / (double)var5);
+               var11 = BlockPos.containing(var6);
             } else {
-               var4 = var3;
+               var11 = var2;
             }
 
-            Raid var12 = this.getOrCreateRaid(var1.serverLevel(), var4);
-            boolean var13 = false;
-            if (!var12.isStarted()) {
-               if (!this.raidMap.containsKey(var12.getId())) {
-                  this.raidMap.put(var12.getId(), var12);
-               }
-
-               var13 = true;
-            } else if (var12.getBadOmenLevel() < var12.getMaxBadOmenLevel()) {
-               var13 = true;
-            } else {
-               var1.removeEffect(MobEffects.BAD_OMEN);
-               var1.connection.send(new ClientboundEntityEventPacket(var1, (byte)43));
+            Raid var12 = this.getOrCreateRaid(var1.serverLevel(), var11);
+            if (!var12.isStarted() && !this.raidMap.containsKey(var12.getId())) {
+               this.raidMap.put(var12.getId(), var12);
             }
 
-            if (var13) {
-               var12.absorbBadOmen(var1);
-               var1.connection.send(new ClientboundEntityEventPacket(var1, (byte)43));
-               if (!var12.hasFirstWaveSpawned()) {
-                  var1.awardStat(Stats.RAID_TRIGGER);
-                  CriteriaTriggers.BAD_OMEN.trigger(var1);
-               }
+            if (!var12.isStarted() || var12.getRaidOmenLevel() < var12.getMaxRaidOmenLevel()) {
+               var12.absorbRaidOmen(var1);
             }
 
             this.setDirty();
@@ -153,7 +131,7 @@ public class Raids extends SavedData {
       var2.tick = var1.getInt("Tick");
       ListTag var3 = var1.getList("Raids", 10);
 
-      for(int var4 = 0; var4 < var3.size(); ++var4) {
+      for (int var4 = 0; var4 < var3.size(); var4++) {
          CompoundTag var5 = var3.getCompound(var4);
          Raid var6 = new Raid(var0, var5);
          var2.raidMap.put(var6.getId(), var6);
@@ -168,7 +146,7 @@ public class Raids extends SavedData {
       var1.putInt("Tick", this.tick);
       ListTag var3 = new ListTag();
 
-      for(Raid var5 : this.raidMap.values()) {
+      for (Raid var5 : this.raidMap.values()) {
          CompoundTag var6 = new CompoundTag();
          var5.save(var6);
          var3.add(var6);
@@ -191,7 +169,7 @@ public class Raids extends SavedData {
       Raid var3 = null;
       double var4 = (double)var2;
 
-      for(Raid var7 : this.raidMap.values()) {
+      for (Raid var7 : this.raidMap.values()) {
          double var8 = var7.getCenter().distSqr(var1);
          if (var7.isActive() && var8 < var4) {
             var3 = var7;

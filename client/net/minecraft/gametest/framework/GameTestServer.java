@@ -10,7 +10,6 @@ import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
@@ -42,7 +41,6 @@ import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
@@ -54,7 +52,7 @@ public class GameTestServer extends MinecraftServer {
    private static final int TEST_POSITION_RANGE = 14999992;
    private static final Services NO_SERVICES = new Services(null, ServicesKeySet.EMPTY, null, null);
    private final LocalSampleLogger sampleLogger = new LocalSampleLogger(4);
-   private List<GameTestBatch> testBatches = new ArrayList();
+   private List<GameTestBatch> testBatches = new ArrayList<>();
    private final List<TestFunction> testFunctions;
    private final BlockPos spawnPos;
    private final Stopwatch stopwatch = Stopwatch.createUnstarted();
@@ -87,15 +85,15 @@ public class GameTestServer extends MinecraftServer {
                   var2x -> WorldLoader.load(
                         var8,
                         var1xx -> {
-                           Registry var2xxx = new MappedRegistry(Registries.LEVEL_STEM, Lifecycle.stable()).freeze();
-                           WorldDimensions.Complete var3xx = var1xx.datapackWorldgen()
-                              .<WorldPreset>registryOrThrow(Registries.WORLD_PRESET)
+                           Registry var2xx = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.stable()).freeze();
+                           WorldDimensions.Complete var3x = var1xx.datapackWorldgen()
+                              .registryOrThrow(Registries.WORLD_PRESET)
                               .getHolderOrThrow(WorldPresets.FLAT)
                               .value()
                               .createWorldDimensions()
-                              .bake(var2xxx);
+                              .bake(var2xx);
                            return new WorldLoader.DataLoadOutput<>(
-                              new PrimaryLevelData(var6, WORLD_OPTIONS, var3xx.specialWorldProperty(), var3xx.lifecycle()), var3xx.dimensionsRegistryAccess()
+                              new PrimaryLevelData(var6, WORLD_OPTIONS, var3x.specialWorldProperty(), var3x.lifecycle()), var3x.dimensionsRegistryAccess()
                            );
                         },
                         WorldStem::new,

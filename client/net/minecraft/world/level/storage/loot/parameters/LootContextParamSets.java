@@ -12,8 +12,8 @@ public class LootContextParamSets {
    private static final BiMap<ResourceLocation, LootContextParamSet> REGISTRY = HashBiMap.create();
    public static final Codec<LootContextParamSet> CODEC = ResourceLocation.CODEC
       .comapFlatMap(
-         var0 -> (DataResult)Optional.ofNullable((LootContextParamSet)REGISTRY.get(var0))
-               .map(DataResult::success)
+         var0 -> Optional.ofNullable((LootContextParamSet)REGISTRY.get(var0))
+               .<DataResult>map(DataResult::success)
                .orElseGet(() -> DataResult.error(() -> "No parameter set exists with id: '" + var0 + "'")),
          REGISTRY.inverse()::get
       );
@@ -37,6 +37,9 @@ public class LootContextParamSets {
             .optional(LootContextParams.KILLER_ENTITY)
             .optional(LootContextParams.DIRECT_KILLER_ENTITY)
             .optional(LootContextParams.LAST_DAMAGE_PLAYER)
+   );
+   public static final LootContextParamSet EQUIPMENT = register(
+      "equipment", var0 -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY)
    );
    public static final LootContextParamSet ARCHAEOLOGY = register(
       "archaeology", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)

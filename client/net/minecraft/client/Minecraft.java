@@ -54,11 +54,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -105,7 +105,6 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
@@ -179,7 +178,6 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.KeybindResolver;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
@@ -207,7 +205,6 @@ import net.minecraft.util.FileZipper;
 import net.minecraft.util.MemoryReserve;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.Unit;
@@ -237,7 +234,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -300,7 +296,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final String versionType;
    private final Proxy proxy;
    private final LevelStorageSource levelSource;
-   private final boolean is64bit;
    private final boolean demo;
    private final boolean allowsMultiplayer;
    private final boolean allowsChat;
@@ -349,7 +344,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    @Nullable
    private Connection pendingConnection;
    private boolean isLocalServer;
-   private final RandomSource randomSource = RandomSource.create();
    @Nullable
    public Entity cameraEntity;
    @Nullable
@@ -397,7 +391,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private double gpuUtilization;
    @Nullable
    private TimerQuery.FrameProfile currentFrameProfile;
-   private final Realms32BitWarningStatus realms32BitWarningStatus;
    private final GameNarrator narrator;
    private final ChatListener chatListener;
    private ReportingContext reportingContext;
@@ -437,8 +430,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.userPropertiesFuture = CompletableFuture.supplyAsync(() -> {
          try {
             return this.userApiService.fetchProperties();
-         } catch (AuthenticationException var2xx) {
-            LOGGER.error("Failed to fetch user properties", var2xx);
+         } catch (AuthenticationException var2x) {
+            LOGGER.error("Failed to fetch user properties", var2x);
             return UserApiService.OFFLINE_PROPERTIES;
          }
       }, Util.nonCriticalIoPool());
@@ -447,7 +440,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.demo = var1.game.demo;
       this.allowsMultiplayer = !var1.game.disableMultiplayer;
       this.allowsChat = !var1.game.disableChat;
-      this.is64bit = checkIs64Bit();
       this.singleplayerServer = null;
       KeybindResolver.setKeyResolver(KeyMapping::createNameSupplier);
       this.fixerUpper = DataFixers.getDataFixer();
@@ -531,9 +523,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       try {
          int var8 = Runtime.getRuntime().availableProcessors();
-         int var9 = this.is64Bit() ? var8 : Math.min(var8, 4);
          Tesselator.init();
-         this.renderBuffers = new RenderBuffers(var9);
+         this.renderBuffers = new RenderBuffers(var8);
       } catch (OutOfMemoryError var12) {
          TinyFileDialogs.tinyfd_messageBox(
             "Minecraft",
@@ -577,7 +568,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.realmsDataFetcher = new RealmsDataFetcher(var14);
       RenderSystem.setErrorCallback(this::onFullscreenError);
       if (this.mainRenderTarget.width != this.window.getWidth() || this.mainRenderTarget.height != this.window.getHeight()) {
-         StringBuilder var15 = new StringBuilder(
+         StringBuilder var9 = new StringBuilder(
             "Recovering from unsupported resolution ("
                + this.window.getWidth()
                + "x"
@@ -585,11 +576,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions)."
          );
          if (GlDebug.isDebugEnabled()) {
-            var15.append("\n\nReported GL debug messages:\n").append(String.join("\n", GlDebug.getLastOpenGlDebugMessages()));
+            var9.append("\n\nReported GL debug messages:\n").append(String.join("\n", GlDebug.getLastOpenGlDebugMessages()));
          }
 
          this.window.setWindowed(this.mainRenderTarget.width, this.mainRenderTarget.height);
-         TinyFileDialogs.tinyfd_messageBox("Minecraft", var15.toString(), "ok", "error", false);
+         TinyFileDialogs.tinyfd_messageBox("Minecraft", var9.toString(), "ok", "error", false);
       } else if (this.options.fullscreen().get() && !this.window.isFullscreen()) {
          this.window.toggleFullScreen();
          this.options.fullscreen().set(this.window.isFullscreen());
@@ -602,7 +593,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.gameRenderer.preloadUiShader(this.vanillaPackResources.asProvider());
       this.telemetryManager = new ClientTelemetryManager(this, this.userApiService, this.user);
       this.profileKeyPairManager = ProfileKeyPairManager.create(this.userApiService, this.user, var3);
-      this.realms32BitWarningStatus = new Realms32BitWarningStatus(this);
       this.narrator = new GameNarrator(this);
       this.narrator.checkStatus(this.options.narrator().get() != NarratorStatus.OFF);
       this.chatListener = new ChatListener(this);
@@ -610,9 +600,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.reportingContext = ReportingContext.create(ReportEnvironment.local(), this.userApiService);
       LoadingOverlay.registerTextures(this);
       this.setScreen(new GenericMessageScreen(Component.translatable("gui.loadingMinecraft")));
-      List var16 = this.resourcePackRepository.openAllSelected();
-      this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var16);
-      ReloadInstance var10 = this.resourceManager.createReload(Util.backgroundExecutor(), this, RESOURCE_RELOAD_INITIAL_TASK, var16);
+      List var15 = this.resourcePackRepository.openAllSelected();
+      this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var15);
+      ReloadInstance var10 = this.resourceManager.createReload(Util.backgroundExecutor(), this, RESOURCE_RELOAD_INITIAL_TASK, var15);
       GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_LOADING_OVERLAY_MS);
       Minecraft.GameLoadCookie var11 = new Minecraft.GameLoadCookie(var14, var1.quickPlay);
       this.setOverlay(new LoadingOverlay(this, var10, var2x -> Util.ifElse(var2x, var2xx -> this.rollbackResourcePacks(var2xx, var11), () -> {
@@ -656,7 +646,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       };
 
-      for(Function var5 : Lists.reverse(var2)) {
+      for (Function var5 : Lists.reverse(var2)) {
          Screen var6 = (Screen)var5.apply(var3);
          var3 = () -> this.setScreen(var6);
       }
@@ -680,7 +670,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }, var2));
       }
 
-      ProfileResult var3 = (ProfileResult)this.profileFuture.join();
+      ProfileResult var3 = this.profileFuture.join();
       if (var3 != null) {
          GameProfile var4 = var3.profile();
          Set var5 = var3.actions();
@@ -733,7 +723,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private UserApiService createUserApiService(YggdrasilAuthenticationService var1, GameConfig var2) {
-      return var1.createUserApiService(var2.user.user.getAccessToken());
+      return var2.user.user.getType() != User.Type.MSA ? UserApiService.OFFLINE : var1.createUserApiService(var2.user.user.getAccessToken());
    }
 
    public static ModCheck checkModStatus() {
@@ -784,7 +774,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       try {
          boolean var1 = false;
 
-         while(this.running) {
+         while (this.running) {
             this.handleDelayedCrash();
 
             try {
@@ -827,7 +817,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          .register(
             SearchRegistry.CREATIVE_NAMES,
             var0 -> new FullTextSearchTree<>(
-                  var0x -> var0x.getTooltipLines(null, TooltipFlag.Default.NORMAL.asCreative())
+                  var0x -> var0x.getTooltipLines(Item.TooltipContext.EMPTY, null, TooltipFlag.Default.NORMAL.asCreative())
                         .stream()
                         .map(var0xx -> ChatFormatting.stripFormatting(var0xx.getString()).trim())
                         .filter(var0xx -> !var0xx.isEmpty()),
@@ -840,11 +830,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          .register(
             SearchRegistry.RECIPE_COLLECTIONS,
             var0 -> new FullTextSearchTree<>(
-                  var0x -> var0x.getRecipes()
+                  var0x -> {
+                     Item.TooltipContext var1 = Item.TooltipContext.of(var0x.registryAccess());
+                     return var0x.getRecipes()
                         .stream()
-                        .flatMap(var1 -> var1.value().getResultItem(var0x.registryAccess()).getTooltipLines(null, TooltipFlag.Default.NORMAL).stream())
+                        .flatMap(var2 -> var2.value().getResultItem(var0x.registryAccess()).getTooltipLines(var1, null, TooltipFlag.Default.NORMAL).stream())
                         .map(var0xx -> ChatFormatting.stripFormatting(var0xx.getString()).trim())
-                        .filter(var0xx -> !var0xx.isEmpty()),
+                        .filter(var0xx -> !var0xx.isEmpty());
+                  },
                   var0x -> var0x.getRecipes().stream().map(var1 -> BuiltInRegistries.ITEM.getKey(var1.value().getResultItem(var0x.registryAccess()).getItem())),
                   var0
                )
@@ -858,19 +851,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private void onFullscreenError(int var1, long var2) {
       this.options.enableVsync().set(false);
       this.options.save();
-   }
-
-   private static boolean checkIs64Bit() {
-      String[] var0 = new String[]{"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"};
-
-      for(String var4 : var0) {
-         String var5 = System.getProperty(var4);
-         if (var5 != null && var5.contains("64")) {
-            return true;
-         }
-      }
-
-      return false;
    }
 
    public RenderTarget getMainRenderTarget() {
@@ -979,10 +959,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       BlockModelShaper var2 = this.getBlockRenderer().getBlockModelShaper();
       BakedModel var3 = var2.getModelManager().getMissingModel();
 
-      for(Block var5 : BuiltInRegistries.BLOCK) {
+      for (Block var5 : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var6 = var5.getStateDefinition().getPossibleStates().iterator();
 
-         while(var6.hasNext()) {
+         while (var6.hasNext()) {
             BlockState var7 = (BlockState)var6.next();
             if (var7.getRenderShape() == RenderShape.MODEL) {
                BakedModel var8 = var2.getBlockModel(var7);
@@ -996,10 +976,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       TextureAtlasSprite var12 = var3.getParticleIcon();
 
-      for(Block var15 : BuiltInRegistries.BLOCK) {
+      for (Block var15 : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var17 = var15.getStateDefinition().getPossibleStates().iterator();
 
-         while(var17.hasNext()) {
+         while (var17.hasNext()) {
             BlockState var19 = (BlockState)var17.next();
             TextureAtlasSprite var9 = var2.getParticleIcon(var19);
             if (!var19.isAir() && var9 == var12) {
@@ -1008,7 +988,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
-      for(Item var16 : BuiltInRegistries.ITEM) {
+      for (Item var16 : BuiltInRegistries.ITEM) {
          ItemStack var18 = var16.getDefaultInstance();
          String var20 = var18.getDescriptionId();
          String var21 = Component.translatable(var20).getString();
@@ -1176,7 +1156,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       Runnable var15;
-      while((var15 = this.progressTasks.poll()) != null) {
+      while ((var15 = this.progressTasks.poll()) != null) {
          var15.run();
       }
 
@@ -1187,7 +1167,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.profiler.pop();
          this.profiler.push("tick");
 
-         for(int var6 = 0; var6 < Math.min(10, var5); ++var6) {
+         for (int var6 = 0; var6 < Math.min(10, var5); var6++) {
             this.profiler.incrementCounter("clientTick");
             this.tick();
          }
@@ -1253,7 +1233,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       Thread.yield();
       this.profiler.pop();
       this.window.setErrorSection("Post render");
-      ++this.frames;
+      this.frames++;
       boolean var9 = this.hasSingleplayerServer()
          && (this.screen != null && this.screen.isPauseScreen() || this.overlay != null && this.overlay.isPauseScreen())
          && !this.singleplayerServer.isPublished();
@@ -1280,7 +1260,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.gpuUtilization = (double)this.currentFrameProfile.get() * 100.0 / (double)this.savedCpuDuration;
       }
 
-      while(Util.getMillis() >= this.lastTime + 1000L) {
+      while (Util.getMillis() >= this.lastTime + 1000L) {
          String var14;
          if (this.gpuUtilization > 0.0) {
             var14 = " GPU: " + (this.gpuUtilization > 100.0 ? ChatFormatting.RED + "100%" : Math.round(this.gpuUtilization) + "%");
@@ -1324,7 +1304,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.fpsPieProfiler.enable();
          }
 
-         ++this.fpsPieRenderTicks;
+         this.fpsPieRenderTicks++;
          var3 = this.fpsPieProfiler.getFiller();
       } else {
          var3 = InactiveProfiler.INSTANCE;
@@ -1409,8 +1389,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       } else {
          Consumer var2 = var2x -> {
             if (var2x != EmptyProfileResults.EMPTY) {
-               int var3xx = var2x.getTickDuration();
-               double var4xx = (double)var2x.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
+               int var3x = var2x.getTickDuration();
+               double var4x = (double)var2x.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
                this.execute(
                   () -> var1.accept(
                         Component.translatable(
@@ -1424,15 +1404,15 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }
          };
          Consumer var3 = var2x -> {
-            MutableComponent var3xx = Component.literal(var2x.toString())
+            MutableComponent var3x = Component.literal(var2x.toString())
                .withStyle(ChatFormatting.UNDERLINE)
                .withStyle(var1xx -> var1xx.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var2x.toFile().getParent())));
             this.execute(() -> var1.accept(Component.translatable("debug.profiling.stop", var3x)));
          };
          SystemReport var4 = fillSystemReport(new SystemReport(), this, this.languageManager, this.launchedVersion, this.options);
          Consumer var5 = var3x -> {
-            Path var4xx = this.archiveProfilingReport(var4, var3x);
-            var3.accept(var4xx);
+            Path var4x = this.archiveProfilingReport(var4, var3x);
+            var3.accept(var4x);
          };
          Consumer var6;
          if (this.singleplayerServer == null) {
@@ -1494,7 +1474,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var24.add(Paths.get("client").resolve(this.options.getFile().getName()), this.options.dumpOptionsForReport());
          var2.forEach(var24::add);
       } finally {
-         for(Path var10 : var2) {
+         for (Path var10 : var2) {
             try {
                FileUtils.forceDelete(var10.toFile());
             } catch (IOException var18) {
@@ -1519,7 +1499,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                   }
                }
             } else {
-               --var1;
+               var1--;
                if (var1 < var2.size() && !"unspecified".equals(((ResultField)var2.get(var1)).name)) {
                   if (!this.debugPath.isEmpty()) {
                      this.debugPath = this.debugPath + "\u001e";
@@ -1546,7 +1526,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       RenderSystem.lineWidth(1.0F);
       Tesselator var7 = Tesselator.getInstance();
       BufferBuilder var8 = var7.getBuilder();
-      boolean var9 = true;
+      short var9 = 160;
       int var10 = this.window.getWidth() - 160 - 10;
       int var11 = this.window.getHeight() - 320;
       RenderSystem.enableBlend();
@@ -1559,7 +1539,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       RenderSystem.disableBlend();
       double var12 = 0.0;
 
-      for(ResultField var15 : var3) {
+      for (ResultField var15 : var3) {
          int var16 = Mth.floor(var15.percentage / 4.0) + 1;
          var8.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
          int var17 = var15.getColor();
@@ -1568,7 +1548,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          int var20 = var17 & 0xFF;
          var8.vertex((double)var10, (double)var11, 0.0).color(var18, var19, var20, 255).endVertex();
 
-         for(int var21 = var16; var21 >= 0; --var21) {
+         for (int var21 = var16; var21 >= 0; var21--) {
             float var22 = (float)((var12 + var15.percentage * (double)var21 / (double)var16) * 6.2831854820251465 / 100.0);
             float var23 = Mth.sin(var22) * 160.0F;
             float var24 = Mth.cos(var22) * 160.0F * 0.5F;
@@ -1578,7 +1558,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var7.end();
          var8.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
 
-         for(int var37 = var16; var37 >= 0; --var37) {
+         for (int var37 = var16; var37 >= 0; var37--) {
             float var38 = (float)((var12 + var15.percentage * (double)var37 / (double)var16) * 6.2831854820251465 / 100.0);
             float var39 = Mth.sin(var38) * 160.0F;
             float var40 = Mth.cos(var38) * 160.0F * 0.5F;
@@ -1613,7 +1593,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var28 = var25.format(var4.globalPercentage) + "%";
       var1.drawString(this.font, var28, var10 + 160 - this.font.width(var28), var11 - 80 - 16, 16777215);
 
-      for(int var27 = 0; var27 < var3.size(); ++var27) {
+      for (int var27 = 0; var27 < var3.size(); var27++) {
          ResultField var31 = (ResultField)var3.get(var27);
          StringBuilder var33 = new StringBuilder();
          if ("unspecified".equals(var31.name)) {
@@ -1694,7 +1674,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             return false;
          } else {
             boolean var2 = false;
-            switch(this.hitResult.getType()) {
+            switch (this.hitResult.getType()) {
                case ENTITY:
                   this.gameMode.attack(this.player, ((EntityHitResult)this.hitResult).getEntity());
                   break;
@@ -1730,14 +1710,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                LOGGER.warn("Null returned as 'hitResult', this shouldn't happen!");
             }
 
-            for(InteractionHand var4 : InteractionHand.values()) {
+            for (InteractionHand var4 : InteractionHand.values()) {
                ItemStack var5 = this.player.getItemInHand(var4);
                if (!var5.isItemEnabled(this.level.enabledFeatures())) {
                   return;
                }
 
                if (this.hitResult != null) {
-                  switch(this.hitResult.getType()) {
+                  switch (this.hitResult.getType()) {
                      case ENTITY:
                         EntityHitResult var6 = (EntityHitResult)this.hitResult;
                         Entity var7 = var6.getEntity();
@@ -1799,16 +1779,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.musicManager;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void tick() {
-      ++this.clientTickCount;
+      this.clientTickCount++;
       if (this.level != null && !this.pause) {
          this.level.tickRateManager().tick();
       }
 
       if (this.rightClickDelay > 0) {
-         --this.rightClickDelay;
+         this.rightClickDelay--;
       }
 
       this.profiler.push("gui");
@@ -1829,8 +1807,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       if (this.screen != null || this.player == null) {
-         Screen var3 = this.screen;
-         if (var3 instanceof InBedChatScreen var2 && !this.player.isSleeping()) {
+         if (this.screen instanceof InBedChatScreen var2 && !this.player.isSleeping()) {
             var2.onPlayerWokeUp();
          }
       } else if (this.player.isDeadOrDying() && !(this.screen instanceof DeathScreen)) {
@@ -1855,7 +1832,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.profiler.popPush("Keybindings");
          this.handleKeybinds();
          if (this.missTime > 0) {
-            --this.missTime;
+            this.missTime--;
          }
       }
 
@@ -1935,19 +1912,21 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private void handleKeybinds() {
-      for(; this.options.keyTogglePerspective.consumeClick(); this.levelRenderer.needsUpdate()) {
+      while (this.options.keyTogglePerspective.consumeClick()) {
          CameraType var1 = this.options.getCameraType();
          this.options.setCameraType(this.options.getCameraType().cycle());
          if (var1.isFirstPerson() != this.options.getCameraType().isFirstPerson()) {
             this.gameRenderer.checkEntityPostEffect(this.options.getCameraType().isFirstPerson() ? this.getCameraEntity() : null);
          }
+
+         this.levelRenderer.needsUpdate();
       }
 
-      while(this.options.keySmoothCamera.consumeClick()) {
+      while (this.options.keySmoothCamera.consumeClick()) {
          this.options.smoothCamera = !this.options.smoothCamera;
       }
 
-      for(int var4 = 0; var4 < 9; ++var4) {
+      for (int var4 = 0; var4 < 9; var4++) {
          boolean var2 = this.options.keySaveHotbarActivator.isDown();
          boolean var3 = this.options.keyLoadHotbarActivator.isDown();
          if (this.options.keyHotbarSlots[var4].consumeClick()) {
@@ -1961,7 +1940,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
-      while(this.options.keySocialInteractions.consumeClick()) {
+      while (this.options.keySocialInteractions.consumeClick()) {
          if (!this.isMultiplayerServer()) {
             this.player.displayClientMessage(SOCIAL_INTERACTIONS_NOT_AVAILABLE, true);
             this.narrator.sayNow(SOCIAL_INTERACTIONS_NOT_AVAILABLE);
@@ -1975,7 +1954,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
-      while(this.options.keyInventory.consumeClick()) {
+      while (this.options.keyInventory.consumeClick()) {
          if (this.gameMode.isServerControlledInventory()) {
             this.player.sendOpenInventory();
          } else {
@@ -1984,24 +1963,24 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
-      while(this.options.keyAdvancements.consumeClick()) {
+      while (this.options.keyAdvancements.consumeClick()) {
          this.setScreen(new AdvancementsScreen(this.player.connection.getAdvancements()));
       }
 
-      while(this.options.keySwapOffhand.consumeClick()) {
+      while (this.options.keySwapOffhand.consumeClick()) {
          if (!this.player.isSpectator()) {
             this.getConnection()
                .send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ZERO, Direction.DOWN));
          }
       }
 
-      while(this.options.keyDrop.consumeClick()) {
+      while (this.options.keyDrop.consumeClick()) {
          if (!this.player.isSpectator() && this.player.drop(Screen.hasControlDown())) {
             this.player.swing(InteractionHand.MAIN_HAND);
          }
       }
 
-      while(this.options.keyChat.consumeClick()) {
+      while (this.options.keyChat.consumeClick()) {
          this.openChatScreen("");
       }
 
@@ -2009,37 +1988,30 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.openChatScreen("/");
       }
 
-      while(this.options.keyPotato.consumeClick()) {
-         Minecraft.ChatStatus var5 = this.getChatStatus();
-         if (var5.isChatAllowed(this.isLocalServer())) {
-            this.player.connection.sendChat("\ud83e\udd54".repeat(this.randomSource.nextIntBetweenInclusive(1, 6)));
-         }
-      }
-
-      boolean var6 = false;
+      boolean var5 = false;
       if (this.player.isUsingItem()) {
          if (!this.options.keyUse.isDown()) {
             this.gameMode.releaseUsingItem(this.player);
          }
 
-         while(this.options.keyAttack.consumeClick()) {
+         while (this.options.keyAttack.consumeClick()) {
          }
 
-         while(this.options.keyUse.consumeClick()) {
+         while (this.options.keyUse.consumeClick()) {
          }
 
-         while(this.options.keyPickItem.consumeClick()) {
+         while (this.options.keyPickItem.consumeClick()) {
          }
       } else {
-         while(this.options.keyAttack.consumeClick()) {
-            var6 |= this.startAttack();
+         while (this.options.keyAttack.consumeClick()) {
+            var5 |= this.startAttack();
          }
 
-         while(this.options.keyUse.consumeClick()) {
+         while (this.options.keyUse.consumeClick()) {
             this.startUseItem();
          }
 
-         while(this.options.keyPickItem.consumeClick()) {
+         while (this.options.keyPickItem.consumeClick()) {
             this.pickBlock();
          }
       }
@@ -2048,7 +2020,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.startUseItem();
       }
 
-      this.continueAttack(this.screen == null && !var6 && this.options.keyAttack.isDown() && this.mouseHandler.isMouseGrabbed());
+      this.continueAttack(this.screen == null && !var5 && this.options.keyAttack.isDown() && this.mouseHandler.isMouseGrabbed());
    }
 
    public ClientTelemetryManager getTelemetryManager() {
@@ -2079,9 +2051,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          SkullBlockEntity.setup(var6, this);
          GameProfileCache.setUsesAuthentication(false);
          this.singleplayerServer = MinecraftServer.spin(var5x -> new IntegratedServer(var5x, this, var1, var2, var3, var6, var1xx -> {
-               StoringChunkProgressListener var2xxx = StoringChunkProgressListener.createFromGameruleRadius(var1xx + 0);
-               this.progressListener.set(var2xxx);
-               return ProcessorChunkProgressListener.createStarted(var2xxx, this.progressTasks::add);
+               StoringChunkProgressListener var2xx = StoringChunkProgressListener.createFromGameruleRadius(var1xx + 0);
+               this.progressListener.set(var2xx);
+               return ProcessorChunkProgressListener.createStarted(var2xx, this.progressTasks::add);
             }));
          this.isLocalServer = true;
          this.updateReportEnvironment(ReportEnvironment.local());
@@ -2094,7 +2066,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          throw new ReportedException(var7);
       }
 
-      while(this.progressListener.get() == null) {
+      while (this.progressListener.get() == null) {
          Thread.yield();
       }
 
@@ -2102,7 +2074,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.setScreen(var12);
       this.profiler.push("waitForServer");
 
-      for(; !this.singleplayerServer.isReady() || this.overlay != null; this.handleDelayedCrash()) {
+      for (; !this.singleplayerServer.isReady() || this.overlay != null; this.handleDelayedCrash()) {
          var12.tick();
          this.runTick(false);
 
@@ -2172,7 +2144,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             if (var4 != null) {
                this.profiler.push("waitForServer");
 
-               while(!var4.isShutdown()) {
+               while (!var4.isShutdown()) {
                   this.runTick(false);
                }
 
@@ -2251,7 +2223,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private UserProperties userProperties() {
-      return (UserProperties)this.userPropertiesFuture.join();
+      return this.userPropertiesFuture.join();
    }
 
    public boolean telemetryOptInExtra() {
@@ -2280,16 +2252,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public boolean isNameBanned() {
-      ProfileResult var1 = (ProfileResult)this.profileFuture.getNow(null);
+      ProfileResult var1 = this.profileFuture.getNow(null);
       return var1 != null && var1.actions().contains(ProfileActionType.FORCED_NAME_CHANGE);
    }
 
    public boolean isBlocked(UUID var1) {
-      if (this.getChatStatus().isChatAllowed(false)) {
-         return this.playerSocialManager.shouldHideMessageFrom(var1);
-      } else {
-         return (this.player == null || !var1.equals(this.player.getUUID())) && !var1.equals(Util.NIL_UUID);
-      }
+      return this.getChatStatus().isChatAllowed(false)
+         ? this.playerSocialManager.shouldHideMessageFrom(var1)
+         : (this.player == null || !var1.equals(this.player.getUUID())) && !var1.equals(Util.NIL_UUID);
    }
 
    public Minecraft.ChatStatus getChatStatus() {
@@ -2392,7 +2362,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private void addCustomNbtData(ItemStack var1, BlockEntity var2, RegistryAccess var3) {
-      CompoundTag var4 = var2.saveWithFullMetadata(var3);
+      CompoundTag var4 = var2.saveCustomAndMetadata(var3);
       var2.removeComponentsFromTag(var4);
       BlockItem.setBlockEntityData(var1, var2.getType(), var4);
       var1.applyComponents(var2.collectComponents());
@@ -2460,20 +2430,20 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var0.setDetail("Graphics mode", var4.graphicsMode().get().toString());
          var0.setDetail("Render Distance", var4.getEffectiveRenderDistance() + "/" + var4.renderDistance().get() + " chunks");
          var0.setDetail("Resource Packs", () -> {
-            StringBuilder var1xx = new StringBuilder();
+            StringBuilder var1x = new StringBuilder();
 
-            for(String var3xx : var4.resourcePacks) {
-               if (var1xx.length() > 0) {
-                  var1xx.append(", ");
+            for (String var3x : var4.resourcePacks) {
+               if (var1x.length() > 0) {
+                  var1x.append(", ");
                }
 
-               var1xx.append(var3xx);
-               if (var4.incompatibleResourcePacks.contains(var3xx)) {
-                  var1xx.append(" (incompatible)");
+               var1x.append(var3x);
+               if (var4.incompatibleResourcePacks.contains(var3x)) {
+                  var1x.append(" (incompatible)");
                }
             }
 
-            return var1xx.toString();
+            return var1x.toString();
          });
       }
 
@@ -2491,7 +2461,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public CompletableFuture<Void> delayTextureReload() {
-      return this.<CompletableFuture<Void>>submit(this::reloadResourcePacks).thenCompose(var0 -> var0);
+      return this.<CompletableFuture<Void>>submit(this::reloadResourcePacks).thenCompose(var0 -> (CompletionStage<Void>)var0);
    }
 
    public void updateReportEnvironment(ReportEnvironment var1) {
@@ -2532,7 +2502,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public GameProfile getGameProfile() {
-      ProfileResult var1 = (ProfileResult)this.profileFuture.join();
+      ProfileResult var1 = this.profileFuture.join();
       return var1 != null ? var1.profile() : new GameProfile(this.user.getProfileId(), this.user.getName());
    }
 
@@ -2570,10 +2540,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public Function<ResourceLocation, TextureAtlasSprite> getTextureAtlas(ResourceLocation var1) {
       return this.modelManager.getAtlas(var1)::getSprite;
-   }
-
-   public boolean is64Bit() {
-      return this.is64bit;
    }
 
    public boolean isPaused() {
@@ -2750,8 +2716,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.window.setWidth(var2);
          this.window.setHeight(var3);
 
-         for(int var11 = 0; var11 < 6; ++var11) {
-            switch(var11) {
+         for (int var11 = 0; var11 < 6; var11++) {
+            switch (var11) {
                case 0:
                   this.player.setYRot(var8);
                   this.player.setXRot(0.0F);
@@ -2824,8 +2790,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          float var9 = (float)var5 / (float)var3;
          float var10 = var8 > var9 ? var8 : var9;
 
-         for(int var11 = (var5 - 1) / var3 * var3; var11 >= 0; var11 -= var3) {
-            for(int var12 = 0; var12 < var4; var12 += var2) {
+         for (int var11 = (var5 - 1) / var3 * var3; var11 >= 0; var11 -= var3) {
+            for (int var12 = 0; var12 < var4; var12 += var2) {
                RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
                float var13 = (float)(var4 - var2) / 2.0F * 2.0F - (float)(var12 * 2);
                float var14 = (float)(var5 - var3) / 2.0F * 2.0F - (float)(var11 * 2);
@@ -2907,10 +2873,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public void prepareForMultiplayer() {
       this.playerSocialManager.startOnlineMode();
       this.getProfileKeyPairManager().prepareKeyPair();
-   }
-
-   public Realms32BitWarningStatus getRealms32BitWarningStatus() {
-      return this.realms32BitWarningStatus;
    }
 
    @Nullable
@@ -3016,14 +2978,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       public abstract boolean isChatAllowed(boolean var1);
    }
 
-   static record GameLoadCookie(RealmsClient a, GameConfig.QuickPlayData b) {
-      private final RealmsClient realmsClient;
-      private final GameConfig.QuickPlayData quickPlayData;
-
-      GameLoadCookie(RealmsClient var1, GameConfig.QuickPlayData var2) {
+   static record GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
+      GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
          super();
-         this.realmsClient = var1;
-         this.quickPlayData = var2;
+         this.realmsClient = realmsClient;
+         this.quickPlayData = quickPlayData;
       }
    }
 }

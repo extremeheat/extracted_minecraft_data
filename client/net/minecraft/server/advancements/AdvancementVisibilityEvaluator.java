@@ -29,7 +29,7 @@ public class AdvancementVisibilityEvaluator {
    }
 
    private static boolean evaluateVisiblityForUnfinishedNode(Stack<AdvancementVisibilityEvaluator.VisibilityRule> var0) {
-      for(int var1 = 0; var1 <= 2; ++var1) {
+      for (int var1 = 0; var1 <= 2; var1++) {
          AdvancementVisibilityEvaluator.VisibilityRule var2 = (AdvancementVisibilityEvaluator.VisibilityRule)var0.peek(var1);
          if (var2 == AdvancementVisibilityEvaluator.VisibilityRule.SHOW) {
             return true;
@@ -54,7 +54,7 @@ public class AdvancementVisibilityEvaluator {
       boolean var6 = var4;
       var1.push(var5);
 
-      for(AdvancementNode var8 : var0.children()) {
+      for (AdvancementNode var8 : var0.children()) {
          var6 |= evaluateVisibility(var8, var1, var2, var3);
       }
 
@@ -68,7 +68,7 @@ public class AdvancementVisibilityEvaluator {
       AdvancementNode var3 = var0.root();
       ObjectArrayList var4 = new ObjectArrayList();
 
-      for(int var5 = 0; var5 <= 2; ++var5) {
+      for (int var5 = 0; var5 <= 2; var5++) {
          var4.push(AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE);
       }
 

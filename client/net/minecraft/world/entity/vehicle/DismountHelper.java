@@ -43,7 +43,7 @@ public class DismountHelper {
    }
 
    public static boolean canDismountTo(CollisionGetter var0, LivingEntity var1, AABB var2) {
-      for(VoxelShape var5 : var0.getBlockCollisions(var1, var2)) {
+      for (VoxelShape var5 : var0.getBlockCollisions(var1, var2)) {
          if (!var5.isEmpty()) {
             return false;
          }
@@ -67,13 +67,13 @@ public class DismountHelper {
       BlockPos.MutableBlockPos var3 = var0.mutable();
       int var4 = 0;
 
-      while(var4 < var1) {
+      while (var4 < var1) {
          VoxelShape var5 = (VoxelShape)var2.apply(var3);
          if (!var5.isEmpty()) {
             return (double)(var0.getY() + var4) + var5.min(Direction.Axis.Y);
          }
 
-         ++var4;
+         var4++;
          var3.move(Direction.UP);
       }
 
@@ -94,7 +94,7 @@ public class DismountHelper {
             Vec3 var6 = Vec3.upFromBottomCenterOf(var2, var4);
             AABB var7 = var0.getDimensions().makeBoundingBox(var6);
 
-            for(VoxelShape var10 : var1.getBlockCollisions(null, var7)) {
+            for (VoxelShape var10 : var1.getBlockCollisions(null, var7)) {
                if (!var10.isEmpty()) {
                   return null;
                }

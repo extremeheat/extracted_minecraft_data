@@ -36,7 +36,7 @@ public class CompassItem extends Item {
       if (var2 instanceof ServerLevel var6) {
          LodestoneTracker var7 = var1.get(DataComponents.LODESTONE_TRACKER);
          if (var7 != null) {
-            LodestoneTracker var8 = var7.tick((ServerLevel)var6);
+            LodestoneTracker var8 = var7.tick(var6);
             if (var8 != var7) {
                var1.set(DataComponents.LODESTONE_TRACKER, var8);
             }

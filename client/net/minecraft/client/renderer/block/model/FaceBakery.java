@@ -107,7 +107,7 @@ public class FaceBakery {
    ) {
       int[] var8 = new int[32];
 
-      for(int var9 = 0; var9 < 4; ++var9) {
+      for (int var9 = 0; var9 < 4; var9++) {
          this.bakeVertex(var8, var9, var3, var1, var4, var2, var5, var6, var7);
       }
 
@@ -157,7 +157,7 @@ public class FaceBakery {
       if (var2 != null) {
          Vector3f var3;
          Vector3f var4;
-         switch(var2.axis()) {
+         switch (var2.axis()) {
             case X:
                var3 = new Vector3f(1.0F, 0.0F, 0.0F);
                var4 = new Vector3f(0.0F, 1.0F, 1.0F);
@@ -216,7 +216,7 @@ public class FaceBakery {
          Direction var7 = null;
          float var8 = 0.0F;
 
-         for(Direction var12 : Direction.values()) {
+         for (Direction var12 : Direction.values()) {
             Vec3i var13 = var12.getNormal();
             Vector3f var14 = new Vector3f((float)var13.getX(), (float)var13.getY(), (float)var13.getZ());
             float var15 = var6.dot(var14);
@@ -241,7 +241,7 @@ public class FaceBakery {
       var4[FaceInfo.Constants.MAX_Y] = -999.0F;
       var4[FaceInfo.Constants.MAX_Z] = -999.0F;
 
-      for(int var5 = 0; var5 < 4; ++var5) {
+      for (int var5 = 0; var5 < 4; var5++) {
          int var6 = 8 * var5;
          float var7 = Float.intBitsToFloat(var3[var6]);
          float var8 = Float.intBitsToFloat(var3[var6 + 1]);
@@ -273,7 +273,7 @@ public class FaceBakery {
 
       FaceInfo var17 = FaceInfo.fromFacing(var2);
 
-      for(int var18 = 0; var18 < 4; ++var18) {
+      for (int var18 = 0; var18 < 4; var18++) {
          int var19 = 8 * var18;
          FaceInfo.VertexInfo var20 = var17.getVertexInfo(var18);
          float var21 = var4[var20.xFace];
@@ -283,7 +283,7 @@ public class FaceBakery {
          var1[var19 + 1] = Float.floatToRawIntBits(var10);
          var1[var19 + 2] = Float.floatToRawIntBits(var11);
 
-         for(int var12 = 0; var12 < 4; ++var12) {
+         for (int var12 = 0; var12 < 4; var12++) {
             int var13 = 8 * var12;
             float var14 = Float.intBitsToFloat(var3[var13]);
             float var15 = Float.intBitsToFloat(var3[var13 + 1]);

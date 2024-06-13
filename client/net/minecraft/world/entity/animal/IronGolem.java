@@ -110,11 +110,11 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    public void aiStep() {
       super.aiStep();
       if (this.attackAnimationTick > 0) {
-         --this.attackAnimationTick;
+         this.attackAnimationTick--;
       }
 
       if (this.offerFlowerTick > 0) {
-         --this.offerFlowerTick;
+         this.offerFlowerTick--;
       }
 
       if (!this.level().isClientSide) {
@@ -305,7 +305,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       if (!var4.entityCanStandOn(var1, var3, this)) {
          return false;
       } else {
-         for(int var5 = 1; var5 < 3; ++var5) {
+         for (int var5 = 1; var5 < 3; var5++) {
             BlockPos var6 = var2.above(var5);
             BlockState var7 = var1.getBlockState(var6);
             if (!NaturalSpawner.isValidEmptySpawnBlock(var1, var6, var7, var7.getFluidState(), EntityType.IRON_GOLEM)) {

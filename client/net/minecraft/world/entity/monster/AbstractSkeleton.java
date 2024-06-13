@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -116,13 +115,10 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       super.aiStep();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void rideTick() {
       super.rideTick();
-      Entity var2 = this.getControlledVehicle();
-      if (var2 instanceof PathfinderMob var1) {
+      if (this.getControlledVehicle() instanceof PathfinderMob var1) {
          this.yBodyRot = var1.yBodyRot;
       }
    }

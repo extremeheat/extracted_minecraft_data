@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.WalkAnimationState;
@@ -48,8 +47,6 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
       this.itemInHandRenderer = var6;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       ItemStack var11 = var4.getItemBySlot(EquipmentSlot.HEAD);
       if (!var11.isEmpty()) {
@@ -78,9 +75,8 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
             SkullBlock.Type var17 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
             SkullModelBase var18 = this.skullModels.get(var17);
             RenderType var19 = SkullBlockRenderer.getRenderType(var17, var16);
-            Entity var22 = var4.getVehicle();
             WalkAnimationState var20;
-            if (var22 instanceof LivingEntity var21) {
+            if (var4.getVehicle() instanceof LivingEntity var21) {
                var20 = var21.walkAnimation;
             } else {
                var20 = var4.walkAnimation;

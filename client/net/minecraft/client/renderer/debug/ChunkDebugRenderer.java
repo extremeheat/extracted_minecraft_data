@@ -49,7 +49,7 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          Map var24 = this.data.serverData.getNow(null);
          double var12 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
 
-         for(Entry var15 : this.data.clientData.entrySet()) {
+         for (Entry var15 : this.data.clientData.entrySet()) {
             ChunkPos var16 = (ChunkPos)var15.getKey();
             String var17 = (String)var15.getValue();
             if (var24 != null) {
@@ -57,9 +57,9 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
             }
 
             String[] var18 = var17.split("\n");
-            int var19 = 0;
+            byte var19 = 0;
 
-            for(String var23 : var18) {
+            for (String var23 : var18) {
                DebugRenderer.renderFloatingText(
                   var1,
                   var2,
@@ -92,8 +92,8 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          Builder var11 = ImmutableMap.builder();
          ClientChunkCache var12 = var7.getChunkSource();
 
-         for(int var13 = var9 - 12; var13 <= var9 + 12; ++var13) {
-            for(int var14 = var10 - 12; var14 <= var10 + 12; ++var14) {
+         for (int var13 = var9 - 12; var13 <= var9 + 12; var13++) {
+            for (int var14 = var10 - 12; var14 <= var10 + 12; var14++) {
                ChunkPos var15 = new ChunkPos(var13, var14);
                String var16 = "";
                LevelChunk var17 = var12.getChunk(var13, var14, false);
@@ -111,17 +111,17 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
          this.clientData = var11.build();
          this.serverData = var2.submit(() -> {
-            ServerLevel var5xx = var2.getLevel(var8);
-            if (var5xx == null) {
+            ServerLevel var5x = var2.getLevel(var8);
+            if (var5x == null) {
                return ImmutableMap.of();
             } else {
                Builder var6 = ImmutableMap.builder();
-               ServerChunkCache var7xx = var5xx.getChunkSource();
+               ServerChunkCache var7x = var5x.getChunkSource();
 
-               for(int var8xx = var9 - 12; var8xx <= var9 + 12; ++var8xx) {
-                  for(int var9xx = var10 - 12; var9xx <= var10 + 12; ++var9xx) {
-                     ChunkPos var10xx = new ChunkPos(var8xx, var9xx);
-                     var6.put(var10xx, "Server: " + var7xx.getChunkDebugData(var10xx));
+               for (int var8x = var9 - 12; var8x <= var9 + 12; var8x++) {
+                  for (int var9x = var10 - 12; var9x <= var10 + 12; var9x++) {
+                     ChunkPos var10x = new ChunkPos(var8x, var9x);
+                     var6.put(var10x, "Server: " + var7x.getChunkDebugData(var10x));
                   }
                }
 

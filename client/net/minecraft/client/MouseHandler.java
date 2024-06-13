@@ -48,11 +48,11 @@ public class MouseHandler {
             if (var6) {
                if ((var5 & 2) == 2) {
                   var3 = 1;
-                  ++this.fakeRightMouse;
+                  this.fakeRightMouse++;
                }
             } else if (this.fakeRightMouse > 0) {
                var3 = 1;
-               --this.fakeRightMouse;
+               this.fakeRightMouse--;
             }
          }
 
@@ -177,11 +177,11 @@ public class MouseHandler {
          (var1x, var3, var5) -> this.minecraft.execute(() -> this.onScroll(var1x, var3, var5)),
          (var1x, var3, var4) -> {
             Path[] var6 = new Path[var3];
-   
-            for(int var7 = 0; var7 < var3; ++var7) {
+
+            for (int var7 = 0; var7 < var3; var7++) {
                var6[var7] = Paths.get(GLFWDropCallback.getName(var4, var7));
             }
-   
+
             this.minecraft.execute(() -> this.onDrop(var1x, Arrays.asList(var6)));
          }
       );
@@ -195,8 +195,8 @@ public class MouseHandler {
             this.ignoreFirstMove = false;
          } else {
             if (this.minecraft.isWindowActive()) {
-               this.accumulatedDX += var3 - this.xpos;
-               this.accumulatedDY += var5 - this.ypos;
+               this.accumulatedDX = this.accumulatedDX + (var3 - this.xpos);
+               this.accumulatedDY = this.accumulatedDY + (var5 - this.ypos);
             }
 
             this.xpos = var3;

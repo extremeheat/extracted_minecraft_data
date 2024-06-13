@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.pools;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,7 +17,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class ListPoolElement extends StructurePoolElement {
-   public static final Codec<ListPoolElement> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<ListPoolElement> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter(var0x -> var0x.elements), projectionCodec())
             .apply(var0, ListPoolElement::new)
    );
@@ -40,7 +39,7 @@ public class ListPoolElement extends StructurePoolElement {
       int var4 = 0;
       int var5 = 0;
 
-      for(StructurePoolElement var7 : this.elements) {
+      for (StructurePoolElement var7 : this.elements) {
          Vec3i var8 = var7.getSize(var1, var2);
          var3 = Math.max(var3, var8.getX());
          var4 = Math.max(var4, var8.getY());
@@ -74,7 +73,7 @@ public class ListPoolElement extends StructurePoolElement {
       RandomSource var9,
       boolean var10
    ) {
-      for(StructurePoolElement var12 : this.elements) {
+      for (StructurePoolElement var12 : this.elements) {
          if (!var12.place(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10)) {
             return false;
          }
@@ -97,7 +96,7 @@ public class ListPoolElement extends StructurePoolElement {
 
    @Override
    public String toString() {
-      return "List[" + (String)this.elements.stream().map(Object::toString).collect(Collectors.joining(", ")) + "]";
+      return "List[" + this.elements.stream().map(Object::toString).collect(Collectors.joining(", ")) + "]";
    }
 
    private void setProjectionOnEachElement(StructureTemplatePool.Projection var1) {

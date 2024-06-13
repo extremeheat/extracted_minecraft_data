@@ -5,14 +5,12 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
@@ -22,8 +20,8 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 public class IntRange {
    private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(NumberProviders.CODEC, "min").forGetter(var0x -> Optional.ofNullable(var0x.min)),
-               ExtraCodecs.strictOptionalField(NumberProviders.CODEC, "max").forGetter(var0x -> Optional.ofNullable(var0x.max))
+               NumberProviders.CODEC.optionalFieldOf("min").forGetter(var0x -> Optional.ofNullable(var0x.min)),
+               NumberProviders.CODEC.optionalFieldOf("max").forGetter(var0x -> Optional.ofNullable(var0x.max))
             )
             .apply(var0, IntRange::new)
    );
@@ -102,17 +100,10 @@ public class IntRange {
       return this.predicate.test(var1, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private OptionalInt unpackExact() {
-      if (Objects.equals(this.min, this.max)) {
-         NumberProvider var2 = this.min;
-         if (var2 instanceof ConstantValue var1 && Math.floor((double)var1.value()) == (double)var1.value()) {
-            return OptionalInt.of((int)var1.value());
-         }
-      }
-
-      return OptionalInt.empty();
+      return Objects.equals(this.min, this.max) && this.min instanceof ConstantValue var1 && Math.floor((double)var1.value()) == (double)var1.value()
+         ? OptionalInt.of((int)var1.value())
+         : OptionalInt.empty();
    }
 
    @FunctionalInterface

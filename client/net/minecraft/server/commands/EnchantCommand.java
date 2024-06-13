@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -74,8 +73,6 @@ public class EnchantCommand {
       );
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static int enchant(CommandSourceStack var0, Collection<? extends Entity> var1, Holder<Enchantment> var2, int var3) throws CommandSyntaxException {
       Enchantment var4 = (Enchantment)var2.value();
       if (var3 > var4.getMaxLevel()) {
@@ -83,13 +80,14 @@ public class EnchantCommand {
       } else {
          int var5 = 0;
 
-         for(Entity var7 : var1) {
-            if (var7 instanceof LivingEntity var8) {
+         for (Entity var7 : var1) {
+            if (var7 instanceof LivingEntity) {
+               LivingEntity var8 = (LivingEntity)var7;
                ItemStack var9 = var8.getMainHandItem();
                if (!var9.isEmpty()) {
                   if (var4.canEnchant(var9) && EnchantmentHelper.isEnchantmentCompatible(EnchantmentHelper.getEnchantmentsForCrafting(var9).keySet(), var4)) {
                      var9.enchant(var4, var3);
-                     ++var5;
+                     var5++;
                   } else if (var1.size() == 1) {
                      throw ERROR_INCOMPATIBLE.create(var9.getItem().getName(var9).getString());
                   }

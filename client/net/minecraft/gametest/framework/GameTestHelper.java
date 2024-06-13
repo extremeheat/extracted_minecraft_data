@@ -114,8 +114,6 @@ public class GameTestHelper {
       return this.spawn(var1, Vec3.atBottomCenterOf(var2));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2) {
       ServerLevel var3 = this.getLevel();
       Entity var4 = var1.create(var3);
@@ -148,9 +146,9 @@ public class GameTestHelper {
       } else {
          Vec3 var8 = this.absoluteVec(new Vec3((double)var2, (double)var3, (double)var4));
          var7.sort((var1x, var2x) -> {
-            double var3xx = var1x.position().distanceTo(var8);
-            double var5xx = var2x.position().distanceTo(var8);
-            return Double.compare(var3xx, var5xx);
+            double var3x = var1x.position().distanceTo(var8);
+            double var5x = var2x.position().distanceTo(var8);
+            return Double.compare(var3x, var5x);
          });
          return (E)var7.get(0);
       }
@@ -387,8 +385,8 @@ public class GameTestHelper {
          if (!var2x.hasProperty(var2)) {
             return false;
          } else {
-            Comparable var3xx = var2x.getValue(var2);
-            return var3.test(var3xx);
+            Comparable var3x = var2x.getValue(var2);
+            return var3.test(var3x);
          }
       }, () -> var4);
    }
@@ -493,7 +491,7 @@ public class GameTestHelper {
       List var7 = this.getLevel().getEntities(EntityType.ITEM, new AABB(var6).inflate(var3), Entity::isAlive);
       int var8 = 0;
 
-      for(ItemEntity var10 : var7) {
+      for (ItemEntity var10 : var7) {
          ItemStack var11 = var10.getItem();
          if (var11.is(var1)) {
             var8 += var11.getCount();
@@ -510,7 +508,7 @@ public class GameTestHelper {
    public void assertItemEntityPresent(Item var1, BlockPos var2, double var3) {
       BlockPos var5 = this.absolutePos(var2);
 
-      for(Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
+      for (Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
          ItemEntity var9 = (ItemEntity)var8;
          if (var9.getItem().getItem().equals(var1)) {
             return;
@@ -523,7 +521,7 @@ public class GameTestHelper {
    public void assertItemEntityNotPresent(Item var1, BlockPos var2, double var3) {
       BlockPos var5 = this.absolutePos(var2);
 
-      for(Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
+      for (Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
          ItemEntity var9 = (ItemEntity)var8;
          if (var9.getItem().getItem().equals(var1)) {
             throw new GameTestAssertPosException("Did not expect " + var1.getDescription().getString() + " item", var5, var2, this.testInfo.getTick());
@@ -532,7 +530,7 @@ public class GameTestHelper {
    }
 
    public void assertItemEntityPresent(Item var1) {
-      for(Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
+      for (Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
          ItemEntity var5 = (ItemEntity)var4;
          if (var5.getItem().getItem().equals(var1)) {
             return;
@@ -543,7 +541,7 @@ public class GameTestHelper {
    }
 
    public void assertItemEntityNotPresent(Item var1) {
-      for(Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
+      for (Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
          ItemEntity var5 = (ItemEntity)var4;
          if (var5.getItem().getItem().equals(var1)) {
             throw new GameTestAssertException("Did not expect " + var1.getDescription().getString() + " item");
@@ -596,7 +594,7 @@ public class GameTestHelper {
       if (var6.isEmpty()) {
          throw new GameTestAssertPosException("Expected " + var2.toShortString(), var5, var1, this.testInfo.getTick());
       } else {
-         for(Entity var8 : var6) {
+         for (Entity var8 : var6) {
             Object var9 = var3.apply(var8);
             if (var9 == null) {
                if (var4 != null) {
@@ -615,7 +613,7 @@ public class GameTestHelper {
       if (var5.isEmpty()) {
          throw new GameTestAssertPosException("Expected entity of type: " + var2, var4, var1, this.getTick());
       } else {
-         for(LivingEntity var7 : var5) {
+         for (LivingEntity var7 : var5) {
             if (var7.isHolding(var3)) {
                return;
             }
@@ -631,7 +629,7 @@ public class GameTestHelper {
       if (var5.isEmpty()) {
          throw new GameTestAssertPosException("Expected " + var2.toShortString() + " to exist", var4, var1, this.getTick());
       } else {
-         for(Entity var7 : var5) {
+         for (Entity var7 : var5) {
             if (((InventoryCarrier)var7).getInventory().hasAnyMatching(var1x -> var1x.is(var3))) {
                return;
             }
@@ -776,8 +774,8 @@ public class GameTestHelper {
       int var3 = (int)Math.floor(var1.maxZ);
       int var4 = (int)Math.floor(var1.maxY);
 
-      for(int var5 = (int)Math.floor(var1.minX); var5 < var2; ++var5) {
-         for(int var6 = (int)Math.floor(var1.minZ); var6 < var3; ++var6) {
+      for (int var5 = (int)Math.floor(var1.minX); var5 < var2; var5++) {
+         for (int var6 = (int)Math.floor(var1.minZ); var6 < var3; var6++) {
             this.tickPrecipitation(new BlockPos(var5, var4, var6));
          }
       }

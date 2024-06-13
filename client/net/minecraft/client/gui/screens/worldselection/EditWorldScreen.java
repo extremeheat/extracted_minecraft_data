@@ -11,10 +11,10 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -78,20 +78,20 @@ public class EditWorldScreen extends Screen {
       this.layout
          .addChild(Button.builder(FOLDER_BUTTON, var1x -> Util.getPlatform().openFile(var2.getLevelPath(LevelResource.ROOT).toFile())).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_BUTTON, var2x -> {
-         boolean var3xx = makeBackupAndShowToast(var2);
-         this.callback.accept(!var3xx);
+         boolean var3x = makeBackupAndShowToast(var2);
+         this.callback.accept(!var3x);
       }).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_FOLDER_BUTTON, var1x -> {
-         LevelStorageSource var2xx = var1.getLevelSource();
-         Path var3xx = var2xx.getBackupPath();
+         LevelStorageSource var2x = var1.getLevelSource();
+         Path var3x = var2x.getBackupPath();
 
          try {
-            FileUtil.createDirectoriesSafe(var3xx);
-         } catch (IOException var5xx) {
-            throw new RuntimeException(var5xx);
+            FileUtil.createDirectoriesSafe(var3x);
+         } catch (IOException var5x) {
+            throw new RuntimeException(var5x);
          }
 
-         Util.getPlatform().openFile(var3xx.toFile());
+         Util.getPlatform().openFile(var3x.toFile());
       }).width(200).build());
       this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, var3x -> var1.setScreen(new BackupConfirmScreen(() -> var1.setScreen(this), (var3xx, var4x) -> {
             if (var3xx) {
@@ -103,6 +103,7 @@ public class EditWorldScreen extends Screen {
       this.layout.addChild(new SpacerElement(200, 20));
       this.layout.addChild(var6);
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
    }
 

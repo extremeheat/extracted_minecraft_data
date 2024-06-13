@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -66,7 +65,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -102,7 +100,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
    }
 
    public ResourceLocation getTextureId() {
-      return ((CatVariant)this.getVariant().value()).texture();
+      return this.getVariant().value().texture();
    }
 
    @Override
@@ -312,8 +310,6 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       return Mth.lerp(var1, this.relaxStateOneAmountO, this.relaxStateOneAmount);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public Cat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Cat var3 = EntityType.CAT.create(var1);
@@ -342,11 +338,8 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
    public boolean canMate(Animal var1) {
       if (!this.isTame()) {
          return false;
-      } else if (!(var1 instanceof Cat)) {
-         return false;
       } else {
-         Cat var2 = (Cat)var1;
-         return var2.isTame() && super.canMate(var1);
+         return !(var1 instanceof Cat var2) ? false : var2.isTame() && super.canMate(var1);
       }
    }
 
@@ -358,9 +351,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       TagKey var6 = var5 ? CatVariantTags.FULL_MOON_SPAWNS : CatVariantTags.DEFAULT_SPAWNS;
       BuiltInRegistries.CAT_VARIANT.getRandomElementOf(var6, var1.getRandom()).ifPresent(this::setVariant);
       ServerLevel var7 = var1.getLevel();
-      boolean var8 = var7.getBiome(this.blockPosition()).is(Biomes.CORRUPTION);
-      boolean var9 = var7.structureManager().getStructureWithPieceAt(this.blockPosition(), StructureTags.CATS_SPAWN_AS_BLACK).isValid();
-      if (var8 || var9) {
+      if (var7.structureManager().getStructureWithPieceAt(this.blockPosition(), StructureTags.CATS_SPAWN_AS_BLACK).isValid()) {
          this.setVariant(BuiltInRegistries.CAT_VARIANT.getHolderOrThrow(CatVariant.ALL_BLACK));
          this.setPersistenceRequired();
       }
@@ -368,8 +359,6 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       return var4;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
@@ -528,7 +517,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       }
 
       private boolean spaceIsOccupied() {
-         for(Cat var3 : this.cat.level().getEntitiesOfClass(Cat.class, new AABB(this.goalPos).inflate(2.0))) {
+         for (Cat var3 : this.cat.level().getEntitiesOfClass(Cat.class, new AABB(this.goalPos).inflate(2.0))) {
             if (var3 != this.cat && (var3.isLying() || var3.isRelaxStateOne())) {
                return true;
             }
@@ -583,7 +572,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
             .withParameter(LootContextParams.THIS_ENTITY, this.cat)
             .create(LootContextParamSets.GIFT);
 
-         for(ItemStack var7 : var3.getRandomItems(var4)) {
+         for (ItemStack var7 : var3.getRandomItems(var4)) {
             this.cat
                .level()
                .addFreshEntity(
@@ -604,7 +593,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
             this.cat.setInSittingPose(false);
             this.cat.getNavigation().moveTo((double)this.goalPos.getX(), (double)this.goalPos.getY(), (double)this.goalPos.getZ(), 1.100000023841858);
             if (this.cat.distanceToSqr(this.ownerPlayer) < 2.5) {
-               ++this.onBedTicks;
+               this.onBedTicks++;
                if (this.onBedTicks > this.adjustedTickDelay(16)) {
                   this.cat.setLying(true);
                   this.cat.setRelaxStateOne(false);

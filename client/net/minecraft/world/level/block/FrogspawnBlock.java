@@ -101,7 +101,7 @@ public class FrogspawnBlock extends Block {
    private void spawnTadpoles(ServerLevel var1, BlockPos var2, RandomSource var3) {
       int var4 = var3.nextInt(2, 6);
 
-      for(int var5 = 1; var5 <= var4; ++var5) {
+      for (int var5 = 1; var5 <= var4; var5++) {
          Tadpole var6 = EntityType.TADPOLE.create(var1);
          if (var6 != null) {
             double var7 = (double)var2.getX() + this.getRandomTadpolePositionOffset(var3);

@@ -3,7 +3,6 @@ package net.minecraft.server.packs;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult.PartialResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -11,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,8 +53,9 @@ public class PathPackResources extends AbstractPackResources {
       return getResource(var2, var3);
    }
 
+   @Nullable
    public static IoSupplier<InputStream> getResource(ResourceLocation var0, Path var1) {
-      return (IoSupplier<InputStream>)FileUtil.decomposePath(var0.getPath()).get().map(var1x -> {
+      return (IoSupplier<InputStream>)FileUtil.decomposePath(var0.getPath()).mapOrElse(var1x -> {
          Path var2 = FileUtil.resolvePath(var1, var1x);
          return returnFileIfExists(var2);
       }, var1x -> {
@@ -72,10 +71,10 @@ public class PathPackResources extends AbstractPackResources {
 
    @Override
    public void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4) {
-      FileUtil.decomposePath(var3).get().ifLeft(var4x -> {
+      FileUtil.decomposePath(var3).ifSuccess(var4x -> {
          Path var5 = this.root.resolve(var1.getDirectory()).resolve(var2);
          listPath(var2, var5, var4x, var4);
-      }).ifRight(var1x -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
+      }).ifError(var1x -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
    }
 
    public static void listPath(String var0, Path var1, List<String> var2, PackResources.ResourceOutput var3) {
@@ -83,12 +82,12 @@ public class PathPackResources extends AbstractPackResources {
 
       try (Stream var5 = Files.find(var4, 2147483647, (var0x, var1x) -> var1x.isRegularFile())) {
          var5.forEach(var3x -> {
-            String var4xx = PATH_JOINER.join(var1.relativize(var3x));
-            ResourceLocation var5xx = ResourceLocation.tryBuild(var0, var4xx);
-            if (var5xx == null) {
-               Util.logAndPauseIfInIde(String.format(Locale.ROOT, "Invalid path in pack: %s:%s, ignoring", var0, var4xx));
+            String var4x = PATH_JOINER.join(var1.relativize(var3x));
+            ResourceLocation var5x = ResourceLocation.tryBuild(var0, var4x);
+            if (var5x == null) {
+               Util.logAndPauseIfInIde(String.format(Locale.ROOT, "Invalid path in pack: %s:%s, ignoring", var0, var4x));
             } else {
-               var3.accept(var5xx, IoSupplier.create(var3x));
+               var3.accept(var5x, IoSupplier.create(var3x));
             }
          });
       } catch (NotDirectoryException | NoSuchFileException var10) {
@@ -103,7 +102,7 @@ public class PathPackResources extends AbstractPackResources {
       Path var3 = this.root.resolve(var1.getDirectory());
 
       try (DirectoryStream var4 = Files.newDirectoryStream(var3)) {
-         for(Path var6 : var4) {
+         for (Path var6 : var4) {
             String var7 = var6.getFileName().toString();
             if (ResourceLocation.isValidNamespace(var7)) {
                var2.add(var7);
@@ -145,7 +144,7 @@ public class PathPackResources extends AbstractPackResources {
          } else {
             ArrayList var5 = new ArrayList(var4.size());
 
-            for(String var7 : var4) {
+            for (String var7 : var4) {
                Path var8 = this.content.resolve(var7);
                var5.add(new PathPackResources(var1, var8));
             }

@@ -55,7 +55,7 @@ public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration
 
    private boolean isValidPlacement(WorldGenLevel var1, BlockPos var2) {
       if (!this.isWaterOrAir(var1, var2) && !this.isWaterOrAir(var1, var2.below())) {
-         for(Direction var4 : Direction.Plane.HORIZONTAL) {
+         for (Direction var4 : Direction.Plane.HORIZONTAL) {
             if (this.isWaterOrAir(var1, var2.relative(var4))) {
                return false;
             }

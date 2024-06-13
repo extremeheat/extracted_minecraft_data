@@ -14,19 +14,17 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
-public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Feature<FC>>(F d, FC e) {
-   private final F feature;
-   private final FC config;
+public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Feature<FC>>(F feature, FC config) {
    public static final Codec<ConfiguredFeature<?, ?>> DIRECT_CODEC = BuiltInRegistries.FEATURE
       .byNameCodec()
       .dispatch(var0 -> var0.feature, Feature::configuredCodec);
    public static final Codec<Holder<ConfiguredFeature<?, ?>>> CODEC = RegistryFileCodec.create(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
    public static final Codec<HolderSet<ConfiguredFeature<?, ?>>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
 
-   public ConfiguredFeature(F var1, FC var2) {
+   public ConfiguredFeature(F feature, FC config) {
       super();
-      this.feature = var1;
-      this.config = var2;
+      this.feature = (F)feature;
+      this.config = (FC)config;
    }
 
    public boolean place(WorldGenLevel var1, ChunkGenerator var2, RandomSource var3, BlockPos var4) {

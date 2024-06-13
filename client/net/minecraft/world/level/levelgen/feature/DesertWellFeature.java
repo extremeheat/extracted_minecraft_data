@@ -9,7 +9,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.BrushableBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -32,24 +31,24 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
       BlockPos var3 = var1.origin();
       var3 = var3.above();
 
-      while(var2.isEmptyBlock(var3) && var3.getY() > var2.getMinBuildHeight() + 2) {
+      while (var2.isEmptyBlock(var3) && var3.getY() > var2.getMinBuildHeight() + 2) {
          var3 = var3.below();
       }
 
       if (!IS_SAND.test(var2.getBlockState(var3))) {
          return false;
       } else {
-         for(int var4 = -2; var4 <= 2; ++var4) {
-            for(int var5 = -2; var5 <= 2; ++var5) {
+         for (int var4 = -2; var4 <= 2; var4++) {
+            for (int var5 = -2; var5 <= 2; var5++) {
                if (var2.isEmptyBlock(var3.offset(var4, -1, var5)) && var2.isEmptyBlock(var3.offset(var4, -2, var5))) {
                   return false;
                }
             }
          }
 
-         for(int var9 = -2; var9 <= 0; ++var9) {
-            for(int var12 = -2; var12 <= 2; ++var12) {
-               for(int var6 = -2; var6 <= 2; ++var6) {
+         for (int var9 = -2; var9 <= 0; var9++) {
+            for (int var12 = -2; var12 <= 2; var12++) {
+               for (int var6 = -2; var6 <= 2; var6++) {
                   var2.setBlock(var3.offset(var12, var9, var6), this.sandstone, 2);
                }
             }
@@ -57,19 +56,19 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
 
          var2.setBlock(var3, this.water, 2);
 
-         for(Direction var13 : Direction.Plane.HORIZONTAL) {
+         for (Direction var13 : Direction.Plane.HORIZONTAL) {
             var2.setBlock(var3.relative(var13), this.water, 2);
          }
 
          BlockPos var11 = var3.below();
          var2.setBlock(var11, this.sand, 2);
 
-         for(Direction var18 : Direction.Plane.HORIZONTAL) {
+         for (Direction var18 : Direction.Plane.HORIZONTAL) {
             var2.setBlock(var11.relative(var18), this.sand, 2);
          }
 
-         for(int var15 = -2; var15 <= 2; ++var15) {
-            for(int var19 = -2; var19 <= 2; ++var19) {
+         for (int var15 = -2; var15 <= 2; var15++) {
+            for (int var19 = -2; var19 <= 2; var19++) {
                if (var15 == -2 || var15 == 2 || var19 == -2 || var19 == 2) {
                   var2.setBlock(var3.offset(var15, 1, var19), this.sandstone, 2);
                }
@@ -81,8 +80,8 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
          var2.setBlock(var3.offset(0, 1, 2), this.sandSlab, 2);
          var2.setBlock(var3.offset(0, 1, -2), this.sandSlab, 2);
 
-         for(int var16 = -1; var16 <= 1; ++var16) {
-            for(int var20 = -1; var20 <= 1; ++var20) {
+         for (int var16 = -1; var16 <= 1; var16++) {
+            for (int var20 = -1; var20 <= 1; var20++) {
                if (var16 == 0 && var20 == 0) {
                   var2.setBlock(var3.offset(var16, 4, var20), this.sandstone, 2);
                } else {
@@ -91,7 +90,7 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
             }
          }
 
-         for(int var17 = 1; var17 <= 3; ++var17) {
+         for (int var17 = 1; var17 <= 3; var17++) {
             var2.setBlock(var3.offset(-1, var17, -1), this.sandstone, 2);
             var2.setBlock(var3.offset(-1, var17, 1), this.sandstone, 2);
             var2.setBlock(var3.offset(1, var17, -1), this.sandstone, 2);

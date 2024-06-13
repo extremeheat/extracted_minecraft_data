@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,7 +64,7 @@ public class FileZipper implements Closeable {
             Files.copy(var10, var1);
          } else {
             try (Stream var3 = Files.find(var1, 2147483647, (var0, var1x) -> var1x.isRegularFile())) {
-               for(Path var5 : (List)var3.collect(Collectors.toList())) {
+               for (Path var5 : (List)var3.collect(Collectors.toList())) {
                   Path var6 = var2.resolve(var1.relativize(var5).toString());
                   Files.createDirectories(var6.getParent());
                   Files.copy(var5, var6);

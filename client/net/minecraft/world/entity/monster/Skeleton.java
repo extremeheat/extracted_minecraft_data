@@ -7,7 +7,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -21,11 +20,6 @@ public class Skeleton extends AbstractSkeleton {
 
    public Skeleton(EntityType<? extends Skeleton> var1, Level var2) {
       super(var1, var2);
-   }
-
-   @Override
-   public boolean hasPotatoVariant() {
-      return true;
    }
 
    @Override
@@ -52,12 +46,12 @@ public class Skeleton extends AbstractSkeleton {
       if (!this.level().isClientSide && this.isAlive() && !this.isNoAi()) {
          if (this.isInPowderSnow) {
             if (this.isFreezeConverting()) {
-               --this.conversionTime;
+               this.conversionTime--;
                if (this.conversionTime < 0) {
                   this.doFreezeConversion();
                }
             } else {
-               ++this.inPowderSnowTime;
+               this.inPowderSnowTime++;
                if (this.inPowderSnowTime >= 140) {
                   this.startFreezeConversion(300);
                }
@@ -122,13 +116,10 @@ public class Skeleton extends AbstractSkeleton {
       return SoundEvents.SKELETON_STEP;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var1.getEntity();
-      if (var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
+      if (var1.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          var5.increaseDroppedSkulls();
          this.spawnAtLocation(Items.SKELETON_SKULL);
       }

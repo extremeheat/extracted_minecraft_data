@@ -40,20 +40,20 @@ public class NbtToSnbt implements DataProvider {
       Path var2 = this.output.getOutputFolder();
       ArrayList var3 = new ArrayList();
 
-      for(Path var5 : this.inputFolders) {
+      for (Path var5 : this.inputFolders) {
          var3.add(
             CompletableFuture.<CompletableFuture>supplyAsync(
                   () -> {
                      try {
                         CompletableFuture var4;
-                        try (Stream var3xx = Files.walk(var5)) {
+                        try (Stream var3x = Files.walk(var5)) {
                            var4 = CompletableFuture.allOf(
-                              var3xx.filter(var0x -> var0x.toString().endsWith(".nbt"))
+                              var3x.filter(var0x -> var0x.toString().endsWith(".nbt"))
                                  .map(var3xx -> CompletableFuture.runAsync(() -> convertStructure(var1, var3xx, getName(var5, var3xx), var2), Util.ioPool()))
-                                 .toArray(var0x -> new CompletableFuture[var0x])
+                                 .toArray(CompletableFuture[]::new)
                            );
                         }
-         
+
                         return var4;
                      } catch (IOException var8) {
                         LOGGER.error("Failed to read structure input directory", var8);
@@ -66,7 +66,7 @@ public class NbtToSnbt implements DataProvider {
          );
       }
 
-      return CompletableFuture.allOf(var3.toArray(var0 -> new CompletableFuture[var0]));
+      return CompletableFuture.allOf(var3.toArray(CompletableFuture[]::new));
    }
 
    @Override

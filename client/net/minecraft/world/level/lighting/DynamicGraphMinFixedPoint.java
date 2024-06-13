@@ -125,8 +125,8 @@ public abstract class DynamicGraphMinFixedPoint {
       if (this.priorityQueue.isEmpty()) {
          return var1;
       } else {
-         while(!this.priorityQueue.isEmpty() && var1 > 0) {
-            --var1;
+         while (!this.priorityQueue.isEmpty() && var1 > 0) {
+            var1--;
             long var2 = this.priorityQueue.removeFirstLong();
             int var4 = Mth.clamp(this.getLevel(var2), 0, this.levelCount - 1);
             int var5 = this.computedLevels.remove(var2) & 255;

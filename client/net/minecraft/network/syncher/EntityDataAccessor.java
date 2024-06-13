@@ -1,13 +1,10 @@
 package net.minecraft.network.syncher;
 
-public record EntityDataAccessor<T>(int a, EntityDataSerializer<T> b) {
-   private final int id;
-   private final EntityDataSerializer<T> serializer;
-
-   public EntityDataAccessor(int var1, EntityDataSerializer<T> var2) {
+public record EntityDataAccessor<T>(int id, EntityDataSerializer<T> serializer) {
+   public EntityDataAccessor(int id, EntityDataSerializer<T> serializer) {
       super();
-      this.id = var1;
-      this.serializer = var2;
+      this.id = id;
+      this.serializer = serializer;
    }
 
    public boolean equals(Object var1) {

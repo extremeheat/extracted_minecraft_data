@@ -28,7 +28,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.config.JoinWorldTask;
 import net.minecraft.server.network.config.ServerResourcePackConfigurationTask;
 import net.minecraft.server.network.config.SynchronizeRegistriesTask;
-import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;

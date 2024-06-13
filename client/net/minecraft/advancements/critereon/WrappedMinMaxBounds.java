@@ -12,18 +12,14 @@ import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.GsonHelper;
 
-public record WrappedMinMaxBounds(@Nullable Float c, @Nullable Float d) {
-   @Nullable
-   private final Float min;
-   @Nullable
-   private final Float max;
+public record WrappedMinMaxBounds(@Nullable Float min, @Nullable Float max) {
    public static final WrappedMinMaxBounds ANY = new WrappedMinMaxBounds(null, null);
    public static final SimpleCommandExceptionType ERROR_INTS_ONLY = new SimpleCommandExceptionType(Component.translatable("argument.range.ints"));
 
-   public WrappedMinMaxBounds(@Nullable Float var1, @Nullable Float var2) {
+   public WrappedMinMaxBounds(@Nullable Float min, @Nullable Float max) {
       super();
-      this.min = var1;
-      this.max = var2;
+      this.min = min;
+      this.max = max;
    }
 
    public static WrappedMinMaxBounds exactly(float var0) {
@@ -45,20 +41,16 @@ public record WrappedMinMaxBounds(@Nullable Float c, @Nullable Float d) {
    public boolean matches(float var1) {
       if (this.min != null && this.max != null && this.min > this.max && this.min > var1 && this.max < var1) {
          return false;
-      } else if (this.min != null && this.min > var1) {
-         return false;
       } else {
-         return this.max == null || !(this.max < var1);
+         return this.min != null && this.min > var1 ? false : this.max == null || !(this.max < var1);
       }
    }
 
    public boolean matchesSqr(double var1) {
       if (this.min != null && this.max != null && this.min > this.max && (double)(this.min * this.min) > var1 && (double)(this.max * this.max) < var1) {
          return false;
-      } else if (this.min != null && (double)(this.min * this.min) > var1) {
-         return false;
       } else {
-         return this.max == null || !((double)(this.max * this.max) < var1);
+         return this.min != null && (double)(this.min * this.min) > var1 ? false : this.max == null || !((double)(this.max * this.max) < var1);
       }
    }
 
@@ -136,7 +128,7 @@ public record WrappedMinMaxBounds(@Nullable Float c, @Nullable Float d) {
    private static Float readNumber(StringReader var0, boolean var1) throws CommandSyntaxException {
       int var2 = var0.getCursor();
 
-      while(var0.canRead() && isAllowedNumber(var0, var1)) {
+      while (var0.canRead() && isAllowedNumber(var0, var1)) {
          var0.skip();
       }
 
@@ -159,11 +151,7 @@ public record WrappedMinMaxBounds(@Nullable Float c, @Nullable Float d) {
    private static boolean isAllowedNumber(StringReader var0, boolean var1) {
       char var2 = var0.peek();
       if ((var2 < '0' || var2 > '9') && var2 != '-') {
-         if (var1 && var2 == '.') {
-            return !var0.canRead(2) || var0.peek(1) != '.';
-         } else {
-            return false;
-         }
+         return var1 && var2 == '.' ? !var0.canRead(2) || var0.peek(1) != '.' : false;
       } else {
          return true;
       }

@@ -2,7 +2,6 @@ package net.minecraft.world.level.gameevent.vibrations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +25,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipBlockStateContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
@@ -95,7 +93,7 @@ public interface VibrationSystem {
       var0.put(GameEvent.ENTITY_DIE.key(), 15);
       var0.put(GameEvent.EXPLODE.key(), 15);
 
-      for(int var1 = 1; var1 <= 15; ++var1) {
+      for (int var1 = 1; var1 <= 15; var1++) {
          var0.put(getResonanceEventByFrequency(var1), var1);
       }
    });
@@ -109,7 +107,7 @@ public interface VibrationSystem {
    }
 
    static int getGameEventFrequency(ResourceKey<GameEvent> var0) {
-      return VIBRATION_FREQUENCY_FOR_EVENT.applyAsInt(var0);
+      return VIBRATION_FREQUENCY_FOR_EVENT.applyAsInt((ResourceKey<GameEvent>)var0);
    }
 
    static ResourceKey<GameEvent> getResonanceEventByFrequency(int var0) {
@@ -124,7 +122,7 @@ public interface VibrationSystem {
    public static final class Data {
       public static Codec<VibrationSystem.Data> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  VibrationInfo.CODEC.optionalFieldOf("event").forGetter(var0x -> Optional.ofNullable(var0x.currentVibration)),
+                  VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter(var0x -> Optional.ofNullable(var0x.currentVibration)),
                   VibrationSelector.CODEC.fieldOf("selector").forGetter(VibrationSystem.Data::getSelectionStrategy),
                   ExtraCodecs.NON_NEGATIVE_INT.fieldOf("event_delay").orElse(0).forGetter(VibrationSystem.Data::getTravelTimeInTicks)
                )
@@ -247,7 +245,7 @@ public interface VibrationSystem {
          Vec3 var3 = new Vec3((double)Mth.floor(var1.x) + 0.5, (double)Mth.floor(var1.y) + 0.5, (double)Mth.floor(var1.z) + 0.5);
          Vec3 var4 = new Vec3((double)Mth.floor(var2.x) + 0.5, (double)Mth.floor(var2.y) + 0.5, (double)Mth.floor(var2.z) + 0.5);
 
-         for(Direction var8 : Direction.values()) {
+         for (Direction var8 : Direction.values()) {
             Vec3 var9 = var3.relative(var8, 9.999999747378752E-6);
             if (var0.isBlockInLine(new ClipBlockStateContext(var9, var4, var0x -> var0x.is(BlockTags.OCCLUDES_VIBRATION_SIGNALS))).getType()
                != HitResult.Type.BLOCK) {
@@ -263,15 +261,15 @@ public interface VibrationSystem {
       static void tick(Level var0, VibrationSystem.Data var1, VibrationSystem.User var2) {
          if (var0 instanceof ServerLevel var3) {
             if (var1.currentVibration == null) {
-               trySelectAndScheduleVibration((ServerLevel)var3, var1, var2);
+               trySelectAndScheduleVibration(var3, var1, var2);
             }
 
             if (var1.currentVibration != null) {
                boolean var4 = var1.getTravelTimeInTicks() > 0;
-               tryReloadVibrationParticle((ServerLevel)var3, var1, var2);
+               tryReloadVibrationParticle(var3, var1, var2);
                var1.decrementTravelTime();
                if (var1.getTravelTimeInTicks() <= 0) {
-                  var4 = receiveVibration((ServerLevel)var3, var1, var2, var1.currentVibration);
+                  var4 = receiveVibration(var3, var1, var2, var1.currentVibration);
                }
 
                if (var4) {
@@ -342,8 +340,8 @@ public interface VibrationSystem {
       private static boolean areAdjacentChunksTicking(Level var0, BlockPos var1) {
          ChunkPos var2 = new ChunkPos(var1);
 
-         for(int var3 = var2.x - 1; var3 <= var2.x + 1; ++var3) {
-            for(int var4 = var2.z - 1; var4 <= var2.z + 1; ++var4) {
+         for (int var3 = var2.x - 1; var3 <= var2.x + 1; var3++) {
+            for (int var4 = var2.z - 1; var4 <= var2.z + 1; var4++) {
                if (!var0.shouldTickBlocksAt(ChunkPos.asLong(var3, var4)) || var0.getChunkSource().getChunkNow(var3, var4) == null) {
                   return false;
                }
@@ -391,7 +389,7 @@ public interface VibrationSystem {
 
                if (var3.isSteppingCarefully() && var1.is(GameEventTags.IGNORE_VIBRATIONS_SNEAKING)) {
                   if (this.canTriggerAvoidVibration() && var3 instanceof ServerPlayer var4) {
-                     CriteriaTriggers.AVOID_VIBRATION.trigger((ServerPlayer)var4);
+                     CriteriaTriggers.AVOID_VIBRATION.trigger(var4);
                   }
 
                   return false;
@@ -402,11 +400,7 @@ public interface VibrationSystem {
                }
             }
 
-            if (var2.affectedState() != null) {
-               return !var2.affectedState().is(BlockTags.DAMPENS_VIBRATIONS);
-            } else {
-               return true;
-            }
+            return var2.affectedState() != null ? !var2.affectedState().is(BlockTags.DAMPENS_VIBRATIONS) : true;
          }
       }
 

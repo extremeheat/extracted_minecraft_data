@@ -68,25 +68,25 @@ public class LevelChunkSection {
       FluidState var7 = var6.getFluidState();
       FluidState var8 = var4.getFluidState();
       if (!var6.isAir()) {
-         --this.nonEmptyBlockCount;
+         this.nonEmptyBlockCount--;
          if (var6.isRandomlyTicking()) {
-            --this.tickingBlockCount;
+            this.tickingBlockCount--;
          }
       }
 
       if (!var7.isEmpty()) {
-         --this.tickingFluidCount;
+         this.tickingFluidCount--;
       }
 
       if (!var4.isAir()) {
-         ++this.nonEmptyBlockCount;
+         this.nonEmptyBlockCount++;
          if (var4.isRandomlyTicking()) {
-            ++this.tickingBlockCount;
+            this.tickingBlockCount++;
          }
       }
 
       if (!var8.isEmpty()) {
-         ++this.tickingFluidCount;
+         this.tickingFluidCount++;
       }
 
       return var6;
@@ -185,11 +185,11 @@ public class LevelChunkSection {
 
    public void fillBiomesFromNoise(BiomeResolver var1, Climate.Sampler var2, int var3, int var4, int var5) {
       PalettedContainer var6 = this.biomes.recreate();
-      boolean var7 = true;
+      byte var7 = 4;
 
-      for(int var8 = 0; var8 < 4; ++var8) {
-         for(int var9 = 0; var9 < 4; ++var9) {
-            for(int var10 = 0; var10 < 4; ++var10) {
+      for (int var8 = 0; var8 < 4; var8++) {
+         for (int var9 = 0; var9 < 4; var9++) {
+            for (int var10 = 0; var10 < 4; var10++) {
                var6.getAndSetUnchecked(var8, var9, var10, var1.getNoiseBiome(var3 + var8, var4 + var9, var5 + var10, var2));
             }
          }

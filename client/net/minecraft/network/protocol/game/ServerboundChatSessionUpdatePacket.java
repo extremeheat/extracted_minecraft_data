@@ -6,8 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundChatSessionUpdatePacket(RemoteChatSession.Data b) implements Packet<ServerGamePacketListener> {
-   private final RemoteChatSession.Data chatSession;
+public record ServerboundChatSessionUpdatePacket(RemoteChatSession.Data chatSession) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatSessionUpdatePacket> STREAM_CODEC = Packet.codec(
       ServerboundChatSessionUpdatePacket::write, ServerboundChatSessionUpdatePacket::new
    );
@@ -16,9 +15,9 @@ public record ServerboundChatSessionUpdatePacket(RemoteChatSession.Data b) imple
       this(RemoteChatSession.Data.read(var1));
    }
 
-   public ServerboundChatSessionUpdatePacket(RemoteChatSession.Data var1) {
+   public ServerboundChatSessionUpdatePacket(RemoteChatSession.Data chatSession) {
       super();
-      this.chatSession = var1;
+      this.chatSession = chatSession;
    }
 
    private void write(FriendlyByteBuf var1) {

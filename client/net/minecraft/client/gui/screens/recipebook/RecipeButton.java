@@ -40,11 +40,11 @@ public class RecipeButton extends AbstractWidget {
 
    public void init(RecipeCollection var1, RecipeBookPage var2) {
       this.collection = var1;
-      this.menu = (RecipeBookMenu)var2.getMinecraft().player.containerMenu;
+      this.menu = (RecipeBookMenu<?>)var2.getMinecraft().player.containerMenu;
       this.book = var2.getRecipeBook();
       List var3 = var1.getRecipes(this.book.isFiltering(this.menu));
 
-      for(RecipeHolder var5 : var3) {
+      for (RecipeHolder var5 : var3) {
          if (this.book.willHighlight(var5)) {
             var2.recipesShown(var3);
             this.animationTime = 15.0F;
@@ -93,7 +93,7 @@ public class RecipeButton extends AbstractWidget {
       int var9 = 4;
       if (this.collection.hasSingleResultItem() && this.getOrderedRecipes().size() > 1) {
          var1.renderItem(var8, this.getX() + var9 + 1, this.getY() + var9 + 1, 0, 10);
-         --var9;
+         var9--;
       }
 
       var1.renderFakeItem(var8, this.getX() + var9, this.getY() + var9);
@@ -121,7 +121,7 @@ public class RecipeButton extends AbstractWidget {
    }
 
    public List<Component> getTooltipText() {
-      ItemStack var1 = ((RecipeHolder)this.getOrderedRecipes().get(this.currentIndex)).value().getResultItem(this.collection.registryAccess());
+      ItemStack var1 = this.getOrderedRecipes().get(this.currentIndex).value().getResultItem(this.collection.registryAccess());
       ArrayList var2 = Lists.newArrayList(Screen.getTooltipFromItem(Minecraft.getInstance(), var1));
       if (this.collection.getRecipes(this.book.isFiltering(this.menu)).size() > 1) {
          var2.add(MORE_RECIPES_TOOLTIP);
@@ -132,7 +132,7 @@ public class RecipeButton extends AbstractWidget {
 
    @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
-      ItemStack var2 = ((RecipeHolder)this.getOrderedRecipes().get(this.currentIndex)).value().getResultItem(this.collection.registryAccess());
+      ItemStack var2 = this.getOrderedRecipes().get(this.currentIndex).value().getResultItem(this.collection.registryAccess());
       var1.add(NarratedElementType.TITLE, Component.translatable("narration.recipe", var2.getHoverName()));
       if (this.collection.getRecipes(this.book.isFiltering(this.menu)).size() > 1) {
          var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"), Component.translatable("narration.recipe.usage.more"));

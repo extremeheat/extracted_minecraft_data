@@ -60,6 +60,6 @@ public class SoundBufferLibrary {
    }
 
    public CompletableFuture<?> preload(Collection<Sound> var1) {
-      return CompletableFuture.allOf(var1.stream().map(var1x -> this.getCompleteBuffer(var1x.getPath())).toArray(var0 -> new CompletableFuture[var0]));
+      return CompletableFuture.allOf(var1.stream().map(var1x -> this.getCompleteBuffer(var1x.getPath())).toArray(CompletableFuture[]::new));
    }
 }

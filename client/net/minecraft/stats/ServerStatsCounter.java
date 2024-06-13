@@ -94,7 +94,7 @@ public class ServerStatsCounter extends StatsCounter {
                   CompoundTag var6 = var5.getCompound("stats");
                   Iterator var7 = var6.getAllKeys().iterator();
 
-                  while(true) {
+                  while (true) {
                      if (!var7.hasNext()) {
                         break label47;
                      }
@@ -104,18 +104,18 @@ public class ServerStatsCounter extends StatsCounter {
                         Util.ifElse(
                            BuiltInRegistries.STAT_TYPE.getOptional(new ResourceLocation(var8)),
                            var3x -> {
-                              CompoundTag var4xx = var6.getCompound(var8);
-   
-                              for(String var6xx : var4xx.getAllKeys()) {
-                                 if (var4xx.contains(var6xx, 99)) {
+                              CompoundTag var4x = var6.getCompound(var8);
+
+                              for (String var6x : var4x.getAllKeys()) {
+                                 if (var4x.contains(var6x, 99)) {
                                     Util.ifElse(
-                                       this.getStat(var3x, var6xx),
+                                       this.getStat(var3x, var6x),
                                        var3xx -> this.stats.put(var3xx, var4x.getInt(var6x)),
                                        () -> LOGGER.warn("Invalid statistic in {}: Don't know what {} is", this.file, var6x)
                                     );
                                  } else {
                                     LOGGER.warn(
-                                       "Invalid statistic value in {}: Don't know what {} is for key {}", new Object[]{this.file, var4xx.get(var6xx), var6xx}
+                                       "Invalid statistic value in {}: Don't know what {} is for key {}", new Object[]{this.file, var4x.get(var6x), var6x}
                                     );
                                  }
                               }
@@ -154,7 +154,7 @@ public class ServerStatsCounter extends StatsCounter {
    private static CompoundTag fromJson(JsonObject var0) {
       CompoundTag var1 = new CompoundTag();
 
-      for(Entry var3 : var0.entrySet()) {
+      for (Entry var3 : var0.entrySet()) {
          JsonElement var4 = (JsonElement)var3.getValue();
          if (var4.isJsonObject()) {
             var1.put((String)var3.getKey(), fromJson(var4.getAsJsonObject()));
@@ -173,15 +173,15 @@ public class ServerStatsCounter extends StatsCounter {
       HashMap var1 = Maps.newHashMap();
       ObjectIterator var2 = this.stats.object2IntEntrySet().iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          it.unimi.dsi.fastutil.objects.Object2IntMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry)var2.next();
          Stat var4 = (Stat)var3.getKey();
-         ((JsonObject)var1.computeIfAbsent(var4.getType(), var0 -> new JsonObject())).addProperty(getKey(var4).toString(), var3.getIntValue());
+         var1.computeIfAbsent(var4.getType(), var0 -> new JsonObject()).addProperty(getKey(var4).toString(), var3.getIntValue());
       }
 
       JsonObject var5 = new JsonObject();
 
-      for(Entry var8 : var1.entrySet()) {
+      for (Entry var8 : var1.entrySet()) {
          var5.add(BuiltInRegistries.STAT_TYPE.getKey((StatType<?>)var8.getKey()).toString(), (JsonElement)var8.getValue());
       }
 
@@ -202,7 +202,7 @@ public class ServerStatsCounter extends StatsCounter {
    public void sendStats(ServerPlayer var1) {
       Object2IntOpenHashMap var2 = new Object2IntOpenHashMap();
 
-      for(Stat var4 : this.getDirty()) {
+      for (Stat var4 : this.getDirty()) {
          var2.put(var4, this.getValue(var4));
       }
 

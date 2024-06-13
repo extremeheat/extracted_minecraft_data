@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -99,7 +98,7 @@ public class ReloadableServerResources {
    }
 
    public void updateRegistryTags() {
-      this.tagManager.getResult().forEach(var1 -> updateRegistryTags(this.fullRegistryHolder.get(), var1));
+      this.tagManager.getResult().forEach(var1 -> updateRegistryTags(this.fullRegistryHolder.get(), (TagManager.LoadResult<?>)var1));
       AbstractFurnaceBlockEntity.invalidateCache();
       Blocks.rebuildCache();
    }
@@ -142,9 +141,9 @@ public class ReloadableServerResources {
          return new HolderLookup.RegistryLookup.Delegate<T>() {
             @Override
             public HolderLookup.RegistryLookup<T> parent() {
-               return switch(ConfigurableRegistryLookup.this.missingTagAccessPolicy) {
-                  case FAIL -> var1;
+               return switch (ConfigurableRegistryLookup.this.missingTagAccessPolicy) {
                   case CREATE_NEW -> var2;
+                  case FAIL -> var1;
                };
             }
          };

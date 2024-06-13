@@ -5,7 +5,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -23,37 +22,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
 public record DimensionType(
-   OptionalLong k,
-   boolean l,
-   boolean m,
-   boolean n,
-   boolean o,
-   double p,
-   boolean q,
-   boolean r,
-   int s,
-   int t,
-   int u,
-   TagKey<Block> v,
-   ResourceLocation w,
-   float x,
-   DimensionType.MonsterSettings y
+   OptionalLong fixedTime,
+   boolean hasSkyLight,
+   boolean hasCeiling,
+   boolean ultraWarm,
+   boolean natural,
+   double coordinateScale,
+   boolean bedWorks,
+   boolean respawnAnchorWorks,
+   int minY,
+   int height,
+   int logicalHeight,
+   TagKey<Block> infiniburn,
+   ResourceLocation effectsLocation,
+   float ambientLight,
+   DimensionType.MonsterSettings monsterSettings
 ) {
-   private final OptionalLong fixedTime;
-   private final boolean hasSkyLight;
-   private final boolean hasCeiling;
-   private final boolean ultraWarm;
-   private final boolean natural;
-   private final double coordinateScale;
-   private final boolean bedWorks;
-   private final boolean respawnAnchorWorks;
-   private final int minY;
-   private final int height;
-   private final int logicalHeight;
-   private final TagKey<Block> infiniburn;
-   private final ResourceLocation effectsLocation;
-   private final float ambientLight;
-   private final DimensionType.MonsterSettings monsterSettings;
    public static final int BITS_FOR_Y = BlockPos.PACKED_Y_LENGTH;
    public static final int MIN_HEIGHT = 16;
    public static final int Y_SIZE = (1 << BITS_FOR_Y) - 32;
@@ -64,7 +48,7 @@ public record DimensionType(
    public static final Codec<DimensionType> DIRECT_CODEC = ExtraCodecs.catchDecoderException(
       RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.asOptionalLong(Codec.LONG.optionalFieldOf("fixed_time")).forGetter(DimensionType::fixedTime),
+                  ExtraCodecs.asOptionalLong(Codec.LONG.lenientOptionalFieldOf("fixed_time")).forGetter(DimensionType::fixedTime),
                   Codec.BOOL.fieldOf("has_skylight").forGetter(DimensionType::hasSkyLight),
                   Codec.BOOL.fieldOf("has_ceiling").forGetter(DimensionType::hasCeiling),
                   Codec.BOOL.fieldOf("ultrawarm").forGetter(DimensionType::ultraWarm),
@@ -88,49 +72,49 @@ public record DimensionType(
    public static final Codec<Holder<DimensionType>> CODEC = RegistryFileCodec.create(Registries.DIMENSION_TYPE, DIRECT_CODEC);
 
    public DimensionType(
-      OptionalLong var1,
-      boolean var2,
-      boolean var3,
-      boolean var4,
-      boolean var5,
-      double var6,
-      boolean var8,
-      boolean var9,
-      int var10,
-      int var11,
-      int var12,
-      TagKey<Block> var13,
-      ResourceLocation var14,
-      float var15,
-      DimensionType.MonsterSettings var16
+      OptionalLong fixedTime,
+      boolean hasSkyLight,
+      boolean hasCeiling,
+      boolean ultraWarm,
+      boolean natural,
+      double coordinateScale,
+      boolean bedWorks,
+      boolean respawnAnchorWorks,
+      int minY,
+      int height,
+      int logicalHeight,
+      TagKey<Block> infiniburn,
+      ResourceLocation effectsLocation,
+      float ambientLight,
+      DimensionType.MonsterSettings monsterSettings
    ) {
       super();
-      if (var11 < 16) {
+      if (height < 16) {
          throw new IllegalStateException("height has to be at least 16");
-      } else if (var10 + var11 > MAX_Y + 1) {
+      } else if (minY + height > MAX_Y + 1) {
          throw new IllegalStateException("min_y + height cannot be higher than: " + (MAX_Y + 1));
-      } else if (var12 > var11) {
+      } else if (logicalHeight > height) {
          throw new IllegalStateException("logical_height cannot be higher than height");
-      } else if (var11 % 16 != 0) {
+      } else if (height % 16 != 0) {
          throw new IllegalStateException("height has to be multiple of 16");
-      } else if (var10 % 16 != 0) {
+      } else if (minY % 16 != 0) {
          throw new IllegalStateException("min_y has to be a multiple of 16");
       } else {
-         this.fixedTime = var1;
-         this.hasSkyLight = var2;
-         this.hasCeiling = var3;
-         this.ultraWarm = var4;
-         this.natural = var5;
-         this.coordinateScale = var6;
-         this.bedWorks = var8;
-         this.respawnAnchorWorks = var9;
-         this.minY = var10;
-         this.height = var11;
-         this.logicalHeight = var12;
-         this.infiniburn = var13;
-         this.effectsLocation = var14;
-         this.ambientLight = var15;
-         this.monsterSettings = var16;
+         this.fixedTime = fixedTime;
+         this.hasSkyLight = hasSkyLight;
+         this.hasCeiling = hasCeiling;
+         this.ultraWarm = ultraWarm;
+         this.natural = natural;
+         this.coordinateScale = coordinateScale;
+         this.bedWorks = bedWorks;
+         this.respawnAnchorWorks = respawnAnchorWorks;
+         this.minY = minY;
+         this.height = height;
+         this.logicalHeight = logicalHeight;
+         this.infiniburn = infiniburn;
+         this.effectsLocation = effectsLocation;
+         this.ambientLight = ambientLight;
+         this.monsterSettings = monsterSettings;
       }
    }
 
@@ -203,11 +187,7 @@ public record DimensionType(
       return this.monsterSettings.monsterSpawnBlockLightLimit();
    }
 
-   public static record MonsterSettings(boolean b, boolean c, IntProvider d, int e) {
-      private final boolean piglinSafe;
-      private final boolean hasRaids;
-      private final IntProvider monsterSpawnLightTest;
-      private final int monsterSpawnBlockLightLimit;
+   public static record MonsterSettings(boolean piglinSafe, boolean hasRaids, IntProvider monsterSpawnLightTest, int monsterSpawnBlockLightLimit) {
       public static final MapCodec<DimensionType.MonsterSettings> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   Codec.BOOL.fieldOf("piglin_safe").forGetter(DimensionType.MonsterSettings::piglinSafe),
@@ -218,12 +198,12 @@ public record DimensionType(
                .apply(var0, DimensionType.MonsterSettings::new)
       );
 
-      public MonsterSettings(boolean var1, boolean var2, IntProvider var3, int var4) {
+      public MonsterSettings(boolean piglinSafe, boolean hasRaids, IntProvider monsterSpawnLightTest, int monsterSpawnBlockLightLimit) {
          super();
-         this.piglinSafe = var1;
-         this.hasRaids = var2;
-         this.monsterSpawnLightTest = var3;
-         this.monsterSpawnBlockLightLimit = var4;
+         this.piglinSafe = piglinSafe;
+         this.hasRaids = hasRaids;
+         this.monsterSpawnLightTest = monsterSpawnLightTest;
+         this.monsterSpawnBlockLightLimit = monsterSpawnBlockLightLimit;
       }
    }
 }

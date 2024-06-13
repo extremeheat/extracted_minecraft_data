@@ -2,11 +2,9 @@ package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Optional;
 import java.util.function.Function;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -37,9 +35,9 @@ public class SetWalkTargetFromAttackTargetIfTargetOutOfReach {
                         var2.erase();
                      } else {
                         var3.set(new EntityTracker(var10, true));
-                        var2.set(new WalkTarget(new EntityTracker(var10, false), var0.apply(var7), 0));
+                        var2.set(new WalkTarget(new EntityTracker(var10, false), (Float)var0.apply(var7), 0));
                      }
-      
+
                      return true;
                   })
       );

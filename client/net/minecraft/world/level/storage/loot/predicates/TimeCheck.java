@@ -1,30 +1,25 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 
-public record TimeCheck(Optional<Long> b, IntRange c) implements LootItemCondition {
-   private final Optional<Long> period;
-   private final IntRange value;
-   public static final Codec<TimeCheck> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(Codec.LONG, "period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value)
-            )
+public record TimeCheck(Optional<Long> period, IntRange value) implements LootItemCondition {
+   public static final MapCodec<TimeCheck> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(Codec.LONG.optionalFieldOf("period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value))
             .apply(var0, TimeCheck::new)
    );
 
-   public TimeCheck(Optional<Long> var1, IntRange var2) {
+   public TimeCheck(Optional<Long> period, IntRange value) {
       super();
-      this.period = var1;
-      this.value = var2;
+      this.period = period;
+      this.value = value;
    }
 
    @Override

@@ -22,11 +22,12 @@ public class VertexFormat {
       this.elementMapping = var1;
       this.elements = var1.values().asList();
       int var2 = 0;
+      UnmodifiableIterator var3 = var1.values().iterator();
 
-      VertexFormatElement var4;
-      for(UnmodifiableIterator var3 = var1.values().iterator(); var3.hasNext(); var2 += var4.getByteSize()) {
-         var4 = (VertexFormatElement)var3.next();
+      while (var3.hasNext()) {
+         VertexFormatElement var4 = (VertexFormatElement)var3.next();
          this.offsets.add(var2);
+         var2 += var4.getByteSize();
       }
 
       this.vertexSize = var2;
@@ -37,7 +38,7 @@ public class VertexFormat {
       return "format: "
          + this.elementMapping.size()
          + " elements: "
-         + (String)this.elementMapping.entrySet().stream().map(Object::toString).collect(Collectors.joining(" "));
+         + this.elementMapping.entrySet().stream().map(Object::toString).collect(Collectors.joining(" "));
    }
 
    public int getIntegerSize() {
@@ -85,7 +86,7 @@ public class VertexFormat {
       int var1 = this.getVertexSize();
       ImmutableList var2 = this.getElements();
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
+      for (int var3 = 0; var3 < var2.size(); var3++) {
          ((VertexFormatElement)var2.get(var3)).setupBufferState(var3, (long)this.offsets.getInt(var3), var1);
       }
    }
@@ -101,7 +102,7 @@ public class VertexFormat {
    private void _clearBufferState() {
       ImmutableList var1 = this.getElements();
 
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
+      for (int var2 = 0; var2 < var1.size(); var2++) {
          VertexFormatElement var3 = (VertexFormatElement)var1.get(var2);
          var3.clearBufferState(var2);
       }
@@ -156,9 +157,9 @@ public class VertexFormat {
       }
 
       public int indexCount(int var1) {
-         return switch(this) {
-            case LINE_STRIP, DEBUG_LINES, DEBUG_LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN -> var1;
+         return switch (this) {
             case LINES, QUADS -> var1 / 4 * 6;
+            case LINE_STRIP, DEBUG_LINES, DEBUG_LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN -> var1;
             default -> 0;
          };
       }

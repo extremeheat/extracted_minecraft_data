@@ -2,22 +2,18 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
-public record EnchantmentPredicate(Optional<Holder<Enchantment>> b, MinMaxBounds.Ints c) {
-   private final Optional<Holder<Enchantment>> enchantment;
-   private final MinMaxBounds.Ints level;
+public record EnchantmentPredicate(Optional<Holder<Enchantment>> enchantment, MinMaxBounds.Ints level) {
    public static final Codec<EnchantmentPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(BuiltInRegistries.ENCHANTMENT.holderByNameCodec(), "enchantment").forGetter(EnchantmentPredicate::enchantment),
-               ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "levels", MinMaxBounds.Ints.ANY).forGetter(EnchantmentPredicate::level)
+               BuiltInRegistries.ENCHANTMENT.holderByNameCodec().optionalFieldOf("enchantment").forGetter(EnchantmentPredicate::enchantment),
+               MinMaxBounds.Ints.CODEC.optionalFieldOf("levels", MinMaxBounds.Ints.ANY).forGetter(EnchantmentPredicate::level)
             )
             .apply(var0, EnchantmentPredicate::new)
    );
@@ -26,10 +22,10 @@ public record EnchantmentPredicate(Optional<Holder<Enchantment>> b, MinMaxBounds
       this(Optional.of(var1.builtInRegistryHolder()), var2);
    }
 
-   public EnchantmentPredicate(Optional<Holder<Enchantment>> var1, MinMaxBounds.Ints var2) {
+   public EnchantmentPredicate(Optional<Holder<Enchantment>> enchantment, MinMaxBounds.Ints level) {
       super();
-      this.enchantment = var1;
-      this.level = var2;
+      this.enchantment = enchantment;
+      this.level = level;
    }
 
    public boolean containedIn(ItemEnchantments var1) {
@@ -44,7 +40,7 @@ public record EnchantmentPredicate(Optional<Holder<Enchantment>> b, MinMaxBounds
             return false;
          }
       } else if (this.level != MinMaxBounds.Ints.ANY) {
-         for(Entry var5 : var1.entrySet()) {
+         for (Entry var5 : var1.entrySet()) {
             if (this.level.matches(var5.getIntValue())) {
                return true;
             }

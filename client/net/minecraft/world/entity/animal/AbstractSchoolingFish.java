@@ -56,11 +56,11 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
    }
 
    private void addFollower() {
-      ++this.schoolSize;
+      this.schoolSize++;
    }
 
    private void removeFollower() {
-      --this.schoolSize;
+      this.schoolSize--;
    }
 
    public boolean canBeFollowed() {

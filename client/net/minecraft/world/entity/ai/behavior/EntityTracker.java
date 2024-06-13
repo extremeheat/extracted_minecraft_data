@@ -30,13 +30,12 @@ public class EntityTracker implements PositionTracker {
 
    @Override
    public boolean isVisibleBy(LivingEntity var1) {
-      Entity var3 = this.entity;
-      if (var3 instanceof LivingEntity var2) {
-         if (!((LivingEntity)var2).isAlive()) {
+      if (this.entity instanceof LivingEntity var2) {
+         if (!var2.isAlive()) {
             return false;
          } else {
             Optional var4 = var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-            return var4.isPresent() && ((NearestVisibleLivingEntities)var4.get()).contains((LivingEntity)var2);
+            return var4.isPresent() && ((NearestVisibleLivingEntities)var4.get()).contains(var2);
          }
       } else {
          return true;

@@ -26,7 +26,7 @@ public abstract class AggregatedTelemetryEvent {
    public void tick(TelemetryEventSender var1) {
       if (this.shouldTakeSample()) {
          this.takeSample();
-         ++this.sampleCount;
+         this.sampleCount++;
          this.lastSampleTime = Instant.now();
       }
 

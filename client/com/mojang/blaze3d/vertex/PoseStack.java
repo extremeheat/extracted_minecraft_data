@@ -2,7 +2,6 @@ package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.Queues;
 import com.mojang.math.MatrixUtil;
-import java.util.ArrayDeque;
 import java.util.Deque;
 import net.minecraft.Util;
 import org.joml.Matrix3f;

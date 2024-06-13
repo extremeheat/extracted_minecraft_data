@@ -429,7 +429,7 @@ public class PiglinAi {
       if (!var1.isEmpty()) {
          var0.swing(InteractionHand.OFF_HAND);
 
-         for(ItemStack var4 : var1) {
+         for (ItemStack var4 : var1) {
             BehaviorUtils.throwItem(var0, var4, var2.add(0.0, 1.0, 0.0));
          }
       }
@@ -443,11 +443,7 @@ public class PiglinAi {
    }
 
    private static boolean wantsToDance(LivingEntity var0, LivingEntity var1) {
-      if (var1.getType() != EntityType.HOGLIN) {
-         return false;
-      } else {
-         return RandomSource.create(var0.level().getGameTime()).nextFloat() < 0.1F;
-      }
+      return var1.getType() != EntityType.HOGLIN ? false : RandomSource.create(var0.level().getGameTime()).nextFloat() < 0.1F;
    }
 
    protected static boolean wantsToPickup(Piglin var0, ItemStack var1) {
@@ -465,10 +461,8 @@ public class PiglinAi {
             return var2;
          } else if (isFood(var1)) {
             return !hasEatenRecently(var0) && var2;
-         } else if (!isLovedItem(var1)) {
-            return var0.canReplaceCurrentItem(var1);
          } else {
-            return isNotHoldingLovedItemInOffHand(var0) && var2;
+            return !isLovedItem(var1) ? var0.canReplaceCurrentItem(var1) : isNotHoldingLovedItemInOffHand(var0) && var2;
          }
       }
    }
@@ -478,12 +472,9 @@ public class PiglinAi {
    }
 
    private static boolean wantsToStopRiding(Piglin var0, Entity var1) {
-      if (!(var1 instanceof Mob)) {
-         return false;
-      } else {
-         Mob var2 = (Mob)var1;
-         return !var2.isBaby() || !var2.isAlive() || wasHurtRecently(var0) || wasHurtRecently(var2) || var2 instanceof Piglin && var2.getVehicle() == null;
-      }
+      return !(var1 instanceof Mob var2)
+         ? false
+         : !var2.isBaby() || !var2.isAlive() || wasHurtRecently(var0) || wasHurtRecently(var2) || var2 instanceof Piglin && var2.getVehicle() == null;
    }
 
    private static boolean isNearestValidAttackTarget(Piglin var0, LivingEntity var1) {
@@ -640,7 +631,7 @@ public class PiglinAi {
    }
 
    public static boolean isWearingGold(LivingEntity var0) {
-      for(ItemStack var3 : var0.getArmorAndBodyArmorSlots()) {
+      for (ItemStack var3 : var0.getArmorAndBodyArmorSlots()) {
          Item var4 = var3.getItem();
          if (var4 instanceof ArmorItem && ((ArmorItem)var4).getMaterial().is(ArmorMaterials.GOLD)) {
             return true;
@@ -742,10 +733,8 @@ public class PiglinAi {
          EntityType var3 = var2.getType();
          if (var3 == EntityType.HOGLIN) {
             return piglinsEqualOrOutnumberHoglins(var0);
-         } else if (isZombified(var3)) {
-            return !var1.isMemoryValue(MemoryModuleType.NEAREST_VISIBLE_ZOMBIFIED, var2);
          } else {
-            return false;
+            return isZombified(var3) ? !var1.isMemoryValue(MemoryModuleType.NEAREST_VISIBLE_ZOMBIFIED, var2) : false;
          }
       }
    }

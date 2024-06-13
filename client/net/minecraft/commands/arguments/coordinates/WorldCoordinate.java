@@ -78,15 +78,10 @@ public class WorldCoordinate {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof WorldCoordinate)) {
+      } else if (!(var1 instanceof WorldCoordinate var2)) {
          return false;
       } else {
-         WorldCoordinate var2 = (WorldCoordinate)var1;
-         if (this.relative != var2.relative) {
-            return false;
-         } else {
-            return Double.compare(var2.value, this.value) == 0;
-         }
+         return this.relative != var2.relative ? false : Double.compare(var2.value, this.value) == 0;
       }
    }
 

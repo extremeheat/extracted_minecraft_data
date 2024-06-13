@@ -45,7 +45,7 @@ public final class LongJumpUtil {
                Vec3 var43 = null;
                EntityDimensions var44 = var0.getDimensions(Pose.LONG_JUMPING);
 
-               for(int var45 = 0; var45 < var40 - 1; ++var45) {
+               for (int var45 = 0; var45 < var40 - 1; var45++) {
                   var41 += var14 / (double)var40;
                   double var46 = var24 / var26 * var41 - Math.pow(var41, 2.0) * var18 / (2.0 * var32 * Math.pow(var26, 2.0));
                   double var48 = var41 * var30;
@@ -71,7 +71,7 @@ public final class LongJumpUtil {
       Vec3 var8 = var4.normalize();
       Vec3 var9 = var2;
 
-      for(int var10 = 0; var10 < var7; ++var10) {
+      for (int var10 = 0; var10 < var7; var10++) {
          var9 = var10 == var7 - 1 ? var3 : var9.add(var8.scale(var5 * 0.8999999761581421));
          if (!var0.level().noCollision(var0, var1.makeBoundingBox(var9))) {
             return false;

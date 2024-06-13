@@ -48,9 +48,9 @@ public class ReloadableServerRegistries {
    public static CompletableFuture<LayeredRegistryAccess<RegistryLayer>> reload(LayeredRegistryAccess<RegistryLayer> var0, ResourceManager var1, Executor var2) {
       RegistryAccess.Frozen var3 = var0.getAccessForLoading(RegistryLayer.RELOADABLE);
       RegistryOps var4 = new ReloadableServerRegistries.EmptyTagLookupWrapper(var3).createSerializationContext(JsonOps.INSTANCE);
-      List var5 = LootDataType.values().map(var3x -> scheduleElementParse(var3x, var4, var1, var2)).toList();
+      List var5 = LootDataType.values().map(var3x -> scheduleElementParse((LootDataType<?>)var3x, var4, var1, var2)).toList();
       CompletableFuture var6 = Util.sequence(var5);
-      return var6.thenApplyAsync(var1x -> apply(var0, var1x), var2);
+      return var6.thenApplyAsync(var1x -> apply(var0, (List<WritableRegistry<?>>)var1x), var2);
    }
 
    private static <T> CompletableFuture<WritableRegistry<?>> scheduleElementParse(
@@ -58,14 +58,14 @@ public class ReloadableServerRegistries {
    ) {
       return CompletableFuture.supplyAsync(
          () -> {
-            MappedRegistry var3xx = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
+            MappedRegistry var3x = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
             HashMap var4 = new HashMap();
             SimpleJsonResourceReloadListener.scanDirectory(var2, var0.directory(), GSON, var4);
             var4.forEach(
                (var3xx, var4x) -> var0.deserialize(var3xx, var1, var4x)
                      .ifPresent(var3xxx -> var3x.register(ResourceKey.create(var0.registryKey(), var3xx), var3xxx, DEFAULT_REGISTRATION_INFO))
             );
-            return var3xx;
+            return var3x;
          },
          var3
       );
@@ -76,7 +76,7 @@ public class ReloadableServerRegistries {
       ProblemReporter.Collector var3 = new ProblemReporter.Collector();
       RegistryAccess.Frozen var4 = var2.compositeAccess();
       ValidationContext var5 = new ValidationContext(var3, LootContextParamSets.ALL_PARAMS, var4.asGetterLookup());
-      LootDataType.values().forEach(var2x -> validateRegistry(var5, var2x, var4));
+      LootDataType.values().forEach(var2x -> validateRegistry(var5, (LootDataType<?>)var2x, var4));
       var3.get().forEach((var0x, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x));
       return var2;
    }

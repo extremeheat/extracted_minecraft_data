@@ -169,7 +169,7 @@ public class ServerScoreboard extends Scoreboard {
    }
 
    protected void setDirty() {
-      for(Runnable var2 : this.dirtyListeners) {
+      for (Runnable var2 : this.dirtyListeners) {
          var2.run();
       }
    }
@@ -178,13 +178,13 @@ public class ServerScoreboard extends Scoreboard {
       ArrayList var2 = Lists.newArrayList();
       var2.add(new ClientboundSetObjectivePacket(var1, 0));
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
+      for (DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
             var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
          }
       }
 
-      for(PlayerScoreEntry var8 : this.listPlayerScores(var1)) {
+      for (PlayerScoreEntry var8 : this.listPlayerScores(var1)) {
          var2.add(
             new ClientboundSetScorePacket(
                var8.owner(), var1.getName(), var8.value(), Optional.ofNullable(var8.display()), Optional.ofNullable(var8.numberFormatOverride())
@@ -198,8 +198,8 @@ public class ServerScoreboard extends Scoreboard {
    public void startTrackingObjective(Objective var1) {
       List var2 = this.getStartTrackingPackets(var1);
 
-      for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-         for(Packet var6 : var2) {
+      for (ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
+         for (Packet var6 : var2) {
             var4.connection.send(var6);
          }
       }
@@ -211,7 +211,7 @@ public class ServerScoreboard extends Scoreboard {
       ArrayList var2 = Lists.newArrayList();
       var2.add(new ClientboundSetObjectivePacket(var1, 1));
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
+      for (DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
             var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
          }
@@ -223,8 +223,8 @@ public class ServerScoreboard extends Scoreboard {
    public void stopTrackingObjective(Objective var1) {
       List var2 = this.getStopTrackingPackets(var1);
 
-      for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-         for(Packet var6 : var2) {
+      for (ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
+         for (Packet var6 : var2) {
             var4.connection.send(var6);
          }
       }
@@ -235,9 +235,9 @@ public class ServerScoreboard extends Scoreboard {
    public int getObjectiveDisplaySlotCount(Objective var1) {
       int var2 = 0;
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
+      for (DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
-            ++var2;
+            var2++;
          }
       }
 

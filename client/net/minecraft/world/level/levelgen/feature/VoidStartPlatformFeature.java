@@ -31,8 +31,8 @@ public class VoidStartPlatformFeature extends Feature<NoneFeatureConfiguration> 
          BlockPos var4 = PLATFORM_OFFSET.atY(var1.origin().getY() + PLATFORM_OFFSET.getY());
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-         for(int var6 = var3.getMinBlockZ(); var6 <= var3.getMaxBlockZ(); ++var6) {
-            for(int var7 = var3.getMinBlockX(); var7 <= var3.getMaxBlockX(); ++var7) {
+         for (int var6 = var3.getMinBlockZ(); var6 <= var3.getMaxBlockZ(); var6++) {
+            for (int var7 = var3.getMinBlockX(); var7 <= var3.getMaxBlockX(); var7++) {
                if (checkerboardDistance(var4.getX(), var4.getZ(), var7, var6) <= 16) {
                   var5.set(var7, var4.getY(), var6);
                   if (var5.equals(var4)) {

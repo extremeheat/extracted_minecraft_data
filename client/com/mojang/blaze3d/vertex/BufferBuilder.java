@@ -115,7 +115,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
    private IntConsumer intConsumer(int var1, VertexFormat.IndexType var2) {
       MutableInt var3 = new MutableInt(var1);
 
-      return switch(var2) {
+      return switch (var2) {
          case SHORT -> var2x -> this.buffer.putShort(var3.getAndAdd(2), (short)var2x);
          case INT -> var2x -> this.buffer.putInt(var3.getAndAdd(4), var2x);
       };
@@ -129,7 +129,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       int var5 = this.vertices / this.mode.primitiveStride;
       Vector3f[] var6 = new Vector3f[var5];
 
-      for(int var7 = 0; var7 < var5; ++var7) {
+      for (int var7 = 0; var7 < var5; var7++) {
          float var8 = var1.get(var2 + var7 * var4 + 0);
          float var9 = var1.get(var2 + var7 * var4 + 1);
          float var10 = var1.get(var2 + var7 * var4 + 2);
@@ -150,7 +150,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
          int[] var2 = this.sorting.sort(this.sortingPoints);
          IntConsumer var3 = this.intConsumer(this.nextElementByte, var1);
 
-         for(int var7 : var2) {
+         for (int var7 : var2) {
             var3.accept(var7 * this.mode.primitiveStride + 0);
             var3.accept(var7 * this.mode.primitiveStride + 1);
             var3.accept(var7 * this.mode.primitiveStride + 2);
@@ -213,7 +213,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
 
       int var8 = this.renderedBufferPointer;
       this.renderedBufferPointer += var5;
-      ++this.renderedBufferCount;
+      this.renderedBufferCount++;
       BufferBuilder.DrawState var7 = new BufferBuilder.DrawState(this.format, this.vertices, var1, this.mode, var3, this.indexOnly, var4);
       return new BufferBuilder.RenderedBuffer(var8, var7);
    }
@@ -248,13 +248,13 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       if (this.elementIndex != 0) {
          throw new IllegalStateException("Not filled all elements of the vertex");
       } else {
-         ++this.vertices;
+         this.vertices++;
          this.ensureVertexCapacity();
          if (this.mode == VertexFormat.Mode.LINES || this.mode == VertexFormat.Mode.LINE_STRIP) {
             int var1 = this.format.getVertexSize();
             this.buffer.put(this.nextElementByte, this.buffer, this.nextElementByte - var1, var1);
             this.nextElementByte += var1;
-            ++this.vertices;
+            this.vertices++;
             this.ensureVertexCapacity();
          }
       }
@@ -264,7 +264,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
    public void nextElement() {
       ImmutableList var1 = this.format.getElements();
       this.elementIndex = (this.elementIndex + 1) % var1.size();
-      this.nextElementByte += this.currentElement.getByteSize();
+      this.nextElementByte = this.nextElementByte + this.currentElement.getByteSize();
       VertexFormatElement var2 = (VertexFormatElement)var1.get(this.elementIndex);
       this.currentElement = var2;
       if (var2.getUsage() == VertexFormatElement.Usage.PADDING) {
@@ -383,24 +383,33 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       return MemoryUtil.memSlice(this.buffer, var1, var2 - var1);
    }
 
-   public static record DrawState(VertexFormat a, int b, int c, VertexFormat.Mode d, VertexFormat.IndexType e, boolean f, boolean g) {
-      private final VertexFormat format;
-      final int vertexCount;
-      private final int indexCount;
-      private final VertexFormat.Mode mode;
-      private final VertexFormat.IndexType indexType;
-      private final boolean indexOnly;
-      private final boolean sequentialIndex;
+   public static record DrawState(
+      VertexFormat format,
+      int vertexCount,
+      int indexCount,
+      VertexFormat.Mode mode,
+      VertexFormat.IndexType indexType,
+      boolean indexOnly,
+      boolean sequentialIndex
+   ) {
 
-      public DrawState(VertexFormat var1, int var2, int var3, VertexFormat.Mode var4, VertexFormat.IndexType var5, boolean var6, boolean var7) {
+      public DrawState(
+         VertexFormat format,
+         int vertexCount,
+         int indexCount,
+         VertexFormat.Mode mode,
+         VertexFormat.IndexType indexType,
+         boolean indexOnly,
+         boolean sequentialIndex
+      ) {
          super();
-         this.format = var1;
-         this.vertexCount = var2;
-         this.indexCount = var3;
-         this.mode = var4;
-         this.indexType = var5;
-         this.indexOnly = var6;
-         this.sequentialIndex = var7;
+         this.format = format;
+         this.vertexCount = vertexCount;
+         this.indexCount = indexCount;
+         this.mode = mode;
+         this.indexType = indexType;
+         this.indexOnly = indexOnly;
+         this.sequentialIndex = sequentialIndex;
       }
 
       public int vertexBufferSize() {

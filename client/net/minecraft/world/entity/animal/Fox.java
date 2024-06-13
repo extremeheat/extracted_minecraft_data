@@ -106,14 +106,9 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    private static final EntityDataAccessor<Optional<UUID>> DATA_TRUSTED_ID_0 = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.OPTIONAL_UUID);
    private static final EntityDataAccessor<Optional<UUID>> DATA_TRUSTED_ID_1 = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.OPTIONAL_UUID);
    static final Predicate<ItemEntity> ALLOWED_ITEMS = var0 -> !var0.hasPickUpDelay() && var0.isAlive();
-   private static final Predicate<Entity> TRUSTED_TARGET_SELECTOR = var0 -> {
-      if (!(var0 instanceof LivingEntity)) {
-         return false;
-      } else {
-         LivingEntity var1 = (LivingEntity)var0;
-         return var1.getLastHurtMob() != null && var1.getLastHurtMobTimestamp() < var1.tickCount + 600;
-      }
-   };
+   private static final Predicate<Entity> TRUSTED_TARGET_SELECTOR = var0 -> !(var0 instanceof LivingEntity var1)
+         ? false
+         : var1.getLastHurtMob() != null && var1.getLastHurtMobTimestamp() < var1.tickCount + 600;
    static final Predicate<Entity> STALKABLE_PREY = var0 -> var0 instanceof Chicken || var0 instanceof Rabbit;
    private static final Predicate<Entity> AVOID_PLAYERS = var0 -> !var0.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(var0);
    private static final int MIN_TICKS_BEFORE_EAT = 600;
@@ -189,7 +184,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    @Override
    public void aiStep() {
       if (!this.level().isClientSide && this.isAlive() && this.isEffectiveAi()) {
-         ++this.ticksSinceEaten;
+         this.ticksSinceEaten++;
          ItemStack var1 = this.getItemBySlot(EquipmentSlot.MAINHAND);
          if (this.canEat(var1)) {
             if (this.ticksSinceEaten > 600) {
@@ -261,7 +256,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       if (var1 == 45) {
          ItemStack var2 = this.getItemBySlot(EquipmentSlot.MAINHAND);
          if (!var2.isEmpty()) {
-            for(int var3 = 0; var3 < 8; ++var3) {
+            for (int var3 = 0; var3 < 8; var3++) {
                Vec3 var4 = new Vec3(((double)this.random.nextFloat() - 0.5) * 0.1, Math.random() * 0.1 + 0.1, 0.0)
                   .xRot(-this.getXRot() * 0.017453292F)
                   .yRot(-this.getYRot() * 0.017453292F);
@@ -304,8 +299,6 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       return var1.getBlockState(var3.below()).is(BlockTags.FOXES_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
@@ -389,7 +382,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       List var2 = this.getTrustedUUIDs();
       ListTag var3 = new ListTag();
 
-      for(UUID var5 : var2) {
+      for (UUID var5 : var2) {
          if (var5 != null) {
             var3.add(NbtUtils.createUUID(var5));
          }
@@ -406,7 +399,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
 
-      for(Tag var4 : var1.getList("Trusted", 11)) {
+      for (Tag var4 : var1.getList("Trusted", 11)) {
          this.addTrustedUUID(NbtUtils.loadUUID(var4));
       }
 
@@ -467,11 +460,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    @Override
    public boolean canTakeItem(ItemStack var1) {
       EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
-      if (!this.getItemBySlot(var2).isEmpty()) {
-         return false;
-      } else {
-         return var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
-      }
+      return !this.getItemBySlot(var2).isEmpty() ? false : var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
    }
 
    @Override
@@ -536,9 +525,9 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
 
       this.interestedAngleO = this.interestedAngle;
       if (this.isInterested()) {
-         this.interestedAngle += (1.0F - this.interestedAngle) * 0.4F;
+         this.interestedAngle = this.interestedAngle + (1.0F - this.interestedAngle) * 0.4F;
       } else {
-         this.interestedAngle += (0.0F - this.interestedAngle) * 0.4F;
+         this.interestedAngle = this.interestedAngle + (0.0F - this.interestedAngle) * 0.4F;
       }
 
       this.crouchAmountO = this.crouchAmount;
@@ -692,13 +681,13 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       double var2 = var1.getZ() - var0.getZ();
       double var4 = var1.getX() - var0.getX();
       double var6 = var2 / var4;
-      boolean var8 = true;
+      byte var8 = 6;
 
-      for(int var9 = 0; var9 < 6; ++var9) {
+      for (int var9 = 0; var9 < 6; var9++) {
          double var10 = var6 == 0.0 ? 0.0 : var2 * (double)((float)var9 / 6.0F);
          double var12 = var6 == 0.0 ? var4 * (double)((float)var9 / 6.0F) : var10 / var6;
 
-         for(int var14 = 1; var14 < 4; ++var14) {
+         for (int var14 = 1; var14 < 4; var14++) {
             if (!var0.level().getBlockState(BlockPos.containing(var0.getX() + var12, var0.getY() + (double)var14, var0.getZ() + var10)).canBeReplaced()) {
                return false;
             }
@@ -729,15 +718,12 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
          if (this.randomInterval > 0 && this.mob.getRandom().nextInt(this.randomInterval) != 0) {
             return false;
          } else {
-            for(UUID var2 : Fox.this.getTrustedUUIDs()) {
-               if (var2 != null && Fox.this.level() instanceof ServerLevel) {
-                  Entity var3 = ((ServerLevel)Fox.this.level()).getEntity(var2);
-                  if (var3 instanceof LivingEntity var4) {
-                     this.trustedLastHurt = (LivingEntity)var4;
-                     this.trustedLastHurtBy = ((LivingEntity)var4).getLastHurtByMob();
-                     int var5 = ((LivingEntity)var4).getLastHurtByMobTimestamp();
-                     return var5 != this.timestamp && this.canAttack(this.trustedLastHurtBy, this.targetConditions);
-                  }
+            for (UUID var2 : Fox.this.getTrustedUUIDs()) {
+               if (var2 != null && Fox.this.level() instanceof ServerLevel && ((ServerLevel)Fox.this.level()).getEntity(var2) instanceof LivingEntity var4) {
+                  this.trustedLastHurt = var4;
+                  this.trustedLastHurtBy = var4.getLastHurtByMob();
+                  int var5 = var4.getLastHurtByMobTimestamp();
+                  return var5 != this.timestamp && this.canAttack(this.trustedLastHurtBy, this.targetConditions);
                }
             }
 
@@ -790,7 +776,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
 
       @Override
       public void tick() {
-         --this.countdown;
+         this.countdown--;
       }
    }
 
@@ -807,11 +793,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
          } else if (var1 instanceof TamableAnimal) {
             return !((TamableAnimal)var1).isTame();
          } else if (!(var1 instanceof Player) || !var1.isSpectator() && !((Player)var1).isCreative()) {
-            if (Fox.this.trusts(var1.getUUID())) {
-               return false;
-            } else {
-               return !var1.isSleeping() && !var1.isDiscrete();
-            }
+            return Fox.this.trusts(var1.getUUID()) ? false : !var1.isSleeping() && !var1.isDiscrete();
          } else {
             return false;
          }
@@ -923,7 +905,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
             if (this.ticksWaited >= 40) {
                this.onReachedTarget();
             } else {
-               ++this.ticksWaited;
+               this.ticksWaited++;
             }
          } else if (!this.isReachedTarget() && Fox.this.random.nextFloat() < 0.05F) {
             Fox.this.playSound(SoundEvents.FOX_SNIFF, 1.0F, 1.0F);
@@ -954,7 +936,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
          ItemStack var4 = Fox.this.getItemBySlot(EquipmentSlot.MAINHAND);
          if (var4.isEmpty()) {
             Fox.this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.SWEET_BERRIES));
-            --var3;
+            var3--;
          }
 
          if (var3 > 0) {
@@ -1324,9 +1306,9 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
 
       @Override
       public void tick() {
-         --this.lookTime;
+         this.lookTime--;
          if (this.lookTime <= 0) {
-            --this.looksRemaining;
+            this.looksRemaining--;
             this.resetLook();
          }
 
@@ -1357,7 +1339,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
             if (Fox.this.level().isThundering() && Fox.this.level().canSeeSky(this.mob.blockPosition())) {
                return this.setWantedPos();
             } else if (this.interval > 0) {
-               --this.interval;
+               this.interval--;
                return false;
             } else {
                this.interval = 100;
@@ -1387,11 +1369,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
 
       @Override
       public boolean canUse() {
-         if (Fox.this.xxa == 0.0F && Fox.this.yya == 0.0F && Fox.this.zza == 0.0F) {
-            return this.canSleep() || Fox.this.isSleeping();
-         } else {
-            return false;
-         }
+         return Fox.this.xxa == 0.0F && Fox.this.yya == 0.0F && Fox.this.zza == 0.0F ? this.canSleep() || Fox.this.isSleeping() : false;
       }
 
       @Override
@@ -1401,7 +1379,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
 
       private boolean canSleep() {
          if (this.countdown > 0) {
-            --this.countdown;
+            this.countdown--;
             return false;
          } else {
             return Fox.this.level().isDay() && this.hasShelter() && !this.alertable() && !Fox.this.isInPowderSnow;

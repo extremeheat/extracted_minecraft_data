@@ -86,10 +86,10 @@ class LinkFSProvider extends FileSystemProvider {
                return var3.children().values().stream().filter(var1 -> {
                   try {
                      return var2.accept(var1);
-                  } catch (IOException var3xx) {
-                     throw new DirectoryIteratorException(var3xx);
+                  } catch (IOException var3x) {
+                     throw new DirectoryIteratorException(var3x);
                   }
-               }).map(var0 -> var0).iterator();
+               }).map(var0 -> (Path)var0).iterator();
             }
 
             @Override
@@ -143,15 +143,15 @@ class LinkFSProvider extends FileSystemProvider {
          int var4 = var2.length;
          int var5 = 0;
 
-         while(var5 < var4) {
+         while (var5 < var4) {
             AccessMode var6 = var3[var5];
-            switch(var6) {
+            switch (var6) {
                case READ:
                   if (!toLinkPath(var1).exists()) {
                      throw new NoSuchFileException(var1.toString());
                   }
                default:
-                  ++var5;
+                  var5++;
                   break;
                case EXECUTE:
                case WRITE:

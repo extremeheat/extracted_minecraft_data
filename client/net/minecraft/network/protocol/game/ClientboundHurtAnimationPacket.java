@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.LivingEntity;
 
-public record ClientboundHurtAnimationPacket(int b, float c) implements Packet<ClientGamePacketListener> {
-   private final int id;
-   private final float yaw;
+public record ClientboundHurtAnimationPacket(int id, float yaw) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundHurtAnimationPacket> STREAM_CODEC = Packet.codec(
       ClientboundHurtAnimationPacket::write, ClientboundHurtAnimationPacket::new
    );
@@ -21,10 +19,10 @@ public record ClientboundHurtAnimationPacket(int b, float c) implements Packet<C
       this(var1.readVarInt(), var1.readFloat());
    }
 
-   public ClientboundHurtAnimationPacket(int var1, float var2) {
+   public ClientboundHurtAnimationPacket(int id, float yaw) {
       super();
-      this.id = var1;
-      this.yaw = var2;
+      this.id = id;
+      this.yaw = yaw;
    }
 
    private void write(FriendlyByteBuf var1) {

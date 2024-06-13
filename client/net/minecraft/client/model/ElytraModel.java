@@ -49,8 +49,6 @@ public class ElytraModel<T extends LivingEntity> extends AgeableListModel<T> {
       return ImmutableList.of(this.leftWing, this.rightWing);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       float var7 = 0.2617994F;
       float var8 = -0.2617994F;
@@ -75,9 +73,9 @@ public class ElytraModel<T extends LivingEntity> extends AgeableListModel<T> {
 
       this.leftWing.y = var9;
       if (var1 instanceof AbstractClientPlayer var14) {
-         var14.elytraRotX += (var7 - var14.elytraRotX) * 0.1F;
-         var14.elytraRotY += (var10 - var14.elytraRotY) * 0.1F;
-         var14.elytraRotZ += (var8 - var14.elytraRotZ) * 0.1F;
+         var14.elytraRotX = var14.elytraRotX + (var7 - var14.elytraRotX) * 0.1F;
+         var14.elytraRotY = var14.elytraRotY + (var10 - var14.elytraRotY) * 0.1F;
+         var14.elytraRotZ = var14.elytraRotZ + (var8 - var14.elytraRotZ) * 0.1F;
          this.leftWing.xRot = var14.elytraRotX;
          this.leftWing.yRot = var14.elytraRotY;
          this.leftWing.zRot = var14.elytraRotZ;

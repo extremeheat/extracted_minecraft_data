@@ -52,7 +52,7 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
    private static final ShulkerBoxBlockEntity[] SHULKER_BOXES = Arrays.stream(DyeColor.values())
       .sorted(Comparator.comparingInt(DyeColor::getId))
       .map(var0 -> new ShulkerBoxBlockEntity(var0, BlockPos.ZERO, Blocks.SHULKER_BOX.defaultBlockState()))
-      .toArray(var0 -> new ShulkerBoxBlockEntity[var0]);
+      .toArray(ShulkerBoxBlockEntity[]::new);
    private static final ShulkerBoxBlockEntity DEFAULT_SHULKER_BOX = new ShulkerBoxBlockEntity(BlockPos.ZERO, Blocks.SHULKER_BOX.defaultBlockState());
    private final ChestBlockEntity chest = new ChestBlockEntity(BlockPos.ZERO, Blocks.CHEST.defaultBlockState());
    private final ChestBlockEntity trappedChest = new TrappedChestBlockEntity(BlockPos.ZERO, Blocks.TRAPPED_CHEST.defaultBlockState());
@@ -80,8 +80,6 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
       this.skullModels = SkullBlockRenderer.createSkullRenderers(this.entityModelSet);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void renderByItem(ItemStack var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       Item var7 = var1.getItem();
       if (var7 instanceof BlockItem) {

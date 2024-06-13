@@ -48,7 +48,7 @@ public class DragonEggBlock extends FallingBlock {
    private void teleport(BlockState var1, Level var2, BlockPos var3) {
       WorldBorder var4 = var2.getWorldBorder();
 
-      for(int var5 = 0; var5 < 1000; ++var5) {
+      for (int var5 = 0; var5 < 1000; var5++) {
          BlockPos var6 = var3.offset(
             var2.random.nextInt(16) - var2.random.nextInt(16),
             var2.random.nextInt(8) - var2.random.nextInt(8),
@@ -56,7 +56,7 @@ public class DragonEggBlock extends FallingBlock {
          );
          if (var2.getBlockState(var6).isAir() && var4.isWithinBounds(var6)) {
             if (var2.isClientSide) {
-               for(int var7 = 0; var7 < 128; ++var7) {
+               for (int var7 = 0; var7 < 128; var7++) {
                   double var8 = var2.random.nextDouble();
                   float var10 = (var2.random.nextFloat() - 0.5F) * 0.2F;
                   float var11 = (var2.random.nextFloat() - 0.5F) * 0.2F;

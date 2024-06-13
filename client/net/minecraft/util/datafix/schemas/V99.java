@@ -13,7 +13,6 @@ import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.fixes.References;
 import org.slf4j.Logger;
 
@@ -242,7 +241,11 @@ public class V99 extends Schema {
                )
             )
       );
-      var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.taggedChoiceLazy("id", DSL.string(), var3));
+      var1.registerType(
+         true,
+         References.BLOCK_ENTITY,
+         () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", DSL.string(), var3))
+      );
       var1.registerType(true, References.ENTITY_TREE, () -> DSL.optionalFields("Riding", References.ENTITY_TREE.in(var1), References.ENTITY.in(var1)));
       var1.registerType(false, References.ENTITY_NAME, () -> DSL.constType(NamespacedSchema.namespacedString()));
       var1.registerType(true, References.ENTITY, () -> DSL.taggedChoiceLazy("id", DSL.string(), var2));
@@ -254,13 +257,15 @@ public class V99 extends Schema {
                   "id",
                   DSL.or(DSL.constType(DSL.intType()), References.ITEM_NAME.in(var1)),
                   "tag",
-                  ExtraDataFixUtils.optionalFields(
-                     Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
-                     Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
-                     Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
-                     Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
-                     Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
-                     Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
+                  DSL.optionalFields(
+                     new Pair[]{
+                        Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
+                        Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
+                        Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
+                        Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
+                        Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
+                        Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
+                     }
                   )
                ),
                ADD_NAMES,
@@ -301,20 +306,20 @@ public class V99 extends Schema {
 
    protected static <T> T addNames(Dynamic<T> var0, Map<String, String> var1, Map<String, String> var2) {
       return (T)var0.update("tag", var3 -> var3.update("BlockEntityTag", var2xx -> {
-            String var3xx = var0.get("id").asString().result().map(NamespacedSchema::ensureNamespaced).orElse("minecraft:air");
-            if (!"minecraft:air".equals(var3xx)) {
-               String var4 = (String)var1.get(var3xx);
+            String var3x = var0.get("id").asString().result().map(NamespacedSchema::ensureNamespaced).orElse("minecraft:air");
+            if (!"minecraft:air".equals(var3x)) {
+               String var4 = (String)var1.get(var3x);
                if (var4 != null) {
                   return var2xx.set("id", var0.createString(var4));
                }
 
-               LOGGER.warn("Unable to resolve BlockEntity for ItemStack: {}", var3xx);
+               LOGGER.warn("Unable to resolve BlockEntity for ItemStack: {}", var3x);
             }
 
             return var2xx;
          }).update("EntityTag", var2xx -> {
-            String var3xx = NamespacedSchema.ensureNamespaced(var0.get("id").asString(""));
-            String var4 = (String)var2.get(var3xx);
+            String var3x = NamespacedSchema.ensureNamespaced(var0.get("id").asString(""));
+            String var4 = (String)var2.get(var3x);
             return var4 != null ? var2xx.set("id", var0.createString(var4)) : var2xx;
          })).getValue();
    }

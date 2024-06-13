@@ -23,7 +23,6 @@ public class MiscOverworldFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> ICE_SPIKE = FeatureUtils.createKey("ice_spike");
    public static final ResourceKey<ConfiguredFeature<?, ?>> ICE_PATCH = FeatureUtils.createKey("ice_patch");
    public static final ResourceKey<ConfiguredFeature<?, ?>> FOREST_ROCK = FeatureUtils.createKey("forest_rock");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> POTATO_CLOUD = FeatureUtils.createKey("potato_cloud");
    public static final ResourceKey<ConfiguredFeature<?, ?>> ICEBERG_PACKED = FeatureUtils.createKey("iceberg_packed");
    public static final ResourceKey<ConfiguredFeature<?, ?>> ICEBERG_BLUE = FeatureUtils.createKey("iceberg_blue");
    public static final ResourceKey<ConfiguredFeature<?, ?>> BLUE_ICE = FeatureUtils.createKey("blue_ice");
@@ -36,7 +35,6 @@ public class MiscOverworldFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> BONUS_CHEST = FeatureUtils.createKey("bonus_chest");
    public static final ResourceKey<ConfiguredFeature<?, ?>> VOID_START_PLATFORM = FeatureUtils.createKey("void_start_platform");
    public static final ResourceKey<ConfiguredFeature<?, ?>> DESERT_WELL = FeatureUtils.createKey("desert_well");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> HASH_WELL = FeatureUtils.createKey("hash_well");
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_LAVA_OVERWORLD = FeatureUtils.createKey("spring_lava_overworld");
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_LAVA_FROZEN = FeatureUtils.createKey("spring_lava_frozen");
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_WATER = FeatureUtils.createKey("spring_water");
@@ -54,25 +52,13 @@ public class MiscOverworldFeatures {
          new DiskConfiguration(
             RuleBasedBlockStateProvider.simple(Blocks.PACKED_ICE),
             BlockPredicate.matchesBlocks(
-               List.of(
-                  Blocks.DIRT,
-                  Blocks.TERREDEPOMME,
-                  Blocks.GRASS_BLOCK,
-                  Blocks.PEELGRASS_BLOCK,
-                  Blocks.CORRUPTED_PEELGRASS_BLOCK,
-                  Blocks.PODZOL,
-                  Blocks.COARSE_DIRT,
-                  Blocks.MYCELIUM,
-                  Blocks.SNOW_BLOCK,
-                  Blocks.ICE
-               )
+               List.of(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.MYCELIUM, Blocks.SNOW_BLOCK, Blocks.ICE)
             ),
             UniformInt.of(2, 3),
             1
          )
       );
       FeatureUtils.register(var0, FOREST_ROCK, Feature.FOREST_ROCK, new BlockStateConfiguration(Blocks.MOSSY_COBBLESTONE.defaultBlockState()));
-      FeatureUtils.register(var0, POTATO_CLOUD, Feature.CLOUD, new BlockStateConfiguration(Blocks.FLOATATO.defaultBlockState()));
       FeatureUtils.register(var0, ICEBERG_PACKED, Feature.ICEBERG, new BlockStateConfiguration(Blocks.PACKED_ICE.defaultBlockState()));
       FeatureUtils.register(var0, ICEBERG_BLUE, Feature.ICEBERG, new BlockStateConfiguration(Blocks.BLUE_ICE.defaultBlockState()));
       FeatureUtils.register(var0, BLUE_ICE, Feature.BLUE_ICE);
@@ -87,10 +73,7 @@ public class MiscOverworldFeatures {
          DISK_CLAY,
          Feature.DISK,
          new DiskConfiguration(
-            RuleBasedBlockStateProvider.simple(Blocks.CLAY),
-            BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.CLAY, Blocks.TERREDEPOMME)),
-            UniformInt.of(2, 3),
-            1
+            RuleBasedBlockStateProvider.simple(Blocks.CLAY), BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.CLAY)), UniformInt.of(2, 3), 1
          )
       );
       FeatureUtils.register(
@@ -98,12 +81,7 @@ public class MiscOverworldFeatures {
          DISK_GRAVEL,
          Feature.DISK,
          new DiskConfiguration(
-            RuleBasedBlockStateProvider.simple(Blocks.GRAVEL),
-            BlockPredicate.matchesBlocks(
-               List.of(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.TERREDEPOMME, Blocks.PEELGRASS_BLOCK, Blocks.CORRUPTED_PEELGRASS_BLOCK)
-            ),
-            UniformInt.of(2, 5),
-            2
+            RuleBasedBlockStateProvider.simple(Blocks.GRAVEL), BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.GRASS_BLOCK)), UniformInt.of(2, 5), 2
          )
       );
       FeatureUtils.register(
@@ -119,9 +97,7 @@ public class MiscOverworldFeatures {
                   )
                )
             ),
-            BlockPredicate.matchesBlocks(
-               List.of(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.TERREDEPOMME, Blocks.PEELGRASS_BLOCK, Blocks.CORRUPTED_PEELGRASS_BLOCK)
-            ),
+            BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.GRASS_BLOCK)),
             UniformInt.of(2, 6),
             2
          )
@@ -145,7 +121,7 @@ public class MiscOverworldFeatures {
                   )
                )
             ),
-            BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.TERREDEPOMME, Blocks.MUD)),
+            BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.MUD)),
             UniformInt.of(2, 6),
             2
          )
@@ -153,7 +129,6 @@ public class MiscOverworldFeatures {
       FeatureUtils.register(var0, BONUS_CHEST, Feature.BONUS_CHEST);
       FeatureUtils.register(var0, VOID_START_PLATFORM, Feature.VOID_START_PLATFORM);
       FeatureUtils.register(var0, DESERT_WELL, Feature.DESERT_WELL);
-      FeatureUtils.register(var0, HASH_WELL, Feature.HASH_WELL);
       FeatureUtils.register(
          var0,
          SPRING_LAVA_OVERWORLD,
@@ -166,15 +141,13 @@ public class MiscOverworldFeatures {
             HolderSet.direct(
                Block::builtInRegistryHolder,
                Blocks.STONE,
-               Blocks.POTONE,
                Blocks.GRANITE,
                Blocks.DIORITE,
                Blocks.ANDESITE,
                Blocks.DEEPSLATE,
                Blocks.TUFF,
                Blocks.CALCITE,
-               Blocks.DIRT,
-               Blocks.TERREDEPOMME
+               Blocks.DIRT
             )
          )
       );
@@ -202,7 +175,6 @@ public class MiscOverworldFeatures {
             HolderSet.direct(
                Block::builtInRegistryHolder,
                Blocks.STONE,
-               Blocks.POTONE,
                Blocks.GRANITE,
                Blocks.DIORITE,
                Blocks.ANDESITE,
@@ -210,7 +182,6 @@ public class MiscOverworldFeatures {
                Blocks.TUFF,
                Blocks.CALCITE,
                Blocks.DIRT,
-               Blocks.TERREDEPOMME,
                Blocks.SNOW_BLOCK,
                Blocks.POWDER_SNOW,
                Blocks.PACKED_ICE

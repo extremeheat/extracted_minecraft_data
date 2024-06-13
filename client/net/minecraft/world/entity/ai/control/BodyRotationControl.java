@@ -29,7 +29,7 @@ public class BodyRotationControl implements Control {
                this.lastStableYHeadRot = this.mob.yHeadRot;
                this.rotateBodyIfNecessary();
             } else {
-               ++this.headStableTime;
+               this.headStableTime++;
                if (this.headStableTime > 10) {
                   this.rotateHeadTowardsFront();
                }

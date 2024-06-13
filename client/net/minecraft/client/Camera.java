@@ -71,12 +71,12 @@ public class Camera {
    public void tick() {
       if (this.entity != null) {
          this.eyeHeightOld = this.eyeHeight;
-         this.eyeHeight += (this.entity.getEyeHeight() - this.eyeHeight) * 0.5F;
+         this.eyeHeight = this.eyeHeight + (this.entity.getEyeHeight() - this.eyeHeight) * 0.5F;
       }
    }
 
    private double getMaxZoom(double var1) {
-      for(int var3 = 0; var3 < 8; ++var3) {
+      for (int var3 = 0; var3 < 8; var3++) {
          float var4 = (float)((var3 & 1) * 2 - 1);
          float var5 = (float)((var3 >> 1 & 1) * 2 - 1);
          float var6 = (float)((var3 >> 2 & 1) * 2 - 1);
@@ -179,7 +179,7 @@ public class Camera {
          } else {
             Camera.NearPlane var2 = this.getNearPlane();
 
-            for(Vec3 var5 : Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight())) {
+            for (Vec3 var5 : Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight())) {
                Vec3 var6 = this.position.add(var5);
                BlockPos var7 = BlockPos.containing(var6);
                FluidState var8 = this.level.getFluidState(var7);

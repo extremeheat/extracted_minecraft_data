@@ -46,7 +46,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       com.google.common.collect.ImmutableList.Builder var4 = ImmutableList.builder();
 
-      for(Tab var6 : var3) {
+      for (Tab var6 : var3) {
          var4.add(this.layout.addChild(new TabButton(var2, var6, 0, 24)));
       }
 
@@ -69,8 +69,6 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void setFocused(@Nullable GuiEventListener var1) {
       super.setFocused(var1);
@@ -132,7 +130,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       RenderSystem.disableBlend();
       UnmodifiableIterator var6 = this.tabButtons.iterator();
 
-      while(var6.hasNext()) {
+      while (var6.hasNext()) {
          TabButton var7 = (TabButton)var6.next();
          var7.render(var1, var2, var3, var4);
       }
@@ -148,7 +146,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       int var2 = Mth.roundToward(var1 / this.tabs.size(), 2);
       UnmodifiableIterator var3 = this.tabButtons.iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          TabButton var4 = (TabButton)var3.next();
          var4.setWidth(var2);
       }

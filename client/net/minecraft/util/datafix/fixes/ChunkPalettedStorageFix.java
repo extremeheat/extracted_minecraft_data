@@ -22,13 +22,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
 import net.minecraft.util.datafix.PackedBitStorage;
@@ -98,7 +96,7 @@ public class ChunkPalettedStorageFix extends DataFix {
       mapDoor(var0, "dark_oak_door", 3152);
    });
    static final Map<String, Dynamic<?>> NOTE_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
-      for(int var1 = 0; var1 < 26; ++var1) {
+      for (int var1 = 0; var1 < 26; var1++) {
          var0.put("true" + var1, BlockStateData.parse("{Name:'minecraft:note_block',Properties:{powered:'true',note:'" + var1 + "'}}"));
          var0.put("false" + var1, BlockStateData.parse("{Name:'minecraft:note_block',Properties:{powered:'false',note:'" + var1 + "'}}"));
       }
@@ -124,7 +122,7 @@ public class ChunkPalettedStorageFix extends DataFix {
    static final Map<String, Dynamic<?>> BED_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
       ObjectIterator var1 = DYE_COLOR_MAP.int2ObjectEntrySet().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          Entry var2 = (Entry)var1.next();
          if (!Objects.equals(var2.getValue(), "red")) {
             addBeds(var0, var2.getIntKey(), (String)var2.getValue());
@@ -134,7 +132,7 @@ public class ChunkPalettedStorageFix extends DataFix {
    static final Map<String, Dynamic<?>> BANNER_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
       ObjectIterator var1 = DYE_COLOR_MAP.int2ObjectEntrySet().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          Entry var2 = (Entry)var1.next();
          if (!Objects.equals(var2.getValue(), "white")) {
             addBanners(var0, 15 - var2.getIntKey(), (String)var2.getValue());
@@ -154,7 +152,7 @@ public class ChunkPalettedStorageFix extends DataFix {
       var0.put(var1 + "south", BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_" + var3 + "',Properties:{facing:'south'}}"));
       var0.put(var1 + "west", BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_" + var3 + "',Properties:{facing:'west'}}"));
 
-      for(int var4 = 0; var4 < 16; ++var4) {
+      for (int var4 = 0; var4 < 16; var4++) {
          var0.put("" + var1 + var4, BlockStateData.parse("{Name:'minecraft:" + var2 + "_" + var3 + "',Properties:{rotation:'" + var4 + "'}}"));
       }
    }
@@ -398,7 +396,7 @@ public class ChunkPalettedStorageFix extends DataFix {
    }
 
    private static void addBanners(Map<String, Dynamic<?>> var0, int var1, String var2) {
-      for(int var3 = 0; var3 < 16; ++var3) {
+      for (int var3 = 0; var3 < 16; var3++) {
          var0.put(var3 + "_" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_banner',Properties:{rotation:'" + var3 + "'}}"));
       }
 
@@ -439,7 +437,7 @@ public class ChunkPalettedStorageFix extends DataFix {
    }
 
    public static int getSideMask(boolean var0, boolean var1, boolean var2, boolean var3) {
-      int var4 = 0;
+      short var4 = 0;
       if (var2) {
          if (var1) {
             var4 |= 2;
@@ -630,7 +628,7 @@ public class ChunkPalettedStorageFix extends DataFix {
 
       public Dynamic<?> getBlock(int var1) {
          if (var1 >= 0 && var1 <= 4095) {
-            Dynamic var2 = (Dynamic)this.palette.byId(this.buffer[var1]);
+            Dynamic var2 = this.palette.byId(this.buffer[var1]);
             return var2 == null ? ChunkPalettedStorageFix.AIR : var2;
          } else {
             return ChunkPalettedStorageFix.AIR;
@@ -666,7 +664,7 @@ public class ChunkPalettedStorageFix extends DataFix {
             ChunkPalettedStorageFix.idFor(this.palette, ChunkPalettedStorageFix.AIR);
             this.listTag.add(ChunkPalettedStorageFix.AIR);
 
-            for(int var5 = 0; var5 < 4096; ++var5) {
+            for (int var5 = 0; var5 < 4096; var5++) {
                int var6 = var5 & 15;
                int var7 = var5 >> 8 & 15;
                int var8 = var5 >> 4 & 15;
@@ -710,7 +708,7 @@ public class ChunkPalettedStorageFix extends DataFix {
             int var2 = Math.max(4, DataFixUtils.ceillog2(this.seen.size()));
             PackedBitStorage var3 = new PackedBitStorage(var2, 4096);
 
-            for(int var4 = 0; var4 < this.buffer.length; ++var4) {
+            for (int var4 = 0; var4 < this.buffer.length; var4++) {
                var3.set(var4, this.buffer[var4]);
             }
 
@@ -737,43 +735,40 @@ public class ChunkPalettedStorageFix extends DataFix {
          this.z = var1.get("zPos").asInt(0) << 4;
          var1.get("TileEntities")
             .asStreamOpt()
-            .result()
-            .ifPresent(
+            .ifSuccess(
                var1x -> var1x.forEach(
                      var1xx -> {
-                        int var2xx = var1xx.get("x").asInt(0) - this.x & 15;
+                        int var2x = var1xx.get("x").asInt(0) - this.x & 15;
                         int var3 = var1xx.get("y").asInt(0);
                         int var4 = var1xx.get("z").asInt(0) - this.z & 15;
-                        int var5 = var3 << 8 | var4 << 4 | var2xx;
+                        int var5 = var3 << 8 | var4 << 4 | var2x;
                         if (this.blockEntities.put(var5, var1xx) != null) {
                            ChunkPalettedStorageFix.LOGGER
-                              .warn(
-                                 "In chunk: {}x{} found a duplicate block entity at position: [{}, {}, {}]", new Object[]{this.x, this.z, var2xx, var3, var4}
-                              );
+                              .warn("In chunk: {}x{} found a duplicate block entity at position: [{}, {}, {}]", new Object[]{this.x, this.z, var2x, var3, var4});
                         }
                      }
                   )
             );
          boolean var2 = var1.get("convertedFromAlphaFormat").asBoolean(false);
-         var1.get("Sections").asStreamOpt().result().ifPresent(var1x -> var1x.forEach(var1xx -> {
-               ChunkPalettedStorageFix.Section var2xx = new ChunkPalettedStorageFix.Section(var1xx);
-               this.sides = var2xx.upgrade(this.sides);
-               this.sections[var2xx.y] = var2xx;
+         var1.get("Sections").asStreamOpt().ifSuccess(var1x -> var1x.forEach(var1xx -> {
+               ChunkPalettedStorageFix.Section var2x = new ChunkPalettedStorageFix.Section((Dynamic<?>)var1xx);
+               this.sides = var2x.upgrade(this.sides);
+               this.sections[var2x.y] = var2x;
             }));
 
-         for(ChunkPalettedStorageFix.Section var6 : this.sections) {
+         for (ChunkPalettedStorageFix.Section var6 : this.sections) {
             if (var6 != null) {
                ObjectIterator var7 = var6.toFix.entrySet().iterator();
 
-               while(var7.hasNext()) {
+               while (var7.hasNext()) {
                   java.util.Map.Entry var8 = (java.util.Map.Entry)var7.next();
                   int var9 = var6.y << 12;
-                  switch(var8.getKey()) {
+                  switch (var8.getKey()) {
                      case 2:
                         IntListIterator var30 = ((IntList)var8.getValue()).iterator();
 
-                        while(var30.hasNext()) {
-                           int var50 = var30.next();
+                        while (var30.hasNext()) {
+                           int var50 = (Integer)var30.next();
                            var50 |= var9;
                            Dynamic var61 = this.getBlock(var50);
                            if ("minecraft:grass_block".equals(ChunkPalettedStorageFix.getName(var61))) {
@@ -787,8 +782,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 3:
                         IntListIterator var29 = ((IntList)var8.getValue()).iterator();
 
-                        while(var29.hasNext()) {
-                           int var48 = var29.next();
+                        while (var29.hasNext()) {
+                           int var48 = (Integer)var29.next();
                            var48 |= var9;
                            Dynamic var60 = this.getBlock(var48);
                            if ("minecraft:podzol".equals(ChunkPalettedStorageFix.getName(var60))) {
@@ -802,17 +797,15 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 25:
                         IntListIterator var28 = ((IntList)var8.getValue()).iterator();
 
-                        while(var28.hasNext()) {
-                           int var46 = var28.next();
+                        while (var28.hasNext()) {
+                           int var46 = (Integer)var28.next();
                            var46 |= var9;
                            Dynamic var59 = this.removeBlockEntity(var46);
                            if (var59 != null) {
                               String var69 = Boolean.toString(var59.get("powered").asBoolean(false))
                                  + (byte)Math.min(Math.max(var59.get("note").asInt(0), 0), 24);
                               this.setBlock(
-                                 var46,
-                                 (Dynamic<?>)ChunkPalettedStorageFix.NOTE_BLOCK_MAP
-                                    .getOrDefault(var69, (Dynamic)ChunkPalettedStorageFix.NOTE_BLOCK_MAP.get("false0"))
+                                 var46, ChunkPalettedStorageFix.NOTE_BLOCK_MAP.getOrDefault(var69, ChunkPalettedStorageFix.NOTE_BLOCK_MAP.get("false0"))
                               );
                            }
                         }
@@ -820,8 +813,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 26:
                         IntListIterator var27 = ((IntList)var8.getValue()).iterator();
 
-                        while(var27.hasNext()) {
-                           int var44 = var27.next();
+                        while (var27.hasNext()) {
+                           int var44 = (Integer)var27.next();
                            var44 |= var9;
                            Dynamic var58 = this.getBlockEntity(var44);
                            Dynamic var68 = this.getBlock(var44);
@@ -833,7 +826,7 @@ public class ChunkPalettedStorageFix extends DataFix {
                                     + ChunkPalettedStorageFix.getProperty(var68, "part")
                                     + var75;
                                  if (ChunkPalettedStorageFix.BED_BLOCK_MAP.containsKey(var78)) {
-                                    this.setBlock(var44, (Dynamic<?>)ChunkPalettedStorageFix.BED_BLOCK_MAP.get(var78));
+                                    this.setBlock(var44, ChunkPalettedStorageFix.BED_BLOCK_MAP.get(var78));
                                  }
                               }
                            }
@@ -848,8 +841,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 197:
                         IntListIterator var26 = ((IntList)var8.getValue()).iterator();
 
-                        while(var26.hasNext()) {
-                           int var42 = var26.next();
+                        while (var26.hasNext()) {
+                           int var42 = (Integer)var26.next();
                            var42 |= var9;
                            Dynamic var57 = this.getBlock(var42);
                            if (ChunkPalettedStorageFix.getName(var57).endsWith("_door")) {
@@ -863,8 +856,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                                     String var18 = ChunkPalettedStorageFix.getProperty(var67, "open");
                                     String var19 = var2 ? "left" : ChunkPalettedStorageFix.getProperty(var77, "hinge");
                                     String var20 = var2 ? "false" : ChunkPalettedStorageFix.getProperty(var77, "powered");
-                                    this.setBlock(var42, (Dynamic<?>)ChunkPalettedStorageFix.DOOR_MAP.get(var16 + var17 + "lower" + var19 + var18 + var20));
-                                    this.setBlock(var74, (Dynamic<?>)ChunkPalettedStorageFix.DOOR_MAP.get(var16 + var17 + "upper" + var19 + var18 + var20));
+                                    this.setBlock(var42, ChunkPalettedStorageFix.DOOR_MAP.get(var16 + var17 + "lower" + var19 + var18 + var20));
+                                    this.setBlock(var74, ChunkPalettedStorageFix.DOOR_MAP.get(var16 + var17 + "upper" + var19 + var18 + var20));
                                  }
                               }
                            }
@@ -873,8 +866,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 86:
                         IntListIterator var25 = ((IntList)var8.getValue()).iterator();
 
-                        while(var25.hasNext()) {
-                           int var40 = var25.next();
+                        while (var25.hasNext()) {
+                           int var40 = (Integer)var25.next();
                            var40 |= var9;
                            Dynamic var56 = this.getBlock(var40);
                            if ("minecraft:carved_pumpkin".equals(ChunkPalettedStorageFix.getName(var56))) {
@@ -888,8 +881,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 110:
                         IntListIterator var24 = ((IntList)var8.getValue()).iterator();
 
-                        while(var24.hasNext()) {
-                           int var38 = var24.next();
+                        while (var24.hasNext()) {
+                           int var38 = (Integer)var24.next();
                            var38 |= var9;
                            Dynamic var55 = this.getBlock(var38);
                            if ("minecraft:mycelium".equals(ChunkPalettedStorageFix.getName(var55))) {
@@ -903,16 +896,15 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 140:
                         IntListIterator var23 = ((IntList)var8.getValue()).iterator();
 
-                        while(var23.hasNext()) {
-                           int var36 = var23.next();
+                        while (var23.hasNext()) {
+                           int var36 = (Integer)var23.next();
                            var36 |= var9;
                            Dynamic var54 = this.removeBlockEntity(var36);
                            if (var54 != null) {
                               String var64 = var54.get("Item").asString("") + var54.get("Data").asInt(0);
                               this.setBlock(
                                  var36,
-                                 (Dynamic<?>)ChunkPalettedStorageFix.FLOWER_POT_MAP
-                                    .getOrDefault(var64, (Dynamic)ChunkPalettedStorageFix.FLOWER_POT_MAP.get("minecraft:air0"))
+                                 ChunkPalettedStorageFix.FLOWER_POT_MAP.getOrDefault(var64, ChunkPalettedStorageFix.FLOWER_POT_MAP.get("minecraft:air0"))
                               );
                            }
                         }
@@ -920,8 +912,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 144:
                         IntListIterator var22 = ((IntList)var8.getValue()).iterator();
 
-                        while(var22.hasNext()) {
-                           int var34 = var22.next();
+                        while (var22.hasNext()) {
+                           int var34 = (Integer)var22.next();
                            var34 |= var9;
                            Dynamic var53 = this.getBlockEntity(var34);
                            if (var53 != null) {
@@ -937,18 +929,15 @@ public class ChunkPalettedStorageFix extends DataFix {
                               var53.remove("SkullType");
                               var53.remove("facing");
                               var53.remove("Rot");
-                              this.setBlock(
-                                 var34,
-                                 (Dynamic<?>)ChunkPalettedStorageFix.SKULL_MAP.getOrDefault(var76, (Dynamic)ChunkPalettedStorageFix.SKULL_MAP.get("0north"))
-                              );
+                              this.setBlock(var34, ChunkPalettedStorageFix.SKULL_MAP.getOrDefault(var76, ChunkPalettedStorageFix.SKULL_MAP.get("0north")));
                            }
                         }
                         break;
                      case 175:
                         IntListIterator var21 = ((IntList)var8.getValue()).iterator();
 
-                        while(var21.hasNext()) {
-                           int var32 = var21.next();
+                        while (var21.hasNext()) {
+                           int var32 = (Integer)var21.next();
                            var32 |= var9;
                            Dynamic var52 = this.getBlock(var32);
                            if ("upper".equals(ChunkPalettedStorageFix.getProperty(var52, "half"))) {
@@ -974,8 +963,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                      case 177:
                         IntListIterator var10 = ((IntList)var8.getValue()).iterator();
 
-                        while(var10.hasNext()) {
-                           int var11 = var10.next();
+                        while (var10.hasNext()) {
+                           int var11 = (Integer)var10.next();
                            var11 |= var9;
                            Dynamic var12 = this.getBlockEntity(var11);
                            Dynamic var13 = this.getBlock(var11);
@@ -984,7 +973,7 @@ public class ChunkPalettedStorageFix extends DataFix {
                               if (var14 != 15 && var14 >= 0 && var14 < 16) {
                                  String var15 = ChunkPalettedStorageFix.getProperty(var13, var8.getKey() == 176 ? "rotation" : "facing") + "_" + var14;
                                  if (ChunkPalettedStorageFix.BANNER_BLOCK_MAP.containsKey(var15)) {
-                                    this.setBlock(var11, (Dynamic<?>)ChunkPalettedStorageFix.BANNER_BLOCK_MAP.get(var15));
+                                    this.setBlock(var11, ChunkPalettedStorageFix.BANNER_BLOCK_MAP.get(var15));
                                  }
                               }
                            }
@@ -1006,7 +995,7 @@ public class ChunkPalettedStorageFix extends DataFix {
       }
 
       public static int relative(int var0, ChunkPalettedStorageFix.Direction var1) {
-         switch(var1.getAxis()) {
+         switch (var1.getAxis()) {
             case X:
                int var2 = (var0 & 15) + var1.getAxisDirection().getStep();
                return var2 >= 0 && var2 <= 15 ? var0 & -16 | var2 : -1;
@@ -1056,7 +1045,7 @@ public class ChunkPalettedStorageFix extends DataFix {
          Dynamic var2 = var1.emptyMap();
          ArrayList var3 = Lists.newArrayList();
 
-         for(ChunkPalettedStorageFix.Section var7 : this.sections) {
+         for (ChunkPalettedStorageFix.Section var7 : this.sections) {
             if (var7 != null) {
                var3.add(var7.write());
                var2 = var2.set(String.valueOf(var7.y), var2.createIntList(Arrays.stream(var7.update.toIntArray())));

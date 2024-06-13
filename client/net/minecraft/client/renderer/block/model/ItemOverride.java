@@ -49,13 +49,13 @@ public class ItemOverride {
          LinkedHashMap var2 = Maps.newLinkedHashMap();
          JsonObject var3 = GsonHelper.getAsJsonObject(var1, "predicate");
 
-         for(Entry var5 : var3.entrySet()) {
+         for (Entry var5 : var3.entrySet()) {
             var2.put(new ResourceLocation((String)var5.getKey()), GsonHelper.convertToFloat((JsonElement)var5.getValue(), (String)var5.getKey()));
          }
 
          return var2.entrySet()
             .stream()
-            .map(var0 -> new ItemOverride.Predicate((ResourceLocation)var0.getKey(), var0.getValue()))
+            .map(var0 -> new ItemOverride.Predicate((ResourceLocation)var0.getKey(), (Float)var0.getValue()))
             .collect(ImmutableList.toImmutableList());
       }
    }

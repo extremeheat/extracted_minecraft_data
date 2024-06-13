@@ -39,12 +39,12 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFish, Colorabl
    ) {
       TropicalFish.Pattern var11 = var4.getVariant();
 
-      Object var12 = switch(var11.base()) {
+      Object var12 = switch (var11.base()) {
          case SMALL -> this.modelA;
          case LARGE -> this.modelB;
       };
 
-      ResourceLocation var13 = switch(var11) {
+      ResourceLocation var13 = switch (var11) {
          case KOB -> KOB_TEXTURE;
          case SUNSTREAK -> SUNSTREAK_TEXTURE;
          case SNOOPER -> SNOOPER_TEXTURE;

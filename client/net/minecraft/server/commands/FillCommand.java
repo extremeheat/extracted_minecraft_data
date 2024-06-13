@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -165,7 +164,7 @@ public class FillCommand {
          ServerLevel var8 = var0.getLevel();
          int var9 = 0;
 
-         for(BlockPos var11 : BlockPos.betweenClosed(var1.minX(), var1.minY(), var1.minZ(), var1.maxX(), var1.maxY(), var1.maxZ())) {
+         for (BlockPos var11 : BlockPos.betweenClosed(var1.minX(), var1.minY(), var1.minZ(), var1.maxX(), var1.maxY(), var1.maxZ())) {
             if (var4 == null || var4.test(new BlockInWorld(var8, var11, true))) {
                BlockInput var12 = var3.filter.filter(var1, var11, var2, var8);
                if (var12 != null) {
@@ -173,13 +172,13 @@ public class FillCommand {
                   Clearable.tryClear(var13);
                   if (var12.place(var8, var11, 2)) {
                      var7.add(var11.immutable());
-                     ++var9;
+                     var9++;
                   }
                }
             }
          }
 
-         for(BlockPos var16 : var7) {
+         for (BlockPos var16 : var7) {
             Block var17 = var8.getBlockState(var16).getBlock();
             var8.blockUpdated(var16, var17);
          }

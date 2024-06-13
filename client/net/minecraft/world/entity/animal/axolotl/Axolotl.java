@@ -286,7 +286,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
       this.level().getProfiler().pop();
       if (!this.isNoAi()) {
          Optional var1 = this.getBrain().getMemory(MemoryModuleType.PLAY_DEAD_TICKS);
-         this.setPlayingDead(var1.isPresent() && var1.get() > 0);
+         this.setPlayingDead(var1.isPresent() && (Integer)var1.get() > 0);
       }
    }
 
@@ -459,7 +459,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
 
    @Override
    public Brain<Axolotl> getBrain() {
-      return super.getBrain();
+      return (Brain<Axolotl>)super.getBrain();
    }
 
    @Override
@@ -586,7 +586,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
       }
 
       private static Axolotl.Variant getSpawnVariant(RandomSource var0, boolean var1) {
-         Axolotl.Variant[] var2 = Arrays.stream(values()).filter(var1x -> var1x.common == var1).toArray(var0x -> new Axolotl.Variant[var0x]);
+         Axolotl.Variant[] var2 = Arrays.stream(values()).filter(var1x -> var1x.common == var1).toArray(Axolotl.Variant[]::new);
          return Util.getRandom(var2, var0);
       }
    }

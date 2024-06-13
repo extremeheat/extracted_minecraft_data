@@ -70,11 +70,11 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
       var3.listResources(var1);
       var2.pop();
 
-      for(String var5 : var1.getNamespaces()) {
+      for (String var5 : var1.getNamespaces()) {
          var2.push(var5);
 
          try {
-            for(Resource var8 : var1.getResourceStack(new ResourceLocation(var5, "sounds.json"))) {
+            for (Resource var8 : var1.getResourceStack(new ResourceLocation(var5, "sounds.json"))) {
                var2.push(var8.sourcePackId());
 
                try (BufferedReader var9 = var8.openAsReader()) {
@@ -82,7 +82,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
                   Map var10 = GsonHelper.fromJson(GSON, var9, SOUND_EVENT_REGISTRATION_TYPE);
                   var2.popPush("register");
 
-                  for(Entry var12 : var10.entrySet()) {
+                  for (Entry var12 : var10.entrySet()) {
                      var3.handleRegistration(new ResourceLocation(var5, (String)var12.getKey()), (SoundEventRegistration)var12.getValue());
                   }
 
@@ -106,7 +106,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
    protected void apply(SoundManager.Preparations var1, ResourceManager var2, ProfilerFiller var3) {
       var1.apply(this.registry, this.soundCache, this.soundEngine);
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         for(ResourceLocation var5 : this.registry.keySet()) {
+         for (ResourceLocation var5 : this.registry.keySet()) {
             WeighedSoundEvents var6 = this.registry.get(var5);
             if (!ComponentUtils.isTranslationResolvable(var6.getSubtitle()) && BuiltInRegistries.SOUND_EVENT.containsKey(var5)) {
                LOGGER.error("Missing subtitle {} for sound event: {}", var6.getSubtitle(), var5);
@@ -115,7 +115,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
       }
 
       if (LOGGER.isDebugEnabled()) {
-         for(ResourceLocation var8 : this.registry.keySet()) {
+         for (ResourceLocation var8 : this.registry.keySet()) {
             if (!BuiltInRegistries.SOUND_EVENT.containsKey(var8)) {
                LOGGER.debug("Not having sound event for: {}", var8);
             }
@@ -254,10 +254,10 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
 
          ResourceProvider var5 = ResourceProvider.fromMap(this.soundCache);
 
-         for(final Sound var7 : var2.getSounds()) {
+         for (final Sound var7 : var2.getSounds()) {
             final ResourceLocation var8 = var7.getLocation();
             Object var9;
-            switch(var7.getType()) {
+            switch (var7.getType()) {
                case FILE:
                   if (!SoundManager.validateSoundResource(var7, var1, var5)) {
                      continue;
@@ -314,7 +314,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
          var2.clear();
          var2.putAll(this.soundCache);
 
-         for(Entry var5 : this.registry.entrySet()) {
+         for (Entry var5 : this.registry.entrySet()) {
             var1.put((ResourceLocation)var5.getKey(), (WeighedSoundEvents)var5.getValue());
             ((WeighedSoundEvents)var5.getValue()).preloadIfRequired(var3);
          }

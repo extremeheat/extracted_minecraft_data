@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -10,7 +10,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class StrongholdStructure extends Structure {
-   public static final Codec<StrongholdStructure> CODEC = simpleCodec(StrongholdStructure::new);
+   public static final MapCodec<StrongholdStructure> CODEC = simpleCodec(StrongholdStructure::new);
 
    public StrongholdStructure(Structure.StructureSettings var1) {
       super(var1);
@@ -36,14 +36,14 @@ public class StrongholdStructure extends Structure {
          var3.addChildren(var3, var0, var1.random());
          List var4 = var3.pendingChildren;
 
-         while(!var4.isEmpty()) {
+         while (!var4.isEmpty()) {
             int var5 = var1.random().nextInt(var4.size());
             StructurePiece var6 = (StructurePiece)var4.remove(var5);
             var6.addChildren(var3, var0, var1.random());
          }
 
          var0.moveBelowSeaLevel(var1.chunkGenerator().getSeaLevel(), var1.chunkGenerator().getMinY(), var1.random(), 10);
-      } while(var0.isEmpty() || var3.portalRoomPiece == null);
+      } while (var0.isEmpty() || var3.portalRoomPiece == null);
    }
 
    @Override

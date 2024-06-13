@@ -41,9 +41,9 @@ public class RailBlock extends BaseRailBlock {
    protected BlockState rotate(BlockState var1, Rotation var2) {
       RailShape var3 = var1.getValue(SHAPE);
 
-      return var1.setValue(SHAPE, switch(var2) {
+      return var1.setValue(SHAPE, switch (var2) {
          case CLOCKWISE_180 -> {
-            switch(var3) {
+            switch (var3) {
                case NORTH_SOUTH:
                   yield RailShape.NORTH_SOUTH;
                case EAST_WEST:
@@ -65,11 +65,11 @@ public class RailBlock extends BaseRailBlock {
                case NORTH_EAST:
                   yield RailShape.SOUTH_WEST;
                default:
-                  throw new IncompatibleClassChangeError();
+                  throw new MatchException(null, null);
             }
          }
          case COUNTERCLOCKWISE_90 -> {
-            switch(var3) {
+            switch (var3) {
                case NORTH_SOUTH:
                   yield RailShape.EAST_WEST;
                case EAST_WEST:
@@ -91,11 +91,11 @@ public class RailBlock extends BaseRailBlock {
                case NORTH_EAST:
                   yield RailShape.NORTH_WEST;
                default:
-                  throw new IncompatibleClassChangeError();
+                  throw new MatchException(null, null);
             }
          }
          case CLOCKWISE_90 -> {
-            switch(var3) {
+            switch (var3) {
                case NORTH_SOUTH:
                   yield RailShape.EAST_WEST;
                case EAST_WEST:
@@ -117,7 +117,7 @@ public class RailBlock extends BaseRailBlock {
                case NORTH_EAST:
                   yield RailShape.SOUTH_EAST;
                default:
-                  throw new IncompatibleClassChangeError();
+                  throw new MatchException(null, null);
             }
          }
          default -> var3;
@@ -127,9 +127,9 @@ public class RailBlock extends BaseRailBlock {
    @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
       RailShape var3 = var1.getValue(SHAPE);
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
-            switch(var3) {
+            switch (var3) {
                case ASCENDING_NORTH:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
                case ASCENDING_SOUTH:
@@ -146,7 +146,7 @@ public class RailBlock extends BaseRailBlock {
                   return super.mirror(var1, var2);
             }
          case FRONT_BACK:
-            switch(var3) {
+            switch (var3) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
                case ASCENDING_WEST:

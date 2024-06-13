@@ -63,44 +63,44 @@ public class RegistryDataLoader {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final RegistrationInfo NETWORK_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
    private static final Function<Optional<KnownPack>, RegistrationInfo> REGISTRATION_INFO_CACHE = Util.memoize(var0 -> {
-      Lifecycle var1 = (Lifecycle)var0.map(KnownPack::isVanilla).map(var0x -> Lifecycle.stable()).orElse(Lifecycle.experimental());
+      Lifecycle var1 = var0.map(KnownPack::isVanilla).map(var0x -> Lifecycle.stable()).orElse(Lifecycle.experimental());
       return new RegistrationInfo(var0, var1);
    });
    public static final List<RegistryDataLoader.RegistryData<?>> WORLDGEN_REGISTRIES = List.of(
-      new RegistryDataLoader.RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.BIOME, Biome.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.CONFIGURED_CARVER, ConfiguredWorldCarver.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.CONFIGURED_FEATURE, ConfiguredFeature.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.PLACED_FEATURE, PlacedFeature.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.CONFIGURED_CARVER, ConfiguredWorldCarver.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.CONFIGURED_FEATURE, ConfiguredFeature.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.PLACED_FEATURE, PlacedFeature.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.STRUCTURE, Structure.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.PROCESSOR_LIST, StructureProcessorType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.TEMPLATE_POOL, StructureTemplatePool.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.NOISE_SETTINGS, NoiseGeneratorSettings.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.NOISE, NormalNoise.NoiseParameters.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.NOISE_SETTINGS, NoiseGeneratorSettings.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.NOISE, NormalNoise.NoiseParameters.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.DENSITY_FUNCTION, DensityFunction.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.WORLD_PRESET, WorldPreset.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC)
    );
    public static final List<RegistryDataLoader.RegistryData<?>> DIMENSION_REGISTRIES = List.of(
-      new RegistryDataLoader.RegistryData(Registries.LEVEL_STEM, LevelStem.CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.LEVEL_STEM, LevelStem.CODEC)
    );
    public static final List<RegistryDataLoader.RegistryData<?>> SYNCHRONIZED_REGISTRIES = List.of(
-      new RegistryDataLoader.RegistryData<Biome>(Registries.BIOME, Biome.NETWORK_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<WolfVariant>(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.BIOME, Biome.NETWORK_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC)
    );
 
    public RegistryDataLoader() {
@@ -126,12 +126,12 @@ public class RegistryDataLoader {
       RegistryOps.RegistryInfoLookup var5 = createContext(var1, var4);
       var4.forEach(var2x -> var0.apply(var2x, var5));
       var4.forEach(var1x -> {
-         WritableRegistry var2xx = var1x.registry();
+         WritableRegistry var2x = var1x.registry();
 
          try {
-            var2xx.freeze();
-         } catch (Exception var4xx) {
-            var3.put(var2xx.key(), var4xx);
+            var2x.freeze();
+         } catch (Exception var4x) {
+            var3.put(var2x.key(), var4x);
          }
       });
       if (!var3.isEmpty()) {
@@ -149,7 +149,7 @@ public class RegistryDataLoader {
       return new RegistryOps.RegistryInfoLookup() {
          @Override
          public <T> Optional<RegistryOps.RegistryInfo<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-            return Optional.ofNullable((RegistryOps.RegistryInfo)var2.get(var1));
+            return Optional.ofNullable((RegistryOps.RegistryInfo<T>)var2.get(var1));
          }
       };
    }
@@ -193,8 +193,7 @@ public class RegistryDataLoader {
       try (BufferedReader var6 = var4.openAsReader()) {
          JsonElement var7 = JsonParser.parseReader(var6);
          DataResult var8 = var1.parse(var2, var7);
-         Object var9 = var8.getOrThrow(false, var0x -> {
-         });
+         Object var9 = var8.getOrThrow();
          var0.register(var3, var9, var5);
       }
    }
@@ -206,11 +205,11 @@ public class RegistryDataLoader {
       FileToIdConverter var6 = FileToIdConverter.json(var5);
       RegistryOps var7 = RegistryOps.create(JsonOps.INSTANCE, var1);
 
-      for(Entry var9 : var6.listMatchingResources(var0).entrySet()) {
+      for (Entry var9 : var6.listMatchingResources(var0).entrySet()) {
          ResourceLocation var10 = (ResourceLocation)var9.getKey();
          ResourceKey var11 = ResourceKey.create(var2.key(), var6.fileToId(var10));
          Resource var12 = (Resource)var9.getValue();
-         RegistrationInfo var13 = (RegistrationInfo)REGISTRATION_INFO_CACHE.apply(var12.knownPackInfo());
+         RegistrationInfo var13 = REGISTRATION_INFO_CACHE.apply(var12.knownPackInfo());
 
          try {
             loadElementFromResource(var2, var3, var7, var11, var12, var13);
@@ -235,14 +234,13 @@ public class RegistryDataLoader {
          String var9 = registryDirPath(var3.key().location());
          FileToIdConverter var10 = FileToIdConverter.json(var9);
 
-         for(RegistrySynchronization.PackedRegistryEntry var12 : var6) {
+         for (RegistrySynchronization.PackedRegistryEntry var12 : var6) {
             ResourceKey var13 = ResourceKey.create(var3.key(), var12.id());
             Optional var14 = var12.data();
             if (var14.isPresent()) {
                try {
                   DataResult var15 = var4.parse(var7, (Tag)var14.get());
-                  Object var16 = var15.getOrThrow(false, var0x -> {
-                  });
+                  Object var16 = var15.getOrThrow();
                   var3.register(var13, var16, NETWORK_REGISTRATION_INFO);
                } catch (Exception var17) {
                   var5.put(var13, new IllegalStateException(String.format(Locale.ROOT, "Failed to parse value %s from server", var14.get()), var17));
@@ -261,16 +259,13 @@ public class RegistryDataLoader {
       }
    }
 
-   static record Loader<T>(RegistryDataLoader.RegistryData<T> a, WritableRegistry<T> b, Map<ResourceKey<?>, Exception> c) {
-      private final RegistryDataLoader.RegistryData<T> data;
-      final WritableRegistry<T> registry;
-      private final Map<ResourceKey<?>, Exception> loadingErrors;
+   static record Loader<T>(RegistryDataLoader.RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
 
-      Loader(RegistryDataLoader.RegistryData<T> var1, WritableRegistry<T> var2, Map<ResourceKey<?>, Exception> var3) {
+      Loader(RegistryDataLoader.RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
          super();
-         this.data = var1;
-         this.registry = var2;
-         this.loadingErrors = var3;
+         this.data = data;
+         this.registry = registry;
+         this.loadingErrors = loadingErrors;
       }
 
       public void loadFromResources(ResourceManager var1, RegistryOps.RegistryInfoLookup var2) {
@@ -291,14 +286,12 @@ public class RegistryDataLoader {
       void apply(RegistryDataLoader.Loader<?> var1, RegistryOps.RegistryInfoLookup var2);
    }
 
-   public static record RegistryData<T>(ResourceKey<? extends Registry<T>> a, Codec<T> b) {
-      private final ResourceKey<? extends Registry<T>> key;
-      final Codec<T> elementCodec;
+   public static record RegistryData<T>(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec) {
 
-      public RegistryData(ResourceKey<? extends Registry<T>> var1, Codec<T> var2) {
+      public RegistryData(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec) {
          super();
-         this.key = var1;
-         this.elementCodec = var2;
+         this.key = key;
+         this.elementCodec = elementCodec;
       }
 
       RegistryDataLoader.Loader<T> create(Lifecycle var1, Map<ResourceKey<?>, Exception> var2) {

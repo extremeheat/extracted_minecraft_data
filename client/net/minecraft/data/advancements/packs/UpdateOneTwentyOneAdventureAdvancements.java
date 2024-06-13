@@ -35,7 +35,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CopperBulbBlock;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
-import net.minecraft.world.level.levelgen.structure.Structure;
 
 public class UpdateOneTwentyOneAdventureAdvancements implements AdvancementSubProvider {
    public UpdateOneTwentyOneAdventureAdvancements() {
@@ -65,7 +64,7 @@ public class UpdateOneTwentyOneAdventureAdvancements implements AdvancementSubPr
          .addCriterion(
             "minecraft_trials_edition",
             PlayerTrigger.TriggerInstance.located(
-               LocationPredicate.Builder.inStructure(var1.<Structure>lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.TRIAL_CHAMBERS))
+               LocationPredicate.Builder.inStructure(var1.lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.TRIAL_CHAMBERS))
             )
          )
          .save(var2, "adventure/minecraft_trials_edition");
@@ -196,6 +195,7 @@ public class UpdateOneTwentyOneAdventureAdvancements implements AdvancementSubPr
                   .dealtDamage(MinMaxBounds.Doubles.atLeast(100.0))
                   .type(
                      DamageSourcePredicate.Builder.damageType()
+                        .tag(TagPredicate.is(DamageTypeTags.IS_PLAYER_ATTACK))
                         .direct(
                            EntityPredicate.Builder.entity()
                               .of(EntityType.PLAYER)

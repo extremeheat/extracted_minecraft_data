@@ -2,14 +2,12 @@ package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import java.util.List;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -58,10 +56,10 @@ public class ShapelessRecipe implements CraftingRecipe {
       StackedContents var3 = new StackedContents();
       int var4 = 0;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
-            ++var4;
+            var4++;
             var3.accountStack(var6, 1);
          }
       }
@@ -79,9 +77,9 @@ public class ShapelessRecipe implements CraftingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<ShapelessRecipe> {
-      private static final Codec<ShapelessRecipe> CODEC = RecordCodecBuilder.create(
+      private static final MapCodec<ShapelessRecipe> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
+                  Codec.STRING.optionalFieldOf("group", "").forGetter(var0x -> var0x.group),
                   CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(var0x -> var0x.category),
                   ItemStack.CODEC.fieldOf("result").forGetter(var0x -> var0x.result),
                   Ingredient.CODEC_NONEMPTY
@@ -89,7 +87,7 @@ public class ShapelessRecipe implements CraftingRecipe {
                      .fieldOf("ingredients")
                      .flatXmap(
                         var0x -> {
-                           Ingredient[] var1 = var0x.stream().filter(var0xx -> !var0xx.isEmpty()).toArray(var0xx -> new Ingredient[var0xx]);
+                           Ingredient[] var1 = var0x.stream().filter(var0xx -> !var0xx.isEmpty()).toArray(Ingredient[]::new);
                            if (var1.length == 0) {
                               return DataResult.error(() -> "No ingredients for shapeless recipe");
                            } else {
@@ -113,7 +111,7 @@ public class ShapelessRecipe implements CraftingRecipe {
       }
 
       @Override
-      public Codec<ShapelessRecipe> codec() {
+      public MapCodec<ShapelessRecipe> codec() {
          return CODEC;
       }
 
@@ -137,7 +135,7 @@ public class ShapelessRecipe implements CraftingRecipe {
          var0.writeEnum(var1.category);
          var0.writeVarInt(var1.ingredients.size());
 
-         for(Ingredient var3 : var1.ingredients) {
+         for (Ingredient var3 : var1.ingredients) {
             Ingredient.CONTENTS_STREAM_CODEC.encode(var0, var3);
          }
 

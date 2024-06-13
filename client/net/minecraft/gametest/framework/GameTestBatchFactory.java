@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.server.level.ServerLevel;
@@ -24,7 +23,7 @@ public class GameTestBatchFactory {
          .stream()
          .flatMap(
             var1x -> {
-               String var2xx = (String)var1x.getKey();
+               String var2x = (String)var1x.getKey();
                List var3 = (List)var1x.getValue();
                return Streams.mapWithIndex(
                   Lists.partition(var3, 50).stream(),
@@ -43,7 +42,7 @@ public class GameTestBatchFactory {
       return var0 -> {
          Map var1 = var0.stream().filter(Objects::nonNull).collect(Collectors.groupingBy(var0x -> var0x.getTestFunction().batchName()));
          return var1.entrySet().stream().flatMap(var0x -> {
-            String var1xx = (String)var0x.getKey();
+            String var1x = (String)var0x.getKey();
             List var2 = (List)var0x.getValue();
             return Streams.mapWithIndex(Lists.partition(var2, 50).stream(), (var1xx, var2x) -> toGameTestBatch(List.copyOf(var1xx), var1x, var2x));
          }).toList();

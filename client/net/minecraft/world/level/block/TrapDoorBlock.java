@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -73,7 +72,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       if (!var1.getValue(OPEN)) {
          return var1.getValue(HALF) == Half.TOP ? TOP_AABB : BOTTOM_AABB;
       } else {
-         switch((Direction)var1.getValue(FACING)) {
+         switch ((Direction)var1.getValue(FACING)) {
             case NORTH:
             default:
                return NORTH_OPEN_AABB;
@@ -89,7 +88,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
 
    @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch(var2) {
+      switch (var2) {
          case LAND:
             return var1.getValue(OPEN);
          case WATER:

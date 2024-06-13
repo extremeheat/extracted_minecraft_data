@@ -1,7 +1,5 @@
 package net.minecraft.world;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.HolderLookup;
@@ -15,26 +13,6 @@ public class ContainerHelper {
 
    public ContainerHelper() {
       super();
-   }
-
-   public static int tryAddItem(Container var0, ItemStack var1) {
-      IntArrayList var2 = new IntArrayList();
-
-      for(int var3 = 0; var3 < var0.getContainerSize(); ++var3) {
-         ItemStack var4 = var0.getItem(var3);
-         if (var4.isEmpty()) {
-            var2.add(var3);
-         }
-      }
-
-      if (var2.isEmpty()) {
-         return -1;
-      } else {
-         Collections.shuffle(var2);
-         int var5 = var2.getInt(0);
-         var0.setItem(var5, var1);
-         return var5;
-      }
    }
 
    public static ItemStack removeItem(List<ItemStack> var0, int var1, int var2) {
@@ -52,7 +30,7 @@ public class ContainerHelper {
    public static CompoundTag saveAllItems(CompoundTag var0, NonNullList<ItemStack> var1, boolean var2, HolderLookup.Provider var3) {
       ListTag var4 = new ListTag();
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
+      for (int var5 = 0; var5 < var1.size(); var5++) {
          ItemStack var6 = (ItemStack)var1.get(var5);
          if (!var6.isEmpty()) {
             CompoundTag var7 = new CompoundTag();
@@ -71,7 +49,7 @@ public class ContainerHelper {
    public static void loadAllItems(CompoundTag var0, NonNullList<ItemStack> var1, HolderLookup.Provider var2) {
       ListTag var3 = var0.getList("Items", 10);
 
-      for(int var4 = 0; var4 < var3.size(); ++var4) {
+      for (int var4 = 0; var4 < var3.size(); var4++) {
          CompoundTag var5 = var3.getCompound(var4);
          int var6 = var5.getByte("Slot") & 255;
          if (var6 >= 0 && var6 < var1.size()) {
@@ -83,7 +61,7 @@ public class ContainerHelper {
    public static int clearOrCountMatchingItems(Container var0, Predicate<ItemStack> var1, int var2, boolean var3) {
       int var4 = 0;
 
-      for(int var5 = 0; var5 < var0.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var0.getContainerSize(); var5++) {
          ItemStack var6 = var0.getItem(var5);
          int var7 = clearOrCountMatchingItems(var6, var1, var2 - var4, var3);
          if (var7 > 0 && !var3 && var6.isEmpty()) {

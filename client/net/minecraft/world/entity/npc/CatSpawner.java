@@ -2,7 +2,6 @@ package net.minecraft.world.entity.npc;
 
 import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.StructureTags;
@@ -28,7 +27,7 @@ public class CatSpawner implements CustomSpawner {
    @Override
    public int tick(ServerLevel var1, boolean var2, boolean var3) {
       if (var3 && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-         --this.nextTick;
+         this.nextTick--;
          if (this.nextTick > 0) {
             return 0;
          } else {
@@ -41,7 +40,7 @@ public class CatSpawner implements CustomSpawner {
                int var6 = (8 + var5.nextInt(24)) * (var5.nextBoolean() ? -1 : 1);
                int var7 = (8 + var5.nextInt(24)) * (var5.nextBoolean() ? -1 : 1);
                BlockPos var8 = var4.blockPosition().offset(var6, 0, var7);
-               boolean var9 = true;
+               byte var9 = 10;
                if (!var1.hasChunksAt(var8.getX() - 10, var8.getZ() - 10, var8.getX() + 10, var8.getZ() + 10)) {
                   return 0;
                } else {
@@ -65,7 +64,7 @@ public class CatSpawner implements CustomSpawner {
    }
 
    private int spawnInVillage(ServerLevel var1, BlockPos var2) {
-      boolean var3 = true;
+      byte var3 = 48;
       if (var1.getPoiManager().getCountInRange(var0 -> var0.is(PoiTypes.HOME), var2, 48, PoiManager.Occupancy.IS_OCCUPIED) > 4L) {
          List var4 = var1.getEntitiesOfClass(Cat.class, new AABB(var2).inflate(48.0, 8.0, 48.0));
          if (var4.size() < 5) {
@@ -77,7 +76,7 @@ public class CatSpawner implements CustomSpawner {
    }
 
    private int spawnInHut(ServerLevel var1, BlockPos var2) {
-      boolean var3 = true;
+      byte var3 = 16;
       List var4 = var1.getEntitiesOfClass(Cat.class, new AABB(var2).inflate(16.0, 8.0, 16.0));
       return var4.size() < 1 ? this.spawnCat(var2, var1) : 0;
    }

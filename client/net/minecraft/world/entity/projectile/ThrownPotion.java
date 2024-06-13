@@ -69,7 +69,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
             this.dowseFire(var5);
             this.dowseFire(var5.relative(var3.getOpposite()));
 
-            for(Direction var8 : Direction.Plane.HORIZONTAL) {
+            for (Direction var8 : Direction.Plane.HORIZONTAL) {
                this.dowseFire(var5.relative(var8));
             }
          }
@@ -101,7 +101,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
    private void applyWater() {
       AABB var1 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
 
-      for(LivingEntity var4 : this.level().getEntitiesOfClass(LivingEntity.class, var1, WATER_SENSITIVE_OR_ON_FIRE)) {
+      for (LivingEntity var4 : this.level().getEntitiesOfClass(LivingEntity.class, var1, WATER_SENSITIVE_OR_ON_FIRE)) {
          double var5 = this.distanceToSqr(var4);
          if (var5 < 16.0) {
             if (var4.isSensitiveToWater()) {
@@ -114,7 +114,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
          }
       }
 
-      for(Axolotl var9 : this.level().getEntitiesOfClass(Axolotl.class, var1)) {
+      for (Axolotl var9 : this.level().getEntitiesOfClass(Axolotl.class, var1)) {
          var9.rehydrate();
       }
    }
@@ -125,7 +125,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       if (!var4.isEmpty()) {
          Entity var5 = this.getEffectSource();
 
-         for(LivingEntity var7 : var4) {
+         for (LivingEntity var7 : var4) {
             if (var7.isAffectedByPotions()) {
                double var8 = this.distanceToSqr(var7);
                if (var8 < 16.0) {
@@ -136,7 +136,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
                      var10 = 1.0 - Math.sqrt(var8) / 4.0;
                   }
 
-                  for(MobEffectInstance var13 : var1) {
+                  for (MobEffectInstance var13 : var1) {
                      Holder var14 = var13.getEffect();
                      if (((MobEffect)var14.value()).isInstantenous()) {
                         ((MobEffect)var14.value()).applyInstantenousEffect(this, this.getOwner(), var7, var13.getAmplifier(), var10);
@@ -156,9 +156,8 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
 
    private void makeAreaOfEffectCloud(PotionContents var1) {
       AreaEffectCloud var2 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
-      Entity var4 = this.getOwner();
-      if (var4 instanceof LivingEntity var3) {
-         var2.setOwner((LivingEntity)var3);
+      if (this.getOwner() instanceof LivingEntity var3) {
+         var2.setOwner(var3);
       }
 
       var2.setRadius(3.0F);

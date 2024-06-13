@@ -2,28 +2,24 @@ package net.minecraft.world.item.component;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.buffer.ByteBuf;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.TooltipFlag;
 
-public record Unbreakable(boolean c) implements TooltipProvider {
-   private final boolean showInTooltip;
+public record Unbreakable(boolean showInTooltip) implements TooltipProvider {
    public static final Codec<Unbreakable> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(Unbreakable::showInTooltip))
-            .apply(var0, Unbreakable::new)
+      var0 -> var0.group(Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(Unbreakable::showInTooltip)).apply(var0, Unbreakable::new)
    );
    public static final StreamCodec<ByteBuf, Unbreakable> STREAM_CODEC = ByteBufCodecs.BOOL.map(Unbreakable::new, Unbreakable::showInTooltip);
    private static final Component TOOLTIP = Component.translatable("item.unbreakable").withStyle(ChatFormatting.BLUE);
 
-   public Unbreakable(boolean var1) {
+   public Unbreakable(boolean showInTooltip) {
       super();
-      this.showInTooltip = var1;
+      this.showInTooltip = showInTooltip;
    }
 
    @Override

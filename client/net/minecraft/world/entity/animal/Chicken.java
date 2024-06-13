@@ -52,11 +52,6 @@ public class Chicken extends Animal {
    }
 
    @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.4));
@@ -82,7 +77,7 @@ public class Chicken extends Animal {
       super.aiStep();
       this.oFlap = this.flap;
       this.oFlapSpeed = this.flapSpeed;
-      this.flapSpeed += (this.onGround() ? -1.0F : 4.0F) * 0.3F;
+      this.flapSpeed = this.flapSpeed + (this.onGround() ? -1.0F : 4.0F) * 0.3F;
       this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
       if (!this.onGround() && this.flapping < 1.0F) {
          this.flapping = 1.0F;
@@ -94,7 +89,7 @@ public class Chicken extends Animal {
          this.setDeltaMovement(var1.multiply(1.0, 0.6, 1.0));
       }
 
-      this.flap += this.flapping * 2.0F;
+      this.flap = this.flap + this.flapping * 2.0F;
       if (!this.level().isClientSide && this.isAlive() && !this.isBaby() && !this.isChickenJockey() && --this.eggTime <= 0) {
          this.playSound(SoundEvents.CHICKEN_EGG, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
          this.spawnAtLocation(Items.EGG);

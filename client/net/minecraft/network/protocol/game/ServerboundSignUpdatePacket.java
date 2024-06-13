@@ -28,7 +28,7 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
       this.isFrontText = var1.readBoolean();
       this.lines = new String[4];
 
-      for(int var2 = 0; var2 < 4; ++var2) {
+      for (int var2 = 0; var2 < 4; var2++) {
          this.lines[var2] = var1.readUtf(384);
       }
    }
@@ -37,7 +37,7 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
       var1.writeBlockPos(this.pos);
       var1.writeBoolean(this.isFrontText);
 
-      for(int var2 = 0; var2 < 4; ++var2) {
+      for (int var2 = 0; var2 < 4; var2++) {
          var1.writeUtf(this.lines[var2]);
       }
    }

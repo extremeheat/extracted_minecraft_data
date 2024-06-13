@@ -65,10 +65,8 @@ public class VertexFormatElement {
             return false;
          } else if (this.index != var2.index) {
             return false;
-         } else if (this.type != var2.type) {
-            return false;
          } else {
-            return this.usage == var2.usage;
+            return this.type != var2.type ? false : this.usage == var2.usage;
          }
       } else {
          return false;

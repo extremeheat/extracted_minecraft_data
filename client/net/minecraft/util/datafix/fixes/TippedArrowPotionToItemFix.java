@@ -17,20 +17,20 @@ public class TippedArrowPotionToItemFix extends NamedEntityWriteReadFix {
       return var2.isEmpty() && var3.isEmpty() && var4.isEmpty()
          ? var1
          : var1.remove("Potion").remove("custom_potion_effects").remove("Color").update("item", var3x -> {
-            Dynamic var4xx = var3x.get("tag").orElseEmptyMap();
+            Dynamic var4x = var3x.get("tag").orElseEmptyMap();
             if (var2.isPresent()) {
-               var4xx = var4xx.set("Potion", (Dynamic)var2.get());
+               var4x = var4x.set("Potion", (Dynamic)var2.get());
             }
-   
+
             if (var3.isPresent()) {
-               var4xx = var4xx.set("custom_potion_effects", (Dynamic)var3.get());
+               var4x = var4x.set("custom_potion_effects", (Dynamic)var3.get());
             }
-   
+
             if (var4.isPresent()) {
-               var4xx = var4xx.set("CustomPotionColor", (Dynamic)var4.get());
+               var4x = var4x.set("CustomPotionColor", (Dynamic)var4.get());
             }
-   
-            return var3x.set("tag", var4xx);
+
+            return var3x.set("tag", var4x);
          });
    }
 }

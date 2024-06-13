@@ -168,7 +168,7 @@ public class PackSelectionModel {
       private void updateHighContrastOptionInstance() {
          if (this.pack.getId().equals("high_contrast")) {
             OptionInstance var1 = Minecraft.getInstance().options.highContrast();
-            var1.set(!var1.get());
+            var1.set(!(Boolean)var1.get());
          }
       }
 

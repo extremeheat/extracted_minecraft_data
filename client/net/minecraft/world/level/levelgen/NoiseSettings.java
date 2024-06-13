@@ -2,19 +2,13 @@ package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.Function;
 import net.minecraft.core.QuartPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.dimension.DimensionType;
 
-public record NoiseSettings(int h, int i, int j, int k) {
-   private final int minY;
-   private final int height;
-   private final int noiseSizeHorizontal;
-   private final int noiseSizeVertical;
+public record NoiseSettings(int minY, int height, int noiseSizeHorizontal, int noiseSizeVertical) {
    public static final Codec<NoiseSettings> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("min_y").forGetter(NoiseSettings::minY),
@@ -30,14 +24,13 @@ public record NoiseSettings(int h, int i, int j, int k) {
    protected static final NoiseSettings END_NOISE_SETTINGS = create(0, 128, 2, 1);
    protected static final NoiseSettings CAVES_NOISE_SETTINGS = create(-64, 192, 1, 2);
    protected static final NoiseSettings FLOATING_ISLANDS_NOISE_SETTINGS = create(0, 256, 2, 1);
-   protected static final NoiseSettings POTATO_NOISE_SETTINGS = create(0, 256, 4, 1);
 
-   public NoiseSettings(int var1, int var2, int var3, int var4) {
+   public NoiseSettings(int minY, int height, int noiseSizeHorizontal, int noiseSizeVertical) {
       super();
-      this.minY = var1;
-      this.height = var2;
-      this.noiseSizeHorizontal = var3;
-      this.noiseSizeVertical = var4;
+      this.minY = minY;
+      this.height = height;
+      this.noiseSizeHorizontal = noiseSizeHorizontal;
+      this.noiseSizeVertical = noiseSizeVertical;
    }
 
    private static DataResult<NoiseSettings> guardY(NoiseSettings var0) {

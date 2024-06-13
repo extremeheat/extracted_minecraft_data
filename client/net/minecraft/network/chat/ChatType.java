@@ -2,7 +2,6 @@ package net.minecraft.network.chat;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Holder;
@@ -17,9 +16,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
-   private final ChatTypeDecoration chat;
-   private final ChatTypeDecoration narration;
+public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
    public static final Codec<ChatType> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ChatTypeDecoration.CODEC.fieldOf("chat").forGetter(ChatType::chat), ChatTypeDecoration.CODEC.fieldOf("narration").forGetter(ChatType::narration)
@@ -35,10 +32,10 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
    public static final ResourceKey<ChatType> TEAM_MSG_COMMAND_OUTGOING = create("team_msg_command_outgoing");
    public static final ResourceKey<ChatType> EMOTE_COMMAND = create("emote_command");
 
-   public ChatType(ChatTypeDecoration var1, ChatTypeDecoration var2) {
+   public ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
       super();
-      this.chat = var1;
-      this.narration = var2;
+      this.chat = chat;
+      this.narration = narration;
    }
 
    private static ResourceKey<ChatType> create(String var0) {
@@ -80,10 +77,7 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
       return new ChatType.Bound(var3.getHolderOrThrow(var0), var2);
    }
 
-   public static record Bound(Holder<ChatType> b, Component c, Optional<Component> d) {
-      private final Holder<ChatType> chatType;
-      private final Component name;
-      private final Optional<Component> targetName;
+   public static record Bound(Holder<ChatType> chatType, Component name, Optional<Component> targetName) {
       public static final StreamCodec<RegistryFriendlyByteBuf, ChatType.Bound> STREAM_CODEC = StreamCodec.composite(
          ByteBufCodecs.holderRegistry(Registries.CHAT_TYPE),
          ChatType.Bound::chatType,
@@ -98,19 +92,19 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
          this(var1, var2, Optional.empty());
       }
 
-      public Bound(Holder<ChatType> var1, Component var2, Optional<Component> var3) {
+      public Bound(Holder<ChatType> chatType, Component name, Optional<Component> targetName) {
          super();
-         this.chatType = var1;
-         this.name = var2;
-         this.targetName = var3;
+         this.chatType = chatType;
+         this.name = name;
+         this.targetName = targetName;
       }
 
       public Component decorate(Component var1) {
-         return ((ChatType)this.chatType.value()).chat().decorate(var1, this);
+         return this.chatType.value().chat().decorate(var1, this);
       }
 
       public Component decorateNarration(Component var1) {
-         return ((ChatType)this.chatType.value()).narration().decorate(var1, this);
+         return this.chatType.value().narration().decorate(var1, this);
       }
 
       public ChatType.Bound withTargetName(Component var1) {

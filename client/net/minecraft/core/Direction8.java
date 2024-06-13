@@ -21,7 +21,7 @@ public enum Direction8 {
       this.directions = Sets.immutableEnumSet(Arrays.asList(var3));
       this.step = new Vec3i(0, 0, 0);
 
-      for(Direction var7 : var3) {
+      for (Direction var7 : var3) {
          this.step.setX(this.step.getX() + var7.getStepX()).setY(this.step.getY() + var7.getStepY()).setZ(this.step.getZ() + var7.getStepZ());
       }
    }

@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -81,11 +80,11 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
                );
                int var5 = var2.getBrightness(LightLayer.SKY, var4);
                if (var5 > 0) {
-                  this.moodiness -= (float)var5 / (float)var2.getMaxLightLevel() * 0.001F;
+                  this.moodiness = this.moodiness - (float)var5 / (float)var2.getMaxLightLevel() * 0.001F;
                } else {
-                  this.moodiness -= (float)(var2.getBrightness(LightLayer.BLOCK, var4) - 1) / (float)var1x.getTickDelay();
+                  this.moodiness = this.moodiness - (float)(var2.getBrightness(LightLayer.BLOCK, var4) - 1) / (float)var1x.getTickDelay();
                }
-      
+
                if (this.moodiness >= 1.0F) {
                   double var6 = (double)var4.getX() + 0.5;
                   double var8 = (double)var4.getY() + 0.5;
@@ -129,7 +128,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
             this.stop();
          }
 
-         this.fade += this.fadeDirection;
+         this.fade = this.fade + this.fadeDirection;
          this.volume = Mth.clamp((float)this.fade / 40.0F, 0.0F, 1.0F);
       }
 

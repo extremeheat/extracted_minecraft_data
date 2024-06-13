@@ -2,11 +2,8 @@ package net.minecraft.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 
-public record Brightness(int d, int e) {
-   private final int block;
-   private final int sky;
+public record Brightness(int block, int sky) {
    public static final Codec<Integer> LIGHT_VALUE_CODEC = ExtraCodecs.intRange(0, 15);
    public static final Codec<Brightness> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(LIGHT_VALUE_CODEC.fieldOf("block").forGetter(Brightness::block), LIGHT_VALUE_CODEC.fieldOf("sky").forGetter(Brightness::sky))
@@ -14,10 +11,10 @@ public record Brightness(int d, int e) {
    );
    public static Brightness FULL_BRIGHT = new Brightness(15, 15);
 
-   public Brightness(int var1, int var2) {
+   public Brightness(int block, int sky) {
       super();
-      this.block = var1;
-      this.sky = var2;
+      this.block = block;
+      this.sky = sky;
    }
 
    public int pack() {

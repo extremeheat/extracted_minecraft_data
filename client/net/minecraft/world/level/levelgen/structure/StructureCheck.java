@@ -17,7 +17,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.resources.ResourceKey;
@@ -88,7 +87,8 @@ public class StructureCheck {
          } else if (!var3.applyAdditionalChunkRestrictions(var1.x, var1.z, this.seed)) {
             return StructureCheckResult.START_NOT_PRESENT;
          } else {
-            boolean var9 = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(var2, var0 -> new Long2BooleanOpenHashMap()))
+            boolean var9 = this.featureChecks
+               .computeIfAbsent(var2, var0 -> new Long2BooleanOpenHashMap())
                .computeIfAbsent(var5, var3x -> this.canCreateStructure(var1, var2));
             return !var9 ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.CHUNK_LOAD_NEEDED;
          }
@@ -106,8 +106,7 @@ public class StructureCheck {
                this.seed,
                var1,
                this.heightAccessor,
-               var2.biomes()::contains,
-               var2.densityChecks()
+               var2.biomes()::contains
             )
          )
          .isPresent();
@@ -128,11 +127,9 @@ public class StructureCheck {
          return StructureCheckResult.CHUNK_LOAD_NEEDED;
       }
 
-      Tag var7 = var6.getResult();
-      if (!(var7 instanceof CompoundTag)) {
+      if (!(var6.getResult() instanceof CompoundTag var8)) {
          return null;
       } else {
-         CompoundTag var8 = (CompoundTag)var7;
          int var9 = ChunkStorage.getVersion(var8);
          if (var9 <= 1493) {
             return StructureCheckResult.CHUNK_LOAD_NEEDED;
@@ -174,7 +171,7 @@ public class StructureCheck {
                Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
                Registry var5 = this.registryAccess.registryOrThrow(Registries.STRUCTURE);
 
-               for(String var7 : var3.getAllKeys()) {
+               for (String var7 : var3.getAllKeys()) {
                   ResourceLocation var8 = ResourceLocation.tryParse(var7);
                   if (var8 != null) {
                      Structure var9 = (Structure)var5.get(var8);

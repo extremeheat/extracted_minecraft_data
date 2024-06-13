@@ -35,13 +35,13 @@ public abstract class SimpleJsonResourceReloadListener extends SimplePreparableR
    public static void scanDirectory(ResourceManager var0, String var1, Gson var2, Map<ResourceLocation, JsonElement> var3) {
       FileToIdConverter var4 = FileToIdConverter.json(var1);
 
-      for(Entry var6 : var4.listMatchingResources(var0).entrySet()) {
+      for (Entry var6 : var4.listMatchingResources(var0).entrySet()) {
          ResourceLocation var7 = (ResourceLocation)var6.getKey();
          ResourceLocation var8 = var4.fileToId(var7);
 
          try (BufferedReader var9 = ((Resource)var6.getValue()).openAsReader()) {
             JsonElement var10 = GsonHelper.fromJson(var2, var9, JsonElement.class);
-            JsonElement var11 = (JsonElement)var3.put(var8, var10);
+            JsonElement var11 = var3.put(var8, var10);
             if (var11 != null) {
                throw new IllegalStateException("Duplicate data file ignored with ID " + var8);
             }

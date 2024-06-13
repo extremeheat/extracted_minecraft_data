@@ -3,7 +3,6 @@ package net.minecraft.core;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Transformation;
-import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.Util;
@@ -23,7 +22,7 @@ public class BlockMath {
       var0.put(Direction.DOWN, new Transformation(null, new Quaternionf().rotateX(1.5707964F), null, null));
    });
    public static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL = Util.make(Maps.newEnumMap(Direction.class), var0 -> {
-      for(Direction var4 : Direction.values()) {
+      for (Direction var4 : Direction.values()) {
          var0.put(var4, VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var4).inverse());
       }
    });

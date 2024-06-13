@@ -32,13 +32,13 @@ public class Divisor implements IntIterator {
          throw new NoSuchElementException();
       } else {
          int var1 = this.quotient;
-         this.remainder += this.mod;
+         this.remainder = this.remainder + this.mod;
          if (this.remainder >= this.denominator) {
-            this.remainder -= this.denominator;
-            ++var1;
+            this.remainder = this.remainder - this.denominator;
+            var1++;
          }
 
-         ++this.returnedParts;
+         this.returnedParts++;
          return var1;
       }
    }

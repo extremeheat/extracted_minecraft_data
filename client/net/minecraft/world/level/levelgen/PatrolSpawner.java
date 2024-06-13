@@ -29,11 +29,11 @@ public class PatrolSpawner implements CustomSpawner {
          return 0;
       } else {
          RandomSource var4 = var1.random;
-         --this.nextTick;
+         this.nextTick--;
          if (this.nextTick > 0) {
             return 0;
          } else {
-            this.nextTick += 12000 + var4.nextInt(1200);
+            this.nextTick = this.nextTick + 12000 + var4.nextInt(1200);
             long var5 = var1.getDayTime() / 24000L;
             if (var5 < 5L || !var1.isDay()) {
                return 0;
@@ -53,7 +53,7 @@ public class PatrolSpawner implements CustomSpawner {
                      int var9 = (24 + var4.nextInt(24)) * (var4.nextBoolean() ? -1 : 1);
                      int var10 = (24 + var4.nextInt(24)) * (var4.nextBoolean() ? -1 : 1);
                      BlockPos.MutableBlockPos var11 = var8.blockPosition().mutable().move(var9, 0, var10);
-                     boolean var12 = true;
+                     byte var12 = 10;
                      if (!var1.hasChunksAt(var11.getX() - 10, var11.getZ() - 10, var11.getX() + 10, var11.getZ() + 10)) {
                         return 0;
                      } else {
@@ -64,8 +64,8 @@ public class PatrolSpawner implements CustomSpawner {
                            int var14 = 0;
                            int var15 = (int)Math.ceil((double)var1.getCurrentDifficultyAt(var11).getEffectiveDifficulty()) + 1;
 
-                           for(int var16 = 0; var16 < var15; ++var16) {
-                              ++var14;
+                           for (int var16 = 0; var16 < var15; var16++) {
+                              var14++;
                               var11.setY(var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var11).getY());
                               if (var16 == 0) {
                                  if (!this.spawnPatrolMember(var1, var11, var4, true)) {

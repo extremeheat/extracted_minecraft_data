@@ -17,7 +17,7 @@ public class SaddleLayer<T extends Entity & Saddleable, M extends EntityModel<T>
 
    public SaddleLayer(RenderLayerParent<T, M> var1, M var2, ResourceLocation var3) {
       super(var1);
-      this.model = var2;
+      this.model = (M)var2;
       this.textureLocation = var3;
    }
 

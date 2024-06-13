@@ -70,7 +70,6 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -187,7 +186,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       super.readAdditionalSaveData(var1);
       Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant")))
          .map(var0 -> ResourceKey.create(Registries.WOLF_VARIANT, var0))
-         .flatMap(var1x -> this.registryAccess().registryOrThrow(Registries.WOLF_VARIANT).getHolder(var1x))
+         .flatMap(var1x -> this.registryAccess().registryOrThrow(Registries.WOLF_VARIANT).getHolder((ResourceKey<WolfVariant>)var1x))
          .ifPresent(this::setVariant);
       if (var1.contains("CollarColor", 99)) {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
@@ -196,8 +195,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
@@ -261,9 +258,9 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       if (this.isAlive()) {
          this.interestedAngleO = this.interestedAngle;
          if (this.isInterested()) {
-            this.interestedAngle += (1.0F - this.interestedAngle) * 0.4F;
+            this.interestedAngle = this.interestedAngle + (1.0F - this.interestedAngle) * 0.4F;
          } else {
-            this.interestedAngle += (0.0F - this.interestedAngle) * 0.4F;
+            this.interestedAngle = this.interestedAngle + (0.0F - this.interestedAngle) * 0.4F;
          }
 
          if (this.isInWaterRainOrBubble()) {
@@ -292,7 +289,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                int var2 = (int)(Mth.sin((this.shakeAnim - 0.4F) * 3.1415927F) * 7.0F);
                Vec3 var3 = this.getDeltaMovement();
 
-               for(int var4 = 0; var4 < var2; ++var4) {
+               for (int var4 = 0; var4 < var2; var4++) {
                   float var5 = (this.random.nextFloat() * 2.0F - 1.0F) * this.getBbWidth() * 0.5F;
                   float var6 = (this.random.nextFloat() * 2.0F - 1.0F) * this.getBbWidth() * 0.5F;
                   this.level()
@@ -359,8 +356,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void actuallyHurt(DamageSource var1, float var2) {
       if (!this.canArmorAbsorb(var1)) {
@@ -372,8 +367,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
          var3.hurtAndBreak(Mth.ceil(var2), this, EquipmentSlot.BODY);
          if (Crackiness.WOLF_ARMOR.byDamage(var4, var5) != Crackiness.WOLF_ARMOR.byDamage(this.getBodyArmorItem())) {
             this.playSound(SoundEvents.WOLF_ARMOR_CRACK);
-            Level var7 = this.level();
-            if (var7 instanceof ServerLevel var6) {
+            if (this.level() instanceof ServerLevel var6) {
                var6.sendParticles(
                   new ItemParticleOption(ParticleTypes.ITEM, Items.ARMADILLO_SCUTE.getDefaultInstance()),
                   this.getX(),
@@ -419,8 +413,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.BODY});
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
@@ -456,7 +448,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                   this.setBodyArmorItem(ItemStack.EMPTY);
                   this.spawnAtLocation(var10);
                   return InteractionResult.SUCCESS;
-               } else if (((ArmorMaterial)ArmorMaterials.ARMADILLO.value()).repairIngredient().get().test(var3)
+               } else if (ArmorMaterials.ARMADILLO.value().repairIngredient().get().test(var3)
                   && this.isInSittingPose()
                   && this.hasArmor()
                   && this.isOwnedBy(var1)
@@ -578,8 +570,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       this.entityData.set(DATA_COLLAR_COLOR, var1.getId());
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public Wolf getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Wolf var3 = EntityType.WOLF.create(var1);
@@ -614,17 +604,12 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
          return false;
       } else if (!this.isTame()) {
          return false;
-      } else if (!(var1 instanceof Wolf)) {
+      } else if (!(var1 instanceof Wolf var2)) {
+         return false;
+      } else if (!var2.isTame()) {
          return false;
       } else {
-         Wolf var2 = (Wolf)var1;
-         if (!var2.isTame()) {
-            return false;
-         } else if (var2.isInSittingPose()) {
-            return false;
-         } else {
-            return this.isInLove() && var2.isInLove();
-         }
+         return var2.isInSittingPose() ? false : this.isInLove() && var2.isInLove();
       }
    }
 
@@ -632,8 +617,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       return this.entityData.get(DATA_INTERESTED_ID);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean wantsToAttack(LivingEntity var1, LivingEntity var2) {
       if (var1 instanceof Creeper || var1 instanceof Ghast || var1 instanceof ArmorStand) {
@@ -641,7 +624,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       } else if (var1 instanceof Wolf var7) {
          return !var7.isTame() || var7.getOwner() != var2;
       } else {
-         if (var1 instanceof Player var3 && var2 instanceof Player var4 && !var4.canHarmPlayer((Player)var3)) {
+         if (var1 instanceof Player var3 && var2 instanceof Player var4 && !var4.canHarmPlayer(var3)) {
             return false;
          }
 
@@ -681,11 +664,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
 
       @Override
       public boolean canUse() {
-         if (super.canUse() && this.toAvoid instanceof Llama) {
-            return !this.wolf.isTame() && this.avoidLlama((Llama)this.toAvoid);
-         } else {
-            return false;
-         }
+         return super.canUse() && this.toAvoid instanceof Llama ? !this.wolf.isTame() && this.avoidLlama((Llama)this.toAvoid) : false;
       }
 
       private boolean avoidLlama(Llama var1) {

@@ -1,8 +1,7 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -11,7 +10,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ApplyExplosionDecay extends LootItemConditionalFunction {
-   public static final Codec<ApplyExplosionDecay> CODEC = RecordCodecBuilder.create(var0 -> commonFields(var0).apply(var0, ApplyExplosionDecay::new));
+   public static final MapCodec<ApplyExplosionDecay> CODEC = RecordCodecBuilder.mapCodec(var0 -> commonFields(var0).apply(var0, ApplyExplosionDecay::new));
 
    private ApplyExplosionDecay(List<LootItemCondition> var1) {
       super(var1);
@@ -31,9 +30,9 @@ public class ApplyExplosionDecay extends LootItemConditionalFunction {
          int var6 = var1.getCount();
          int var7 = 0;
 
-         for(int var8 = 0; var8 < var6; ++var8) {
+         for (int var8 = 0; var8 < var6; var8++) {
             if (var4.nextFloat() <= var5) {
-               ++var7;
+               var7++;
             }
          }
 

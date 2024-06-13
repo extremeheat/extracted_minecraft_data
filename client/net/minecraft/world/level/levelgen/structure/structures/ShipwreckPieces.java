@@ -126,7 +126,7 @@ public class ShipwreckPieces {
          } else {
             BlockPos var13 = this.templatePosition.offset(var10.getX() - 1, 0, var10.getZ() - 1);
 
-            for(BlockPos var15 : BlockPos.betweenClosed(this.templatePosition, var13)) {
+            for (BlockPos var15 : BlockPos.betweenClosed(this.templatePosition, var13)) {
                int var16 = var1.getHeight(var11, var15.getX(), var15.getZ());
                var9 += var16;
                var8 = Math.min(var8, var16);

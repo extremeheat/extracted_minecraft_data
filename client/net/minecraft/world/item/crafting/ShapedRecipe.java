@@ -1,13 +1,12 @@
 package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -90,13 +89,13 @@ public class ShapedRecipe implements CraftingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<ShapedRecipe> {
-      public static final Codec<ShapedRecipe> CODEC = RecordCodecBuilder.create(
+      public static final MapCodec<ShapedRecipe> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
+                  Codec.STRING.optionalFieldOf("group", "").forGetter(var0x -> var0x.group),
                   CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(var0x -> var0x.category),
                   ShapedRecipePattern.MAP_CODEC.forGetter(var0x -> var0x.pattern),
                   ItemStack.CODEC.fieldOf("result").forGetter(var0x -> var0x.result),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "show_notification", true).forGetter(var0x -> var0x.showNotification)
+                  Codec.BOOL.optionalFieldOf("show_notification", true).forGetter(var0x -> var0x.showNotification)
                )
                .apply(var0, ShapedRecipe::new)
       );
@@ -109,7 +108,7 @@ public class ShapedRecipe implements CraftingRecipe {
       }
 
       @Override
-      public Codec<ShapedRecipe> codec() {
+      public MapCodec<ShapedRecipe> codec() {
          return CODEC;
       }
 
@@ -121,7 +120,7 @@ public class ShapedRecipe implements CraftingRecipe {
       private static ShapedRecipe fromNetwork(RegistryFriendlyByteBuf var0) {
          String var1 = var0.readUtf();
          CraftingBookCategory var2 = var0.readEnum(CraftingBookCategory.class);
-         ShapedRecipePattern var3 = (ShapedRecipePattern)ShapedRecipePattern.STREAM_CODEC.decode(var0);
+         ShapedRecipePattern var3 = ShapedRecipePattern.STREAM_CODEC.decode(var0);
          ItemStack var4 = ItemStack.STREAM_CODEC.decode(var0);
          boolean var5 = var0.readBoolean();
          return new ShapedRecipe(var1, var2, var3, var4, var5);

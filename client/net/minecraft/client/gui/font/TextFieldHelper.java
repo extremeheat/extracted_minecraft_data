@@ -130,7 +130,7 @@ public class TextFieldHelper {
    }
 
    public void moveBy(int var1, boolean var2, TextFieldHelper.CursorStep var3) {
-      switch(var3) {
+      switch (var3) {
          case CHARACTER:
             this.moveByChars(var1, var2);
             break;
@@ -158,7 +158,7 @@ public class TextFieldHelper {
    }
 
    public void removeFromCursor(int var1, TextFieldHelper.CursorStep var2) {
-      switch(var2) {
+      switch (var2) {
          case CHARACTER:
             this.removeCharsFromCursor(var1);
             break;

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -80,7 +79,7 @@ public class WallSignBlock extends SignBlock {
       BlockPos var5 = var1.getClickedPos();
       Direction[] var6 = var1.getNearestLookingDirections();
 
-      for(Direction var10 : var6) {
+      for (Direction var10 : var6) {
          if (var10.getAxis().isHorizontal()) {
             Direction var11 = var10.getOpposite();
             var2 = var2.setValue(FACING, var11);

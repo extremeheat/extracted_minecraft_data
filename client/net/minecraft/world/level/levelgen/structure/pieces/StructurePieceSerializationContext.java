@@ -6,16 +6,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
-public record StructurePieceSerializationContext(ResourceManager a, RegistryAccess b, StructureTemplateManager c) {
-   private final ResourceManager resourceManager;
-   private final RegistryAccess registryAccess;
-   private final StructureTemplateManager structureTemplateManager;
-
-   public StructurePieceSerializationContext(ResourceManager var1, RegistryAccess var2, StructureTemplateManager var3) {
+public record StructurePieceSerializationContext(
+   ResourceManager resourceManager, RegistryAccess registryAccess, StructureTemplateManager structureTemplateManager
+) {
+   public StructurePieceSerializationContext(ResourceManager resourceManager, RegistryAccess registryAccess, StructureTemplateManager structureTemplateManager) {
       super();
-      this.resourceManager = var1;
-      this.registryAccess = var2;
-      this.structureTemplateManager = var3;
+      this.resourceManager = resourceManager;
+      this.registryAccess = registryAccess;
+      this.structureTemplateManager = structureTemplateManager;
    }
 
    public static StructurePieceSerializationContext fromLevel(ServerLevel var0) {

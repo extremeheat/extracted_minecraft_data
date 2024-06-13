@@ -14,12 +14,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundCommandSuggestionsPacket(int b, int c, int d, List<ClientboundCommandSuggestionsPacket.Entry> e)
+public record ClientboundCommandSuggestionsPacket(int id, int start, int length, List<ClientboundCommandSuggestionsPacket.Entry> suggestions)
    implements Packet<ClientGamePacketListener> {
-   private final int id;
-   private final int start;
-   private final int length;
-   private final List<ClientboundCommandSuggestionsPacket.Entry> suggestions;
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandSuggestionsPacket> STREAM_CODEC = StreamCodec.composite(
       ByteBufCodecs.VAR_INT,
       ClientboundCommandSuggestionsPacket::id,
@@ -44,12 +40,12 @@ public record ClientboundCommandSuggestionsPacket(int b, int c, int d, List<Clie
       );
    }
 
-   public ClientboundCommandSuggestionsPacket(int var1, int var2, int var3, List<ClientboundCommandSuggestionsPacket.Entry> var4) {
+   public ClientboundCommandSuggestionsPacket(int id, int start, int length, List<ClientboundCommandSuggestionsPacket.Entry> suggestions) {
       super();
-      this.id = var1;
-      this.start = var2;
-      this.length = var3;
-      this.suggestions = var4;
+      this.id = id;
+      this.start = start;
+      this.length = length;
+      this.suggestions = suggestions;
    }
 
    @Override
@@ -66,9 +62,7 @@ public record ClientboundCommandSuggestionsPacket(int b, int c, int d, List<Clie
       return new Suggestions(var1, this.suggestions.stream().map(var1x -> new Suggestion(var1, var1x.text(), var1x.tooltip().orElse(null))).toList());
    }
 
-   public static record Entry(String b, Optional<Component> c) {
-      private final String text;
-      private final Optional<Component> tooltip;
+   public static record Entry(String text, Optional<Component> tooltip) {
       public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandSuggestionsPacket.Entry> STREAM_CODEC = StreamCodec.composite(
          ByteBufCodecs.STRING_UTF8,
          ClientboundCommandSuggestionsPacket.Entry::text,
@@ -77,10 +71,10 @@ public record ClientboundCommandSuggestionsPacket(int b, int c, int d, List<Clie
          ClientboundCommandSuggestionsPacket.Entry::new
       );
 
-      public Entry(String var1, Optional<Component> var2) {
+      public Entry(String text, Optional<Component> tooltip) {
          super();
-         this.text = var1;
-         this.tooltip = var2;
+         this.text = text;
+         this.tooltip = tooltip;
       }
    }
 }

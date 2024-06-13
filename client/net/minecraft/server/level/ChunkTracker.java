@@ -20,8 +20,8 @@ public abstract class ChunkTracker extends DynamicGraphMinFixedPoint {
          int var6 = var5.x;
          int var7 = var5.z;
 
-         for(int var8 = -1; var8 <= 1; ++var8) {
-            for(int var9 = -1; var9 <= 1; ++var9) {
+         for (int var8 = -1; var8 <= 1; var8++) {
+            for (int var9 = -1; var9 <= 1; var9++) {
                long var10 = ChunkPos.asLong(var6 + var8, var7 + var9);
                if (var10 != var1) {
                   this.checkNeighbor(var1, var10, var3, var4);
@@ -38,8 +38,8 @@ public abstract class ChunkTracker extends DynamicGraphMinFixedPoint {
       int var8 = var7.x;
       int var9 = var7.z;
 
-      for(int var10 = -1; var10 <= 1; ++var10) {
-         for(int var11 = -1; var11 <= 1; ++var11) {
+      for (int var10 = -1; var10 <= 1; var10++) {
+         for (int var11 = -1; var11 <= 1; var11++) {
             long var12 = ChunkPos.asLong(var8 + var10, var9 + var11);
             if (var12 == var1) {
                var12 = ChunkPos.INVALID_CHUNK_POS;

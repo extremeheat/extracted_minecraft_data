@@ -176,7 +176,7 @@ public class CrashReportCategory {
       var1.append("-- ").append(this.title).append(" --\n");
       var1.append("Details:");
 
-      for(CrashReportCategory.Entry var3 : this.entries) {
+      for (CrashReportCategory.Entry var3 : this.entries) {
          var1.append("\n\t");
          var1.append(var3.getKey());
          var1.append(": ");
@@ -186,7 +186,7 @@ public class CrashReportCategory {
       if (this.stackTrace != null && this.stackTrace.length > 0) {
          var1.append("\nStacktrace:");
 
-         for(StackTraceElement var5 : this.stackTrace) {
+         for (StackTraceElement var5 : this.stackTrace) {
             var1.append("\n\tat ");
             var1.append(var5);
          }
@@ -209,8 +209,6 @@ public class CrashReportCategory {
       private final String key;
       private final String value;
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public Entry(String var1, @Nullable Object var2) {
          super();
          this.key = var1;

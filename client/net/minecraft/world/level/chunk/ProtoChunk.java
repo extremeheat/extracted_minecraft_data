@@ -137,7 +137,7 @@ public class ProtoChunk extends ChunkAccess {
             EnumSet var19 = this.getStatus().heightmapsAfter();
             EnumSet var15 = null;
 
-            for(Heightmap.Types var17 : var19) {
+            for (Heightmap.Types var17 : var19) {
                Heightmap var18 = this.heightmaps.get(var17);
                if (var18 == null) {
                   if (var15 == null) {
@@ -152,7 +152,7 @@ public class ProtoChunk extends ChunkAccess {
                Heightmap.primeHeightmaps(this, var15);
             }
 
-            for(Heightmap.Types var21 : var19) {
+            for (Heightmap.Types var21 : var19) {
                this.heightmaps.get(var21).update(var10, var5, var12, var2);
             }
 

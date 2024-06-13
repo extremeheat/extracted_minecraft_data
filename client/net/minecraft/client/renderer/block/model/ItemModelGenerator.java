@@ -26,7 +26,7 @@ public class ItemModelGenerator {
       HashMap var3 = Maps.newHashMap();
       ArrayList var4 = Lists.newArrayList();
 
-      for(int var5 = 0; var5 < LAYERS.size(); ++var5) {
+      for (int var5 = 0; var5 < LAYERS.size(); var5++) {
          String var6 = LAYERS.get(var5);
          if (!var2.hasTexture(var6)) {
             break;
@@ -59,7 +59,7 @@ public class ItemModelGenerator {
       float var5 = (float)var1.height();
       ArrayList var6 = Lists.newArrayList();
 
-      for(ItemModelGenerator.Span var8 : this.getSpans(var1)) {
+      for (ItemModelGenerator.Span var8 : this.getSpans(var1)) {
          float var9 = 0.0F;
          float var10 = 0.0F;
          float var11 = 0.0F;
@@ -74,7 +74,7 @@ public class ItemModelGenerator {
          float var20 = (float)var8.getMax();
          float var21 = (float)var8.getAnchor();
          ItemModelGenerator.SpanFacing var22 = var8.getFacing();
-         switch(var22) {
+         switch (var22) {
             case UP:
                var13 = var19;
                var9 = var19;
@@ -124,7 +124,7 @@ public class ItemModelGenerator {
          var16 *= var18;
          HashMap var23 = Maps.newHashMap();
          var23.put(var22.getDirection(), new BlockElementFace(null, var3, var2, new BlockFaceUV(new float[]{var13, var15, var14, var16}, 0)));
-         switch(var22) {
+         switch (var22) {
             case UP:
                var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var11, var10, 8.5F), var23, null, true));
                break;
@@ -147,8 +147,8 @@ public class ItemModelGenerator {
       int var3 = var1.height();
       ArrayList var4 = Lists.newArrayList();
       var1.getUniqueFrames().forEach(var5 -> {
-         for(int var6 = 0; var6 < var3; ++var6) {
-            for(int var7 = 0; var7 < var2; ++var7) {
+         for (int var6 = 0; var6 < var3; var6++) {
+            for (int var7 = 0; var7 < var2; var7++) {
                boolean var8 = !this.isTransparent(var1, var5, var7, var6, var2, var3);
                this.checkTransition(ItemModelGenerator.SpanFacing.UP, var4, var1, var5, var7, var6, var2, var3, var8);
                this.checkTransition(ItemModelGenerator.SpanFacing.DOWN, var4, var1, var5, var7, var6, var2, var3, var8);
@@ -180,7 +180,7 @@ public class ItemModelGenerator {
    private void createOrExpandSpan(List<ItemModelGenerator.Span> var1, ItemModelGenerator.SpanFacing var2, int var3, int var4) {
       ItemModelGenerator.Span var5 = null;
 
-      for(ItemModelGenerator.Span var7 : var1) {
+      for (ItemModelGenerator.Span var7 : var1) {
          if (var7.getFacing() == var2) {
             int var8 = var2.isHorizontal() ? var4 : var3;
             if (var7.getAnchor() == var8) {

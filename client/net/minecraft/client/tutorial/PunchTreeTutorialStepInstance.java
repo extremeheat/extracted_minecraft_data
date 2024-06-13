@@ -26,7 +26,7 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
 
    @Override
    public void tick() {
-      ++this.timeWaiting;
+      this.timeWaiting++;
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
@@ -74,7 +74,7 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
       } else if (this.toast != null) {
          this.toast.updateProgress(0.0F);
       } else if (var5) {
-         ++this.resetCount;
+         this.resetCount++;
       }
    }
 

@@ -94,7 +94,7 @@ public class QueryThreadGs4 extends GenericThread {
       LOGGER.debug("Packet len {} [{}]", var3, var4);
       if (3 <= var3 && -2 == var2[0] && -3 == var2[1]) {
          LOGGER.debug("Packet '{}' [{}]", PktUtils.toHexString(var2[2]), var4);
-         switch(var2[2]) {
+         switch (var2[2]) {
             case 0:
                if (!this.validChallenge(var1)) {
                   LOGGER.debug("Invalid challenge [{}]", var4);
@@ -173,7 +173,7 @@ public class QueryThreadGs4 extends GenericThread {
          this.rulesResponse.write(0);
          String[] var4 = this.serverInterface.getPlayerNames();
 
-         for(String var8 : var4) {
+         for (String var8 : var4) {
             this.rulesResponse.writeString(var8);
          }
 
@@ -219,7 +219,7 @@ public class QueryThreadGs4 extends GenericThread {
       DatagramPacket var1 = new DatagramPacket(this.buffer, this.buffer.length);
 
       try {
-         while(this.running) {
+         while (this.running) {
             try {
                this.socket.receive(var1);
                this.pruneChallenges();

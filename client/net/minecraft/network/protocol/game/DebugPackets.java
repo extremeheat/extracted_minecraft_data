@@ -116,7 +116,7 @@ public class DebugPackets {
       Map var3 = var0.getBrain().getMemories();
       ArrayList var4 = Lists.newArrayList();
 
-      for(Entry var6 : var3.entrySet()) {
+      for (Entry var6 : var3.entrySet()) {
          MemoryModuleType var7 = (MemoryModuleType)var6.getKey();
          Optional var8 = (Optional)var6.getValue();
          String var9;
@@ -168,7 +168,7 @@ public class DebugPackets {
       } else {
          ArrayList var2 = Lists.newArrayList();
 
-         for(Object var4 : (Iterable)var1) {
+         for (Object var4 : (Iterable)var1) {
             var2.add(getShortDescription(var0, var4));
          }
 
@@ -179,7 +179,7 @@ public class DebugPackets {
    private static void sendPacketToAllPlayers(ServerLevel var0, CustomPacketPayload var1) {
       ClientboundCustomPayloadPacket var2 = new ClientboundCustomPayloadPacket(var1);
 
-      for(ServerPlayer var4 : var0.players()) {
+      for (ServerPlayer var4 : var0.players()) {
          var4.connection.send(var2);
       }
    }

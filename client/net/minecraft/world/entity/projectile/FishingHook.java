@@ -145,7 +145,7 @@ public class FishingHook extends Projectile {
          this.discard();
       } else if (this.level().isClientSide || !this.shouldStopFishing(var1)) {
          if (this.onGround()) {
-            ++this.life;
+            this.life++;
             if (this.life >= 1200) {
                this.discard();
                return;
@@ -252,7 +252,7 @@ public class FishingHook extends Projectile {
 
    private void checkCollision() {
       HitResult var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-      this.onHit(var1);
+      this.hitOrDeflect(var1);
    }
 
    @Override
@@ -284,15 +284,15 @@ public class FishingHook extends Projectile {
       int var3 = 1;
       BlockPos var4 = var1.above();
       if (this.random.nextFloat() < 0.25F && this.level().isRainingAt(var4)) {
-         ++var3;
+         var3++;
       }
 
       if (this.random.nextFloat() < 0.5F && !this.level().canSeeSky(var4)) {
-         --var3;
+         var3--;
       }
 
       if (this.nibble > 0) {
-         --this.nibble;
+         this.nibble--;
          if (this.nibble <= 0) {
             this.timeUntilLured = 0;
             this.timeUntilHooked = 0;
@@ -301,7 +301,7 @@ public class FishingHook extends Projectile {
       } else if (this.timeUntilHooked > 0) {
          this.timeUntilHooked -= var3;
          if (this.timeUntilHooked > 0) {
-            this.fishAngle += (float)this.random.triangle(0.0, 9.188);
+            this.fishAngle = this.fishAngle + (float)this.random.triangle(0.0, 9.188);
             float var5 = this.fishAngle * 0.017453292F;
             float var6 = Mth.sin(var5);
             float var7 = Mth.cos(var5);
@@ -376,18 +376,16 @@ public class FishingHook extends Projectile {
          }
       } else {
          this.timeUntilLured = Mth.nextInt(this.random, 100, 600);
-         this.timeUntilLured -= this.lureSpeed * 20 * 5;
+         this.timeUntilLured = this.timeUntilLured - this.lureSpeed * 20 * 5;
       }
    }
 
    private boolean calculateOpenWater(BlockPos var1) {
       FishingHook.OpenWaterType var2 = FishingHook.OpenWaterType.INVALID;
 
-      for(int var3 = -1; var3 <= 2; ++var3) {
+      for (int var3 = -1; var3 <= 2; var3++) {
          FishingHook.OpenWaterType var4 = this.getOpenWaterTypeForArea(var1.offset(-2, var3, -2), var1.offset(2, var3, 2));
-         switch(var4) {
-            case INVALID:
-               return false;
+         switch (var4) {
             case ABOVE_WATER:
                if (var2 == FishingHook.OpenWaterType.INVALID) {
                   return false;
@@ -397,6 +395,9 @@ public class FishingHook extends Projectile {
                if (var2 == FishingHook.OpenWaterType.ABOVE_WATER) {
                   return false;
                }
+               break;
+            case INVALID:
+               return false;
          }
 
          var2 = var4;
@@ -456,7 +457,7 @@ public class FishingHook extends Projectile {
             ObjectArrayList var6 = var5.getRandomItems(var4);
             CriteriaTriggers.FISHING_ROD_HOOKED.trigger((ServerPlayer)var2, var1, this, var6);
 
-            for(ItemStack var8 : var6) {
+            for (ItemStack var8 : var6) {
                ItemEntity var9 = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), var8);
                double var10 = var2.getX() - this.getX();
                double var12 = var2.getY() - this.getY();

@@ -42,27 +42,27 @@ public class PoweredRailBlock extends BaseRailBlock {
          int var8 = var2.getZ();
          boolean var9 = true;
          RailShape var10 = var3.getValue(SHAPE);
-         switch(var10) {
+         switch (var10) {
             case NORTH_SOUTH:
                if (var4) {
-                  ++var8;
+                  var8++;
                } else {
-                  --var8;
+                  var8--;
                }
                break;
             case EAST_WEST:
                if (var4) {
-                  --var6;
+                  var6--;
                } else {
-                  ++var6;
+                  var6++;
                }
                break;
             case ASCENDING_EAST:
                if (var4) {
-                  --var6;
+                  var6--;
                } else {
-                  ++var6;
-                  ++var7;
+                  var6++;
+                  var7++;
                   var9 = false;
                }
 
@@ -70,21 +70,21 @@ public class PoweredRailBlock extends BaseRailBlock {
                break;
             case ASCENDING_WEST:
                if (var4) {
-                  --var6;
-                  ++var7;
+                  var6--;
+                  var7++;
                   var9 = false;
                } else {
-                  ++var6;
+                  var6++;
                }
 
                var10 = RailShape.EAST_WEST;
                break;
             case ASCENDING_NORTH:
                if (var4) {
-                  ++var8;
+                  var8++;
                } else {
-                  --var8;
-                  ++var7;
+                  var8--;
+                  var7++;
                   var9 = false;
                }
 
@@ -92,21 +92,19 @@ public class PoweredRailBlock extends BaseRailBlock {
                break;
             case ASCENDING_SOUTH:
                if (var4) {
-                  ++var8;
-                  ++var7;
+                  var8++;
+                  var7++;
                   var9 = false;
                } else {
-                  --var8;
+                  var8--;
                }
 
                var10 = RailShape.NORTH_SOUTH;
          }
 
-         if (this.isSameRailWithPower(var1, new BlockPos(var6, var7, var8), var4, var5, var10)) {
-            return true;
-         } else {
-            return var9 && this.isSameRailWithPower(var1, new BlockPos(var6, var7 - 1, var8), var4, var5, var10);
-         }
+         return this.isSameRailWithPower(var1, new BlockPos(var6, var7, var8), var4, var5, var10)
+            ? true
+            : var9 && this.isSameRailWithPower(var1, new BlockPos(var6, var7 - 1, var8), var4, var5, var10);
       }
    }
 
@@ -154,9 +152,9 @@ public class PoweredRailBlock extends BaseRailBlock {
 
    @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+      switch (var2) {
          case CLOCKWISE_180:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
                case ASCENDING_WEST:
@@ -175,7 +173,7 @@ public class PoweredRailBlock extends BaseRailBlock {
                   return var1.setValue(SHAPE, RailShape.SOUTH_WEST);
             }
          case COUNTERCLOCKWISE_90:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case NORTH_SOUTH:
                   return var1.setValue(SHAPE, RailShape.EAST_WEST);
                case EAST_WEST:
@@ -198,7 +196,7 @@ public class PoweredRailBlock extends BaseRailBlock {
                   return var1.setValue(SHAPE, RailShape.NORTH_WEST);
             }
          case CLOCKWISE_90:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case NORTH_SOUTH:
                   return var1.setValue(SHAPE, RailShape.EAST_WEST);
                case EAST_WEST:
@@ -228,9 +226,9 @@ public class PoweredRailBlock extends BaseRailBlock {
    @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
       RailShape var3 = var1.getValue(SHAPE);
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
-            switch(var3) {
+            switch (var3) {
                case ASCENDING_NORTH:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
                case ASCENDING_SOUTH:
@@ -247,7 +245,7 @@ public class PoweredRailBlock extends BaseRailBlock {
                   return super.mirror(var1, var2);
             }
          case FRONT_BACK:
-            switch(var3) {
+            switch (var3) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
                case ASCENDING_WEST:

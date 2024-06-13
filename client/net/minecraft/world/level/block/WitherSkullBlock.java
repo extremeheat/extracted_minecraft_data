@@ -14,7 +14,6 @@ import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,9 +44,8 @@ public class WitherSkullBlock extends SkullBlock {
    }
 
    public static void checkSpawn(Level var0, BlockPos var1) {
-      BlockEntity var3 = var0.getBlockEntity(var1);
-      if (var3 instanceof SkullBlockEntity var2) {
-         checkSpawn(var0, var1, (SkullBlockEntity)var2);
+      if (var0.getBlockEntity(var1) instanceof SkullBlockEntity var2) {
+         checkSpawn(var0, var1, var2);
       }
    }
 
@@ -72,7 +70,7 @@ public class WitherSkullBlock extends SkullBlock {
                   var6.yBodyRot = var5.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
                   var6.makeInvulnerable();
 
-                  for(ServerPlayer var9 : var0.getEntitiesOfClass(ServerPlayer.class, var6.getBoundingBox().inflate(50.0))) {
+                  for (ServerPlayer var9 : var0.getEntitiesOfClass(ServerPlayer.class, var6.getBoundingBox().inflate(50.0))) {
                      CriteriaTriggers.SUMMONED_ENTITY.trigger(var9, var6);
                   }
 
@@ -85,14 +83,12 @@ public class WitherSkullBlock extends SkullBlock {
    }
 
    public static boolean canSpawnMob(Level var0, BlockPos var1, ItemStack var2) {
-      if (var2.is(Items.WITHER_SKELETON_SKULL)
-         && var1.getY() >= var0.getMinBuildHeight() + 2
-         && var0.getDifficulty() != Difficulty.PEACEFUL
-         && !var0.isClientSide) {
-         return getOrCreateWitherBase().find(var0, var1) != null;
-      } else {
-         return false;
-      }
+      return var2.is(Items.WITHER_SKELETON_SKULL)
+            && var1.getY() >= var0.getMinBuildHeight() + 2
+            && var0.getDifficulty() != Difficulty.PEACEFUL
+            && !var0.isClientSide
+         ? getOrCreateWitherBase().find(var0, var1) != null
+         : false;
    }
 
    private static BlockPattern getOrCreateWitherFull() {

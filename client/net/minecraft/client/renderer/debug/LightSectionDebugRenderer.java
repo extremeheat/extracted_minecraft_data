@@ -92,7 +92,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       float var21 = var12.z();
       float var22 = var12.w();
       Matrix4f var23 = var0.last().pose();
-      switch(var2) {
+      switch (var2) {
          case DOWN:
             var1.vertex(var23, var13, var14, var15).color(var19, var20, var21, var22).endVertex();
             var1.vertex(var23, var16, var14, var15).color(var19, var20, var21, var22).endVertex();
@@ -167,9 +167,9 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
          this.lightAndBlocksShape = new BitSetDiscreteVoxelShape(var5, var5, var5);
          this.lightShape = new BitSetDiscreteVoxelShape(var5, var5, var5);
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            for(int var7 = 0; var7 < var5; ++var7) {
-               for(int var8 = 0; var8 < var5; ++var8) {
+         for (int var6 = 0; var6 < var5; var6++) {
+            for (int var7 = 0; var7 < var5; var7++) {
+               for (int var8 = 0; var8 < var5; var8++) {
                   SectionPos var9 = SectionPos.of(var2.x() + var8 - var3, var2.y() + var7 - var3, var2.z() + var6 - var3);
                   LayerLightSectionStorage.SectionType var10 = var1.getDebugSectionType(var4, var9);
                   if (var10 == LayerLightSectionStorage.SectionType.LIGHT_AND_DATA) {

@@ -17,7 +17,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.FaviconTexture;
 import net.minecraft.client.gui.screens.LoadingDotsText;
@@ -100,7 +99,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
    public void updateOnlineServers(ServerList var1) {
       this.onlineServers.clear();
 
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
+      for (int var2 = 0; var2 < var1.size(); var2++) {
          this.onlineServers.add(new ServerSelectionList.OnlineServerEntry(this.screen, var1.get(var2)));
       }
 
@@ -111,13 +110,13 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       int var2 = var1.size() - this.networkServers.size();
       this.networkServers.clear();
 
-      for(LanServer var4 : var1) {
+      for (LanServer var4 : var1) {
          this.networkServers.add(new ServerSelectionList.NetworkServerEntry(this.screen, var4));
       }
 
       this.refreshEntries();
 
-      for(int var8 = this.networkServers.size() - var2; var8 < this.networkServers.size(); ++var8) {
+      for (int var8 = this.networkServers.size() - var2; var8 < this.networkServers.size(); var8++) {
          ServerSelectionList.NetworkServerEntry var9 = this.networkServers.get(var8);
          int var5 = var8 - this.networkServers.size() + this.children().size();
          int var6 = this.getRowTop(var5);
@@ -280,11 +279,11 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
                                  this.minecraft.execute(this::refreshStatus);
                               }
                            );
-                     } catch (UnknownHostException var2xx) {
+                     } catch (UnknownHostException var2x) {
                         this.serverData.setState(ServerData.State.UNREACHABLE);
                         this.serverData.motd = ServerSelectionList.CANT_RESOLVE_TEXT;
                         this.minecraft.execute(this::refreshStatus);
-                     } catch (Exception var3xx) {
+                     } catch (Exception var3x) {
                         this.serverData.setState(ServerData.State.UNREACHABLE);
                         this.serverData.motd = ServerSelectionList.CANT_CONNECT_TEXT;
                         this.minecraft.execute(this::refreshStatus);
@@ -296,7 +295,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          var1.drawString(this.minecraft.font, this.serverData.name, var4 + 32 + 3, var3 + 1, 16777215, false);
          List var11 = this.minecraft.font.split(this.serverData.motd, var5 - 32 - 2);
 
-         for(int var12 = 0; var12 < Math.min(var11.size(), 2); ++var12) {
+         for (int var12 = 0; var12 < Math.min(var11.size(), 2); var12++) {
             var1.drawString(this.minecraft.font, (FormattedCharSequence)var11.get(var12), var4 + 32 + 3, var3 + 12 + 9 * var12, -8355712, false);
          }
 
@@ -306,7 +305,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             if (var19 > 4) {
                var19 = 8 - var19;
             }
-            this.statusIcon = switch(var19) {
+            this.statusIcon = switch (var19) {
                case 1 -> ServerSelectionList.PINGING_2_SPRITE;
                case 2 -> ServerSelectionList.PINGING_3_SPRITE;
                case 3 -> ServerSelectionList.PINGING_4_SPRITE;
@@ -374,7 +373,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
 
       private void refreshStatus() {
          this.onlinePlayersTooltip = null;
-         switch(this.serverData.state()) {
+         switch (this.serverData.state()) {
             case INITIAL:
             case PINGING:
                this.statusIcon = ServerSelectionList.PING_1_SPRITE;
@@ -503,7 +502,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          MutableComponent var1 = Component.empty();
          var1.append(Component.translatable("narrator.select", this.serverData.name));
          var1.append(CommonComponents.NARRATION_SEPARATOR);
-         switch(this.serverData.state()) {
+         switch (this.serverData.state()) {
             case PINGING:
                var1.append(ServerSelectionList.PINGING_STATUS);
                break;

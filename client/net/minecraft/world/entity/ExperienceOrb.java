@@ -2,7 +2,6 @@ package net.minecraft.world.entity;
 
 import java.util.List;
 import java.util.Map.Entry;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -32,8 +31,7 @@ public class ExperienceOrb extends Entity {
    private int health = 5;
    private int value;
    private int count = 1;
-   @Nullable
-   private ExperienceOrb.Target followingTarget;
+   private Player followingPlayer;
 
    public ExperienceOrb(Level var1, double var2, double var4, double var6, int var8) {
       this(EntityType.EXPERIENCE_ORB, var1);
@@ -93,16 +91,20 @@ public class ExperienceOrb extends Entity {
          this.scanForEntities();
       }
 
-      if (this.followingTarget != null) {
-         if (this.followingTarget.valid()) {
-            Vec3 var1 = this.followingTarget.target().subtract(this.getX(), this.getY(), this.getZ());
-            double var2 = var1.lengthSqr();
-            if (var2 < 64.0) {
-               double var4 = 1.0 - Math.sqrt(var2) / 8.0;
-               this.setDeltaMovement(this.getDeltaMovement().add(var1.normalize().scale(var4 * var4 * 0.1)));
-            }
-         } else {
-            this.followingTarget = null;
+      if (this.followingPlayer != null && (this.followingPlayer.isSpectator() || this.followingPlayer.isDeadOrDying())) {
+         this.followingPlayer = null;
+      }
+
+      if (this.followingPlayer != null) {
+         Vec3 var1 = new Vec3(
+            this.followingPlayer.getX() - this.getX(),
+            this.followingPlayer.getY() + (double)this.followingPlayer.getEyeHeight() / 2.0 - this.getY(),
+            this.followingPlayer.getZ() - this.getZ()
+         );
+         double var2 = var1.lengthSqr();
+         if (var2 < 64.0) {
+            double var4 = 1.0 - Math.sqrt(var2) / 8.0;
+            this.setDeltaMovement(this.getDeltaMovement().add(var1.normalize().scale(var4 * var4 * 0.1)));
          }
       }
 
@@ -117,7 +119,7 @@ public class ExperienceOrb extends Entity {
          this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, -0.9, 1.0));
       }
 
-      ++this.age;
+      this.age++;
       if (this.age >= 6000) {
          this.discard();
       }
@@ -129,22 +131,19 @@ public class ExperienceOrb extends Entity {
    }
 
    private void scanForEntities() {
-      if (this.followingTarget == null || this.followingTarget.target().distanceToSqr(this.getX(), this.getY(), this.getZ()) > 64.0) {
-         Player var1 = this.level().getNearestPlayer(this, 8.0);
-         if (var1 != null) {
-            this.followingTarget = new ExperienceOrb.PlayerTarget(var1);
-         }
+      if (this.followingPlayer == null || this.followingPlayer.distanceToSqr(this) > 64.0) {
+         this.followingPlayer = this.level().getNearestPlayer(this, 8.0);
       }
 
       if (this.level() instanceof ServerLevel) {
-         for(ExperienceOrb var3 : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
+         for (ExperienceOrb var3 : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
             this.merge(var3);
          }
       }
    }
 
    public static void award(ServerLevel var0, Vec3 var1, int var2) {
-      while(var2 > 0) {
+      while (var2 > 0) {
          int var3 = getExperienceValue(var2);
          var2 -= var3;
          if (!tryMergeToExisting(var0, var1, var3)) {
@@ -159,7 +158,7 @@ public class ExperienceOrb extends Entity {
       List var5 = var0.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), var3, var2x -> canMerge(var2x, var4, var2));
       if (!var5.isEmpty()) {
          ExperienceOrb var6 = (ExperienceOrb)var5.get(0);
-         ++var6.count;
+         var6.count++;
          var6.age = 0;
          return true;
       } else {
@@ -176,7 +175,7 @@ public class ExperienceOrb extends Entity {
    }
 
    private void merge(ExperienceOrb var1) {
-      this.count += var1.count;
+      this.count = this.count + var1.count;
       this.age = Math.min(this.age, var1.age);
       var1.discard();
    }
@@ -234,7 +233,7 @@ public class ExperienceOrb extends Entity {
                var1.giveExperiencePoints(var2);
             }
 
-            --this.count;
+            this.count--;
             if (this.count == 0) {
                this.discard();
             }
@@ -265,10 +264,6 @@ public class ExperienceOrb extends Entity {
 
    public int getValue() {
       return this.value;
-   }
-
-   public int getTotalValue() {
-      return this.value * this.count;
    }
 
    public int getIcon() {
@@ -329,59 +324,8 @@ public class ExperienceOrb extends Entity {
       return new ClientboundAddExperienceOrbPacket(this);
    }
 
-   public void targetBlock(BlockPos var1) {
-      ExperienceOrb.BlockTarget var2 = new ExperienceOrb.BlockTarget(var1);
-      if (this.followingTarget == null || this.followingTarget.target().distanceTo(this.position()) > var2.target().distanceTo(this.position())) {
-         this.followingTarget = var2;
-      }
-   }
-
    @Override
    public SoundSource getSoundSource() {
       return SoundSource.AMBIENT;
-   }
-
-   static class BlockTarget implements ExperienceOrb.Target {
-      private final BlockPos pos;
-
-      BlockTarget(BlockPos var1) {
-         super();
-         this.pos = var1;
-      }
-
-      @Override
-      public Vec3 target() {
-         return Vec3.atCenterOf(this.pos);
-      }
-
-      @Override
-      public boolean valid() {
-         return true;
-      }
-   }
-
-   static class PlayerTarget implements ExperienceOrb.Target {
-      private final Player player;
-
-      PlayerTarget(Player var1) {
-         super();
-         this.player = var1;
-      }
-
-      @Override
-      public Vec3 target() {
-         return new Vec3(this.player.getX(), this.player.getY() + (double)this.player.getEyeHeight() / 2.0, this.player.getZ());
-      }
-
-      @Override
-      public boolean valid() {
-         return !this.player.isSpectator() && !this.player.isDeadOrDying();
-      }
-   }
-
-   interface Target {
-      Vec3 target();
-
-      boolean valid();
    }
 }

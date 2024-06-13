@@ -102,7 +102,7 @@ public class SimpleBakedModel implements BakedModel {
       private Builder(boolean var1, boolean var2, boolean var3, ItemTransforms var4, ItemOverrides var5) {
          super();
 
-         for(Direction var9 : Direction.values()) {
+         for (Direction var9 : Direction.values()) {
             this.culledFaces.put(var9, Lists.newArrayList());
          }
 

@@ -49,7 +49,7 @@ public class GetServerDetailsTask extends LongRunningTask {
          LOGGER.info("User aborted connecting to realms");
          return;
       } catch (RealmsServiceException var5) {
-         switch(var5.realmsError.errorCode()) {
+         switch (var5.realmsError.errorCode()) {
             case 6002:
                setScreen(new RealmsTermsScreen(this.lastScreen, this.server));
                return;
@@ -96,7 +96,7 @@ public class GetServerDetailsTask extends LongRunningTask {
    private RealmsServerAddress fetchServerAddress() throws RealmsServiceException, TimeoutException, CancellationException {
       RealmsClient var1 = RealmsClient.create();
 
-      for(int var2 = 0; var2 < 40; ++var2) {
+      for (int var2 = 0; var2 < 40; var2++) {
          if (this.aborted()) {
             throw new CancellationException();
          }

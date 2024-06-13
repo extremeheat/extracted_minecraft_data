@@ -76,7 +76,7 @@ public class TradeWithVillager extends Behavior<Villager> {
       ItemStack var4 = ItemStack.EMPTY;
       int var5 = 0;
 
-      while(var5 < var3.getContainerSize()) {
+      while (var5 < var3.getContainerSize()) {
          ItemStack var6;
          Item var7;
          int var8;
@@ -97,7 +97,7 @@ public class TradeWithVillager extends Behavior<Villager> {
                }
             }
 
-            ++var5;
+            var5++;
             continue;
          }
 

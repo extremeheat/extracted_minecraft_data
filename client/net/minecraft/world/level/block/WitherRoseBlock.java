@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -52,7 +51,7 @@ public class WitherRoseBlock extends FlowerBlock {
       double var7 = (double)var3.getX() + var6.x;
       double var9 = (double)var3.getZ() + var6.z;
 
-      for(int var11 = 0; var11 < 3; ++var11) {
+      for (int var11 = 0; var11 < 3; var11++) {
          if (var4.nextBoolean()) {
             var2.addParticle(
                ParticleTypes.SMOKE,
@@ -67,8 +66,6 @@ public class WitherRoseBlock extends FlowerBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide && var2.getDifficulty() != Difficulty.PEACEFUL) {

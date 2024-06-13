@@ -2,18 +2,13 @@ package net.minecraft.util.profiling.jfr.stats;
 
 import jdk.jfr.consumer.RecordedEvent;
 
-public record ChunkIdentification(String a, String b, int c, int d) {
-   private final String level;
-   private final String dimension;
-   private final int x;
-   private final int z;
-
-   public ChunkIdentification(String var1, String var2, int var3, int var4) {
+public record ChunkIdentification(String level, String dimension, int x, int z) {
+   public ChunkIdentification(String level, String dimension, int x, int z) {
       super();
-      this.level = var1;
-      this.dimension = var2;
-      this.x = var3;
-      this.z = var4;
+      this.level = level;
+      this.dimension = dimension;
+      this.x = x;
+      this.z = z;
    }
 
    public static ChunkIdentification from(RecordedEvent var0) {

@@ -2,13 +2,11 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Collection;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.FishingHook;
@@ -32,30 +30,26 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<FishingRodHo
    }
 
    public static record TriggerInstance(
-      Optional<ContextAwarePredicate> b, Optional<ItemPredicate> c, Optional<ContextAwarePredicate> d, Optional<ItemPredicate> e
+      Optional<ContextAwarePredicate> player, Optional<ItemPredicate> rod, Optional<ContextAwarePredicate> entity, Optional<ItemPredicate> item
    ) implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<ItemPredicate> rod;
-      private final Optional<ContextAwarePredicate> entity;
-      private final Optional<ItemPredicate> item;
       public static final Codec<FishingRodHookedTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(FishingRodHookedTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC, "rod").forGetter(FishingRodHookedTrigger.TriggerInstance::rod),
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "entity").forGetter(FishingRodHookedTrigger.TriggerInstance::entity),
-                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC, "item").forGetter(FishingRodHookedTrigger.TriggerInstance::item)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(FishingRodHookedTrigger.TriggerInstance::player),
+                  ItemPredicate.CODEC.optionalFieldOf("rod").forGetter(FishingRodHookedTrigger.TriggerInstance::rod),
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(FishingRodHookedTrigger.TriggerInstance::entity),
+                  ItemPredicate.CODEC.optionalFieldOf("item").forGetter(FishingRodHookedTrigger.TriggerInstance::item)
                )
                .apply(var0, FishingRodHookedTrigger.TriggerInstance::new)
       );
 
       public TriggerInstance(
-         Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, Optional<ContextAwarePredicate> var3, Optional<ItemPredicate> var4
+         Optional<ContextAwarePredicate> player, Optional<ItemPredicate> rod, Optional<ContextAwarePredicate> entity, Optional<ItemPredicate> item
       ) {
          super();
-         this.player = var1;
-         this.rod = var2;
-         this.entity = var3;
-         this.item = var4;
+         this.player = player;
+         this.rod = rod;
+         this.entity = entity;
+         this.item = item;
       }
 
       public static Criterion<FishingRodHookedTrigger.TriggerInstance> fishedItem(
@@ -66,7 +60,7 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<FishingRodHo
       }
 
       public boolean matches(ItemStack var1, LootContext var2, Collection<ItemStack> var3) {
-         if (this.rod.isPresent() && !((ItemPredicate)this.rod.get()).matches(var1)) {
+         if (this.rod.isPresent() && !this.rod.get().matches(var1)) {
             return false;
          } else if (this.entity.isPresent() && !this.entity.get().matches(var2)) {
             return false;
@@ -74,12 +68,12 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<FishingRodHo
             if (this.item.isPresent()) {
                boolean var4 = false;
                Entity var5 = var2.getParamOrNull(LootContextParams.THIS_ENTITY);
-               if (var5 instanceof ItemEntity var6 && ((ItemPredicate)this.item.get()).matches(var6.getItem())) {
+               if (var5 instanceof ItemEntity var6 && this.item.get().matches(var6.getItem())) {
                   var4 = true;
                }
 
-               for(ItemStack var7 : var3) {
-                  if (((ItemPredicate)this.item.get()).matches(var7)) {
+               for (ItemStack var7 : var3) {
+                  if (this.item.get().matches(var7)) {
                      var4 = true;
                      break;
                   }

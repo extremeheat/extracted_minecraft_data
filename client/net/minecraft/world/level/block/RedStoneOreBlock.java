@@ -103,7 +103,7 @@ public class RedStoneOreBlock extends Block {
       double var2 = 0.5625;
       RandomSource var4 = var0.random;
 
-      for(Direction var8 : Direction.values()) {
+      for (Direction var8 : Direction.values()) {
          BlockPos var9 = var1.relative(var8);
          if (!var0.getBlockState(var9).isSolidRender(var0, var9)) {
             Direction.Axis var10 = var8.getAxis();

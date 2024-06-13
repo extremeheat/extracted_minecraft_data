@@ -97,7 +97,7 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
                   } catch (RealmsServiceException var2) {
                      RealmsSubscriptionInfoScreen.LOGGER.error("Couldn't delete world", var2);
                   }
-   
+
                   RealmsSubscriptionInfoScreen.this.minecraft
                      .execute(() -> RealmsSubscriptionInfoScreen.this.minecraft.setScreen(RealmsSubscriptionInfoScreen.this.mainScreen));
                }

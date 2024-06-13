@@ -3,11 +3,9 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 public class StopAttackingIfTargetInvalid {
@@ -55,6 +53,6 @@ public class StopAttackingIfTargetInvalid {
    }
 
    private static boolean isTiredOfTryingToReachTarget(LivingEntity var0, Optional<Long> var1) {
-      return var1.isPresent() && var0.level().getGameTime() - var1.get() > 200L;
+      return var1.isPresent() && var0.level().getGameTime() - (Long)var1.get() > 200L;
    }
 }

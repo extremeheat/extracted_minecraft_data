@@ -54,7 +54,7 @@ public class SporeBlossomBlock extends Block {
       var2.addParticle(ParticleTypes.FALLING_SPORE_BLOSSOM, var8, var10, var12, 0.0, 0.0, 0.0);
       BlockPos.MutableBlockPos var14 = new BlockPos.MutableBlockPos();
 
-      for(int var15 = 0; var15 < 14; ++var15) {
+      for (int var15 = 0; var15 < 14; var15++) {
          var14.set(var5 + Mth.nextInt(var4, -10, 10), var6 - var4.nextInt(10), var7 + Mth.nextInt(var4, -10, 10));
          BlockState var16 = var2.getBlockState(var14);
          if (!var16.isCollisionShapeFullBlock(var2, var14)) {

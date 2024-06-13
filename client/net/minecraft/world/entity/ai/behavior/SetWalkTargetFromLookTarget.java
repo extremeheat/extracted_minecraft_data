@@ -2,10 +2,8 @@ package net.minecraft.world.entity.ai.behavior;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 
@@ -25,7 +23,7 @@ public class SetWalkTargetFromLookTarget {
                      if (!var0.test(var7)) {
                         return false;
                      } else {
-                        var4.set(new WalkTarget(var3.get(var5), var1.apply(var7), var2));
+                        var4.set(new WalkTarget(var3.get(var5), (Float)var1.apply(var7), var2));
                         return true;
                      }
                   })

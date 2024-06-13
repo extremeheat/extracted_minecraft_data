@@ -103,7 +103,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
             String var2;
             try {
-               while(!DedicatedServer.this.isStopped() && DedicatedServer.this.isRunning() && (var2 = var1.readLine()) != null) {
+               while (!DedicatedServer.this.isStopped() && DedicatedServer.this.isRunning() && (var2 = var1.readLine()) != null) {
                   DedicatedServer.this.handleConsoleInput(var2, DedicatedServer.this.createCommandSourceStack());
                }
             } catch (IOException var4) {
@@ -307,7 +307,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    public void handleConsoleInputs() {
-      while(!this.consoleInput.isEmpty()) {
+      while (!this.consoleInput.isEmpty()) {
          ConsoleInput var1 = this.consoleInput.remove(0);
          this.getCommands().performPrefixedCommand(var1.source, var1.msg);
       }
@@ -452,7 +452,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    protected boolean convertOldUsers() {
       boolean var2 = false;
 
-      for(int var1 = 0; !var2 && var1 <= 2; ++var1) {
+      for (int var1 = 0; !var2 && var1 <= 2; var1++) {
          if (var1 > 0) {
             LOGGER.warn("Encountered a problem while converting the user banlist, retrying in a few seconds");
             this.waitForRetry();
@@ -463,7 +463,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       boolean var3 = false;
 
-      for(int var7 = 0; !var3 && var7 <= 2; ++var7) {
+      for (int var7 = 0; !var3 && var7 <= 2; var7++) {
          if (var7 > 0) {
             LOGGER.warn("Encountered a problem while converting the ip banlist, retrying in a few seconds");
             this.waitForRetry();
@@ -474,7 +474,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       boolean var4 = false;
 
-      for(int var8 = 0; !var4 && var8 <= 2; ++var8) {
+      for (int var8 = 0; !var4 && var8 <= 2; var8++) {
          if (var8 > 0) {
             LOGGER.warn("Encountered a problem while converting the op list, retrying in a few seconds");
             this.waitForRetry();
@@ -485,7 +485,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       boolean var5 = false;
 
-      for(int var9 = 0; !var5 && var9 <= 2; ++var9) {
+      for (int var9 = 0; !var5 && var9 <= 2; var9++) {
          if (var9 > 0) {
             LOGGER.warn("Encountered a problem while converting the whitelist, retrying in a few seconds");
             this.waitForRetry();
@@ -496,7 +496,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       boolean var6 = false;
 
-      for(int var10 = 0; !var6 && var10 <= 2; ++var10) {
+      for (int var10 = 0; !var6 && var10 <= 2; var10++) {
          if (var10 > 0) {
             LOGGER.warn("Encountered a problem while converting the player save files, retrying in a few seconds");
             this.waitForRetry();

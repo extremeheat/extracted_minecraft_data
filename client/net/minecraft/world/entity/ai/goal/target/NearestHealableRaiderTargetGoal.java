@@ -18,7 +18,7 @@ public class NearestHealableRaiderTargetGoal<T extends LivingEntity> extends Nea
    }
 
    public void decrementCooldown() {
-      --this.cooldown;
+      this.cooldown--;
    }
 
    @Override

@@ -46,8 +46,8 @@ public class SectionOcclusionGraph {
    private Future<?> fullUpdateTask;
    @Nullable
    private ViewArea viewArea;
-   private final AtomicReference<SectionOcclusionGraph.GraphState> currentGraph = new AtomicReference();
-   private final AtomicReference<SectionOcclusionGraph.GraphEvents> nextGraphEvents = new AtomicReference();
+   private final AtomicReference<SectionOcclusionGraph.GraphState> currentGraph = new AtomicReference<>();
+   private final AtomicReference<SectionOcclusionGraph.GraphEvents> nextGraphEvents = new AtomicReference<>();
    private final AtomicBoolean needsFrustumUpdate = new AtomicBoolean(false);
 
    public SectionOcclusionGraph() {
@@ -78,7 +78,7 @@ public class SectionOcclusionGraph {
    }
 
    public void addSectionsInFrustum(Frustum var1, List<SectionRenderDispatcher.RenderSection> var2) {
-      for(SectionOcclusionGraph.Node var4 : ((SectionOcclusionGraph.GraphState)this.currentGraph.get()).storage().renderSections) {
+      for (SectionOcclusionGraph.Node var4 : this.currentGraph.get().storage().renderSections) {
          if (var1.isVisible(var4.section.getBoundingBox())) {
             var2.add(var4.section);
          }
@@ -90,24 +90,24 @@ public class SectionOcclusionGraph {
    }
 
    public void onChunkLoaded(ChunkPos var1) {
-      SectionOcclusionGraph.GraphEvents var2 = (SectionOcclusionGraph.GraphEvents)this.nextGraphEvents.get();
+      SectionOcclusionGraph.GraphEvents var2 = this.nextGraphEvents.get();
       if (var2 != null) {
          this.addNeighbors(var2, var1);
       }
 
-      SectionOcclusionGraph.GraphEvents var3 = ((SectionOcclusionGraph.GraphState)this.currentGraph.get()).events;
+      SectionOcclusionGraph.GraphEvents var3 = this.currentGraph.get().events;
       if (var3 != var2) {
          this.addNeighbors(var3, var1);
       }
    }
 
    public void onSectionCompiled(SectionRenderDispatcher.RenderSection var1) {
-      SectionOcclusionGraph.GraphEvents var2 = (SectionOcclusionGraph.GraphEvents)this.nextGraphEvents.get();
+      SectionOcclusionGraph.GraphEvents var2 = this.nextGraphEvents.get();
       if (var2 != null) {
          var2.sectionsToPropagateFrom.add(var1);
       }
 
-      SectionOcclusionGraph.GraphEvents var3 = ((SectionOcclusionGraph.GraphState)this.currentGraph.get()).events;
+      SectionOcclusionGraph.GraphEvents var3 = this.currentGraph.get().events;
       if (var3 != var2) {
          var3.sectionsToPropagateFrom.add(var1);
       }
@@ -139,12 +139,12 @@ public class SectionOcclusionGraph {
    }
 
    private void runPartialUpdate(boolean var1, Frustum var2, List<SectionRenderDispatcher.RenderSection> var3, Vec3 var4) {
-      SectionOcclusionGraph.GraphState var5 = (SectionOcclusionGraph.GraphState)this.currentGraph.get();
+      SectionOcclusionGraph.GraphState var5 = this.currentGraph.get();
       this.queueSectionsWithNewNeighbors(var5);
       if (!var5.events.sectionsToPropagateFrom.isEmpty()) {
          ArrayDeque var6 = Queues.newArrayDeque();
 
-         while(!var5.events.sectionsToPropagateFrom.isEmpty()) {
+         while (!var5.events.sectionsToPropagateFrom.isEmpty()) {
             SectionRenderDispatcher.RenderSection var7 = var5.events.sectionsToPropagateFrom.poll();
             SectionOcclusionGraph.Node var8 = var5.storage.sectionToNodeMap.get(var7);
             if (var8 != null && var8.section == var7) {
@@ -165,7 +165,7 @@ public class SectionOcclusionGraph {
    private void queueSectionsWithNewNeighbors(SectionOcclusionGraph.GraphState var1) {
       LongIterator var2 = var1.events.chunksWhichReceivedNeighbors.iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          long var3 = var2.nextLong();
          List var5 = (List)var1.storage.chunksWaitingForNeighbors.get(var3);
          if (var5 != null && ((SectionRenderDispatcher.RenderSection)var5.get(0)).hasAllNeighbors()) {
@@ -185,7 +185,7 @@ public class SectionOcclusionGraph {
    }
 
    private void initializeQueueForFullUpdate(Camera var1, Queue<SectionOcclusionGraph.Node> var2) {
-      boolean var3 = true;
+      byte var3 = 16;
       Vec3 var4 = var1.getPosition();
       BlockPos var5 = var1.getBlockPosition();
       SectionRenderDispatcher.RenderSection var6 = this.viewArea.getRenderSectionAt(var5);
@@ -198,8 +198,8 @@ public class SectionOcclusionGraph {
          int var12 = this.viewArea.getViewDistance();
          ArrayList var13 = Lists.newArrayList();
 
-         for(int var14 = -var12; var14 <= var12; ++var14) {
-            for(int var15 = -var12; var15 <= var12; ++var15) {
+         for (int var14 = -var12; var14 <= var12; var14++) {
+            for (int var15 = -var12; var15 <= var12; var15++) {
                SectionRenderDispatcher.RenderSection var16 = this.viewArea
                   .getRenderSectionAt(new BlockPos(var10 + SectionPos.sectionToBlockCoord(var14, 8), var9, var11 + SectionPos.sectionToBlockCoord(var15, 8)));
                if (var16 != null && this.isInViewDistance(var5, var16.getOrigin())) {
@@ -237,11 +237,11 @@ public class SectionOcclusionGraph {
       boolean var4,
       Consumer<SectionRenderDispatcher.RenderSection> var5
    ) {
-      boolean var6 = true;
+      byte var6 = 16;
       BlockPos var7 = new BlockPos(Mth.floor(var2.x / 16.0) * 16, Mth.floor(var2.y / 16.0) * 16, Mth.floor(var2.z / 16.0) * 16);
       BlockPos var8 = var7.offset(8, 8, 8);
 
-      while(!var3.isEmpty()) {
+      while (!var3.isEmpty()) {
          SectionOcclusionGraph.Node var9 = (SectionOcclusionGraph.Node)var3.poll();
          SectionRenderDispatcher.RenderSection var10 = var9.section;
          if (var1.renderSections.add(var9)) {
@@ -252,14 +252,14 @@ public class SectionOcclusionGraph {
             || Math.abs(var10.getOrigin().getY() - var7.getY()) > 60
             || Math.abs(var10.getOrigin().getZ() - var7.getZ()) > 60;
 
-         for(Direction var15 : DIRECTIONS) {
+         for (Direction var15 : DIRECTIONS) {
             SectionRenderDispatcher.RenderSection var16 = this.getRelativeFrom(var7, var10, var15);
             if (var16 != null && (!var4 || !var9.hasDirection(var15.getOpposite()))) {
                if (var4 && var9.hasSourceDirections()) {
                   SectionRenderDispatcher.CompiledSection var17 = var10.getCompiled();
                   boolean var18 = false;
 
-                  for(int var19 = 0; var19 < DIRECTIONS.length; ++var19) {
+                  for (int var19 = 0; var19 < DIRECTIONS.length; var19++) {
                      if (var9.hasSourceDirection(var19) && var17.facesCanSeeEachother(DIRECTIONS[var19].getOpposite(), var15)) {
                         var18 = true;
                         break;
@@ -282,7 +282,7 @@ public class SectionOcclusionGraph {
                   Vec3 var20 = var2.subtract(var28).normalize().scale(CEILED_SECTION_DIAGONAL);
                   boolean var21 = true;
 
-                  while(var2.subtract(var28).lengthSqr() > 3600.0) {
+                  while (var2.subtract(var28).lengthSqr() > 3600.0) {
                      var28 = var28.add(var20);
                      LevelHeightAccessor var22 = this.viewArea.getLevelHeightAccessor();
                      if (var28.y > (double)var22.getMaxBuildHeight() || var28.y < (double)var22.getMinBuildHeight()) {
@@ -341,36 +341,32 @@ public class SectionOcclusionGraph {
    @Nullable
    @VisibleForDebug
    protected SectionOcclusionGraph.Node getNode(SectionRenderDispatcher.RenderSection var1) {
-      return ((SectionOcclusionGraph.GraphState)this.currentGraph.get()).storage.sectionToNodeMap.get(var1);
+      return this.currentGraph.get().storage.sectionToNodeMap.get(var1);
    }
 
-   static record GraphEvents(LongSet a, BlockingQueue<SectionRenderDispatcher.RenderSection> b) {
-      final LongSet chunksWhichReceivedNeighbors;
-      final BlockingQueue<SectionRenderDispatcher.RenderSection> sectionsToPropagateFrom;
+   static record GraphEvents(LongSet chunksWhichReceivedNeighbors, BlockingQueue<SectionRenderDispatcher.RenderSection> sectionsToPropagateFrom) {
 
       public GraphEvents() {
          this(new LongOpenHashSet(), new LinkedBlockingQueue<>());
       }
 
-      private GraphEvents(LongSet var1, BlockingQueue<SectionRenderDispatcher.RenderSection> var2) {
+      private GraphEvents(LongSet chunksWhichReceivedNeighbors, BlockingQueue<SectionRenderDispatcher.RenderSection> sectionsToPropagateFrom) {
          super();
-         this.chunksWhichReceivedNeighbors = var1;
-         this.sectionsToPropagateFrom = var2;
+         this.chunksWhichReceivedNeighbors = chunksWhichReceivedNeighbors;
+         this.sectionsToPropagateFrom = sectionsToPropagateFrom;
       }
    }
 
-   static record GraphState(SectionOcclusionGraph.GraphStorage a, SectionOcclusionGraph.GraphEvents b) {
-      final SectionOcclusionGraph.GraphStorage storage;
-      final SectionOcclusionGraph.GraphEvents events;
+   static record GraphState(SectionOcclusionGraph.GraphStorage storage, SectionOcclusionGraph.GraphEvents events) {
 
       public GraphState(int var1) {
          this(new SectionOcclusionGraph.GraphStorage(var1), new SectionOcclusionGraph.GraphEvents());
       }
 
-      private GraphState(SectionOcclusionGraph.GraphStorage var1, SectionOcclusionGraph.GraphEvents var2) {
+      private GraphState(SectionOcclusionGraph.GraphStorage storage, SectionOcclusionGraph.GraphEvents events) {
          super();
-         this.storage = var1;
-         this.events = var2;
+         this.storage = storage;
+         this.events = events;
       }
    }
 
@@ -434,12 +430,7 @@ public class SectionOcclusionGraph {
 
       @Override
       public boolean equals(Object var1) {
-         if (!(var1 instanceof SectionOcclusionGraph.Node)) {
-            return false;
-         } else {
-            SectionOcclusionGraph.Node var2 = (SectionOcclusionGraph.Node)var1;
-            return this.section.getOrigin().equals(var2.section.getOrigin());
-         }
+         return !(var1 instanceof SectionOcclusionGraph.Node var2) ? false : this.section.getOrigin().equals(var2.section.getOrigin());
       }
    }
 

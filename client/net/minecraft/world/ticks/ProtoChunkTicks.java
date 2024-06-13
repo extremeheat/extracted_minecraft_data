@@ -33,7 +33,7 @@ public class ProtoChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
    @Override
    public boolean hasScheduledTick(BlockPos var1, T var2) {
-      return this.ticksPerPosition.contains(SavedTick.<Object>probe(var2, var1));
+      return this.ticksPerPosition.contains(SavedTick.probe(var2, var1));
    }
 
    @Override
@@ -45,7 +45,7 @@ public class ProtoChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    public Tag save(long var1, Function<T, String> var3) {
       ListTag var4 = new ListTag();
 
-      for(SavedTick var6 : this.ticks) {
+      for (SavedTick var6 : this.ticks) {
          var4.add(var6.save(var3));
       }
 

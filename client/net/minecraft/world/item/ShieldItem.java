@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.ItemTags;
@@ -28,7 +27,7 @@ public class ShieldItem extends Item implements Equipable {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       BannerItem.appendHoverTextFromBannerBlockEntityTag(var1, var3);
    }
 

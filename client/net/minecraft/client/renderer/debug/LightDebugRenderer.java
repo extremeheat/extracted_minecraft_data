@@ -25,7 +25,7 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       BlockPos var10 = BlockPos.containing(var3, var5, var7);
       LongOpenHashSet var11 = new LongOpenHashSet();
 
-      for(BlockPos var13 : BlockPos.betweenClosed(var10.offset(-10, -10, -10), var10.offset(10, 10, 10))) {
+      for (BlockPos var13 : BlockPos.betweenClosed(var10.offset(-10, -10, -10), var10.offset(10, 10, 10))) {
          int var14 = var9.getBrightness(LightLayer.SKY, var13);
          float var15 = (float)(15 - var14) / 15.0F * 0.5F + 0.16F;
          int var16 = Mth.hsvToRgb(var15, 0.9F, 0.9F);

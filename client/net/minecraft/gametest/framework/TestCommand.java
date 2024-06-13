@@ -40,7 +40,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
@@ -474,11 +473,11 @@ public class TestCommand {
          this.logAndRun(
             this.finder.findStructureBlockPos(),
             var1x -> {
-               StructureBlockEntity var2xx = (StructureBlockEntity)var2.getBlockEntity(var1x);
-               if (var2xx == null) {
+               StructureBlockEntity var2x = (StructureBlockEntity)var2.getBlockEntity(var1x);
+               if (var2x == null) {
                   return 0;
                } else {
-                  BoundingBox var3 = StructureUtils.getStructureBoundingBox(var2xx);
+                  BoundingBox var3 = StructureUtils.getStructureBoundingBox(var2x);
                   StructureUtils.clearSpaceForStructure(var3, var2);
                   return 1;
                }
@@ -505,7 +504,7 @@ public class TestCommand {
                   if (TestCommand.saveAndExportTestStructure(var2, var4) != 0) {
                      var1.setFalse();
                   }
-   
+
                   return 1;
                }
             },
@@ -554,12 +553,10 @@ public class TestCommand {
       }
    }
 
-   static record TestBatchSummaryDisplayer(CommandSourceStack a) implements GameTestBatchListener {
-      private final CommandSourceStack source;
-
-      TestBatchSummaryDisplayer(CommandSourceStack var1) {
+   static record TestBatchSummaryDisplayer(CommandSourceStack source) implements GameTestBatchListener {
+      TestBatchSummaryDisplayer(CommandSourceStack source) {
          super();
-         this.source = var1;
+         this.source = source;
       }
 
       @Override
@@ -572,14 +569,11 @@ public class TestCommand {
       }
    }
 
-   public static record TestSummaryDisplayer(ServerLevel a, MultipleTestTracker b) implements GameTestListener {
-      private final ServerLevel level;
-      private final MultipleTestTracker tracker;
-
-      public TestSummaryDisplayer(ServerLevel var1, MultipleTestTracker var2) {
+   public static record TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) implements GameTestListener {
+      public TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) {
          super();
-         this.level = var1;
-         this.tracker = var2;
+         this.level = level;
+         this.tracker = tracker;
       }
 
       @Override

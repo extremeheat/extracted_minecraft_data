@@ -45,7 +45,7 @@ public class FrostedIceBlock extends IceBlock {
          && this.slightlyMelt(var1, var2, var3)) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-         for(Direction var9 : Direction.values()) {
+         for (Direction var9 : Direction.values()) {
             var5.setWithOffset(var3, var9);
             BlockState var10 = var2.getBlockState(var5);
             if (var10.is(this) && !this.slightlyMelt(var10, var2, var5)) {
@@ -81,7 +81,7 @@ public class FrostedIceBlock extends IceBlock {
       int var4 = 0;
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-      for(Direction var9 : Direction.values()) {
+      for (Direction var9 : Direction.values()) {
          var5.setWithOffset(var2, var9);
          if (var1.getBlockState(var5).is(this)) {
             if (++var4 >= var3) {

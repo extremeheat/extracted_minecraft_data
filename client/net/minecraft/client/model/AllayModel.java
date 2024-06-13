@@ -113,7 +113,7 @@ public class AllayModel extends HierarchicalModel<Allay> implements ArmedModel {
       this.left_wing.yRot = 0.7853982F - var8;
       this.body.xRot = var11 * 0.7853982F;
       float var19 = var13 * Mth.lerp(var11, -1.0471976F, -1.134464F);
-      this.root.y += (float)Math.cos((double)var10) * 0.25F * var12;
+      this.root.y = this.root.y + (float)Math.cos((double)var10) * 0.25F * var12;
       this.right_arm.xRot = var19;
       this.left_arm.xRot = var19;
       float var20 = var12 * (1.0F - var13);

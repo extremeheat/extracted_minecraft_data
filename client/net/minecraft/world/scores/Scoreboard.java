@@ -220,7 +220,7 @@ public class Scoreboard {
    public void removeObjective(Objective var1) {
       this.objectivesByName.remove(var1.getName());
 
-      for(DisplaySlot var5 : DisplaySlot.values()) {
+      for (DisplaySlot var5 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var5) == var1) {
             this.setDisplayObjective(var5, null);
          }
@@ -231,7 +231,7 @@ public class Scoreboard {
          var6.remove(var1);
       }
 
-      for(PlayerScores var8 : this.playerScores.values()) {
+      for (PlayerScores var8 : this.playerScores.values()) {
          var8.remove(var1);
       }
 
@@ -268,7 +268,7 @@ public class Scoreboard {
    public void removePlayerTeam(PlayerTeam var1) {
       this.teamsByName.remove(var1.getName());
 
-      for(String var3 : var1.getPlayers()) {
+      for (String var3 : var1.getPlayers()) {
          this.teamsByPlayer.remove(var3);
       }
 
@@ -365,7 +365,7 @@ public class Scoreboard {
    }
 
    protected void loadPlayerScores(ListTag var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
+      for (int var3 = 0; var3 < var1.size(); var3++) {
          CompoundTag var4 = var1.getCompound(var3);
          Score var5 = Score.read(var4, var2);
          String var6 = var4.getString("Name");

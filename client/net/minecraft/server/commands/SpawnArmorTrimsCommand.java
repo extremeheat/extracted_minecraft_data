@@ -3,10 +3,8 @@ package net.minecraft.server.commands;
 import com.google.common.collect.Maps;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.datafixers.util.Pair;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ToIntFunction;
@@ -113,10 +111,10 @@ public class SpawnArmorTrimsCommand {
       Registry var4 = var2.registryAccess().registryOrThrow(Registries.TRIM_PATTERN);
       Registry var5 = var2.registryAccess().registryOrThrow(Registries.TRIM_MATERIAL);
       var4.stream()
-         .sorted(Comparator.comparing(var1x -> TRIM_PATTERN_ORDER.applyAsInt((ResourceKey<TrimPattern>)var4.getResourceKey(var1x).orElse(null))))
+         .sorted(Comparator.comparing(var1x -> TRIM_PATTERN_ORDER.applyAsInt(var4.getResourceKey(var1x).orElse(null))))
          .forEachOrdered(
             var3x -> var5.stream()
-                  .sorted(Comparator.comparing(var1xx -> TRIM_MATERIAL_ORDER.applyAsInt((ResourceKey<TrimMaterial>)var5.getResourceKey(var1xx).orElse(null))))
+                  .sorted(Comparator.comparing(var1xx -> TRIM_MATERIAL_ORDER.applyAsInt(var5.getResourceKey(var1xx).orElse(null))))
                   .forEachOrdered(var4x -> var3.add(new ArmorTrim(var5.wrapAsHolder(var4x), var4.wrapAsHolder(var3x))))
          );
       BlockPos var6 = var1.blockPosition().relative(var1.getDirection(), 5);
@@ -126,8 +124,8 @@ public class SpawnArmorTrimsCommand {
       int var11 = 0;
       int var12 = 0;
 
-      for(ArmorTrim var14 : var3) {
-         for(ArmorMaterial var16 : var7) {
+      for (ArmorTrim var14 : var3) {
+         for (ArmorMaterial var16 : var7) {
             if (var16 != ArmorMaterials.LEATHER.value()) {
                double var17 = (double)var6.getX() + 0.5 - (double)(var11 % var5.size()) * 3.0;
                double var19 = (double)var6.getY() + 0.5 + (double)(var12 % var8) * 3.0;
@@ -136,22 +134,21 @@ public class SpawnArmorTrimsCommand {
                var23.setYRot(180.0F);
                var23.setNoGravity(true);
 
-               for(EquipmentSlot var27 : EquipmentSlot.values()) {
+               for (EquipmentSlot var27 : EquipmentSlot.values()) {
                   Item var28 = MATERIAL_AND_SLOT_TO_ITEM.get(Pair.of(var16, var27));
                   if (var28 != null) {
                      ItemStack var29 = new ItemStack(var28);
                      var29.set(DataComponents.TRIM, var14);
                      var23.setItemSlot(var27, var29);
-                     if (var28 instanceof ArmorItem var30 && var30.getMaterial().is(ArmorMaterials.TURTLE)) {
-                        var23.setCustomName(
-                           ((TrimPattern)var14.pattern().value())
-                              .copyWithStyle(var14.material())
-                              .copy()
-                              .append(" ")
-                              .append(((TrimMaterial)var14.material().value()).description())
-                        );
-                        var23.setCustomNameVisible(true);
-                        continue;
+                     if (var28 instanceof ArmorItem) {
+                        ArmorItem var30 = (ArmorItem)var28;
+                        if (var30.getMaterial().is(ArmorMaterials.TURTLE)) {
+                           var23.setCustomName(
+                              var14.pattern().value().copyWithStyle(var14.material()).copy().append(" ").append(var14.material().value().description())
+                           );
+                           var23.setCustomNameVisible(true);
+                           continue;
+                        }
                      }
 
                      var23.setInvisible(true);
@@ -159,11 +156,11 @@ public class SpawnArmorTrimsCommand {
                }
 
                var2.addFreshEntity(var23);
-               ++var12;
+               var12++;
             }
          }
 
-         ++var11;
+         var11++;
       }
 
       var0.sendSuccess(() -> Component.literal("Armorstands with trimmed armor spawned around you"), true);

@@ -2,9 +2,7 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import org.slf4j.Logger;
@@ -29,7 +27,7 @@ public class LevelUUIDFix extends AbstractUUIDFix {
    }
 
    private Dynamic<?> updateWanderingTrader(Dynamic<?> var1) {
-      return (Dynamic<?>)replaceUUIDString(var1, "WanderingTraderId", "WanderingTraderId").orElse(var1);
+      return replaceUUIDString(var1, "WanderingTraderId", "WanderingTraderId").orElse(var1);
    }
 
    private Dynamic<?> updateDragonFight(Dynamic<?> var1) {
@@ -37,7 +35,7 @@ public class LevelUUIDFix extends AbstractUUIDFix {
          "DimensionData",
          var0 -> var0.updateMapValues(
                var0x -> var0x.mapSecond(
-                     var0xx -> var0xx.update("DragonFight", var0xxx -> (Dynamic)replaceUUIDLeastMost(var0xxx, "DragonUUID", "Dragon").orElse(var0xxx))
+                     var0xx -> var0xx.update("DragonFight", var0xxx -> replaceUUIDLeastMost(var0xxx, "DragonUUID", "Dragon").orElse(var0xxx))
                   )
             )
       );
@@ -49,9 +47,10 @@ public class LevelUUIDFix extends AbstractUUIDFix {
          var0 -> var0.updateMapValues(
                var0x -> var0x.mapSecond(
                      var0xx -> var0xx.update(
-                           "Players", var1x -> var0xx.createList(var1x.asStream().map(var0xxxx -> (Dynamic)createUUIDFromML(var0xxxx).orElseGet(() -> {
+                           "Players",
+                           var1x -> var0xx.createList(var1x.asStream().map(var0xxxx -> (Dynamic)createUUIDFromML((Dynamic<?>)var0xxxx).orElseGet(() -> {
                                     LOGGER.warn("CustomBossEvents contains invalid UUIDs.");
-                                    return var0xxxx;
+                                    return (Dynamic<?>)var0xxxx;
                                  })))
                         )
                   )

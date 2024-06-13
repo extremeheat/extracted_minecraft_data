@@ -20,8 +20,7 @@ public class VanillaAdvancementProvider {
             new VanillaHusbandryAdvancements(),
             new VanillaAdventureAdvancements(),
             new VanillaNetherAdvancements(),
-            new VanillaStoryAdvancements(),
-            new PoisonousPotatoAdvancements()
+            new VanillaStoryAdvancements()
          )
       );
    }

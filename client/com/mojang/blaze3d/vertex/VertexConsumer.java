@@ -83,7 +83,7 @@ public interface VertexConsumer {
       Vec3i var14 = var2.getDirection().getNormal();
       Matrix4f var15 = var1.pose();
       Vector3f var16 = var1.transformNormal((float)var14.getX(), (float)var14.getY(), (float)var14.getZ(), new Vector3f());
-      boolean var17 = true;
+      byte var17 = 8;
       int var18 = var13.length / 8;
       MemoryStack var19 = MemoryStack.stackPush();
 
@@ -91,7 +91,7 @@ public interface VertexConsumer {
          ByteBuffer var20 = var19.malloc(DefaultVertexFormat.BLOCK.getVertexSize());
          IntBuffer var21 = var20.asIntBuffer();
 
-         for(int var22 = 0; var22 < var18; ++var22) {
+         for (int var22 = 0; var22 < var18; var22++) {
             var21.clear();
             var21.put(var13, var22 * 8, 8);
             float var23 = var20.getFloat(0);

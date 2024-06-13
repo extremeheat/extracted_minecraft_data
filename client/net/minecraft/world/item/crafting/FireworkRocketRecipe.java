@@ -23,7 +23,7 @@ public class FireworkRocketRecipe extends CustomRecipe {
       boolean var3 = false;
       int var4 = 0;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (PAPER_INGREDIENT.test(var6)) {
@@ -49,11 +49,11 @@ public class FireworkRocketRecipe extends CustomRecipe {
       ArrayList var3 = new ArrayList();
       int var4 = 0;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (GUNPOWDER_INGREDIENT.test(var6)) {
-               ++var4;
+               var4++;
             } else if (STAR_INGREDIENT.test(var6)) {
                FireworkExplosion var7 = var6.get(DataComponents.FIREWORK_EXPLOSION);
                if (var7 != null) {

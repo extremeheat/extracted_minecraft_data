@@ -18,7 +18,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +34,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
 
    public LivingEntityRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
       super(var1);
-      this.model = var2;
+      this.model = (M)var2;
       this.shadowRadius = var3;
    }
 
@@ -48,8 +47,6 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       return this.model;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
       this.model.attackTime = this.getAttackAnim((T)var1, var3);
@@ -58,27 +55,24 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       float var7 = Mth.rotLerp(var3, var1.yBodyRotO, var1.yBodyRot);
       float var8 = Mth.rotLerp(var3, var1.yHeadRotO, var1.yHeadRot);
       float var9 = var8 - var7;
-      if (var1.isPassenger()) {
-         Entity var11 = var1.getVehicle();
-         if (var11 instanceof LivingEntity var10) {
-            var7 = Mth.rotLerp(var3, var10.yBodyRotO, var10.yBodyRot);
-            var9 = var8 - var7;
-            float var26 = Mth.wrapDegrees(var9);
-            if (var26 < -85.0F) {
-               var26 = -85.0F;
-            }
-
-            if (var26 >= 85.0F) {
-               var26 = 85.0F;
-            }
-
-            var7 = var8 - var26;
-            if (var26 * var26 > 2500.0F) {
-               var7 += var26 * 0.2F;
-            }
-
-            var9 = var8 - var7;
+      if (var1.isPassenger() && var1.getVehicle() instanceof LivingEntity var10) {
+         var7 = Mth.rotLerp(var3, var10.yBodyRotO, var10.yBodyRot);
+         var9 = var8 - var7;
+         float var26 = Mth.wrapDegrees(var9);
+         if (var26 < -85.0F) {
+            var26 = -85.0F;
          }
+
+         if (var26 >= 85.0F) {
+            var26 = 85.0F;
+         }
+
+         var7 = var8 - var26;
+         if (var26 * var26 > 2500.0F) {
+            var7 += var26 * 0.2F;
+         }
+
+         var9 = var8 - var7;
       }
 
       float var25 = Mth.lerp(var3, var1.xRotO, var1.getXRot());
@@ -131,7 +125,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       }
 
       if (!var1.isSpectator()) {
-         for(RenderLayer var31 : this.layers) {
+         for (RenderLayer var31 : this.layers) {
             var31.render(var4, var5, var6, var1, var14, var13, var3, var29, var9, var25);
          }
       }
@@ -140,17 +134,9 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       super.render((T)var1, var2, var3, var4, var5, var6);
    }
 
-   public static ResourceLocation potatoify(ResourceLocation var0) {
-      return var0.withPath(var0x -> var0x.replaceFirst(".png$", "_potato.png"));
-   }
-
    @Nullable
    protected RenderType getRenderType(T var1, boolean var2, boolean var3, boolean var4) {
       ResourceLocation var5 = this.getTextureLocation((T)var1);
-      if (var1.hasPotatoVariant() && var1.isPotato()) {
-         var5 = potatoify(var5);
-      }
-
       if (var3) {
          return RenderType.itemEntityTranslucentCull(var5);
       } else if (var2) {
@@ -169,7 +155,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
    }
 
    private static float sleepDirectionToRotation(Direction var0) {
-      switch(var0) {
+      switch (var0) {
          case SOUTH:
             return 90.0F;
          case WEST:
@@ -252,7 +238,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
             PlayerTeam var9 = var6.getTeam();
             if (var8 != null) {
                Team.Visibility var10 = var8.getNameTagVisibility();
-               switch(var10) {
+               switch (var10) {
                   case ALWAYS:
                      return var7;
                   case NEVER:

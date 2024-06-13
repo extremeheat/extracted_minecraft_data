@@ -3,7 +3,6 @@ package net.minecraft.world.item;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
@@ -32,7 +31,7 @@ public class InstrumentItem extends Item {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       Optional var5 = this.getInstrument(var1).flatMap(Holder::unwrapKey);
       if (var5.isPresent()) {
@@ -49,15 +48,15 @@ public class InstrumentItem extends Item {
 
    public static void setRandom(ItemStack var0, TagKey<Instrument> var1, RandomSource var2) {
       Optional var3 = BuiltInRegistries.INSTRUMENT.getRandomElementOf(var1, var2);
-      var3.ifPresent(var1x -> var0.set(DataComponents.INSTRUMENT, var1x));
+      var3.ifPresent(var1x -> var0.set(DataComponents.INSTRUMENT, (Holder<Instrument>)var1x));
    }
 
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      Holder var5 = var4.get(DataComponents.INSTRUMENT);
-      if (var5 != null) {
-         Instrument var6 = (Instrument)var5.value();
+      Optional var5 = this.getInstrument(var4);
+      if (var5.isPresent()) {
+         Instrument var6 = (Instrument)((Holder)var5.get()).value();
          var2.startUsingItem(var3);
          play(var1, var2, var6);
          var2.getCooldowns().addCooldown(this, var6.useDuration());

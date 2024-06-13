@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -15,7 +14,7 @@ public class DropExperienceBlock extends Block {
       var0 -> var0.group(IntProvider.codec(0, 10).fieldOf("experience").forGetter(var0x -> var0x.xpRange), propertiesCodec())
             .apply(var0, DropExperienceBlock::new)
    );
-   protected final IntProvider xpRange;
+   private final IntProvider xpRange;
 
    @Override
    public MapCodec<? extends DropExperienceBlock> codec() {

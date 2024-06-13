@@ -25,7 +25,7 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
       List var9 = var1.getBeamSections();
       int var10 = 0;
 
-      for(int var11 = 0; var11 < var9.size(); ++var11) {
+      for (int var11 = 0; var11 < var9.size(); var11++) {
          BeaconBlockEntity.BeaconBeamSection var12 = (BeaconBlockEntity.BeaconBeamSection)var9.get(var11);
          renderBeaconBeam(var3, var4, var2, var7, var10, var11 == var9.size() - 1 ? 1024 : var12.getHeight(), var12.getColor());
          var10 += var12.getHeight();

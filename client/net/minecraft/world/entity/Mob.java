@@ -80,10 +80,13 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 
-public abstract class Mob extends LivingEntity implements Targeting {
+public abstract class Mob extends LivingEntity implements EquipmentUser, Targeting {
    private static final EntityDataAccessor<Byte> DATA_MOB_FLAGS_ID = SynchedEntityData.defineId(Mob.class, EntityDataSerializers.BYTE);
    private static final int MOB_FLAG_NO_AI = 1;
    private static final int MOB_FLAG_LEFTHANDED = 2;
@@ -167,9 +170,8 @@ public abstract class Mob extends LivingEntity implements Targeting {
    public float getPathfindingMalus(PathType var1) {
       Mob var2;
       label17: {
-         Entity var4 = this.getControlledVehicle();
-         if (var4 instanceof Mob var3 && ((Mob)var3).shouldPassengersInheritMalus()) {
-            var2 = (Mob)var3;
+         if (this.getControlledVehicle() instanceof Mob var3 && var3.shouldPassengersInheritMalus()) {
+            var2 = var3;
             break label17;
          }
 
@@ -199,8 +201,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    }
 
    public MoveControl getMoveControl() {
-      Entity var2 = this.getControlledVehicle();
-      return var2 instanceof Mob var1 ? var1.getMoveControl() : this.moveControl;
+      return this.getControlledVehicle() instanceof Mob var1 ? var1.getMoveControl() : this.moveControl;
    }
 
    public JumpControl getJumpControl() {
@@ -208,8 +209,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    }
 
    public PathNavigation getNavigation() {
-      Entity var2 = this.getControlledVehicle();
-      return var2 instanceof Mob var1 ? var1.getNavigation() : this.navigation;
+      return this.getControlledVehicle() instanceof Mob var1 ? var1.getNavigation() : this.navigation;
    }
 
    @Nullable
@@ -217,7 +217,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    public LivingEntity getControllingPassenger() {
       Entity var1 = this.getFirstPassenger();
       if (!this.isNoAi() && var1 instanceof Mob var2 && var1.canControlVehicle()) {
-         return (LivingEntity)var2;
+         return var2;
       }
 
       return null;
@@ -291,13 +291,13 @@ public abstract class Mob extends LivingEntity implements Targeting {
       if (this.xpReward > 0) {
          int var1 = this.xpReward;
 
-         for(int var2 = 0; var2 < this.armorItems.size(); ++var2) {
+         for (int var2 = 0; var2 < this.armorItems.size(); var2++) {
             if (!this.armorItems.get(var2).isEmpty() && this.armorDropChances[var2] <= 1.0F) {
                var1 += 1 + this.random.nextInt(3);
             }
          }
 
-         for(int var3 = 0; var3 < this.handItems.size(); ++var3) {
+         for (int var3 = 0; var3 < this.handItems.size(); var3++) {
             if (!this.handItems.get(var3).isEmpty() && this.handDropChances[var3] <= 1.0F) {
                var1 += 1 + this.random.nextInt(3);
             }
@@ -315,7 +315,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
 
    public void spawnAnim() {
       if (this.level().isClientSide) {
-         for(int var1 = 0; var1 < 20; ++var1) {
+         for (int var1 = 0; var1 < 20; var1++) {
             double var2 = this.random.nextGaussian() * 0.02;
             double var4 = this.random.nextGaussian() * 0.02;
             double var6 = this.random.nextGaussian() * 0.02;
@@ -369,8 +369,6 @@ public abstract class Mob extends LivingEntity implements Targeting {
       return null;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
@@ -378,7 +376,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       var1.putBoolean("PersistenceRequired", this.persistenceRequired);
       ListTag var2 = new ListTag();
 
-      for(ItemStack var4 : this.armorItems) {
+      for (ItemStack var4 : this.armorItems) {
          if (!var4.isEmpty()) {
             var2.add(var4.save(this.registryAccess()));
          } else {
@@ -389,14 +387,14 @@ public abstract class Mob extends LivingEntity implements Targeting {
       var1.put("ArmorItems", var2);
       ListTag var10 = new ListTag();
 
-      for(float var7 : this.armorDropChances) {
+      for (float var7 : this.armorDropChances) {
          var10.add(FloatTag.valueOf(var7));
       }
 
       var1.put("ArmorDropChances", var10);
       ListTag var12 = new ListTag();
 
-      for(ItemStack var15 : this.handItems) {
+      for (ItemStack var15 : this.handItems) {
          if (!var15.isEmpty()) {
             var12.add(var15.save(this.registryAccess()));
          } else {
@@ -407,7 +405,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       var1.put("HandItems", var12);
       ListTag var14 = new ListTag();
 
-      for(float var9 : this.handDropChances) {
+      for (float var9 : this.handDropChances) {
          var14.add(FloatTag.valueOf(var9));
       }
 
@@ -420,18 +418,15 @@ public abstract class Mob extends LivingEntity implements Targeting {
       Either var17 = this.delayedLeashInfo;
       if (this.leashHolder instanceof LivingEntity) {
          var17 = Either.left(this.leashHolder.getUUID());
-      } else {
-         Entity var20 = this.leashHolder;
-         if (var20 instanceof HangingEntity var19) {
-            var17 = Either.right(var19.getPos());
-         }
+      } else if (this.leashHolder instanceof HangingEntity var19) {
+         var17 = Either.right(var19.getPos());
       }
 
       if (var17 != null) {
          var1.put("leash", (Tag)var17.map(var0 -> {
-            CompoundTag var1xx = new CompoundTag();
-            var1xx.putUUID("UUID", var0);
-            return var1xx;
+            CompoundTag var1x = new CompoundTag();
+            var1x.putUUID("UUID", var0);
+            return var1x;
          }, NbtUtils::writeBlockPos));
       }
 
@@ -459,7 +454,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       if (var1.contains("ArmorItems", 9)) {
          ListTag var2 = var1.getList("ArmorItems", 10);
 
-         for(int var3 = 0; var3 < this.armorItems.size(); ++var3) {
+         for (int var3 = 0; var3 < this.armorItems.size(); var3++) {
             CompoundTag var4 = var2.getCompound(var3);
             this.armorItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
          }
@@ -468,7 +463,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       if (var1.contains("ArmorDropChances", 9)) {
          ListTag var5 = var1.getList("ArmorDropChances", 5);
 
-         for(int var8 = 0; var8 < var5.size(); ++var8) {
+         for (int var8 = 0; var8 < var5.size(); var8++) {
             this.armorDropChances[var8] = var5.getFloat(var8);
          }
       }
@@ -476,7 +471,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       if (var1.contains("HandItems", 9)) {
          ListTag var6 = var1.getList("HandItems", 10);
 
-         for(int var9 = 0; var9 < this.handItems.size(); ++var9) {
+         for (int var9 = 0; var9 < this.handItems.size(); var9++) {
             CompoundTag var11 = var6.getCompound(var9);
             this.handItems.set(var9, ItemStack.parseOptional(this.registryAccess(), var11));
          }
@@ -485,7 +480,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       if (var1.contains("HandDropChances", 9)) {
          ListTag var7 = var1.getList("HandDropChances", 5);
 
-         for(int var10 = 0; var10 < var7.size(); ++var10) {
+         for (int var10 = 0; var10 < var7.size(); var10++) {
             this.handDropChances[var10] = var7.getFloat(var10);
          }
       }
@@ -500,7 +495,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       if (var1.contains("leash", 10)) {
          this.delayedLeashInfo = Either.left(var1.getCompound("leash").getUUID("UUID"));
       } else if (var1.contains("leash", 11)) {
-         this.delayedLeashInfo = (Either)NbtUtils.readBlockPos(var1, "leash").map(Either::right).orElse(null);
+         this.delayedLeashInfo = NbtUtils.readBlockPos(var1, "leash").<Either<UUID, BlockPos>>map(Either::right).orElse(null);
       } else {
          this.delayedLeashInfo = null;
       }
@@ -570,7 +565,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
          && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
          Vec3i var1 = this.getPickupReach();
 
-         for(ItemEntity var4 : this.level()
+         for (ItemEntity var4 : this.level()
             .getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate((double)var1.getX(), (double)var1.getY(), (double)var1.getZ()))) {
             if (!var4.isRemoved() && !var4.getItem().isEmpty() && !var4.hasPickUpDelay() && this.wantsToPickUp(var4.getItem())) {
                this.pickUpItem(var4);
@@ -634,7 +629,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    }
 
    public void setGuaranteedDrop(EquipmentSlot var1) {
-      switch(var1.getType()) {
+      switch (var1.getType()) {
          case HAND:
             this.handDropChances[var1.getIndex()] = 2.0F;
             break;
@@ -646,8 +641,6 @@ public abstract class Mob extends LivingEntity implements Targeting {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2) {
       if (var2.isEmpty()) {
          return true;
@@ -657,52 +650,43 @@ public abstract class Mob extends LivingEntity implements Targeting {
          } else {
             double var10 = this.getApproximateAttackDamageWithItem(var1);
             double var11 = this.getApproximateAttackDamageWithItem(var2);
-            if (var10 != var11) {
-               return var10 > var11;
-            } else {
-               return this.canReplaceEqualItem(var1, var2);
-            }
+            return var10 != var11 ? var10 > var11 : this.canReplaceEqualItem(var1, var2);
          }
       } else if (var1.getItem() instanceof BowItem && var2.getItem() instanceof BowItem) {
          return this.canReplaceEqualItem(var1, var2);
       } else if (var1.getItem() instanceof CrossbowItem && var2.getItem() instanceof CrossbowItem) {
          return this.canReplaceEqualItem(var1, var2);
-      } else {
-         Item var4 = var1.getItem();
-         if (var4 instanceof ArmorItem var3) {
-            if (EnchantmentHelper.hasBindingCurse(var2)) {
-               return false;
-            } else if (!(var2.getItem() instanceof ArmorItem)) {
-               return true;
-            } else {
-               ArmorItem var9 = (ArmorItem)var2.getItem();
-               if (var3.getDefense() != var9.getDefense()) {
-                  return var3.getDefense() > var9.getDefense();
-               } else if (var3.getToughness() != var9.getToughness()) {
-                  return var3.getToughness() > var9.getToughness();
-               } else {
-                  return this.canReplaceEqualItem(var1, var2);
-               }
-            }
-         } else {
-            if (var1.getItem() instanceof DiggerItem) {
-               if (var2.getItem() instanceof BlockItem) {
-                  return true;
-               }
-
-               if (var2.getItem() instanceof DiggerItem) {
-                  double var8 = this.getApproximateAttackDamageWithItem(var1);
-                  double var6 = this.getApproximateAttackDamageWithItem(var2);
-                  if (var8 != var6) {
-                     return var8 > var6;
-                  }
-
-                  return this.canReplaceEqualItem(var1, var2);
-               }
-            }
-
+      } else if (var1.getItem() instanceof ArmorItem var3) {
+         if (EnchantmentHelper.hasBindingCurse(var2)) {
             return false;
+         } else if (!(var2.getItem() instanceof ArmorItem)) {
+            return true;
+         } else {
+            ArmorItem var9 = (ArmorItem)var2.getItem();
+            if (var3.getDefense() != var9.getDefense()) {
+               return var3.getDefense() > var9.getDefense();
+            } else {
+               return var3.getToughness() != var9.getToughness() ? var3.getToughness() > var9.getToughness() : this.canReplaceEqualItem(var1, var2);
+            }
          }
+      } else {
+         if (var1.getItem() instanceof DiggerItem) {
+            if (var2.getItem() instanceof BlockItem) {
+               return true;
+            }
+
+            if (var2.getItem() instanceof DiggerItem) {
+               double var8 = this.getApproximateAttackDamageWithItem(var1);
+               double var6 = this.getApproximateAttackDamageWithItem(var2);
+               if (var8 != var6) {
+                  return var8 > var6;
+               }
+
+               return this.canReplaceEqualItem(var1, var2);
+            }
+         }
+
+         return false;
       }
    }
 
@@ -712,11 +696,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    }
 
    public boolean canReplaceEqualItem(ItemStack var1, ItemStack var2) {
-      if (var1.getDamageValue() < var2.getDamageValue()) {
-         return true;
-      } else {
-         return hasAnyComponentExceptDamage(var1) && !hasAnyComponentExceptDamage(var2);
-      }
+      return var1.getDamageValue() < var2.getDamageValue() ? true : hasAnyComponentExceptDamage(var1) && !hasAnyComponentExceptDamage(var2);
    }
 
    private static boolean hasAnyComponentExceptDamage(ItemStack var0) {
@@ -774,7 +754,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
 
    @Override
    protected final void serverAiStep() {
-      ++this.noActionTime;
+      this.noActionTime++;
       ProfilerFiller var1 = this.level().getProfiler();
       var1.push("sensing");
       this.sensing.tick();
@@ -842,8 +822,6 @@ public abstract class Mob extends LivingEntity implements Targeting {
       return 10;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void lookAt(Entity var1, float var2, float var3) {
       double var4 = var1.getX() - this.getX();
       double var8 = var1.getZ() - this.getZ();
@@ -952,7 +930,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
 
    @Override
    public ItemStack getItemBySlot(EquipmentSlot var1) {
-      return switch(var1.getType()) {
+      return switch (var1.getType()) {
          case HAND -> (ItemStack)this.handItems.get(var1.getIndex());
          case ARMOR -> (ItemStack)this.armorItems.get(var1.getIndex());
          case BODY -> this.bodyArmorItem;
@@ -962,7 +940,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    @Override
    public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
       this.verifyEquippedItem(var2);
-      switch(var1.getType()) {
+      switch (var1.getType()) {
          case HAND:
             this.onEquipItem(var1, this.handItems.set(var1.getIndex(), var2), var2);
             break;
@@ -980,7 +958,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
 
-      for(EquipmentSlot var7 : EquipmentSlot.values()) {
+      for (EquipmentSlot var7 : EquipmentSlot.values()) {
          ItemStack var8 = this.getItemBySlot(var7);
          float var9 = this.getEquipmentDropChance(var7);
          boolean var10 = var9 > 1.0F;
@@ -999,11 +977,24 @@ public abstract class Mob extends LivingEntity implements Targeting {
    }
 
    protected float getEquipmentDropChance(EquipmentSlot var1) {
-      return switch(var1.getType()) {
+      return switch (var1.getType()) {
          case HAND -> this.handDropChances[var1.getIndex()];
          case ARMOR -> this.armorDropChances[var1.getIndex()];
          case BODY -> this.bodyArmorDropChance;
       };
+   }
+
+   private LootParams createEquipmentParams(ServerLevel var1) {
+      return new LootParams.Builder(var1)
+         .withParameter(LootContextParams.ORIGIN, this.position())
+         .withParameter(LootContextParams.THIS_ENTITY, this)
+         .create(LootContextParamSets.EQUIPMENT);
+   }
+
+   public void equip(ResourceLocation var1) {
+      if (this.level() instanceof ServerLevel var2) {
+         this.equip(var1, this.createEquipmentParams(var2));
+      }
    }
 
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
@@ -1011,20 +1002,20 @@ public abstract class Mob extends LivingEntity implements Targeting {
          int var3 = var1.nextInt(2);
          float var4 = this.level().getDifficulty() == Difficulty.HARD ? 0.1F : 0.25F;
          if (var1.nextFloat() < 0.095F) {
-            ++var3;
+            var3++;
          }
 
          if (var1.nextFloat() < 0.095F) {
-            ++var3;
+            var3++;
          }
 
          if (var1.nextFloat() < 0.095F) {
-            ++var3;
+            var3++;
          }
 
          boolean var5 = true;
 
-         for(EquipmentSlot var9 : EquipmentSlot.values()) {
+         for (EquipmentSlot var9 : EquipmentSlot.values()) {
             if (var9.getType() == EquipmentSlot.Type.ARMOR) {
                ItemStack var10 = this.getItemBySlot(var9);
                if (!var5 && var1.nextFloat() < var4) {
@@ -1045,7 +1036,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
 
    @Nullable
    public static Item getEquipmentForSlot(EquipmentSlot var0, int var1) {
-      switch(var0) {
+      switch (var0) {
          case HEAD:
             if (var1 == 0) {
                return Items.LEATHER_HELMET;
@@ -1103,7 +1094,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       float var3 = var2.getSpecialMultiplier();
       this.enchantSpawnedWeapon(var1, var3);
 
-      for(EquipmentSlot var7 : EquipmentSlot.values()) {
+      for (EquipmentSlot var7 : EquipmentSlot.values()) {
          if (var7.getType() == EquipmentSlot.Type.ARMOR) {
             this.enchantSpawnedArmor(var1, var3, var7);
          }
@@ -1113,7 +1104,8 @@ public abstract class Mob extends LivingEntity implements Targeting {
    protected void enchantSpawnedWeapon(RandomSource var1, float var2) {
       if (!this.getMainHandItem().isEmpty() && var1.nextFloat() < 0.25F * var2) {
          this.setItemSlot(
-            EquipmentSlot.MAINHAND, EnchantmentHelper.enchantItem(var1, this.getMainHandItem(), (int)(5.0F + var2 * (float)var1.nextInt(18)), false)
+            EquipmentSlot.MAINHAND,
+            EnchantmentHelper.enchantItem(this.level().enabledFeatures(), var1, this.getMainHandItem(), (int)(5.0F + var2 * (float)var1.nextInt(18)), false)
          );
       }
    }
@@ -1121,7 +1113,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    protected void enchantSpawnedArmor(RandomSource var1, float var2, EquipmentSlot var3) {
       ItemStack var4 = this.getItemBySlot(var3);
       if (!var4.isEmpty() && var1.nextFloat() < 0.5F * var2) {
-         this.setItemSlot(var3, EnchantmentHelper.enchantItem(var1, var4, (int)(5.0F + var2 * (float)var1.nextInt(18)), false));
+         this.setItemSlot(var3, EnchantmentHelper.enchantItem(this.level().enabledFeatures(), var1, var4, (int)(5.0F + var2 * (float)var1.nextInt(18)), false));
       }
    }
 
@@ -1140,8 +1132,9 @@ public abstract class Mob extends LivingEntity implements Targeting {
       this.persistenceRequired = true;
    }
 
+   @Override
    public void setDropChance(EquipmentSlot var1, float var2) {
-      switch(var1.getType()) {
+      switch (var1.getType()) {
          case HAND:
             this.handDropChances[var1.getIndex()] = var2;
             break;
@@ -1213,7 +1206,9 @@ public abstract class Mob extends LivingEntity implements Targeting {
          if (var3.getItem() instanceof SpawnEggItem) {
             if (this.level() instanceof ServerLevel) {
                SpawnEggItem var6 = (SpawnEggItem)var3.getItem();
-               Optional var5 = var6.spawnOffspringFromSpawnEgg(var1, this, this.getType(), (ServerLevel)this.level(), this.position(), var3);
+               Optional var5 = var6.spawnOffspringFromSpawnEgg(
+                  var1, this, (EntityType<? extends Mob>)this.getType(), (ServerLevel)this.level(), this.position(), var3
+               );
                var5.ifPresent(var2x -> this.onOffspringSpawnedFromEgg(var1, var2x));
                return var5.isPresent() ? InteractionResult.SUCCESS : InteractionResult.PASS;
             } else {
@@ -1237,11 +1232,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    }
 
    public boolean isWithinRestriction(BlockPos var1) {
-      if (this.restrictRadius == -1.0F) {
-         return true;
-      } else {
-         return this.restrictCenter.distSqr(var1) < (double)(this.restrictRadius * this.restrictRadius);
-      }
+      return this.restrictRadius == -1.0F ? true : this.restrictCenter.distSqr(var1) < (double)(this.restrictRadius * this.restrictRadius);
    }
 
    public void restrictTo(BlockPos var1, int var2) {
@@ -1290,7 +1281,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
             if (var2) {
                var3.setCanPickUpLoot(this.canPickUpLoot());
 
-               for(EquipmentSlot var7 : EquipmentSlot.values()) {
+               for (EquipmentSlot var7 : EquipmentSlot.values()) {
                   ItemStack var8 = this.getItemBySlot(var7);
                   if (!var8.isEmpty()) {
                      var3.setItemSlot(var7, var8.copyAndClear());
@@ -1387,29 +1378,24 @@ public abstract class Mob extends LivingEntity implements Targeting {
       return var3;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void restoreLeashFromSave() {
-      if (this.delayedLeashInfo != null) {
-         Level var2 = this.level();
-         if (var2 instanceof ServerLevel var1) {
-            Optional var5 = this.delayedLeashInfo.left();
-            Optional var3 = this.delayedLeashInfo.right();
-            if (var5.isPresent()) {
-               Entity var4 = var1.getEntity((UUID)var5.get());
-               if (var4 != null) {
-                  this.setLeashedTo(var4, true);
-                  return;
-               }
-            } else if (var3.isPresent()) {
-               this.setLeashedTo(LeashFenceKnotEntity.getOrCreateKnot(this.level(), (BlockPos)var3.get()), true);
+      if (this.delayedLeashInfo != null && this.level() instanceof ServerLevel var1) {
+         Optional var5 = this.delayedLeashInfo.left();
+         Optional var3 = this.delayedLeashInfo.right();
+         if (var5.isPresent()) {
+            Entity var4 = var1.getEntity((UUID)var5.get());
+            if (var4 != null) {
+               this.setLeashedTo(var4, true);
                return;
             }
+         } else if (var3.isPresent()) {
+            this.setLeashedTo(LeashFenceKnotEntity.getOrCreateKnot(this.level(), (BlockPos)var3.get()), true);
+            return;
+         }
 
-            if (this.tickCount > 100) {
-               this.spawnAtLocation(Items.LEAD);
-               this.delayedLeashInfo = null;
-            }
+         if (this.tickCount > 100) {
+            this.spawnAtLocation(Items.LEAD);
+            this.delayedLeashInfo = null;
          }
       }
    }

@@ -2,7 +2,6 @@ package net.minecraft.world.item.component;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Locale;
@@ -13,32 +12,29 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
-public record DyedItemColor(int d, boolean e) implements TooltipProvider {
-   private final int rgb;
-   private final boolean showInTooltip;
+public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipProvider {
    private static final Codec<DyedItemColor> FULL_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.INT.fieldOf("rgb").forGetter(DyedItemColor::rgb),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(DyedItemColor::showInTooltip)
+               Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(DyedItemColor::showInTooltip)
             )
             .apply(var0, DyedItemColor::new)
    );
-   public static final Codec<DyedItemColor> CODEC = ExtraCodecs.withAlternative(FULL_CODEC, Codec.INT, var0 -> new DyedItemColor(var0, true));
+   public static final Codec<DyedItemColor> CODEC = Codec.withAlternative(FULL_CODEC, Codec.INT, var0 -> new DyedItemColor(var0, true));
    public static final StreamCodec<ByteBuf, DyedItemColor> STREAM_CODEC = StreamCodec.composite(
       ByteBufCodecs.INT, DyedItemColor::rgb, ByteBufCodecs.BOOL, DyedItemColor::showInTooltip, DyedItemColor::new
    );
    public static final int LEATHER_COLOR = -6265536;
 
-   public DyedItemColor(int var1, boolean var2) {
+   public DyedItemColor(int rgb, boolean showInTooltip) {
       super();
-      this.rgb = var1;
-      this.showInTooltip = var2;
+      this.rgb = rgb;
+      this.showInTooltip = showInTooltip;
    }
 
    public static int getOrDefault(ItemStack var0, int var1) {
@@ -65,10 +61,10 @@ public record DyedItemColor(int d, boolean e) implements TooltipProvider {
             var3 += var9;
             var4 += var10;
             var5 += var11;
-            ++var7;
+            var7++;
          }
 
-         for(DyeItem var19 : var1) {
+         for (DyeItem var19 : var1) {
             float[] var22 = var19.getDyeColor().getTextureDiffuseColors();
             int var12 = (int)(var22[0] * 255.0F);
             int var13 = (int)(var22[1] * 255.0F);
@@ -77,7 +73,7 @@ public record DyedItemColor(int d, boolean e) implements TooltipProvider {
             var3 += var12;
             var4 += var13;
             var5 += var14;
-            ++var7;
+            var7++;
          }
 
          int var17 = var3 / var7;

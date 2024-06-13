@@ -31,14 +31,14 @@ public class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry>
    }
 
    public void addSmall(OptionInstance<?>... var1) {
-      for(int var2 = 0; var2 < var1.length; var2 += 2) {
+      for (byte var2 = 0; var2 < var1.length; var2 += 2) {
          OptionInstance var3 = var2 < var1.length - 1 ? var1[var2 + 1] : null;
          this.addEntry(OptionsList.OptionEntry.small(this.minecraft.options, var1[var2], var3, this.screen));
       }
    }
 
    public void addSmall(List<AbstractWidget> var1) {
-      for(int var2 = 0; var2 < var1.size(); var2 += 2) {
+      for (byte var2 = 0; var2 < var1.size(); var2 += 2) {
          this.addSmall((AbstractWidget)var1.get(var2), var2 < var1.size() - 1 ? (AbstractWidget)var1.get(var2 + 1) : null);
       }
    }
@@ -52,11 +52,9 @@ public class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry>
       return 310;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public AbstractWidget findOption(OptionInstance<?> var1) {
-      for(OptionsList.Entry var3 : this.children()) {
+      for (OptionsList.Entry var3 : this.children()) {
          if (var3 instanceof OptionsList.OptionEntry var4) {
             AbstractWidget var5 = var4.options.get(var1);
             if (var5 != null) {
@@ -69,8 +67,8 @@ public class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry>
    }
 
    public Optional<GuiEventListener> getMouseOver(double var1, double var3) {
-      for(OptionsList.Entry var6 : this.children()) {
-         for(GuiEventListener var8 : var6.children()) {
+      for (OptionsList.Entry var6 : this.children()) {
+         for (GuiEventListener var8 : var6.children()) {
             if (var8.isMouseOver(var1, var3)) {
                return Optional.of(var8);
             }
@@ -101,10 +99,10 @@ public class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry>
 
       @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = 0;
+         short var11 = 0;
          int var12 = this.screen.width / 2 - 155;
 
-         for(AbstractWidget var14 : this.children) {
+         for (AbstractWidget var14 : this.children) {
             var14.setPosition(var12 + var11, var3);
             var14.render(var1, var7, var8, var10);
             var11 += 160;

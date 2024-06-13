@@ -118,7 +118,7 @@ public class WorldBorder {
       this.centerZ = var3;
       this.extent.onCenterChange();
 
-      for(BorderChangeListener var6 : this.getListeners()) {
+      for (BorderChangeListener var6 : this.getListeners()) {
          var6.onBorderCenterSet(this, var1, var3);
       }
    }
@@ -138,7 +138,7 @@ public class WorldBorder {
    public void setSize(double var1) {
       this.extent = new WorldBorder.StaticBorderExtent(var1);
 
-      for(BorderChangeListener var4 : this.getListeners()) {
+      for (BorderChangeListener var4 : this.getListeners()) {
          var4.onBorderSizeSet(this, var1);
       }
    }
@@ -146,7 +146,7 @@ public class WorldBorder {
    public void lerpSizeBetween(double var1, double var3, long var5) {
       this.extent = (WorldBorder.BorderExtent)(var1 == var3 ? new WorldBorder.StaticBorderExtent(var3) : new WorldBorder.MovingBorderExtent(var1, var3, var5));
 
-      for(BorderChangeListener var8 : this.getListeners()) {
+      for (BorderChangeListener var8 : this.getListeners()) {
          var8.onBorderSizeLerping(this, var1, var3, var5);
       }
    }
@@ -179,7 +179,7 @@ public class WorldBorder {
    public void setDamageSafeZone(double var1) {
       this.damageSafeZone = var1;
 
-      for(BorderChangeListener var4 : this.getListeners()) {
+      for (BorderChangeListener var4 : this.getListeners()) {
          var4.onBorderSetDamageSafeZOne(this, var1);
       }
    }
@@ -191,7 +191,7 @@ public class WorldBorder {
    public void setDamagePerBlock(double var1) {
       this.damagePerBlock = var1;
 
-      for(BorderChangeListener var4 : this.getListeners()) {
+      for (BorderChangeListener var4 : this.getListeners()) {
          var4.onBorderSetDamagePerBlock(this, var1);
       }
    }
@@ -207,7 +207,7 @@ public class WorldBorder {
    public void setWarningTime(int var1) {
       this.warningTime = var1;
 
-      for(BorderChangeListener var3 : this.getListeners()) {
+      for (BorderChangeListener var3 : this.getListeners()) {
          var3.onBorderSetWarningTime(this, var1);
       }
    }
@@ -219,7 +219,7 @@ public class WorldBorder {
    public void setWarningBlocks(int var1) {
       this.warningBlocks = var1;
 
-      for(BorderChangeListener var3 : this.getListeners()) {
+      for (BorderChangeListener var3 : this.getListeners()) {
          var3.onBorderSetWarningBlocks(this, var1);
       }
    }

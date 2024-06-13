@@ -82,7 +82,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
          var2 = ParticleTypes.SMOKE;
       }
 
-      for(int var3 = 0; var3 < 7; ++var3) {
+      for (int var3 = 0; var3 < 7; var3++) {
          double var4 = this.random.nextGaussian() * 0.02;
          double var6 = this.random.nextGaussian() * 0.02;
          double var8 = this.random.nextGaussian() * 0.02;
@@ -148,7 +148,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       this.setTame(true, true);
       this.setOwnerUUID(var1.getUUID());
       if (var1 instanceof ServerPlayer var2) {
-         CriteriaTriggers.TAME_ANIMAL.trigger((ServerPlayer)var2, this);
+         CriteriaTriggers.TAME_ANIMAL.trigger(var2, this);
       }
    }
 

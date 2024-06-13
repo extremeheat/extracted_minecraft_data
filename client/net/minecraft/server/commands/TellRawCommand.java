@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -25,19 +24,19 @@ public class TellRawCommand {
                      Commands.argument("message", ComponentArgument.textComponent(var1))
                         .executes(
                            var0x -> {
-                              int var1xx = 0;
-                     
-                              for(ServerPlayer var3 : EntityArgument.getPlayers(var0x, "targets")) {
+                              int var1x = 0;
+
+                              for (ServerPlayer var3 : EntityArgument.getPlayers(var0x, "targets")) {
                                  var3.sendSystemMessage(
                                     ComponentUtils.updateForEntity(
                                        (CommandSourceStack)var0x.getSource(), ComponentArgument.getComponent(var0x, "message"), var3, 0
                                     ),
                                     false
                                  );
-                                 ++var1xx;
+                                 var1x++;
                               }
-                     
-                              return var1xx;
+
+                              return var1x;
                            }
                         )
                   )

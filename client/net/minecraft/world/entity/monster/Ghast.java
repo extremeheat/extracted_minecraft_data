@@ -195,7 +195,7 @@ public class Ghast extends FlyingMob implements Enemy {
       public void tick() {
          if (this.operation == MoveControl.Operation.MOVE_TO) {
             if (this.floatDuration-- <= 0) {
-               this.floatDuration += this.ghast.getRandom().nextInt(5) + 2;
+               this.floatDuration = this.floatDuration + this.ghast.getRandom().nextInt(5) + 2;
                Vec3 var1 = new Vec3(this.wantedX - this.ghast.getX(), this.wantedY - this.ghast.getY(), this.wantedZ - this.ghast.getZ());
                double var2 = var1.length();
                var1 = var1.normalize();
@@ -211,7 +211,7 @@ public class Ghast extends FlyingMob implements Enemy {
       private boolean canReach(Vec3 var1, int var2) {
          AABB var3 = this.ghast.getBoundingBox();
 
-         for(int var4 = 1; var4 < var2; ++var4) {
+         for (int var4 = 1; var4 < var2; var4++) {
             var3 = var3.move(var1);
             if (!this.ghast.level().noCollision(this.ghast, var3)) {
                return false;
@@ -258,7 +258,7 @@ public class Ghast extends FlyingMob implements Enemy {
             double var2 = 64.0;
             if (var1.distanceToSqr(this.ghast) < 4096.0 && this.ghast.hasLineOfSight(var1)) {
                Level var4 = this.ghast.level();
-               ++this.chargeTime;
+               this.chargeTime++;
                if (this.chargeTime == 10 && !this.ghast.isSilent()) {
                   var4.levelEvent(null, 1015, this.ghast.blockPosition(), 0);
                }
@@ -279,7 +279,7 @@ public class Ghast extends FlyingMob implements Enemy {
                   this.chargeTime = -40;
                }
             } else if (this.chargeTime > 0) {
-               --this.chargeTime;
+               this.chargeTime--;
             }
 
             this.ghast.setCharging(this.chargeTime > 10);

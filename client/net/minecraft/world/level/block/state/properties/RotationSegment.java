@@ -29,7 +29,7 @@ public class RotationSegment {
    }
 
    public static Optional<Direction> convertToDirection(int var0) {
-      Direction var1 = switch(var0) {
+      Direction var1 = switch (var0) {
          case 0 -> Direction.NORTH;
          case 4 -> Direction.EAST;
          case 8 -> Direction.SOUTH;

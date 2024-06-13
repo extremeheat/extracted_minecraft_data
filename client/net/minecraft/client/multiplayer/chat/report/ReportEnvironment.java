@@ -8,15 +8,11 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 
-public record ReportEnvironment(String a, @Nullable ReportEnvironment.Server b) {
-   private final String clientVersion;
-   @Nullable
-   private final ReportEnvironment.Server server;
-
-   public ReportEnvironment(String var1, @Nullable ReportEnvironment.Server var2) {
+public record ReportEnvironment(String clientVersion, @Nullable ReportEnvironment.Server server) {
+   public ReportEnvironment(String clientVersion, @Nullable ReportEnvironment.Server server) {
       super();
-      this.clientVersion = var1;
-      this.server = var2;
+      this.clientVersion = clientVersion;
+      this.server = server;
    }
 
    public static ReportEnvironment local() {
@@ -41,19 +37,17 @@ public record ReportEnvironment(String a, @Nullable ReportEnvironment.Server b) 
 
    @Nullable
    public ThirdPartyServerInfo thirdPartyServerInfo() {
-      ReportEnvironment.Server var2 = this.server;
-      return var2 instanceof ReportEnvironment.Server.ThirdParty var1 ? new ThirdPartyServerInfo(var1.ip) : null;
+      return this.server instanceof ReportEnvironment.Server.ThirdParty var1 ? new ThirdPartyServerInfo(var1.ip) : null;
    }
 
    @Nullable
    public RealmInfo realmInfo() {
-      ReportEnvironment.Server var2 = this.server;
-      return var2 instanceof ReportEnvironment.Server.Realm var1 ? new RealmInfo(String.valueOf(var1.realmId()), var1.slotId()) : null;
+      return this.server instanceof ReportEnvironment.Server.Realm var1 ? new RealmInfo(String.valueOf(var1.realmId()), var1.slotId()) : null;
    }
 
    private static String getClientVersion() {
       StringBuilder var0 = new StringBuilder();
-      var0.append("24w14potato");
+      var0.append("24w14a");
       if (Minecraft.checkModStatus().shouldReportAsModified()) {
          var0.append(" (modded)");
       }
@@ -62,27 +56,23 @@ public record ReportEnvironment(String a, @Nullable ReportEnvironment.Server b) 
    }
 
    public interface Server {
-      public static record Realm(long a, int b) implements ReportEnvironment.Server {
-         private final long realmId;
-         private final int slotId;
-
+      public static record Realm(long realmId, int slotId) implements ReportEnvironment.Server {
          public Realm(RealmsServer var1) {
             this(var1.id, var1.activeSlot);
          }
 
-         public Realm(long var1, int var3) {
+         public Realm(long realmId, int slotId) {
             super();
-            this.realmId = var1;
-            this.slotId = var3;
+            this.realmId = realmId;
+            this.slotId = slotId;
          }
       }
 
-      public static record ThirdParty(String a) implements ReportEnvironment.Server {
-         final String ip;
+      public static record ThirdParty(String ip) implements ReportEnvironment.Server {
 
-         public ThirdParty(String var1) {
+         public ThirdParty(String ip) {
             super();
-            this.ip = var1;
+            this.ip = ip;
          }
       }
    }

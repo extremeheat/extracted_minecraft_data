@@ -47,8 +47,8 @@ public class StringUtil {
          Matcher var1 = LINE_PATTERN.matcher(var0);
          int var2 = 1;
 
-         while(var1.find()) {
-            ++var2;
+         while (var1.find()) {
+            var2++;
          }
 
          return var2;
@@ -78,7 +78,7 @@ public class StringUtil {
    public static String filterText(String var0, boolean var1) {
       StringBuilder var2 = new StringBuilder();
 
-      for(char var6 : var0.toCharArray()) {
+      for (char var6 : var0.toCharArray()) {
          if (isAllowedChatCharacter(var6)) {
             var2.append(var6);
          } else if (var1 && var6 == '\n') {

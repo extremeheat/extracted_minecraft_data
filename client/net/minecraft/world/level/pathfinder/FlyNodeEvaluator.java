@@ -43,7 +43,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1 = this.mob.getBlockY();
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos(this.mob.getX(), (double)var1, this.mob.getZ());
 
-         for(BlockState var3 = this.currentContext.getBlockState(var2); var3.is(Blocks.WATER); var3 = this.currentContext.getBlockState(var2)) {
+         for (BlockState var3 = this.currentContext.getBlockState(var2); var3.is(Blocks.WATER); var3 = this.currentContext.getBlockState(var2)) {
             var2.set(this.mob.getX(), (double)(++var1), this.mob.getZ());
          }
       } else {
@@ -52,7 +52,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
 
       BlockPos var5 = BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ());
       if (!this.canStartAt(var5)) {
-         for(BlockPos var4 : this.iteratePathfindingStartNodeCandidatePositions(this.mob)) {
+         for (BlockPos var4 : this.iteratePathfindingStartNodeCandidatePositions(this.mob)) {
             if (this.canStartAt(var4)) {
                return super.getStartNode(var4);
             }
@@ -275,7 +275,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var4.type = var5;
          var4.costMalus = Math.max(var4.costMalus, var6);
          if (var5 == PathType.WALKABLE) {
-            ++var4.costMalus;
+            var4.costMalus++;
          }
       }
 

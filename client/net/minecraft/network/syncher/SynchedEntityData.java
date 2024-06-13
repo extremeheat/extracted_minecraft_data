@@ -47,7 +47,7 @@ public class SynchedEntityData {
    }
 
    private <T> SynchedEntityData.DataItem<T> getItem(EntityDataAccessor<T> var1) {
-      return this.itemsById[var1.id()];
+      return (SynchedEntityData.DataItem<T>)this.itemsById[var1.id()];
    }
 
    public <T> T get(EntityDataAccessor<T> var1) {
@@ -61,7 +61,7 @@ public class SynchedEntityData {
    public <T> void set(EntityDataAccessor<T> var1, T var2, boolean var3) {
       SynchedEntityData.DataItem var4 = this.getItem(var1);
       if (var3 || ObjectUtils.notEqual(var2, var4.getValue())) {
-         var4.setValue((T)var2);
+         var4.setValue(var2);
          this.entity.onSyncedDataUpdated(var1);
          var4.setDirty(true);
          this.isDirty = true;
@@ -80,7 +80,7 @@ public class SynchedEntityData {
          this.isDirty = false;
          ArrayList var1 = new ArrayList();
 
-         for(SynchedEntityData.DataItem var5 : this.itemsById) {
+         for (SynchedEntityData.DataItem var5 : this.itemsById) {
             if (var5.isDirty()) {
                var5.setDirty(false);
                var1.add(var5.value());
@@ -95,7 +95,7 @@ public class SynchedEntityData {
    public List<SynchedEntityData.DataValue<?>> getNonDefaultValues() {
       ArrayList var1 = null;
 
-      for(SynchedEntityData.DataItem var5 : this.itemsById) {
+      for (SynchedEntityData.DataItem var5 : this.itemsById) {
          if (!var5.isSetToDefault()) {
             if (var1 == null) {
                var1 = new ArrayList();
@@ -109,7 +109,7 @@ public class SynchedEntityData {
    }
 
    public void assignValues(List<SynchedEntityData.DataValue<?>> var1) {
-      for(SynchedEntityData.DataValue var3 : var1) {
+      for (SynchedEntityData.DataValue var3 : var1) {
          SynchedEntityData.DataItem var4 = this.itemsById[var3.id];
          this.assignValue(var4, var3);
          this.entity.onSyncedDataUpdated(var4.getAccessor());
@@ -162,7 +162,7 @@ public class SynchedEntityData {
       }
 
       public SynchedEntityData build() {
-         for(int var1 = 0; var1 < this.itemsById.length; ++var1) {
+         for (int var1 = 0; var1 < this.itemsById.length; var1++) {
             if (this.itemsById[var1] == null) {
                throw new IllegalStateException("Entity " + this.entity.getClass() + " has not defined synched data value " + var1);
             }
@@ -214,16 +214,13 @@ public class SynchedEntityData {
       }
    }
 
-   public static record DataValue<T>(int a, EntityDataSerializer<T> b, T c) {
-      final int id;
-      private final EntityDataSerializer<T> serializer;
-      final T value;
+   public static record DataValue<T>(int id, EntityDataSerializer<T> serializer, T value) {
 
-      public DataValue(int var1, EntityDataSerializer<T> var2, T var3) {
+      public DataValue(int id, EntityDataSerializer<T> serializer, T value) {
          super();
-         this.id = var1;
-         this.serializer = var2;
-         this.value = (T)var3;
+         this.id = id;
+         this.serializer = serializer;
+         this.value = (T)value;
       }
 
       public static <T> SynchedEntityData.DataValue<T> create(EntityDataAccessor<T> var0, T var1) {

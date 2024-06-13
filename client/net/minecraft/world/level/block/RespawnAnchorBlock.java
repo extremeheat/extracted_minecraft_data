@@ -223,7 +223,7 @@ public class RespawnAnchorBlock extends Block {
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
       UnmodifiableIterator var5 = RESPAWN_OFFSETS.iterator();
 
-      while(var5.hasNext()) {
+      while (var5.hasNext()) {
          Vec3i var6 = (Vec3i)var5.next();
          var4.set(var2).move(var6);
          Vec3 var7 = DismountHelper.findSafeDismountLocation(var0, var1, var4, var3);

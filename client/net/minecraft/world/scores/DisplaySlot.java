@@ -48,7 +48,7 @@ public enum DisplaySlot implements StringRepresentable {
 
    @Nullable
    public static DisplaySlot teamColorToSlot(ChatFormatting var0) {
-      return switch(var0) {
+      return switch (var0) {
          case BLACK -> TEAM_BLACK;
          case DARK_BLUE -> TEAM_DARK_BLUE;
          case DARK_GREEN -> TEAM_DARK_GREEN;

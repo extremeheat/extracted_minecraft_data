@@ -3,7 +3,6 @@ package net.minecraft.world.item.crafting;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
@@ -56,7 +55,7 @@ public class FireworkStarRecipe extends CustomRecipe {
       boolean var6 = false;
       boolean var7 = false;
 
-      for(int var8 = 0; var8 < var1.getContainerSize(); ++var8) {
+      for (int var8 = 0; var8 < var1.getContainerSize(); var8++) {
          ItemStack var9 = var1.getItem(var8);
          if (!var9.isEmpty()) {
             if (SHAPE_INGREDIENT.test(var9)) {
@@ -102,7 +101,7 @@ public class FireworkStarRecipe extends CustomRecipe {
       boolean var5 = false;
       IntArrayList var6 = new IntArrayList();
 
-      for(int var7 = 0; var7 < var1.getContainerSize(); ++var7) {
+      for (int var7 = 0; var7 < var1.getContainerSize(); var7++) {
          ItemStack var8 = var1.getItem(var7);
          if (!var8.isEmpty()) {
             if (SHAPE_INGREDIENT.test(var8)) {

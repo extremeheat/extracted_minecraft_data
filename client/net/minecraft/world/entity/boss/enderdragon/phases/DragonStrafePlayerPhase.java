@@ -52,7 +52,7 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
          double var26 = 64.0;
          if (this.attackTarget.distanceToSqr(this.dragon) < 4096.0) {
             if (this.dragon.hasLineOfSight(this.attackTarget)) {
-               ++this.fireballCharge;
+               this.fireballCharge++;
                Vec3 var27 = new Vec3(this.attackTarget.getX() - this.dragon.getX(), 0.0, this.attackTarget.getZ() - this.dragon.getZ()).normalize();
                Vec3 var6 = new Vec3((double)Mth.sin(this.dragon.getYRot() * 0.017453292F), 0.0, (double)(-Mth.cos(this.dragon.getYRot() * 0.017453292F)))
                   .normalize();
@@ -77,7 +77,7 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
                   this.dragon.level().addFreshEntity(var24);
                   this.fireballCharge = 0;
                   if (this.currentPath != null) {
-                     while(!this.currentPath.isDone()) {
+                     while (!this.currentPath.isDone()) {
                         this.currentPath.advance();
                      }
                   }
@@ -85,10 +85,10 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
                   this.dragon.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
                }
             } else if (this.fireballCharge > 0) {
-               --this.fireballCharge;
+               this.fireballCharge--;
             }
          } else if (this.fireballCharge > 0) {
-            --this.fireballCharge;
+            this.fireballCharge--;
          }
       }
    }
@@ -103,9 +103,9 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
          }
 
          if (this.holdingPatternClockwise) {
-            ++var2;
+            var2++;
          } else {
-            --var2;
+            var2--;
          }
 
          if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() > 0) {
@@ -138,7 +138,7 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
          double var4;
          do {
             var4 = (double)((float)var1.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-         } while(var4 < (double)var1.getY());
+         } while (var4 < (double)var1.getY());
 
          this.targetLocation = new Vec3(var2, var4, var6);
       }

@@ -82,7 +82,7 @@ public class BlockPredicateArgument implements ArgumentType<BlockPredicateArgume
          if (!var2.is(this.state.getBlock())) {
             return false;
          } else {
-            for(Property var4 : this.properties) {
+            for (Property var4 : this.properties) {
                if (var2.getValue(var4) != this.state.getValue(var4)) {
                   return false;
                }
@@ -125,7 +125,7 @@ public class BlockPredicateArgument implements ArgumentType<BlockPredicateArgume
          if (!var2.is(this.tag)) {
             return false;
          } else {
-            for(Entry var4 : this.vagueProperties.entrySet()) {
+            for (Entry var4 : this.vagueProperties.entrySet()) {
                Property var5 = var2.getBlock().getStateDefinition().getProperty((String)var4.getKey());
                if (var5 == null) {
                   return false;

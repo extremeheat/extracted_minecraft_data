@@ -63,7 +63,7 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
    }
 
    protected T computeNext() {
-      while(this.cursor.advance()) {
+      while (this.cursor.advance()) {
          int var1 = this.cursor.nextX();
          int var2 = this.cursor.nextY();
          int var3 = this.cursor.nextZ();

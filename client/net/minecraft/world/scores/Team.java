@@ -15,11 +15,7 @@ public abstract class Team {
    }
 
    public boolean isAlliedTo(@Nullable Team var1) {
-      if (var1 == null) {
-         return false;
-      } else {
-         return this == var1;
-      }
+      return var1 == null ? false : this == var1;
    }
 
    public abstract String getName();
@@ -46,7 +42,8 @@ public abstract class Team {
       PUSH_OTHER_TEAMS("pushOtherTeams", 2),
       PUSH_OWN_TEAM("pushOwnTeam", 3);
 
-      private static final Map<String, Team.CollisionRule> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.name, var0 -> var0));
+      private static final Map<String, Team.CollisionRule> BY_NAME = Arrays.stream(values())
+         .collect(Collectors.toMap(var0 -> var0.name, var0 -> (Team.CollisionRule)var0));
       public final String name;
       public final int id;
 
@@ -71,7 +68,8 @@ public abstract class Team {
       HIDE_FOR_OTHER_TEAMS("hideForOtherTeams", 2),
       HIDE_FOR_OWN_TEAM("hideForOwnTeam", 3);
 
-      private static final Map<String, Team.Visibility> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.name, var0 -> var0));
+      private static final Map<String, Team.Visibility> BY_NAME = Arrays.stream(values())
+         .collect(Collectors.toMap(var0 -> var0.name, var0 -> (Team.Visibility)var0));
       public final String name;
       public final int id;
 

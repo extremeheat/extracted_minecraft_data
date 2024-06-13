@@ -8,9 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundPlayerCombatKillPacket(int b, Component c) implements Packet<ClientGamePacketListener> {
-   private final int playerId;
-   private final Component message;
+public record ClientboundPlayerCombatKillPacket(int playerId, Component message) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerCombatKillPacket> STREAM_CODEC = StreamCodec.composite(
       ByteBufCodecs.VAR_INT,
       ClientboundPlayerCombatKillPacket::playerId,
@@ -19,10 +17,10 @@ public record ClientboundPlayerCombatKillPacket(int b, Component c) implements P
       ClientboundPlayerCombatKillPacket::new
    );
 
-   public ClientboundPlayerCombatKillPacket(int var1, Component var2) {
+   public ClientboundPlayerCombatKillPacket(int playerId, Component message) {
       super();
-      this.playerId = var1;
-      this.message = var2;
+      this.playerId = playerId;
+      this.message = message;
    }
 
    @Override

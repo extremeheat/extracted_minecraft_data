@@ -222,7 +222,7 @@ public class Bat extends AmbientCreature {
       var1.putByte("BatFlags", this.entityData.get(DATA_ID_FLAGS));
    }
 
-   public static boolean checkBatSpawnRules(EntityType<? extends Bat> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkBatSpawnRules(EntityType<Bat> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       if (var3.getY() >= var1.getSeaLevel()) {
          return false;
       } else {

@@ -61,8 +61,8 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
       double var26 = 1.0 / (double)var24;
       double var28 = 1.0 / (double)var25;
 
-      for(int var30 = 0; var30 < var24; ++var30) {
-         for(int var31 = 0; var31 < var25; ++var31) {
+      for (int var30 = 0; var30 < var24; var30++) {
+         for (int var31 = 0; var31 < var25; var31++) {
             float var32 = var9 + (float)((var30 + 1) * 16);
             float var33 = var9 + (float)(var30 * 16);
             float var34 = var10 + (float)((var31 + 1) * 16);

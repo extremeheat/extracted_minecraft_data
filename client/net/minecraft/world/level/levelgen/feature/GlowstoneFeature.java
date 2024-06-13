@@ -28,14 +28,14 @@ public class GlowstoneFeature extends Feature<NoneFeatureConfiguration> {
          } else {
             var2.setBlock(var3, Blocks.GLOWSTONE.defaultBlockState(), 2);
 
-            for(int var6 = 0; var6 < 1500; ++var6) {
+            for (int var6 = 0; var6 < 1500; var6++) {
                BlockPos var7 = var3.offset(var4.nextInt(8) - var4.nextInt(8), -var4.nextInt(12), var4.nextInt(8) - var4.nextInt(8));
                if (var2.getBlockState(var7).isAir()) {
                   int var8 = 0;
 
-                  for(Direction var12 : Direction.values()) {
+                  for (Direction var12 : Direction.values()) {
                      if (var2.getBlockState(var7.relative(var12)).is(Blocks.GLOWSTONE)) {
-                        ++var8;
+                        var8++;
                      }
 
                      if (var8 > 1) {

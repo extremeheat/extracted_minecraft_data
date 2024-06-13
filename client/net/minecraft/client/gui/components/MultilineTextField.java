@@ -105,8 +105,8 @@ public class MultilineTextField {
    }
 
    public int getLineAtCursor() {
-      for(int var1 = 0; var1 < this.displayLines.size(); ++var1) {
-         MultilineTextField.StringView var2 = (MultilineTextField.StringView)this.displayLines.get(var1);
+      for (int var1 = 0; var1 < this.displayLines.size(); var1++) {
+         MultilineTextField.StringView var2 = this.displayLines.get(var1);
          if (this.cursor >= var2.beginIndex && this.cursor <= var2.endIndex) {
             return var1;
          }
@@ -116,11 +116,11 @@ public class MultilineTextField {
    }
 
    public MultilineTextField.StringView getLineView(int var1) {
-      return (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var1, 0, this.displayLines.size() - 1));
+      return this.displayLines.get(Mth.clamp(var1, 0, this.displayLines.size() - 1));
    }
 
    public void seekCursor(Whence var1, int var2) {
-      switch(var1) {
+      switch (var1) {
          case ABSOLUTE:
             this.cursor = var2;
             break;
@@ -150,7 +150,7 @@ public class MultilineTextField {
    public void seekCursorToPoint(double var1, double var3) {
       int var5 = Mth.floor(var1);
       int var6 = Mth.floor(var3 / 9.0);
-      MultilineTextField.StringView var7 = (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var6, 0, this.displayLines.size() - 1));
+      MultilineTextField.StringView var7 = this.displayLines.get(Mth.clamp(var6, 0, this.displayLines.size() - 1));
       int var8 = this.font.plainSubstrByWidth(this.value.substring(var7.beginIndex, var7.endIndex), var5).length();
       this.seekCursor(Whence.ABSOLUTE, var7.beginIndex + var8);
    }
@@ -172,7 +172,7 @@ public class MultilineTextField {
          this.insertText("");
          return true;
       } else {
-         switch(var1) {
+         switch (var1) {
             case 257:
             case 335:
                this.insertText("\n");
@@ -276,7 +276,7 @@ public class MultilineTextField {
       if (var2 < 0) {
          throw new IllegalStateException("Cursor is not within text (cursor = " + this.cursor + ", length = " + this.value.length() + ")");
       } else {
-         return (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var2 + var1, 0, this.displayLines.size() - 1));
+         return this.displayLines.get(Mth.clamp(var2 + var1, 0, this.displayLines.size() - 1));
       }
    }
 
@@ -287,12 +287,12 @@ public class MultilineTextField {
       } else {
          int var1 = Mth.clamp(this.cursor, 0, this.value.length() - 1);
 
-         while(var1 > 0 && Character.isWhitespace(this.value.charAt(var1 - 1))) {
-            --var1;
+         while (var1 > 0 && Character.isWhitespace(this.value.charAt(var1 - 1))) {
+            var1--;
          }
 
-         while(var1 > 0 && !Character.isWhitespace(this.value.charAt(var1 - 1))) {
-            --var1;
+         while (var1 > 0 && !Character.isWhitespace(this.value.charAt(var1 - 1))) {
+            var1--;
          }
 
          return new MultilineTextField.StringView(var1, this.getWordEndPosition(var1));
@@ -306,12 +306,12 @@ public class MultilineTextField {
       } else {
          int var1 = Mth.clamp(this.cursor, 0, this.value.length() - 1);
 
-         while(var1 < this.value.length() && !Character.isWhitespace(this.value.charAt(var1))) {
-            ++var1;
+         while (var1 < this.value.length() && !Character.isWhitespace(this.value.charAt(var1))) {
+            var1++;
          }
 
-         while(var1 < this.value.length() && Character.isWhitespace(this.value.charAt(var1))) {
-            ++var1;
+         while (var1 < this.value.length() && Character.isWhitespace(this.value.charAt(var1))) {
+            var1++;
          }
 
          return new MultilineTextField.StringView(var1, this.getWordEndPosition(var1));
@@ -321,8 +321,8 @@ public class MultilineTextField {
    private int getWordEndPosition(int var1) {
       int var2 = var1;
 
-      while(var2 < this.value.length() && !Character.isWhitespace(this.value.charAt(var2))) {
-         ++var2;
+      while (var2 < this.value.length() && !Character.isWhitespace(this.value.charAt(var2))) {
+         var2++;
       }
 
       return var2;
@@ -361,15 +361,13 @@ public class MultilineTextField {
       }
    }
 
-   protected static record StringView(int a, int b) {
-      final int beginIndex;
-      final int endIndex;
+   protected static record StringView(int beginIndex, int endIndex) {
       static final MultilineTextField.StringView EMPTY = new MultilineTextField.StringView(0, 0);
 
-      protected StringView(int var1, int var2) {
+      protected StringView(int beginIndex, int endIndex) {
          super();
-         this.beginIndex = var1;
-         this.endIndex = var2;
+         this.beginIndex = beginIndex;
+         this.endIndex = endIndex;
       }
    }
 }

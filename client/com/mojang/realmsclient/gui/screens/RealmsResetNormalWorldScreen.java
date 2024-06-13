@@ -5,10 +5,10 @@ import com.mojang.realmsclient.util.WorldGenerationInfo;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -62,6 +62,7 @@ public class RealmsResetNormalWorldScreen extends RealmsScreen {
       var2.addChild(Button.builder(this.buttonTitle, var1x -> this.callback.accept(this.createWorldGenerationInfo())).build());
       var2.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
@@ -77,13 +78,13 @@ public class RealmsResetNormalWorldScreen extends RealmsScreen {
       var1.addChild(
          Button.builder(Component.translatable("selectWorld.experiments"), var2x -> this.minecraft.setScreen(new ExperimentsScreen(this, var2, var1xx -> {
                this.experiments.clear();
-   
-               for(Pack var3 : var1xx.getSelectedPacks()) {
+
+               for (Pack var3 : var1xx.getSelectedPacks()) {
                   if (var3.getPackSource() == PackSource.FEATURE) {
                      this.experiments.add(var3.getId());
                   }
                }
-   
+
                this.minecraft.setScreen(this);
             }))).width(210).build()
       );

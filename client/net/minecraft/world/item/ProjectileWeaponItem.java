@@ -19,7 +19,6 @@ import net.minecraft.world.level.Level;
 public abstract class ProjectileWeaponItem extends Item {
    public static final Predicate<ItemStack> ARROW_ONLY = var0 -> var0.is(ItemTags.ARROWS);
    public static final Predicate<ItemStack> ARROW_OR_FIREWORK = ARROW_ONLY.or(var0 -> var0.is(Items.FIREWORK_ROCKET));
-   public static final Predicate<ItemStack> POISONOUS_POTATO = var0 -> var0.is(Items.POISONOUS_POTATO);
 
    public ProjectileWeaponItem(Item.Properties var1) {
       super(var1);
@@ -62,7 +61,7 @@ public abstract class ProjectileWeaponItem extends Item {
       float var12 = (float)((var5.size() - 1) % 2) * var11 / 2.0F;
       float var13 = 1.0F;
 
-      for(int var14 = 0; var14 < var5.size(); ++var14) {
+      for (int var14 = 0; var14 < var5.size(); var14++) {
          ItemStack var15 = (ItemStack)var5.get(var14);
          if (!var15.isEmpty()) {
             float var16 = var12 + var13 * (float)((var14 + 1) / 2) * var11;
@@ -82,8 +81,7 @@ public abstract class ProjectileWeaponItem extends Item {
    protected abstract void shootProjectile(LivingEntity var1, Projectile var2, int var3, float var4, float var5, float var6, @Nullable LivingEntity var7);
 
    protected Projectile createProjectile(Level var1, LivingEntity var2, ItemStack var3, ItemStack var4, boolean var5) {
-      Item var8 = var4.getItem();
-      ArrowItem var6 = var8 instanceof ArrowItem var7 ? var7 : (ArrowItem)Items.ARROW;
+      ArrowItem var6 = var4.getItem() instanceof ArrowItem var7 ? var7 : (ArrowItem)Items.ARROW;
       AbstractArrow var11 = var6.createArrow(var1, var4, var2);
       if (var5) {
          var11.setCritArrow(true);
@@ -124,7 +122,7 @@ public abstract class ProjectileWeaponItem extends Item {
          ArrayList var5 = new ArrayList(var4);
          ItemStack var6 = var1.copy();
 
-         for(int var7 = 0; var7 < var4; ++var7) {
+         for (int var7 = 0; var7 < var4; var7++) {
             var5.add(useAmmo(var0, var7 == 0 ? var1 : var6, var2, var7 > 0));
          }
 
@@ -132,8 +130,6 @@ public abstract class ProjectileWeaponItem extends Item {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected static ItemStack useAmmo(ItemStack var0, ItemStack var1, LivingEntity var2, boolean var3) {
       boolean var4 = !var3 && !hasInfiniteArrows(var0, var1, var2.hasInfiniteMaterials());
       if (!var4) {

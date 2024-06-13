@@ -7,9 +7,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundTabListPacket(Component b, Component c) implements Packet<ClientGamePacketListener> {
-   private final Component header;
-   private final Component footer;
+public record ClientboundTabListPacket(Component header, Component footer) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundTabListPacket> STREAM_CODEC = StreamCodec.composite(
       ComponentSerialization.TRUSTED_STREAM_CODEC,
       ClientboundTabListPacket::header,
@@ -18,10 +16,10 @@ public record ClientboundTabListPacket(Component b, Component c) implements Pack
       ClientboundTabListPacket::new
    );
 
-   public ClientboundTabListPacket(Component var1, Component var2) {
+   public ClientboundTabListPacket(Component header, Component footer) {
       super();
-      this.header = var1;
-      this.footer = var2;
+      this.header = header;
+      this.footer = footer;
    }
 
    @Override

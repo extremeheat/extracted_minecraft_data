@@ -24,7 +24,7 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder {
    }
 
    private static boolean copyVarint(ByteBuf var0, ByteBuf var1) {
-      for(int var2 = 0; var2 < 3; ++var2) {
+      for (int var2 = 0; var2 < 3; var2++) {
          if (!var0.isReadable()) {
             return false;
          }

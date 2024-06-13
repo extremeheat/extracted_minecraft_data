@@ -32,7 +32,7 @@ public final class Scope {
    @Nullable
    @SafeVarargs
    public final <T> T getAny(Atom<T>... var1) {
-      for(Atom var5 : var1) {
+      for (Atom var5 : var1) {
          Object var6 = this.get(var5);
          if (var6 != null) {
             return (T)var6;

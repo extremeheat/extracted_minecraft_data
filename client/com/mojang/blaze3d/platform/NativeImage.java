@@ -267,7 +267,7 @@ public final class NativeImage implements AutoCloseable {
          IntBuffer var4 = MemoryUtil.memIntBuffer(this.pixels, var3);
          IntBuffer var5 = MemoryUtil.memIntBuffer(var2.pixels, var3);
 
-         for(int var6 = 0; var6 < var3; ++var6) {
+         for (int var6 = 0; var6 < var3; var6++) {
             var5.put(var6, var1.applyAsInt(var4.get(var6)));
          }
 
@@ -283,7 +283,7 @@ public final class NativeImage implements AutoCloseable {
          int var2 = this.width * this.height;
          IntBuffer var3 = MemoryUtil.memIntBuffer(this.pixels, var2);
 
-         for(int var4 = 0; var4 < var2; ++var4) {
+         for (int var4 = 0; var4 < var2; var4++) {
             var3.put(var4, var1.applyAsInt(var3.get(var4)));
          }
       }
@@ -410,8 +410,8 @@ public final class NativeImage implements AutoCloseable {
          this.checkAllocated();
          int[] var1 = new int[this.getWidth() * this.getHeight()];
 
-         for(int var2 = 0; var2 < this.getHeight(); ++var2) {
-            for(int var3 = 0; var3 < this.getWidth(); ++var3) {
+         for (int var2 = 0; var2 < this.getHeight(); var2++) {
+            for (int var3 = 0; var3 < this.getWidth(); var3++) {
                int var4 = this.getPixelRGBA(var3, var2);
                var1[var3 + var2 * this.getWidth()] = FastColor.ARGB32.color(
                   FastColor.ABGR32.alpha(var4), FastColor.ABGR32.red(var4), FastColor.ABGR32.green(var4), FastColor.ABGR32.blue(var4)
@@ -471,8 +471,8 @@ public final class NativeImage implements AutoCloseable {
       this.format.setPackPixelStoreState();
       GlStateManager._getTexImage(3553, var1, this.format.glFormat(), 5121, this.pixels);
       if (var2 && this.format.hasAlpha()) {
-         for(int var3 = 0; var3 < this.getHeight(); ++var3) {
-            for(int var4 = 0; var4 < this.getWidth(); ++var4) {
+         for (int var3 = 0; var3 < this.getHeight(); var3++) {
+            for (int var4 = 0; var4 < this.getWidth(); var4++) {
                this.setPixelRGBA(var4, var3, this.getPixelRGBA(var4, var3) | 255 << this.format.alphaOffset());
             }
          }
@@ -589,7 +589,7 @@ public final class NativeImage implements AutoCloseable {
             int var3 = Math.min(this.getWidth(), var1.getWidth());
             int var4 = Math.min(this.getHeight(), var1.getHeight());
 
-            for(int var5 = 0; var5 < var4; ++var5) {
+            for (int var5 = 0; var5 < var4; var5++) {
                int var6 = var5 * var1.getWidth() * var2;
                int var7 = var5 * this.getWidth() * var2;
                MemoryUtil.memCopy(var1.pixels + (long)var6, this.pixels + (long)var7, (long)var3);
@@ -599,8 +599,8 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public void fillRect(int var1, int var2, int var3, int var4, int var5) {
-      for(int var6 = var2; var6 < var2 + var4; ++var6) {
-         for(int var7 = var1; var7 < var1 + var3; ++var7) {
+      for (int var6 = var2; var6 < var2 + var4; var6++) {
+         for (int var7 = var1; var7 < var1 + var3; var7++) {
             this.setPixelRGBA(var7, var6, var5);
          }
       }
@@ -611,8 +611,8 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public void copyRect(NativeImage var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9) {
-      for(int var10 = 0; var10 < var7; ++var10) {
-         for(int var11 = 0; var11 < var6; ++var11) {
+      for (int var10 = 0; var10 < var7; var10++) {
+         for (int var11 = 0; var11 < var6; var11++) {
             int var12 = var8 ? var6 - 1 - var11 : var11;
             int var13 = var9 ? var7 - 1 - var10 : var10;
             int var14 = this.getPixelRGBA(var2 + var11, var3 + var10);
@@ -628,7 +628,7 @@ public final class NativeImage implements AutoCloseable {
       long var3 = MemoryUtil.nmemAlloc((long)var2);
 
       try {
-         for(int var5 = 0; var5 < this.getHeight() / 2; ++var5) {
+         for (int var5 = 0; var5 < this.getHeight() / 2; var5++) {
             int var6 = var5 * this.getWidth() * var1;
             int var7 = (this.getHeight() - 1 - var5) * this.getWidth() * var1;
             MemoryUtil.memCopy(this.pixels + (long)var6, var3, (long)var2);
@@ -809,7 +809,7 @@ public final class NativeImage implements AutoCloseable {
       }
 
       static NativeImage.Format getStbFormat(int var0) {
-         switch(var0) {
+         switch (var0) {
             case 1:
                return LUMINANCE;
             case 2:

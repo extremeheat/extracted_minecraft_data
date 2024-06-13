@@ -19,7 +19,7 @@ public class ClassTreeIdRegistry {
       } else {
          Class var3 = var1;
 
-         while((var3 = var3.getSuperclass()) != Object.class) {
+         while ((var3 = var3.getSuperclass()) != Object.class) {
             int var4 = this.classToLastIdCache.getInt(var3);
             if (var4 != -1) {
                return var4;

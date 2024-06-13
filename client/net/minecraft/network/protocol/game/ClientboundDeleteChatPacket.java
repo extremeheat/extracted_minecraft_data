@@ -6,8 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundDeleteChatPacket(MessageSignature.Packed b) implements Packet<ClientGamePacketListener> {
-   private final MessageSignature.Packed messageSignature;
+public record ClientboundDeleteChatPacket(MessageSignature.Packed messageSignature) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundDeleteChatPacket> STREAM_CODEC = Packet.codec(
       ClientboundDeleteChatPacket::write, ClientboundDeleteChatPacket::new
    );
@@ -16,9 +15,9 @@ public record ClientboundDeleteChatPacket(MessageSignature.Packed b) implements 
       this(MessageSignature.Packed.read(var1));
    }
 
-   public ClientboundDeleteChatPacket(MessageSignature.Packed var1) {
+   public ClientboundDeleteChatPacket(MessageSignature.Packed messageSignature) {
       super();
-      this.messageSignature = var1;
+      this.messageSignature = messageSignature;
    }
 
    private void write(FriendlyByteBuf var1) {

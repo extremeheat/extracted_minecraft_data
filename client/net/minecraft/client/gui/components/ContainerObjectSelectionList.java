@@ -26,10 +26,9 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (this.getItemCount() == 0) {
          return null;
-      } else if (!(var1 instanceof FocusNavigationEvent.ArrowNavigation)) {
+      } else if (!(var1 instanceof FocusNavigationEvent.ArrowNavigation var2)) {
          return super.nextFocusPath(var1);
       } else {
-         FocusNavigationEvent.ArrowNavigation var2 = (FocusNavigationEvent.ArrowNavigation)var1;
          ContainerObjectSelectionList.Entry var3 = this.getFocused();
          if (var2.direction().getAxis() == ScreenAxis.HORIZONTAL && var3 != null) {
             return ComponentPath.path(this, var3.nextFocusPath(var1));
@@ -41,7 +40,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
             }
 
             if (var4 == -1) {
-               switch(var5) {
+               switch (var5) {
                   case LEFT:
                      var4 = 2147483647;
                      var5 = ScreenDirection.DOWN;
@@ -65,7 +64,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
                }
 
                var7 = var6.focusPathAtIndex(var2, var4);
-            } while(var7 == null);
+            } while (var7 == null);
 
             return ComponentPath.path(this, var7);
          }
@@ -76,7 +75,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
    public void setFocused(@Nullable GuiEventListener var1) {
       super.setFocused(var1);
       if (var1 == null) {
-         this.setSelected((E)null);
+         this.setSelected(null);
       }
    }
 
@@ -166,7 +165,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
       @Override
       public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
          if (var1 instanceof FocusNavigationEvent.ArrowNavigation var2) {
-            byte var3 = switch(var2.direction()) {
+            byte var3 = switch (var2.direction()) {
                case LEFT -> -1;
                case RIGHT -> 1;
                case UP, DOWN -> 0;
@@ -177,7 +176,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
 
             int var4 = Mth.clamp(var3 + this.children().indexOf(this.getFocused()), 0, this.children().size() - 1);
 
-            for(int var5 = var4; var5 >= 0 && var5 < this.children().size(); var5 += var3) {
+            for (int var5 = var4; var5 >= 0 && var5 < this.children().size(); var5 += var3) {
                GuiEventListener var6 = this.children().get(var5);
                ComponentPath var7 = var6.nextFocusPath(var1);
                if (var7 != null) {

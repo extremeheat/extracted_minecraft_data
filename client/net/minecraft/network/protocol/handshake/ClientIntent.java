@@ -13,7 +13,7 @@ public enum ClientIntent {
    }
 
    public static ClientIntent byId(int var0) {
-      return switch(var0) {
+      return switch (var0) {
          case 1 -> STATUS;
          case 2 -> LOGIN;
          case 3 -> TRANSFER;
@@ -22,7 +22,7 @@ public enum ClientIntent {
    }
 
    public int id() {
-      return switch(this) {
+      return switch (this) {
          case STATUS -> 1;
          case LOGIN -> 2;
          case TRANSFER -> 3;

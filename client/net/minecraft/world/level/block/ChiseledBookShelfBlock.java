@@ -28,7 +28,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec2;
@@ -56,7 +55,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
       super(var1);
       BlockState var2 = this.stateDefinition.any().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH);
 
-      for(BooleanProperty var4 : SLOT_OCCUPIED_PROPERTIES) {
+      for (BooleanProperty var4 : SLOT_OCCUPIED_PROPERTIES) {
          var2 = var2.setValue(var4, Boolean.valueOf(false));
       }
 
@@ -70,8 +69,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
 
    @Override
    protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      BlockEntity var9 = var3.getBlockEntity(var4);
-      if (var9 instanceof ChiseledBookShelfBlockEntity var8) {
+      if (var3.getBlockEntity(var4) instanceof ChiseledBookShelfBlockEntity var8) {
          if (!var1.is(ItemTags.BOOKSHELF_BOOKS)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
          } else {
@@ -81,7 +79,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
             } else if (var2.getValue(SLOT_OCCUPIED_PROPERTIES.get(var10.getAsInt()))) {
                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
             } else {
-               addBook(var3, var4, var5, (ChiseledBookShelfBlockEntity)var8, var1, var10.getAsInt());
+               addBook(var3, var4, var5, var8, var1, var10.getAsInt());
                return ItemInteractionResult.sidedSuccess(var3.isClientSide);
             }
          }
@@ -92,15 +90,14 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
 
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof ChiseledBookShelfBlockEntity var6) {
+      if (var2.getBlockEntity(var3) instanceof ChiseledBookShelfBlockEntity var6) {
          OptionalInt var8 = this.getHitSlot(var5, var1);
          if (var8.isEmpty()) {
             return InteractionResult.PASS;
          } else if (!var1.getValue(SLOT_OCCUPIED_PROPERTIES.get(var8.getAsInt()))) {
             return InteractionResult.CONSUME;
          } else {
-            removeBook(var2, var3, var4, (ChiseledBookShelfBlockEntity)var6, var8.getAsInt());
+            removeBook(var2, var3, var4, var6, var8.getAsInt());
             return InteractionResult.sidedSuccess(var2.isClientSide);
          }
       } else {
@@ -110,9 +107,9 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
 
    private OptionalInt getHitSlot(BlockHitResult var1, BlockState var2) {
       return getRelativeHitCoordinatesForBlockFace(var1, var2.getValue(HorizontalDirectionalBlock.FACING)).map(var0 -> {
-         int var1xx = var0.y >= 0.5F ? 0 : 1;
-         int var2xx = getSection(var0.x);
-         return OptionalInt.of(var2xx + var1xx * 3);
+         int var1x = var0.y >= 0.5F ? 0 : 1;
+         int var2x = getSection(var0.x);
+         return OptionalInt.of(var2x + var1x * 3);
       }).orElseGet(OptionalInt::empty);
    }
 
@@ -127,7 +124,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
          double var7 = var4.y();
          double var9 = var4.z();
 
-         return switch(var2) {
+         return switch (var2) {
             case NORTH -> Optional.of(new Vec2((float)(1.0 - var5), (float)var7));
             case SOUTH -> Optional.of(new Vec2((float)var5, (float)var7));
             case WEST -> Optional.of(new Vec2((float)var9, (float)var7));
@@ -185,14 +182,11 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
       SLOT_OCCUPIED_PROPERTIES.forEach(var1x -> var1.add(var1x));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof ChiseledBookShelfBlockEntity var7 && !var7.isEmpty()) {
-            for(int var8 = 0; var8 < 6; ++var8) {
+         if (var2.getBlockEntity(var3) instanceof ChiseledBookShelfBlockEntity var7 && !var7.isEmpty()) {
+            for (int var8 = 0; var8 < 6; var8++) {
                ItemStack var9 = var7.getItem(var8);
                if (!var9.isEmpty()) {
                   Containers.dropItemStack(var2, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var9);
@@ -232,8 +226,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
       if (var2.isClientSide()) {
          return 0;
       } else {
-         BlockEntity var5 = var2.getBlockEntity(var3);
-         return var5 instanceof ChiseledBookShelfBlockEntity var4 ? var4.getLastInteractedSlot() + 1 : 0;
+         return var2.getBlockEntity(var3) instanceof ChiseledBookShelfBlockEntity var4 ? var4.getLastInteractedSlot() + 1 : 0;
       }
    }
 }

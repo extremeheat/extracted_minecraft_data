@@ -145,7 +145,7 @@ public class RealmsClient {
    private static JsonArray uuidListToJsonArray(List<UUID> var0) {
       JsonArray var1 = new JsonArray();
 
-      for(UUID var3 : var0) {
+      for (UUID var3 : var0) {
          if (var3 != null) {
             var1.add(var3.toString());
          }
@@ -450,7 +450,7 @@ public class RealmsClient {
       public static Optional<RealmsClient.Environment> byName(String var0) {
          String var1 = var0.toLowerCase(Locale.ROOT);
 
-         return switch(var1) {
+         return switch (var1) {
             case "production" -> Optional.of(PRODUCTION);
             case "local" -> Optional.of(LOCAL);
             case "stage", "staging" -> Optional.of(STAGE);

@@ -7,16 +7,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import jdk.jfr.consumer.RecordedEvent;
 
-public record GcHeapStat(Instant a, long b, GcHeapStat.Timing c) {
-   private final Instant timestamp;
-   private final long heapUsed;
-   private final GcHeapStat.Timing timing;
-
-   public GcHeapStat(Instant var1, long var2, GcHeapStat.Timing var4) {
+public record GcHeapStat(Instant timestamp, long heapUsed, GcHeapStat.Timing timing) {
+   public GcHeapStat(Instant timestamp, long heapUsed, GcHeapStat.Timing timing) {
       super();
-      this.timestamp = var1;
-      this.heapUsed = var2;
-      this.timing = var4;
+      this.timestamp = timestamp;
+      this.heapUsed = heapUsed;
+      this.timing = timing;
    }
 
    public static GcHeapStat from(RecordedEvent var0) {
@@ -37,7 +33,7 @@ public record GcHeapStat(Instant a, long b, GcHeapStat.Timing c) {
       List var4 = (List)var3.get(GcHeapStat.Timing.BEFORE_GC);
       List var5 = (List)var3.get(GcHeapStat.Timing.AFTER_GC);
 
-      for(int var6 = 1; var6 < var4.size(); ++var6) {
+      for (int var6 = 1; var6 < var4.size(); var6++) {
          GcHeapStat var7 = (GcHeapStat)var4.get(var6);
          GcHeapStat var8 = (GcHeapStat)var5.get(var6 - 1);
          var1 += var7.heapUsed - var8.heapUsed;
@@ -47,18 +43,13 @@ public record GcHeapStat(Instant a, long b, GcHeapStat.Timing c) {
       return (double)var1 / (double)var9.getSeconds();
    }
 
-   public static record Summary(Duration a, Duration b, int c, double d) {
-      private final Duration duration;
-      private final Duration gcTotalDuration;
-      private final int totalGCs;
-      private final double allocationRateBytesPerSecond;
-
-      public Summary(Duration var1, Duration var2, int var3, double var4) {
+   public static record Summary(Duration duration, Duration gcTotalDuration, int totalGCs, double allocationRateBytesPerSecond) {
+      public Summary(Duration duration, Duration gcTotalDuration, int totalGCs, double allocationRateBytesPerSecond) {
          super();
-         this.duration = var1;
-         this.gcTotalDuration = var2;
-         this.totalGCs = var3;
-         this.allocationRateBytesPerSecond = var4;
+         this.duration = duration;
+         this.gcTotalDuration = gcTotalDuration;
+         this.totalGCs = totalGCs;
+         this.allocationRateBytesPerSecond = allocationRateBytesPerSecond;
       }
 
       public float gcOverHead() {

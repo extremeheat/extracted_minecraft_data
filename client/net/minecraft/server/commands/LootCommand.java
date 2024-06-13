@@ -10,7 +10,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -291,7 +290,7 @@ public class LootCommand {
       Container var4 = getContainer(var0, var1);
       ArrayList var5 = Lists.newArrayListWithCapacity(var2.size());
 
-      for(ItemStack var7 : var2) {
+      for (ItemStack var7 : var2) {
          if (distributeToContainer(var4, var7.copy())) {
             var4.setChanged();
             var5.add(var7);
@@ -305,7 +304,7 @@ public class LootCommand {
    private static boolean distributeToContainer(Container var0, ItemStack var1) {
       boolean var2 = false;
 
-      for(int var3 = 0; var3 < var0.getContainerSize() && !var1.isEmpty(); ++var3) {
+      for (int var3 = 0; var3 < var0.getContainerSize() && !var1.isEmpty(); var3++) {
          ItemStack var4 = var0.getItem(var3);
          if (var0.canPlaceItem(var3, var1)) {
             if (var4.isEmpty()) {
@@ -333,7 +332,7 @@ public class LootCommand {
       if (var2 >= 0 && var2 < var7) {
          ArrayList var8 = Lists.newArrayListWithCapacity(var4.size());
 
-         for(int var9 = 0; var9 < var3; ++var9) {
+         for (int var9 = 0; var9 < var3; var9++) {
             int var10 = var2 + var9;
             ItemStack var11 = var9 < var4.size() ? (ItemStack)var4.get(var9) : ItemStack.EMPTY;
             if (var6.canPlaceItem(var10, var11)) {
@@ -356,8 +355,8 @@ public class LootCommand {
    private static int playerGive(Collection<ServerPlayer> var0, List<ItemStack> var1, LootCommand.Callback var2) throws CommandSyntaxException {
       ArrayList var3 = Lists.newArrayListWithCapacity(var1.size());
 
-      for(ItemStack var5 : var1) {
-         for(ServerPlayer var7 : var0) {
+      for (ItemStack var5 : var1) {
+         for (ServerPlayer var7 : var0) {
             if (var7.getInventory().add(var5.copy())) {
                var3.add(var5);
             }
@@ -369,7 +368,7 @@ public class LootCommand {
    }
 
    private static void setSlots(Entity var0, List<ItemStack> var1, int var2, int var3, List<ItemStack> var4) {
-      for(int var5 = 0; var5 < var3; ++var5) {
+      for (int var5 = 0; var5 < var3; var5++) {
          ItemStack var6 = var5 < var1.size() ? (ItemStack)var1.get(var5) : ItemStack.EMPTY;
          SlotAccess var7 = var0.getSlot(var2 + var5);
          if (var7 != SlotAccess.NULL && var7.set(var6.copy())) {
@@ -378,12 +377,10 @@ public class LootCommand {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static int entityReplace(Collection<? extends Entity> var0, int var1, int var2, List<ItemStack> var3, LootCommand.Callback var4) throws CommandSyntaxException {
       ArrayList var5 = Lists.newArrayListWithCapacity(var3.size());
 
-      for(Entity var7 : var0) {
+      for (Entity var7 : var0) {
          if (var7 instanceof ServerPlayer var8) {
             setSlots(var7, var3, var1, var2, var5);
             var8.containerMenu.broadcastChanges();
@@ -399,9 +396,9 @@ public class LootCommand {
    private static int dropInWorld(CommandSourceStack var0, Vec3 var1, List<ItemStack> var2, LootCommand.Callback var3) throws CommandSyntaxException {
       ServerLevel var4 = var0.getLevel();
       var2.forEach(var2x -> {
-         ItemEntity var3xx = new ItemEntity(var4, var1.x, var1.y, var1.z, var2x.copy());
-         var3xx.setDefaultPickUpDelay();
-         var4.addFreshEntity(var3xx);
+         ItemEntity var3x = new ItemEntity(var4, var1.x, var1.y, var1.z, var2x.copy());
+         var3x.setDefaultPickUpDelay();
+         var4.addFreshEntity(var3x);
       });
       var3.accept(var2);
       return var2.size();

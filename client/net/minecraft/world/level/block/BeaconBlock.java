@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
@@ -50,9 +49,8 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof BeaconBlockEntity var6) {
-            var4.openMenu((MenuProvider)var6);
+         if (var2.getBlockEntity(var3) instanceof BeaconBlockEntity var6) {
+            var4.openMenu(var6);
             var4.awardStat(Stats.INTERACT_WITH_BEACON);
          }
 

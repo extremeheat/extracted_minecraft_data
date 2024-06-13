@@ -12,7 +12,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
@@ -32,7 +31,6 @@ import net.minecraft.world.entity.ai.behavior.SetEntityLookTargetSometimes;
 import net.minecraft.world.entity.ai.behavior.SetWalkTargetFromLookTarget;
 import net.minecraft.world.entity.ai.behavior.Swim;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
@@ -110,7 +108,7 @@ public class ArmadilloAi {
                   if (var2 instanceof Armadillo var3 && var3.isScared()) {
                      return false;
                   }
-      
+
                   return super.checkExtraStartConditions(var1, var2);
                }
             },
@@ -182,7 +180,7 @@ public class ArmadilloAi {
       protected void tick(ServerLevel var1, Armadillo var2, long var3) {
          super.tick(var1, var2, var3);
          if (this.nextPeekTimer > 0) {
-            --this.nextPeekTimer;
+            this.nextPeekTimer--;
          }
 
          if (var2.shouldSwitchToScaredState()) {

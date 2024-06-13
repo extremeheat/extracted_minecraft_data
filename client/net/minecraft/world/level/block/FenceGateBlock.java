@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -112,7 +111,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
 
    @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch(var2) {
+      switch (var2) {
          case LAND:
             return var1.getValue(OPEN);
          case WATER:

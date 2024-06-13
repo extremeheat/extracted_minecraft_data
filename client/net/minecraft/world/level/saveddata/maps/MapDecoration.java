@@ -9,12 +9,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record MapDecoration(Holder<MapDecorationType> b, byte c, byte d, byte e, Optional<Component> f) {
-   private final Holder<MapDecorationType> type;
-   private final byte x;
-   private final byte y;
-   private final byte rot;
-   private final Optional<Component> name;
+public record MapDecoration(Holder<MapDecorationType> type, byte x, byte y, byte rot, Optional<Component> name) {
    public static final StreamCodec<RegistryFriendlyByteBuf, MapDecoration> STREAM_CODEC = StreamCodec.composite(
       MapDecorationType.STREAM_CODEC,
       MapDecoration::type,
@@ -29,21 +24,21 @@ public record MapDecoration(Holder<MapDecorationType> b, byte c, byte d, byte e,
       MapDecoration::new
    );
 
-   public MapDecoration(Holder<MapDecorationType> var1, byte var2, byte var3, byte var4, Optional<Component> var5) {
+   public MapDecoration(Holder<MapDecorationType> type, byte x, byte y, byte rot, Optional<Component> name) {
       super();
-      var4 = (byte)(var4 & 15);
-      this.type = var1;
-      this.x = var2;
-      this.y = var3;
-      this.rot = var4;
-      this.name = var5;
+      rot = (byte)(rot & 15);
+      this.type = type;
+      this.x = x;
+      this.y = y;
+      this.rot = rot;
+      this.name = name;
    }
 
    public ResourceLocation getSpriteLocation() {
-      return ((MapDecorationType)this.type.value()).assetId();
+      return this.type.value().assetId();
    }
 
    public boolean renderOnFrame() {
-      return ((MapDecorationType)this.type.value()).showOnItemFrame();
+      return this.type.value().showOnItemFrame();
    }
 }

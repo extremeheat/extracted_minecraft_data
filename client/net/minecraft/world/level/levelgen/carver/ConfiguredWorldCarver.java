@@ -17,19 +17,17 @@ import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Aquifer;
 
-public record ConfiguredWorldCarver<WC extends CarverConfiguration>(WorldCarver<WC> d, WC e) {
-   private final WorldCarver<WC> worldCarver;
-   private final WC config;
+public record ConfiguredWorldCarver<WC extends CarverConfiguration>(WorldCarver<WC> worldCarver, WC config) {
    public static final Codec<ConfiguredWorldCarver<?>> DIRECT_CODEC = BuiltInRegistries.CARVER
       .byNameCodec()
       .dispatch(var0 -> var0.worldCarver, WorldCarver::configuredCodec);
    public static final Codec<Holder<ConfiguredWorldCarver<?>>> CODEC = RegistryFileCodec.create(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
    public static final Codec<HolderSet<ConfiguredWorldCarver<?>>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
 
-   public ConfiguredWorldCarver(WorldCarver<WC> var1, WC var2) {
+   public ConfiguredWorldCarver(WorldCarver<WC> worldCarver, WC config) {
       super();
-      this.worldCarver = var1;
-      this.config = var2;
+      this.worldCarver = worldCarver;
+      this.config = (WC)config;
    }
 
    public boolean isStartChunk(RandomSource var1) {

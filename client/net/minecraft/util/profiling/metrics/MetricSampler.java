@@ -92,16 +92,16 @@ public class MetricSampler {
    public MetricSampler.SamplerResult result() {
       Int2DoubleOpenHashMap var1 = new Int2DoubleOpenHashMap();
       int var2 = -2147483648;
+      int var3 = -2147483648;
 
-      int var3;
-      int var4;
-      for(var3 = -2147483648; this.values.isReadable(8); var3 = var4) {
-         var4 = this.ticks.readInt();
+      while (this.values.isReadable(8)) {
+         int var4 = this.ticks.readInt();
          if (var2 == -2147483648) {
             var2 = var4;
          }
 
          var1.put(var4, this.values.readDouble());
+         var3 = var4;
       }
 
       return new MetricSampler.SamplerResult(var2, var3, var1);

@@ -61,7 +61,7 @@ public class PostPass implements AutoCloseable {
       RenderSystem.viewport(0, 0, (int)var2, (int)var3);
       this.effect.setSampler("DiffuseSampler", this.inTarget::getColorTextureId);
 
-      for(int var4 = 0; var4 < this.auxAssets.size(); ++var4) {
+      for (int var4 = 0; var4 < this.auxAssets.size(); var4++) {
          this.effect.setSampler(this.auxNames.get(var4), this.auxAssets.get(var4));
          this.effect.safeGetUniform("AuxSize" + var4).set((float)this.auxWidths.get(var4).intValue(), (float)this.auxHeights.get(var4).intValue());
       }
@@ -88,7 +88,7 @@ public class PostPass implements AutoCloseable {
       this.outTarget.unbindWrite();
       this.inTarget.unbindRead();
 
-      for(Object var7 : this.auxAssets) {
+      for (Object var7 : this.auxAssets) {
          if (var7 instanceof RenderTarget) {
             ((RenderTarget)var7).unbindRead();
          }

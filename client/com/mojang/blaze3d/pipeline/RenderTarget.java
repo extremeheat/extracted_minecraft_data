@@ -262,7 +262,7 @@ public abstract class RenderTarget {
       RenderSystem.assertOnRenderThreadOrInit();
       this.bindWrite(true);
       GlStateManager._clearColor(this.clearChannels[0], this.clearChannels[1], this.clearChannels[2], this.clearChannels[3]);
-      int var2 = 16384;
+      short var2 = 16384;
       if (this.useDepth) {
          GlStateManager._clearDepth(1.0);
          var2 |= 256;

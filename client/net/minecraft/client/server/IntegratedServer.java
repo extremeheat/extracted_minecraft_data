@@ -6,7 +6,6 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
@@ -26,7 +25,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -127,7 +125,7 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    private void tickPaused() {
-      for(ServerPlayer var2 : this.getPlayerList().getPlayers()) {
+      for (ServerPlayer var2 : this.getPlayerList().getPlayers()) {
          var2.awardStat(Stats.TOTAL_WORLD_TIME);
       }
    }
@@ -185,9 +183,9 @@ public class IntegratedServer extends MinecraftServer {
       try {
          this.minecraft.prepareForMultiplayer();
          this.minecraft.getProfileKeyPairManager().prepareKeyPair().thenAcceptAsync(var1x -> var1x.ifPresent(var1xx -> {
-               ClientPacketListener var2xx = this.minecraft.getConnection();
-               if (var2xx != null) {
-                  var2xx.setKeyPair(var1xx);
+               ClientPacketListener var2x = this.minecraft.getConnection();
+               if (var2x != null) {
+                  var2x.setKeyPair(var1xx);
                }
             }), this.minecraft);
          this.getConnection().startTcpServerListener(null, var3);
@@ -200,7 +198,7 @@ public class IntegratedServer extends MinecraftServer {
          int var4 = this.getProfilePermissions(this.minecraft.player.getGameProfile());
          this.minecraft.player.setPermissionLevel(var4);
 
-         for(ServerPlayer var6 : this.getPlayerList().getPlayers()) {
+         for (ServerPlayer var6 : this.getPlayerList().getPlayers()) {
             this.getCommands().sendCommands(var6);
          }
 
@@ -222,7 +220,7 @@ public class IntegratedServer extends MinecraftServer {
    @Override
    public void halt(boolean var1) {
       this.executeBlocking(() -> {
-         for(ServerPlayer var3 : Lists.newArrayList(this.getPlayerList().getPlayers())) {
+         for (ServerPlayer var3 : Lists.newArrayList(this.getPlayerList().getPlayers())) {
             if (!var3.getUUID().equals(this.uuid)) {
                this.getPlayerList().remove(var3);
             }

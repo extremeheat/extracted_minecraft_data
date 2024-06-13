@@ -12,25 +12,31 @@ public interface PieceGenerator<C extends FeatureConfiguration> {
    void generatePieces(StructurePiecesBuilder var1, PieceGenerator.Context<C> var2);
 
    public static record Context<C extends FeatureConfiguration>(
-      C a, ChunkGenerator b, StructureTemplateManager c, ChunkPos d, LevelHeightAccessor e, WorldgenRandom f, long g
+      C config,
+      ChunkGenerator chunkGenerator,
+      StructureTemplateManager structureTemplateManager,
+      ChunkPos chunkPos,
+      LevelHeightAccessor heightAccessor,
+      WorldgenRandom random,
+      long seed
    ) {
-      private final C config;
-      private final ChunkGenerator chunkGenerator;
-      private final StructureTemplateManager structureTemplateManager;
-      private final ChunkPos chunkPos;
-      private final LevelHeightAccessor heightAccessor;
-      private final WorldgenRandom random;
-      private final long seed;
-
-      public Context(C var1, ChunkGenerator var2, StructureTemplateManager var3, ChunkPos var4, LevelHeightAccessor var5, WorldgenRandom var6, long var7) {
+      public Context(
+         C config,
+         ChunkGenerator chunkGenerator,
+         StructureTemplateManager structureTemplateManager,
+         ChunkPos chunkPos,
+         LevelHeightAccessor heightAccessor,
+         WorldgenRandom random,
+         long seed
+      ) {
          super();
-         this.config = var1;
-         this.chunkGenerator = var2;
-         this.structureTemplateManager = var3;
-         this.chunkPos = var4;
-         this.heightAccessor = var5;
-         this.random = var6;
-         this.seed = var7;
+         this.config = (C)config;
+         this.chunkGenerator = chunkGenerator;
+         this.structureTemplateManager = structureTemplateManager;
+         this.chunkPos = chunkPos;
+         this.heightAccessor = heightAccessor;
+         this.random = random;
+         this.seed = seed;
       }
    }
 }

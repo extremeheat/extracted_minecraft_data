@@ -154,7 +154,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
          return 0;
       }
 
-      for(Direction var6 : Direction.Plane.HORIZONTAL) {
+      for (Direction var6 : Direction.Plane.HORIZONTAL) {
          BlockState var7 = var0.getBlockState(var2.setWithOffset(var1, var6));
          if (var7.is(Blocks.SCAFFOLDING)) {
             var4 = Math.min(var4, var7.getValue(DISTANCE) + 1);

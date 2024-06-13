@@ -19,7 +19,7 @@ public class DustParticleBase<T extends DustParticleOptionsBase> extends Texture
       this.rCol = this.randomizeColor(var14.getColor().x(), var16);
       this.gCol = this.randomizeColor(var14.getColor().y(), var16);
       this.bCol = this.randomizeColor(var14.getColor().z(), var16);
-      this.quadSize *= 0.75F * var14.getScale();
+      this.quadSize = this.quadSize * 0.75F * var14.getScale();
       int var17 = (int)(8.0 / (this.random.nextDouble() * 0.8 + 0.2));
       this.lifetime = (int)Math.max((float)var17 * var14.getScale(), 1.0F);
       this.setSpriteFromAge(var15);

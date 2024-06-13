@@ -25,14 +25,14 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, ColorableHie
    }
 
    public ResourceLocation getTextureLocation(TropicalFish var1) {
-      return switch(var1.getVariant().base()) {
+      return switch (var1.getVariant().base()) {
          case SMALL -> MODEL_A_TEXTURE;
          case LARGE -> MODEL_B_TEXTURE;
       };
    }
 
    public void render(TropicalFish var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      ColorableHierarchicalModel var7 = switch(var1.getVariant().base()) {
+      ColorableHierarchicalModel var7 = switch (var1.getVariant().base()) {
          case SMALL -> this.modelA;
          case LARGE -> this.modelB;
       };

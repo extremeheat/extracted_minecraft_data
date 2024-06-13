@@ -2,7 +2,6 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
@@ -32,10 +31,13 @@ public class SavedDataUUIDFix extends AbstractUUIDFix {
                                              "HeroesOfTheVillage",
                                              var0xxxxx -> var0xxxxx.createList(
                                                    var0xxxxx.asStream()
-                                                      .map(var0xxxxxx -> (Dynamic)createUUIDFromLongs(var0xxxxxx, "UUIDMost", "UUIDLeast").orElseGet(() -> {
-                                                            LOGGER.warn("HeroesOfTheVillage contained invalid UUIDs.");
-                                                            return var0xxxxxx;
-                                                         }))
+                                                      .map(
+                                                         var0xxxxxx -> (Dynamic)createUUIDFromLongs((Dynamic<?>)var0xxxxxx, "UUIDMost", "UUIDLeast")
+                                                               .orElseGet(() -> {
+                                                                  LOGGER.warn("HeroesOfTheVillage contained invalid UUIDs.");
+                                                                  return (Dynamic<?>)var0xxxxxx;
+                                                               })
+                                                      )
                                                 )
                                           )
                                     )

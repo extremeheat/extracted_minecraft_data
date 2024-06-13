@@ -24,7 +24,7 @@ public class SalmonModel<T extends Entity> extends HierarchicalModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      boolean var2 = true;
+      byte var2 = 20;
       PartDefinition var3 = var1.addOrReplaceChild(
          "body_front", CubeListBuilder.create().texOffs(0, 0).addBox(-1.5F, -2.5F, 0.0F, 3.0F, 5.0F, 8.0F), PartPose.offset(0.0F, 20.0F, 0.0F)
       );

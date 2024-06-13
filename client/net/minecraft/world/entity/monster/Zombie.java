@@ -71,7 +71,6 @@ public class Zombie extends Monster {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Integer> DATA_SPECIAL_TYPE_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Boolean> DATA_DROWNED_CONVERSION_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
-   private static final EntityDataAccessor<Boolean> DATA_POTATO_CONVERTING_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
    public static final float ZOMBIE_LEADER_CHANCE = 0.05F;
    public static final int REINFORCEMENT_ATTEMPTS = 50;
    public static final int REINFORCEMENT_RANGE_MAX = 40;
@@ -101,7 +100,7 @@ public class Zombie extends Monster {
    }
 
    protected void addBehaviourGoals() {
-      this.goalSelector.addGoal(2, new ZombieAttackGoal<>(this, 1.0, false));
+      this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
       this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, true, 4, this::canBreakDoors));
       this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers(ZombifiedPiglin.class));
@@ -126,15 +125,10 @@ public class Zombie extends Monster {
       var1.define(DATA_BABY_ID, false);
       var1.define(DATA_SPECIAL_TYPE_ID, 0);
       var1.define(DATA_DROWNED_CONVERSION_ID, false);
-      var1.define(DATA_POTATO_CONVERTING_ID, false);
    }
 
    public boolean isUnderWaterConverting() {
       return this.getEntityData().get(DATA_DROWNED_CONVERSION_ID);
-   }
-
-   public boolean isPotatoConverting() {
-      return this.getEntityData().get(DATA_POTATO_CONVERTING_ID);
    }
 
    public boolean canBreakDoors() {
@@ -204,16 +198,14 @@ public class Zombie extends Monster {
    @Override
    public void tick() {
       if (!this.level().isClientSide && this.isAlive() && !this.isNoAi()) {
-         if (this.isPotatoConverting()) {
-            this.doPotatoConversion();
-         } else if (this.isUnderWaterConverting()) {
-            --this.conversionTime;
+         if (this.isUnderWaterConverting()) {
+            this.conversionTime--;
             if (this.conversionTime < 0) {
                this.doUnderWaterConversion();
             }
          } else if (this.convertsInWater()) {
             if (this.isEyeInFluid(FluidTags.WATER)) {
-               ++this.inWaterTime;
+               this.inWaterTime++;
                if (this.inWaterTime >= 600) {
                   this.startUnderWaterConversion(300);
                }
@@ -265,17 +257,6 @@ public class Zombie extends Monster {
       }
    }
 
-   private void startPotatoConversion() {
-      this.getEntityData().set(DATA_POTATO_CONVERTING_ID, true);
-   }
-
-   protected void doPotatoConversion() {
-      this.convertToZombieType(EntityType.POISONOUS_POTATO_ZOMBIE);
-      if (!this.isSilent()) {
-         this.level().levelEvent(null, 1040, this.blockPosition(), 0);
-      }
-   }
-
    protected void convertToZombieType(EntityType<? extends Zombie> var1) {
       Zombie var2 = this.convertTo(var1, true);
       if (var2 != null) {
@@ -310,7 +291,7 @@ public class Zombie extends Monster {
             int var7 = Mth.floor(this.getZ());
             Zombie var8 = new Zombie(this.level());
 
-            for(int var9 = 0; var9 < 50; ++var9) {
+            for (int var9 = 0; var9 < 50; var9++) {
                int var10 = var5 + Mth.nextInt(this.random, 7, 40) * Mth.nextInt(this.random, -1, 1);
                int var11 = var6 + Mth.nextInt(this.random, 7, 40) * Mth.nextInt(this.random, -1, 1);
                int var12 = var7 + Mth.nextInt(this.random, 7, 40) * Mth.nextInt(this.random, -1, 1);
@@ -414,8 +395,6 @@ public class Zombie extends Monster {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean killedEntity(ServerLevel var1, LivingEntity var2) {
       boolean var3 = super.killedEntity(var1, var2);
@@ -542,13 +521,10 @@ public class Zombie extends Monster {
       this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(this.random.nextDouble() * 0.10000000149011612);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var1.getEntity();
-      if (var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
+      if (var1.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          ItemStack var6 = this.getSkull();
          if (!var6.isEmpty()) {
             var5.increaseDroppedSkulls();

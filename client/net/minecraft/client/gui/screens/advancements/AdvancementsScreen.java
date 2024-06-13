@@ -8,8 +8,8 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientAdvancements;
@@ -71,6 +71,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).width(200).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
@@ -100,7 +101,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
          int var6 = (this.width - 252) / 2;
          int var7 = (this.height - 140) / 2;
 
-         for(AdvancementTab var9 : this.tabs.values()) {
+         for (AdvancementTab var9 : this.tabs.values()) {
             if (var9.isMouseOver(var6, var7, var1, var3)) {
                this.advancements.setSelectedTab(var9.getRootNode().holder(), true);
                break;
@@ -174,11 +175,11 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       RenderSystem.enableBlend();
       var1.blit(WINDOW_LOCATION, var2, var3, 0, 0, 252, 140);
       if (this.tabs.size() > 1) {
-         for(AdvancementTab var5 : this.tabs.values()) {
+         for (AdvancementTab var5 : this.tabs.values()) {
             var5.drawTab(var1, var2, var3, var5 == this.selectedTab);
          }
 
-         for(AdvancementTab var7 : this.tabs.values()) {
+         for (AdvancementTab var7 : this.tabs.values()) {
             var7.drawIcon(var1, var2, var3);
          }
       }
@@ -197,7 +198,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       }
 
       if (this.tabs.size() > 1) {
-         for(AdvancementTab var7 : this.tabs.values()) {
+         for (AdvancementTab var7 : this.tabs.values()) {
             if (var7.isMouseOver(var4, var5, (double)var2, (double)var3)) {
                var1.renderTooltip(this.font, var7.getTitle(), var2, var3);
             }

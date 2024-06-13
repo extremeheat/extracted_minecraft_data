@@ -60,7 +60,7 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       boolean var28 = (double)var3.nextFloat() < var17.generateCrackChance;
       int var29 = 0;
 
-      for(int var30 = 0; var30 < var9; ++var30) {
+      for (int var30 = 0; var30 < var9; var30++) {
          int var31 = var2.outerWallDistance.sample(var3);
          int var32 = var2.outerWallDistance.sample(var3);
          int var33 = var2.outerWallDistance.sample(var3);
@@ -100,16 +100,16 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       ArrayList var47 = Lists.newArrayList();
       Predicate var49 = isReplaceable(var2.geodeBlockSettings.cannotReplace);
 
-      for(BlockPos var52 : BlockPos.betweenClosed(var4.offset(var6, var6, var6), var4.offset(var7, var7, var7))) {
+      for (BlockPos var52 : BlockPos.betweenClosed(var4.offset(var6, var6, var6), var4.offset(var7, var7, var7))) {
          double var54 = var11.getValue((double)var52.getX(), (double)var52.getY(), (double)var52.getZ()) * var2.noiseMultiplier;
          double var36 = 0.0;
          double var38 = 0.0;
 
-         for(Pair var41 : var8) {
+         for (Pair var41 : var8) {
             var36 += Mth.invSqrt(var52.distSqr((Vec3i)var41.getFirst()) + (double)((Integer)var41.getSecond()).intValue()) + var54;
          }
 
-         for(BlockPos var63 : var12) {
+         for (BlockPos var63 : var12) {
             var38 += Mth.invSqrt(var52.distSqr(var63) + (double)var17.crackPointOffset) + var54;
          }
 
@@ -117,7 +117,7 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
             if (var28 && var38 >= var26 && var36 < var18) {
                this.safeSetBlock(var5, var52, Blocks.AIR.defaultBlockState(), var49);
 
-               for(Direction var43 : DIRECTIONS) {
+               for (Direction var43 : DIRECTIONS) {
                   BlockPos var44 = var52.relative(var43);
                   FluidState var45 = var5.getFluidState(var44);
                   if (!var45.isEmpty()) {
@@ -146,25 +146,24 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       }
 
       List var51 = var16.innerPlacements;
-      if (!var51.isEmpty()) {
-         for(BlockPos var55 : var47) {
-            BlockState var56 = Util.getRandom(var51, var3);
 
-            for(Direction var39 : DIRECTIONS) {
-               if (var56.hasProperty(BlockStateProperties.FACING)) {
-                  var56 = var56.setValue(BlockStateProperties.FACING, var39);
-               }
+      for (BlockPos var55 : var47) {
+         BlockState var56 = Util.getRandom(var51, var3);
 
-               BlockPos var62 = var55.relative(var39);
-               BlockState var65 = var5.getBlockState(var62);
-               if (var56.hasProperty(BlockStateProperties.WATERLOGGED)) {
-                  var56 = var56.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var65.getFluidState().isSource()));
-               }
+         for (Direction var39 : DIRECTIONS) {
+            if (var56.hasProperty(BlockStateProperties.FACING)) {
+               var56 = var56.setValue(BlockStateProperties.FACING, var39);
+            }
 
-               if (BuddingAmethystBlock.canClusterGrowAtState(var65)) {
-                  this.safeSetBlock(var5, var62, var56, var49);
-                  break;
-               }
+            BlockPos var62 = var55.relative(var39);
+            BlockState var65 = var5.getBlockState(var62);
+            if (var56.hasProperty(BlockStateProperties.WATERLOGGED)) {
+               var56 = var56.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var65.getFluidState().isSource()));
+            }
+
+            if (BuddingAmethystBlock.canClusterGrowAtState(var65)) {
+               this.safeSetBlock(var5, var62, var56, var49);
+               break;
             }
          }
       }

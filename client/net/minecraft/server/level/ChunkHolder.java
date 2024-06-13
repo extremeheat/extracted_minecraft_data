@@ -117,7 +117,7 @@ public class ChunkHolder {
 
    @Nullable
    public ChunkStatus getLastAvailableStatus() {
-      for(int var1 = CHUNK_STATUSES.size() - 1; var1 >= 0; --var1) {
+      for (int var1 = CHUNK_STATUSES.size() - 1; var1 >= 0; var1--) {
          ChunkStatus var2 = CHUNK_STATUSES.get(var1);
          CompletableFuture var3 = this.getFutureIfPresentUnchecked(var2);
          if (var3.getNow(UNLOADED_CHUNK).isSuccess()) {
@@ -130,7 +130,7 @@ public class ChunkHolder {
 
    @Nullable
    public ChunkAccess getLastAvailable() {
-      for(int var1 = CHUNK_STATUSES.size() - 1; var1 >= 0; --var1) {
+      for (int var1 = CHUNK_STATUSES.size() - 1; var1 >= 0; var1--) {
          ChunkStatus var2 = CHUNK_STATUSES.get(var1);
          CompletableFuture var3 = this.getFutureIfPresentUnchecked(var2);
          if (!var3.isCompletedExceptionally()) {
@@ -200,7 +200,7 @@ public class ChunkHolder {
          if (this.hasChangedSections) {
             List var10 = this.playerProvider.getPlayers(this.pos, false);
 
-            for(int var11 = 0; var11 < this.changedBlocksPerSection.length; ++var11) {
+            for (int var11 = 0; var11 < this.changedBlocksPerSection.length; var11++) {
                ShortSet var5 = this.changedBlocksPerSection[var11];
                if (var5 != null) {
                   this.changedBlocksPerSection[var11] = null;
@@ -277,7 +277,7 @@ public class ChunkHolder {
          this.chunkToSaveHistory.push(new ChunkHolder.ChunkSaveDebug(Thread.currentThread(), var2, var1));
       }
 
-      this.chunkToSave = this.chunkToSave.thenCombine(var2, (var0, var1x) -> var0);
+      this.chunkToSave = this.chunkToSave.thenCombine(var2, (var0, var1x) -> (ChunkAccess)var0);
    }
 
    private void updateChunkToSave(CompletableFuture<? extends ChunkResult<? extends ChunkAccess>> var1, String var2) {
@@ -285,7 +285,7 @@ public class ChunkHolder {
          this.chunkToSaveHistory.push(new ChunkHolder.ChunkSaveDebug(Thread.currentThread(), var1, var2));
       }
 
-      this.chunkToSave = this.chunkToSave.thenCombine(var1, (var0, var1x) -> ChunkResult.orElse(var1x, var0));
+      this.chunkToSave = this.chunkToSave.thenCombine(var1, (var0, var1x) -> ChunkResult.orElse((ChunkResult<? extends ChunkAccess>)var1x, (ChunkAccess)var0));
    }
 
    public void addSendDependency(CompletableFuture<?> var1) {
@@ -343,7 +343,7 @@ public class ChunkHolder {
       if (var5) {
          ChunkResult var9 = ChunkResult.error(() -> "Unloaded ticket level " + this.pos);
 
-         for(int var10 = var6 ? var4.getIndex() + 1 : 0; var10 <= var3.getIndex(); ++var10) {
+         for (int var10 = var6 ? var4.getIndex() + 1 : 0; var10 <= var3.getIndex(); var10++) {
             CompletableFuture var11 = this.futures.get(var10);
             if (var11 == null) {
                this.futures.set(var10, CompletableFuture.completedFuture(var9));
@@ -412,7 +412,7 @@ public class ChunkHolder {
    }
 
    public void replaceProtoChunk(ImposterProtoChunk var1) {
-      for(int var2 = 0; var2 < this.futures.length(); ++var2) {
+      for (int var2 = 0; var2 < this.futures.length(); var2++) {
          CompletableFuture var3 = this.futures.get(var2);
          if (var3 != null) {
             ChunkAccess var4 = var3.getNow(UNLOADED_CHUNK).orElse(null);
@@ -428,23 +428,19 @@ public class ChunkHolder {
    public List<Pair<ChunkStatus, CompletableFuture<ChunkResult<ChunkAccess>>>> getAllFutures() {
       ArrayList var1 = new ArrayList();
 
-      for(int var2 = 0; var2 < CHUNK_STATUSES.size(); ++var2) {
+      for (int var2 = 0; var2 < CHUNK_STATUSES.size(); var2++) {
          var1.add(Pair.of(CHUNK_STATUSES.get(var2), this.futures.get(var2)));
       }
 
       return var1;
    }
 
-   static record ChunkSaveDebug(Thread a, CompletableFuture<?> b, String c) {
-      private final Thread thread;
-      private final CompletableFuture<?> future;
-      private final String source;
-
-      ChunkSaveDebug(Thread var1, CompletableFuture<?> var2, String var3) {
+   static record ChunkSaveDebug(Thread thread, CompletableFuture<?> future, String source) {
+      ChunkSaveDebug(Thread thread, CompletableFuture<?> future, String source) {
          super();
-         this.thread = var1;
-         this.future = var2;
-         this.source = var3;
+         this.thread = thread;
+         this.future = future;
+         this.source = source;
       }
    }
 

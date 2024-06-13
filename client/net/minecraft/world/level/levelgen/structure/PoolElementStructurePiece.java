@@ -70,7 +70,7 @@ public class PoolElementStructurePiece extends StructurePiece {
       var2.putString("rotation", this.rotation.name());
       ListTag var4 = new ListTag();
 
-      for(JigsawJunction var6 : this.junctions) {
+      for (JigsawJunction var6 : this.junctions) {
          var4.add((Tag)var6.serialize(var3).getValue());
       }
 

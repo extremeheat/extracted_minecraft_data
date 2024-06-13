@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
@@ -28,6 +27,6 @@ public class WeightedPlacedFeature {
    }
 
    public boolean place(WorldGenLevel var1, ChunkGenerator var2, RandomSource var3, BlockPos var4) {
-      return ((PlacedFeature)this.feature.value()).place(var1, var2, var3, var4);
+      return this.feature.value().place(var1, var2, var3, var4);
    }
 }

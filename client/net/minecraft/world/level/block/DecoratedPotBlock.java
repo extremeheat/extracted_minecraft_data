@@ -2,14 +2,11 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.CommonComponents;
@@ -98,12 +95,9 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
          .setValue(CRACKED, Boolean.valueOf(false));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      BlockEntity var9 = var3.getBlockEntity(var4);
-      if (var9 instanceof DecoratedPotBlockEntity var8) {
+      if (var3.getBlockEntity(var4) instanceof DecoratedPotBlockEntity var8) {
          if (var3.isClientSide) {
             return ItemInteractionResult.CONSUME;
          } else {
@@ -140,12 +134,9 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof DecoratedPotBlockEntity var6) {
+      if (var2.getBlockEntity(var3) instanceof DecoratedPotBlockEntity var6) {
          var2.playSound(null, var3, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F);
          var6.wobble(DecoratedPotBlockEntity.WobbleStyle.NEGATIVE);
          var2.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
@@ -187,8 +178,8 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       BlockEntity var3 = var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
       if (var3 instanceof DecoratedPotBlockEntity var4) {
          var2.withDynamicDrop(SHERDS_DYNAMIC_DROP_ID, var1x -> {
-            for(Item var3xx : var4.getDecorations().ordered()) {
-               var1x.accept(var3xx.getDefaultInstance());
+            for (Item var3x : var4.getDecorations().ordered()) {
+               var1x.accept(var3x.getDefaultInstance());
             }
          });
       }
@@ -219,12 +210,12 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4, @Nullable RegistryAccess var5) {
-      super.appendHoverText(var1, var2, var3, var4, var5);
-      PotDecorations var6 = var1.getOrDefault(DataComponents.POT_DECORATIONS, PotDecorations.EMPTY);
-      if (!var6.equals(PotDecorations.EMPTY)) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+      super.appendHoverText(var1, var2, var3, var4);
+      PotDecorations var5 = var1.getOrDefault(DataComponents.POT_DECORATIONS, PotDecorations.EMPTY);
+      if (!var5.equals(PotDecorations.EMPTY)) {
          var3.add(CommonComponents.EMPTY);
-         Stream.of(var6.front(), var6.left(), var6.right(), var6.back())
+         Stream.of(var5.front(), var5.left(), var5.right(), var5.back())
             .forEach(var1x -> var3.add(new ItemStack(var1x.orElse(Items.BRICK), 1).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY)));
       }
    }
@@ -240,8 +231,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
 
    @Override
    public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
-      BlockEntity var5 = var1.getBlockEntity(var2);
-      return var5 instanceof DecoratedPotBlockEntity var4 ? var4.getPotAsItem() : super.getCloneItemStack(var1, var2, var3);
+      return var1.getBlockEntity(var2) instanceof DecoratedPotBlockEntity var4 ? var4.getPotAsItem() : super.getCloneItemStack(var1, var2, var3);
    }
 
    @Override

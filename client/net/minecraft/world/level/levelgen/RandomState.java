@@ -25,7 +25,7 @@ public final class RandomState {
    private final Map<ResourceLocation, PositionalRandomFactory> positionalRandoms;
 
    public static RandomState create(HolderGetter.Provider var0, ResourceKey<NoiseGeneratorSettings> var1, long var2) {
-      return create((NoiseGeneratorSettings)var0.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(var1).value(), var0.lookupOrThrow(Registries.NOISE), var2);
+      return create(var0.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(var1).value(), var0.lookupOrThrow(Registries.NOISE), var2);
    }
 
    public static RandomState create(NoiseGeneratorSettings var0, HolderGetter<NormalNoise.NoiseParameters> var1, long var2) {
@@ -78,8 +78,6 @@ public final class RandomState {
             return new DensityFunction.NoiseHolder(var2, var3x);
          }
 
-         // $VF: Could not properly define all variable types!
-         // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
          private DensityFunction wrapNew(DensityFunction var1) {
             if (var1 instanceof BlendedNoise var2) {
                RandomSource var3x = var5 ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(new ResourceLocation("terrain"));
@@ -99,8 +97,6 @@ public final class RandomState {
       DensityFunction.Visitor var6 = new DensityFunction.Visitor() {
          private final Map<DensityFunction, DensityFunction> wrapped = new HashMap<>();
 
-         // $VF: Could not properly define all variable types!
-         // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
          private DensityFunction wrapNew(DensityFunction var1) {
             if (var1 instanceof DensityFunctions.HolderHolder var3) {
                return var3.function().value();

@@ -30,14 +30,14 @@ public class CopperBulbBlock extends Block {
    @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var4.getBlock() != var1.getBlock() && var2 instanceof ServerLevel var6) {
-         this.checkAndFlip(var1, (ServerLevel)var6, var3);
+         this.checkAndFlip(var1, var6, var3);
       }
    }
 
    @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var2 instanceof ServerLevel var7) {
-         this.checkAndFlip(var1, (ServerLevel)var7, var3);
+         this.checkAndFlip(var1, var7, var3);
       }
    }
 

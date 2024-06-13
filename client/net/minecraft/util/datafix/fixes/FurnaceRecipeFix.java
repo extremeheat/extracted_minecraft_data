@@ -51,15 +51,15 @@ public class FurnaceRecipeFix extends DataFix {
       var4 = var4.remove("RecipesUsedSize");
       ArrayList var6 = Lists.newArrayList();
 
-      for(int var7 = 0; var7 < var5; ++var7) {
+      for (int var7 = 0; var7 < var5; var7++) {
          String var8 = "RecipeLocation" + var7;
          String var9 = "RecipeAmount" + var7;
          Optional var10 = var4.get(var8).result();
          int var11 = var4.get(var9).asInt(0);
          if (var11 > 0) {
             var10.ifPresent(var3x -> {
-               Optional var4xx = var1.read(var3x).result();
-               var4xx.ifPresent(var2xx -> var6.add(Pair.of(var2xx.getFirst(), var11)));
+               Optional var4x = var1.read(var3x).result();
+               var4x.ifPresent(var2xx -> var6.add(Pair.of(var2xx.getFirst(), var11)));
             });
          }
 

@@ -1,7 +1,6 @@
 package net.minecraft.server.packs;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult.PartialResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -44,7 +43,7 @@ public class VanillaPackResources implements PackResources {
       FileUtil.validatePath(var1);
       List var2 = List.of(var1);
 
-      for(Path var4 : this.rootPaths) {
+      for (Path var4 : this.rootPaths) {
          Path var5 = FileUtil.resolvePath(var4, var2);
          if (Files.exists(var5) && PathPackResources.validatePath(var5)) {
             return IoSupplier.create(var5);
@@ -55,19 +54,19 @@ public class VanillaPackResources implements PackResources {
    }
 
    public void listRawPaths(PackType var1, ResourceLocation var2, Consumer<Path> var3) {
-      FileUtil.decomposePath(var2.getPath()).get().ifLeft(var4 -> {
+      FileUtil.decomposePath(var2.getPath()).ifSuccess(var4 -> {
          String var5 = var2.getNamespace();
 
-         for(Path var7 : this.pathsForType.get(var1)) {
+         for (Path var7 : this.pathsForType.get(var1)) {
             Path var8 = var7.resolve(var5);
             var3.accept(FileUtil.resolvePath(var8, var4));
          }
-      }).ifRight(var1x -> LOGGER.error("Invalid path {}: {}", var2, var1x.message()));
+      }).ifError(var1x -> LOGGER.error("Invalid path {}: {}", var2, var1x.message()));
    }
 
    @Override
    public void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4) {
-      FileUtil.decomposePath(var3).get().ifLeft(var4x -> {
+      FileUtil.decomposePath(var3).ifSuccess(var4x -> {
          List var5 = this.pathsForType.get(var1);
          int var6 = var5.size();
          if (var6 == 1) {
@@ -75,7 +74,7 @@ public class VanillaPackResources implements PackResources {
          } else if (var6 > 1) {
             HashMap var7 = new HashMap();
 
-            for(int var8 = 0; var8 < var6 - 1; ++var8) {
+            for (int var8 = 0; var8 < var6 - 1; var8++) {
                getResources(var7::putIfAbsent, var2, (Path)var5.get(var8), var4x);
             }
 
@@ -87,7 +86,7 @@ public class VanillaPackResources implements PackResources {
                var7.forEach(var4);
             }
          }
-      }).ifRight(var1x -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
+      }).ifError(var1x -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
    }
 
    private static void getResources(PackResources.ResourceOutput var0, String var1, Path var2, List<String> var3) {
@@ -98,10 +97,10 @@ public class VanillaPackResources implements PackResources {
    @Nullable
    @Override
    public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
-      return (IoSupplier<InputStream>)FileUtil.decomposePath(var2.getPath()).get().map(var3 -> {
+      return (IoSupplier<InputStream>)FileUtil.decomposePath(var2.getPath()).mapOrElse(var3 -> {
          String var4 = var2.getNamespace();
 
-         for(Path var6 : this.pathsForType.get(var1)) {
+         for (Path var6 : this.pathsForType.get(var1)) {
             Path var7 = FileUtil.resolvePath(var6.resolve(var4), var3);
             if (Files.exists(var7) && PathPackResources.validatePath(var7)) {
                return IoSupplier.create(var7);
@@ -149,6 +148,6 @@ public class VanillaPackResources implements PackResources {
    }
 
    public ResourceProvider asProvider() {
-      return var1 -> Optional.ofNullable(this.getResource(PackType.CLIENT_RESOURCES, var1)).map(var1x -> new Resource(this, var1x));
+      return var1 -> Optional.ofNullable(this.getResource(PackType.CLIENT_RESOURCES, var1)).map(var1x -> new Resource(this, (IoSupplier<InputStream>)var1x));
    }
 }

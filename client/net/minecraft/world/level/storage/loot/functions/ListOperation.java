@@ -7,7 +7,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -17,7 +16,7 @@ import org.slf4j.Logger;
 
 public interface ListOperation {
    static MapCodec<ListOperation> codec(int var0) {
-      return ExtraCodecs.validate(ListOperation.Type.CODEC.dispatchMap("mode", ListOperation::mode, var0x -> var0x.mapCodec.codec()), var1 -> {
+      return ListOperation.Type.CODEC.dispatchMap("mode", ListOperation::mode, var0x -> var0x.mapCodec).validate(var1 -> {
          if (var1 instanceof ListOperation.ReplaceSection var2 && var2.size().isPresent()) {
             int var3 = var2.size().get();
             if (var3 > var0) {
@@ -58,17 +57,16 @@ public interface ListOperation {
       }
    }
 
-   public static record Insert(int b) implements ListOperation {
-      private final int offset;
+   public static record Insert(int offset) implements ListOperation {
       private static final Logger LOGGER = LogUtils.getLogger();
       public static final MapCodec<ListOperation.Insert> MAP_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(ExtraCodecs.strictOptionalField(ExtraCodecs.NON_NEGATIVE_INT, "offset", 0).forGetter(ListOperation.Insert::offset))
+         var0 -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(ListOperation.Insert::offset))
                .apply(var0, ListOperation.Insert::new)
       );
 
-      public Insert(int var1) {
+      public Insert(int offset) {
          super();
-         this.offset = var1;
+         this.offset = offset;
       }
 
       @Override
@@ -114,14 +112,12 @@ public interface ListOperation {
       }
    }
 
-   public static record ReplaceSection(int b, Optional<Integer> c) implements ListOperation {
-      private final int offset;
-      private final Optional<Integer> size;
+   public static record ReplaceSection(int offset, Optional<Integer> size) implements ListOperation {
       private static final Logger LOGGER = LogUtils.getLogger();
       public static final MapCodec<ListOperation.ReplaceSection> MAP_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(ExtraCodecs.NON_NEGATIVE_INT, "offset", 0).forGetter(ListOperation.ReplaceSection::offset),
-                  ExtraCodecs.strictOptionalField(ExtraCodecs.NON_NEGATIVE_INT, "size").forGetter(ListOperation.ReplaceSection::size)
+                  ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(ListOperation.ReplaceSection::offset),
+                  ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("size").forGetter(ListOperation.ReplaceSection::size)
                )
                .apply(var0, ListOperation.ReplaceSection::new)
       );
@@ -130,10 +126,10 @@ public interface ListOperation {
          this(var1, Optional.empty());
       }
 
-      public ReplaceSection(int var1, Optional<Integer> var2) {
+      public ReplaceSection(int offset, Optional<Integer> size) {
          super();
-         this.offset = var1;
-         this.size = var2;
+         this.offset = offset;
+         this.size = size;
       }
 
       @Override

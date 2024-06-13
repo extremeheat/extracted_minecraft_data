@@ -1,10 +1,8 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +13,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -24,7 +23,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -32,8 +30,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureElement;
@@ -52,6 +48,8 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -93,7 +91,7 @@ public class Item implements FeatureElement, ItemLike {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          String var2 = this.getClass().getSimpleName();
          if (!var2.endsWith("Item")) {
-            LOGGER.error("Item classes should end with Item and {} doesn't.", var2.trim().isEmpty() ? this.getClass().getName() : var2);
+            LOGGER.error("Item classes should end with Item and {} doesn't.", var2);
          }
       }
    }
@@ -115,9 +113,6 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public void onDestroyed(ItemEntity var1) {
-   }
-
-   public void onViewedInContainer(ItemStack var1, Level var2, BlockPos var3, Container var4) {
    }
 
    public void verifyComponentsAfterLoad(ItemStack var1) {
@@ -221,11 +216,6 @@ public class Item implements FeatureElement, ItemLike {
       return BuiltInRegistries.ITEM.getKey(this).getPath();
    }
 
-   public Item withDescriptionId(String var1) {
-      this.descriptionId = var1;
-      return this;
-   }
-
    protected String getOrCreateDescriptionId() {
       if (this.descriptionId == null) {
          this.descriptionId = Util.makeDescriptionId("item", BuiltInRegistries.ITEM.getKey(this));
@@ -277,7 +267,7 @@ public class Item implements FeatureElement, ItemLike {
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
    }
 
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
    }
 
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
@@ -289,8 +279,7 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public boolean isFoil(ItemStack var1) {
-      Boolean var2 = var1.get(DataComponents.EXPLICIT_FOIL);
-      return var2 != null && var2 ? true : var1.isEnchanted();
+      return var1.isEnchanted();
    }
 
    public boolean isEnchantable(ItemStack var1) {
@@ -312,8 +301,8 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    @Deprecated
-   public Multimap<Holder<Attribute>, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return ImmutableMultimap.of();
+   public ItemAttributeModifiers getDefaultAttributeModifiers() {
+      return ItemAttributeModifiers.EMPTY;
    }
 
    public boolean useOnRelease(ItemStack var1) {
@@ -326,6 +315,10 @@ public class Item implements FeatureElement, ItemLike {
 
    public SoundEvent getDrinkingSound() {
       return SoundEvents.GENERIC_DRINK;
+   }
+
+   public SoundEvent getEatingSound() {
+      return SoundEvents.GENERIC_EAT;
    }
 
    public SoundEvent getBreakingSound() {
@@ -391,7 +384,7 @@ public class Item implements FeatureElement, ItemLike {
             this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
          }
 
-         this.components.set(var1, (T)var2);
+         this.components.set(var1, var2);
          return this;
       }
 
@@ -410,6 +403,74 @@ public class Item implements FeatureElement, ItemLike {
 
       private DataComponentMap buildComponents() {
          return this.components == null ? DataComponents.COMMON_ITEM_COMPONENTS : (DataComponentMap)COMPONENT_INTERNER.intern(this.components.build());
+      }
+   }
+
+   public interface TooltipContext {
+      Item.TooltipContext EMPTY = new Item.TooltipContext() {
+         @Nullable
+         @Override
+         public HolderLookup.Provider registries() {
+            return null;
+         }
+
+         @Override
+         public float tickRate() {
+            return 20.0F;
+         }
+
+         @Nullable
+         @Override
+         public MapItemSavedData mapData(MapId var1) {
+            return null;
+         }
+      };
+
+      @Nullable
+      HolderLookup.Provider registries();
+
+      float tickRate();
+
+      @Nullable
+      MapItemSavedData mapData(MapId var1);
+
+      static Item.TooltipContext of(@Nullable final Level var0) {
+         return var0 == null ? EMPTY : new Item.TooltipContext() {
+            @Override
+            public HolderLookup.Provider registries() {
+               return var0.registryAccess();
+            }
+
+            @Override
+            public float tickRate() {
+               return var0.tickRateManager().tickrate();
+            }
+
+            @Override
+            public MapItemSavedData mapData(MapId var1) {
+               return var0.getMapData(var1);
+            }
+         };
+      }
+
+      static Item.TooltipContext of(final HolderLookup.Provider var0) {
+         return new Item.TooltipContext() {
+            @Override
+            public HolderLookup.Provider registries() {
+               return var0;
+            }
+
+            @Override
+            public float tickRate() {
+               return 20.0F;
+            }
+
+            @Nullable
+            @Override
+            public MapItemSavedData mapData(MapId var1) {
+               return null;
+            }
+         };
       }
    }
 }

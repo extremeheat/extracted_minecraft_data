@@ -1,15 +1,14 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class PineFoliagePlacer extends FoliagePlacer {
-   public static final Codec<PineFoliagePlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<PineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> foliagePlacerParts(var0).and(IntProvider.codec(0, 24).fieldOf("height").forGetter(var0x -> var0x.height)).apply(var0, PineFoliagePlacer::new)
    );
    private final IntProvider height;
@@ -38,12 +37,12 @@ public class PineFoliagePlacer extends FoliagePlacer {
    ) {
       int var10 = 0;
 
-      for(int var11 = var9; var11 >= var9 - var7; --var11) {
+      for (int var11 = var9; var11 >= var9 - var7; var11--) {
          this.placeLeavesRow(var1, var2, var3, var4, var6.pos(), var10, var11, var6.doubleTrunk());
          if (var10 >= 1 && var11 == var9 - var7 + 1) {
-            --var10;
+            var10--;
          } else if (var10 < var8 + var6.radiusOffset()) {
-            ++var10;
+            var10++;
          }
       }
    }

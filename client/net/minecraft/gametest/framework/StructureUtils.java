@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -40,7 +39,7 @@ public class StructureUtils {
    }
 
    public static Rotation getRotationForRotationSteps(int var0) {
-      switch(var0) {
+      switch (var0) {
          case 0:
             return Rotation.NONE;
          case 1:
@@ -55,7 +54,7 @@ public class StructureUtils {
    }
 
    public static int getRotationStepsForRotation(Rotation var0) {
-      switch(var0) {
+      switch (var0) {
          case NONE:
             return 0;
          case CLOCKWISE_90:
@@ -219,7 +218,7 @@ public class StructureUtils {
    }
 
    public static Stream<BlockPos> lookedAtStructureBlockPos(BlockPos var0, Entity var1, ServerLevel var2) {
-      boolean var3 = true;
+      short var3 = 200;
       Vec3 var4 = var1.getEyePosition();
       Vec3 var5 = var4.add(var1.getLookAngle().scale(200.0));
       return findStructureBlocks(var0, 200, var2)

@@ -26,7 +26,7 @@ public class PendingInvitesList extends ValueObject {
          if (var3.get("invites").isJsonArray()) {
             Iterator var4 = var3.get("invites").getAsJsonArray().iterator();
 
-            while(var4.hasNext()) {
+            while (var4.hasNext()) {
                var1.pendingInvites.add(PendingInvite.parse(((JsonElement)var4.next()).getAsJsonObject()));
             }
          }

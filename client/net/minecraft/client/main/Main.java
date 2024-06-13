@@ -235,7 +235,7 @@ public class Main {
          };
          var88.start();
 
-         while(var68.isRunning()) {
+         while (var68.isRunning()) {
          }
       } else {
          var88 = null;
@@ -275,8 +275,6 @@ public class Main {
       return var0 != null ? OptionalInt.of(var0) : OptionalInt.empty();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    private static <T> T parseArgument(OptionSet var0, OptionSpec<T> var1) {
       try {

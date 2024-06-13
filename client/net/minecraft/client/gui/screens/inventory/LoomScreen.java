@@ -130,8 +130,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          List var15 = this.menu.getSelectablePatterns();
 
          label64:
-         for(int var16 = 0; var16 < 4; ++var16) {
-            for(int var17 = 0; var17 < 4; ++var17) {
+         for (int var16 = 0; var16 < 4; var16++) {
+            for (int var17 = 0; var17 < 4; var17++) {
                int var18 = var16 + this.startRow;
                int var19 = var18 * 4 + var17;
                if (var19 >= var15.size()) {
@@ -185,8 +185,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          int var6 = this.leftPos + 60;
          int var7 = this.topPos + 13;
 
-         for(int var8 = 0; var8 < 4; ++var8) {
-            for(int var9 = 0; var9 < 4; ++var9) {
+         for (int var8 = 0; var8 < 4; var8++) {
+            for (int var9 = 0; var9 < 4; var9++) {
                double var10 = var1 - (double)(var6 + var9 * 14);
                double var12 = var3 - (double)(var7 + var8 * 14);
                int var14 = var8 + this.startRow;

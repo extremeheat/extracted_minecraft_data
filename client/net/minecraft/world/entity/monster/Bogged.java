@@ -47,11 +47,6 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_SHEARED, false);
@@ -113,8 +108,6 @@ public class Bogged extends AbstractSkeleton implements Shearable {
       return SoundEvents.BOGGED_STEP;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected AbstractArrow getArrow(ItemStack var1, float var2) {
       AbstractArrow var3 = super.getArrow(var1, var2);
@@ -143,16 +136,15 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    private void spawnShearedMushrooms() {
-      Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1 && ((ServerLevel)var1).getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-         LootTable var6 = ((ServerLevel)var1).getServer().reloadableRegistries().getLootTable(BuiltInLootTables.BOGGED_SHEAR);
-         LootParams var3 = new LootParams.Builder((ServerLevel)var1)
+      if (this.level() instanceof ServerLevel var1 && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         LootTable var6 = var1.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.BOGGED_SHEAR);
+         LootParams var3 = new LootParams.Builder(var1)
             .withParameter(LootContextParams.ORIGIN, this.position())
             .withParameter(LootContextParams.THIS_ENTITY, this)
             .create(LootContextParamSets.SHEARING);
          ObjectListIterator var4 = var6.getRandomItems(var3).iterator();
 
-         while(var4.hasNext()) {
+         while (var4.hasNext()) {
             ItemStack var5 = (ItemStack)var4.next();
             this.spawnAtLocation(var5);
          }

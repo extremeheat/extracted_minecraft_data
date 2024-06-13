@@ -37,7 +37,7 @@ public class CatModel<T extends Cat> extends OcelotModel<T> {
          this.body.y += -4.0F;
          this.body.z += 5.0F;
          this.head.y += -3.3F;
-         ++this.head.z;
+         this.head.z++;
          this.tail1.y += 8.0F;
          this.tail1.z += -2.0F;
          this.tail2.y += 2.0F;

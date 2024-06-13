@@ -4,16 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -21,8 +17,7 @@ import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
 
-public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMatcher> c) {
-   private final List<StatePropertiesPredicate.PropertyMatcher> properties;
+public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMatcher> properties) {
    private static final Codec<List<StatePropertiesPredicate.PropertyMatcher>> PROPERTIES_CODEC = Codec.unboundedMap(
          Codec.STRING, StatePropertiesPredicate.ValueMatcher.CODEC
       )
@@ -36,16 +31,16 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       );
    public static final Codec<StatePropertiesPredicate> CODEC = PROPERTIES_CODEC.xmap(StatePropertiesPredicate::new, StatePropertiesPredicate::properties);
    public static final StreamCodec<ByteBuf, StatePropertiesPredicate> STREAM_CODEC = StatePropertiesPredicate.PropertyMatcher.STREAM_CODEC
-      .<List<StatePropertiesPredicate.PropertyMatcher>>apply(ByteBufCodecs.list())
+      .apply(ByteBufCodecs.list())
       .map(StatePropertiesPredicate::new, StatePropertiesPredicate::properties);
 
-   public StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMatcher> var1) {
+   public StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMatcher> properties) {
       super();
-      this.properties = var1;
+      this.properties = (List<StatePropertiesPredicate.PropertyMatcher>)properties;
    }
 
    public <S extends StateHolder<?, S>> boolean matches(StateDefinition<?, S> var1, S var2) {
-      for(StatePropertiesPredicate.PropertyMatcher var4 : this.properties) {
+      for (StatePropertiesPredicate.PropertyMatcher var4 : this.properties) {
          if (!var4.match(var1, (S)var2)) {
             return false;
          }
@@ -63,7 +58,7 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
    }
 
    public Optional<String> checkState(StateDefinition<?, ?> var1) {
-      for(StatePropertiesPredicate.PropertyMatcher var3 : this.properties) {
+      for (StatePropertiesPredicate.PropertyMatcher var3 : this.properties) {
          Optional var4 = var3.checkState(var1);
          if (var4.isPresent()) {
             return var4;
@@ -106,16 +101,15 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       }
    }
 
-   static record ExactMatcher(String e) implements StatePropertiesPredicate.ValueMatcher {
-      private final String value;
+   static record ExactMatcher(String value) implements StatePropertiesPredicate.ValueMatcher {
       public static final Codec<StatePropertiesPredicate.ExactMatcher> CODEC = Codec.STRING
          .xmap(StatePropertiesPredicate.ExactMatcher::new, StatePropertiesPredicate.ExactMatcher::value);
       public static final StreamCodec<ByteBuf, StatePropertiesPredicate.ExactMatcher> STREAM_CODEC = ByteBufCodecs.STRING_UTF8
          .map(StatePropertiesPredicate.ExactMatcher::new, StatePropertiesPredicate.ExactMatcher::value);
 
-      ExactMatcher(String var1) {
+      ExactMatcher(String value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       @Override
@@ -126,9 +120,7 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       }
    }
 
-   static record PropertyMatcher(String b, StatePropertiesPredicate.ValueMatcher c) {
-      private final String name;
-      private final StatePropertiesPredicate.ValueMatcher valueMatcher;
+   static record PropertyMatcher(String name, StatePropertiesPredicate.ValueMatcher valueMatcher) {
       public static final StreamCodec<ByteBuf, StatePropertiesPredicate.PropertyMatcher> STREAM_CODEC = StreamCodec.composite(
          ByteBufCodecs.STRING_UTF8,
          StatePropertiesPredicate.PropertyMatcher::name,
@@ -137,10 +129,10 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
          StatePropertiesPredicate.PropertyMatcher::new
       );
 
-      PropertyMatcher(String var1, StatePropertiesPredicate.ValueMatcher var2) {
+      PropertyMatcher(String name, StatePropertiesPredicate.ValueMatcher valueMatcher) {
          super();
-         this.name = var1;
-         this.valueMatcher = var2;
+         this.name = name;
+         this.valueMatcher = valueMatcher;
       }
 
       public <S extends StateHolder<?, S>> boolean match(StateDefinition<?, S> var1, S var2) {
@@ -154,13 +146,11 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       }
    }
 
-   static record RangedMatcher(Optional<String> e, Optional<String> f) implements StatePropertiesPredicate.ValueMatcher {
-      private final Optional<String> minValue;
-      private final Optional<String> maxValue;
+   static record RangedMatcher(Optional<String> minValue, Optional<String> maxValue) implements StatePropertiesPredicate.ValueMatcher {
       public static final Codec<StatePropertiesPredicate.RangedMatcher> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(Codec.STRING, "min").forGetter(StatePropertiesPredicate.RangedMatcher::minValue),
-                  ExtraCodecs.strictOptionalField(Codec.STRING, "max").forGetter(StatePropertiesPredicate.RangedMatcher::maxValue)
+                  Codec.STRING.optionalFieldOf("min").forGetter(StatePropertiesPredicate.RangedMatcher::minValue),
+                  Codec.STRING.optionalFieldOf("max").forGetter(StatePropertiesPredicate.RangedMatcher::maxValue)
                )
                .apply(var0, StatePropertiesPredicate.RangedMatcher::new)
       );
@@ -172,10 +162,10 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
          StatePropertiesPredicate.RangedMatcher::new
       );
 
-      private RangedMatcher(Optional<String> var1, Optional<String> var2) {
+      private RangedMatcher(Optional<String> minValue, Optional<String> maxValue) {
          super();
-         this.minValue = var1;
-         this.maxValue = var2;
+         this.minValue = minValue;
+         this.maxValue = maxValue;
       }
 
       @Override
@@ -203,7 +193,7 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       Codec<StatePropertiesPredicate.ValueMatcher> CODEC = Codec.either(
             StatePropertiesPredicate.ExactMatcher.CODEC, StatePropertiesPredicate.RangedMatcher.CODEC
          )
-         .xmap(var0 -> (StatePropertiesPredicate.ValueMatcher)var0.map(var0x -> var0x, var0x -> var0x), var0 -> {
+         .xmap(Either::unwrap, var0 -> {
             if (var0 instanceof StatePropertiesPredicate.ExactMatcher var1) {
                return Either.left(var1);
             } else if (var0 instanceof StatePropertiesPredicate.RangedMatcher var2) {
@@ -215,7 +205,7 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       StreamCodec<ByteBuf, StatePropertiesPredicate.ValueMatcher> STREAM_CODEC = ByteBufCodecs.either(
             StatePropertiesPredicate.ExactMatcher.STREAM_CODEC, StatePropertiesPredicate.RangedMatcher.STREAM_CODEC
          )
-         .map(var0 -> (StatePropertiesPredicate.ValueMatcher)var0.map(var0x -> var0x, var0x -> var0x), var0 -> {
+         .map(Either::unwrap, var0 -> {
             if (var0 instanceof StatePropertiesPredicate.ExactMatcher var1) {
                return Either.left(var1);
             } else if (var0 instanceof StatePropertiesPredicate.RangedMatcher var2) {

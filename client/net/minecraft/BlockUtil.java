@@ -31,14 +31,14 @@ public class BlockUtil {
       var14[var11] = new BlockUtil.IntBounds(getLimit(var5, var6.set(var0), var9, var4), getLimit(var5, var6.set(var0), var10, var4));
       int var15 = var14[var11].min;
 
-      for(int var16 = 1; var16 <= var11; ++var16) {
+      for (int var16 = 1; var16 <= var11; var16++) {
          BlockUtil.IntBounds var17 = var14[var13 - (var16 - 1)];
          var14[var13 - var16] = new BlockUtil.IntBounds(
             getLimit(var5, var6.set(var0).move(var7, var16), var9, var17.min), getLimit(var5, var6.set(var0).move(var7, var16), var10, var17.max)
          );
       }
 
-      for(int var26 = 1; var26 <= var12; ++var26) {
+      for (int var26 = 1; var26 <= var12; var26++) {
          BlockUtil.IntBounds var28 = var14[var13 + var26 - 1];
          var14[var13 + var26] = new BlockUtil.IntBounds(
             getLimit(var5, var6.set(var0).move(var8, var26), var9, var28.min), getLimit(var5, var6.set(var0).move(var8, var26), var10, var28.max)
@@ -51,8 +51,8 @@ public class BlockUtil {
       int var19 = 0;
       int[] var20 = new int[var14.length];
 
-      for(int var21 = var15; var21 >= 0; --var21) {
-         for(int var22 = 0; var22 < var14.length; ++var22) {
+      for (int var21 = var15; var21 >= 0; var21--) {
+         for (int var22 = 0; var22 < var14.length; var22++) {
             BlockUtil.IntBounds var23 = var14[var22];
             int var24 = var15 - var23.min;
             int var25 = var15 + var23.max;
@@ -62,7 +62,7 @@ public class BlockUtil {
          Pair var30 = getMaxRectangleLocation(var20);
          BlockUtil.IntBounds var31 = (BlockUtil.IntBounds)var30.getFirst();
          int var32 = 1 + var31.max - var31.min;
-         int var33 = var30.getSecond();
+         int var33 = (Integer)var30.getSecond();
          if (var32 * var33 > var18 * var19) {
             var27 = var31.min;
             var29 = var21;
@@ -77,8 +77,8 @@ public class BlockUtil {
    private static int getLimit(Predicate<BlockPos> var0, BlockPos.MutableBlockPos var1, Direction var2, int var3) {
       int var4 = 0;
 
-      while(var4 < var3 && var0.test(var1.move(var2))) {
-         ++var4;
+      while (var4 < var3 && var0.test(var1.move(var2))) {
+         var4++;
       }
 
       return var4;
@@ -92,10 +92,10 @@ public class BlockUtil {
       IntArrayList var4 = new IntArrayList();
       var4.push(0);
 
-      for(int var5 = 1; var5 <= var0.length; ++var5) {
+      for (int var5 = 1; var5 <= var0.length; var5++) {
          int var6 = var5 == var0.length ? 0 : var0[var5];
 
-         while(!var4.isEmpty()) {
+         while (!var4.isEmpty()) {
             int var7 = var0[var4.topInt()];
             if (var6 >= var7) {
                var4.push(var5);
@@ -126,7 +126,7 @@ public class BlockUtil {
       do {
          var5.move(var3);
          var6 = var0.getBlockState(var5);
-      } while(var6.is(var2));
+      } while (var6.is(var2));
 
       return var6.is(var4) ? Optional.of(var5) : Optional.empty();
    }

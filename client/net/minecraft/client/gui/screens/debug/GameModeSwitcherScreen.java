@@ -61,7 +61,7 @@ public class GameModeSwitcherScreen extends Screen {
       super.init();
       this.currentlyHovered = this.previousHovered;
 
-      for(int var1 = 0; var1 < GameModeSwitcherScreen.GameModeIcon.VALUES.length; ++var1) {
+      for (int var1 = 0; var1 < GameModeSwitcherScreen.GameModeIcon.VALUES.length; var1++) {
          GameModeSwitcherScreen.GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.VALUES[var1];
          this.slots.add(new GameModeSwitcherScreen.GameModeSlot(var2, this.width / 2 - ALL_SLOTS_WIDTH / 2 + var1 * 31, this.height / 2 - 31));
       }
@@ -87,7 +87,7 @@ public class GameModeSwitcherScreen extends Screen {
 
          boolean var7 = this.firstMouseX == var2 && this.firstMouseY == var3;
 
-         for(GameModeSwitcherScreen.GameModeSlot var9 : this.slots) {
+         for (GameModeSwitcherScreen.GameModeSlot var9 : this.slots) {
             var9.render(var1, var2, var3, var4);
             var9.setSelected(this.currentlyHovered == var9.icon);
             if (!var7 && var9.isHoveredOrFocused()) {
@@ -141,7 +141,7 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    static enum GameModeIcon {
-      CREATIVE(Component.translatable("gameMode.creative"), "gamemode creative", new ItemStack(Blocks.PEELGRASS_BLOCK)),
+      CREATIVE(Component.translatable("gameMode.creative"), "gamemode creative", new ItemStack(Blocks.GRASS_BLOCK)),
       SURVIVAL(Component.translatable("gameMode.survival"), "gamemode survival", new ItemStack(Items.IRON_SWORD)),
       ADVENTURE(Component.translatable("gameMode.adventure"), "gamemode adventure", new ItemStack(Items.MAP)),
       SPECTATOR(Component.translatable("gameMode.spectator"), "gamemode spectator", new ItemStack(Items.ENDER_EYE));
@@ -172,7 +172,7 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       GameModeSwitcherScreen.GameModeIcon getNext() {
-         return switch(this) {
+         return switch (this) {
             case CREATIVE -> SURVIVAL;
             case SURVIVAL -> ADVENTURE;
             case ADVENTURE -> SPECTATOR;
@@ -181,7 +181,7 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       static GameModeSwitcherScreen.GameModeIcon getFromGameType(GameType var0) {
-         return switch(var0) {
+         return switch (var0) {
             case SPECTATOR -> SPECTATOR;
             case SURVIVAL -> SURVIVAL;
             case CREATIVE -> CREATIVE;

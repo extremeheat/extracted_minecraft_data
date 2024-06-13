@@ -5,7 +5,6 @@ import com.google.common.primitives.Longs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 import java.time.Instant;
@@ -14,11 +13,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 
-public record SignedMessageBody(String b, Instant c, long d, LastSeenMessages e) {
-   private final String content;
-   private final Instant timeStamp;
-   private final long salt;
-   private final LastSeenMessages lastSeen;
+public record SignedMessageBody(String content, Instant timeStamp, long salt, LastSeenMessages lastSeen) {
    public static final MapCodec<SignedMessageBody> MAP_CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Codec.STRING.fieldOf("content").forGetter(SignedMessageBody::content),
@@ -29,12 +24,12 @@ public record SignedMessageBody(String b, Instant c, long d, LastSeenMessages e)
             .apply(var0, SignedMessageBody::new)
    );
 
-   public SignedMessageBody(String var1, Instant var2, long var3, LastSeenMessages var5) {
+   public SignedMessageBody(String content, Instant timeStamp, long salt, LastSeenMessages lastSeen) {
       super();
-      this.content = var1;
-      this.timeStamp = var2;
-      this.salt = var3;
-      this.lastSeen = var5;
+      this.content = content;
+      this.timeStamp = timeStamp;
+      this.salt = salt;
+      this.lastSeen = lastSeen;
    }
 
    public static SignedMessageBody unsigned(String var0) {
@@ -54,22 +49,17 @@ public record SignedMessageBody(String b, Instant c, long d, LastSeenMessages e)
       return new SignedMessageBody.Packed(this.content, this.timeStamp, this.salt, this.lastSeen.pack(var1));
    }
 
-   public static record Packed(String a, Instant b, long c, LastSeenMessages.Packed d) {
-      private final String content;
-      private final Instant timeStamp;
-      private final long salt;
-      private final LastSeenMessages.Packed lastSeen;
-
+   public static record Packed(String content, Instant timeStamp, long salt, LastSeenMessages.Packed lastSeen) {
       public Packed(FriendlyByteBuf var1) {
          this(var1.readUtf(256), var1.readInstant(), var1.readLong(), new LastSeenMessages.Packed(var1));
       }
 
-      public Packed(String var1, Instant var2, long var3, LastSeenMessages.Packed var5) {
+      public Packed(String content, Instant timeStamp, long salt, LastSeenMessages.Packed lastSeen) {
          super();
-         this.content = var1;
-         this.timeStamp = var2;
-         this.salt = var3;
-         this.lastSeen = var5;
+         this.content = content;
+         this.timeStamp = timeStamp;
+         this.salt = salt;
+         this.lastSeen = lastSeen;
       }
 
       public void write(FriendlyByteBuf var1) {

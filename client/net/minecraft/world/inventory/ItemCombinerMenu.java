@@ -2,13 +2,11 @@ package net.minecraft.world.inventory;
 
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class ItemCombinerMenu extends AbstractContainerMenu {
@@ -41,7 +39,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    private void createInputSlots(ItemCombinerMenuSlotDefinition var1) {
-      for(final ItemCombinerMenuSlotDefinition.SlotDefinition var3 : var1.getSlots()) {
+      for (final ItemCombinerMenuSlotDefinition.SlotDefinition var3 : var1.getSlots()) {
          this.addSlot(new Slot(this.inputSlots, var3.slotIndex(), var3.x(), var3.y()) {
             @Override
             public boolean mayPlace(ItemStack var1) {
@@ -71,13 +69,13 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    private void createInventorySlots(Inventory var1) {
-      for(int var2 = 0; var2 < 3; ++var2) {
-         for(int var3 = 0; var3 < 9; ++var3) {
+      for (int var2 = 0; var2 < 3; var2++) {
+         for (int var3 = 0; var3 < 9; var3++) {
             this.addSlot(new Slot(var1, var3 + var2 * 9 + 9, 8 + var3 * 18, 84 + var2 * 18));
          }
       }
 
-      for(int var4 = 0; var4 < 9; ++var4) {
+      for (int var4 = 0; var4 < 9; var4++) {
          this.addSlot(new Slot(var1, var4, 8 + var4 * 18, 142));
       }
    }
@@ -112,13 +110,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
 
    @Override
    public boolean stillValid(Player var1) {
-      return this.access
-         .evaluate(
-            (var2, var3) -> !this.isValidBlock(var2.getBlockState(var3))
-                  ? false
-                  : var1.distanceToSqr((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5) <= 64.0,
-            true
-         );
+      return this.access.evaluate((var2, var3) -> !this.isValidBlock(var2.getBlockState(var3)) ? false : var1.canInteractWithBlock(var3, 4.0), true);
    }
 
    @Override

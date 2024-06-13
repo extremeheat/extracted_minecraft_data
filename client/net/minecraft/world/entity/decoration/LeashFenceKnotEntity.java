@@ -87,7 +87,7 @@ public class LeashFenceKnotEntity extends HangingEntity {
                Mob.class, new AABB(this.getX() - 7.0, this.getY() - 7.0, this.getZ() - 7.0, this.getX() + 7.0, this.getY() + 7.0, this.getZ() + 7.0)
             );
 
-         for(Mob var8 : var6) {
+         for (Mob var8 : var6) {
             if (var8.getLeashHolder() == var1) {
                var8.setLeashedTo(this, true);
                var3 = true;
@@ -98,7 +98,7 @@ public class LeashFenceKnotEntity extends HangingEntity {
          if (!var3) {
             this.discard();
             if (var1.getAbilities().instabuild) {
-               for(Mob var9 : var6) {
+               for (Mob var9 : var6) {
                   if (var9.isLeashed() && var9.getLeashHolder() == this) {
                      var9.dropLeash(true, false);
                      var10 = true;
@@ -125,7 +125,7 @@ public class LeashFenceKnotEntity extends HangingEntity {
       int var3 = var1.getY();
       int var4 = var1.getZ();
 
-      for(LeashFenceKnotEntity var7 : var0.getEntitiesOfClass(
+      for (LeashFenceKnotEntity var7 : var0.getEntitiesOfClass(
          LeashFenceKnotEntity.class,
          new AABB((double)var2 - 1.0, (double)var3 - 1.0, (double)var4 - 1.0, (double)var2 + 1.0, (double)var3 + 1.0, (double)var4 + 1.0)
       )) {

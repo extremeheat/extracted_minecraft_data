@@ -14,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GrowingPlantHeadBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -55,15 +54,12 @@ public class ShearsItem extends Item {
          || var3.is(BlockTags.WOOL);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
-      Block var5 = var4.getBlock();
-      if (var5 instanceof GrowingPlantHeadBlock var6 && !var6.isMaxAge(var4)) {
+      if (var4.getBlock() instanceof GrowingPlantHeadBlock var6 && !var6.isMaxAge(var4)) {
          Player var7 = var1.getPlayer();
          ItemStack var8 = var1.getItemInHand();
          if (var7 instanceof ServerPlayer) {

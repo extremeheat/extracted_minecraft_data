@@ -1,7 +1,6 @@
 package net.minecraft.network.chat;
 
 import com.google.common.collect.Lists;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
@@ -53,25 +52,8 @@ public class MutableComponent implements Component {
       return this.append(Component.literal(var1));
    }
 
-   public MutableComponent append(Component... var1) {
-      this.siblings.addAll(Arrays.asList(var1));
-      return this;
-   }
-
-   public MutableComponent append(Object... var1) {
-      for(Object var5 : var1) {
-         if (var5 instanceof Component var7) {
-            this.append((Component)var7);
-         } else {
-            if (!(var5 instanceof String)) {
-               throw new IllegalArgumentException("Don't know how to turn " + var5 + " into a Component");
-            }
-
-            String var6 = (String)var5;
-            this.append(Component.literal(var6));
-         }
-      }
-
+   public MutableComponent append(Component var1) {
+      this.siblings.add(var1);
       return this;
    }
 
@@ -115,11 +97,10 @@ public class MutableComponent implements Component {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof MutableComponent)) {
-         return false;
       } else {
-         MutableComponent var2 = (MutableComponent)var1;
-         return this.contents.equals(var2.contents) && this.style.equals(var2.style) && this.siblings.equals(var2.siblings);
+         return !(var1 instanceof MutableComponent var2)
+            ? false
+            : this.contents.equals(var2.contents) && this.style.equals(var2.style) && this.siblings.equals(var2.siblings);
       }
    }
 

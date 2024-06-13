@@ -44,7 +44,7 @@ public class BoatItem extends Item {
          if (!var9.isEmpty()) {
             Vec3 var10 = var2.getEyePosition();
 
-            for(Entity var12 : var9) {
+            for (Entity var12 : var9) {
                AABB var13 = var12.getBoundingBox().inflate((double)var12.getPickRadius());
                if (var13.contains(var10)) {
                   return InteractionResultHolder.pass(var4);
@@ -78,7 +78,7 @@ public class BoatItem extends Item {
       Vec3 var5 = var2.getLocation();
       Object var6 = this.hasChest ? new ChestBoat(var1, var5.x, var5.y, var5.z) : new Boat(var1, var5.x, var5.y, var5.z);
       if (var1 instanceof ServerLevel var7) {
-         EntityType.createDefaultStackConfig((ServerLevel)var7, var3, var4).accept(var6);
+         EntityType.createDefaultStackConfig(var7, var3, var4).accept(var6);
       }
 
       return (Boat)var6;

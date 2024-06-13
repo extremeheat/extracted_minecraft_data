@@ -37,7 +37,7 @@ public class KnowledgeBookItem extends Item {
             RecipeManager var6 = var1.getServer().getRecipeManager();
             ArrayList var7 = new ArrayList(var5.size());
 
-            for(ResourceLocation var9 : var5) {
+            for (ResourceLocation var9 : var5) {
                Optional var10 = var6.byKey(var9);
                if (!var10.isPresent()) {
                   LOGGER.error("Invalid recipe: {}", var9);

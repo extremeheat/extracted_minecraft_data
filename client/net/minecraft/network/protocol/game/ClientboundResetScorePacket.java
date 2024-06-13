@@ -6,10 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundResetScorePacket(String b, @Nullable String c) implements Packet<ClientGamePacketListener> {
-   private final String owner;
-   @Nullable
-   private final String objectiveName;
+public record ClientboundResetScorePacket(String owner, @Nullable String objectiveName) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundResetScorePacket> STREAM_CODEC = Packet.codec(
       ClientboundResetScorePacket::write, ClientboundResetScorePacket::new
    );
@@ -18,10 +15,10 @@ public record ClientboundResetScorePacket(String b, @Nullable String c) implemen
       this(var1.readUtf(), var1.readNullable(FriendlyByteBuf::readUtf));
    }
 
-   public ClientboundResetScorePacket(String var1, @Nullable String var2) {
+   public ClientboundResetScorePacket(String owner, @Nullable String objectiveName) {
       super();
-      this.owner = var1;
-      this.objectiveName = var2;
+      this.owner = owner;
+      this.objectiveName = objectiveName;
    }
 
    private void write(FriendlyByteBuf var1) {

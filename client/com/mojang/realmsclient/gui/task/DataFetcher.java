@@ -40,14 +40,12 @@ public class DataFetcher {
       return new DataFetcher.Subscription();
    }
 
-   static record ComputationResult<T>(Either<T, Exception> a, long b) {
-      private final Either<T, Exception> value;
-      final long time;
+   static record ComputationResult<T>(Either<T, Exception> value, long time) {
 
-      ComputationResult(Either<T, Exception> var1, long var2) {
+      ComputationResult(Either<T, Exception> value, long time) {
          super();
-         this.value = var1;
-         this.time = var2;
+         this.value = value;
+         this.time = time;
       }
    }
 
@@ -103,32 +101,30 @@ public class DataFetcher {
       }
 
       public void forceUpdate() {
-         for(DataFetcher.SubscribedTask var2 : this.subscriptions) {
+         for (DataFetcher.SubscribedTask var2 : this.subscriptions) {
             var2.runCallback();
          }
       }
 
       public void tick() {
-         for(DataFetcher.SubscribedTask var2 : this.subscriptions) {
+         for (DataFetcher.SubscribedTask var2 : this.subscriptions) {
             var2.update(DataFetcher.this.timeSource.get(DataFetcher.this.resolution));
          }
       }
 
       public void reset() {
-         for(DataFetcher.SubscribedTask var2 : this.subscriptions) {
+         for (DataFetcher.SubscribedTask var2 : this.subscriptions) {
             var2.reset();
          }
       }
    }
 
-   static record SuccessfulComputationResult<T>(T a, long b) {
-      final T value;
-      final long time;
+   static record SuccessfulComputationResult<T>(T value, long time) {
 
-      SuccessfulComputationResult(T var1, long var2) {
+      SuccessfulComputationResult(T value, long time) {
          super();
-         this.value = (T)var1;
-         this.time = var2;
+         this.value = (T)value;
+         this.time = time;
       }
    }
 
@@ -153,7 +149,7 @@ public class DataFetcher {
 
       void updateIfNeeded(long var1) {
          if (this.pendingTask != null) {
-            DataFetcher.ComputationResult var3 = (DataFetcher.ComputationResult)this.pendingTask.getNow((T)null);
+            DataFetcher.ComputationResult var3 = this.pendingTask.getNow(null);
             if (var3 == null) {
                return;
             }
@@ -164,21 +160,21 @@ public class DataFetcher {
                this.lastResult = new DataFetcher.SuccessfulComputationResult<>((T)var3x, var4);
                this.nextUpdate = var4 + this.period * this.repeatStrategy.delayCyclesAfterSuccess();
             }).ifRight(var3x -> {
-               long var4xx = this.repeatStrategy.delayCyclesAfterFailure();
-               DataFetcher.LOGGER.warn("Failed to process task {}, will repeat after {} cycles", new Object[]{this.id, var4xx, var3x});
-               this.nextUpdate = var4 + this.period * var4xx;
+               long var4x = this.repeatStrategy.delayCyclesAfterFailure();
+               DataFetcher.LOGGER.warn("Failed to process task {}, will repeat after {} cycles", new Object[]{this.id, var4x, var3x});
+               this.nextUpdate = var4 + this.period * var4x;
             });
          }
 
          if (this.nextUpdate <= var1) {
             this.pendingTask = CompletableFuture.supplyAsync(() -> {
                try {
-                  Object var1xx = this.updater.call();
+                  Object var1x = this.updater.call();
                   long var5 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new DataFetcher.ComputationResult(Either.left(var1xx), var5);
-               } catch (Exception var4xx) {
+                  return new DataFetcher.ComputationResult<>(Either.left(var1x), var5);
+               } catch (Exception var4x) {
                   long var2 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new DataFetcher.ComputationResult(Either.right(var4xx), var2);
+                  return new DataFetcher.ComputationResult<>(Either.right(var4x), var2);
                }
             }, DataFetcher.this.executor);
          }

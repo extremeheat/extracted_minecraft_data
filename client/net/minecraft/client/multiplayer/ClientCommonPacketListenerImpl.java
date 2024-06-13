@@ -67,7 +67,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    @Nullable
    protected final Screen postDisconnectScreen;
    protected boolean keepResourcePacks;
-   private final List<ClientCommonPacketListenerImpl.DeferredPacket> deferredPackets = new ArrayList();
+   private final List<ClientCommonPacketListenerImpl.DeferredPacket> deferredPackets = new ArrayList<>();
    protected final Map<ResourceLocation, byte[]> serverCookies;
 
    protected ClientCommonPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
@@ -92,8 +92,6 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.send(new ServerboundPongPacket(var1.getId()));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleCustomPayload(ClientboundCustomPayloadPacket var1) {
       CustomPacketPayload var2 = var1.payload();
@@ -192,7 +190,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected void sendDeferredPackets() {
       Iterator var1 = this.deferredPackets.iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          ClientCommonPacketListenerImpl.DeferredPacket var2 = (ClientCommonPacketListenerImpl.DeferredPacket)var1.next();
          if (var2.sendCondition().getAsBoolean()) {
             this.send(var2.packet);
@@ -249,16 +247,13 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          );
    }
 
-   static record DeferredPacket(Packet<? extends ServerboundPacketListener> a, BooleanSupplier b, long c) {
-      final Packet<? extends ServerboundPacketListener> packet;
-      private final BooleanSupplier sendCondition;
-      private final long expirationTime;
+   static record DeferredPacket(Packet<? extends ServerboundPacketListener> packet, BooleanSupplier sendCondition, long expirationTime) {
 
-      DeferredPacket(Packet<? extends ServerboundPacketListener> var1, BooleanSupplier var2, long var3) {
+      DeferredPacket(Packet<? extends ServerboundPacketListener> packet, BooleanSupplier sendCondition, long expirationTime) {
          super();
-         this.packet = var1;
-         this.sendCondition = var2;
-         this.expirationTime = var3;
+         this.packet = packet;
+         this.sendCondition = sendCondition;
+         this.expirationTime = expirationTime;
       }
    }
 
@@ -277,26 +272,26 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          super(
             var5x -> {
                var2.setScreen(var3);
-               DownloadedPackSource var6xx = var2.getDownloadedPackSource();
+               DownloadedPackSource var6x = var2.getDownloadedPackSource();
                if (var5x) {
                   if (ClientCommonPacketListenerImpl.this.serverData != null) {
                      ClientCommonPacketListenerImpl.this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
                   }
-   
-                  var6xx.allowServerPacks();
+
+                  var6x.allowServerPacks();
                } else {
-                  var6xx.rejectServerPacks();
+                  var6x.rejectServerPacks();
                   if (var5) {
                      ClientCommonPacketListenerImpl.this.connection.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
                   } else if (ClientCommonPacketListenerImpl.this.serverData != null) {
                      ClientCommonPacketListenerImpl.this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
                   }
                }
-   
-               for(ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest var8 : var4) {
-                  var6xx.pushPack(var8.id, var8.url, var8.hash);
+
+               for (ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest var8 : var4) {
+                  var6x.pushPack(var8.id, var8.url, var8.hash);
                }
-   
+
                if (ClientCommonPacketListenerImpl.this.serverData != null) {
                   ServerList.saveSingleServer(ClientCommonPacketListenerImpl.this.serverData);
                }
@@ -323,16 +318,13 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          return ClientCommonPacketListenerImpl.this.new PackConfirmScreen(var1, this.parentScreen, var7, var5, var6);
       }
 
-      static record PendingRequest(UUID a, URL b, String c) {
-         final UUID id;
-         final URL url;
-         final String hash;
+      static record PendingRequest(UUID id, URL url, String hash) {
 
-         PendingRequest(UUID var1, URL var2, String var3) {
+         PendingRequest(UUID id, URL url, String hash) {
             super();
-            this.id = var1;
-            this.url = var2;
-            this.hash = var3;
+            this.id = id;
+            this.url = url;
+            this.hash = hash;
          }
       }
    }

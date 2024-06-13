@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -46,7 +45,7 @@ public class WardenSpawnTrackerCommand {
    }
 
    private static int setWarningLevel(CommandSourceStack var0, Collection<? extends Player> var1, int var2) {
-      for(Player var4 : var1) {
+      for (Player var4 : var1) {
          var4.getWardenSpawnTracker().ifPresent(var1x -> var1x.setWarningLevel(var2));
       }
 
@@ -62,7 +61,7 @@ public class WardenSpawnTrackerCommand {
    }
 
    private static int resetTracker(CommandSourceStack var0, Collection<? extends Player> var1) {
-      for(Player var3 : var1) {
+      for (Player var3 : var1) {
          var3.getWardenSpawnTracker().ifPresent(WardenSpawnTracker::reset);
       }
 

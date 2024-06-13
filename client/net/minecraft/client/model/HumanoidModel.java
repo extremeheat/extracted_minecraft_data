@@ -101,7 +101,7 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
 
    public void prepareMobModel(T var1, float var2, float var3, float var4) {
       this.swimAmount = var1.getSwimAmount(var4);
-      super.prepareMobModel((T)var1, var2, var3, var4);
+      super.prepareMobModel(var1, var2, var3, var4);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
@@ -257,20 +257,16 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
    }
 
    private void poseRightArm(T var1) {
-      switch(this.rightArmPose) {
+      switch (this.rightArmPose) {
          case EMPTY:
             this.rightArm.yRot = 0.0F;
-            break;
-         case BLOCK:
-            this.poseBlockingArm(this.rightArm, true);
             break;
          case ITEM:
             this.rightArm.xRot = this.rightArm.xRot * 0.5F - 0.31415927F;
             this.rightArm.yRot = 0.0F;
             break;
-         case THROW_SPEAR:
-            this.rightArm.xRot = this.rightArm.xRot * 0.5F - 3.1415927F;
-            this.rightArm.yRot = 0.0F;
+         case BLOCK:
+            this.poseBlockingArm(this.rightArm, true);
             break;
          case BOW_AND_ARROW:
             this.rightArm.yRot = -0.1F + this.head.yRot;
@@ -278,15 +274,15 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
             this.rightArm.xRot = -1.5707964F + this.head.xRot;
             this.leftArm.xRot = -1.5707964F + this.head.xRot;
             break;
+         case THROW_SPEAR:
+            this.rightArm.xRot = this.rightArm.xRot * 0.5F - 3.1415927F;
+            this.rightArm.yRot = 0.0F;
+            break;
          case CROSSBOW_CHARGE:
             AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, var1, true);
             break;
          case CROSSBOW_HOLD:
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, true);
-            break;
-         case BRUSH:
-            this.rightArm.xRot = this.rightArm.xRot * 0.5F - 0.62831855F;
-            this.rightArm.yRot = 0.0F;
             break;
          case SPYGLASS:
             this.rightArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (var1.isCrouching() ? 0.2617994F : 0.0F), -2.4F, 3.3F);
@@ -295,24 +291,24 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
          case TOOT_HORN:
             this.rightArm.xRot = Mth.clamp(this.head.xRot, -1.2F, 1.2F) - 1.4835298F;
             this.rightArm.yRot = this.head.yRot - 0.5235988F;
+            break;
+         case BRUSH:
+            this.rightArm.xRot = this.rightArm.xRot * 0.5F - 0.62831855F;
+            this.rightArm.yRot = 0.0F;
       }
    }
 
    private void poseLeftArm(T var1) {
-      switch(this.leftArmPose) {
+      switch (this.leftArmPose) {
          case EMPTY:
             this.leftArm.yRot = 0.0F;
-            break;
-         case BLOCK:
-            this.poseBlockingArm(this.leftArm, false);
             break;
          case ITEM:
             this.leftArm.xRot = this.leftArm.xRot * 0.5F - 0.31415927F;
             this.leftArm.yRot = 0.0F;
             break;
-         case THROW_SPEAR:
-            this.leftArm.xRot = this.leftArm.xRot * 0.5F - 3.1415927F;
-            this.leftArm.yRot = 0.0F;
+         case BLOCK:
+            this.poseBlockingArm(this.leftArm, false);
             break;
          case BOW_AND_ARROW:
             this.rightArm.yRot = -0.1F + this.head.yRot - 0.4F;
@@ -320,15 +316,15 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
             this.rightArm.xRot = -1.5707964F + this.head.xRot;
             this.leftArm.xRot = -1.5707964F + this.head.xRot;
             break;
+         case THROW_SPEAR:
+            this.leftArm.xRot = this.leftArm.xRot * 0.5F - 3.1415927F;
+            this.leftArm.yRot = 0.0F;
+            break;
          case CROSSBOW_CHARGE:
             AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, var1, false);
             break;
          case CROSSBOW_HOLD:
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, false);
-            break;
-         case BRUSH:
-            this.leftArm.xRot = this.leftArm.xRot * 0.5F - 0.62831855F;
-            this.leftArm.yRot = 0.0F;
             break;
          case SPYGLASS:
             this.leftArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (var1.isCrouching() ? 0.2617994F : 0.0F), -2.4F, 3.3F);
@@ -337,6 +333,10 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
          case TOOT_HORN:
             this.leftArm.xRot = Mth.clamp(this.head.xRot, -1.2F, 1.2F) - 1.4835298F;
             this.leftArm.yRot = this.head.yRot + 0.5235988F;
+            break;
+         case BRUSH:
+            this.leftArm.xRot = this.leftArm.xRot * 0.5F - 0.62831855F;
+            this.leftArm.yRot = 0.0F;
       }
    }
 
@@ -359,9 +359,9 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
          this.rightArm.x = -Mth.cos(this.body.yRot) * 5.0F;
          this.leftArm.z = -Mth.sin(this.body.yRot) * 5.0F;
          this.leftArm.x = Mth.cos(this.body.yRot) * 5.0F;
-         this.rightArm.yRot += this.body.yRot;
-         this.leftArm.yRot += this.body.yRot;
-         this.leftArm.xRot += this.body.yRot;
+         this.rightArm.yRot = this.rightArm.yRot + this.body.yRot;
+         this.leftArm.yRot = this.leftArm.yRot + this.body.yRot;
+         this.leftArm.xRot = this.leftArm.xRot + this.body.yRot;
          var5 = 1.0F - this.attackTime;
          var5 *= var5;
          var5 *= var5;
@@ -369,8 +369,8 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
          float var6 = Mth.sin(var5 * 3.1415927F);
          float var7 = Mth.sin(this.attackTime * 3.1415927F) * -(this.head.xRot - 0.7F) * 0.75F;
          var4.xRot -= var6 * 1.2F + var7;
-         var4.yRot += this.body.yRot * 2.0F;
-         var4.zRot += Mth.sin(this.attackTime * 3.1415927F) * -0.4F;
+         var4.yRot = var4.yRot + this.body.yRot * 2.0F;
+         var4.zRot = var4.zRot + Mth.sin(this.attackTime * 3.1415927F) * -0.4F;
       }
    }
 

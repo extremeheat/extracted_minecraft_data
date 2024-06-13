@@ -3,10 +3,8 @@ package net.minecraft.world.level.storage;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
-import com.mojang.serialization.DataResult.PartialResult;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -170,7 +168,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    public static <T> PrimaryLevelData parse(Dynamic<T> var0, LevelSettings var1, PrimaryLevelData.SpecialWorldProperty var2, WorldOptions var3, Lifecycle var4) {
       long var5 = var0.get("Time").asLong(0L);
       return new PrimaryLevelData(
-         (CompoundTag)CompoundTag.CODEC.parse(var0.get("Player").orElseEmptyMap()).result().orElse((T)null),
+         (CompoundTag)CompoundTag.CODEC.parse(var0.get("Player").orElseEmptyMap()).result().orElse(null),
          var0.get("WasModded").asBoolean(false),
          new BlockPos(var0.get("SpawnX").asInt(0), var0.get("SpawnY").asInt(0), var0.get("SpawnZ").asInt(0)),
          var0.get("SpawnAngle").asFloat(0.0F),
@@ -187,12 +185,12 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          WorldBorder.Settings.read(var0, WorldBorder.DEFAULT_SETTINGS),
          var0.get("WanderingTraderSpawnDelay").asInt(0),
          var0.get("WanderingTraderSpawnChance").asInt(0),
-         (UUID)var0.get("WanderingTraderId").read(UUIDUtil.CODEC).result().orElse((T)null),
+         (UUID)var0.get("WanderingTraderId").read(UUIDUtil.CODEC).result().orElse(null),
          var0.get("ServerBrands").asStream().flatMap(var0x -> var0x.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)),
          var0.get("removed_features").asStream().flatMap(var0x -> var0x.asString().result().stream()).collect(Collectors.toSet()),
          new TimerQueue<>(TimerCallbacks.SERVER_CALLBACKS, var0.get("ScheduledEvents").asStream()),
          (CompoundTag)var0.get("CustomBossEvents").orElseEmptyMap().getValue(),
-         (EndDragonFight.Data)var0.get("DragonFight").read(EndDragonFight.Data.CODEC).resultOrPartial(LOGGER::error).orElse((T)EndDragonFight.Data.DEFAULT),
+         var0.get("DragonFight").read(EndDragonFight.Data.CODEC).resultOrPartial(LOGGER::error).orElse(EndDragonFight.Data.DEFAULT),
          var1,
          var3,
          var2,
@@ -251,13 +249,15 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var2.putByte("Difficulty", (byte)this.settings.difficulty().getId());
       var2.putBoolean("DifficultyLocked", this.difficultyLocked);
       var2.put("GameRules", this.settings.gameRules().createTag());
-      var2.put("DragonFight", Util.getOrThrow(EndDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, this.endDragonFightData), IllegalStateException::new));
+      var2.put("DragonFight", (Tag)EndDragonFight.Data.CODEC.encodeStart(NbtOps.INSTANCE, this.endDragonFightData).getOrThrow());
       if (var3 != null) {
          var2.put("Player", var3);
       }
 
-      DataResult var6 = WorldDataConfiguration.CODEC.encodeStart(NbtOps.INSTANCE, this.settings.getDataConfiguration());
-      var6.get().ifLeft(var1x -> var2.merge((CompoundTag)var1x)).ifRight(var0 -> LOGGER.warn("Failed to encode configuration {}", var0.message()));
+      WorldDataConfiguration.CODEC
+         .encodeStart(NbtOps.INSTANCE, this.settings.getDataConfiguration())
+         .ifSuccess(var1x -> var2.merge((CompoundTag)var1x))
+         .ifError(var0 -> LOGGER.warn("Failed to encode configuration {}", var0.message()));
       if (this.customBossEvents != null) {
          var2.put("CustomBossEvents", this.customBossEvents);
       }

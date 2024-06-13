@@ -33,7 +33,7 @@ public abstract class AbstractDebugChart {
       int var11 = Math.max(0, this.sampleStorage.capacity() - (var3 - 2));
       int var12 = this.sampleStorage.size() - var11;
 
-      for(int var13 = 0; var13 < var12; ++var13) {
+      for (int var13 = 0; var13 < var12; var13++) {
          int var14 = var2 + var13 + 1;
          int var15 = var11 + var13;
          long var16 = this.getValueForAggregation(var15);

@@ -16,7 +16,6 @@ import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.item.AnimalArmorItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
 
@@ -39,14 +38,13 @@ public class WolfArmorLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
    public void render(PoseStack var1, MultiBufferSource var2, int var3, Wolf var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       if (var4.hasArmor()) {
          ItemStack var11 = var4.getBodyArmorItem();
-         Item var13 = var11.getItem();
-         if (var13 instanceof AnimalArmorItem var12) {
+         if (var11.getItem() instanceof AnimalArmorItem var12) {
             this.getParentModel().copyPropertiesTo(this.model);
             this.model.prepareMobModel(var4, var5, var6, var7);
             this.model.setupAnim(var4, var5, var6, var8, var9, var10);
-            VertexConsumer var14 = var2.getBuffer(RenderType.entityCutoutNoCull(((AnimalArmorItem)var12).getTexture()));
+            VertexConsumer var14 = var2.getBuffer(RenderType.entityCutoutNoCull(var12.getTexture()));
             this.model.renderToBuffer(var1, var14, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-            this.maybeRenderColoredLayer(var1, var2, var3, var11, (AnimalArmorItem)var12);
+            this.maybeRenderColoredLayer(var1, var2, var3, var11, var12);
             this.maybeRenderCracks(var1, var2, var3, var11);
          }
       }

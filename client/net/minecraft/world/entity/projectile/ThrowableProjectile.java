@@ -61,7 +61,7 @@ public abstract class ThrowableProjectile extends Projectile {
       }
 
       if (var1.getType() != HitResult.Type.MISS && !var2) {
-         this.onHit(var1);
+         this.hitOrDeflect(var1);
       }
 
       this.checkInsideBlocks();
@@ -72,7 +72,7 @@ public abstract class ThrowableProjectile extends Projectile {
       this.updateRotation();
       float var10;
       if (this.isInWater()) {
-         for(int var11 = 0; var11 < 4; ++var11) {
+         for (int var11 = 0; var11 < 4; var11++) {
             float var12 = 0.25F;
             this.level().addParticle(ParticleTypes.BUBBLE, var14 - var13.x * 0.25, var6 - var13.y * 0.25, var8 - var13.z * 0.25, var13.x, var13.y, var13.z);
          }

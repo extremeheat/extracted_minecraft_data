@@ -20,7 +20,7 @@ public class LocalSampleLogger extends AbstractSampleLogger implements SampleSto
       int var1 = this.wrapIndex(this.start + this.size);
       System.arraycopy(this.sample, 0, this.samples[var1], 0, this.sample.length);
       if (this.size < 240) {
-         ++this.size;
+         this.size++;
       } else {
          this.start = this.wrapIndex(this.start + 1);
       }

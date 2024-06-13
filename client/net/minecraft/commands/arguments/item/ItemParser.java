@@ -12,10 +12,8 @@ import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -73,7 +71,7 @@ public class ItemParser {
 
          @Override
          public <T> void visitComponent(DataComponentType<T> var1, T var2x) {
-            var3.set(var1, (T)var2x);
+            var3.set(var1, var2x);
          }
       });
       return new ItemParser.ItemResult(Objects.requireNonNull((Holder<Item>)var2.getValue(), "Parser gave no item"), var3.build());
@@ -104,14 +102,11 @@ public class ItemParser {
       return var3.resolveSuggestions(var1, var2);
    }
 
-   public static record ItemResult(Holder<Item> a, DataComponentMap b) {
-      private final Holder<Item> item;
-      private final DataComponentMap components;
-
-      public ItemResult(Holder<Item> var1, DataComponentMap var2) {
+   public static record ItemResult(Holder<Item> item, DataComponentMap components) {
+      public ItemResult(Holder<Item> item, DataComponentMap components) {
          super();
-         this.item = var1;
-         this.components = var2;
+         this.item = item;
+         this.components = components;
       }
    }
 
@@ -149,7 +144,7 @@ public class ItemParser {
          this.visitor.visitSuggestions(this::suggestComponentAssignment);
          ReferenceArraySet var1 = new ReferenceArraySet();
 
-         while(this.reader.canRead() && this.reader.peek() != ']') {
+         while (this.reader.canRead() && this.reader.peek() != ']') {
             this.reader.skipWhitespace();
             DataComponentType var2 = readComponentType(this.reader);
             if (!var1.add(var2)) {
@@ -200,7 +195,7 @@ public class ItemParser {
          int var2 = this.reader.getCursor();
          Tag var3 = new TagParser(this.reader).readValue();
          DataResult var4 = var1.codecOrThrow().parse(ItemParser.this.registryOps, var3);
-         this.visitor.visitComponent(var1, Util.getOrThrow(var4, var3x -> {
+         this.visitor.visitComponent(var1, var4.getOrThrow(var3x -> {
             this.reader.setCursor(var2);
             return ItemParser.ERROR_MALFORMED_COMPONENT.createWithContext(this.reader, var1.toString(), var3x);
          }));
@@ -238,8 +233,8 @@ public class ItemParser {
       private CompletableFuture<Suggestions> suggestComponentAssignment(SuggestionsBuilder var1) {
          String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
          SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var2, var0 -> var0.getKey().location(), var1x -> {
-            DataComponentType var2xx = var1x.getValue();
-            if (var2xx.codec() != null) {
+            DataComponentType var2x = var1x.getValue();
+            if (var2x.codec() != null) {
                ResourceLocation var3 = var1x.getKey().location();
                var1.suggest(var3.toString() + "=");
             }

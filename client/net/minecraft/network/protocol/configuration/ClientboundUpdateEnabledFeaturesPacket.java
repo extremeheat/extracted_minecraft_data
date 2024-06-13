@@ -8,8 +8,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
-public record ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> b) implements Packet<ClientConfigurationPacketListener> {
-   private final Set<ResourceLocation> features;
+public record ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> features) implements Packet<ClientConfigurationPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundUpdateEnabledFeaturesPacket> STREAM_CODEC = Packet.codec(
       ClientboundUpdateEnabledFeaturesPacket::write, ClientboundUpdateEnabledFeaturesPacket::new
    );
@@ -18,9 +17,9 @@ public record ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> b) im
       this(var1.readCollection(HashSet::new, FriendlyByteBuf::readResourceLocation));
    }
 
-   public ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> var1) {
+   public ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> features) {
       super();
-      this.features = var1;
+      this.features = features;
    }
 
    private void write(FriendlyByteBuf var1) {

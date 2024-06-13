@@ -11,7 +11,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.NetherPortalBlock;
@@ -76,7 +75,7 @@ public class PortalShape {
    private BlockPos calculateBottomLeft(BlockPos var1) {
       int var2 = Math.max(this.level.getMinBuildHeight(), var1.getY() - 21);
 
-      while(var1.getY() > var2 && isEmpty(this.level.getBlockState(var1.below()))) {
+      while (var1.getY() > var2 && isEmpty(this.level.getBlockState(var1.below()))) {
          var1 = var1.below();
       }
 
@@ -93,7 +92,7 @@ public class PortalShape {
    private int getDistanceUntilEdgeAboveFrame(BlockPos var1, Direction var2) {
       BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
 
-      for(int var4 = 0; var4 <= 21; ++var4) {
+      for (int var4 = 0; var4 <= 21; var4++) {
          var3.set(var1).move(var2, var4);
          BlockState var5 = this.level.getBlockState(var3);
          if (!isEmpty(var5)) {
@@ -119,7 +118,7 @@ public class PortalShape {
    }
 
    private boolean hasTopFrame(BlockPos.MutableBlockPos var1, int var2) {
-      for(int var3 = 0; var3 < this.width; ++var3) {
+      for (int var3 = 0; var3 < this.width; var3++) {
          BlockPos.MutableBlockPos var4 = var1.set(this.bottomLeft).move(Direction.UP, var2).move(this.rightDir, var3);
          if (!FRAME.test(this.level.getBlockState(var4), this.level, var4)) {
             return false;
@@ -130,7 +129,7 @@ public class PortalShape {
    }
 
    private int getDistanceUntilTop(BlockPos.MutableBlockPos var1) {
-      for(int var2 = 0; var2 < 21; ++var2) {
+      for (int var2 = 0; var2 < 21; var2++) {
          var1.set(this.bottomLeft).move(Direction.UP, var2).move(this.rightDir, -1);
          if (!FRAME.test(this.level.getBlockState(var1), this.level, var1)) {
             return var2;
@@ -141,7 +140,7 @@ public class PortalShape {
             return var2;
          }
 
-         for(int var3 = 0; var3 < this.width; ++var3) {
+         for (int var3 = 0; var3 < this.width; var3++) {
             var1.set(this.bottomLeft).move(Direction.UP, var2).move(this.rightDir, var3);
             BlockState var4 = this.level.getBlockState(var1);
             if (!isEmpty(var4)) {
@@ -149,7 +148,7 @@ public class PortalShape {
             }
 
             if (var4.is(Blocks.NETHER_PORTAL)) {
-               ++this.numPortalBlocks;
+               this.numPortalBlocks++;
             }
          }
       }

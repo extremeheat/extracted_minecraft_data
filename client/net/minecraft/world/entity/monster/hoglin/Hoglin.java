@@ -152,7 +152,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    @Override
    public Brain<Hoglin> getBrain() {
-      return super.getBrain();
+      return (Brain<Hoglin>)super.getBrain();
    }
 
    @Override
@@ -162,7 +162,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       this.level().getProfiler().pop();
       HoglinAi.updateActivity(this);
       if (this.isConverting()) {
-         ++this.timeInOverworld;
+         this.timeInOverworld++;
          if (this.timeInOverworld > 300) {
             this.makeSound(SoundEvents.HOGLIN_CONVERTED_TO_ZOMBIFIED);
             this.finishConversion((ServerLevel)this.level());
@@ -175,7 +175,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    @Override
    public void aiStep() {
       if (this.attackAnimationRemainingTicks > 0) {
-         --this.attackAnimationRemainingTicks;
+         this.attackAnimationRemainingTicks--;
       }
 
       super.aiStep();

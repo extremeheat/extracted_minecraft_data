@@ -18,12 +18,12 @@ public abstract class ReentrantBlockableEventLoop<R extends Runnable> extends Bl
 
    @Override
    public void doRunTask(R var1) {
-      ++this.reentrantCount;
+      this.reentrantCount++;
 
       try {
          super.doRunTask((R)var1);
       } finally {
-         --this.reentrantCount;
+         this.reentrantCount--;
       }
    }
 }

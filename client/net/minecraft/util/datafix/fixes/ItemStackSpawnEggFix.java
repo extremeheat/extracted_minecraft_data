@@ -10,7 +10,6 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,7 +44,6 @@ public class ItemStackSpawnEggFix extends DataFix {
       var0.put("minecraft:parrot", "minecraft:parrot_spawn_egg");
       var0.put("minecraft:pig", "minecraft:pig_spawn_egg");
       var0.put("minecraft:polar_bear", "minecraft:polar_bear_spawn_egg");
-      var0.put("minecraft:poisonous_potato_zombie", "minecraft:poisonous_potato_zombie_spawn_egg");
       var0.put("minecraft:rabbit", "minecraft:rabbit_spawn_egg");
       var0.put("minecraft:sheep", "minecraft:sheep_spawn_egg");
       var0.put("minecraft:shulker", "minecraft:shulker_spawn_egg");

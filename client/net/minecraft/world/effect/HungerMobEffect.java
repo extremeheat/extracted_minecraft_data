@@ -8,8 +8,6 @@ class HungerMobEffect extends MobEffect {
       super(var1, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean applyEffectTick(LivingEntity var1, int var2) {
       if (var1 instanceof Player var3) {

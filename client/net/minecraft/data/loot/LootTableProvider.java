@@ -8,11 +8,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import net.minecraft.Util;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.MappedRegistry;
@@ -58,22 +56,22 @@ public class LootTableProvider implements DataProvider {
       MappedRegistry var3 = new MappedRegistry<>(Registries.LOOT_TABLE, Lifecycle.experimental());
       Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
       this.subProviders.forEach(var3x -> var3x.provider().get().generate(var2, (var3xx, var4x) -> {
-            ResourceLocation var5xx = sequenceIdForLootTable(var3xx);
-            ResourceLocation var6xx = var4.put(RandomSequence.seedForKey(var5xx), var5xx);
-            if (var6xx != null) {
-               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var6xx + " and " + var3xx.location());
+            ResourceLocation var5x = sequenceIdForLootTable(var3xx);
+            ResourceLocation var6x = var4.put(RandomSequence.seedForKey(var5x), var5x);
+            if (var6x != null) {
+               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var6x + " and " + var3xx.location());
             }
 
-            var4x.setRandomSequence(var5xx);
-            LootTable var7xx = var4x.setParamSet(var3x.paramSet).build();
-            var3.register(var3xx, var7xx, RegistrationInfo.BUILT_IN);
+            var4x.setRandomSequence(var5x);
+            LootTable var7x = var4x.setParamSet(var3x.paramSet).build();
+            var3.register(var3xx, var7x, RegistrationInfo.BUILT_IN);
          }));
       var3.freeze();
       ProblemReporter.Collector var5 = new ProblemReporter.Collector();
       HolderGetter.Provider var6 = new RegistryAccess.ImmutableRegistryAccess(List.of(var3)).freeze().asGetterLookup();
       ValidationContext var7 = new ValidationContext(var5, LootContextParamSets.ALL_PARAMS, var6);
 
-      for(ResourceKey var10 : Sets.difference(this.requiredTables, var3.registryKeySet())) {
+      for (ResourceKey var10 : Sets.difference(this.requiredTables, var3.registryKeySet())) {
          var5.report("Missing built-in table: " + var10.location());
       }
 
@@ -88,11 +86,11 @@ public class LootTableProvider implements DataProvider {
          throw new IllegalStateException("Failed to validate loot tables, see logs");
       } else {
          return CompletableFuture.allOf(var3.entrySet().stream().map(var3x -> {
-            ResourceKey var4xx = (ResourceKey)var3x.getKey();
-            LootTable var5xx = (LootTable)var3x.getValue();
-            Path var6xx = this.pathProvider.json(var4xx.location());
-            return DataProvider.saveStable(var1, var2, LootTable.DIRECT_CODEC, var5xx, var6xx);
-         }).toArray(var0 -> new CompletableFuture[var0]));
+            ResourceKey var4x = (ResourceKey)var3x.getKey();
+            LootTable var5x = (LootTable)var3x.getValue();
+            Path var6x = this.pathProvider.json(var4x.location());
+            return DataProvider.saveStable(var1, var2, LootTable.DIRECT_CODEC, var5x, var6x);
+         }).toArray(CompletableFuture[]::new));
       }
    }
 
@@ -105,14 +103,12 @@ public class LootTableProvider implements DataProvider {
       return "Loot Tables";
    }
 
-   public static record SubProviderEntry(Supplier<LootTableSubProvider> a, LootContextParamSet b) {
-      private final Supplier<LootTableSubProvider> provider;
-      final LootContextParamSet paramSet;
+   public static record SubProviderEntry(Supplier<LootTableSubProvider> provider, LootContextParamSet paramSet) {
 
-      public SubProviderEntry(Supplier<LootTableSubProvider> var1, LootContextParamSet var2) {
+      public SubProviderEntry(Supplier<LootTableSubProvider> provider, LootContextParamSet paramSet) {
          super();
-         this.provider = var1;
-         this.paramSet = var2;
+         this.provider = provider;
+         this.paramSet = paramSet;
       }
    }
 }

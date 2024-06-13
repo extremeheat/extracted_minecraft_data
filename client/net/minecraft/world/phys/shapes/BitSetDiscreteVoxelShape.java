@@ -29,9 +29,9 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
       var9.yMax = var7;
       var9.zMax = var8;
 
-      for(int var10 = var3; var10 < var6; ++var10) {
-         for(int var11 = var4; var11 < var7; ++var11) {
-            for(int var12 = var5; var12 < var8; ++var12) {
+      for (int var10 = var3; var10 < var6; var10++) {
+         for (int var11 = var4; var11 < var7; var11++) {
+            for (int var12 = var5; var12 < var8; var12++) {
                var9.fillUpdateBounds(var10, var11, var12, false);
             }
          }
@@ -47,9 +47,9 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
       } else {
          this.storage = new BitSet(this.xSize * this.ySize * this.zSize);
 
-         for(int var2 = 0; var2 < this.xSize; ++var2) {
-            for(int var3 = 0; var3 < this.ySize; ++var3) {
-               for(int var4 = 0; var4 < this.zSize; ++var4) {
+         for (int var2 = 0; var2 < this.xSize; var2++) {
+            for (int var3 = 0; var3 < this.ySize; var3++) {
+               for (int var4 = 0; var4 < this.zSize; var4++) {
                   if (var1.isFull(var2, var3, var4)) {
                      this.storage.set(this.getIndex(var2, var3, var4));
                   }
@@ -151,11 +151,11 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
    protected static void forAllBoxes(DiscreteVoxelShape var0, DiscreteVoxelShape.IntLineConsumer var1, boolean var2) {
       BitSetDiscreteVoxelShape var3 = new BitSetDiscreteVoxelShape(var0);
 
-      for(int var4 = 0; var4 < var3.ySize; ++var4) {
-         for(int var5 = 0; var5 < var3.xSize; ++var5) {
+      for (int var4 = 0; var4 < var3.ySize; var4++) {
+         for (int var5 = 0; var5 < var3.xSize; var5++) {
             int var6 = -1;
 
-            for(int var7 = 0; var7 <= var3.zSize; ++var7) {
+            for (int var7 = 0; var7 <= var3.zSize; var7++) {
                if (var3.isFullWide(var5, var4, var7)) {
                   if (var2) {
                      if (var6 == -1) {
@@ -169,17 +169,17 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
                   int var9 = var4;
                   var3.clearZStrip(var6, var7, var5, var4);
 
-                  while(var3.isZStripFull(var6, var7, var8 + 1, var4)) {
+                  while (var3.isZStripFull(var6, var7, var8 + 1, var4)) {
                      var3.clearZStrip(var6, var7, var8 + 1, var4);
-                     ++var8;
+                     var8++;
                   }
 
-                  while(var3.isXZRectangleFull(var5, var8 + 1, var6, var7, var9 + 1)) {
-                     for(int var10 = var5; var10 <= var8; ++var10) {
+                  while (var3.isXZRectangleFull(var5, var8 + 1, var6, var7, var9 + 1)) {
+                     for (int var10 = var5; var10 <= var8; var10++) {
                         var3.clearZStrip(var6, var7, var10, var9 + 1);
                      }
 
-                     ++var9;
+                     var9++;
                   }
 
                   var1.consume(var5, var4, var6, var8 + 1, var9 + 1, var7);
@@ -191,15 +191,11 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
    }
 
    private boolean isZStripFull(int var1, int var2, int var3, int var4) {
-      if (var3 < this.xSize && var4 < this.ySize) {
-         return this.storage.nextClearBit(this.getIndex(var3, var4, var1)) >= this.getIndex(var3, var4, var2);
-      } else {
-         return false;
-      }
+      return var3 < this.xSize && var4 < this.ySize ? this.storage.nextClearBit(this.getIndex(var3, var4, var1)) >= this.getIndex(var3, var4, var2) : false;
    }
 
    private boolean isXZRectangleFull(int var1, int var2, int var3, int var4, int var5) {
-      for(int var6 = var1; var6 < var2; ++var6) {
+      for (int var6 = var1; var6 < var2; var6++) {
          if (!this.isZStripFull(var3, var4, var6, var5)) {
             return false;
          }

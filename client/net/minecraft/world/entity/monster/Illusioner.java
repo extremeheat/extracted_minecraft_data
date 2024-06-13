@@ -48,7 +48,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       this.xpReward = 5;
       this.clientSideIllusionOffsets = new Vec3[2][4];
 
-      for(int var3 = 0; var3 < 4; ++var3) {
+      for (int var3 = 0; var3 < 4; var3++) {
          this.clientSideIllusionOffsets[0][var3] = Vec3.ZERO;
          this.clientSideIllusionOffsets[1][var3] = Vec3.ZERO;
       }
@@ -90,7 +90,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
    public void aiStep() {
       super.aiStep();
       if (this.level().isClientSide && this.isInvisible()) {
-         --this.clientSideIllusionTicks;
+         this.clientSideIllusionTicks--;
          if (this.clientSideIllusionTicks < 0) {
             this.clientSideIllusionTicks = 0;
          }
@@ -98,9 +98,9 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          if (this.hurtTime == 1 || this.tickCount % 1200 == 0) {
             this.clientSideIllusionTicks = 3;
             float var4 = -6.0F;
-            boolean var2 = true;
+            byte var2 = 13;
 
-            for(int var3 = 0; var3 < 4; ++var3) {
+            for (int var3 = 0; var3 < 4; var3++) {
                this.clientSideIllusionOffsets[0][var3] = this.clientSideIllusionOffsets[1][var3];
                this.clientSideIllusionOffsets[1][var3] = new Vec3(
                   (double)(-6.0F + (float)this.random.nextInt(13)) * 0.5,
@@ -109,7 +109,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
                );
             }
 
-            for(int var5 = 0; var5 < 16; ++var5) {
+            for (int var5 = 0; var5 < 16; var5++) {
                this.level().addParticle(ParticleTypes.CLOUD, this.getRandomX(0.5), this.getRandomY(), this.getZ(0.5), 0.0, 0.0, 0.0);
             }
 
@@ -117,7 +117,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          } else if (this.hurtTime == this.hurtDuration - 1) {
             this.clientSideIllusionTicks = 3;
 
-            for(int var1 = 0; var1 < 4; ++var1) {
+            for (int var1 = 0; var1 < 4; var1++) {
                this.clientSideIllusionOffsets[0][var1] = this.clientSideIllusionOffsets[1][var1];
                this.clientSideIllusionOffsets[1][var1] = new Vec3(0.0, 0.0, 0.0);
             }
@@ -138,7 +138,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          var2 = Math.pow(var2, 0.25);
          Vec3[] var4 = new Vec3[4];
 
-         for(int var5 = 0; var5 < 4; ++var5) {
+         for (int var5 = 0; var5 < 4; var5++) {
             var4[var5] = this.clientSideIllusionOffsets[1][var5].scale(1.0 - var2).add(this.clientSideIllusionOffsets[0][var5].scale(var2));
          }
 
@@ -205,10 +205,10 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
             return false;
          } else if (Illusioner.this.getTarget() == null) {
             return false;
-         } else if (Illusioner.this.getTarget().getId() == this.lastTargetId) {
-            return false;
          } else {
-            return Illusioner.this.level().getCurrentDifficultyAt(Illusioner.this.blockPosition()).isHarderThan((float)Difficulty.NORMAL.ordinal());
+            return Illusioner.this.getTarget().getId() == this.lastTargetId
+               ? false
+               : Illusioner.this.level().getCurrentDifficultyAt(Illusioner.this.blockPosition()).isHarderThan((float)Difficulty.NORMAL.ordinal());
          }
       }
 
@@ -254,11 +254,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
 
       @Override
       public boolean canUse() {
-         if (!super.canUse()) {
-            return false;
-         } else {
-            return !Illusioner.this.hasEffect(MobEffects.INVISIBILITY);
-         }
+         return !super.canUse() ? false : !Illusioner.this.hasEffect(MobEffects.INVISIBILITY);
       }
 
       @Override

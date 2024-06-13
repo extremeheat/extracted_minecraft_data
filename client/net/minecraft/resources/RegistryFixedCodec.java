@@ -23,8 +23,6 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
       this.registryKey = var1;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<T> encode(Holder<E> var1, DynamicOps<T> var2, T var3) {
       if (var2 instanceof RegistryOps var4) {
          Optional var5 = var4.owner(this.registryKey);
@@ -44,8 +42,6 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
       return DataResult.error(() -> "Can't access registry " + this.registryKey);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<Pair<Holder<E>, T>> decode(DynamicOps<T> var1, T var2) {
       if (var1 instanceof RegistryOps var3) {
          Optional var4 = var3.getter(this.registryKey);
@@ -54,11 +50,11 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
                .decode(var1, var2)
                .flatMap(
                   var2x -> {
-                     ResourceLocation var3xx = (ResourceLocation)var2x.getFirst();
-                     return ((DataResult)((HolderGetter)var4.get())
-                           .get(ResourceKey.create(this.registryKey, var3xx))
-                           .map(DataResult::success)
-                           .orElseGet(() -> (T)DataResult.error(() -> "Failed to get element " + var3x)))
+                     ResourceLocation var3x = (ResourceLocation)var2x.getFirst();
+                     return ((HolderGetter)var4.get())
+                        .get(ResourceKey.create(this.registryKey, var3x))
+                        .<DataResult>map(DataResult::success)
+                        .orElseGet(() -> DataResult.error(() -> "Failed to get element " + var3x))
                         .map(var1xx -> Pair.of(var1xx, var2x.getSecond()))
                         .setLifecycle(Lifecycle.stable());
                   }

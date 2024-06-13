@@ -13,7 +13,6 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -237,9 +236,8 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Override
    public void tick() {
-      Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
-         VibrationSystem.Ticker.tick((Level)var1, this.vibrationData, this.vibrationUser);
+      if (this.level() instanceof ServerLevel var1) {
+         VibrationSystem.Ticker.tick(var1, this.vibrationData, this.vibrationUser);
          if (this.isPersistenceRequired() || this.requiresCustomPersistence()) {
             WardenAi.setDigCooldown(this);
          }
@@ -257,15 +255,15 @@ public class Warden extends Monster implements VibrationSystem {
 
          this.tendrilAnimationO = this.tendrilAnimation;
          if (this.tendrilAnimation > 0) {
-            --this.tendrilAnimation;
+            this.tendrilAnimation--;
          }
 
          this.heartAnimationO = this.heartAnimation;
          if (this.heartAnimation > 0) {
-            --this.heartAnimation;
+            this.heartAnimation--;
          }
 
-         switch(this.getPose()) {
+         switch (this.getPose()) {
             case EMERGING:
                this.clientDiggingParticles(this.emergeAnimationState);
                break;
@@ -326,7 +324,7 @@ public class Warden extends Monster implements VibrationSystem {
          RandomSource var2 = this.getRandom();
          BlockState var3 = this.getBlockStateOn();
          if (var3.getRenderShape() != RenderShape.INVISIBLE) {
-            for(int var4 = 0; var4 < 30; ++var4) {
+            for (int var4 = 0; var4 < 30; var4++) {
                double var5 = this.getX() + (double)Mth.randomBetween(var2, -0.7F, 0.7F);
                double var7 = this.getY();
                double var9 = this.getZ() + (double)Mth.randomBetween(var2, -0.7F, 0.7F);
@@ -339,7 +337,7 @@ public class Warden extends Monster implements VibrationSystem {
    @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (DATA_POSE.equals(var1)) {
-         switch(this.getPose()) {
+         switch (this.getPose()) {
             case EMERGING:
                this.emergeAnimationState.start(this.tickCount);
                break;
@@ -369,7 +367,7 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Override
    public Brain<Warden> getBrain() {
-      return super.getBrain();
+      return (Brain<Warden>)super.getBrain();
    }
 
    @Override
@@ -380,8 +378,7 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Override
    public void updateDynamicGameEventListener(BiConsumer<DynamicGameEventListener<?>, ServerLevel> var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+      if (this.level() instanceof ServerLevel var2) {
          var1.accept(this.dynamicGameEventListener, var2);
       }
    }
@@ -514,8 +511,8 @@ public class Warden extends Monster implements VibrationSystem {
          this.increaseAngerAt(var4, AngerLevel.ANGRY.getMinimumAnger() + 20, false);
          if (this.brain.getMemory(MemoryModuleType.ATTACK_TARGET).isEmpty()
             && var4 instanceof LivingEntity var5
-            && (!var1.isIndirect() || this.closerThan((Entity)var5, 5.0))) {
-            this.setAttackTarget((LivingEntity)var5);
+            && (!var1.isIndirect() || this.closerThan(var5, 5.0))) {
+            this.setAttackTarget(var5);
          }
       }
 
@@ -618,8 +615,7 @@ public class Warden extends Monster implements VibrationSystem {
             && !Warden.this.getBrain().hasMemoryValue(MemoryModuleType.VIBRATION_COOLDOWN)
             && !Warden.this.isDiggingOrEmerging()
             && var1.getWorldBorder().isWithinBounds(var2)) {
-            Entity var6 = var4.sourceEntity();
-            if (var6 instanceof LivingEntity var5 && !Warden.this.canTargetEntity((Entity)var5)) {
+            if (var4.sourceEntity() instanceof LivingEntity var5 && !Warden.this.canTargetEntity(var5)) {
                return false;
             }
 

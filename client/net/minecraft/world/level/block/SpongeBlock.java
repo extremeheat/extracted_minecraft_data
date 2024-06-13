@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -50,7 +49,7 @@ public class SpongeBlock extends Block {
 
    private boolean removeWaterBreadthFirstSearch(Level var1, BlockPos var2) {
       return BlockPos.breadthFirstTraversal(var2, 6, 65, (var0, var1x) -> {
-         for(Direction var5 : ALL_DIRECTIONS) {
+         for (Direction var5 : ALL_DIRECTIONS) {
             var1x.accept(var0.relative(var5));
          }
       }, var2x -> {
@@ -62,8 +61,7 @@ public class SpongeBlock extends Block {
             if (!var4.is(FluidTags.WATER)) {
                return false;
             } else {
-               Block var6 = var3.getBlock();
-               if (var6 instanceof BucketPickup var5 && !var5.pickupBlock(null, var1, var2x, var3).isEmpty()) {
+               if (var3.getBlock() instanceof BucketPickup var5 && !var5.pickupBlock(null, var1, var2x, var3).isEmpty()) {
                   return true;
                }
 

@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -60,7 +59,6 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
             .apply(var0, CampfireBlock::new)
    );
    protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 7.0, 16.0);
-   protected static final VoxelShape SHAPE_FRYING = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
    public static final BooleanProperty LIT = BlockStateProperties.LIT;
    public static final BooleanProperty SIGNAL_FIRE = BlockStateProperties.SIGNAL_FIRE;
    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -89,12 +87,9 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       );
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      BlockEntity var8 = var3.getBlockEntity(var4);
-      if (var8 instanceof CampfireBlockEntity var9) {
+      if (var3.getBlockEntity(var4) instanceof CampfireBlockEntity var9) {
          ItemStack var10 = var5.getItemInHand(var6);
          Optional var11 = var9.getCookableRecipe(var10);
          if (var11.isPresent()) {
@@ -164,7 +159,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return var1.is(Blocks.FRYING_TABLE) ? SHAPE_FRYING : SHAPE;
+      return SHAPE;
    }
 
    @Override
@@ -189,7 +184,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          }
 
          if (this.spawnParticles && var4.nextInt(5) == 0) {
-            for(int var5 = 0; var5 < var4.nextInt(1) + 1; ++var5) {
+            for (int var5 = 0; var5 < var4.nextInt(1) + 1; var5++) {
                var2.addParticle(
                   ParticleTypes.LAVA,
                   (double)var3.getX() + 0.5,
@@ -206,7 +201,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
    public static void dowse(@Nullable Entity var0, LevelAccessor var1, BlockPos var2, BlockState var3) {
       if (var1.isClientSide()) {
-         for(int var4 = 0; var4 < 20; ++var4) {
+         for (int var4 = 0; var4 < 20; var4++) {
             makeParticles((Level)var1, var2, var3.getValue(SIGNAL_FIRE), true);
          }
       }
@@ -274,7 +269,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    public static boolean isSmokeyPos(Level var0, BlockPos var1) {
-      for(int var2 = 1; var2 <= 5; ++var2) {
+      for (int var2 = 1; var2 <= 5; var2++) {
          BlockPos var3 = var1.below(var2);
          BlockState var4 = var0.getBlockState(var3);
          if (isLitCampfire(var4)) {

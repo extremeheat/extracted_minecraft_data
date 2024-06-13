@@ -19,10 +19,10 @@ public class MinecartModel<T extends Entity> extends HierarchicalModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      boolean var2 = true;
-      boolean var3 = true;
-      boolean var4 = true;
-      boolean var5 = true;
+      byte var2 = 20;
+      byte var3 = 8;
+      byte var4 = 16;
+      byte var5 = 4;
       var1.addOrReplaceChild(
          "bottom",
          CubeListBuilder.create().texOffs(0, 10).addBox(-10.0F, -8.0F, -1.0F, 20.0F, 16.0F, 2.0F),

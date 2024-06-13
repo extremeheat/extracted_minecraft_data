@@ -41,7 +41,7 @@ public abstract class AbstractSignEditScreen extends Screen {
       this.text = var1.getText(var2);
       this.isFrontText = var2;
       this.woodType = SignBlock.getWoodType(var1.getBlockState().getBlock());
-      this.messages = IntStream.range(0, 4).mapToObj(var2x -> this.text.getMessage(var2x, var3)).map(Component::getString).toArray(var0 -> new String[var0]);
+      this.messages = IntStream.range(0, 4).mapToObj(var2x -> this.text.getMessage(var2x, var3)).map(Component::getString).toArray(String[]::new);
    }
 
    @Override
@@ -60,7 +60,7 @@ public abstract class AbstractSignEditScreen extends Screen {
 
    @Override
    public void tick() {
-      ++this.frame;
+      this.frame++;
       if (!this.isValid()) {
          this.onDone();
       }
@@ -158,7 +158,7 @@ public abstract class AbstractSignEditScreen extends Screen {
       int var7 = 4 * this.sign.getTextLineHeight() / 2;
       int var8 = this.line * this.sign.getTextLineHeight() - var7;
 
-      for(int var9 = 0; var9 < this.messages.length; ++var9) {
+      for (int var9 = 0; var9 < this.messages.length; var9++) {
          String var10 = this.messages[var9];
          if (var10 != null) {
             if (this.font.isBidirectional()) {
@@ -177,7 +177,7 @@ public abstract class AbstractSignEditScreen extends Screen {
          }
       }
 
-      for(int var19 = 0; var19 < this.messages.length; ++var19) {
+      for (int var19 = 0; var19 < this.messages.length; var19++) {
          String var20 = this.messages[var19];
          if (var20 != null && var19 == this.line && var5 >= 0) {
             int var21 = this.font.width(var20.substring(0, Math.max(Math.min(var5, var20.length()), 0)));

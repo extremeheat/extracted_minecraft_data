@@ -6,22 +6,16 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.PackSource;
 
-public record PackLocationInfo(String a, Component b, PackSource c, Optional<KnownPack> d) {
-   private final String id;
-   private final Component title;
-   private final PackSource source;
-   private final Optional<KnownPack> knownPackInfo;
-
-   public PackLocationInfo(String var1, Component var2, PackSource var3, Optional<KnownPack> var4) {
+public record PackLocationInfo(String id, Component title, PackSource source, Optional<KnownPack> knownPackInfo) {
+   public PackLocationInfo(String id, Component title, PackSource source, Optional<KnownPack> knownPackInfo) {
       super();
-      this.id = var1;
-      this.title = var2;
-      this.source = var3;
-      this.knownPackInfo = var4;
+      this.id = id;
+      this.title = title;
+      this.source = source;
+      this.knownPackInfo = knownPackInfo;
    }
 
    public Component createChatLink(boolean var1, Component var2) {

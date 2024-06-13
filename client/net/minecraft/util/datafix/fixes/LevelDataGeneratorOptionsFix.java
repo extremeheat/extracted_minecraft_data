@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -113,12 +111,12 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
       Type var1 = this.getOutputSchema().getType(References.LEVEL);
       return this.fixTypeEverywhereTyped(
          "LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), var1, var1x -> Util.writeAndReadTypedOrThrow(var1x, var1, var0x -> {
-               Optional var1xxx = var0x.get("generatorOptions").asString().result();
+               Optional var1xx = var0x.get("generatorOptions").asString().result();
                if ("flat".equalsIgnoreCase(var0x.get("generatorName").asString(""))) {
-                  String var3 = var1xxx.orElse("");
+                  String var3 = var1xx.orElse("");
                   return var0x.set("generatorOptions", convert(var3, var0x.getOps()));
-               } else if ("buffet".equalsIgnoreCase(var0x.get("generatorName").asString("")) && var1xxx.isPresent()) {
-                  Dynamic var2 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var1xxx.get(), true));
+               } else if ("buffet".equalsIgnoreCase(var0x.get("generatorName").asString("")) && var1xx.isPresent()) {
+                  Dynamic var2 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var1xx.get(), true));
                   return var0x.set("generatorOptions", var2.convert(var0x.getOps()));
                } else {
                   return var0x;
@@ -142,14 +140,14 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
             if (var2.hasNext()) {
                String[] var6 = ((String)var2.next()).toLowerCase(Locale.ROOT).split(",");
 
-               for(String var10 : var6) {
+               for (String var10 : var6) {
                   String[] var11 = var10.split("\\(", 2);
                   if (!var11[0].isEmpty()) {
                      var5.put(var11[0], Maps.newHashMap());
                      if (var11.length > 1 && var11[1].endsWith(")") && var11[1].length() > 1) {
                         String[] var12 = var11[1].substring(0, var11[1].length() - 1).split(" ");
 
-                        for(String var16 : var12) {
+                        for (String var16 : var12) {
                            String[] var17 = var16.split("=", 2);
                            if (var17.length == 2) {
                               ((Map)var5.get(var11[0])).put(var17[0], var17[1]);
@@ -175,7 +173,10 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
             .map(
                var1x -> var1.createMap(
                      ImmutableMap.of(
-                        var1.createString("height"), var1.createInt(var1x.getFirst()), var1.createString("block"), var1.createString((String)var1x.getSecond())
+                        var1.createString("height"),
+                        var1.createInt((Integer)var1x.getFirst()),
+                        var1.createString("block"),
+                        var1.createString((String)var1x.getSecond())
                      )
                   )
             )
@@ -227,7 +228,7 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
       ArrayList var1 = Lists.newArrayList();
       String[] var2 = var0.split(",");
 
-      for(String var6 : var2) {
+      for (String var6 : var2) {
          Pair var7 = getLayerInfoFromString(var6);
          if (var7 == null) {
             return Collections.emptyList();

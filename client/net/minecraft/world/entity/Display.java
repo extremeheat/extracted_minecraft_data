@@ -15,7 +15,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
@@ -175,7 +174,7 @@ public abstract class Display extends Entity {
                this.posRotInterpolationTarget = null;
             } else {
                this.posRotInterpolationTarget.applyLerpStep(this);
-               --this.posRotInterpolationTarget.steps;
+               this.posRotInterpolationTarget.steps--;
                if (this.posRotInterpolationTarget.steps == 0) {
                   this.posRotInterpolationTarget = null;
                }
@@ -279,11 +278,8 @@ public abstract class Display extends Entity {
 
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
-      Transformation.EXTENDED_CODEC
-         .encodeStart(NbtOps.INSTANCE, createTransformation(this.entityData))
-         .result()
-         .ifPresent(var1x -> var1.put("transformation", var1x));
-      Display.BillboardConstraints.CODEC.encodeStart(NbtOps.INSTANCE, this.getBillboardConstraints()).result().ifPresent(var1x -> var1.put("billboard", var1x));
+      Transformation.EXTENDED_CODEC.encodeStart(NbtOps.INSTANCE, createTransformation(this.entityData)).ifSuccess(var1x -> var1.put("transformation", var1x));
+      Display.BillboardConstraints.CODEC.encodeStart(NbtOps.INSTANCE, this.getBillboardConstraints()).ifSuccess(var1x -> var1.put("billboard", var1x));
       var1.putInt("interpolation_duration", this.getTransformationInterpolationDuration());
       var1.putInt("teleport_duration", this.getPosRotInterpolationDuration());
       var1.putFloat("view_range", this.getViewRange());
@@ -294,7 +290,7 @@ public abstract class Display extends Entity {
       var1.putInt("glow_color_override", this.getGlowColorOverride());
       Brightness var2 = this.getBrightnessOverride();
       if (var2 != null) {
-         Brightness.CODEC.encodeStart(NbtOps.INSTANCE, var2).result().ifPresent(var1x -> var1.put("brightness", var1x));
+         Brightness.CODEC.encodeStart(NbtOps.INSTANCE, var2).ifSuccess(var1x -> var1.put("brightness", var1x));
       }
    }
 
@@ -597,24 +593,19 @@ public abstract class Display extends Entity {
          this.blockRenderState = new Display.BlockDisplay.BlockRenderState(this.getBlockState());
       }
 
-      public static record BlockRenderState(BlockState a) {
-         private final BlockState blockState;
-
-         public BlockRenderState(BlockState var1) {
+      public static record BlockRenderState(BlockState blockState) {
+         public BlockRenderState(BlockState blockState) {
             super();
-            this.blockState = var1;
+            this.blockState = blockState;
          }
       }
    }
 
-   static record ColorInterpolator(int a, int b) implements Display.IntInterpolator {
-      private final int previous;
-      private final int current;
-
-      ColorInterpolator(int var1, int var2) {
+   static record ColorInterpolator(int previous, int current) implements Display.IntInterpolator {
+      ColorInterpolator(int previous, int current) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.previous = previous;
+         this.current = current;
       }
 
       @Override
@@ -731,7 +722,7 @@ public abstract class Display extends Entity {
             var1.put("item", this.getItemStack().save(this.registryAccess()));
          }
 
-         ItemDisplayContext.CODEC.encodeStart(NbtOps.INSTANCE, this.getItemTransform()).result().ifPresent(var1x -> var1.put("item_display", var1x));
+         ItemDisplayContext.CODEC.encodeStart(NbtOps.INSTANCE, this.getItemTransform()).ifSuccess(var1x -> var1.put("item_display", var1x));
       }
 
       @Override
@@ -751,26 +742,20 @@ public abstract class Display extends Entity {
          this.itemRenderState = new Display.ItemDisplay.ItemRenderState(var3, this.getItemTransform());
       }
 
-      public static record ItemRenderState(ItemStack a, ItemDisplayContext b) {
-         private final ItemStack itemStack;
-         private final ItemDisplayContext itemTransform;
-
-         public ItemRenderState(ItemStack var1, ItemDisplayContext var2) {
+      public static record ItemRenderState(ItemStack itemStack, ItemDisplayContext itemTransform) {
+         public ItemRenderState(ItemStack itemStack, ItemDisplayContext itemTransform) {
             super();
-            this.itemStack = var1;
-            this.itemTransform = var2;
+            this.itemStack = itemStack;
+            this.itemTransform = itemTransform;
          }
       }
    }
 
-   static record LinearFloatInterpolator(float a, float b) implements Display.FloatInterpolator {
-      private final float previous;
-      private final float current;
-
-      LinearFloatInterpolator(float var1, float var2) {
+   static record LinearFloatInterpolator(float previous, float current) implements Display.FloatInterpolator {
+      LinearFloatInterpolator(float previous, float current) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.previous = previous;
+         this.current = current;
       }
 
       @Override
@@ -779,14 +764,11 @@ public abstract class Display extends Entity {
       }
    }
 
-   static record LinearIntInterpolator(int a, int b) implements Display.IntInterpolator {
-      private final int previous;
-      private final int current;
-
-      LinearIntInterpolator(int var1, int var2) {
+   static record LinearIntInterpolator(int previous, int current) implements Display.IntInterpolator {
+      LinearIntInterpolator(int previous, int current) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.previous = previous;
+         this.current = current;
       }
 
       @Override
@@ -824,30 +806,29 @@ public abstract class Display extends Entity {
    }
 
    public static record RenderState(
-      Display.GenericInterpolator<Transformation> a, Display.BillboardConstraints b, int c, Display.FloatInterpolator d, Display.FloatInterpolator e, int f
+      Display.GenericInterpolator<Transformation> transformation,
+      Display.BillboardConstraints billboardConstraints,
+      int brightnessOverride,
+      Display.FloatInterpolator shadowRadius,
+      Display.FloatInterpolator shadowStrength,
+      int glowColorOverride
    ) {
-      final Display.GenericInterpolator<Transformation> transformation;
-      private final Display.BillboardConstraints billboardConstraints;
-      private final int brightnessOverride;
-      final Display.FloatInterpolator shadowRadius;
-      final Display.FloatInterpolator shadowStrength;
-      private final int glowColorOverride;
 
       public RenderState(
-         Display.GenericInterpolator<Transformation> var1,
-         Display.BillboardConstraints var2,
-         int var3,
-         Display.FloatInterpolator var4,
-         Display.FloatInterpolator var5,
-         int var6
+         Display.GenericInterpolator<Transformation> transformation,
+         Display.BillboardConstraints billboardConstraints,
+         int brightnessOverride,
+         Display.FloatInterpolator shadowRadius,
+         Display.FloatInterpolator shadowStrength,
+         int glowColorOverride
       ) {
          super();
-         this.transformation = var1;
-         this.billboardConstraints = var2;
-         this.brightnessOverride = var3;
-         this.shadowRadius = var4;
-         this.shadowStrength = var5;
-         this.glowColorOverride = var6;
+         this.transformation = transformation;
+         this.billboardConstraints = billboardConstraints;
+         this.brightnessOverride = brightnessOverride;
+         this.shadowRadius = shadowRadius;
+         this.shadowStrength = shadowStrength;
+         this.glowColorOverride = glowColorOverride;
       }
    }
 
@@ -971,7 +952,7 @@ public abstract class Display extends Entity {
             .resultOrPartial(Util.prefix("Display entity", Display.LOGGER::error))
             .map(Pair::getFirst);
          if (var3.isPresent()) {
-            var2 = switch((Display.TextDisplay.Align)var3.get()) {
+            var2 = switch ((Display.TextDisplay.Align)var3.get()) {
                case CENTER -> var2;
                case LEFT -> (byte)(var2 | 8);
                case RIGHT -> (byte)(var2 | 16);
@@ -1012,7 +993,7 @@ public abstract class Display extends Entity {
          storeFlag(var2, var1, "shadow", (byte)1);
          storeFlag(var2, var1, "see_through", (byte)2);
          storeFlag(var2, var1, "default_background", (byte)4);
-         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var2)).result().ifPresent(var1x -> var1.put("alignment", var1x));
+         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var2)).ifSuccess(var1x -> var1.put("alignment", var1x));
       }
 
       @Override
@@ -1091,25 +1072,19 @@ public abstract class Display extends Entity {
          }
       }
 
-      public static record CachedInfo(List<Display.TextDisplay.CachedLine> a, int b) {
-         private final List<Display.TextDisplay.CachedLine> lines;
-         private final int width;
-
-         public CachedInfo(List<Display.TextDisplay.CachedLine> var1, int var2) {
+      public static record CachedInfo(List<Display.TextDisplay.CachedLine> lines, int width) {
+         public CachedInfo(List<Display.TextDisplay.CachedLine> lines, int width) {
             super();
-            this.lines = var1;
-            this.width = var2;
+            this.lines = lines;
+            this.width = width;
          }
       }
 
-      public static record CachedLine(FormattedCharSequence a, int b) {
-         private final FormattedCharSequence contents;
-         private final int width;
-
-         public CachedLine(FormattedCharSequence var1, int var2) {
+      public static record CachedLine(FormattedCharSequence contents, int width) {
+         public CachedLine(FormattedCharSequence contents, int width) {
             super();
-            this.contents = var1;
-            this.width = var2;
+            this.contents = contents;
+            this.width = width;
          }
       }
 
@@ -1118,32 +1093,26 @@ public abstract class Display extends Entity {
          Display.TextDisplay.CachedInfo split(Component var1, int var2);
       }
 
-      public static record TextRenderState(Component a, int b, Display.IntInterpolator c, Display.IntInterpolator d, byte e) {
-         private final Component text;
-         private final int lineWidth;
-         final Display.IntInterpolator textOpacity;
-         final Display.IntInterpolator backgroundColor;
-         private final byte flags;
+      public static record TextRenderState(
+         Component text, int lineWidth, Display.IntInterpolator textOpacity, Display.IntInterpolator backgroundColor, byte flags
+      ) {
 
-         public TextRenderState(Component var1, int var2, Display.IntInterpolator var3, Display.IntInterpolator var4, byte var5) {
+         public TextRenderState(Component text, int lineWidth, Display.IntInterpolator textOpacity, Display.IntInterpolator backgroundColor, byte flags) {
             super();
-            this.text = var1;
-            this.lineWidth = var2;
-            this.textOpacity = var3;
-            this.backgroundColor = var4;
-            this.flags = var5;
+            this.text = text;
+            this.lineWidth = lineWidth;
+            this.textOpacity = textOpacity;
+            this.backgroundColor = backgroundColor;
+            this.flags = flags;
          }
       }
    }
 
-   static record TransformationInterpolator(Transformation a, Transformation b) implements Display.GenericInterpolator<Transformation> {
-      private final Transformation previous;
-      private final Transformation current;
-
-      TransformationInterpolator(Transformation var1, Transformation var2) {
+   static record TransformationInterpolator(Transformation previous, Transformation current) implements Display.GenericInterpolator<Transformation> {
+      TransformationInterpolator(Transformation previous, Transformation current) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.previous = previous;
+         this.current = current;
       }
 
       public Transformation get(float var1) {

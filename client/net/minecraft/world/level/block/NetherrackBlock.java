@@ -27,7 +27,7 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       if (!var1.getBlockState(var2.above()).propagatesSkylightDown(var1, var2)) {
          return false;
       } else {
-         for(BlockPos var5 : BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1))) {
+         for (BlockPos var5 : BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1))) {
             if (var1.getBlockState(var5).is(BlockTags.NYLIUM)) {
                return true;
             }
@@ -47,7 +47,7 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       boolean var5 = false;
       boolean var6 = false;
 
-      for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-1, -1, -1), var3.offset(1, 1, 1))) {
+      for (BlockPos var8 : BlockPos.betweenClosed(var3.offset(-1, -1, -1), var3.offset(1, 1, 1))) {
          BlockState var9 = var1.getBlockState(var8);
          if (var9.is(Blocks.WARPED_NYLIUM)) {
             var6 = true;

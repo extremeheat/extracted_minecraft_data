@@ -1,7 +1,10 @@
 package net.minecraft.world.level.block;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -21,9 +24,14 @@ public abstract class PipeBlock extends Block {
    public static final BooleanProperty WEST = BlockStateProperties.WEST;
    public static final BooleanProperty UP = BlockStateProperties.UP;
    public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
-   public static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION = Map.of(
-      Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST, Direction.UP, UP, Direction.DOWN, DOWN
-   );
+   public static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION = ImmutableMap.copyOf(Util.make(Maps.newEnumMap(Direction.class), var0 -> {
+      var0.put(Direction.NORTH, NORTH);
+      var0.put(Direction.EAST, EAST);
+      var0.put(Direction.SOUTH, SOUTH);
+      var0.put(Direction.WEST, WEST);
+      var0.put(Direction.UP, UP);
+      var0.put(Direction.DOWN, DOWN);
+   }));
    protected final VoxelShape[] shapeByIndex;
 
    protected PipeBlock(float var1, BlockBehaviour.Properties var2) {
@@ -42,7 +50,7 @@ public abstract class PipeBlock extends Block {
       );
       VoxelShape[] var5 = new VoxelShape[DIRECTIONS.length];
 
-      for(int var6 = 0; var6 < DIRECTIONS.length; ++var6) {
+      for (int var6 = 0; var6 < DIRECTIONS.length; var6++) {
          Direction var7 = DIRECTIONS[var6];
          var5[var6] = Shapes.box(
             0.5 + Math.min((double)(-var1), (double)var7.getStepX() * 0.5),
@@ -56,10 +64,10 @@ public abstract class PipeBlock extends Block {
 
       VoxelShape[] var10 = new VoxelShape[64];
 
-      for(int var11 = 0; var11 < 64; ++var11) {
+      for (int var11 = 0; var11 < 64; var11++) {
          VoxelShape var8 = var4;
 
-         for(int var9 = 0; var9 < DIRECTIONS.length; ++var9) {
+         for (int var9 = 0; var9 < DIRECTIONS.length; var9++) {
             if ((var11 & 1 << var9) != 0) {
                var8 = Shapes.or(var8, var5[var9]);
             }
@@ -84,7 +92,7 @@ public abstract class PipeBlock extends Block {
    protected int getAABBIndex(BlockState var1) {
       int var2 = 0;
 
-      for(int var3 = 0; var3 < DIRECTIONS.length; ++var3) {
+      for (int var3 = 0; var3 < DIRECTIONS.length; var3++) {
          if (var1.getValue(PROPERTY_BY_DIRECTION.get(DIRECTIONS[var3]))) {
             var2 |= 1 << var3;
          }

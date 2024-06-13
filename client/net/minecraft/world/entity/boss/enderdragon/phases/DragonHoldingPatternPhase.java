@@ -83,9 +83,9 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
          }
 
          if (this.clockwise) {
-            ++var7;
+            var7++;
          } else {
-            --var7;
+            var7--;
          }
 
          if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() >= 0) {
@@ -123,7 +123,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
          double var6;
          do {
             var6 = (double)((float)var1.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-         } while(var6 < (double)var1.getY());
+         } while (var6 < (double)var1.getY());
 
          this.targetLocation = new Vec3(var2, var6, var4);
       }

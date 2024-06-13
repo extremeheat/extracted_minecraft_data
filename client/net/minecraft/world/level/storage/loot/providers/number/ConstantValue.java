@@ -1,20 +1,19 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.level.storage.loot.LootContext;
 
-public record ConstantValue(float c) implements NumberProvider {
-   private final float value;
-   public static final Codec<ConstantValue> CODEC = RecordCodecBuilder.create(
+public record ConstantValue(float value) implements NumberProvider {
+   public static final MapCodec<ConstantValue> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(Codec.FLOAT.fieldOf("value").forGetter(ConstantValue::value)).apply(var0, ConstantValue::new)
    );
    public static final Codec<ConstantValue> INLINE_CODEC = Codec.FLOAT.xmap(ConstantValue::new, ConstantValue::value);
 
-   public ConstantValue(float var1) {
+   public ConstantValue(float value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
    @Override
@@ -35,10 +34,8 @@ public record ConstantValue(float c) implements NumberProvider {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         return Float.compare(((ConstantValue)var1).value, this.value) == 0;
       } else {
-         return false;
+         return var1 != null && this.getClass() == var1.getClass() ? Float.compare(((ConstantValue)var1).value, this.value) == 0 : false;
       }
    }
 

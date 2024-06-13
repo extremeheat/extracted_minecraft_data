@@ -56,7 +56,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    @Override
    protected void renderSelection(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
       if (this.scrollbarVisible()) {
-         boolean var7 = true;
+         byte var7 = 2;
          int var8 = this.getRowLeft() - 2;
          int var9 = this.getRight() - 6 - 1;
          int var10 = var2 - 2;
@@ -71,14 +71,14 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.getSelected() != null) {
-         switch(var1) {
+         switch (var1) {
             case 32:
             case 257:
                this.getSelected().keyboardSelection();
                return true;
             default:
                if (Screen.hasShiftDown()) {
-                  switch(var1) {
+                  switch (var1) {
                      case 264:
                         this.getSelected().keyboardMoveDown();
                         return true;

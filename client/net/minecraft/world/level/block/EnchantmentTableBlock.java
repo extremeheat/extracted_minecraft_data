@@ -12,7 +12,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.EnchantmentMenu;
@@ -65,7 +64,7 @@ public class EnchantmentTableBlock extends BaseEntityBlock {
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       super.animateTick(var1, var2, var3, var4);
 
-      for(BlockPos var6 : BOOKSHELF_OFFSETS) {
+      for (BlockPos var6 : BOOKSHELF_OFFSETS) {
          if (var4.nextInt(16) == 0 && isValidBookShelf(var2, var3, var6)) {
             var2.addParticle(
                ParticleTypes.ENCHANT,

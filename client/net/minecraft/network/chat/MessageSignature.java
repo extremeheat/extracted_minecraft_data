@@ -12,15 +12,14 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
 
-public record MessageSignature(byte[] c) {
-   private final byte[] bytes;
+public record MessageSignature(byte[] bytes) {
    public static final Codec<MessageSignature> CODEC = ExtraCodecs.BASE64_STRING.xmap(MessageSignature::new, MessageSignature::bytes);
    public static final int BYTES = 256;
 
-   public MessageSignature(byte[] var1) {
+   public MessageSignature(byte[] bytes) {
       super();
-      Preconditions.checkState(var1.length == 256, "Invalid message signature size");
-      this.bytes = var1;
+      Preconditions.checkState(bytes.length == 256, "Invalid message signature size");
+      this.bytes = bytes;
    }
 
    public static MessageSignature read(FriendlyByteBuf var0) {
@@ -66,10 +65,7 @@ public record MessageSignature(byte[] c) {
       return var2 != -1 ? new MessageSignature.Packed(var2) : new MessageSignature.Packed(this);
    }
 
-   public static record Packed(int b, @Nullable MessageSignature c) {
-      private final int id;
-      @Nullable
-      private final MessageSignature fullSignature;
+   public static record Packed(int id, @Nullable MessageSignature fullSignature) {
       public static final int FULL_SIGNATURE = -1;
 
       public Packed(MessageSignature var1) {
@@ -80,10 +76,10 @@ public record MessageSignature(byte[] c) {
          this(var1, null);
       }
 
-      public Packed(int var1, @Nullable MessageSignature var2) {
+      public Packed(int id, @Nullable MessageSignature fullSignature) {
          super();
-         this.id = var1;
-         this.fullSignature = var2;
+         this.id = id;
+         this.fullSignature = fullSignature;
       }
 
       public static MessageSignature.Packed read(FriendlyByteBuf var0) {

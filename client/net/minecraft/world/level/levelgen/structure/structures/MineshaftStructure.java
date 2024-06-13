@@ -2,8 +2,8 @@ package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
@@ -22,7 +22,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class MineshaftStructure extends Structure {
-   public static final Codec<MineshaftStructure> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<MineshaftStructure> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(settingsCodec(var0), MineshaftStructure.Type.CODEC.fieldOf("mineshaft_type").forGetter(var0x -> var0x.type))
             .apply(var0, MineshaftStructure::new)
    );
@@ -70,8 +70,7 @@ public class MineshaftStructure extends Structure {
 
    public static enum Type implements StringRepresentable {
       NORMAL("normal", Blocks.OAK_LOG, Blocks.OAK_PLANKS, Blocks.OAK_FENCE),
-      MESA("mesa", Blocks.DARK_OAK_LOG, Blocks.DARK_OAK_PLANKS, Blocks.DARK_OAK_FENCE),
-      POTATO("potato", Blocks.POTATO_STEM, Blocks.POTATO_PLANKS, Blocks.POTATO_FENCE);
+      MESA("mesa", Blocks.DARK_OAK_LOG, Blocks.DARK_OAK_PLANKS, Blocks.DARK_OAK_FENCE);
 
       public static final Codec<MineshaftStructure.Type> CODEC = StringRepresentable.fromEnum(MineshaftStructure.Type::values);
       private static final IntFunction<MineshaftStructure.Type> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);

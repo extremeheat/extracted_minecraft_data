@@ -39,7 +39,7 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public <U> U convertTo(DynamicOps<U> var1, Tag var2) {
-      switch(var2.getId()) {
+      switch (var2.getId()) {
          case 0:
             return (U)var1.empty();
          case 1:
@@ -116,13 +116,13 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public DataResult<Tag> mergeToList(Tag var1, Tag var2) {
-      return (DataResult<Tag>)createCollector(var1)
+      return createCollector(var1)
          .map(var1x -> DataResult.success(var1x.accept(var2).result()))
          .orElseGet(() -> DataResult.error(() -> "mergeToList called with not a list: " + var1, var1));
    }
 
    public DataResult<Tag> mergeToList(Tag var1, List<Tag> var2) {
-      return (DataResult<Tag>)createCollector(var1)
+      return createCollector(var1)
          .map(var1x -> DataResult.success(var1x.acceptAll(var2).result()))
          .orElseGet(() -> DataResult.error(() -> "mergeToList called with not a list: " + var1, var1));
    }
@@ -135,7 +135,7 @@ public class NbtOps implements DynamicOps<Tag> {
       } else {
          CompoundTag var4 = new CompoundTag();
          if (var1 instanceof CompoundTag var5) {
-            ((CompoundTag)var5).getAllKeys().forEach(var2x -> var4.put(var2x, var5.get(var2x)));
+            var5.getAllKeys().forEach(var2x -> var4.put(var2x, var5.get(var2x)));
          }
 
          var4.put(var2.getAsString(), var3);
@@ -149,16 +149,16 @@ public class NbtOps implements DynamicOps<Tag> {
       } else {
          CompoundTag var3 = new CompoundTag();
          if (var1 instanceof CompoundTag var4) {
-            ((CompoundTag)var4).getAllKeys().forEach(var2x -> var3.put(var2x, var4.get(var2x)));
+            var4.getAllKeys().forEach(var2x -> var3.put(var2x, var4.get(var2x)));
          }
 
          ArrayList var5 = Lists.newArrayList();
          var2.entries().forEach(var2x -> {
-            Tag var3xx = (Tag)var2x.getFirst();
-            if (!(var3xx instanceof StringTag)) {
-               var5.add(var3xx);
+            Tag var3x = (Tag)var2x.getFirst();
+            if (!(var3x instanceof StringTag)) {
+               var5.add(var3x);
             } else {
-               var3.put(var3xx.getAsString(), (Tag)var2x.getSecond());
+               var3.put(var3x.getAsString(), (Tag)var2x.getSecond());
             }
          });
          return !var5.isEmpty() ? DataResult.error(() -> "some keys are not strings: " + var5, var3) : DataResult.success(var3);
@@ -217,19 +217,17 @@ public class NbtOps implements DynamicOps<Tag> {
       return var0;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public DataResult<Stream<Tag>> getStream(Tag var1) {
       if (var1 instanceof ListTag var3) {
          return var3.getElementType() == 10 ? DataResult.success(var3.stream().map(var0 -> tryUnwrap((CompoundTag)var0))) : DataResult.success(var3.stream());
       } else {
-         return var1 instanceof CollectionTag var2 ? DataResult.success(var2.stream().map(var0 -> var0)) : DataResult.error(() -> "Not a list");
+         return var1 instanceof CollectionTag var2 ? DataResult.success(var2.stream().map(var0 -> (Tag)var0)) : DataResult.error(() -> "Not a list");
       }
    }
 
    public DataResult<Consumer<Consumer<Tag>>> getList(Tag var1) {
       if (var1 instanceof ListTag var3) {
-         return ((ListTag)var3).getElementType() == 10
+         return var3.getElementType() == 10
             ? DataResult.success((Consumer<Consumer>)var1x -> var3.forEach(var1xx -> var1x.accept(tryUnwrap((CompoundTag)var1xx))))
             : DataResult.success(var3::forEach);
       } else {
@@ -271,7 +269,7 @@ public class NbtOps implements DynamicOps<Tag> {
    public Tag remove(Tag var1, String var2) {
       if (var1 instanceof CompoundTag var3) {
          CompoundTag var4 = new CompoundTag();
-         ((CompoundTag)var3).getAllKeys().stream().filter(var1x -> !Objects.equals(var1x, var2)).forEach(var2x -> var4.put(var2x, var3.get(var2x)));
+         var3.getAllKeys().stream().filter(var1x -> !Objects.equals(var1x, var2)).forEach(var2x -> var4.put(var2x, var3.get(var2x)));
          return var4;
       } else {
          return var1;
@@ -287,8 +285,6 @@ public class NbtOps implements DynamicOps<Tag> {
       return new NbtOps.NbtRecordBuilder();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static Optional<NbtOps.ListCollector> createCollector(Tag var0) {
       if (var0 instanceof EndTag) {
          return Optional.of(NbtOps.InitialListCollector.INSTANCE);
@@ -299,10 +295,10 @@ public class NbtOps implements DynamicOps<Tag> {
             }
 
             if (var1 instanceof ListTag var5) {
-               return switch(((ListTag)var5).getElementType()) {
+               return switch (var5.getElementType()) {
                   case 0 -> Optional.of(NbtOps.InitialListCollector.INSTANCE);
-                  case 10 -> Optional.of(new NbtOps.HeterogenousListCollector((Collection<Tag>)var5));
-                  default -> Optional.of(new NbtOps.HomogenousListCollector((ListTag)var5));
+                  case 10 -> Optional.of(new NbtOps.HeterogenousListCollector(var5));
+                  default -> Optional.of(new NbtOps.HomogenousListCollector(var5));
                };
             }
 
@@ -336,8 +332,6 @@ public class NbtOps implements DynamicOps<Tag> {
          this.values.addElements(0, var1);
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public NbtOps.ListCollector accept(Tag var1) {
          if (var1 instanceof ByteTag var2) {
@@ -386,8 +380,8 @@ public class NbtOps implements DynamicOps<Tag> {
       }
 
       private static Tag wrapIfNeeded(Tag var0) {
-         if (var0 instanceof CompoundTag var1 && !isWrapper((CompoundTag)var1)) {
-            return (Tag)var1;
+         if (var0 instanceof CompoundTag var1 && !isWrapper(var1)) {
+            return var1;
          }
 
          return wrapElement(var0);
@@ -447,12 +441,10 @@ public class NbtOps implements DynamicOps<Tag> {
          super();
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public NbtOps.ListCollector accept(Tag var1) {
          if (var1 instanceof CompoundTag var5) {
-            return new NbtOps.HeterogenousListCollector().accept((Tag)var5);
+            return new NbtOps.HeterogenousListCollector().accept(var5);
          } else if (var1 instanceof ByteTag var4) {
             return new NbtOps.ByteListCollector(var4.getAsByte());
          } else if (var1 instanceof IntTag var3) {
@@ -483,8 +475,6 @@ public class NbtOps implements DynamicOps<Tag> {
          this.values.addElements(0, var1);
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public NbtOps.ListCollector accept(Tag var1) {
          if (var1 instanceof IntTag var2) {
@@ -507,7 +497,7 @@ public class NbtOps implements DynamicOps<Tag> {
       default NbtOps.ListCollector acceptAll(Iterable<Tag> var1) {
          NbtOps.ListCollector var2 = this;
 
-         for(Tag var4 : var1) {
+         for (Tag var4 : var1) {
             var2 = var2.accept(var4);
          }
 
@@ -534,8 +524,6 @@ public class NbtOps implements DynamicOps<Tag> {
          this.values.addElements(0, var1);
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public NbtOps.ListCollector accept(Tag var1) {
          if (var1 instanceof LongTag var2) {
@@ -569,13 +557,12 @@ public class NbtOps implements DynamicOps<Tag> {
       protected DataResult<Tag> build(CompoundTag var1, Tag var2) {
          if (var2 == null || var2 == EndTag.INSTANCE) {
             return DataResult.success(var1);
-         } else if (!(var2 instanceof CompoundTag)) {
+         } else if (!(var2 instanceof CompoundTag var3)) {
             return DataResult.error(() -> "mergeToMap called with not a map: " + var2, var2);
          } else {
-            CompoundTag var3 = (CompoundTag)var2;
             CompoundTag var4 = new CompoundTag(Maps.newHashMap(var3.entries()));
 
-            for(Entry var6 : var1.entries().entrySet()) {
+            for (Entry var6 : var1.entries().entrySet()) {
                var4.put((String)var6.getKey(), (Tag)var6.getValue());
             }
 

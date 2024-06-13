@@ -148,7 +148,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
 
    @Override
    public void tick() {
-      for(Tickable var2 : this.tickableTextures) {
+      for (Tickable var2 : this.tickableTextures) {
          var2.tick();
       }
    }
@@ -176,16 +176,16 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       TitleScreen.preloadResources(this, var5).thenCompose(var1::wait).thenAcceptAsync(var4x -> {
          MissingTextureAtlasSprite.getTexture();
          RealmsPopupScreen.updateCarouselImages(this.resourceManager);
-         Iterator var5xx = this.byPath.entrySet().iterator();
+         Iterator var5x = this.byPath.entrySet().iterator();
 
-         while(var5xx.hasNext()) {
-            Entry var6xx = (Entry)var5xx.next();
-            ResourceLocation var7xx = (ResourceLocation)var6xx.getKey();
-            AbstractTexture var8 = (AbstractTexture)var6xx.getValue();
-            if (var8 == MissingTextureAtlasSprite.getTexture() && !var7xx.equals(MissingTextureAtlasSprite.getLocation())) {
-               var5xx.remove();
+         while (var5x.hasNext()) {
+            Entry var6x = (Entry)var5x.next();
+            ResourceLocation var7x = (ResourceLocation)var6x.getKey();
+            AbstractTexture var8 = (AbstractTexture)var6x.getValue();
+            if (var8 == MissingTextureAtlasSprite.getTexture() && !var7x.equals(MissingTextureAtlasSprite.getLocation())) {
+               var5x.remove();
             } else {
-               var8.reset(this, var2, var7xx, var6);
+               var8.reset(this, var2, var7x, var6);
             }
          }
 
@@ -211,9 +211,9 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       }
 
       this.byPath.forEach((var1x, var2) -> {
-         if (var2 instanceof Dumpable var3xx) {
+         if (var2 instanceof Dumpable var3x) {
             try {
-               var3xx.dumpContents(var1x, var1);
+               var3x.dumpContents(var1x, var1);
             } catch (IOException var5) {
                LOGGER.error("Failed to dump texture {}", var1x, var5);
             }

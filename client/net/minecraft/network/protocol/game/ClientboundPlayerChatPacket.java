@@ -15,17 +15,14 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundPlayerChatPacket(
-   UUID b, int c, @Nullable MessageSignature d, SignedMessageBody.Packed e, @Nullable Component f, FilterMask g, ChatType.Bound h
+   UUID sender,
+   int index,
+   @Nullable MessageSignature signature,
+   SignedMessageBody.Packed body,
+   @Nullable Component unsignedContent,
+   FilterMask filterMask,
+   ChatType.Bound chatType
 ) implements Packet<ClientGamePacketListener> {
-   private final UUID sender;
-   private final int index;
-   @Nullable
-   private final MessageSignature signature;
-   private final SignedMessageBody.Packed body;
-   @Nullable
-   private final Component unsignedContent;
-   private final FilterMask filterMask;
-   private final ChatType.Bound chatType;
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket> STREAM_CODEC = Packet.codec(
       ClientboundPlayerChatPacket::write, ClientboundPlayerChatPacket::new
    );
@@ -38,21 +35,27 @@ public record ClientboundPlayerChatPacket(
          new SignedMessageBody.Packed(var1),
          FriendlyByteBuf.readNullable(var1, ComponentSerialization.TRUSTED_STREAM_CODEC),
          FilterMask.read(var1),
-         (ChatType.Bound)ChatType.Bound.STREAM_CODEC.decode(var1)
+         ChatType.Bound.STREAM_CODEC.decode(var1)
       );
    }
 
    public ClientboundPlayerChatPacket(
-      UUID var1, int var2, @Nullable MessageSignature var3, SignedMessageBody.Packed var4, @Nullable Component var5, FilterMask var6, ChatType.Bound var7
+      UUID sender,
+      int index,
+      @Nullable MessageSignature signature,
+      SignedMessageBody.Packed body,
+      @Nullable Component unsignedContent,
+      FilterMask filterMask,
+      ChatType.Bound chatType
    ) {
       super();
-      this.sender = var1;
-      this.index = var2;
-      this.signature = var3;
-      this.body = var4;
-      this.unsignedContent = var5;
-      this.filterMask = var6;
-      this.chatType = var7;
+      this.sender = sender;
+      this.index = index;
+      this.signature = signature;
+      this.body = body;
+      this.unsignedContent = unsignedContent;
+      this.filterMask = filterMask;
+      this.chatType = chatType;
    }
 
    private void write(RegistryFriendlyByteBuf var1) {

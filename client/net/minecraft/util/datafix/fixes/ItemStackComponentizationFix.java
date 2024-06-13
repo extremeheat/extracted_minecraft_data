@@ -8,21 +8,19 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.MapLike;
 import com.mojang.serialization.OptionalDynamic;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
-import net.minecraft.util.datafix.ExtraDataFixUtils;
+import net.minecraft.util.datafix.ComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemStackComponentizationFix extends DataFix {
@@ -48,6 +46,55 @@ public class ItemStackComponentizationFix extends DataFix {
    private static final List<String> BUCKETED_MOB_TAGS = List.of(
       "NoAI", "Silent", "NoGravity", "Glowing", "Invulnerable", "Health", "Age", "Variant", "HuntingCooldown", "BucketVariantTag"
    );
+   private static final Set<String> BOOLEAN_BLOCK_STATE_PROPERTIES = Set.of(
+      "attached",
+      "bottom",
+      "conditional",
+      "disarmed",
+      "drag",
+      "enabled",
+      "extended",
+      "eye",
+      "falling",
+      "hanging",
+      "has_bottle_0",
+      "has_bottle_1",
+      "has_bottle_2",
+      "has_record",
+      "has_book",
+      "inverted",
+      "in_wall",
+      "lit",
+      "locked",
+      "occupied",
+      "open",
+      "persistent",
+      "powered",
+      "short",
+      "signal_fire",
+      "snowy",
+      "triggered",
+      "unstable",
+      "waterlogged",
+      "berries",
+      "bloom",
+      "shrieking",
+      "can_summon",
+      "up",
+      "down",
+      "north",
+      "east",
+      "south",
+      "west",
+      "slot_0_occupied",
+      "slot_1_occupied",
+      "slot_2_occupied",
+      "slot_3_occupied",
+      "slot_4_occupied",
+      "slot_5_occupied",
+      "cracked",
+      "crafting"
+   );
    private static final Splitter PROPERTY_SPLITTER = Splitter.on(',');
 
    public ItemStackComponentizationFix(Schema var1) {
@@ -59,16 +106,16 @@ public class ItemStackComponentizationFix extends DataFix {
       var0.moveTagToComponent("Damage", "minecraft:damage", var1.createInt(0));
       var0.moveTagToComponent("RepairCost", "minecraft:repair_cost", var1.createInt(0));
       var0.moveTagToComponent("CustomModelData", "minecraft:custom_model_data");
-      var0.removeTag("BlockStateTag").result().ifPresent(var1x -> var0.setComponent("minecraft:block_state", fixBlockStateTag(var1x)));
+      var0.removeTag("BlockStateTag").result().ifPresent(var1x -> var0.setComponent("minecraft:block_state", fixBlockStateTag((Dynamic<?>)var1x)));
       var0.moveTagToComponent("EntityTag", "minecraft:entity_data");
       var0.fixSubTag("BlockEntityTag", false, var1x -> {
-         String var2xx = NamespacedSchema.ensureNamespaced(var1x.get("id").asString(""));
-         var1x = fixBlockEntityTag(var0, var1x, var2xx);
-         Dynamic var3xx = var1x.remove("id");
-         return var3xx.equals(var1x.emptyMap()) ? var3xx : var1x;
+         String var2x = NamespacedSchema.ensureNamespaced(var1x.get("id").asString(""));
+         var1x = fixBlockEntityTag(var0, var1x, var2x);
+         Dynamic var3x = var1x.remove("id");
+         return var3x.equals(var1x.emptyMap()) ? var3x : var1x;
       });
       var0.moveTagToComponent("BlockEntityTag", "minecraft:block_entity_data");
-      if (ExtraDataFixUtils.asBoolean(var0.removeTag("Unbreakable"), false)) {
+      if (var0.removeTag("Unbreakable").asBoolean(false)) {
          Dynamic var3 = var1.emptyMap();
          if ((var2 & 4) != 0) {
             var3 = var3.set("show_in_tooltip", var1.createBoolean(false));
@@ -164,20 +211,24 @@ public class ItemStackComponentizationFix extends DataFix {
       }
 
       if (var0.is("minecraft:player_head")) {
-         var0.removeTag("SkullOwner").result().ifPresent(var1x -> var0.setComponent("minecraft:profile", fixProfile(var1x)));
+         var0.removeTag("SkullOwner").result().ifPresent(var1x -> var0.setComponent("minecraft:profile", fixProfile((Dynamic<?>)var1x)));
       }
    }
 
    private static Dynamic<?> fixBlockStateTag(Dynamic<?> var0) {
-      return var0.createMap(var0.asMap(var0x -> var0x, var0x -> {
-         Optional var1 = ExtraDataFixUtils.asBoolean(var0x).result();
-         if (var1.isPresent()) {
-            return var0x.createString(String.valueOf(var1.get()));
-         } else {
-            Optional var2 = var0x.asNumber().result();
-            return var2.isPresent() ? var0x.createString(((Number)var2.get()).toString()) : var0x;
-         }
-      }));
+      return (Dynamic<?>)DataFixUtils.orElse(var0.asMapOpt().result().map(var0x -> var0x.collect(Collectors.toMap(Pair::getFirst, var0xx -> {
+            String var1 = ((Dynamic)var0xx.getFirst()).asString("");
+            Dynamic var2 = (Dynamic)var0xx.getSecond();
+            if (BOOLEAN_BLOCK_STATE_PROPERTIES.contains(var1)) {
+               Optional var3 = var2.asBoolean().result();
+               if (var3.isPresent()) {
+                  return var2.createString(String.valueOf(var3.get()));
+               }
+            }
+
+            Optional var4 = var2.asNumber().result();
+            return var4.isPresent() ? var2.createString(((Number)var4.get()).toString()) : var2;
+         }))).map(var0::createMap), var0);
    }
 
    private static Dynamic<?> fixDisplay(ItemStackComponentizationFix.ItemStackData var0, Dynamic<?> var1, int var2) {
@@ -194,12 +245,17 @@ public class ItemStackComponentizationFix extends DataFix {
          var0.setComponent("minecraft:dyed_color", var5);
       }
 
+      Optional var6 = var1.get("LocName").asString().result();
+      if (var6.isPresent()) {
+         var0.setComponent("minecraft:item_name", ComponentDataFixUtils.createTranslatableComponent(var1.getOps(), (String)var6.get()));
+      }
+
       if (var0.is("minecraft:filled_map")) {
          var0.setComponent("minecraft:map_color", var1.get("MapColor"));
          var1 = var1.remove("MapColor");
       }
 
-      return var1.remove("Name").remove("Lore").remove("color");
+      return var1.remove("Name").remove("Lore").remove("color").remove("LocName");
    }
 
    private static <T> Dynamic<T> fixBlockEntityTag(ItemStackComponentizationFix.ItemStackData var0, Dynamic<T> var1, String var2) {
@@ -216,7 +272,7 @@ public class ItemStackComponentizationFix extends DataFix {
          var0.setComponent("minecraft:container_loot", var4);
          var1 = var1.remove("LootTable").remove("LootTableSeed");
       }
-      return switch(var2) {
+      return switch (var2) {
          case "minecraft:skull" -> {
             var0.setComponent("minecraft:note_block_sound", var1.get("note_block_sound"));
             yield var1.remove("note_block_sound");
@@ -226,7 +282,7 @@ public class ItemStackComponentizationFix extends DataFix {
             Optional var10 = var1.get("item").result();
             if (var10.isPresent()) {
                var0.setComponent(
-                  "minecraft:container", var1.createList(Stream.of((T)var1.emptyMap().set("slot", var1.createInt(0)).set("item", (Dynamic)var10.get())))
+                  "minecraft:container", var1.createList(Stream.of(var1.emptyMap().set("slot", var1.createInt(0)).set("item", (Dynamic)var10.get())))
                );
             }
 
@@ -259,14 +315,14 @@ public class ItemStackComponentizationFix extends DataFix {
    }
 
    private static void fixEnchantments(ItemStackComponentizationFix.ItemStackData var0, Dynamic<?> var1, String var2, String var3, boolean var4) {
-      List var5 = var0.removeTag(var2).asList(Function.identity());
-      List var6 = var5.stream().flatMap(var0x -> parseEnchantment(var0x).stream()).toList();
+      OptionalDynamic var5 = var0.removeTag(var2);
+      List var6 = var5.asList(Function.identity()).stream().flatMap(var0x -> parseEnchantment((Dynamic<?>)var0x).stream()).toList();
       if (!var6.isEmpty() || var4) {
          Dynamic var7 = var1.emptyMap();
          Dynamic var8 = var1.emptyMap();
 
-         for(Pair var10 : var6) {
-            var8 = var8.set((String)var10.getFirst(), var1.createInt(var10.getSecond()));
+         for (Pair var10 : var6) {
+            var8 = var8.set((String)var10.getFirst(), var1.createInt((Integer)var10.getSecond()));
          }
 
          var7 = var7.set("levels", var8);
@@ -277,7 +333,7 @@ public class ItemStackComponentizationFix extends DataFix {
          var0.setComponent(var3, var7);
       }
 
-      if (!var5.isEmpty() && var6.isEmpty()) {
+      if (var5.result().isPresent() && var6.isEmpty()) {
          var0.setComponent("minecraft:enchantment_glint_override", var1.createBoolean(true));
       }
    }
@@ -300,7 +356,9 @@ public class ItemStackComponentizationFix extends DataFix {
                var1.createList(
                   ((Dynamic)var5.get())
                      .asStream()
-                     .map(var0x -> (Dynamic)DataFixUtils.orElse(var0x.asString().map(var1x -> fixBlockStatePredicate(var0x, var1x)).result(), var0x))
+                     .map(
+                        var0x -> (Dynamic)DataFixUtils.orElse(var0x.asString().map(var1x -> fixBlockStatePredicate((Dynamic<?>)var0x, var1x)).result(), var0x)
+                     )
                )
             );
          if (var4) {
@@ -329,7 +387,7 @@ public class ItemStackComponentizationFix extends DataFix {
       if (var2 != -1 && var7 != -1) {
          Dynamic var8 = var0.emptyMap();
 
-         for(String var11 : PROPERTY_SPLITTER.split(var1.substring(var2 + 1, var7))) {
+         for (String var11 : PROPERTY_SPLITTER.split(var1.substring(var2 + 1, var7))) {
             int var12 = var11.indexOf(61);
             if (var12 != -1) {
                String var13 = var11.substring(0, var12).trim();
@@ -364,13 +422,13 @@ public class ItemStackComponentizationFix extends DataFix {
 
    private static Dynamic<?> fixAttributeModifier(Dynamic<?> var0) {
       Dynamic var1 = var0.emptyMap().set("name", var0.createString("")).set("amount", var0.createDouble(0.0)).set("operation", var0.createString("add_value"));
-      var1 = ExtraDataFixUtils.copyField(var0, "AttributeName", var1, "type");
-      var1 = ExtraDataFixUtils.copyField(var0, "Slot", var1, "slot");
-      var1 = ExtraDataFixUtils.copyField(var0, "UUID", var1, "uuid");
-      var1 = ExtraDataFixUtils.copyField(var0, "Name", var1, "name");
-      var1 = ExtraDataFixUtils.copyField(var0, "Amount", var1, "amount");
-      return ExtraDataFixUtils.copyAndFixField(var0, "Operation", var1, "operation", var0x -> {
-         return var0x.createString(switch(var0x.asInt(0)) {
+      var1 = Dynamic.copyField(var0, "AttributeName", var1, "type");
+      var1 = Dynamic.copyField(var0, "Slot", var1, "slot");
+      var1 = Dynamic.copyField(var0, "UUID", var1, "uuid");
+      var1 = Dynamic.copyField(var0, "Name", var1, "name");
+      var1 = Dynamic.copyField(var0, "Amount", var1, "amount");
+      return Dynamic.copyAndFixField(var0, "Operation", var1, "operation", var0x -> {
+         return var0x.createString(switch (var0x.asInt(0)) {
             case 1 -> "add_multiplied_base";
             case 2 -> "add_multiplied_total";
             default -> "add_value";
@@ -389,7 +447,7 @@ public class ItemStackComponentizationFix extends DataFix {
    }
 
    private static String fixMapDecorationType(int var0) {
-      return switch(var0) {
+      return switch (var0) {
          case 1 -> "frame";
          case 2 -> "red_marker";
          case 3 -> "blue_marker";
@@ -473,7 +531,7 @@ public class ItemStackComponentizationFix extends DataFix {
       } else {
          ArrayList var4 = new ArrayList(var2.size());
 
-         for(int var5 = 0; var5 < var2.size(); ++var5) {
+         for (int var5 = 0; var5 < var2.size(); var5++) {
             String var6 = (String)var2.get(var5);
             String var7 = (String)var3.get(String.valueOf(var5));
             var4.add(createFilteredText(var1, var6, Optional.ofNullable(var7)));
@@ -484,7 +542,7 @@ public class ItemStackComponentizationFix extends DataFix {
    }
 
    private static Dynamic<?> createFilteredText(Dynamic<?> var0, String var1, Optional<String> var2) {
-      Dynamic var3 = var0.emptyMap().set("text", var0.createString(var1));
+      Dynamic var3 = var0.emptyMap().set("raw", var0.createString(var1));
       if (var2.isPresent()) {
          var3 = var3.set("filtered", var0.createString((String)var2.get()));
       }
@@ -495,7 +553,7 @@ public class ItemStackComponentizationFix extends DataFix {
    private static void fixBucketedMobData(ItemStackComponentizationFix.ItemStackData var0, Dynamic<?> var1) {
       Dynamic var2 = var1.emptyMap();
 
-      for(String var4 : BUCKETED_MOB_TAGS) {
+      for (String var4 : BUCKETED_MOB_TAGS) {
          var2 = var0.moveTagInto(var4, var2, var4);
       }
 
@@ -508,7 +566,7 @@ public class ItemStackComponentizationFix extends DataFix {
       Optional var2 = var0.removeTag("LodestonePos").result();
       Optional var3 = var0.removeTag("LodestoneDimension").result();
       if (!var2.isEmpty() || !var3.isEmpty()) {
-         boolean var4 = ExtraDataFixUtils.asBoolean(var0.removeTag("LodestoneTracked"), true);
+         boolean var4 = var0.removeTag("LodestoneTracked").asBoolean(true);
          Dynamic var5 = var1.emptyMap();
          if (var2.isPresent() && var3.isPresent()) {
             var5 = var5.set("target", var1.emptyMap().set("pos", (Dynamic)var2.get()).set("dimension", (Dynamic)var3.get()));
@@ -539,8 +597,8 @@ public class ItemStackComponentizationFix extends DataFix {
    }
 
    private static Dynamic<?> fixFireworkExplosion(Dynamic<?> var0) {
-      var0 = ExtraDataFixUtils.renameAndFixField(var0, "Type", "shape", var0x -> {
-         return var0x.createString(switch(var0x.asInt(0)) {
+      var0 = var0.renameAndFixField("Type", "shape", var0x -> {
+         return var0x.createString(switch (var0x.asInt(0)) {
             case 1 -> "large_ball";
             case 2 -> "star";
             case 3 -> "creeper";
@@ -548,10 +606,10 @@ public class ItemStackComponentizationFix extends DataFix {
             default -> "small_ball";
          });
       });
-      var0 = ExtraDataFixUtils.renameField(var0, "Colors", "colors");
-      var0 = ExtraDataFixUtils.renameField(var0, "FadeColors", "fade_colors");
-      var0 = ExtraDataFixUtils.renameField(var0, "Trail", "has_trail");
-      return ExtraDataFixUtils.renameField(var0, "Flicker", "has_twinkle");
+      var0 = var0.renameField("Colors", "colors");
+      var0 = var0.renameField("FadeColors", "fade_colors");
+      var0 = var0.renameField("Trail", "has_trail");
+      return var0.renameField("Flicker", "has_twinkle");
    }
 
    public static Dynamic<?> fixProfile(Dynamic<?> var0) {
@@ -586,9 +644,9 @@ public class ItemStackComponentizationFix extends DataFix {
    @Nullable
    private static Dynamic<?> fixProfileProperties(OptionalDynamic<?> var0) {
       Map var1 = var0.asMap(var0x -> var0x.asString(""), var0x -> var0x.asList(var0xx -> {
-            String var1xx = var0xx.get("Value").asString("");
+            String var1x = var0xx.get("Value").asString("");
             Optional var2 = var0xx.get("Signature").asString().result();
-            return Pair.of(var1xx, var2);
+            return Pair.of(var1x, var2);
          }));
       return var1.isEmpty() ? null : var0.createList(var1.entrySet().stream().flatMap(var1x -> ((List)var1x.getValue()).stream().map(var2 -> {
             Dynamic var3 = var0.emptyMap().set("name", var0.createString((String)var1x.getKey())).set("value", var0.createString((String)var2.getFirst()));
@@ -662,14 +720,14 @@ public class ItemStackComponentizationFix extends DataFix {
       }
 
       public void moveTagToComponent(String var1, String var2) {
-         this.removeTag(var1).result().ifPresent(var2x -> this.setComponent(var2, var2x));
+         this.removeTag(var1).result().ifPresent(var2x -> this.setComponent(var2, (Dynamic<?>)var2x));
       }
 
       public void fixSubTag(String var1, boolean var2, UnaryOperator<Dynamic<?>> var3) {
          OptionalDynamic var4 = this.tag.get(var1);
          if (!var2 || !var4.result().isEmpty()) {
             Dynamic var5 = var4.orElseEmptyMap();
-            var5 = (Dynamic)var3.apply(var5);
+            var5 = var3.apply(var5);
             if (var5.equals(var5.emptyMap())) {
                this.tag = this.tag.remove(var1);
             } else {
@@ -693,11 +751,11 @@ public class ItemStackComponentizationFix extends DataFix {
 
       private static <T> Dynamic<T> mergeRemainder(Dynamic<T> var0, Dynamic<?> var1) {
          DynamicOps var2 = var0.getOps();
-         return (Dynamic<T>)var2.getMap(var0.getValue())
+         return var2.getMap(var0.getValue())
             .flatMap(var2x -> var2.mergeToMap(var1.convert(var2).getValue(), var2x))
             .map(var1x -> new Dynamic(var2, var1x))
             .result()
-            .orElse((T)var0);
+            .orElse(var0);
       }
 
       public boolean is(String var1) {

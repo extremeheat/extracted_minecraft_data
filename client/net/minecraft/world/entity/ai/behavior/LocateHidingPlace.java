@@ -1,12 +1,8 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.Holder;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -45,7 +41,7 @@ public class LocateHidingPlace {
                                        var12.getRandom()
                                     )
                            )
-                           .or(() -> var3.tryGet(var5).map(GlobalPos::pos))
+                           .or(() -> var3.<GlobalPos>tryGet(var5).map(GlobalPos::pos))
                            .ifPresent(var10xx -> {
                               var7.erase();
                               var8.erase();

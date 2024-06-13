@@ -65,9 +65,7 @@ public class EntitySelectorParser {
          (var1x, var2) -> Doubles.compare(var2.distanceToSqr(var0), var1x.distanceToSqr(var0))
       );
    public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_RANDOM = (var0, var1) -> Collections.shuffle(var1);
-   public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> SUGGEST_NOTHING = (var0, var1) -> var0.buildFuture(
-         
-      );
+   public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> SUGGEST_NOTHING = (var0, var1) -> var0.buildFuture();
    private final StringReader reader;
    private final boolean allowSelectors;
    private int maxResults;
@@ -192,11 +190,7 @@ public class EntitySelectorParser {
       double var5 = (double)Mth.wrapDegrees(var1.max() == null ? 359.0F : var1.max());
       return var5x -> {
          double var6 = Mth.wrapDegrees(var2.applyAsDouble(var5x));
-         if (var3 > var5) {
-            return var6 >= var3 || var6 <= var5;
-         } else {
-            return var6 >= var3 && var6 <= var5;
-         }
+         return var3 > var5 ? var6 >= var3 || var6 <= var5 : var6 >= var3 && var6 <= var5;
       };
    }
 
@@ -276,7 +270,7 @@ public class EntitySelectorParser {
       this.suggestions = this::suggestOptionsKey;
       this.reader.skipWhitespace();
 
-      while(this.reader.canRead() && this.reader.peek() != ']') {
+      while (this.reader.canRead() && this.reader.peek() != ']') {
          this.reader.skipWhitespace();
          int var1 = this.reader.getCursor();
          String var2 = this.reader.readString();

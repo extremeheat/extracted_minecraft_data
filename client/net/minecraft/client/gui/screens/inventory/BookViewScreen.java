@@ -89,7 +89,7 @@ public class BookViewScreen extends Screen {
 
    protected void createPageControlButtons() {
       int var1 = (this.width - 192) / 2;
-      boolean var2 = true;
+      byte var2 = 2;
       this.forwardButton = this.addRenderableWidget(new PageButton(var1 + 116, 159, true, var1x -> this.pageForward(), this.playTurnSound));
       this.backButton = this.addRenderableWidget(new PageButton(var1 + 43, 159, false, var1x -> this.pageBack(), this.playTurnSound));
       this.updateButtonVisibility();
@@ -101,7 +101,7 @@ public class BookViewScreen extends Screen {
 
    protected void pageBack() {
       if (this.currentPage > 0) {
-         --this.currentPage;
+         this.currentPage--;
       }
 
       this.updateButtonVisibility();
@@ -109,7 +109,7 @@ public class BookViewScreen extends Screen {
 
    protected void pageForward() {
       if (this.currentPage < this.getNumPages() - 1) {
-         ++this.currentPage;
+         this.currentPage++;
       }
 
       this.updateButtonVisibility();
@@ -125,7 +125,7 @@ public class BookViewScreen extends Screen {
       if (super.keyPressed(var1, var2, var3)) {
          return true;
       } else {
-         switch(var1) {
+         switch (var1) {
             case 266:
                this.backButton.onPress();
                return true;
@@ -142,7 +142,7 @@ public class BookViewScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       int var5 = (this.width - 192) / 2;
-      boolean var6 = true;
+      byte var6 = 2;
       if (this.cachedPage != this.currentPage) {
          FormattedText var7 = this.bookAccess.getPage(this.currentPage);
          this.cachedPageComponents = this.font.split(var7, 114);
@@ -154,7 +154,7 @@ public class BookViewScreen extends Screen {
       var1.drawString(this.font, this.pageMsg, var5 - var11 + 192 - 44, 18, 0, false);
       int var8 = Math.min(128 / 9, this.cachedPageComponents.size());
 
-      for(int var9 = 0; var9 < var8; ++var9) {
+      for (int var9 = 0; var9 < var8; var9++) {
          FormattedCharSequence var10 = this.cachedPageComponents.get(var9);
          var1.drawString(this.font, var10, var5 + 36, 32 + var9 * 9, 0, false);
       }
@@ -237,12 +237,10 @@ public class BookViewScreen extends Screen {
       }
    }
 
-   public static record BookAccess(List<Component> a) {
-      private final List<Component> pages;
-
-      public BookAccess(List<Component> var1) {
+   public static record BookAccess(List<Component> pages) {
+      public BookAccess(List<Component> pages) {
          super();
-         this.pages = var1;
+         this.pages = pages;
       }
 
       public int getPageCount() {

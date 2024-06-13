@@ -78,7 +78,7 @@ public class RegionFile implements AutoCloseable {
 
             long var7 = Files.size(var2);
 
-            for(int var9 = 0; var9 < 1024; ++var9) {
+            for (int var9 = 0; var9 < 1024; var9++) {
                int var10 = this.offsets.get(var9);
                if (var10 != 0) {
                   int var11 = getSectorNumber(var10);

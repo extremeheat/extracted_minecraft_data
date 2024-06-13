@@ -39,20 +39,20 @@ public class RealmsConnect {
             @Override
             public void run() {
                InetSocketAddress var1x = null;
-   
+
                try {
                   var1x = new InetSocketAddress(var4, var5);
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
-   
+
                   RealmsConnect.this.connection = Connection.connectToServer(
                      var1x, var3.options.useNativeTransport(), var3.getDebugOverlay().getBandwidthLogger()
                   );
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
-   
+
                   ClientHandshakePacketListenerImpl var2 = new ClientHandshakePacketListenerImpl(
                      RealmsConnect.this.connection, var3, var1.toServerData(var4), RealmsConnect.this.onlineScreen, false, null, var0 -> {
                      }, null
@@ -60,16 +60,16 @@ public class RealmsConnect {
                   if (var1.worldType == RealmsServer.WorldType.MINIGAME) {
                      var2.setMinigameName(var1.minigameName);
                   }
-   
+
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
-   
+
                   RealmsConnect.this.connection.initiateServerboundPlayConnection(var4, var5, var2);
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
-   
+
                   RealmsConnect.this.connection.send(new ServerboundHelloPacket(var3.getUser().getName(), var3.getUser().getProfileId()));
                   var3.updateReportEnvironment(ReportEnvironment.realm(var1));
                   var3.quickPlayLog().setWorldData(QuickPlayLog.Type.REALMS, String.valueOf(var1.id), var1.name);
@@ -79,14 +79,14 @@ public class RealmsConnect {
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
-   
+
                   RealmsConnect.LOGGER.error("Couldn't connect to world", var5x);
                   String var3x = var5x.toString();
                   if (var1x != null) {
                      String var4x = var1x + ":" + var5;
                      var3x = var3x.replaceAll(var4x, "");
                   }
-   
+
                   DisconnectedRealmsScreen var6 = new DisconnectedRealmsScreen(
                      RealmsConnect.this.onlineScreen, CommonComponents.CONNECT_FAILED, Component.translatable("disconnect.genericReason", var3x)
                   );

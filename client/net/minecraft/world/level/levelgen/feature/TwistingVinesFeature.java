@@ -31,7 +31,7 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
          int var8 = var5.maxHeight();
          BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
 
-         for(int var10 = 0; var10 < var6 * var6; ++var10) {
+         for (int var10 = 0; var10 < var6 * var6; var10++) {
             var9.set(var3).move(Mth.nextInt(var4, -var6, var6), Mth.nextInt(var4, -var7, var7), Mth.nextInt(var4, -var6, var6));
             if (findFirstAirBlockAboveGround(var2, var9) && !isInvalidPlacementLocation(var2, var9)) {
                int var11 = Mth.nextInt(var4, 1, var8);
@@ -43,8 +43,8 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
                   var11 = 1;
                }
 
-               boolean var12 = true;
-               boolean var13 = true;
+               byte var12 = 17;
+               byte var13 = 25;
                placeWeepingVinesColumn(var2, var4, var9, var11, 17, 25);
             }
          }
@@ -59,14 +59,14 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
          if (var0.isOutsideBuildHeight(var1)) {
             return false;
          }
-      } while(var0.getBlockState(var1).isAir());
+      } while (var0.getBlockState(var1).isAir());
 
       var1.move(0, 1, 0);
       return true;
    }
 
    public static void placeWeepingVinesColumn(LevelAccessor var0, RandomSource var1, BlockPos.MutableBlockPos var2, int var3, int var4, int var5) {
-      for(int var6 = 1; var6 <= var3; ++var6) {
+      for (int var6 = 1; var6 <= var3; var6++) {
          if (var0.isEmptyBlock(var2)) {
             if (var6 == var3 || !var0.isEmptyBlock(var2.above())) {
                var0.setBlock(
@@ -87,10 +87,7 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
          return true;
       } else {
          BlockState var2 = var0.getBlockState(var1.below());
-         return !var2.is(Blocks.NETHERRACK)
-            && !var2.is(Blocks.WARPED_NYLIUM)
-            && !var2.is(Blocks.WARPED_WART_BLOCK)
-            && !var2.is(Blocks.CORRUPTED_PEELGRASS_BLOCK);
+         return !var2.is(Blocks.NETHERRACK) && !var2.is(Blocks.WARPED_NYLIUM) && !var2.is(Blocks.WARPED_WART_BLOCK);
       }
    }
 }

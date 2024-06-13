@@ -2,14 +2,15 @@ package net.minecraft.client.gui.screens.worldselection;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.Collection;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -58,6 +59,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       var1.addChild(Button.builder(CommonComponents.GUI_PROCEED, var1x -> this.callback.accept(true)).build());
       var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.callback.accept(false)).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.layout.arrangeElements();
       this.repositionElements();
@@ -76,6 +78,8 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
    class DetailsScreen extends Screen {
       private static final Component TITLE = Component.translatable("selectWorld.experimental.details.title");
       final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+      @Nullable
+      private ConfirmExperimentalFeaturesScreen.DetailsScreen.PackList list;
 
       DetailsScreen() {
          super(TITLE);
@@ -84,16 +88,23 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       @Override
       protected void init() {
          this.layout.addTitleHeader(TITLE, this.font);
-         this.layout
-            .addToContents(new ConfirmExperimentalFeaturesScreen.DetailsScreen.PackList(this.minecraft, ConfirmExperimentalFeaturesScreen.this.enabledPacks));
+         this.list = this.layout
+            .addToContents(
+               new ConfirmExperimentalFeaturesScreen.DetailsScreen.PackList(this, this.minecraft, ConfirmExperimentalFeaturesScreen.this.enabledPacks)
+            );
          this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).build());
          this.layout.visitWidgets(var1 -> {
+            AbstractWidget var10000 = this.addRenderableWidget(var1);
          });
          this.repositionElements();
       }
 
       @Override
       protected void repositionElements() {
+         if (this.list != null) {
+            this.list.updateSize(this.width, this.layout);
+         }
+
          this.layout.arrangeElements();
       }
 
@@ -103,15 +114,15 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       }
 
       class PackList extends ObjectSelectionList<ConfirmExperimentalFeaturesScreen.DetailsScreen.PackListEntry> {
-         public PackList(Minecraft var2, Collection<Pack> var3) {
-            super(var2, DetailsScreen.this.width, DetailsScreen.this.layout.getContentHeight(), DetailsScreen.this.layout.getHeaderHeight(), (9 + 2) * 3);
+         public PackList(Minecraft var1, Collection<Pack> var2, Collection var3) {
+            super(var2, var1.width, var1.layout.getContentHeight(), var1.layout.getHeaderHeight(), (9 + 2) * 3);
 
-            for(Pack var5 : var3) {
+            for (Pack var5 : var3) {
                String var6 = FeatureFlags.printMissingFlags(FeatureFlags.VANILLA_SET, var5.getRequestedFeatures());
                if (!var6.isEmpty()) {
                   MutableComponent var7 = ComponentUtils.mergeStyles(var5.getTitle().copy(), Style.EMPTY.withBold(true));
                   MutableComponent var8 = Component.translatable("selectWorld.experimental.details.entry", var6);
-                  this.addEntry(DetailsScreen.this.new PackListEntry(var7, var8, MultiLineLabel.create(DetailsScreen.this.font, var8, this.getRowWidth())));
+                  this.addEntry(var1.new PackListEntry(var7, var8, MultiLineLabel.create(var1.font, var8, this.getRowWidth())));
                }
             }
          }

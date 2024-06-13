@@ -50,9 +50,9 @@ public class UseBonemeal extends Behavior<Villager> {
       Optional var4 = Optional.empty();
       int var5 = 0;
 
-      for(int var6 = -1; var6 <= 1; ++var6) {
-         for(int var7 = -1; var7 <= 1; ++var7) {
-            for(int var8 = -1; var8 <= 1; ++var8) {
+      for (int var6 = -1; var6 <= 1; var6++) {
+         for (int var7 = -1; var7 <= 1; var7++) {
+            for (int var8 = -1; var8 <= 1; var8++) {
                var3.setWithOffset(var2.blockPosition(), var6, var7, var8);
                if (this.validPos(var3, var1)) {
                   if (var1.random.nextInt(++var5) == 0) {
@@ -99,7 +99,7 @@ public class UseBonemeal extends Behavior<Villager> {
          SimpleContainer var7 = var2.getInventory();
          int var8 = var7.getContainerSize();
 
-         for(int var9 = 0; var9 < var8; ++var9) {
+         for (int var9 = 0; var9 < var8; var9++) {
             ItemStack var10 = var7.getItem(var9);
             if (var10.is(Items.BONE_MEAL)) {
                var6 = var10;
@@ -114,7 +114,7 @@ public class UseBonemeal extends Behavior<Villager> {
             this.nextWorkCycleTime = var3 + 40L;
          }
 
-         ++this.timeWorkedSoFar;
+         this.timeWorkedSoFar++;
       }
    }
 }

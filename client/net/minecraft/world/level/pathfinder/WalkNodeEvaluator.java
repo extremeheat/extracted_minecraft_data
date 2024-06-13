@@ -61,9 +61,9 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       BlockState var3 = this.currentContext.getBlockState(var2.set(this.mob.getX(), (double)var1, this.mob.getZ()));
       if (!this.mob.canStandOnFluid(var3.getFluidState())) {
          if (this.canFloat() && this.mob.isInWater()) {
-            while(true) {
+            while (true) {
                if (!var3.is(Blocks.WATER) && var3.getFluidState() != Fluids.WATER.getSource(false)) {
-                  --var1;
+                  var1--;
                   break;
                }
 
@@ -74,7 +74,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          } else {
             var2.set(this.mob.getX(), this.mob.getY() + 1.0, this.mob.getZ());
 
-            while(var2.getY() > this.currentContext.level().getMinBuildHeight()) {
+            while (var2.getY() > this.currentContext.level().getMinBuildHeight()) {
                var1 = var2.getY();
                var2.setY(var2.getY() - 1);
                BlockState var4 = this.currentContext.getBlockState(var2);
@@ -84,11 +84,11 @@ public class WalkNodeEvaluator extends NodeEvaluator {
             }
          }
       } else {
-         while(this.mob.canStandOnFluid(var3.getFluidState())) {
+         while (this.mob.canStandOnFluid(var3.getFluidState())) {
             var3 = this.currentContext.getBlockState(var2.set(this.mob.getX(), (double)(++var1), this.mob.getZ()));
          }
 
-         --var1;
+         var1--;
       }
 
       BlockPos var6 = this.mob.blockPosition();
@@ -134,7 +134,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
 
       double var7 = this.getFloorLevel(new BlockPos(var2.x, var2.y, var2.z));
 
-      for(Direction var10 : Direction.Plane.HORIZONTAL) {
+      for (Direction var10 : Direction.Plane.HORIZONTAL) {
          Node var11 = this.findAcceptedNode(var2.x + var10.getStepX(), var2.y, var2.z + var10.getStepZ(), var4, var7, var10, var6);
          this.reusableNeighbors[var10.get2DDataValue()] = var11;
          if (this.isNeighborValid(var11, var2)) {
@@ -142,7 +142,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          }
       }
 
-      for(Direction var14 : Direction.Plane.HORIZONTAL) {
+      for (Direction var14 : Direction.Plane.HORIZONTAL) {
          Direction var15 = var14.getClockWise();
          if (this.isDiagonalValid(var2, this.reusableNeighbors[var14.get2DDataValue()], this.reusableNeighbors[var15.get2DDataValue()])) {
             Node var12 = this.findAcceptedNode(
@@ -175,10 +175,8 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    protected boolean isDiagonalValid(@Nullable Node var1) {
       if (var1 == null || var1.closed) {
          return false;
-      } else if (var1.type == PathType.WALKABLE_DOOR) {
-         return false;
       } else {
-         return var1.costMalus >= 0.0F;
+         return var1.type == PathType.WALKABLE_DOOR ? false : var1.costMalus >= 0.0F;
       }
    }
 
@@ -196,7 +194,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       int var4 = Mth.ceil(var3.length() / var2.getSize());
       var3 = var3.scale((double)(1.0F / (float)var4));
 
-      for(int var5 = 1; var5 <= var4; ++var5) {
+      for (int var5 = 1; var5 <= var4; var5++) {
          var2 = var2.move(var3);
          if (this.hasCollisions(var2)) {
             return false;
@@ -315,23 +313,23 @@ public class WalkNodeEvaluator extends NodeEvaluator {
 
    @Nullable
    private Node tryFindFirstNonWaterBelow(int var1, int var2, int var3, @Nullable Node var4) {
-      --var2;
+      var2--;
 
-      while(var2 > this.mob.level().getMinBuildHeight()) {
+      while (var2 > this.mob.level().getMinBuildHeight()) {
          PathType var5 = this.getCachedPathType(var1, var2, var3);
          if (var5 != PathType.WATER) {
             return var4;
          }
 
          var4 = this.getNodeAndUpdateCostToMax(var1, var2, var3, var5, this.mob.getPathfindingMalus(var5));
-         --var2;
+         var2--;
       }
 
       return var4;
    }
 
    private Node tryFindFirstGroundNodeBelow(int var1, int var2, int var3) {
-      for(int var4 = var2 - 1; var4 >= this.mob.level().getMinBuildHeight(); --var4) {
+      for (int var4 = var2 - 1; var4 >= this.mob.level().getMinBuildHeight(); var4--) {
          if (var2 - var4 > this.mob.getMaxFallDistance()) {
             return this.getBlockedNode(var1, var4, var3);
          }
@@ -369,7 +367,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       } else {
          PathType var7 = PathType.BLOCKED;
 
-         for(PathType var9 : var6) {
+         for (PathType var9 : var6) {
             if (var5.getPathfindingMalus(var9) < 0.0F) {
                return var9;
             }
@@ -391,9 +389,9 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    public Set<PathType> getPathTypeWithinMobBB(PathfindingContext var1, int var2, int var3, int var4) {
       EnumSet var5 = EnumSet.noneOf(PathType.class);
 
-      for(int var6 = 0; var6 < this.entityWidth; ++var6) {
-         for(int var7 = 0; var7 < this.entityHeight; ++var7) {
-            for(int var8 = 0; var8 < this.entityDepth; ++var8) {
+      for (int var6 = 0; var6 < this.entityWidth; var6++) {
+         for (int var7 = 0; var7 < this.entityHeight; var7++) {
+            for (int var8 = 0; var8 < this.entityDepth; var8++) {
                int var9 = var6 + var2;
                int var10 = var7 + var3;
                int var11 = var8 + var4;
@@ -437,7 +435,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       int var4 = var1.getZ();
       PathType var5 = var0.getPathTypeFromState(var2, var3, var4);
       if (var5 == PathType.OPEN && var3 >= var0.level().getMinBuildHeight() + 1) {
-         return switch(var0.getPathTypeFromState(var2, var3 - 1, var4)) {
+         return switch (var0.getPathTypeFromState(var2, var3 - 1, var4)) {
             case OPEN, WATER, LAVA, WALKABLE -> PathType.OPEN;
             case DAMAGE_FIRE -> PathType.DAMAGE_FIRE;
             case DAMAGE_OTHER -> PathType.DAMAGE_OTHER;
@@ -453,9 +451,9 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    }
 
    public static PathType checkNeighbourBlocks(PathfindingContext var0, int var1, int var2, int var3, PathType var4) {
-      for(int var5 = -1; var5 <= 1; ++var5) {
-         for(int var6 = -1; var6 <= 1; ++var6) {
-            for(int var7 = -1; var7 <= 1; ++var7) {
+      for (int var5 = -1; var5 <= 1; var5++) {
+         for (int var6 = -1; var6 <= 1; var6++) {
+            for (int var7 = -1; var7 <= 1; var7++) {
                if (var5 != 0 || var7 != 0) {
                   PathType var8 = var0.getPathTypeFromState(var1 + var5, var2 + var6, var3 + var7);
                   if (var8 == PathType.DAMAGE_OTHER) {
@@ -481,8 +479,6 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       return var4;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected static PathType getPathTypeFromState(BlockGetter var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
       Block var3 = var2.getBlock();

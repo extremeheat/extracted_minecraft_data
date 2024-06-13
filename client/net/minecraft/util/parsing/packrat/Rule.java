@@ -23,14 +23,11 @@ public interface Rule<S, T> {
       T run(Scope var1);
    }
 
-   public static record WrappedTerm<S, T>(Rule.RuleAction<S, T> a, Term<S> b) implements Rule<S, T> {
-      private final Rule.RuleAction<S, T> action;
-      private final Term<S> child;
-
-      public WrappedTerm(Rule.RuleAction<S, T> var1, Term<S> var2) {
+   public static record WrappedTerm<S, T>(Rule.RuleAction<S, T> action, Term<S> child) implements Rule<S, T> {
+      public WrappedTerm(Rule.RuleAction<S, T> action, Term<S> child) {
          super();
-         this.action = var1;
-         this.child = var2;
+         this.action = action;
+         this.child = child;
       }
 
       @Override

@@ -43,7 +43,7 @@ public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> e
       var1.translate(2.5F, 0.0F, 0.0F);
       VertexConsumer var17 = var2.getBuffer(RenderType.entityCutoutNoCull(BEE_STINGER_LOCATION));
 
-      for(int var18 = 0; var18 < 4; ++var18) {
+      for (int var18 = 0; var18 < 4; var18++) {
          var1.mulPose(Axis.XP.rotationDegrees(90.0F));
          PoseStack.Pose var19 = var1.last();
          vertex(var17, var19, -4.5F, -1, 0.0F, 0.0F, var3);

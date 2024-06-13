@@ -15,7 +15,7 @@ public class OpenAlUtil {
    }
 
    private static String alErrorToString(int var0) {
-      switch(var0) {
+      switch (var0) {
          case 40961:
             return "Invalid name parameter.";
          case 40962:
@@ -42,7 +42,7 @@ public class OpenAlUtil {
    }
 
    private static String alcErrorToString(int var0) {
-      switch(var0) {
+      switch (var0) {
          case 40961:
             return "Invalid device.";
          case 40962:

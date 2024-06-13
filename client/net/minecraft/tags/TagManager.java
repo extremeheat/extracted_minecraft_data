@@ -50,8 +50,8 @@ public class TagManager implements PreparableReloadListener {
    public CompletableFuture<Void> reload(
       PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
    ) {
-      List var7 = this.registryAccess.registries().map(var3x -> this.createLoader(var2, var5, var3x)).toList();
-      return CompletableFuture.allOf(var7.toArray(var0 -> new CompletableFuture[var0]))
+      List var7 = this.registryAccess.registries().map(var3x -> this.createLoader(var2, var5, (RegistryAccess.RegistryEntry<?>)var3x)).toList();
+      return CompletableFuture.allOf(var7.toArray(CompletableFuture[]::new))
          .thenCompose(var1::wait)
          .thenAcceptAsync(var2x -> this.results = var7.stream().map(CompletableFuture::join).collect(Collectors.toUnmodifiableList()), var6);
    }
@@ -60,17 +60,14 @@ public class TagManager implements PreparableReloadListener {
       ResourceKey var4 = var3.key();
       Registry var5 = var3.value();
       TagLoader var6 = new TagLoader<>(var5::getHolder, getTagDir(var4));
-      return CompletableFuture.supplyAsync(() -> new TagManager.LoadResult(var4, var6.loadAndBuild(var1)), var2);
+      return CompletableFuture.supplyAsync(() -> new TagManager.LoadResult<>(var4, var6.loadAndBuild(var1)), var2);
    }
 
-   public static record LoadResult<T>(ResourceKey<? extends Registry<T>> a, Map<ResourceLocation, Collection<Holder<T>>> b) {
-      private final ResourceKey<? extends Registry<T>> key;
-      private final Map<ResourceLocation, Collection<Holder<T>>> tags;
-
-      public LoadResult(ResourceKey<? extends Registry<T>> var1, Map<ResourceLocation, Collection<Holder<T>>> var2) {
+   public static record LoadResult<T>(ResourceKey<? extends Registry<T>> key, Map<ResourceLocation, Collection<Holder<T>>> tags) {
+      public LoadResult(ResourceKey<? extends Registry<T>> key, Map<ResourceLocation, Collection<Holder<T>>> tags) {
          super();
-         this.key = var1;
-         this.tags = var2;
+         this.key = key;
+         this.tags = tags;
       }
    }
 }

@@ -1,18 +1,15 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.google.common.collect.Sets;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 
-public record BinomialDistributionGenerator(NumberProvider b, NumberProvider c) implements NumberProvider {
-   private final NumberProvider n;
-   private final NumberProvider p;
-   public static final Codec<BinomialDistributionGenerator> CODEC = RecordCodecBuilder.create(
+public record BinomialDistributionGenerator(NumberProvider n, NumberProvider p) implements NumberProvider {
+   public static final MapCodec<BinomialDistributionGenerator> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n),
                NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)
@@ -20,10 +17,10 @@ public record BinomialDistributionGenerator(NumberProvider b, NumberProvider c) 
             .apply(var0, BinomialDistributionGenerator::new)
    );
 
-   public BinomialDistributionGenerator(NumberProvider var1, NumberProvider var2) {
+   public BinomialDistributionGenerator(NumberProvider n, NumberProvider p) {
       super();
-      this.n = var1;
-      this.p = var2;
+      this.n = n;
+      this.p = p;
    }
 
    @Override
@@ -38,9 +35,9 @@ public record BinomialDistributionGenerator(NumberProvider b, NumberProvider c) 
       RandomSource var4 = var1.getRandom();
       int var5 = 0;
 
-      for(int var6 = 0; var6 < var2; ++var6) {
+      for (int var6 = 0; var6 < var2; var6++) {
          if (var4.nextFloat() < var3) {
-            ++var5;
+            var5++;
          }
       }
 

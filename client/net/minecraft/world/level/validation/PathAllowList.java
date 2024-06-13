@@ -31,12 +31,12 @@ public class PathAllowList implements PathMatcher {
             LOGGER.error("Failed to compile file pattern list", var5);
             return var0 -> false;
          }
-         return switch(var3.size()) {
+         return switch (var3.size()) {
             case 0 -> var0 -> false;
             case 1 -> (PathMatcher)var3.get(0);
             default -> var1xx -> {
-            for(PathMatcher var3xx : var3) {
-               if (var3xx.matches(var1xx)) {
+            for (PathMatcher var3x : var3) {
+               if (var3x.matches(var1xx)) {
                   return true;
                }
             }
@@ -56,14 +56,11 @@ public class PathAllowList implements PathMatcher {
       return new PathAllowList(var0.lines().flatMap(var0x -> PathAllowList.ConfigEntry.parse(var0x).stream()).toList());
    }
 
-   public static record ConfigEntry(PathAllowList.EntryType a, String b) {
-      private final PathAllowList.EntryType type;
-      private final String pattern;
-
-      public ConfigEntry(PathAllowList.EntryType var1, String var2) {
+   public static record ConfigEntry(PathAllowList.EntryType type, String pattern) {
+      public ConfigEntry(PathAllowList.EntryType type, String pattern) {
          super();
-         this.type = var1;
-         this.pattern = var2;
+         this.type = type;
+         this.pattern = pattern;
       }
 
       public PathMatcher compile(FileSystem var1) {
@@ -83,7 +80,7 @@ public class PathAllowList implements PathMatcher {
                String var2 = var0.substring(1, var1);
                String var3 = var0.substring(var1 + 1);
 
-               return switch(var2) {
+               return switch (var2) {
                   case "glob", "regex" -> Optional.of(new PathAllowList.ConfigEntry(PathAllowList.EntryType.FILESYSTEM, var2 + ":" + var3));
                   case "prefix" -> Optional.of(new PathAllowList.ConfigEntry(PathAllowList.EntryType.PREFIX, var3));
                   default -> throw new IllegalArgumentException("Unsupported definition type in line '" + var0 + "'");

@@ -5,7 +5,6 @@ import com.mojang.datafixers.util.Function3;
 import com.mojang.datafixers.util.Function4;
 import com.mojang.datafixers.util.Function5;
 import com.mojang.datafixers.util.Function6;
-import com.mojang.datafixers.util.Function7;
 import io.netty.buffer.ByteBuf;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -65,12 +64,12 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, O>() {
          @Override
          public O decode(B var1x) {
-            return (O)var1.apply(StreamCodec.this.decode(var1x));
+            return (O)var1.apply(StreamCodec.this.decode((B)var1x));
          }
 
          @Override
          public void encode(B var1x, O var2x) {
-            StreamCodec.this.encode(var1x, var2.apply(var2x));
+            StreamCodec.this.encode((B)var1x, (V)var2.apply(var2x));
          }
       };
    }
@@ -79,12 +78,12 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<O, V>() {
          public V decode(O var1x) {
             Object var2 = var1.apply(var1x);
-            return StreamCodec.this.decode(var2);
+            return StreamCodec.this.decode((B)var2);
          }
 
          public void encode(O var1x, V var2) {
             Object var3 = var1.apply(var1x);
-            StreamCodec.this.encode(var3, var2);
+            StreamCodec.this.encode((B)var3, (V)var2);
          }
       };
    }
@@ -95,17 +94,17 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, U>() {
          @Override
          public U decode(B var1x) {
-            Object var2x = StreamCodec.this.decode(var1x);
+            Object var2x = StreamCodec.this.decode((B)var1x);
             StreamCodec var3 = (StreamCodec)var2.apply(var2x);
-            return (U)var3.decode(var1x);
+            return (U)var3.decode((B)var1x);
          }
 
          @Override
          public void encode(B var1x, U var2x) {
             Object var3 = var1.apply(var2x);
             StreamCodec var4 = (StreamCodec)var2.apply(var3);
-            StreamCodec.this.encode(var1x, var3);
-            var4.encode(var1x, var2x);
+            StreamCodec.this.encode((B)var1x, (V)var3);
+            var4.encode((B)var1x, (V)var2x);
          }
       };
    }
@@ -114,13 +113,13 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, C>() {
          @Override
          public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
+            Object var2x = var0.decode((B)var1x);
             return (C)var2.apply(var2x);
          }
 
          @Override
          public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
+            var0.encode((B)var1x, (V)var1.apply(var2x));
          }
       };
    }
@@ -135,15 +134,15 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, C>() {
          @Override
          public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
+            Object var2x = var0.decode((B)var1x);
+            Object var3x = var2.decode((B)var1x);
             return (C)var4.apply(var2x, var3x);
          }
 
          @Override
          public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
+            var0.encode((B)var1x, (V)var1.apply(var2x));
+            var2.encode((B)var1x, (V)var3.apply(var2x));
          }
       };
    }
@@ -160,17 +159,17 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, C>() {
          @Override
          public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
+            Object var2x = var0.decode((B)var1x);
+            Object var3x = var2.decode((B)var1x);
+            Object var4x = var4.decode((B)var1x);
             return (C)var6.apply(var2x, var3x, var4x);
          }
 
          @Override
          public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
+            var0.encode((B)var1x, (V)var1.apply(var2x));
+            var2.encode((B)var1x, (V)var3.apply(var2x));
+            var4.encode((B)var1x, (V)var5.apply(var2x));
          }
       };
    }
@@ -189,19 +188,19 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, C>() {
          @Override
          public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
+            Object var2x = var0.decode((B)var1x);
+            Object var3x = var2.decode((B)var1x);
+            Object var4x = var4.decode((B)var1x);
+            Object var5x = var6.decode((B)var1x);
             return (C)var8.apply(var2x, var3x, var4x, var5x);
          }
 
          @Override
          public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
+            var0.encode((B)var1x, (V)var1.apply(var2x));
+            var2.encode((B)var1x, (V)var3.apply(var2x));
+            var4.encode((B)var1x, (V)var5.apply(var2x));
+            var6.encode((B)var1x, (V)var7.apply(var2x));
          }
       };
    }
@@ -222,21 +221,21 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, C>() {
          @Override
          public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
+            Object var2x = var0.decode((B)var1x);
+            Object var3x = var2.decode((B)var1x);
+            Object var4x = var4.decode((B)var1x);
+            Object var5x = var6.decode((B)var1x);
+            Object var6x = var8.decode((B)var1x);
             return (C)var10.apply(var2x, var3x, var4x, var5x, var6x);
          }
 
          @Override
          public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
+            var0.encode((B)var1x, (V)var1.apply(var2x));
+            var2.encode((B)var1x, (V)var3.apply(var2x));
+            var4.encode((B)var1x, (V)var5.apply(var2x));
+            var6.encode((B)var1x, (V)var7.apply(var2x));
+            var8.encode((B)var1x, (V)var9.apply(var2x));
          }
       };
    }
@@ -259,66 +258,23 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, C>() {
          @Override
          public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
+            Object var2x = var0.decode((B)var1x);
+            Object var3x = var2.decode((B)var1x);
+            Object var4x = var4.decode((B)var1x);
+            Object var5x = var6.decode((B)var1x);
+            Object var6x = var8.decode((B)var1x);
+            Object var7x = var10.decode((B)var1x);
             return (C)var12.apply(var2x, var3x, var4x, var5x, var6x, var7x);
          }
 
          @Override
          public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
-         }
-      };
-   }
-
-   static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(
-      final StreamCodec<? super B, T1> var0,
-      final Function<C, T1> var1,
-      final StreamCodec<? super B, T2> var2,
-      final Function<C, T2> var3,
-      final StreamCodec<? super B, T3> var4,
-      final Function<C, T3> var5,
-      final StreamCodec<? super B, T4> var6,
-      final Function<C, T4> var7,
-      final StreamCodec<? super B, T5> var8,
-      final Function<C, T5> var9,
-      final StreamCodec<? super B, T6> var10,
-      final Function<C, T6> var11,
-      final StreamCodec<? super B, T7> var12,
-      final Function<C, T7> var13,
-      final Function7<T1, T2, T3, T4, T5, T6, T7, C> var14
-   ) {
-      return new StreamCodec<B, C>() {
-         @Override
-         public C decode(B var1x) {
-            Object var2x = var0.decode(var1x);
-            Object var3x = var2.decode(var1x);
-            Object var4x = var4.decode(var1x);
-            Object var5x = var6.decode(var1x);
-            Object var6x = var8.decode(var1x);
-            Object var7x = var10.decode(var1x);
-            Object var8x = var12.decode(var1x);
-            return (C)var14.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x);
-         }
-
-         @Override
-         public void encode(B var1x, C var2x) {
-            var0.encode(var1x, var1.apply(var2x));
-            var2.encode(var1x, var3.apply(var2x));
-            var4.encode(var1x, var5.apply(var2x));
-            var6.encode(var1x, var7.apply(var2x));
-            var8.encode(var1x, var9.apply(var2x));
-            var10.encode(var1x, var11.apply(var2x));
-            var12.encode(var1x, var13.apply(var2x));
+            var0.encode((B)var1x, (V)var1.apply(var2x));
+            var2.encode((B)var1x, (V)var3.apply(var2x));
+            var4.encode((B)var1x, (V)var5.apply(var2x));
+            var6.encode((B)var1x, (V)var7.apply(var2x));
+            var8.encode((B)var1x, (V)var9.apply(var2x));
+            var10.encode((B)var1x, (V)var11.apply(var2x));
          }
       };
    }
@@ -329,12 +285,12 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
 
          @Override
          public T decode(B var1) {
-            return this.inner.get().decode(var1);
+            return this.inner.get().decode((B)var1);
          }
 
          @Override
          public void encode(B var1, T var2) {
-            this.inner.get().encode(var1, var2);
+            this.inner.get().encode((B)var1, (T)var2);
          }
       };
    }

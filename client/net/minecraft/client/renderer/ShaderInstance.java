@@ -9,7 +9,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.shaders.BlendMode;
@@ -37,7 +36,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
 import org.apache.commons.io.IOUtils;
-import org.joml.Matrix4f;
 import org.slf4j.Logger;
 
 public class ShaderInstance implements Shader, AutoCloseable {
@@ -107,7 +105,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
          if (var9 != null) {
             int var10 = 0;
 
-            for(JsonElement var12 : var9) {
+            for (JsonElement var12 : var9) {
                try {
                   this.parseSamplerNode(var12);
                } catch (Exception var18) {
@@ -116,7 +114,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
                   throw var14;
                }
 
-               ++var10;
+               var10++;
             }
          }
 
@@ -124,7 +122,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
          if (var22 != null) {
             int var23 = 0;
 
-            for(JsonElement var13 : var22) {
+            for (JsonElement var13 : var22) {
                try {
                   this.parseUniformNode(var13);
                } catch (Exception var17) {
@@ -133,7 +131,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
                   throw var15;
                }
 
-               ++var23;
+               var23++;
             }
          }
 
@@ -143,7 +141,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
          this.programId = ProgramManager.createProgram();
          int var24 = 0;
 
-         for(UnmodifiableIterator var26 = var3.getElementAttributeNames().iterator(); var26.hasNext(); ++var24) {
+         for (UnmodifiableIterator var26 = var3.getElementAttributeNames().iterator(); var26.hasNext(); var24++) {
             String var27 = (String)var26.next();
             Uniform.glBindAttribLocation(this.programId, var24, var27);
          }
@@ -276,7 +274,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
 
    @Override
    public void close() {
-      for(Uniform var2 : this.uniforms) {
+      for (Uniform var2 : this.uniforms) {
          var2.close();
       }
 
@@ -290,7 +288,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
       lastAppliedShader = null;
       int var1 = GlStateManager._getActiveTexture();
 
-      for(int var2 = 0; var2 < this.samplerLocations.size(); ++var2) {
+      for (int var2 = 0; var2 < this.samplerLocations.size(); var2++) {
          if (this.samplerMap.get(this.samplerNames.get(var2)) != null) {
             GlStateManager._activeTexture(33984 + var2);
             GlStateManager._bindTexture(0);
@@ -312,7 +310,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
 
       int var1 = GlStateManager._getActiveTexture();
 
-      for(int var2 = 0; var2 < this.samplerLocations.size(); ++var2) {
+      for (int var2 = 0; var2 < this.samplerLocations.size(); var2++) {
          String var3 = this.samplerNames.get(var2);
          if (this.samplerMap.get(var3) != null) {
             int var4 = Uniform.glGetUniformLocation(this.programId, var3);
@@ -336,7 +334,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
 
       GlStateManager._activeTexture(var1);
 
-      for(Uniform var8 : this.uniforms) {
+      for (Uniform var8 : this.uniforms) {
          var8.upload();
       }
    }
@@ -362,7 +360,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
       RenderSystem.assertOnRenderThread();
       IntArrayList var1 = new IntArrayList();
 
-      for(int var2 = 0; var2 < this.samplerNames.size(); ++var2) {
+      for (int var2 = 0; var2 < this.samplerNames.size(); var2++) {
          String var3 = this.samplerNames.get(var2);
          int var4 = Uniform.glGetUniformLocation(this.programId, var3);
          if (var4 == -1) {
@@ -374,12 +372,12 @@ public class ShaderInstance implements Shader, AutoCloseable {
          }
       }
 
-      for(int var6 = var1.size() - 1; var6 >= 0; --var6) {
+      for (int var6 = var1.size() - 1; var6 >= 0; var6--) {
          int var8 = var1.getInt(var6);
          this.samplerNames.remove(var8);
       }
 
-      for(Uniform var9 : this.uniforms) {
+      for (Uniform var9 : this.uniforms) {
          String var10 = var9.getName();
          int var5 = Uniform.glGetUniformLocation(this.programId, var10);
          if (var5 == -1) {
@@ -420,7 +418,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
       } else {
          int var8 = 0;
 
-         for(JsonElement var10 : var7) {
+         for (JsonElement var10 : var7) {
             try {
                var6[var8] = GsonHelper.convertToFloat(var10, "value");
             } catch (Exception var13) {
@@ -429,13 +427,13 @@ public class ShaderInstance implements Shader, AutoCloseable {
                throw var12;
             }
 
-            ++var8;
+            var8++;
          }
 
          if (var5 > 1 && var7.size() == 1) {
-            while(var8 < var5) {
+            while (var8 < var5) {
                var6[var8] = var6[0];
-               ++var8;
+               var8++;
             }
          }
 
@@ -480,62 +478,5 @@ public class ShaderInstance implements Shader, AutoCloseable {
    @Override
    public int getId() {
       return this.programId;
-   }
-
-   public void setDefaultUniforms(VertexFormat.Mode var1, Matrix4f var2, Matrix4f var3, Window var4) {
-      for(int var5 = 0; var5 < 12; ++var5) {
-         int var6 = RenderSystem.getShaderTexture(var5);
-         this.setSampler("Sampler" + var5, var6);
-      }
-
-      if (this.MODEL_VIEW_MATRIX != null) {
-         this.MODEL_VIEW_MATRIX.set(var2);
-      }
-
-      if (this.PROJECTION_MATRIX != null) {
-         this.PROJECTION_MATRIX.set(var3);
-      }
-
-      if (this.COLOR_MODULATOR != null) {
-         this.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
-      }
-
-      if (this.GLINT_ALPHA != null) {
-         this.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
-      }
-
-      if (this.FOG_START != null) {
-         this.FOG_START.set(RenderSystem.getShaderFogStart());
-      }
-
-      if (this.FOG_END != null) {
-         this.FOG_END.set(RenderSystem.getShaderFogEnd());
-      }
-
-      if (this.FOG_COLOR != null) {
-         this.FOG_COLOR.set(RenderSystem.getShaderFogColor());
-      }
-
-      if (this.FOG_SHAPE != null) {
-         this.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
-      }
-
-      if (this.TEXTURE_MATRIX != null) {
-         this.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
-      }
-
-      if (this.GAME_TIME != null) {
-         this.GAME_TIME.set(RenderSystem.getShaderGameTime());
-      }
-
-      if (this.SCREEN_SIZE != null) {
-         this.SCREEN_SIZE.set((float)var4.getWidth(), (float)var4.getHeight());
-      }
-
-      if (this.LINE_WIDTH != null && (var1 == VertexFormat.Mode.LINES || var1 == VertexFormat.Mode.LINE_STRIP)) {
-         this.LINE_WIDTH.set(RenderSystem.getShaderLineWidth());
-      }
-
-      RenderSystem.setupShaderLights(this);
    }
 }

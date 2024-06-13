@@ -46,10 +46,10 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
       Optional var7 = var1.registryAccess().registryOrThrow(Registries.PLACED_FEATURE).getHolder(VegetationPlacements.GRASS_BONEMEAL);
 
       label49:
-      for(int var8 = 0; var8 < 128; ++var8) {
+      for (int var8 = 0; var8 < 128; var8++) {
          BlockPos var9 = var5;
 
-         for(int var10 = 0; var10 < var8 / 16; ++var10) {
+         for (int var10 = 0; var10 < var8 / 16; var10++) {
             var9 = var9.offset(var2.nextInt(3) - 1, (var2.nextInt(3) - 1) * var2.nextInt(3) / 2, var2.nextInt(3) - 1);
             if (!var1.getBlockState(var9.below()).is(this) || var1.getBlockState(var9).isCollisionShapeFullBlock(var1, var9)) {
                continue label49;

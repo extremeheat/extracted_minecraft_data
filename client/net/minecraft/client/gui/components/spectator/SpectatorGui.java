@@ -69,7 +69,7 @@ public class SpectatorGui implements SpectatorMenuListener {
 
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-      for(int var6 = 0; var6 < 9; ++var6) {
+      for (int var6 = 0; var6 < 9; var6++) {
          this.renderSlot(var1, var6, var1.guiWidth() / 2 - 90 + var6 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var6));
       }
 
@@ -119,7 +119,7 @@ public class SpectatorGui implements SpectatorMenuListener {
    public void onMouseScrolled(int var1) {
       int var2 = this.menu.getSelectedSlot() + var1;
 
-      while(var2 >= 0 && var2 <= 8 && (this.menu.getItem(var2) == SpectatorMenu.EMPTY_SLOT || !this.menu.getItem(var2).isEnabled())) {
+      while (var2 >= 0 && var2 <= 8 && (this.menu.getItem(var2) == SpectatorMenu.EMPTY_SLOT || !this.menu.getItem(var2).isEnabled())) {
          var2 += var1;
       }
 

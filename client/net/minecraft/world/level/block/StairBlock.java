@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,7 +54,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    private static VoxelShape[] makeShapes(VoxelShape var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4) {
-      return IntStream.range(0, 16).mapToObj(var5 -> makeStairShape(var5, var0, var1, var2, var3, var4)).toArray(var0x -> new VoxelShape[var0x]);
+      return IntStream.range(0, 16).mapToObj(var5 -> makeStairShape(var5, var0, var1, var2, var3, var4)).toArray(VoxelShape[]::new);
    }
 
    private static VoxelShape makeStairShape(int var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4, VoxelShape var5) {
@@ -180,10 +179,10 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    protected BlockState mirror(BlockState var1, Mirror var2) {
       Direction var3 = var1.getValue(FACING);
       StairsShape var4 = var1.getValue(SHAPE);
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
             if (var3.getAxis() == Direction.Axis.Z) {
-               switch(var4) {
+               switch (var4) {
                   case INNER_LEFT:
                      return var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
                   case INNER_RIGHT:
@@ -199,7 +198,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
             break;
          case FRONT_BACK:
             if (var3.getAxis() == Direction.Axis.X) {
-               switch(var4) {
+               switch (var4) {
                   case INNER_LEFT:
                      return var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
                   case INNER_RIGHT:

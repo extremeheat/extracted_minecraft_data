@@ -5,13 +5,10 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.CompoundList.CompoundListType;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,9 +55,9 @@ public class NewVillageFix extends DataFix {
                                  var0xxx -> var0xxx.update(
                                        "References",
                                        var0xxxx -> {
-                                          Optional var1xxxxx = var0xxxx.get("New_Village").result();
+                                          Optional var1xxxx = var0xxxx.get("New_Village").result();
                                           return ((Dynamic)DataFixUtils.orElse(
-                                                var1xxxxx.map(var1xxxxx -> var0xxxx.remove("New_Village").set("Village", var1xxxxx)), var0xxxx
+                                                var1xxxx.map(var1xxxxx -> var0xxxx.remove("New_Village").set("Village", var1xxxxx)), var0xxxx
                                              ))
                                              .remove("Village");
                                        }

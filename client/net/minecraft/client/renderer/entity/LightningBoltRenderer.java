@@ -22,7 +22,7 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt> {
       float var10 = 0.0F;
       RandomSource var11 = RandomSource.create(var1.seed);
 
-      for(int var12 = 7; var12 >= 0; --var12) {
+      for (int var12 = 7; var12 >= 0; var12--) {
          var7[var12] = var9;
          var8[var12] = var10;
          var9 += (float)(var11.nextInt(11) - 5);
@@ -32,10 +32,10 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt> {
       VertexConsumer var29 = var5.getBuffer(RenderType.lightning());
       Matrix4f var30 = var4.last().pose();
 
-      for(int var13 = 0; var13 < 4; ++var13) {
+      for (int var13 = 0; var13 < 4; var13++) {
          RandomSource var14 = RandomSource.create(var1.seed);
 
-         for(int var15 = 0; var15 < 3; ++var15) {
+         for (int var15 = 0; var15 < 3; var15++) {
             int var16 = 7;
             int var17 = 0;
             if (var15 > 0) {
@@ -49,7 +49,7 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt> {
             float var18 = var7[var16] - var9;
             float var19 = var8[var16] - var10;
 
-            for(int var20 = var16; var20 >= var17; --var20) {
+            for (int var20 = var16; var20 >= var17; var20--) {
                float var21 = var18;
                float var22 = var19;
                if (var15 == 0) {

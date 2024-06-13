@@ -2,41 +2,25 @@ package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.Function;
 
 public record NoiseRouter(
-   DensityFunction b,
-   DensityFunction c,
-   DensityFunction d,
-   DensityFunction e,
-   DensityFunction f,
-   DensityFunction g,
-   DensityFunction h,
-   DensityFunction i,
-   DensityFunction j,
-   DensityFunction k,
-   DensityFunction l,
-   DensityFunction m,
-   DensityFunction n,
-   DensityFunction o,
-   DensityFunction p
+   DensityFunction barrierNoise,
+   DensityFunction fluidLevelFloodednessNoise,
+   DensityFunction fluidLevelSpreadNoise,
+   DensityFunction lavaNoise,
+   DensityFunction temperature,
+   DensityFunction vegetation,
+   DensityFunction continents,
+   DensityFunction erosion,
+   DensityFunction depth,
+   DensityFunction ridges,
+   DensityFunction initialDensityWithoutJaggedness,
+   DensityFunction finalDensity,
+   DensityFunction veinToggle,
+   DensityFunction veinRidged,
+   DensityFunction veinGap
 ) {
-   private final DensityFunction barrierNoise;
-   private final DensityFunction fluidLevelFloodednessNoise;
-   private final DensityFunction fluidLevelSpreadNoise;
-   private final DensityFunction lavaNoise;
-   private final DensityFunction temperature;
-   private final DensityFunction vegetation;
-   private final DensityFunction continents;
-   private final DensityFunction erosion;
-   private final DensityFunction depth;
-   private final DensityFunction ridges;
-   private final DensityFunction initialDensityWithoutJaggedness;
-   private final DensityFunction finalDensity;
-   private final DensityFunction veinToggle;
-   private final DensityFunction veinRidged;
-   private final DensityFunction veinGap;
    public static final Codec<NoiseRouter> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                field("barrier", NoiseRouter::barrierNoise),
@@ -59,38 +43,38 @@ public record NoiseRouter(
    );
 
    public NoiseRouter(
-      DensityFunction var1,
-      DensityFunction var2,
-      DensityFunction var3,
-      DensityFunction var4,
-      DensityFunction var5,
-      DensityFunction var6,
-      DensityFunction var7,
-      DensityFunction var8,
-      DensityFunction var9,
-      DensityFunction var10,
-      DensityFunction var11,
-      DensityFunction var12,
-      DensityFunction var13,
-      DensityFunction var14,
-      DensityFunction var15
+      DensityFunction barrierNoise,
+      DensityFunction fluidLevelFloodednessNoise,
+      DensityFunction fluidLevelSpreadNoise,
+      DensityFunction lavaNoise,
+      DensityFunction temperature,
+      DensityFunction vegetation,
+      DensityFunction continents,
+      DensityFunction erosion,
+      DensityFunction depth,
+      DensityFunction ridges,
+      DensityFunction initialDensityWithoutJaggedness,
+      DensityFunction finalDensity,
+      DensityFunction veinToggle,
+      DensityFunction veinRidged,
+      DensityFunction veinGap
    ) {
       super();
-      this.barrierNoise = var1;
-      this.fluidLevelFloodednessNoise = var2;
-      this.fluidLevelSpreadNoise = var3;
-      this.lavaNoise = var4;
-      this.temperature = var5;
-      this.vegetation = var6;
-      this.continents = var7;
-      this.erosion = var8;
-      this.depth = var9;
-      this.ridges = var10;
-      this.initialDensityWithoutJaggedness = var11;
-      this.finalDensity = var12;
-      this.veinToggle = var13;
-      this.veinRidged = var14;
-      this.veinGap = var15;
+      this.barrierNoise = barrierNoise;
+      this.fluidLevelFloodednessNoise = fluidLevelFloodednessNoise;
+      this.fluidLevelSpreadNoise = fluidLevelSpreadNoise;
+      this.lavaNoise = lavaNoise;
+      this.temperature = temperature;
+      this.vegetation = vegetation;
+      this.continents = continents;
+      this.erosion = erosion;
+      this.depth = depth;
+      this.ridges = ridges;
+      this.initialDensityWithoutJaggedness = initialDensityWithoutJaggedness;
+      this.finalDensity = finalDensity;
+      this.veinToggle = veinToggle;
+      this.veinRidged = veinRidged;
+      this.veinGap = veinGap;
    }
 
    private static RecordCodecBuilder<NoiseRouter, DensityFunction> field(String var0, Function<NoiseRouter, DensityFunction> var1) {

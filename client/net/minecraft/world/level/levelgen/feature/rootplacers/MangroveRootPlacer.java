@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.rootplacers;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +19,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class MangroveRootPlacer extends RootPlacer {
    public static final int ROOT_WIDTH_LIMIT = 8;
    public static final int ROOT_LENGTH_LIMIT = 15;
-   public static final Codec<MangroveRootPlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<MangroveRootPlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> rootPlacerParts(var0)
             .and(MangroveRootPlacement.CODEC.fieldOf("mangrove_root_placement").forGetter(var0x -> var0x.mangroveRootPlacement))
             .apply(var0, MangroveRootPlacer::new)
@@ -39,7 +38,7 @@ public class MangroveRootPlacer extends RootPlacer {
       ArrayList var7 = Lists.newArrayList();
       BlockPos.MutableBlockPos var8 = var4.mutable();
 
-      while(var8.getY() < var5.getY()) {
+      while (var8.getY() < var5.getY()) {
          if (!this.canPlaceRoot(var1, var8)) {
             return false;
          }
@@ -49,7 +48,7 @@ public class MangroveRootPlacer extends RootPlacer {
 
       var7.add(var5.below());
 
-      for(Direction var10 : Direction.Plane.HORIZONTAL) {
+      for (Direction var10 : Direction.Plane.HORIZONTAL) {
          BlockPos var11 = var5.relative(var10);
          ArrayList var12 = Lists.newArrayList();
          if (!this.simulateRoots(var1, var3, var11, var10, var5, var12, 0)) {
@@ -60,7 +59,7 @@ public class MangroveRootPlacer extends RootPlacer {
          var7.add(var5.relative(var10));
       }
 
-      for(BlockPos var14 : var7) {
+      for (BlockPos var14 : var7) {
          this.placeRoot(var1, var2, var3, var14, var6);
       }
 
@@ -70,7 +69,7 @@ public class MangroveRootPlacer extends RootPlacer {
    private boolean simulateRoots(LevelSimulatedReader var1, RandomSource var2, BlockPos var3, Direction var4, BlockPos var5, List<BlockPos> var6, int var7) {
       int var8 = this.mangroveRootPlacement.maxRootLength();
       if (var7 != var8 && var6.size() <= var8) {
-         for(BlockPos var11 : this.potentialRootPositions(var3, var4, var2, var5)) {
+         for (BlockPos var11 : this.potentialRootPositions(var3, var4, var2, var5)) {
             if (this.canPlaceRoot(var1, var11)) {
                var6.add(var11);
                if (!this.simulateRoots(var1, var2, var11, var4, var5, var6, var7 + 1)) {

@@ -82,7 +82,7 @@ public abstract class Column {
    ) {
       var4.setY(var5);
 
-      for(int var7 = 1; var7 < var1 && var0.isStateAtPosition(var4, var2); ++var7) {
+      for (int var7 = 1; var7 < var1 && var0.isStateAtPosition(var4, var2); var7++) {
          var4.move(var6);
       }
 

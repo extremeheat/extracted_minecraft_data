@@ -3,7 +3,6 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 
 public class FilteredSignsFix extends NamedEntityFix {
    public FilteredSignsFix(Schema var1) {

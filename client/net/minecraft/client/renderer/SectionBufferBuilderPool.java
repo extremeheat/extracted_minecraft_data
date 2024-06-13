@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 
 public class SectionBufferBuilderPool {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final int MAX_BUILDERS_32_BIT = 4;
    private final Queue<SectionBufferBuilderPack> freeBuffers;
    private volatile int freeBufferCount;
 
@@ -26,14 +25,14 @@ public class SectionBufferBuilderPool {
       ArrayList var3 = new ArrayList(var2);
 
       try {
-         for(int var4 = 0; var4 < var2; ++var4) {
+         for (int var4 = 0; var4 < var2; var4++) {
             var3.add(new SectionBufferBuilderPack());
          }
       } catch (OutOfMemoryError var7) {
          LOGGER.warn("Allocated only {}/{} buffers", var3.size(), var2);
          int var5 = Math.min(var3.size() * 2 / 3, var3.size() - 1);
 
-         for(int var6 = 0; var6 < var5; ++var6) {
+         for (int var6 = 0; var6 < var5; var6++) {
             ((SectionBufferBuilderPack)var3.remove(var3.size() - 1)).close();
          }
       }

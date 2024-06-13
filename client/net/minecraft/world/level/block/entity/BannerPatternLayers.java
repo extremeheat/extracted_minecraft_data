@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.Holder;
@@ -18,18 +17,17 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.DyeColor;
 import org.slf4j.Logger;
 
-public record BannerPatternLayers(List<BannerPatternLayers.Layer> d) {
-   final List<BannerPatternLayers.Layer> layers;
+public record BannerPatternLayers(List<BannerPatternLayers.Layer> layers) {
    static final Logger LOGGER = LogUtils.getLogger();
    public static final BannerPatternLayers EMPTY = new BannerPatternLayers(List.of());
    public static final Codec<BannerPatternLayers> CODEC = BannerPatternLayers.Layer.CODEC.listOf().xmap(BannerPatternLayers::new, BannerPatternLayers::layers);
    public static final StreamCodec<RegistryFriendlyByteBuf, BannerPatternLayers> STREAM_CODEC = BannerPatternLayers.Layer.STREAM_CODEC
-      .<List<BannerPatternLayers.Layer>>apply(ByteBufCodecs.list())
+      .apply(ByteBufCodecs.list())
       .map(BannerPatternLayers::new, BannerPatternLayers::layers);
 
-   public BannerPatternLayers(List<BannerPatternLayers.Layer> var1) {
+   public BannerPatternLayers(List<BannerPatternLayers.Layer> layers) {
       super();
-      this.layers = var1;
+      this.layers = (List<BannerPatternLayers.Layer>)layers;
    }
 
    public BannerPatternLayers removeLast() {
@@ -73,9 +71,7 @@ public record BannerPatternLayers(List<BannerPatternLayers.Layer> d) {
       }
    }
 
-   public static record Layer(Holder<BannerPattern> c, DyeColor d) {
-      private final Holder<BannerPattern> pattern;
-      private final DyeColor color;
+   public static record Layer(Holder<BannerPattern> pattern, DyeColor color) {
       public static final Codec<BannerPatternLayers.Layer> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   BannerPattern.CODEC.fieldOf("pattern").forGetter(BannerPatternLayers.Layer::pattern),
@@ -91,14 +87,14 @@ public record BannerPatternLayers(List<BannerPatternLayers.Layer> d) {
          BannerPatternLayers.Layer::new
       );
 
-      public Layer(Holder<BannerPattern> var1, DyeColor var2) {
+      public Layer(Holder<BannerPattern> pattern, DyeColor color) {
          super();
-         this.pattern = var1;
-         this.color = var2;
+         this.pattern = pattern;
+         this.color = color;
       }
 
       public MutableComponent description() {
-         String var1 = ((BannerPattern)this.pattern.value()).translationKey();
+         String var1 = this.pattern.value().translationKey();
          return Component.translatable(var1 + "." + this.color.getName());
       }
    }

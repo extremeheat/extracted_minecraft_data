@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
@@ -28,6 +29,7 @@ public class VaultBlock extends BaseEntityBlock {
    public static final MapCodec<VaultBlock> CODEC = simpleCodec(VaultBlock::new);
    public static final Property<VaultState> STATE = BlockStateProperties.VAULT_STATE;
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+   public static final BooleanProperty OMINOUS = BlockStateProperties.OMINOUS;
 
    @Override
    public MapCodec<VaultBlock> codec() {
@@ -36,19 +38,18 @@ public class VaultBlock extends BaseEntityBlock {
 
    public VaultBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(STATE, VaultState.INACTIVE));
+      this.registerDefaultState(
+         this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(STATE, VaultState.INACTIVE).setValue(OMINOUS, Boolean.valueOf(false))
+      );
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (var1.isEmpty() || var2.getValue(STATE) != VaultState.ACTIVE) {
          return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
       } else if (var3 instanceof ServerLevel var8) {
-         BlockEntity var10 = ((ServerLevel)var8).getBlockEntity(var4);
-         if (var10 instanceof VaultBlockEntity var9) {
-            VaultBlockEntity.Server.tryInsertKey((ServerLevel)var8, var4, var2, var9.getConfig(), var9.getServerData(), var9.getSharedData(), var5, var1);
+         if (var8.getBlockEntity(var4) instanceof VaultBlockEntity var9) {
+            VaultBlockEntity.Server.tryInsertKey(var8, var4, var2, var9.getConfig(), var9.getServerData(), var9.getSharedData(), var5, var1);
             return ItemInteractionResult.SUCCESS;
          } else {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
@@ -66,7 +67,7 @@ public class VaultBlock extends BaseEntityBlock {
 
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, STATE);
+      var1.add(FACING, STATE, OMINOUS);
    }
 
    @Nullable

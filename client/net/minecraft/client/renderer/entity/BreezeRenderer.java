@@ -35,7 +35,7 @@ public class BreezeRenderer extends MobRenderer<Breeze, BreezeModel<Breeze>> {
       var0.rods().visible = false;
       var0.wind().visible = false;
 
-      for(ModelPart var5 : var1) {
+      for (ModelPart var5 : var1) {
          var5.visible = true;
       }
 

@@ -36,14 +36,12 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    private Codec<Holder.Reference<T>> referenceHolderWithLifecycle() {
       Codec var1 = ResourceLocation.CODEC
          .comapFlatMap(
-            var1x -> (DataResult)this.getHolder(var1x)
-                  .map(DataResult::success)
-                  .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry key in " + this.key() + ": " + var1x)),
+            var1x -> this.getHolder(var1x)
+                  .<DataResult>map(DataResult::success)
+                  .orElseGet(() -> DataResult.error(() -> "Unknown registry key in " + this.key() + ": " + var1x)),
             var0 -> var0.key().location()
          );
-      return ExtraCodecs.overrideLifecycle(
-         var1, var1x -> (Lifecycle)this.registrationInfo(var1x.key()).map(RegistrationInfo::lifecycle).orElse((T)Lifecycle.experimental())
-      );
+      return ExtraCodecs.overrideLifecycle(var1, var1x -> this.registrationInfo(var1x.key()).map(RegistrationInfo::lifecycle).orElse(Lifecycle.experimental()));
    }
 
    private DataResult<Holder.Reference<T>> safeCastToReference(Holder<T> var1) {
@@ -119,7 +117,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    }
 
    static <T> Holder.Reference<T> registerForHolder(Registry<T> var0, ResourceKey<T> var1, T var2) {
-      return ((WritableRegistry)var0).register(var1, var2, RegistrationInfo.BUILT_IN);
+      return (Holder.Reference<T>)((WritableRegistry)var0).register(var1, var2, RegistrationInfo.BUILT_IN);
    }
 
    static <T> Holder.Reference<T> registerForHolder(Registry<T> var0, ResourceLocation var1, T var2) {
@@ -172,7 +170,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
 
          @Nullable
          public Holder<T> byId(int var1) {
-            return (Holder<T>)Registry.this.getHolder(var1).orElse((T)null);
+            return (Holder<T>)Registry.this.getHolder(var1).orElse(null);
          }
 
          @Override
@@ -182,7 +180,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
 
          @Override
          public Iterator<Holder<T>> iterator() {
-            return Registry.this.holders().map(var0 -> var0).iterator();
+            return Registry.this.holders().map(var0 -> (Holder<T>)var0).iterator();
          }
       };
    }

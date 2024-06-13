@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.function.BiFunction;
 import net.minecraft.core.Holder;
@@ -9,7 +10,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 
@@ -18,9 +18,7 @@ public class LootItemFunctions {
    public static final Codec<LootItemFunction> TYPED_CODEC = BuiltInRegistries.LOOT_FUNCTION_TYPE
       .byNameCodec()
       .dispatch("function", LootItemFunction::getType, LootItemFunctionType::codec);
-   public static final Codec<LootItemFunction> ROOT_CODEC = ExtraCodecs.lazyInitializedCodec(
-      () -> ExtraCodecs.withAlternative(TYPED_CODEC, SequenceFunction.INLINE_CODEC)
-   );
+   public static final Codec<LootItemFunction> ROOT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(TYPED_CODEC, SequenceFunction.INLINE_CODEC));
    public static final Codec<Holder<LootItemFunction>> CODEC = RegistryFileCodec.create(Registries.ITEM_MODIFIER, ROOT_CODEC);
    public static final LootItemFunctionType SET_COUNT = register("set_count", SetItemCountFunction.CODEC);
    public static final LootItemFunctionType ENCHANT_WITH_LEVELS = register("enchant_with_levels", EnchantWithLevelsFunction.CODEC);
@@ -57,19 +55,20 @@ public class LootItemFunctions {
    public static final LootItemFunctionType SET_WRITTEN_BOOK_PAGES = register("set_written_book_pages", SetWrittenBookPagesFunction.CODEC);
    public static final LootItemFunctionType SET_WRITABLE_BOOK_PAGES = register("set_writable_book_pages", SetWritableBookPagesFunction.CODEC);
    public static final LootItemFunctionType TOGGLE_TOOLTIPS = register("toggle_tooltips", ToggleTooltips.CODEC);
+   public static final LootItemFunctionType SET_OMINOUS_BOTTLE_AMPLIFIER = register("set_ominous_bottle_amplifier", SetOminousBottleAmplifierFunction.CODEC);
 
    public LootItemFunctions() {
       super();
    }
 
-   private static LootItemFunctionType register(String var0, Codec<? extends LootItemFunction> var1) {
+   private static LootItemFunctionType register(String var0, MapCodec<? extends LootItemFunction> var1) {
       return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, new ResourceLocation(var0), new LootItemFunctionType(var1));
    }
 
    public static BiFunction<ItemStack, LootContext, ItemStack> compose(List<? extends BiFunction<ItemStack, LootContext, ItemStack>> var0) {
       List var1 = List.copyOf(var0);
 
-      return switch(var1.size()) {
+      return switch (var1.size()) {
          case 0 -> IDENTITY;
          case 1 -> (BiFunction)var1.get(0);
          case 2 -> {
@@ -78,7 +77,7 @@ public class LootItemFunctions {
             yield (var2x, var3x) -> (ItemStack)var3.apply((ItemStack)var2.apply(var2x, var3x), var3x);
          }
          default -> (var1x, var2x) -> {
-         for(BiFunction var4 : var1) {
+         for (BiFunction var4 : var1) {
             var1x = (ItemStack)var4.apply(var1x, var2x);
          }
 

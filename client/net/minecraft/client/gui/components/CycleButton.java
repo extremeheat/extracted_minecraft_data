@@ -151,11 +151,11 @@ public class CycleButton<T> extends AbstractButton {
    }
 
    public static CycleButton.Builder<Boolean> booleanBuilder(Component var0, Component var1) {
-      return new CycleButton.Builder<>(var2 -> var2 ? var0 : var1).withValues(BOOLEAN_OPTIONS);
+      return new CycleButton.Builder<Boolean>(var2 -> var2 ? var0 : var1).withValues(BOOLEAN_OPTIONS);
    }
 
    public static CycleButton.Builder<Boolean> onOffBuilder() {
-      return new CycleButton.Builder<>(var0 -> var0 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).withValues(BOOLEAN_OPTIONS);
+      return new CycleButton.Builder<Boolean>(var0 -> var0 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).withValues(BOOLEAN_OPTIONS);
    }
 
    public static CycleButton.Builder<Boolean> onOffBuilder(boolean var0) {

@@ -4,10 +4,8 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -15,7 +13,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,17 +23,6 @@ import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.entity.projectile.FireworkRocketEntity;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.SmallFireball;
-import net.minecraft.world.entity.projectile.Snowball;
-import net.minecraft.world.entity.projectile.SpectralArrow;
-import net.minecraft.world.entity.projectile.ThrownEgg;
-import net.minecraft.world.entity.projectile.ThrownExperienceBottle;
-import net.minecraft.world.entity.projectile.ThrownPotion;
-import net.minecraft.world.entity.projectile.windcharge.WindCharge;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BoneMealItem;
@@ -49,10 +35,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.BeehiveBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.CampfireBlock;
@@ -60,7 +44,6 @@ import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.CandleCakeBlock;
 import net.minecraft.world.level.block.CarvedPumpkinBlock;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraft.world.level.block.PotatoZombieHeadBlock;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.SkullBlock;
@@ -69,13 +52,11 @@ import net.minecraft.world.level.block.WitherSkullBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public interface DispenseItemBehavior {
@@ -85,100 +66,17 @@ public interface DispenseItemBehavior {
    ItemStack dispense(BlockSource var1, ItemStack var2);
 
    static void bootStrap() {
-      DispenserBlock.registerBehavior(Items.ARROW, new AbstractProjectileDispenseBehavior() {
-         @Override
-         protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
-            Arrow var4 = new Arrow(var1, var2.x(), var2.y(), var2.z(), var3.copyWithCount(1));
-            var4.pickup = AbstractArrow.Pickup.ALLOWED;
-            return var4;
-         }
-      });
-      DispenserBlock.registerBehavior(Items.TIPPED_ARROW, new AbstractProjectileDispenseBehavior() {
-         @Override
-         protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
-            Arrow var4 = new Arrow(var1, var2.x(), var2.y(), var2.z(), var3.copyWithCount(1));
-            var4.pickup = AbstractArrow.Pickup.ALLOWED;
-            return var4;
-         }
-      });
-      DispenserBlock.registerBehavior(Items.SPECTRAL_ARROW, new AbstractProjectileDispenseBehavior() {
-         @Override
-         protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
-            SpectralArrow var4 = new SpectralArrow(var1, var2.x(), var2.y(), var2.z(), var3.copyWithCount(1));
-            var4.pickup = AbstractArrow.Pickup.ALLOWED;
-            return var4;
-         }
-      });
-      DispenserBlock.registerBehavior(Items.EGG, new AbstractProjectileDispenseBehavior() {
-         @Override
-         protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
-            return Util.make(new ThrownEgg(var1, var2.x(), var2.y(), var2.z()), var1x -> var1x.setItem(var3));
-         }
-      });
-      DispenserBlock.registerBehavior(Items.SNOWBALL, new AbstractProjectileDispenseBehavior() {
-         @Override
-         protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
-            return Util.make(new Snowball(var1, var2.x(), var2.y(), var2.z()), var1x -> var1x.setItem(var3));
-         }
-      });
-      DispenserBlock.registerBehavior(Items.EXPERIENCE_BOTTLE, new AbstractProjectileDispenseBehavior() {
-         @Override
-         protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
-            return Util.make(new ThrownExperienceBottle(var1, var2.x(), var2.y(), var2.z()), var1x -> var1x.setItem(var3));
-         }
-
-         @Override
-         protected float getUncertainty() {
-            return super.getUncertainty() * 0.5F;
-         }
-
-         @Override
-         protected float getPower() {
-            return super.getPower() * 1.25F;
-         }
-      });
-      DispenserBlock.registerBehavior(Items.SPLASH_POTION, new DispenseItemBehavior() {
-         @Override
-         public ItemStack dispense(BlockSource var1, ItemStack var2) {
-            return (new AbstractProjectileDispenseBehavior() {
-               @Override
-               protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
-                  return Util.make(new ThrownPotion(var1, var2.x(), var2.y(), var2.z()), var1x -> var1x.setItem(var3));
-               }
-
-               @Override
-               protected float getUncertainty() {
-                  return super.getUncertainty() * 0.5F;
-               }
-
-               @Override
-               protected float getPower() {
-                  return super.getPower() * 1.25F;
-               }
-            }).dispense(var1, var2);
-         }
-      });
-      DispenserBlock.registerBehavior(Items.LINGERING_POTION, new DispenseItemBehavior() {
-         @Override
-         public ItemStack dispense(BlockSource var1, ItemStack var2) {
-            return (new AbstractProjectileDispenseBehavior() {
-               @Override
-               protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
-                  return Util.make(new ThrownPotion(var1, var2.x(), var2.y(), var2.z()), var1x -> var1x.setItem(var3));
-               }
-
-               @Override
-               protected float getUncertainty() {
-                  return super.getUncertainty() * 0.5F;
-               }
-
-               @Override
-               protected float getPower() {
-                  return super.getPower() * 1.25F;
-               }
-            }).dispense(var1, var2);
-         }
-      });
+      DispenserBlock.registerProjectileBehavior(Items.ARROW);
+      DispenserBlock.registerProjectileBehavior(Items.TIPPED_ARROW);
+      DispenserBlock.registerProjectileBehavior(Items.SPECTRAL_ARROW);
+      DispenserBlock.registerProjectileBehavior(Items.EGG);
+      DispenserBlock.registerProjectileBehavior(Items.SNOWBALL);
+      DispenserBlock.registerProjectileBehavior(Items.EXPERIENCE_BOTTLE);
+      DispenserBlock.registerProjectileBehavior(Items.SPLASH_POTION);
+      DispenserBlock.registerProjectileBehavior(Items.LINGERING_POTION);
+      DispenserBlock.registerProjectileBehavior(Items.FIREWORK_ROCKET);
+      DispenserBlock.registerProjectileBehavior(Items.FIRE_CHARGE);
+      DispenserBlock.registerProjectileBehavior(Items.WIND_CHARGE);
       DefaultDispenseItemBehavior var0 = new DefaultDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
@@ -198,7 +96,7 @@ public interface DispenseItemBehavior {
          }
       };
 
-      for(SpawnEggItem var2 : SpawnEggItem.eggs()) {
+      for (SpawnEggItem var2 : SpawnEggItem.eggs()) {
          DispenserBlock.registerBehavior(var2, var0);
       }
 
@@ -217,34 +115,33 @@ public interface DispenseItemBehavior {
             return var2;
          }
       });
-      DispenserBlock.registerBehavior(Items.SADDLE, new OptionalDispenseItemBehavior() {
-         @Override
-         public ItemStack execute(BlockSource var1, ItemStack var2) {
-            BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
-            List var4 = var1.level().getEntitiesOfClass(LivingEntity.class, new AABB(var3), var0 -> {
-               if (!(var0 instanceof Saddleable)) {
-                  return false;
+      DispenserBlock.registerBehavior(
+         Items.SADDLE,
+         new OptionalDispenseItemBehavior() {
+            @Override
+            public ItemStack execute(BlockSource var1, ItemStack var2) {
+               BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+               List var4 = var1.level()
+                  .getEntitiesOfClass(
+                     LivingEntity.class, new AABB(var3), var0 -> !(var0 instanceof Saddleable var1x) ? false : !var1x.isSaddled() && var1x.isSaddleable()
+                  );
+               if (!var4.isEmpty()) {
+                  ((Saddleable)var4.get(0)).equipSaddle(SoundSource.BLOCKS);
+                  var2.shrink(1);
+                  this.setSuccess(true);
+                  return var2;
                } else {
-                  Saddleable var1xx = (Saddleable)var0;
-                  return !var1xx.isSaddled() && var1xx.isSaddleable();
+                  return super.execute(var1, var2);
                }
-            });
-            if (!var4.isEmpty()) {
-               ((Saddleable)var4.get(0)).equipSaddle(SoundSource.BLOCKS);
-               var2.shrink(1);
-               this.setSuccess(true);
-               return var2;
-            } else {
-               return super.execute(var1, var2);
             }
          }
-      });
+      );
       OptionalDispenseItemBehavior var8 = new OptionalDispenseItemBehavior() {
          @Override
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
 
-            for(AbstractHorse var6 : var1.level().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canWearBodyArmor())) {
+            for (AbstractHorse var6 : var1.level().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canWearBodyArmor())) {
                if (var6.isBodyArmorItem(var2) && !var6.isWearingBodyArmor() && var6.isTamed()) {
                   var6.setBodyArmorItem(var2.split(1));
                   this.setSuccess(true);
@@ -281,8 +178,8 @@ public interface DispenseItemBehavior {
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
                BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
-   
-               for(AbstractChestedHorse var6 : var1.level()
+
+               for (AbstractChestedHorse var6 : var1.level()
                   .getEntitiesOfClass(AbstractChestedHorse.class, new AABB(var3), var0 -> var0.isAlive() && !var0.hasChest())) {
                   if (var6.isTamed() && var6.getSlot(499).set(var2)) {
                      var2.shrink(1);
@@ -290,76 +187,8 @@ public interface DispenseItemBehavior {
                      return var2;
                   }
                }
-   
+
                return super.execute(var1, var2);
-            }
-         }
-      );
-      DispenserBlock.registerBehavior(Items.FIREWORK_ROCKET, new DefaultDispenseItemBehavior() {
-         @Override
-         public ItemStack execute(BlockSource var1, ItemStack var2) {
-            Direction var3 = var1.state().getValue(DispenserBlock.FACING);
-            Vec3 var4 = DispenseItemBehavior.getEntityPokingOutOfBlockPos(var1, EntityType.FIREWORK_ROCKET, var3);
-            FireworkRocketEntity var5 = new FireworkRocketEntity(var1.level(), var2, var4.x(), var4.y(), var4.z(), true);
-            var5.shoot((double)var3.getStepX(), (double)var3.getStepY(), (double)var3.getStepZ(), 0.5F, 1.0F);
-            var1.level().addFreshEntity(var5);
-            var2.shrink(1);
-            return var2;
-         }
-
-         @Override
-         protected void playSound(BlockSource var1) {
-            var1.level().levelEvent(1004, var1.pos(), 0);
-         }
-      });
-      DispenserBlock.registerBehavior(Items.FIRE_CHARGE, new DefaultDispenseItemBehavior() {
-         @Override
-         public ItemStack execute(BlockSource var1, ItemStack var2) {
-            Direction var3 = var1.state().getValue(DispenserBlock.FACING);
-            Position var4 = DispenserBlock.getDispensePosition(var1);
-            double var5 = var4.x() + (double)((float)var3.getStepX() * 0.3F);
-            double var7 = var4.y() + (double)((float)var3.getStepY() * 0.3F);
-            double var9 = var4.z() + (double)((float)var3.getStepZ() * 0.3F);
-            ServerLevel var11 = var1.level();
-            RandomSource var12 = var11.random;
-            double var13 = var12.triangle((double)var3.getStepX(), 0.11485000000000001);
-            double var15 = var12.triangle((double)var3.getStepY(), 0.11485000000000001);
-            double var17 = var12.triangle((double)var3.getStepZ(), 0.11485000000000001);
-            SmallFireball var19 = new SmallFireball(var11, var5, var7, var9, var13, var15, var17);
-            var11.addFreshEntity(Util.make(var19, var1x -> var1x.setItem(var2)));
-            var2.shrink(1);
-            return var2;
-         }
-
-         @Override
-         protected void playSound(BlockSource var1) {
-            var1.level().levelEvent(1018, var1.pos(), 0);
-         }
-      });
-      DispenserBlock.registerBehavior(
-         Items.WIND_CHARGE,
-         new DefaultDispenseItemBehavior() {
-            @Override
-            public ItemStack execute(BlockSource var1, ItemStack var2) {
-               Direction var3 = var1.state().getValue(DispenserBlock.FACING);
-               Position var4 = DispenserBlock.getDispensePosition(var1);
-               ServerLevel var5 = var1.level();
-               RandomSource var6 = var5.random;
-               double var7 = var6.triangle((double)var3.getStepX(), 0.11485000000000001);
-               double var9 = var6.triangle((double)var3.getStepY(), 0.11485000000000001);
-               double var11 = var6.triangle((double)var3.getStepZ(), 0.11485000000000001);
-               WindCharge var13 = new WindCharge(
-                  var5,
-                  var4.x() + (double)((float)var3.getStepX() * 0.3F),
-                  var4.y() + (double)((float)var3.getStepY() * 0.3F),
-                  var4.z() + (double)((float)var3.getStepZ() * 0.3F),
-                  var7,
-                  var9,
-                  var11
-               );
-               var5.addFreshEntity(var13);
-               var2.shrink(1);
-               return var2;
             }
          }
       );
@@ -406,43 +235,37 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, var9);
       DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, var9);
       DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, var9);
-      DispenserBlock.registerBehavior(
-         Items.BUCKET,
-         new DefaultDispenseItemBehavior() {
-            private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-   
-            // $VF: Could not properly define all variable types!
-            // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-            @Override
-            public ItemStack execute(BlockSource var1, ItemStack var2) {
-               ServerLevel var3 = var1.level();
-               BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
-               BlockState var5 = var3.getBlockState(var4);
-               Block var6 = var5.getBlock();
-               if (var6 instanceof BucketPickup var8) {
-                  ItemStack var9 = var8.pickupBlock(null, var3, var4, var5);
-                  if (var9.isEmpty()) {
-                     return super.execute(var1, var2);
-                  } else {
-                     var3.gameEvent(null, GameEvent.FLUID_PICKUP, var4);
-                     Item var7 = var9.getItem();
-                     var2.shrink(1);
-                     if (var2.isEmpty()) {
-                        return new ItemStack(var7);
-                     } else {
-                        if (var1.blockEntity().addItem(new ItemStack(var7)) < 0) {
-                           this.defaultDispenseItemBehavior.dispense(var1, new ItemStack(var7));
-                        }
-   
-                        return var2;
-                     }
-                  }
-               } else {
+      DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
+         private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
+
+         @Override
+         public ItemStack execute(BlockSource var1, ItemStack var2) {
+            ServerLevel var3 = var1.level();
+            BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+            BlockState var5 = var3.getBlockState(var4);
+            if (var5.getBlock() instanceof BucketPickup var8) {
+               ItemStack var9 = var8.pickupBlock(null, var3, var4, var5);
+               if (var9.isEmpty()) {
                   return super.execute(var1, var2);
+               } else {
+                  var3.gameEvent(null, GameEvent.FLUID_PICKUP, var4);
+                  Item var7 = var9.getItem();
+                  var2.shrink(1);
+                  if (var2.isEmpty()) {
+                     return new ItemStack(var7);
+                  } else {
+                     if (var1.blockEntity().addItem(new ItemStack(var7)) < 0) {
+                        this.defaultDispenseItemBehavior.dispense(var1, new ItemStack(var7));
+                     }
+
+                     return var2;
+                  }
                }
+            } else {
+               return super.execute(var1, var2);
             }
          }
-      );
+      });
       DispenserBlock.registerBehavior(Items.FLINT_AND_STEEL, new OptionalDispenseItemBehavior() {
          @Override
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
@@ -531,13 +354,13 @@ public interface DispenseItemBehavior {
                   if (var6 instanceof SkullBlockEntity) {
                      WitherSkullBlock.checkSpawn(var3, var5, (SkullBlockEntity)var6);
                   }
-   
+
                   var2.shrink(1);
                   this.setSuccess(true);
                } else {
                   this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
                }
-   
+
                return var2;
             }
          }
@@ -563,19 +386,9 @@ public interface DispenseItemBehavior {
             return var2;
          }
       });
-      DispenserBlock.registerBehavior(Blocks.POTATO_ZOMBIE_HEAD_HAT, new OptionalDispenseItemBehavior() {
-         @Override
-         protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            ServerLevel var3 = var1.level();
-            BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
-            PotatoZombieHeadBlock var5 = (PotatoZombieHeadBlock)Blocks.POTATO_ZOMBIE_HEAD_HAT;
-            this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
-            return var2;
-         }
-      });
       DispenserBlock.registerBehavior(Blocks.SHULKER_BOX.asItem(), new ShulkerBoxDispenseBehavior());
 
-      for(DyeColor var7 : DyeColor.values()) {
+      for (DyeColor var7 : DyeColor.values()) {
          DispenserBlock.registerBehavior(ShulkerBoxBlock.getBlockByColor(var7).asItem(), new ShulkerBoxDispenseBehavior());
       }
 
@@ -583,7 +396,7 @@ public interface DispenseItemBehavior {
          Items.GLASS_BOTTLE.asItem(),
          new OptionalDispenseItemBehavior() {
             private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-   
+
             private ItemStack takeLiquid(BlockSource var1, ItemStack var2, ItemStack var3) {
                var2.shrink(1);
                if (var2.isEmpty()) {
@@ -593,11 +406,11 @@ public interface DispenseItemBehavior {
                   if (var1.blockEntity().addItem(var3.copy()) < 0) {
                      this.defaultDispenseItemBehavior.dispense(var1, var3.copy());
                   }
-   
+
                   return var2;
                }
             }
-   
+
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
                this.setSuccess(false);
@@ -651,7 +464,7 @@ public interface DispenseItemBehavior {
                this.setSuccess(false);
                return var2;
             } else {
-               for(Armadillo var7 : var5) {
+               for (Armadillo var7 : var5) {
                   if (var7.brushOffScute()) {
                      var2.hurtAndBreak(16, var3.getRandom(), null, () -> {
                         var2.shrink(1);
@@ -688,7 +501,7 @@ public interface DispenseItemBehavior {
          Items.POTION,
          new DefaultDispenseItemBehavior() {
             private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-   
+
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
                PotionContents var3 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
@@ -702,7 +515,7 @@ public interface DispenseItemBehavior {
                      return this.defaultDispenseItemBehavior.dispense(var1, var2);
                   } else {
                      if (!var4.isClientSide) {
-                        for(int var7 = 0; var7 < 5; ++var7) {
+                        for (int var7 = 0; var7 < 5; var7++) {
                            var4.sendParticles(
                               ParticleTypes.SPLASH,
                               (double)var5.getX() + var4.random.nextDouble(),
@@ -716,7 +529,7 @@ public interface DispenseItemBehavior {
                            );
                         }
                      }
-   
+
                      var4.playSound(null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
                      var4.gameEvent(null, GameEvent.FLUID_PLACE, var5);
                      var4.setBlockAndUpdate(var6, Blocks.MUD.defaultBlockState());
@@ -726,14 +539,5 @@ public interface DispenseItemBehavior {
             }
          }
       );
-   }
-
-   static Vec3 getEntityPokingOutOfBlockPos(BlockSource var0, EntityType<?> var1, Direction var2) {
-      return var0.center()
-         .add(
-            (double)var2.getStepX() * (0.5000099999997474 - (double)var1.getWidth() / 2.0),
-            (double)var2.getStepY() * (0.5000099999997474 - (double)var1.getHeight() / 2.0) - (double)var1.getHeight() / 2.0,
-            (double)var2.getStepZ() * (0.5000099999997474 - (double)var1.getWidth() / 2.0)
-         );
    }
 }

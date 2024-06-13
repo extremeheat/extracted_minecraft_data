@@ -74,11 +74,7 @@ public class GsonHelper {
    }
 
    public static boolean isValidNode(@Nullable JsonObject var0, String var1) {
-      if (var0 == null) {
-         return false;
-      } else {
-         return var0.get(var1) != null;
-      }
+      return var0 == null ? false : var0.get(var1) != null;
    }
 
    public static JsonElement getNonNull(JsonObject var0, String var1) {
@@ -552,7 +548,7 @@ public class GsonHelper {
       } else if (var1.isJsonArray()) {
          var0.beginArray();
 
-         for(JsonElement var4 : var1.getAsJsonArray()) {
+         for (JsonElement var4 : var1.getAsJsonArray()) {
             writeValue(var0, var4, var2);
          }
 
@@ -564,7 +560,7 @@ public class GsonHelper {
 
          var0.beginObject();
 
-         for(Entry var7 : sortByKeyIfNeeded(var1.getAsJsonObject().entrySet(), var2)) {
+         for (Entry var7 : sortByKeyIfNeeded(var1.getAsJsonObject().entrySet(), var2)) {
             var0.name((String)var7.getKey());
             writeValue(var0, (JsonElement)var7.getValue(), var2);
          }

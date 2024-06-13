@@ -19,15 +19,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 public record VillagerProfession(
-   String q, Predicate<Holder<PoiType>> r, Predicate<Holder<PoiType>> s, ImmutableSet<Item> t, ImmutableSet<Block> u, @Nullable SoundEvent v
+   String name,
+   Predicate<Holder<PoiType>> heldJobSite,
+   Predicate<Holder<PoiType>> acquirableJobSite,
+   ImmutableSet<Item> requestedItems,
+   ImmutableSet<Block> secondaryPoi,
+   @Nullable SoundEvent workSound
 ) {
-   private final String name;
-   private final Predicate<Holder<PoiType>> heldJobSite;
-   private final Predicate<Holder<PoiType>> acquirableJobSite;
-   private final ImmutableSet<Item> requestedItems;
-   private final ImmutableSet<Block> secondaryPoi;
-   @Nullable
-   private final SoundEvent workSound;
    public static final Predicate<Holder<PoiType>> ALL_ACQUIRABLE_JOBS = var0 -> var0.is(PoiTypeTags.ACQUIRABLE_JOB_SITE);
    public static final VillagerProfession NONE = register("none", PoiType.NONE, ALL_ACQUIRABLE_JOBS, null);
    public static final VillagerProfession ARMORER = register("armorer", PoiTypes.ARMORER, SoundEvents.VILLAGER_WORK_ARMORER);
@@ -38,7 +36,7 @@ public record VillagerProfession(
       "farmer",
       PoiTypes.FARMER,
       ImmutableSet.of(Items.WHEAT, Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS, Items.BONE_MEAL),
-      ImmutableSet.of(Blocks.FARMLAND, Blocks.POISON_FARMLAND),
+      ImmutableSet.of(Blocks.FARMLAND),
       SoundEvents.VILLAGER_WORK_FARMER
    );
    public static final VillagerProfession FISHERMAN = register("fisherman", PoiTypes.FISHERMAN, SoundEvents.VILLAGER_WORK_FISHERMAN);
@@ -52,20 +50,20 @@ public record VillagerProfession(
    public static final VillagerProfession WEAPONSMITH = register("weaponsmith", PoiTypes.WEAPONSMITH, SoundEvents.VILLAGER_WORK_WEAPONSMITH);
 
    public VillagerProfession(
-      String var1,
-      Predicate<Holder<PoiType>> var2,
-      Predicate<Holder<PoiType>> var3,
-      ImmutableSet<Item> var4,
-      ImmutableSet<Block> var5,
-      @Nullable SoundEvent var6
+      String name,
+      Predicate<Holder<PoiType>> heldJobSite,
+      Predicate<Holder<PoiType>> acquirableJobSite,
+      ImmutableSet<Item> requestedItems,
+      ImmutableSet<Block> secondaryPoi,
+      @Nullable SoundEvent workSound
    ) {
       super();
-      this.name = var1;
-      this.heldJobSite = var2;
-      this.acquirableJobSite = var3;
-      this.requestedItems = var4;
-      this.secondaryPoi = var5;
-      this.workSound = var6;
+      this.name = name;
+      this.heldJobSite = heldJobSite;
+      this.acquirableJobSite = acquirableJobSite;
+      this.requestedItems = requestedItems;
+      this.secondaryPoi = secondaryPoi;
+      this.workSound = workSound;
    }
 
    public String toString() {

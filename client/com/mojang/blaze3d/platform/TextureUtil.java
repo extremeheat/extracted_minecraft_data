@@ -67,7 +67,7 @@ public class TextureUtil {
          GlStateManager._texParameter(3553, 34049, 0.0F);
       }
 
-      for(int var5 = 0; var5 <= var2; ++var5) {
+      for (int var5 = 0; var5 <= var2; var5++) {
          GlStateManager._texImage2D(3553, var5, var0.glFormat(), var3 >> var5, var4 >> var5, 0, 6408, 5121, null);
       }
    }
@@ -86,7 +86,7 @@ public class TextureUtil {
       ByteBuffer var2 = MemoryUtil.memAlloc(var1);
 
       try {
-         while(var0.read(var2) != -1) {
+         while (var0.read(var2) != -1) {
             if (!var2.hasRemaining()) {
                var2 = MemoryUtil.memRealloc(var2, var2.capacity() * 2);
             }
@@ -107,7 +107,7 @@ public class TextureUtil {
       RenderSystem.assertOnRenderThread();
       bind(var2);
 
-      for(int var7 = 0; var7 <= var3; ++var7) {
+      for (int var7 = 0; var7 <= var3; var7++) {
          int var8 = var4 >> var7;
          int var9 = var5 >> var7;
 

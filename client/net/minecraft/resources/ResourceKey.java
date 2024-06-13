@@ -50,7 +50,7 @@ public class ResourceKey<T> {
    }
 
    public <E> Optional<ResourceKey<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-      return this.isFor(var1) ? Optional.of(this) : Optional.empty();
+      return this.isFor(var1) ? Optional.of((ResourceKey<E>)this) : Optional.empty();
    }
 
    public ResourceLocation location() {
@@ -65,14 +65,12 @@ public class ResourceKey<T> {
       return createRegistryKey(this.registryName);
    }
 
-   static record InternKey(ResourceLocation a, ResourceLocation b) {
-      final ResourceLocation registry;
-      final ResourceLocation location;
+   static record InternKey(ResourceLocation registry, ResourceLocation location) {
 
-      InternKey(ResourceLocation var1, ResourceLocation var2) {
+      InternKey(ResourceLocation registry, ResourceLocation location) {
          super();
-         this.registry = var1;
-         this.location = var2;
+         this.registry = registry;
+         this.location = location;
       }
    }
 }

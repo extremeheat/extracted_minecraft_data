@@ -2,7 +2,6 @@ package net.minecraft.world.item.armortrim;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import net.minecraft.core.Holder;
@@ -19,12 +18,9 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
 
-public record TrimMaterial(String e, Holder<Item> f, float g, Map<Holder<ArmorMaterial>, String> h, Component i) {
-   private final String assetName;
-   private final Holder<Item> ingredient;
-   private final float itemModelIndex;
-   private final Map<Holder<ArmorMaterial>, String> overrideArmorMaterials;
-   private final Component description;
+public record TrimMaterial(
+   String assetName, Holder<Item> ingredient, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials, Component description
+) {
    public static final Codec<TrimMaterial> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ExtraCodecs.RESOURCE_PATH_CODEC.fieldOf("asset_name").forGetter(TrimMaterial::assetName),
@@ -55,13 +51,15 @@ public record TrimMaterial(String e, Holder<Item> f, float g, Map<Holder<ArmorMa
       Registries.TRIM_MATERIAL, DIRECT_STREAM_CODEC
    );
 
-   public TrimMaterial(String var1, Holder<Item> var2, float var3, Map<Holder<ArmorMaterial>, String> var4, Component var5) {
+   public TrimMaterial(
+      String assetName, Holder<Item> ingredient, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials, Component description
+   ) {
       super();
-      this.assetName = var1;
-      this.ingredient = var2;
-      this.itemModelIndex = var3;
-      this.overrideArmorMaterials = var4;
-      this.description = var5;
+      this.assetName = assetName;
+      this.ingredient = ingredient;
+      this.itemModelIndex = itemModelIndex;
+      this.overrideArmorMaterials = overrideArmorMaterials;
+      this.description = description;
    }
 
    public static TrimMaterial create(String var0, Item var1, float var2, Component var3, Map<Holder<ArmorMaterial>, String> var4) {

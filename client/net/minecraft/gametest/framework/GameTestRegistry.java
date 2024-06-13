@@ -132,7 +132,7 @@ public class GameTestRegistry {
          var1.requiredSuccesses(),
          var1.attempts(),
          var1.skyAccess(),
-         turnMethodIntoConsumer(var0)
+         (Consumer<GameTestHelper>)turnMethodIntoConsumer(var0)
       );
    }
 

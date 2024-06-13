@@ -62,7 +62,7 @@ public class PostChain implements AutoCloseable {
                JsonArray var6 = var17.getAsJsonArray("targets");
                int var7 = 0;
 
-               for(JsonElement var9 : var6) {
+               for (JsonElement var9 : var6) {
                   try {
                      this.parseTargetNode(var9);
                   } catch (Exception var14) {
@@ -71,7 +71,7 @@ public class PostChain implements AutoCloseable {
                      throw var11;
                   }
 
-                  ++var7;
+                  var7++;
                }
             }
 
@@ -79,7 +79,7 @@ public class PostChain implements AutoCloseable {
                JsonArray var18 = var17.getAsJsonArray("passes");
                int var19 = 0;
 
-               for(JsonElement var21 : var18) {
+               for (JsonElement var21 : var18) {
                   try {
                      this.parsePassNode(var1, var21);
                   } catch (Exception var13) {
@@ -88,7 +88,7 @@ public class PostChain implements AutoCloseable {
                      throw var22;
                   }
 
-                  ++var19;
+                  var19++;
                }
             }
          }
@@ -133,7 +133,7 @@ public class PostChain implements AutoCloseable {
          if (var11 != null) {
             int var12 = 0;
 
-            for(JsonElement var14 : var11) {
+            for (JsonElement var14 : var11) {
                try {
                   JsonObject var15 = GsonHelper.convertToJsonObject(var14, "auxtarget");
                   String var32 = GsonHelper.getAsString(var15, "name");
@@ -184,7 +184,7 @@ public class PostChain implements AutoCloseable {
                   throw var16;
                }
 
-               ++var12;
+               var12++;
             }
          }
 
@@ -192,7 +192,7 @@ public class PostChain implements AutoCloseable {
          if (var28 != null) {
             int var29 = 0;
 
-            for(JsonElement var31 : var28) {
+            for (JsonElement var31 : var28) {
                try {
                   this.parseUniformNode(var31);
                } catch (Exception var26) {
@@ -201,7 +201,7 @@ public class PostChain implements AutoCloseable {
                   throw var33;
                }
 
-               ++var29;
+               var29++;
             }
          }
       }
@@ -217,7 +217,7 @@ public class PostChain implements AutoCloseable {
          float[] var5 = new float[4];
          int var6 = 0;
 
-         for(JsonElement var9 : GsonHelper.getAsJsonArray(var2, "values")) {
+         for (JsonElement var9 : GsonHelper.getAsJsonArray(var2, "values")) {
             try {
                var5[var6] = GsonHelper.convertToFloat(var9, "value");
             } catch (Exception var12) {
@@ -226,10 +226,10 @@ public class PostChain implements AutoCloseable {
                throw var11;
             }
 
-            ++var6;
+            var6++;
          }
 
-         switch(var6) {
+         switch (var6) {
             case 0:
             default:
                break;
@@ -263,11 +263,11 @@ public class PostChain implements AutoCloseable {
 
    @Override
    public void close() {
-      for(RenderTarget var2 : this.customRenderTargets.values()) {
+      for (RenderTarget var2 : this.customRenderTargets.values()) {
          var2.destroyBuffers();
       }
 
-      for(PostPass var4 : this.passes) {
+      for (PostPass var4 : this.passes) {
          var4.close();
       }
 
@@ -289,11 +289,11 @@ public class PostChain implements AutoCloseable {
       this.screenHeight = this.screenTarget.height;
       this.updateOrthoMatrix();
 
-      for(PostPass var4 : this.passes) {
+      for (PostPass var4 : this.passes) {
          var4.setOrthoMatrix(this.shaderOrthoMatrix);
       }
 
-      for(RenderTarget var6 : this.fullSizedTargets) {
+      for (RenderTarget var6 : this.fullSizedTargets) {
          var6.resize(var1, var2, Minecraft.ON_OSX);
       }
    }
@@ -301,28 +301,28 @@ public class PostChain implements AutoCloseable {
    private void setFilterMode(int var1) {
       this.screenTarget.setFilterMode(var1);
 
-      for(RenderTarget var3 : this.customRenderTargets.values()) {
+      for (RenderTarget var3 : this.customRenderTargets.values()) {
          var3.setFilterMode(var1);
       }
    }
 
    public void process(float var1) {
       if (var1 < this.lastStamp) {
-         this.time += 1.0F - this.lastStamp;
+         this.time = this.time + (1.0F - this.lastStamp);
          this.time += var1;
       } else {
-         this.time += var1 - this.lastStamp;
+         this.time = this.time + (var1 - this.lastStamp);
       }
 
       this.lastStamp = var1;
 
-      while(this.time > 20.0F) {
+      while (this.time > 20.0F) {
          this.time -= 20.0F;
       }
 
       int var2 = 9728;
 
-      for(PostPass var4 : this.passes) {
+      for (PostPass var4 : this.passes) {
          int var5 = var4.getFilterMode();
          if (var2 != var5) {
             this.setFilterMode(var5);
@@ -336,7 +336,7 @@ public class PostChain implements AutoCloseable {
    }
 
    public void setUniform(String var1, float var2) {
-      for(PostPass var4 : this.passes) {
+      for (PostPass var4 : this.passes) {
          var4.getEffect().safeGetUniform(var1).set(var2);
       }
    }

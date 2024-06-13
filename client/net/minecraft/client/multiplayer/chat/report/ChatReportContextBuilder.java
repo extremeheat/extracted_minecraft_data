@@ -25,15 +25,16 @@ public class ChatReportContextBuilder {
    public void collectAllContext(ChatLog var1, IntCollection var2, ChatReportContextBuilder.Handler var3) {
       IntRBTreeSet var4 = new IntRBTreeSet(var2);
 
-      for(int var5 = var4.lastInt(); var5 >= var1.start() && (this.isActive() || !var4.isEmpty()); --var5) {
+      for (int var5 = var4.lastInt(); var5 >= var1.start() && (this.isActive() || !var4.isEmpty()); var5--) {
          LoggedChatEvent var7 = var1.lookup(var5);
-         if (var7 instanceof LoggedChatMessage.Player var6) {
-            boolean var8 = this.acceptContext(((LoggedChatMessage.Player)var6).message());
+         if (var7 instanceof LoggedChatMessage.Player) {
+            LoggedChatMessage.Player var6 = (LoggedChatMessage.Player)var7;
+            boolean var8 = this.acceptContext(var6.message());
             if (var4.remove(var5)) {
-               this.trackContext(((LoggedChatMessage.Player)var6).message());
-               var3.accept(var5, (LoggedChatMessage.Player)var6);
+               this.trackContext(var6.message());
+               var3.accept(var5, var6);
             } else if (var8) {
-               var3.accept(var5, (LoggedChatMessage.Player)var6);
+               var3.accept(var5, var6);
             }
          }
       }
@@ -47,7 +48,7 @@ public class ChatReportContextBuilder {
       boolean var2 = false;
       Iterator var3 = this.activeCollectors.iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          ChatReportContextBuilder.Collector var4 = (ChatReportContextBuilder.Collector)var3.next();
          if (var4.accept(var1)) {
             var2 = true;
@@ -91,7 +92,7 @@ public class ChatReportContextBuilder {
             }
 
             if (var2) {
-               ++this.count;
+               this.count++;
             }
 
             return var2;

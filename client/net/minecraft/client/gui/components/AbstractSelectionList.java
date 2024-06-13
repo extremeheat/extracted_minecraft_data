@@ -66,7 +66,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    }
 
    public void setSelected(@Nullable E var1) {
-      this.selected = var1;
+      this.selected = (E)var1;
    }
 
    public E getFirstElement() {
@@ -277,8 +277,6 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return var1 == 0;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (!this.isValidMouseClick(var5)) {
@@ -375,7 +373,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    @Nullable
    protected E nextEntry(ScreenDirection var1, Predicate<E> var2, @Nullable E var3) {
-      byte var4 = switch(var1) {
+      byte var4 = switch (var1) {
          case RIGHT, LEFT -> 0;
          case UP -> -1;
          case DOWN -> 1;
@@ -388,7 +386,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
             var5 = this.children().indexOf(var3) + var4;
          }
 
-         for(int var6 = var5; var6 >= 0 && var6 < this.children.size(); var6 += var4) {
+         for (int var6 = var5; var6 >= 0 && var6 < this.children.size(); var6 += var4) {
             AbstractSelectionList.Entry var7 = this.children().get(var6);
             if (var2.test(var7)) {
                return (E)var7;
@@ -410,7 +408,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       int var7 = this.itemHeight - 4;
       int var8 = this.getItemCount();
 
-      for(int var9 = 0; var9 < var8; ++var9) {
+      for (int var9 = 0; var9 < var8; var9++) {
          int var10 = this.getRowTop(var9);
          int var11 = this.getRowBottom(var9);
          if (var11 >= this.getY() && var10 <= this.getBottom()) {
@@ -479,7 +477,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    protected boolean removeEntry(E var1) {
       boolean var2 = this.children.remove(var1);
       if (var2 && var1 == this.getSelected()) {
-         this.setSelected((E)null);
+         this.setSelected(null);
       }
 
       return var2;

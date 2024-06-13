@@ -50,8 +50,6 @@ public class UnconfiguredPipelineHandler {
          }
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) throws Exception {
          if (var2 instanceof UnconfiguredPipelineHandler.InboundConfigurationTask var4) {
             try {
@@ -84,8 +82,6 @@ public class UnconfiguredPipelineHandler {
          super();
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) throws Exception {
          if (var2 instanceof Packet) {
             ReferenceCountUtil.release(var2);

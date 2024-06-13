@@ -54,7 +54,7 @@ public class ShriekParticle extends TextureSheetParticle {
       };
       float var11 = this.getQuadSize(var3);
 
-      for(int var12 = 0; var12 < 4; ++var12) {
+      for (int var12 = 0; var12 < 4; var12++) {
          Vector3f var13 = var10[var12];
          var13.rotate(var9);
          var13.mul(var11);
@@ -85,7 +85,7 @@ public class ShriekParticle extends TextureSheetParticle {
    @Override
    public void tick() {
       if (this.delay > 0) {
-         --this.delay;
+         this.delay--;
       } else {
          super.tick();
       }

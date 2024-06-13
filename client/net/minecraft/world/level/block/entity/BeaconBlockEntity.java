@@ -19,7 +19,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -77,7 +76,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    private final ContainerData dataAccess = new ContainerData() {
       @Override
       public int get(int var1) {
-         return switch(var1) {
+         return switch (var1) {
             case 0 -> BeaconBlockEntity.this.levels;
             case 1 -> BeaconMenu.encodeEffect(BeaconBlockEntity.this.primaryPower);
             case 2 -> BeaconMenu.encodeEffect(BeaconBlockEntity.this.secondaryPower);
@@ -87,7 +86,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
       @Override
       public void set(int var1, int var2) {
-         switch(var1) {
+         switch (var1) {
             case 0:
                BeaconBlockEntity.this.levels = var2;
                break;
@@ -136,7 +135,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          : var3.checkingBeamSections.get(var3.checkingBeamSections.size() - 1);
       int var9 = var0.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var6);
 
-      for(int var10 = 0; var10 < 10 && var7.getY() <= var9; ++var10) {
+      for (int var10 = 0; var10 < 10 && var7.getY() <= var9; var10++) {
          BlockState var11 = var0.getBlockState(var7);
          Block var12 = var11.getBlock();
          if (var12 instanceof BeaconBeamBlock) {
@@ -165,7 +164,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          }
 
          var7 = var7.above();
-         ++var3.lastCheckY;
+         var3.lastCheckY++;
       }
 
       int var15 = var3.levels;
@@ -189,7 +188,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
             if (!var16 && var17) {
                playSound(var0, var1, SoundEvents.BEACON_ACTIVATE);
 
-               for(ServerPlayer var14 : var0.getEntitiesOfClass(
+               for (ServerPlayer var14 : var0.getEntitiesOfClass(
                   ServerPlayer.class,
                   new AABB((double)var4, (double)var5, (double)var6, (double)var4, (double)(var5 - 4), (double)var6).inflate(10.0, 5.0, 10.0)
                )) {
@@ -205,7 +204,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    private static int updateBase(Level var0, int var1, int var2, int var3) {
       int var4 = 0;
 
-      for(int var5 = 1; var5 <= 4; var4 = var5++) {
+      for (int var5 = 1; var5 <= 4; var4 = var5++) {
          int var6 = var2 - var5;
          if (var6 < var0.getMinBuildHeight()) {
             break;
@@ -213,8 +212,8 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
          boolean var7 = true;
 
-         for(int var8 = var1 - var5; var8 <= var1 + var5 && var7; ++var8) {
-            for(int var9 = var3 - var5; var9 <= var3 + var5; ++var9) {
+         for (int var8 = var1 - var5; var8 <= var1 + var5 && var7; var8++) {
+            for (int var9 = var3 - var5; var9 <= var3 + var5; var9++) {
                if (!var0.getBlockState(new BlockPos(var8, var6, var9)).is(BlockTags.BEACON_BASE_BLOCKS)) {
                   var7 = false;
                   break;
@@ -248,12 +247,12 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          AABB var9 = new AABB(var1).inflate(var5).expandTowards(0.0, (double)var0.getHeight(), 0.0);
          List var10 = var0.getEntitiesOfClass(Player.class, var9);
 
-         for(Player var12 : var10) {
+         for (Player var12 : var10) {
             var12.addEffect(new MobEffectInstance(var3, var8, var7, true, true));
          }
 
          if (var2 >= 4 && !Objects.equals(var3, var4) && var4 != null) {
-            for(Player var14 : var10) {
+            for (Player var14 : var10) {
                var14.addEffect(new MobEffectInstance(var4, var8, 0, true, true));
             }
          }
@@ -274,7 +273,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    private static void storeEffect(CompoundTag var0, String var1, @Nullable Holder<MobEffect> var2) {
@@ -294,8 +293,8 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.primaryPower = loadEffect(var1, "primary_effect");
       this.secondaryPower = loadEffect(var1, "secondary_effect");
       if (var1.contains("CustomName", 8)) {
@@ -347,13 +346,15 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    @Override
-   public void applyComponents(DataComponentMap var1) {
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
       this.name = var1.get(DataComponents.CUSTOM_NAME);
       this.lockKey = var1.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);
    }
 
    @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.CUSTOM_NAME, this.name);
       if (!this.lockKey.equals(LockCode.NO_LOCK)) {
          var1.set(DataComponents.LOCK, this.lockKey);
@@ -383,7 +384,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       }
 
       protected void increaseHeight() {
-         ++this.height;
+         this.height++;
       }
 
       public float[] getColor() {

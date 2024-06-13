@@ -9,7 +9,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -130,7 +129,7 @@ public class BiomeGenerationSettings {
       }
 
       private void addFeatureStepsUpTo(int var1) {
-         while(this.features.size() <= var1) {
+         while (this.features.size() <= var1) {
             this.features.add(Lists.newArrayList());
          }
       }

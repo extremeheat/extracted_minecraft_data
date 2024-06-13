@@ -5,9 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundRespawnPacket(CommonPlayerSpawnInfo e, byte f) implements Packet<ClientGamePacketListener> {
-   private final CommonPlayerSpawnInfo commonPlayerSpawnInfo;
-   private final byte dataToKeep;
+public record ClientboundRespawnPacket(CommonPlayerSpawnInfo commonPlayerSpawnInfo, byte dataToKeep) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRespawnPacket> STREAM_CODEC = Packet.codec(
       ClientboundRespawnPacket::write, ClientboundRespawnPacket::new
    );
@@ -19,10 +17,10 @@ public record ClientboundRespawnPacket(CommonPlayerSpawnInfo e, byte f) implemen
       this(new CommonPlayerSpawnInfo(var1), var1.readByte());
    }
 
-   public ClientboundRespawnPacket(CommonPlayerSpawnInfo var1, byte var2) {
+   public ClientboundRespawnPacket(CommonPlayerSpawnInfo commonPlayerSpawnInfo, byte dataToKeep) {
       super();
-      this.commonPlayerSpawnInfo = var1;
-      this.dataToKeep = var2;
+      this.commonPlayerSpawnInfo = commonPlayerSpawnInfo;
+      this.dataToKeep = dataToKeep;
    }
 
    private void write(RegistryFriendlyByteBuf var1) {

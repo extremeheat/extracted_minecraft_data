@@ -11,7 +11,6 @@ import com.mojang.datafixers.types.templates.TaggedChoice.TaggedChoiceType;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,7 +41,7 @@ public class EntityMinecartIdentifiersFix extends DataFix {
                   } else {
                      var6 = "MinecartRideable";
                   }
-   
+
                   return Pair.of(
                      var6,
                      (DataResult)var4.write()

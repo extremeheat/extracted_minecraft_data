@@ -202,17 +202,15 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       return this.worldDimensionData.create(var1);
    }
 
-   static record WorldDimensionData(JsonObject a, String b) {
-      private final JsonObject generatorSettings;
-      private final String levelType;
+   static record WorldDimensionData(JsonObject generatorSettings, String levelType) {
       private static final Map<String, ResourceKey<WorldPreset>> LEGACY_PRESET_NAMES = Map.of(
          "default", WorldPresets.NORMAL, "largebiomes", WorldPresets.LARGE_BIOMES
       );
 
-      WorldDimensionData(JsonObject var1, String var2) {
+      WorldDimensionData(JsonObject generatorSettings, String levelType) {
          super();
-         this.generatorSettings = var1;
-         this.levelType = var2;
+         this.generatorSettings = generatorSettings;
+         this.levelType = levelType;
       }
 
       public WorldDimensions create(RegistryAccess var1) {

@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -18,7 +17,7 @@ public class DebugMobSpawningCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires(var0x -> var0x.hasPermission(2));
 
-      for(MobCategory var5 : MobCategory.values()) {
+      for (MobCategory var5 : MobCategory.values()) {
          var1.then(
             Commands.literal(var5.getName())
                .then(

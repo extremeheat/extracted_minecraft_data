@@ -37,7 +37,7 @@ public abstract class MoveToBlockGoal extends Goal {
    @Override
    public boolean canUse() {
       if (this.nextStartTick > 0) {
-         --this.nextStartTick;
+         this.nextStartTick--;
          return false;
       } else {
          this.nextStartTick = this.nextStartTick(this.mob);
@@ -85,13 +85,13 @@ public abstract class MoveToBlockGoal extends Goal {
       BlockPos var1 = this.getMoveToTarget();
       if (!var1.closerToCenterThan(this.mob.position(), this.acceptedDistance())) {
          this.reachedTarget = false;
-         ++this.tryTicks;
+         this.tryTicks++;
          if (this.shouldRecalculatePath()) {
             this.mob.getNavigation().moveTo((double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, this.speedModifier);
          }
       } else {
          this.reachedTarget = true;
-         --this.tryTicks;
+         this.tryTicks--;
       }
    }
 
@@ -109,10 +109,10 @@ public abstract class MoveToBlockGoal extends Goal {
       BlockPos var3 = this.mob.blockPosition();
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
 
-      for(int var5 = this.verticalSearchStart; var5 <= var2; var5 = var5 > 0 ? -var5 : 1 - var5) {
-         for(int var6 = 0; var6 < var1; ++var6) {
-            for(int var7 = 0; var7 <= var6; var7 = var7 > 0 ? -var7 : 1 - var7) {
-               for(int var8 = var7 < var6 && var7 > -var6 ? var6 : 0; var8 <= var6; var8 = var8 > 0 ? -var8 : 1 - var8) {
+      for (int var5 = this.verticalSearchStart; var5 <= var2; var5 = var5 > 0 ? -var5 : 1 - var5) {
+         for (int var6 = 0; var6 < var1; var6++) {
+            for (int var7 = 0; var7 <= var6; var7 = var7 > 0 ? -var7 : 1 - var7) {
+               for (int var8 = var7 < var6 && var7 > -var6 ? var6 : 0; var8 <= var6; var8 = var8 > 0 ? -var8 : 1 - var8) {
                   var4.setWithOffset(var3, var7, var5 - 1, var8);
                   if (this.mob.isWithinRestriction(var4) && this.isValidTarget(this.mob.level(), var4)) {
                      this.blockPos = var4;

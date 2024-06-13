@@ -136,7 +136,7 @@ public class ClientChunkCache extends ChunkSource {
          var4.viewCenterX = this.storage.viewCenterX;
          var4.viewCenterZ = this.storage.viewCenterZ;
 
-         for(int var5 = 0; var5 < this.storage.chunks.length(); ++var5) {
+         for (int var5 = 0; var5 < this.storage.chunks.length(); var5++) {
             LevelChunk var6 = this.storage.chunks.get(var5);
             if (var6 != null) {
                ChunkPos var7 = var6.getPos();
@@ -191,18 +191,18 @@ public class ClientChunkCache extends ChunkSource {
       protected void replace(int var1, @Nullable LevelChunk var2) {
          LevelChunk var3 = this.chunks.getAndSet(var1, var2);
          if (var3 != null) {
-            --this.chunkCount;
+            this.chunkCount--;
             ClientChunkCache.this.level.unload(var3);
          }
 
          if (var2 != null) {
-            ++this.chunkCount;
+            this.chunkCount++;
          }
       }
 
       protected LevelChunk replace(int var1, LevelChunk var2, @Nullable LevelChunk var3) {
          if (this.chunks.compareAndSet(var1, var2, var3) && var3 == null) {
-            --this.chunkCount;
+            this.chunkCount--;
          }
 
          ClientChunkCache.this.level.unload(var2);
@@ -222,8 +222,8 @@ public class ClientChunkCache extends ChunkSource {
          try (FileOutputStream var2 = new FileOutputStream(var1)) {
             int var3 = ClientChunkCache.this.storage.chunkRadius;
 
-            for(int var4 = this.viewCenterZ - var3; var4 <= this.viewCenterZ + var3; ++var4) {
-               for(int var5 = this.viewCenterX - var3; var5 <= this.viewCenterX + var3; ++var5) {
+            for (int var4 = this.viewCenterZ - var3; var4 <= this.viewCenterZ + var3; var4++) {
+               for (int var5 = this.viewCenterX - var3; var5 <= this.viewCenterX + var3; var5++) {
                   LevelChunk var6 = ClientChunkCache.this.storage.chunks.get(ClientChunkCache.this.storage.getIndex(var5, var4));
                   if (var6 != null) {
                      ChunkPos var7 = var6.getPos();

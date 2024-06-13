@@ -90,7 +90,7 @@ public class EnchantmentNames {
       StringBuilder var3 = new StringBuilder();
       int var4 = this.random.nextInt(2) + 3;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
+      for (int var5 = 0; var5 < var4; var5++) {
          if (var5 != 0) {
             var3.append(" ");
          }

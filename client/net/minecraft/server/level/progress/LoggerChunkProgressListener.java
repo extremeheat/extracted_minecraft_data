@@ -43,7 +43,7 @@ public class LoggerChunkProgressListener implements ChunkProgressListener {
    @Override
    public void onStatusChange(ChunkPos var1, @Nullable ChunkStatus var2) {
       if (var2 == ChunkStatus.FULL) {
-         ++this.count;
+         this.count++;
       }
 
       int var3 = this.getProgress();

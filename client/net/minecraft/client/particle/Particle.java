@@ -113,16 +113,16 @@ public abstract class Particle {
       if (this.age++ >= this.lifetime) {
          this.remove();
       } else {
-         this.yd -= 0.04 * (double)this.gravity;
+         this.yd = this.yd - 0.04 * (double)this.gravity;
          this.move(this.xd, this.yd, this.zd);
          if (this.speedUpWhenYMotionIsBlocked && this.y == this.yo) {
             this.xd *= 1.1;
             this.zd *= 1.1;
          }
 
-         this.xd *= (double)this.friction;
-         this.yd *= (double)this.friction;
-         this.zd *= (double)this.friction;
+         this.xd = this.xd * (double)this.friction;
+         this.yd = this.yd * (double)this.friction;
+         this.zd = this.zd * (double)this.friction;
          if (this.onGround) {
             this.xd *= 0.699999988079071;
             this.zd *= 0.699999988079071;
@@ -185,7 +185,7 @@ public abstract class Particle {
          double var9 = var3;
          double var11 = var5;
          if (this.hasPhysics && (var1 != 0.0 || var3 != 0.0 || var5 != 0.0) && var1 * var1 + var3 * var3 + var5 * var5 < MAXIMUM_COLLISION_VELOCITY_SQUARED) {
-            Vec3 var13 = Entity.collideBoundingBox(null, new Vec3(var1, var3, var5), this.getBoundingBox(), this.level, List.of()).movement();
+            Vec3 var13 = Entity.collideBoundingBox(null, new Vec3(var1, var3, var5), this.getBoundingBox(), this.level, List.of());
             var1 = var13.x;
             var3 = var13.y;
             var5 = var13.z;
@@ -239,19 +239,15 @@ public abstract class Particle {
       return Optional.empty();
    }
 
-   public static record LifetimeAlpha(float b, float c, float d, float e) {
-      private final float startAlpha;
-      private final float endAlpha;
-      private final float startAtNormalizedAge;
-      private final float endAtNormalizedAge;
+   public static record LifetimeAlpha(float startAlpha, float endAlpha, float startAtNormalizedAge, float endAtNormalizedAge) {
       public static final Particle.LifetimeAlpha ALWAYS_OPAQUE = new Particle.LifetimeAlpha(1.0F, 1.0F, 0.0F, 1.0F);
 
-      public LifetimeAlpha(float var1, float var2, float var3, float var4) {
+      public LifetimeAlpha(float startAlpha, float endAlpha, float startAtNormalizedAge, float endAtNormalizedAge) {
          super();
-         this.startAlpha = var1;
-         this.endAlpha = var2;
-         this.startAtNormalizedAge = var3;
-         this.endAtNormalizedAge = var4;
+         this.startAlpha = startAlpha;
+         this.endAlpha = endAlpha;
+         this.startAtNormalizedAge = startAtNormalizedAge;
+         this.endAtNormalizedAge = endAtNormalizedAge;
       }
 
       public boolean isOpaque() {

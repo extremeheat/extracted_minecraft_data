@@ -111,7 +111,7 @@ public class CreateFlatWorldScreen extends Screen {
       public DetailsList() {
          super(CreateFlatWorldScreen.this.minecraft, CreateFlatWorldScreen.this.width, CreateFlatWorldScreen.this.height - 103, 43, 24);
 
-         for(int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); ++var2) {
+         for (int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); var2++) {
             this.addEntry(new CreateFlatWorldScreen.DetailsList.Entry());
          }
       }
@@ -125,7 +125,7 @@ public class CreateFlatWorldScreen extends Screen {
          int var1 = this.children().indexOf(this.getSelected());
          this.clearEntries();
 
-         for(int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); ++var2) {
+         for (int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); var2++) {
             this.addEntry(new CreateFlatWorldScreen.DetailsList.Entry());
          }
 

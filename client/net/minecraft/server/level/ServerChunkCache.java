@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -106,7 +107,7 @@ public class ServerChunkCache extends ChunkSource {
    }
 
    private void storeInCache(long var1, @Nullable ChunkAccess var3, ChunkStatus var4) {
-      for(int var5 = 3; var5 > 0; --var5) {
+      for (int var5 = 3; var5 > 0; var5--) {
          this.lastChunkPos[var5] = this.lastChunkPos[var5 - 1];
          this.lastChunkStatus[var5] = this.lastChunkStatus[var5 - 1];
          this.lastChunk[var5] = this.lastChunk[var5 - 1];
@@ -127,7 +128,7 @@ public class ServerChunkCache extends ChunkSource {
          var5.incrementCounter("getChunk");
          long var6 = ChunkPos.asLong(var1, var2);
 
-         for(int var8 = 0; var8 < 4; ++var8) {
+         for (int var8 = 0; var8 < 4; var8++) {
             if (var6 == this.lastChunkPos[var8] && var3 == this.lastChunkStatus[var8]) {
                ChunkAccess var9 = this.lastChunk[var8];
                if (var9 != null || !var4) {
@@ -159,7 +160,7 @@ public class ServerChunkCache extends ChunkSource {
          this.level.getProfiler().incrementCounter("getChunkNow");
          long var3 = ChunkPos.asLong(var1, var2);
 
-         for(int var5 = 0; var5 < 4; ++var5) {
+         for (int var5 = 0; var5 < 4; var5++) {
             if (var3 == this.lastChunkPos[var5] && this.lastChunkStatus[var5] == ChunkStatus.FULL) {
                ChunkAccess var6 = this.lastChunk[var5];
                return var6 instanceof LevelChunk ? (LevelChunk)var6 : null;
@@ -204,7 +205,7 @@ public class ServerChunkCache extends ChunkSource {
          var6 = CompletableFuture.<CompletableFuture<ChunkResult<ChunkAccess>>>supplyAsync(
                () -> this.getChunkFutureMainThread(var1, var2, var3, var4), this.mainThreadProcessor
             )
-            .thenCompose(var0 -> var0);
+            .thenCompose(var0 -> (CompletionStage<ChunkResult<ChunkAccess>>)var0);
       }
 
       return var6;
@@ -253,7 +254,7 @@ public class ServerChunkCache extends ChunkSource {
       } else {
          int var6 = CHUNK_STATUSES.size() - 1;
 
-         while(true) {
+         while (true) {
             ChunkStatus var7 = CHUNK_STATUSES.get(var6);
             ChunkAccess var8 = var5.getFutureIfPresentUnchecked(var7).getNow(ChunkHolder.UNLOADED_CHUNK).orElse(null);
             if (var8 != null) {
@@ -264,7 +265,7 @@ public class ServerChunkCache extends ChunkSource {
                return null;
             }
 
-            --var6;
+            var6--;
          }
       }
    }
@@ -339,7 +340,7 @@ public class ServerChunkCache extends ChunkSource {
          var5.push("filteringLoadedChunks");
          ArrayList var6 = Lists.newArrayListWithCapacity(this.chunkMap.size());
 
-         for(ChunkHolder var8 : this.chunkMap.getChunks()) {
+         for (ChunkHolder var8 : this.chunkMap.getChunks()) {
             LevelChunk var9 = var8.getTickingChunk();
             if (var9 != null) {
                var6.add(new ServerChunkCache.ChunkAndHolder(var9, var8));
@@ -359,7 +360,7 @@ public class ServerChunkCache extends ChunkSource {
             int var10 = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
             boolean var11 = this.level.getLevelData().getGameTime() % 400L == 0L;
 
-            for(ServerChunkCache.ChunkAndHolder var13 : var6) {
+            for (ServerChunkCache.ChunkAndHolder var13 : var6) {
                LevelChunk var14 = var13.chunk;
                ChunkPos var15 = var14.getPos();
                if (this.level.isNaturalSpawningAllowed(var15) && this.chunkMap.anyPlayerCloseEnoughForSpawning(var15)) {
@@ -515,14 +516,12 @@ public class ServerChunkCache extends ChunkSource {
       this.distanceManager.removeTicketsOnClosing();
    }
 
-   static record ChunkAndHolder(LevelChunk a, ChunkHolder b) {
-      final LevelChunk chunk;
-      final ChunkHolder holder;
+   static record ChunkAndHolder(LevelChunk chunk, ChunkHolder holder) {
 
-      ChunkAndHolder(LevelChunk var1, ChunkHolder var2) {
+      ChunkAndHolder(LevelChunk chunk, ChunkHolder holder) {
          super();
-         this.chunk = var1;
-         this.holder = var2;
+         this.chunk = chunk;
+         this.holder = holder;
       }
    }
 

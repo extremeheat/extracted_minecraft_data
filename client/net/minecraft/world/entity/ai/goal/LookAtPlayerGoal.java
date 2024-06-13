@@ -15,7 +15,7 @@ public class LookAtPlayerGoal extends Goal {
    @Nullable
    protected Entity lookAt;
    protected final float lookDistance;
-   protected int lookTime;
+   private int lookTime;
    protected final float probability;
    private final boolean onlyHorizontal;
    protected final Class<? extends LivingEntity> lookAtType;
@@ -80,10 +80,8 @@ public class LookAtPlayerGoal extends Goal {
    public boolean canContinueToUse() {
       if (!this.lookAt.isAlive()) {
          return false;
-      } else if (this.mob.distanceToSqr(this.lookAt) > (double)(this.lookDistance * this.lookDistance)) {
-         return false;
       } else {
-         return this.lookTime > 0;
+         return this.mob.distanceToSqr(this.lookAt) > (double)(this.lookDistance * this.lookDistance) ? false : this.lookTime > 0;
       }
    }
 
@@ -102,7 +100,7 @@ public class LookAtPlayerGoal extends Goal {
       if (this.lookAt.isAlive()) {
          double var1 = this.onlyHorizontal ? this.mob.getEyeY() : this.lookAt.getEyeY();
          this.mob.getLookControl().setLookAt(this.lookAt.getX(), var1, this.lookAt.getZ());
-         --this.lookTime;
+         this.lookTime--;
       }
    }
 }

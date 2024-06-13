@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -65,6 +64,7 @@ public class RealmsBackupScreen extends RealmsScreen {
       this.downloadButton.active = false;
       var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
       this.fetchRealmsBackups();
@@ -111,8 +111,8 @@ public class RealmsBackupScreen extends RealmsScreen {
                   if (RealmsBackupScreen.this.backupList != null) {
                      RealmsBackupScreen.this.backupList.children().clear();
 
-                     for(Backup var3xx : RealmsBackupScreen.this.backups) {
-                        RealmsBackupScreen.this.backupList.addEntry(var3xx);
+                     for (Backup var3x : RealmsBackupScreen.this.backups) {
+                        RealmsBackupScreen.this.backupList.addEntry(var3x);
                      }
                   }
                });
@@ -233,7 +233,7 @@ public class RealmsBackupScreen extends RealmsScreen {
          if (var2 != RealmsBackupScreen.this.backups.size() - 1) {
             Backup var3 = RealmsBackupScreen.this.backups.get(var2 + 1);
 
-            for(String var5 : var1.metadata.keySet()) {
+            for (String var5 : var1.metadata.keySet()) {
                if (!var5.contains("uploaded") && var3.metadata.containsKey(var5)) {
                   if (!var1.metadata.get(var5).equals(var3.metadata.get(var5))) {
                      this.addToChangeList(var5);

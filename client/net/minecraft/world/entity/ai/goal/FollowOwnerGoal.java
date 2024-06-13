@@ -65,10 +65,8 @@ public class FollowOwnerGoal extends Goal {
    public boolean canContinueToUse() {
       if (this.navigation.isDone()) {
          return false;
-      } else if (this.unableToMove()) {
-         return false;
       } else {
-         return !(this.tamable.distanceToSqr(this.owner) <= (double)(this.stopDistance * this.stopDistance));
+         return this.unableToMove() ? false : !(this.tamable.distanceToSqr(this.owner) <= (double)(this.stopDistance * this.stopDistance));
       }
    }
 
@@ -106,7 +104,7 @@ public class FollowOwnerGoal extends Goal {
    private void teleportToOwner() {
       BlockPos var1 = this.owner.blockPosition();
 
-      for(int var2 = 0; var2 < 10; ++var2) {
+      for (int var2 = 0; var2 < 10; var2++) {
          int var3 = this.randomIntInclusive(-3, 3);
          int var4 = this.randomIntInclusive(-1, 1);
          int var5 = this.randomIntInclusive(-3, 3);

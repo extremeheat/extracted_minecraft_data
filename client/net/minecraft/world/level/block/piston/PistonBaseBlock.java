@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +71,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (var1.getValue(EXTENDED)) {
-         switch((Direction)var1.getValue(FACING)) {
+         switch ((Direction)var1.getValue(FACING)) {
             case DOWN:
                return DOWN_AABB;
             case UP:
@@ -131,13 +130,12 @@ public class PistonBaseBlock extends DirectionalBlock {
          BlockPos var6 = var2.relative(var4, 2);
          BlockState var7 = var1.getBlockState(var6);
          byte var8 = 1;
-         if (var7.is(Blocks.MOVING_PISTON) && var7.getValue(FACING) == var4) {
-            BlockEntity var9 = var1.getBlockEntity(var6);
-            if (var9 instanceof PistonMovingBlockEntity var10
-               && var10.isExtending()
-               && (var10.getProgress(0.0F) < 0.5F || var1.getGameTime() == var10.getLastTicked() || ((ServerLevel)var1).isHandlingTick())) {
-               var8 = 2;
-            }
+         if (var7.is(Blocks.MOVING_PISTON)
+            && var7.getValue(FACING) == var4
+            && var1.getBlockEntity(var6) instanceof PistonMovingBlockEntity var10
+            && var10.isExtending()
+            && (var10.getProgress(0.0F) < 0.5F || var1.getGameTime() == var10.getLastTicked() || ((ServerLevel)var1).isHandlingTick())) {
+            var8 = 2;
          }
 
          var1.blockEvent(var2, this, var8, var4.get3DDataValue());
@@ -145,7 +143,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    private boolean getNeighborSignal(SignalGetter var1, BlockPos var2, Direction var3) {
-      for(Direction var7 : Direction.values()) {
+      for (Direction var7 : Direction.values()) {
          if (var7 != var3 && var1.hasSignal(var2.relative(var7), var7)) {
             return true;
          }
@@ -156,7 +154,7 @@ public class PistonBaseBlock extends DirectionalBlock {
       } else {
          BlockPos var9 = var2.above();
 
-         for(Direction var8 : Direction.values()) {
+         for (Direction var8 : Direction.values()) {
             if (var8 != Direction.DOWN && var1.hasSignal(var9.relative(var8), var8)) {
                return true;
             }
@@ -166,8 +164,6 @@ public class PistonBaseBlock extends DirectionalBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       Direction var6 = var1.getValue(FACING);
@@ -214,12 +210,12 @@ public class PistonBaseBlock extends DirectionalBlock {
             BlockPos var10 = var3.offset(var6.getStepX() * 2, var6.getStepY() * 2, var6.getStepZ() * 2);
             BlockState var11 = var2.getBlockState(var10);
             boolean var12 = false;
-            if (var11.is(Blocks.MOVING_PISTON)) {
-               BlockEntity var13 = var2.getBlockEntity(var10);
-               if (var13 instanceof PistonMovingBlockEntity var14 && var14.getDirection() == var6 && var14.isExtending()) {
-                  var14.finalTick();
-                  var12 = true;
-               }
+            if (var11.is(Blocks.MOVING_PISTON)
+               && var2.getBlockEntity(var10) instanceof PistonMovingBlockEntity var14
+               && var14.getDirection() == var6
+               && var14.isExtending()) {
+               var14.finalTick();
+               var12 = true;
             }
 
             if (!var12) {
@@ -260,7 +256,7 @@ public class PistonBaseBlock extends DirectionalBlock {
                return false;
             }
 
-            switch(var0.getPistonPushReaction()) {
+            switch (var0.getPistonPushReaction()) {
                case BLOCK:
                   return false;
                case DESTROY:
@@ -290,7 +286,7 @@ public class PistonBaseBlock extends DirectionalBlock {
          List var8 = var6.getToPush();
          ArrayList var9 = Lists.newArrayList();
 
-         for(BlockPos var11 : var8) {
+         for (BlockPos var11 : var8) {
             BlockState var12 = var1.getBlockState(var11);
             var9.add(var12);
             var7.put(var11, var12);
@@ -301,7 +297,7 @@ public class PistonBaseBlock extends DirectionalBlock {
          Direction var21 = var4 ? var3 : var3.getOpposite();
          int var13 = 0;
 
-         for(int var14 = var19.size() - 1; var14 >= 0; --var14) {
+         for (int var14 = var19.size() - 1; var14 >= 0; var14--) {
             BlockPos var15 = (BlockPos)var19.get(var14);
             BlockState var16 = var1.getBlockState(var15);
             BlockEntity var17 = var16.hasBlockEntity() ? var1.getBlockEntity(var15) : null;
@@ -315,7 +311,7 @@ public class PistonBaseBlock extends DirectionalBlock {
             var20[var13++] = var16;
          }
 
-         for(int var23 = var8.size() - 1; var23 >= 0; --var23) {
+         for (int var23 = var8.size() - 1; var23 >= 0; var23--) {
             BlockPos var26 = (BlockPos)var8.get(var23);
             BlockState var33 = var1.getBlockState(var26);
             var26 = var26.relative(var21);
@@ -340,11 +336,11 @@ public class PistonBaseBlock extends DirectionalBlock {
 
          BlockState var25 = Blocks.AIR.defaultBlockState();
 
-         for(BlockPos var35 : var7.keySet()) {
+         for (BlockPos var35 : var7.keySet()) {
             var1.setBlock(var35, var25, 82);
          }
 
-         for(Entry var36 : var7.entrySet()) {
+         for (Entry var36 : var7.entrySet()) {
             BlockPos var39 = (BlockPos)var36.getKey();
             BlockState var18 = (BlockState)var36.getValue();
             var18.updateIndirectNeighbourShapes(var1, var39, 2);
@@ -354,14 +350,14 @@ public class PistonBaseBlock extends DirectionalBlock {
 
          var13 = 0;
 
-         for(int var31 = var19.size() - 1; var31 >= 0; --var31) {
+         for (int var31 = var19.size() - 1; var31 >= 0; var31--) {
             BlockState var37 = var20[var13++];
             BlockPos var40 = (BlockPos)var19.get(var31);
             var37.updateIndirectNeighbourShapes(var1, var40, 2);
             var1.updateNeighborsAt(var40, var37.getBlock());
          }
 
-         for(int var32 = var8.size() - 1; var32 >= 0; --var32) {
+         for (int var32 = var8.size() - 1; var32 >= 0; var32--) {
             var1.updateNeighborsAt((BlockPos)var8.get(var32), var20[var13++].getBlock());
          }
 

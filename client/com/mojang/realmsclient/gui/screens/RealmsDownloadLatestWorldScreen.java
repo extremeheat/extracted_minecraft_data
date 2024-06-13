@@ -101,7 +101,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    @Override
    public void tick() {
       super.tick();
-      ++this.animTick;
+      this.animTick++;
       if (this.status != null && this.narrationRateLimiter.tryAcquire(1)) {
          Component var1 = this.createProgressNarrationMessage();
          this.minecraft.getNarrator().sayNow(var1);
@@ -165,7 +165,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    private void drawDots(GuiGraphics var1) {
       int var2 = this.font.width(this.status);
       if (this.animTick % 10 == 0) {
-         ++this.dotIndex;
+         this.dotIndex++;
       }
 
       var1.drawString(this.font, DOTS[this.dotIndex % DOTS.length], this.width / 2 + var2 / 2 + 5, 50, -1, false);
@@ -226,7 +226,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
                var1.contentLength(this.worldDownload.downloadLink);
                var1.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
 
-               while(!var1.isFinished()) {
+               while (!var1.isFinished()) {
                   if (var1.isError()) {
                      var1.cancel();
                      this.errorMessage = Component.translatable("mco.download.failed");

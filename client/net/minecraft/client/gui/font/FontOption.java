@@ -9,8 +9,7 @@ import net.minecraft.util.StringRepresentable;
 
 public enum FontOption implements StringRepresentable {
    UNIFORM("uniform"),
-   JAPANESE_VARIANTS("jp"),
-   POTATIS("potato");
+   JAPANESE_VARIANTS("jp");
 
    public static final Codec<FontOption> CODEC = StringRepresentable.fromEnum(FontOption::values);
    private final String name;
@@ -35,8 +34,8 @@ public enum FontOption implements StringRepresentable {
       }
 
       public boolean apply(Set<FontOption> var1) {
-         for(Entry var3 : this.values.entrySet()) {
-            if (var1.contains(var3.getKey()) != var3.getValue()) {
+         for (Entry var3 : this.values.entrySet()) {
+            if (var1.contains(var3.getKey()) != (Boolean)var3.getValue()) {
                return false;
             }
          }

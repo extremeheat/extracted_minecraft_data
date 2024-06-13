@@ -16,11 +16,11 @@ public enum SymmetricGroup3 {
    private final Matrix3f transformation;
    private static final int ORDER = 3;
    private static final SymmetricGroup3[][] cayleyTable = Util.make(new SymmetricGroup3[values().length][values().length], var0 -> {
-      for(SymmetricGroup3 var4 : values()) {
-         for(SymmetricGroup3 var8 : values()) {
+      for (SymmetricGroup3 var4 : values()) {
+         for (SymmetricGroup3 var8 : values()) {
             int[] var9 = new int[3];
 
-            for(int var10 = 0; var10 < 3; ++var10) {
+            for (int var10 = 0; var10 < 3; var10++) {
                var9[var10] = var4.permutation[var8.permutation[var10]];
             }
 

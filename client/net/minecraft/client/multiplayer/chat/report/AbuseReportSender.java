@@ -33,17 +33,15 @@ public interface AbuseReportSender {
       }
    }
 
-   public static record Services(ReportEnvironment a, UserApiService b) implements AbuseReportSender {
-      private final ReportEnvironment environment;
-      private final UserApiService userApiService;
+   public static record Services(ReportEnvironment environment, UserApiService userApiService) implements AbuseReportSender {
       private static final Component SERVICE_UNAVAILABLE_TEXT = Component.translatable("gui.abuseReport.send.service_unavailable");
       private static final Component HTTP_ERROR_TEXT = Component.translatable("gui.abuseReport.send.http_error");
       private static final Component JSON_ERROR_TEXT = Component.translatable("gui.abuseReport.send.json_error");
 
-      public Services(ReportEnvironment var1, UserApiService var2) {
+      public Services(ReportEnvironment environment, UserApiService userApiService) {
          super();
-         this.environment = var1;
-         this.userApiService = var2;
+         this.environment = environment;
+         this.userApiService = userApiService;
       }
 
       @Override
@@ -53,7 +51,7 @@ public interface AbuseReportSender {
                AbuseReportRequest var4 = new AbuseReportRequest(
                   1, var1, var3, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo(), var2.backendName()
                );
-   
+
                try {
                   this.userApiService.reportAbuse(var4);
                   return Unit.INSTANCE;
@@ -79,11 +77,11 @@ public interface AbuseReportSender {
       }
 
       private Component getErrorDescription(MinecraftClientException var1) {
-         return switch(var1.getType()) {
+         return switch (var1.getType()) {
             case SERVICE_UNAVAILABLE -> SERVICE_UNAVAILABLE_TEXT;
             case HTTP_ERROR -> HTTP_ERROR_TEXT;
             case JSON_ERROR -> JSON_ERROR_TEXT;
-            default -> throw new IncompatibleClassChangeError();
+            default -> throw new MatchException(null, null);
          };
       }
 

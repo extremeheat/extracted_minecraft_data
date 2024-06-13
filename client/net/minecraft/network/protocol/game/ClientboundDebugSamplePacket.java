@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 
-public record ClientboundDebugSamplePacket(long[] b, RemoteDebugSampleType c) implements Packet<ClientGamePacketListener> {
-   private final long[] sample;
-   private final RemoteDebugSampleType debugSampleType;
+public record ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType debugSampleType) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundDebugSamplePacket> STREAM_CODEC = Packet.codec(
       ClientboundDebugSamplePacket::write, ClientboundDebugSamplePacket::new
    );
@@ -17,10 +15,10 @@ public record ClientboundDebugSamplePacket(long[] b, RemoteDebugSampleType c) im
       this(var1.readLongArray(), var1.readEnum(RemoteDebugSampleType.class));
    }
 
-   public ClientboundDebugSamplePacket(long[] var1, RemoteDebugSampleType var2) {
+   public ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType debugSampleType) {
       super();
-      this.sample = var1;
-      this.debugSampleType = var2;
+      this.sample = sample;
+      this.debugSampleType = debugSampleType;
    }
 
    private void write(FriendlyByteBuf var1) {

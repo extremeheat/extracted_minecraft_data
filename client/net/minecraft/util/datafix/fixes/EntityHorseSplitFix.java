@@ -20,7 +20,7 @@ public class EntityHorseSplitFix extends EntityRenameFix {
       if (Objects.equals("EntityHorse", var1)) {
          int var5 = var3.get("Type").asInt(0);
 
-         String var4 = switch(var5) {
+         String var4 = switch (var5) {
             case 1 -> "Donkey";
             case 2 -> "Mule";
             case 3 -> "ZombieHorse";

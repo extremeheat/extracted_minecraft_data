@@ -4,7 +4,6 @@ import com.google.common.primitives.Doubles;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -53,19 +52,14 @@ public class BlendingData {
       Blocks.PODZOL,
       Blocks.GRAVEL,
       Blocks.GRASS_BLOCK,
-      Blocks.PEELGRASS_BLOCK,
-      Blocks.CORRUPTED_PEELGRASS_BLOCK,
       Blocks.STONE,
-      Blocks.POTONE,
       Blocks.COARSE_DIRT,
       Blocks.SAND,
-      Blocks.GRAVTATER,
       Blocks.RED_SAND,
       Blocks.MYCELIUM,
       Blocks.SNOW_BLOCK,
       Blocks.TERRACOTTA,
-      Blocks.DIRT,
-      Blocks.TERREDEPOMME
+      Blocks.DIRT
    );
    protected static final double NO_VALUE = 1.7976931348623157E308;
    private boolean hasCalculatedData;
@@ -77,7 +71,7 @@ public class BlendingData {
          var0 -> var0.group(
                   Codec.INT.fieldOf("min_section").forGetter(var0x -> var0x.areaWithOldGeneration.getMinSection()),
                   Codec.INT.fieldOf("max_section").forGetter(var0x -> var0x.areaWithOldGeneration.getMaxSection()),
-                  DOUBLE_ARRAY_CODEC.optionalFieldOf("heights")
+                  DOUBLE_ARRAY_CODEC.lenientOptionalFieldOf("heights")
                      .forGetter(
                         var0x -> DoubleStream.of(var0x.heights).anyMatch(var0xx -> var0xx != 1.7976931348623157E308)
                               ? Optional.of(var0x.heights)
@@ -119,7 +113,7 @@ public class BlendingData {
    public static Set<Direction8> sideByGenerationAge(WorldGenLevel var0, int var1, int var2, boolean var3) {
       EnumSet var4 = EnumSet.noneOf(Direction8.class);
 
-      for(Direction8 var8 : Direction8.values()) {
+      for (Direction8 var8 : Direction8.values()) {
          int var9 = var1 + var8.getStepX();
          int var10 = var2 + var8.getStepZ();
          if (var0.getChunk(var9, var10).isOldNoiseGeneration() == var3) {
@@ -137,25 +131,25 @@ public class BlendingData {
          }
 
          if (var2.contains(Direction8.NORTH)) {
-            for(int var3 = 1; var3 < QUARTS_PER_SECTION; ++var3) {
+            for (int var3 = 1; var3 < QUARTS_PER_SECTION; var3++) {
                this.addValuesForColumn(getInsideIndex(var3, 0), var1, 4 * var3, 0);
             }
          }
 
          if (var2.contains(Direction8.WEST)) {
-            for(int var4 = 1; var4 < QUARTS_PER_SECTION; ++var4) {
+            for (int var4 = 1; var4 < QUARTS_PER_SECTION; var4++) {
                this.addValuesForColumn(getInsideIndex(0, var4), var1, 0, 4 * var4);
             }
          }
 
          if (var2.contains(Direction8.EAST)) {
-            for(int var5 = 1; var5 < QUARTS_PER_SECTION; ++var5) {
+            for (int var5 = 1; var5 < QUARTS_PER_SECTION; var5++) {
                this.addValuesForColumn(getOutsideIndex(CELL_HORIZONTAL_MAX_INDEX_OUTSIDE, var5), var1, 15, 4 * var5);
             }
          }
 
          if (var2.contains(Direction8.SOUTH)) {
-            for(int var6 = 0; var6 < QUARTS_PER_SECTION; ++var6) {
+            for (int var6 = 0; var6 < QUARTS_PER_SECTION; var6++) {
                this.addValuesForColumn(getOutsideIndex(var6, CELL_HORIZONTAL_MAX_INDEX_OUTSIDE), var1, 4 * var6, 15);
             }
          }
@@ -192,7 +186,7 @@ public class BlendingData {
       int var5 = this.areaWithOldGeneration.getMinBuildHeight();
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos(var2, var4, var3);
 
-      while(var6.getY() > var5) {
+      while (var6.getY() > var5) {
          var6.move(Direction.DOWN);
          if (SURFACE_BLOCKS.contains(var1.getBlockState(var6).getBlock())) {
             return var6.getY();
@@ -209,7 +203,7 @@ public class BlendingData {
    private static double read7(ChunkAccess var0, BlockPos.MutableBlockPos var1) {
       double var2 = 0.0;
 
-      for(int var4 = 0; var4 < 7; ++var4) {
+      for (int var4 = 0; var4 < 7; var4++) {
          var2 += read1(var0, var1);
       }
 
@@ -222,7 +216,7 @@ public class BlendingData {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos(var2, this.areaWithOldGeneration.getMaxBuildHeight(), var3);
       double var7 = read7(var1, var6);
 
-      for(int var9 = var5.length - 2; var9 >= 0; --var9) {
+      for (int var9 = var5.length - 2; var9 >= 0; var9--) {
          double var10 = read1(var1, var6);
          double var12 = read7(var1, var6);
          var5[var9] = (var7 + var10 + var12) / 15.0;
@@ -245,7 +239,7 @@ public class BlendingData {
       ObjectArrayList var4 = new ObjectArrayList(this.quartCountPerColumn());
       var4.size(this.quartCountPerColumn());
 
-      for(int var5 = 0; var5 < var4.size(); ++var5) {
+      for (int var5 = 0; var5 < var4.size(); var5++) {
          int var6 = var5 + QuartPos.fromBlock(this.areaWithOldGeneration.getMinBuildHeight());
          var4.set(var5, var1.getNoiseBiome(QuartPos.fromBlock(var2), var6, QuartPos.fromBlock(var3)));
       }
@@ -261,10 +255,8 @@ public class BlendingData {
          return false;
       } else if (var2.is(BlockTags.LOGS)) {
          return false;
-      } else if (var2.is(Blocks.BROWN_MUSHROOM_BLOCK) || var2.is(Blocks.RED_MUSHROOM_BLOCK)) {
-         return false;
       } else {
-         return !var2.getCollisionShape(var0, var1).isEmpty();
+         return var2.is(Blocks.BROWN_MUSHROOM_BLOCK) || var2.is(Blocks.RED_MUSHROOM_BLOCK) ? false : !var2.getCollisionShape(var0, var1).isEmpty();
       }
    }
 
@@ -300,7 +292,7 @@ public class BlendingData {
          && var2 < QuartPos.fromBlock(this.areaWithOldGeneration.getMaxBuildHeight())) {
          int var5 = var2 - QuartPos.fromBlock(this.areaWithOldGeneration.getMinBuildHeight());
 
-         for(int var6 = 0; var6 < this.biomes.size(); ++var6) {
+         for (int var6 = 0; var6 < this.biomes.size(); var6++) {
             if (this.biomes.get(var6) != null) {
                Holder var7 = this.biomes.get(var6).get(var5);
                if (var7 != null) {
@@ -312,7 +304,7 @@ public class BlendingData {
    }
 
    protected void iterateHeights(int var1, int var2, BlendingData.HeightConsumer var3) {
-      for(int var4 = 0; var4 < this.heights.length; ++var4) {
+      for (int var4 = 0; var4 < this.heights.length; var4++) {
          double var5 = this.heights[var4];
          if (var5 != 1.7976931348623157E308) {
             var3.consume(var1 + getX(var4), var2 + getZ(var4), var5);
@@ -325,13 +317,13 @@ public class BlendingData {
       int var7 = Math.max(0, var3 - var6);
       int var8 = Math.min(this.cellCountPerColumn(), var4 - var6);
 
-      for(int var9 = 0; var9 < this.densities.length; ++var9) {
+      for (int var9 = 0; var9 < this.densities.length; var9++) {
          double[] var10 = this.densities[var9];
          if (var10 != null) {
             int var11 = var1 + getX(var9);
             int var12 = var2 + getZ(var9);
 
-            for(int var13 = var7; var13 < var8; ++var13) {
+            for (int var13 = var7; var13 < var8; var13++) {
                var5.consume(var11, var13 + var6, var12, var10[var13] * 0.1);
             }
          }

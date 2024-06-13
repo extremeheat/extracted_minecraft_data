@@ -10,10 +10,10 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -101,6 +101,7 @@ public class StatsScreen extends Screen {
 
       this.layout = var1;
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
@@ -153,10 +154,10 @@ public class StatsScreen extends Screen {
       public GeneralStatisticsList(Minecraft var2) {
          super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 14);
          ObjectArrayList var3 = new ObjectArrayList(Stats.CUSTOM.iterator());
-         var3.sort(Comparator.comparing(var0 -> I18n.get(StatsScreen.getTranslationKey(var0))));
+         var3.sort(Comparator.comparing(var0 -> I18n.get(StatsScreen.getTranslationKey((Stat<ResourceLocation>)var0))));
          ObjectListIterator var4 = var3.iterator();
 
-         while(var4.hasNext()) {
+         while (var4.hasNext()) {
             Stat var5 = (Stat)var4.next();
             this.addEntry(new StatsScreen.GeneralStatisticsList.Entry(var5));
          }
@@ -230,10 +231,10 @@ public class StatsScreen extends Screen {
          this.setRenderHeader(true, 22);
          Set var3 = Sets.newIdentityHashSet();
 
-         for(Item var5 : BuiltInRegistries.ITEM) {
+         for (Item var5 : BuiltInRegistries.ITEM) {
             boolean var6 = false;
 
-            for(StatType var8 : this.itemColumns) {
+            for (StatType var8 : this.itemColumns) {
                if (var8.contains(var5) && StatsScreen.this.stats.getValue(var8.get(var5)) > 0) {
                   var6 = true;
                }
@@ -244,10 +245,10 @@ public class StatsScreen extends Screen {
             }
          }
 
-         for(Block var11 : BuiltInRegistries.BLOCK) {
+         for (Block var11 : BuiltInRegistries.BLOCK) {
             boolean var13 = false;
 
-            for(StatType var15 : this.blockColumns) {
+            for (StatType var15 : this.blockColumns) {
                if (var15.contains(var11) && StatsScreen.this.stats.getValue(var15.get(var11)) > 0) {
                   var13 = true;
                }
@@ -260,7 +261,7 @@ public class StatsScreen extends Screen {
 
          var3.remove(Items.AIR);
 
-         for(Item var12 : var3) {
+         for (Item var12 : var3) {
             this.addEntry(new StatsScreen.ItemStatisticsList.ItemRow(var12));
          }
       }
@@ -275,7 +276,7 @@ public class StatsScreen extends Screen {
             this.headerPressed = -1;
          }
 
-         for(int var4 = 0; var4 < this.iconSprites.length; ++var4) {
+         for (int var4 = 0; var4 < this.iconSprites.length; var4++) {
             ResourceLocation var5 = this.headerPressed == var4 ? StatsScreen.SLOT_SPRITE : StatsScreen.HEADER_SPRITE;
             var1.blitSprite(var5, var2 + this.getColumnX(var4) - 18, var3 + 1, 0, 18, 18);
          }
@@ -286,7 +287,7 @@ public class StatsScreen extends Screen {
             var1.blitSprite(var8, var2 + var6, var3 + 1, 0, 18, 18);
          }
 
-         for(int var7 = 0; var7 < this.iconSprites.length; ++var7) {
+         for (int var7 = 0; var7 < this.iconSprites.length; var7++) {
             int var9 = this.headerPressed == var7 ? 1 : 0;
             var1.blitSprite(this.iconSprites[var7], var2 + this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, 0, 18, 18);
          }
@@ -301,7 +302,7 @@ public class StatsScreen extends Screen {
       protected boolean clickedHeader(int var1, int var2) {
          this.headerPressed = -1;
 
-         for(int var3 = 0; var3 < this.iconSprites.length; ++var3) {
+         for (int var3 = 0; var3 < this.iconSprites.length; var3++) {
             int var4 = var1 - this.getColumnX(var3);
             if (var4 >= -36 && var4 <= 0) {
                this.headerPressed = var3;
@@ -348,7 +349,7 @@ public class StatsScreen extends Screen {
                Component var10 = null;
                int var7 = var2 - var5;
 
-               for(int var8 = 0; var8 < this.iconSprites.length; ++var8) {
+               for (int var8 = 0; var8 < this.iconSprites.length; var8++) {
                   int var9 = this.getColumnX(var8);
                   if (var7 >= var9 - 18 && var7 <= var9) {
                      var10 = this.getColumn(var8).getDisplayName();
@@ -389,17 +390,14 @@ public class StatsScreen extends Screen {
             return this.item;
          }
 
-         // $VF: Could not properly define all variable types!
-         // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
          @Override
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
             var1.blitSprite(StatsScreen.SLOT_SPRITE, var4, var3, 0, 18, 18);
             var1.renderFakeItem(this.item.getDefaultInstance(), var4 + 1, var3 + 1);
             if (StatsScreen.this.itemStatsList != null) {
-               for(int var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); ++var11) {
-                  Item var14 = this.item;
+               for (int var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); var11++) {
                   Stat var12;
-                  if (var14 instanceof BlockItem var13) {
+                  if (this.item instanceof BlockItem var13) {
                      var12 = StatsScreen.this.itemStatsList.blockColumns.get(var11).get(var13.getBlock());
                   } else {
                      var12 = null;
@@ -408,7 +406,7 @@ public class StatsScreen extends Screen {
                   this.renderStat(var1, var12, var4 + ItemStatisticsList.this.getColumnX(var11), var3 + var6 / 2 - 9 / 2, var2 % 2 == 0);
                }
 
-               for(int var15 = 0; var15 < StatsScreen.this.itemStatsList.itemColumns.size(); ++var15) {
+               for (int var15 = 0; var15 < StatsScreen.this.itemStatsList.itemColumns.size(); var15++) {
                   this.renderStat(
                      var1,
                      StatsScreen.this.itemStatsList.itemColumns.get(var15).get(this.item),
@@ -465,7 +463,7 @@ public class StatsScreen extends Screen {
       public MobsStatisticsList(Minecraft var2) {
          super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 9 * 4);
 
-         for(EntityType var4 : BuiltInRegistries.ENTITY_TYPE) {
+         for (EntityType var4 : BuiltInRegistries.ENTITY_TYPE) {
             if (StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var4)) > 0 || StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(var4)) > 0) {
                this.addEntry(new StatsScreen.MobsStatisticsList.MobRow(var4));
             }

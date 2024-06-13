@@ -4,17 +4,15 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record RecipeHolder<T extends Recipe<?>>(ResourceLocation b, T c) {
-   private final ResourceLocation id;
-   private final T value;
+public record RecipeHolder<T extends Recipe<?>>(ResourceLocation id, T value) {
    public static final StreamCodec<RegistryFriendlyByteBuf, RecipeHolder<?>> STREAM_CODEC = StreamCodec.composite(
       ResourceLocation.STREAM_CODEC, RecipeHolder::id, Recipe.STREAM_CODEC, RecipeHolder::value, RecipeHolder::new
    );
 
-   public RecipeHolder(ResourceLocation var1, T var2) {
+   public RecipeHolder(ResourceLocation id, T value) {
       super();
-      this.id = var1;
-      this.value = var2;
+      this.id = id;
+      this.value = (T)value;
    }
 
    public boolean equals(Object var1) {

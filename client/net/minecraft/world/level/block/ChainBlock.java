@@ -39,7 +39,7 @@ public class ChainBlock extends RotatedPillarBlock implements SimpleWaterloggedB
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((Direction.Axis)var1.getValue(AXIS)) {
+      switch ((Direction.Axis)var1.getValue(AXIS)) {
          case X:
          default:
             return X_AXIS_AABB;

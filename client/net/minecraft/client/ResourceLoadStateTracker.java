@@ -22,7 +22,7 @@ public class ResourceLoadStateTracker {
    }
 
    public void startReload(ResourceLoadStateTracker.ReloadReason var1, List<PackResources> var2) {
-      ++this.reloadCount;
+      this.reloadCount++;
       if (this.reloadState != null && !this.reloadState.finished) {
          LOGGER.warn("Reload already ongoing, replacing");
       }
@@ -66,9 +66,9 @@ public class ResourceLoadStateTracker {
       public void fillCrashInfo(CrashReportCategory var1) {
          var1.setDetail("Recovery", "Yes");
          var1.setDetail("Recovery reason", () -> {
-            StringWriter var1xx = new StringWriter();
-            this.error.printStackTrace(new PrintWriter(var1xx));
-            return var1xx.toString();
+            StringWriter var1x = new StringWriter();
+            this.error.printStackTrace(new PrintWriter(var1x));
+            return var1x.toString();
          });
       }
    }

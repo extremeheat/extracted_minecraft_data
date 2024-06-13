@@ -29,7 +29,7 @@ public interface CommandFunction<T> {
    static <T extends ExecutionCommandSource<T>> CommandFunction<T> fromLines(ResourceLocation var0, CommandDispatcher<T> var1, T var2, List<String> var3) {
       FunctionBuilder var4 = new FunctionBuilder();
 
-      for(int var5 = 0; var5 < var3.size(); ++var5) {
+      for (int var5 = 0; var5 < var3.size(); var5++) {
          int var6 = var5 + 1;
          String var7 = ((String)var3.get(var5)).trim();
          String var8;
@@ -45,7 +45,7 @@ public interface CommandFunction<T> {
                String var10 = ((String)var3.get(var5)).trim();
                var9.append(var10);
                checkCommandLineLength(var9);
-            } while(shouldConcatenateNextLine(var9));
+            } while (shouldConcatenateNextLine(var9));
 
             var8 = var9.toString();
          } else {

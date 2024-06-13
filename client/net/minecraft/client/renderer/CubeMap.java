@@ -21,7 +21,7 @@ public class CubeMap {
    public CubeMap(ResourceLocation var1) {
       super();
 
-      for(int var2 = 0; var2 < 6; ++var2) {
+      for (int var2 = 0; var2 < 6; var2++) {
          this.images[var2] = var1.withPath(var1.getPath() + "_" + var2 + ".png");
       }
    }
@@ -39,9 +39,9 @@ public class CubeMap {
       RenderSystem.enableBlend();
       RenderSystem.disableCull();
       RenderSystem.depthMask(false);
-      boolean var9 = true;
+      byte var9 = 2;
 
-      for(int var10 = 0; var10 < 4; ++var10) {
+      for (int var10 = 0; var10 < 4; var10++) {
          var8.pushMatrix();
          float var11 = ((float)(var10 % 2) / 2.0F - 0.5F) / 256.0F;
          float var12 = ((float)(var10 / 2) / 2.0F - 0.5F) / 256.0F;
@@ -51,7 +51,7 @@ public class CubeMap {
          var8.rotateY(var3 * 0.017453292F);
          RenderSystem.applyModelViewMatrix();
 
-         for(int var14 = 0; var14 < 6; ++var14) {
+         for (int var14 = 0; var14 < 6; var14++) {
             RenderSystem.setShaderTexture(0, this.images[var14]);
             var6.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             int var15 = Math.round(255.0F * var4) / (var10 + 1);
@@ -116,7 +116,7 @@ public class CubeMap {
    public CompletableFuture<Void> preload(TextureManager var1, Executor var2) {
       CompletableFuture[] var3 = new CompletableFuture[6];
 
-      for(int var4 = 0; var4 < var3.length; ++var4) {
+      for (int var4 = 0; var4 < var3.length; var4++) {
          var3[var4] = var1.preload(this.images[var4], var2);
       }
 

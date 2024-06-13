@@ -1,9 +1,6 @@
 package net.minecraft.world.item;
 
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
 import com.mojang.serialization.Codec;
 import java.util.EnumMap;
 import java.util.List;
@@ -21,12 +18,13 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.AABB;
@@ -47,7 +45,7 @@ public class ArmorItem extends Item implements Equipable {
    };
    protected final ArmorItem.Type type;
    protected final Holder<ArmorMaterial> material;
-   private final Supplier<Multimap<Holder<Attribute>, AttributeModifier>> defaultModifiers;
+   private final Supplier<ItemAttributeModifiers> defaultModifiers;
 
    public static boolean dispenseArmor(BlockSource var0, ItemStack var1) {
       BlockPos var2 = var0.pos().relative(var0.state().getValue(DispenserBlock.FACING));
@@ -76,20 +74,22 @@ public class ArmorItem extends Item implements Equipable {
       DispenserBlock.registerBehavior(this, DISPENSE_ITEM_BEHAVIOR);
       this.defaultModifiers = Suppliers.memoize(
          () -> {
-            int var2xx = ((ArmorMaterial)var1.value()).getDefense(var2);
-            float var3xx = ((ArmorMaterial)var1.value()).toughness();
-            Builder var4 = ImmutableMultimap.builder();
-            UUID var5 = ARMOR_MODIFIER_UUID_PER_TYPE.get(var2);
-            var4.put(Attributes.ARMOR, new AttributeModifier(var5, "Armor modifier", (double)var2xx, AttributeModifier.Operation.ADD_VALUE));
-            var4.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var5, "Armor toughness", (double)var3xx, AttributeModifier.Operation.ADD_VALUE));
-            float var6 = ((ArmorMaterial)var1.value()).knockbackResistance();
-            if (var6 > 0.0F) {
-               var4.put(
+            int var2x = ((ArmorMaterial)var1.value()).getDefense(var2);
+            float var3x = ((ArmorMaterial)var1.value()).toughness();
+            ItemAttributeModifiers.Builder var4 = ItemAttributeModifiers.builder();
+            EquipmentSlotGroup var5 = EquipmentSlotGroup.bySlot(var2.getSlot());
+            UUID var6 = ARMOR_MODIFIER_UUID_PER_TYPE.get(var2);
+            var4.add(Attributes.ARMOR, new AttributeModifier(var6, "Armor modifier", (double)var2x, AttributeModifier.Operation.ADD_VALUE), var5);
+            var4.add(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var6, "Armor toughness", (double)var3x, AttributeModifier.Operation.ADD_VALUE), var5);
+            float var7 = ((ArmorMaterial)var1.value()).knockbackResistance();
+            if (var7 > 0.0F) {
+               var4.add(
                   Attributes.KNOCKBACK_RESISTANCE,
-                  new AttributeModifier(var5, "Armor knockback resistance", (double)var6, AttributeModifier.Operation.ADD_VALUE)
+                  new AttributeModifier(var6, "Armor knockback resistance", (double)var7, AttributeModifier.Operation.ADD_VALUE),
+                  var5
                );
             }
-   
+
             return var4.build();
          }
       );
@@ -101,7 +101,7 @@ public class ArmorItem extends Item implements Equipable {
 
    @Override
    public int getEnchantmentValue() {
-      return ((ArmorMaterial)this.material.value()).enchantmentValue();
+      return this.material.value().enchantmentValue();
    }
 
    public Holder<ArmorMaterial> getMaterial() {
@@ -110,7 +110,7 @@ public class ArmorItem extends Item implements Equipable {
 
    @Override
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return ((ArmorMaterial)this.material.value()).repairIngredient().get().test(var2) || super.isValidRepairItem(var1, var2);
+      return this.material.value().repairIngredient().get().test(var2) || super.isValidRepairItem(var1, var2);
    }
 
    @Override
@@ -119,16 +119,16 @@ public class ArmorItem extends Item implements Equipable {
    }
 
    @Override
-   public Multimap<Holder<Attribute>, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return var1 == this.type.getSlot() ? (Multimap)this.defaultModifiers.get() : super.getDefaultAttributeModifiers(var1);
+   public ItemAttributeModifiers getDefaultAttributeModifiers() {
+      return this.defaultModifiers.get();
    }
 
    public int getDefense() {
-      return ((ArmorMaterial)this.material.value()).getDefense(this.type);
+      return this.material.value().getDefense(this.type);
    }
 
    public float getToughness() {
-      return ((ArmorMaterial)this.material.value()).toughness();
+      return this.material.value().toughness();
    }
 
    @Override
@@ -138,7 +138,7 @@ public class ArmorItem extends Item implements Equipable {
 
    @Override
    public Holder<SoundEvent> getEquipSound() {
-      return ((ArmorMaterial)this.getMaterial().value()).equipSound();
+      return this.getMaterial().value().equipSound();
    }
 
    public static enum Type implements StringRepresentable {

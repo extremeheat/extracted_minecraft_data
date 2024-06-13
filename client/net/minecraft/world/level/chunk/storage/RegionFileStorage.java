@@ -90,7 +90,7 @@ public final class RegionFileStorage implements AutoCloseable {
       ExceptionCollector var1 = new ExceptionCollector();
       ObjectIterator var2 = this.regionCache.values().iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          RegionFile var3 = (RegionFile)var2.next();
 
          try {
@@ -106,7 +106,7 @@ public final class RegionFileStorage implements AutoCloseable {
    public void flush() throws IOException {
       ObjectIterator var1 = this.regionCache.values().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          RegionFile var2 = (RegionFile)var1.next();
          var2.flush();
       }

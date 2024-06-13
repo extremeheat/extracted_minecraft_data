@@ -21,9 +21,11 @@ import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.Level;
+import org.apache.commons.lang3.math.Fraction;
 
 public class BundleItem extends Item {
    private static final int BAR_COLOR = Mth.color(0.4F, 0.4F, 1.0F);
+   private static final int TOOLTIP_MAX_WEIGHT = 64;
 
    public BundleItem(Item.Properties var1) {
       super(var1);
@@ -31,7 +33,7 @@ public class BundleItem extends Item {
 
    public static float getFullnessDisplay(ItemStack var0) {
       BundleContents var1 = var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return (float)var1.weight() / 64.0F;
+      return var1.weight().floatValue();
    }
 
    @Override
@@ -109,13 +111,13 @@ public class BundleItem extends Item {
    @Override
    public boolean isBarVisible(ItemStack var1) {
       BundleContents var2 = var1.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return var2.weight() > 0;
+      return var2.weight().compareTo(Fraction.ZERO) > 0;
    }
 
    @Override
    public int getBarWidth(ItemStack var1) {
       BundleContents var2 = var1.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return Math.min(1 + 12 * var2.weight() / 64, 13);
+      return Math.min(1 + Mth.mulAndTruncate(var2.weight(), 12), 13);
    }
 
    @Override
@@ -139,14 +141,17 @@ public class BundleItem extends Item {
 
    @Override
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
-      return Optional.ofNullable(var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new);
+      return !var1.has(DataComponents.HIDE_TOOLTIP) && !var1.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)
+         ? Optional.ofNullable(var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new)
+         : Optional.empty();
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       BundleContents var5 = var1.get(DataComponents.BUNDLE_CONTENTS);
       if (var5 != null) {
-         var3.add(Component.translatable("item.minecraft.bundle.fullness", var5.weight(), 64).withStyle(ChatFormatting.GRAY));
+         int var6 = Mth.mulAndTruncate(var5.weight(), 64);
+         var3.add(Component.translatable("item.minecraft.bundle.fullness", var6, 64).withStyle(ChatFormatting.GRAY));
       }
    }
 

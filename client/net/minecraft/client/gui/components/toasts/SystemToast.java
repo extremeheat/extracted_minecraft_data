@@ -79,11 +79,11 @@ public class SystemToast implements Toast {
          var1.blitSprite(BACKGROUND_SPRITE, 0, 0, var5, this.height());
       } else {
          int var6 = this.height();
-         boolean var7 = true;
+         byte var7 = 28;
          int var8 = Math.min(4, var6 - 28);
          this.renderBackgroundRow(var1, var5, 0, 0, 28);
 
-         for(int var9 = 28; var9 < var6 - var8; var9 += 10) {
+         for (byte var9 = 28; var9 < var6 - var8; var9 += 10) {
             this.renderBackgroundRow(var1, var5, 16, var9, Math.min(16, var6 - var9 - var8));
          }
 
@@ -95,7 +95,7 @@ public class SystemToast implements Toast {
       } else {
          var1.drawString(var2.getMinecraft().font, this.title, 18, 7, -256, false);
 
-         for(int var10 = 0; var10 < this.messageLines.size(); ++var10) {
+         for (int var10 = 0; var10 < this.messageLines.size(); var10++) {
             var1.drawString(var2.getMinecraft().font, this.messageLines.get(var10), 18, 18 + var10 * 12, -1, false);
          }
       }
@@ -111,7 +111,7 @@ public class SystemToast implements Toast {
       ResourceLocation var8 = BACKGROUND_SPRITE;
       var1.blitSprite(var8, 160, 32, 0, var3, 0, var4, var6, var5);
 
-      for(int var9 = var6; var9 < var2 - var7; var9 += 64) {
+      for (int var9 = var6; var9 < var2 - var7; var9 += 64) {
          var1.blitSprite(var8, 160, 32, 32, var3, var9, var4, Math.min(64, var2 - var9 - var7), var5);
       }
 

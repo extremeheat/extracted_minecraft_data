@@ -9,7 +9,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -262,7 +261,7 @@ public class AdvancementCommands {
    private static int perform(CommandSourceStack var0, Collection<ServerPlayer> var1, AdvancementCommands.Action var2, Collection<AdvancementHolder> var3) throws CommandSyntaxException {
       int var4 = 0;
 
-      for(ServerPlayer var6 : var1) {
+      for (ServerPlayer var6 : var1) {
          var4 += var2.perform(var6, var3);
       }
 
@@ -325,9 +324,9 @@ public class AdvancementCommands {
       if (!var6.criteria().containsKey(var4)) {
          throw ERROR_CRITERION_NOT_FOUND.create(Advancement.name(var3), var4);
       } else {
-         for(ServerPlayer var8 : var1) {
+         for (ServerPlayer var8 : var1) {
             if (var2.performCriterion(var8, var3, var4)) {
-               ++var5;
+               var5++;
             }
          }
 
@@ -368,7 +367,7 @@ public class AdvancementCommands {
       } else {
          ArrayList var5 = new ArrayList();
          if (var2.parents) {
-            for(AdvancementNode var6 = var4.parent(); var6 != null; var6 = var6.parent()) {
+            for (AdvancementNode var6 = var4.parent(); var6 != null; var6 = var6.parent()) {
                var5.add(var6.holder());
             }
          }
@@ -383,7 +382,7 @@ public class AdvancementCommands {
    }
 
    private static void addChildren(AdvancementNode var0, List<AdvancementHolder> var1) {
-      for(AdvancementNode var3 : var0.children()) {
+      for (AdvancementNode var3 : var0.children()) {
          var1.add(var3.holder());
          addChildren(var3, var1);
       }
@@ -397,7 +396,7 @@ public class AdvancementCommands {
             if (var3.isDone()) {
                return false;
             } else {
-               for(String var5 : var3.getRemainingCriteria()) {
+               for (String var5 : var3.getRemainingCriteria()) {
                   var1.getAdvancements().award(var2, var5);
                }
 
@@ -417,7 +416,7 @@ public class AdvancementCommands {
             if (!var3.hasProgress()) {
                return false;
             } else {
-               for(String var5 : var3.getCompletedCriteria()) {
+               for (String var5 : var3.getCompletedCriteria()) {
                   var1.getAdvancements().revoke(var2, var5);
                }
 
@@ -440,9 +439,9 @@ public class AdvancementCommands {
       public int perform(ServerPlayer var1, Iterable<AdvancementHolder> var2) {
          int var3 = 0;
 
-         for(AdvancementHolder var5 : var2) {
+         for (AdvancementHolder var5 : var2) {
             if (this.perform(var1, var5)) {
-               ++var3;
+               var3++;
             }
          }
 

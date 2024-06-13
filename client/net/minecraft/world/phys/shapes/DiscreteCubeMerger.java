@@ -20,7 +20,7 @@ public final class DiscreteCubeMerger implements IndexMerger {
    public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
       int var2 = this.result.size() - 1;
 
-      for(int var3 = 0; var3 < var2; ++var3) {
+      for (int var3 = 0; var3 < var2; var3++) {
          if (!var1.merge(var3 / this.secondDiv, var3 / this.firstDiv, var3)) {
             return false;
          }

@@ -30,11 +30,7 @@ public class ThornsEnchantment extends Enchantment {
    }
 
    public static boolean shouldHit(int var0, RandomSource var1) {
-      if (var0 <= 0) {
-         return false;
-      } else {
-         return var1.nextFloat() < 0.15F * (float)var0;
-      }
+      return var0 <= 0 ? false : var1.nextFloat() < 0.15F * (float)var0;
    }
 
    public static int getDamage(int var0, RandomSource var1) {

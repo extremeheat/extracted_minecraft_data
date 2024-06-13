@@ -39,17 +39,17 @@ public class ModelProvider implements DataProvider {
    public CompletableFuture<?> run(CachedOutput var1) {
       HashMap var2 = Maps.newHashMap();
       Consumer var3 = var1x -> {
-         Block var2xx = var1x.getBlock();
-         BlockStateGenerator var3xx = var2.put(var2xx, var1x);
-         if (var3xx != null) {
-            throw new IllegalStateException("Duplicate blockstate definition for " + var2xx);
+         Block var2x = var1x.getBlock();
+         BlockStateGenerator var3x = var2.put(var2x, var1x);
+         if (var3x != null) {
+            throw new IllegalStateException("Duplicate blockstate definition for " + var2x);
          }
       };
       HashMap var4 = Maps.newHashMap();
       HashSet var5 = Sets.newHashSet();
       BiConsumer var6 = (var1x, var2x) -> {
-         Supplier var3xx = var4.put(var1x, var2x);
-         if (var3xx != null) {
+         Supplier var3x = var4.put(var1x, var2x);
+         if (var3x != null) {
             throw new IllegalStateException("Duplicate model definition for " + var1x);
          }
       };
@@ -61,15 +61,15 @@ public class ModelProvider implements DataProvider {
          throw new IllegalStateException("Missing blockstate definitions for: " + var8);
       } else {
          BuiltInRegistries.BLOCK.forEach(var2x -> {
-            Item var3xx = Item.BY_BLOCK.get(var2x);
-            if (var3xx != null) {
-               if (var5.contains(var3xx)) {
+            Item var3x = Item.BY_BLOCK.get(var2x);
+            if (var3x != null) {
+               if (var5.contains(var3x)) {
                   return;
                }
 
-               ResourceLocation var4xx = ModelLocationUtils.getModelLocation(var3xx);
-               if (!var4.containsKey(var4xx)) {
-                  var4.put(var4xx, new DelegatedModel(ModelLocationUtils.getModelLocation(var2x)));
+               ResourceLocation var4x = ModelLocationUtils.getModelLocation(var3x);
+               if (!var4.containsKey(var4x)) {
+                  var4.put(var4x, new DelegatedModel(ModelLocationUtils.getModelLocation(var2x)));
                }
             }
          });
@@ -82,10 +82,10 @@ public class ModelProvider implements DataProvider {
 
    private <T> CompletableFuture<?> saveCollection(CachedOutput var1, Map<T, ? extends Supplier<JsonElement>> var2, Function<T, Path> var3) {
       return CompletableFuture.allOf(var2.entrySet().stream().map(var2x -> {
-         Path var3xx = (Path)var3.apply(var2x.getKey());
+         Path var3x = (Path)var3.apply(var2x.getKey());
          JsonElement var4 = (JsonElement)((Supplier)var2x.getValue()).get();
-         return DataProvider.saveStable(var1, var4, var3xx);
-      }).toArray(var0 -> new CompletableFuture[var0]));
+         return DataProvider.saveStable(var1, var4, var3x);
+      }).toArray(CompletableFuture[]::new));
    }
 
    @Override

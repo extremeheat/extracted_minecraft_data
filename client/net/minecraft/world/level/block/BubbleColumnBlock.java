@@ -53,7 +53,7 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
          if (!var2.isClientSide) {
             ServerLevel var6 = (ServerLevel)var2;
 
-            for(int var7 = 0; var7 < 2; ++var7) {
+            for (int var7 = 0; var7 < 2; var7++) {
                var6.sendParticles(
                   ParticleTypes.SPLASH,
                   (double)var3.getX() + var2.random.nextDouble(),
@@ -103,7 +103,7 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
          var0.setBlock(var1, var4, 2);
          BlockPos.MutableBlockPos var5 = var1.mutable().move(Direction.UP);
 
-         while(canExistIn(var0.getBlockState(var5))) {
+         while (canExistIn(var0.getBlockState(var5))) {
             if (!var0.setBlock(var5, var4, 2)) {
                return;
             }

@@ -12,7 +12,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.VegetationPatchConfiguration;
-import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration> {
    public VegetationPatchFeature(Codec<VegetationPatchConfiguration> var1) {
@@ -42,10 +41,10 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
       Direction var11 = var10.getOpposite();
       HashSet var12 = new HashSet();
 
-      for(int var13 = -var6; var13 <= var6; ++var13) {
+      for (int var13 = -var6; var13 <= var6; var13++) {
          boolean var14 = var13 == -var6 || var13 == var6;
 
-         for(int var15 = -var7; var15 <= var7; ++var15) {
+         for (int var15 = -var7; var15 <= var7; var15++) {
             boolean var16 = var15 == -var7 || var15 == var7;
             boolean var17 = var14 || var16;
             boolean var18 = var14 && var16;
@@ -53,11 +52,11 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
             if (!var18 && (!var19 || var2.extraEdgeColumnChance != 0.0F && !(var3.nextFloat() > var2.extraEdgeColumnChance))) {
                var8.setWithOffset(var4, var13, 0, var15);
 
-               for(int var20 = 0; var1.isStateAtPosition(var8, BlockBehaviour.BlockStateBase::isAir) && var20 < var2.verticalRange; ++var20) {
+               for (int var20 = 0; var1.isStateAtPosition(var8, BlockBehaviour.BlockStateBase::isAir) && var20 < var2.verticalRange; var20++) {
                   var8.move(var10);
                }
 
-               for(int var25 = 0; var1.isStateAtPosition(var8, var0 -> !var0.isAir()) && var25 < var2.verticalRange; ++var25) {
+               for (int var25 = 0; var1.isStateAtPosition(var8, var0 -> !var0.isAir()) && var25 < var2.verticalRange; var25++) {
                   var8.move(var11);
                }
 
@@ -87,7 +86,7 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
       int var6,
       int var7
    ) {
-      for(BlockPos var9 : var5) {
+      for (BlockPos var9 : var5) {
          if (var3.vegetationChance > 0.0F && var4.nextFloat() < var3.vegetationChance) {
             this.placeVegetation(var2, var3, var1.chunkGenerator(), var4, var9);
          }
@@ -95,13 +94,13 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
    }
 
    protected boolean placeVegetation(WorldGenLevel var1, VegetationPatchConfiguration var2, ChunkGenerator var3, RandomSource var4, BlockPos var5) {
-      return ((PlacedFeature)var2.vegetationFeature.value()).place(var1, var3, var4, var5.relative(var2.surface.getDirection().getOpposite()));
+      return var2.vegetationFeature.value().place(var1, var3, var4, var5.relative(var2.surface.getDirection().getOpposite()));
    }
 
    protected boolean placeGround(
       WorldGenLevel var1, VegetationPatchConfiguration var2, Predicate<BlockState> var3, RandomSource var4, BlockPos.MutableBlockPos var5, int var6
    ) {
-      for(int var7 = 0; var7 < var6; ++var7) {
+      for (int var7 = 0; var7 < var6; var7++) {
          BlockState var8 = var2.groundState.getState(var4, var5);
          BlockState var9 = var1.getBlockState(var5);
          if (!var8.is(var9.getBlock())) {

@@ -44,8 +44,8 @@ public class GenericWaitingScreen extends Screen {
          this.message = MultiLineLabel.create(this.font, this.messageText, 360);
       }
 
-      boolean var1 = true;
-      boolean var2 = true;
+      short var1 = 150;
+      byte var2 = 20;
       int var3 = this.message != null ? this.message.getLineCount() : 1;
       int var4 = Math.max(var3, 5) * 9;
       int var5 = Math.min(120 + var4, this.height - 40);
@@ -55,7 +55,7 @@ public class GenericWaitingScreen extends Screen {
    @Override
    public void tick() {
       if (this.disableButtonTicks > 0) {
-         --this.disableButtonTicks;
+         this.disableButtonTicks--;
       }
 
       this.button.active = this.disableButtonTicks == 0;

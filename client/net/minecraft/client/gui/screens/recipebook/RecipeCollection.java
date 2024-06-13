@@ -35,7 +35,7 @@ public class RecipeCollection {
       int var2 = var1.size();
       ItemStack var3 = ((RecipeHolder)var1.get(0)).value().getResultItem(var0);
 
-      for(int var4 = 1; var4 < var2; ++var4) {
+      for (int var4 = 1; var4 < var2; var4++) {
          ItemStack var5 = ((RecipeHolder)var1.get(var4)).value().getResultItem(var0);
          if (!ItemStack.isSameItemSameComponents(var3, var5)) {
             return false;
@@ -54,7 +54,7 @@ public class RecipeCollection {
    }
 
    public void updateKnownRecipes(RecipeBook var1) {
-      for(RecipeHolder var3 : this.recipes) {
+      for (RecipeHolder var3 : this.recipes) {
          if (var1.contains(var3)) {
             this.known.add(var3);
          }
@@ -62,7 +62,7 @@ public class RecipeCollection {
    }
 
    public void canCraft(StackedContents var1, int var2, int var3, RecipeBook var4) {
-      for(RecipeHolder var6 : this.recipes) {
+      for (RecipeHolder var6 : this.recipes) {
          boolean var7 = var6.value().canCraftInDimensions(var2, var3) && var4.contains(var6);
          if (var7) {
             this.fitsDimensions.add(var6);
@@ -98,7 +98,7 @@ public class RecipeCollection {
       ArrayList var2 = Lists.newArrayList();
       Set var3 = var1 ? this.craftable : this.fitsDimensions;
 
-      for(RecipeHolder var5 : this.recipes) {
+      for (RecipeHolder var5 : this.recipes) {
          if (var3.contains(var5)) {
             var2.add(var5);
          }
@@ -110,7 +110,7 @@ public class RecipeCollection {
    public List<RecipeHolder<?>> getDisplayRecipes(boolean var1) {
       ArrayList var2 = Lists.newArrayList();
 
-      for(RecipeHolder var4 : this.recipes) {
+      for (RecipeHolder var4 : this.recipes) {
          if (this.fitsDimensions.contains(var4) && this.craftable.contains(var4) == var1) {
             var2.add(var4);
          }

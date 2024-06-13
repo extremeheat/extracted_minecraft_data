@@ -55,7 +55,7 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
             var1, var5, 0, -4, 0, this.width - 1, 0, this.depth - 1, Blocks.SANDSTONE.defaultBlockState(), Blocks.SANDSTONE.defaultBlockState(), false
          );
 
-         for(int var8 = 1; var8 <= 9; ++var8) {
+         for (int var8 = 1; var8 <= 9; var8++) {
             this.generateBox(
                var1,
                var5,
@@ -84,9 +84,9 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
             );
          }
 
-         for(int var16 = 0; var16 < this.width; ++var16) {
-            for(int var9 = 0; var9 < this.depth; ++var9) {
-               boolean var10 = true;
+         for (int var16 = 0; var16 < this.width; var16++) {
+            for (int var9 = 0; var9 < this.depth; var9++) {
+               byte var10 = -5;
                this.fillColumnDown(var1, Blocks.SANDSTONE.defaultBlockState(), var16, -5, var9, var5);
             }
          }
@@ -171,7 +171,7 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
          this.generateBox(var1, var5, 3, 1, 5, 4, 2, 16, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          this.generateBox(var1, var5, this.width - 6, 1, 5, this.width - 5, 2, 16, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
 
-         for(int var12 = 5; var12 <= 17; var12 += 2) {
+         for (byte var12 = 5; var12 <= 17; var12 += 2) {
             this.placeBlock(var1, Blocks.CUT_SANDSTONE.defaultBlockState(), 4, 1, var12, var5);
             this.placeBlock(var1, Blocks.CHISELED_SANDSTONE.defaultBlockState(), 4, 2, var12, var5);
             this.placeBlock(var1, Blocks.CUT_SANDSTONE.defaultBlockState(), this.width - 5, 1, var12, var5);
@@ -192,7 +192,7 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
          this.placeBlock(var1, Blocks.ORANGE_TERRACOTTA.defaultBlockState(), 10, 0, 13, var5);
          this.placeBlock(var1, Blocks.BLUE_TERRACOTTA.defaultBlockState(), 10, 0, 10, var5);
 
-         for(int var20 = 0; var20 <= this.width - 1; var20 += this.width - 1) {
+         for (int var20 = 0; var20 <= this.width - 1; var20 += this.width - 1) {
             this.placeBlock(var1, Blocks.CUT_SANDSTONE.defaultBlockState(), var20, 2, 1, var5);
             this.placeBlock(var1, Blocks.ORANGE_TERRACOTTA.defaultBlockState(), var20, 2, 2, var5);
             this.placeBlock(var1, Blocks.CUT_SANDSTONE.defaultBlockState(), var20, 2, 3, var5);
@@ -216,7 +216,7 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
             this.placeBlock(var1, Blocks.CUT_SANDSTONE.defaultBlockState(), var20, 8, 3, var5);
          }
 
-         for(int var21 = 2; var21 <= this.width - 3; var21 += this.width - 3 - 2) {
+         for (int var21 = 2; var21 <= this.width - 3; var21 += this.width - 3 - 2) {
             this.placeBlock(var1, Blocks.CUT_SANDSTONE.defaultBlockState(), var21 - 1, 2, 0, var5);
             this.placeBlock(var1, Blocks.ORANGE_TERRACOTTA.defaultBlockState(), var21, 2, 0, var5);
             this.placeBlock(var1, Blocks.CUT_SANDSTONE.defaultBlockState(), var21 + 1, 2, 0, var5);
@@ -272,7 +272,7 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
          this.placeBlock(var1, Blocks.CHISELED_SANDSTONE.defaultBlockState(), 10, -10, 13, var5);
          this.placeBlock(var1, Blocks.CUT_SANDSTONE.defaultBlockState(), 10, -11, 13, var5);
 
-         for(Direction var13 : Direction.Plane.HORIZONTAL) {
+         for (Direction var13 : Direction.Plane.HORIZONTAL) {
             if (!this.hasPlacedChest[var13.get2DDataValue()]) {
                int var14 = var13.getStepX() * 2;
                int var15 = var13.getStepZ() * 2;
@@ -371,9 +371,9 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
    }
 
    private void placeSandBox(int var1, int var2, int var3, int var4, int var5, int var6) {
-      for(int var7 = var2; var7 <= var5; ++var7) {
-         for(int var8 = var1; var8 <= var4; ++var8) {
-            for(int var9 = var3; var9 <= var6; ++var9) {
+      for (int var7 = var2; var7 <= var5; var7++) {
+         for (int var8 = var1; var8 <= var4; var8++) {
+            for (int var9 = var3; var9 <= var6; var9++) {
                this.placeSand(var8, var7, var9);
             }
          }
@@ -391,8 +391,8 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
    }
 
    private void placeCollapsedRoof(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7) {
-      for(int var8 = var3; var8 <= var6; ++var8) {
-         for(int var9 = var5; var9 <= var7; ++var9) {
+      for (int var8 = var3; var8 <= var6; var8++) {
+         for (int var9 = var5; var9 <= var7; var9++) {
             this.placeCollapsedRoofPiece(var1, var8, var4, var9, var2);
          }
       }

@@ -10,7 +10,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -34,7 +33,7 @@ class ReportGameListener implements GameTestListener {
    @Override
    public void testStructureLoaded(GameTestInfo var1) {
       spawnBeacon(var1, Blocks.LIGHT_GRAY_STAINED_GLASS);
-      ++this.attempts;
+      this.attempts++;
    }
 
    private void handleRetry(GameTestInfo var1, GameTestRunner var2, boolean var3) {
@@ -60,7 +59,7 @@ class ReportGameListener implements GameTestListener {
 
    @Override
    public void testPassed(GameTestInfo var1, GameTestRunner var2) {
-      ++this.successes;
+      this.successes++;
       if (var1.retryOptions().hasRetries()) {
          this.handleRetry(var1, var2, true);
       } else if (!var1.isFlaky()) {
@@ -119,8 +118,6 @@ class ReportGameListener implements GameTestListener {
       visualizeFailedTest(var0, var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected static void visualizeFailedTest(GameTestInfo var0, Throwable var1) {
       String var2 = var1.getMessage() + (var1.getCause() == null ? "" : " cause: " + Util.describeError(var1.getCause()));
       String var3 = (var0.isRequired() ? "" : "(optional) ") + var0.getTestName() + " failed! " + var2;
@@ -142,8 +139,8 @@ class ReportGameListener implements GameTestListener {
       BlockPos var6 = var5.offset(0, 1, 0);
       var2.setBlockAndUpdate(var6, var1.defaultBlockState());
 
-      for(int var7 = -1; var7 <= 1; ++var7) {
-         for(int var8 = -1; var8 <= 1; ++var8) {
+      for (int var7 = -1; var7 <= 1; var7++) {
+         for (int var8 = -1; var8 <= 1; var8++) {
             BlockPos var9 = var5.offset(var7, -1, var8);
             var2.setBlockAndUpdate(var9, Blocks.IRON_BLOCK.defaultBlockState());
          }
@@ -170,7 +167,7 @@ class ReportGameListener implements GameTestListener {
 
       var3.append("-------------------\n");
       ItemStack var4 = new ItemStack(Items.WRITABLE_BOOK);
-      var4.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(List.of(Filterable.<String>passThrough(var3 + var2))));
+      var4.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(List.of(Filterable.passThrough(var3 + var2))));
       return var4;
    }
 

@@ -142,7 +142,7 @@ public class ArmorStand extends LivingEntity {
 
    @Override
    public ItemStack getItemBySlot(EquipmentSlot var1) {
-      switch(var1.getType()) {
+      switch (var1.getType()) {
          case HAND:
             return this.handItems.get(var1.getIndex());
          case ARMOR:
@@ -160,7 +160,7 @@ public class ArmorStand extends LivingEntity {
    @Override
    public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
       this.verifyEquippedItem(var2);
-      switch(var1.getType()) {
+      switch (var1.getType()) {
          case HAND:
             this.onEquipItem(var1, this.handItems.set(var1.getIndex(), var2), var2);
             break;
@@ -180,14 +180,14 @@ public class ArmorStand extends LivingEntity {
       super.addAdditionalSaveData(var1);
       ListTag var2 = new ListTag();
 
-      for(ItemStack var4 : this.armorItems) {
+      for (ItemStack var4 : this.armorItems) {
          var2.add(var4.saveOptional(this.registryAccess()));
       }
 
       var1.put("ArmorItems", var2);
       ListTag var6 = new ListTag();
 
-      for(ItemStack var5 : this.handItems) {
+      for (ItemStack var5 : this.handItems) {
          var6.add(var5.saveOptional(this.registryAccess()));
       }
 
@@ -210,7 +210,7 @@ public class ArmorStand extends LivingEntity {
       if (var1.contains("ArmorItems", 9)) {
          ListTag var2 = var1.getList("ArmorItems", 10);
 
-         for(int var3 = 0; var3 < this.armorItems.size(); ++var3) {
+         for (int var3 = 0; var3 < this.armorItems.size(); var3++) {
             CompoundTag var4 = var2.getCompound(var3);
             this.armorItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
          }
@@ -219,7 +219,7 @@ public class ArmorStand extends LivingEntity {
       if (var1.contains("HandItems", 9)) {
          ListTag var5 = var1.getList("HandItems", 10);
 
-         for(int var7 = 0; var7 < this.handItems.size(); ++var7) {
+         for (int var7 = 0; var7 < this.handItems.size(); var7++) {
             CompoundTag var8 = var5.getCompound(var7);
             this.handItems.set(var7, ItemStack.parseOptional(this.registryAccess(), var8));
          }
@@ -291,7 +291,7 @@ public class ArmorStand extends LivingEntity {
 
    @Override
    protected void pushEntities() {
-      for(Entity var3 : this.level().getEntities(this, this.getBoundingBox(), RIDABLE_MINECARTS)) {
+      for (Entity var3 : this.level().getEntities(this, this.getBoundingBox(), RIDABLE_MINECARTS)) {
          if (this.distanceToSqr(var3) <= 0.2) {
             var3.push(this);
          }
@@ -305,8 +305,6 @@ public class ArmorStand extends LivingEntity {
          return InteractionResult.PASS;
       } else if (var1.isSpectator()) {
          return InteractionResult.SUCCESS;
-      } else if (var4.is(Items.POTATO_PEELER)) {
-         return InteractionResult.PASS;
       } else if (var1.level().isClientSide) {
          return InteractionResult.CONSUME;
       } else {
@@ -410,8 +408,7 @@ public class ArmorStand extends LivingEntity {
          if (!var3 && !var4) {
             return false;
          } else {
-            Entity var6 = var1.getEntity();
-            if (var6 instanceof Player var5 && !var5.getAbilities().mayBuild) {
+            if (var1.getEntity() instanceof Player var5 && !var5.getAbilities().mayBuild) {
                return false;
             }
 
@@ -501,7 +498,7 @@ public class ArmorStand extends LivingEntity {
       this.playBrokenSound();
       this.dropAllDeathLoot(var1);
 
-      for(int var2 = 0; var2 < this.handItems.size(); ++var2) {
+      for (int var2 = 0; var2 < this.handItems.size(); var2++) {
          ItemStack var3 = this.handItems.get(var2);
          if (!var3.isEmpty()) {
             Block.popResource(this.level(), this.blockPosition().above(), var3);
@@ -509,7 +506,7 @@ public class ArmorStand extends LivingEntity {
          }
       }
 
-      for(int var4 = 0; var4 < this.armorItems.size(); ++var4) {
+      for (int var4 = 0; var4 < this.armorItems.size(); var4++) {
          ItemStack var5 = this.armorItems.get(var4);
          if (!var5.isEmpty()) {
             Block.popResource(this.level(), this.blockPosition().above(), var5);
@@ -791,7 +788,7 @@ public class ArmorStand extends LivingEntity {
          BlockPos var3 = this.blockPosition();
          int var4 = -2147483648;
 
-         for(BlockPos var6 : BlockPos.betweenClosed(BlockPos.containing(var2.minX, var2.minY, var2.minZ), BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ))) {
+         for (BlockPos var6 : BlockPos.betweenClosed(BlockPos.containing(var2.minX, var2.minY, var2.minZ), BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ))) {
             int var7 = Math.max(this.level().getBrightness(LightLayer.BLOCK, var6), this.level().getBrightness(LightLayer.SKY, var6));
             if (var7 == 15) {
                return Vec3.atCenterOf(var6);

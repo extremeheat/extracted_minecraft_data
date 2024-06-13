@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -12,7 +11,7 @@ import net.minecraft.world.level.levelgen.heightproviders.TrapezoidHeight;
 import net.minecraft.world.level.levelgen.heightproviders.UniformHeight;
 
 public class HeightRangePlacement extends PlacementModifier {
-   public static final Codec<HeightRangePlacement> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<HeightRangePlacement> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(HeightProvider.CODEC.fieldOf("height").forGetter(var0x -> var0x.height)).apply(var0, HeightRangePlacement::new)
    );
    private final HeightProvider height;

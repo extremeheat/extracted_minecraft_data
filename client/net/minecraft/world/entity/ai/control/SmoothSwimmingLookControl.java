@@ -16,7 +16,7 @@ public class SmoothSwimmingLookControl extends LookControl {
    @Override
    public void tick() {
       if (this.lookAtCooldown > 0) {
-         --this.lookAtCooldown;
+         this.lookAtCooldown--;
          this.getYRotD().ifPresent(var1x -> this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, var1x + 20.0F, this.yMaxRotSpeed));
          this.getXRotD().ifPresent(var1x -> this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), var1x + 10.0F, this.xMaxRotAngle)));
       } else {

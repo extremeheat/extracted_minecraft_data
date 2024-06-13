@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,7 +16,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.alchemy.Potion;
@@ -39,11 +37,7 @@ public class PotionItem extends Item {
    @Override
    public ItemStack getDefaultInstance() {
       ItemStack var1 = super.getDefaultInstance();
-      var1.applyComponents(this.components());
-      if (var1.get(DataComponents.POTION_CONTENTS) == null) {
-         var1.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
-      }
-
+      var1.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
       return var1;
    }
 
@@ -99,7 +93,7 @@ public class PotionItem extends Item {
          if (!var2.isClientSide) {
             ServerLevel var8 = (ServerLevel)var2;
 
-            for(int var9 = 0; var9 < 5; ++var9) {
+            for (int var9 = 0; var9 < 5; var9++) {
                var8.sendParticles(
                   ParticleTypes.SPLASH,
                   (double)var3.getX() + var2.random.nextDouble(),
@@ -140,16 +134,14 @@ public class PotionItem extends Item {
 
    @Override
    public String getDescriptionId(ItemStack var1) {
-      return Potion.getName(
-         ((PotionContents)var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion(), this.getDescriptionId() + ".effect."
-      );
+      return Potion.getName(var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion(), this.getDescriptionId() + ".effect.");
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       PotionContents var5 = var1.get(DataComponents.POTION_CONTENTS);
       if (var5 != null) {
-         var5.addPotionTooltip(var3::add, 1.0F, var2 == null ? 20.0F : var2.tickRateManager().tickrate());
+         var5.addPotionTooltip(var3::add, 1.0F, var2.tickRate());
       }
    }
 }

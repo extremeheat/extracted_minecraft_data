@@ -63,7 +63,7 @@ public enum EquipmentSlot implements StringRepresentable {
    }
 
    public static EquipmentSlot byTypeAndIndex(EquipmentSlot.Type var0, int var1) {
-      for(EquipmentSlot var5 : values()) {
+      for (EquipmentSlot var5 : values()) {
          if (var5.getType() == var0 && var5.getIndex() == var1) {
             return var5;
          }

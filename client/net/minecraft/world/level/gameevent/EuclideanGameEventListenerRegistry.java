@@ -66,7 +66,7 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
       try {
          Iterator var6 = this.listeners.iterator();
 
-         while(var6.hasNext()) {
+         while (var6.hasNext()) {
             GameEventListener var7 = (GameEventListener)var6.next();
             if (this.listenersToRemove.remove(var7)) {
                var6.remove();

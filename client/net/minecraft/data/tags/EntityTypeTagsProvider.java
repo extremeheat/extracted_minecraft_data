@@ -23,8 +23,7 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
             EntityType.ZOMBIFIED_PIGLIN,
             EntityType.ZOGLIN,
             EntityType.DROWNED,
-            EntityType.HUSK,
-            EntityType.POISONOUS_POTATO_ZOMBIE
+            EntityType.HUSK
          );
       this.tag(EntityTypeTags.RAIDERS)
          .add(EntityType.EVOKER, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.VINDICATOR, EntityType.ILLUSIONER, EntityType.WITCH);
@@ -46,15 +45,12 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS).add(EntityType.RABBIT, EntityType.ENDERMITE, EntityType.SILVERFISH, EntityType.FOX);
       this.tag(EntityTypeTags.AXOLOTL_HUNT_TARGETS)
          .add(EntityType.TROPICAL_FISH, EntityType.PUFFERFISH, EntityType.SALMON, EntityType.COD, EntityType.SQUID, EntityType.GLOW_SQUID, EntityType.TADPOLE);
-      this.tag(EntityTypeTags.AXOLOTL_ALWAYS_HOSTILES)
-         .add(EntityType.DROWNED, EntityType.GUARDIAN, EntityType.ELDER_GUARDIAN, EntityType.TOXIFIN, EntityType.PLAGUEWHALE);
+      this.tag(EntityTypeTags.AXOLOTL_ALWAYS_HOSTILES).add(EntityType.DROWNED, EntityType.GUARDIAN, EntityType.ELDER_GUARDIAN);
       this.tag(EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES).add(EntityType.STRAY, EntityType.POLAR_BEAR, EntityType.SNOW_GOLEM, EntityType.WITHER);
       this.tag(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES).add(EntityType.STRIDER, EntityType.BLAZE, EntityType.MAGMA_CUBE);
       this.tag(EntityTypeTags.CAN_BREATHE_UNDER_WATER)
          .addTag(EntityTypeTags.UNDEAD)
          .add(
-            EntityType.PLAGUEWHALE,
-            EntityType.TOXIFIN,
             EntityType.AXOLOTL,
             EntityType.FROG,
             EntityType.GUARDIAN,
@@ -77,7 +73,6 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
             EntityType.SHULKER,
             EntityType.ALLAY,
             EntityType.BAT,
-            EntityType.BATATO,
             EntityType.BEE,
             EntityType.BLAZE,
             EntityType.CAT,
@@ -110,7 +105,7 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
          .add(EntityType.TURTLE)
          .add(EntityType.AXOLOTL)
          .add(EntityType.GUARDIAN)
-         .add(EntityType.ELDER_GUARDIAN, EntityType.TOXIFIN, EntityType.PLAGUEWHALE)
+         .add(EntityType.ELDER_GUARDIAN)
          .add(EntityType.COD)
          .add(EntityType.PUFFERFISH)
          .add(EntityType.SALMON)
@@ -132,7 +127,7 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.NOT_SCARY_FOR_PUFFERFISH)
          .add(EntityType.TURTLE)
          .add(EntityType.GUARDIAN)
-         .add(EntityType.ELDER_GUARDIAN, EntityType.TOXIFIN, EntityType.PLAGUEWHALE)
+         .add(EntityType.ELDER_GUARDIAN)
          .add(EntityType.COD)
          .add(EntityType.PUFFERFISH)
          .add(EntityType.SALMON)

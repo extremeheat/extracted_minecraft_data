@@ -126,7 +126,7 @@ public abstract class BaseCommandBlock implements CommandSource {
                this.lastOutput = null;
                CommandSourceStack var3 = this.createCommandSourceStack().withCallback((var1x, var2x) -> {
                   if (var1x) {
-                     ++this.successCount;
+                     this.successCount++;
                   }
                });
                var2.getCommands().performPrefixedCommand(var3, this.command);

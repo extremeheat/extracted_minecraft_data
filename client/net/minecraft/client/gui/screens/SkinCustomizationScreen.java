@@ -22,7 +22,7 @@ public class SkinCustomizationScreen extends OptionsSubScreen {
       this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
       ArrayList var1 = new ArrayList();
 
-      for(PlayerModelPart var5 : PlayerModelPart.values()) {
+      for (PlayerModelPart var5 : PlayerModelPart.values()) {
          var1.add(
             CycleButton.onOffBuilder(this.options.isModelPartEnabled(var5)).create(var5.getName(), (var2, var3) -> this.options.toggleModelPart(var5, var3))
          );

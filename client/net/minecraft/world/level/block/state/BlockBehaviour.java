@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.state;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -133,7 +132,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch(var2) {
+      switch (var2) {
          case LAND:
             return !var1.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
          case WATER:
@@ -172,7 +171,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          boolean var7 = var4.getIndirectSourceEntity() instanceof Player;
          if (var6.dropFromExplosion(var4) && var2 instanceof ServerLevel var8) {
             BlockEntity var9 = var1.hasBlockEntity() ? var2.getBlockEntity(var3) : null;
-            LootParams.Builder var10 = new LootParams.Builder((ServerLevel)var8)
+            LootParams.Builder var10 = new LootParams.Builder(var8)
                .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3))
                .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
                .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var9)
@@ -181,7 +180,7 @@ public abstract class BlockBehaviour implements FeatureElement {
                var10.withParameter(LootContextParams.EXPLOSION_RADIUS, var4.radius());
             }
 
-            var1.spawnAfterBreak((ServerLevel)var8, var3, ItemStack.EMPTY, var7);
+            var1.spawnAfterBreak(var8, var3, ItemStack.EMPTY, var7);
             var1.getDrops(var10).forEach(var2x -> var5.accept(var2x, var3));
          }
 
@@ -458,11 +457,7 @@ public abstract class BlockBehaviour implements FeatureElement {
                return false;
             } else {
                AABB var2 = var1.bounds();
-               if (var2.getSize() >= 0.7291666666666666) {
-                  return true;
-               } else {
-                  return var2.getYsize() >= 1.0;
-               }
+               return var2.getSize() >= 0.7291666666666666 ? true : var2.getYsize() >= 1.0;
             }
          }
       }
@@ -679,7 +674,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3, int var4) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-         for(Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
+         for (Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
             var5.setWithOffset(var2, var9);
             var1.neighborShapeChanged(var9.getOpposite(), this.asState(), var5, var2, var3, var4);
          }
@@ -886,7 +881,7 @@ public abstract class BlockBehaviour implements FeatureElement {
                this.occlusionShapes = new VoxelShape[DIRECTIONS.length];
                VoxelShape var3 = var2.getOcclusionShape(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
 
-               for(Direction var7 : DIRECTIONS) {
+               for (Direction var7 : DIRECTIONS) {
                   this.occlusionShapes[var7.ordinal()] = Shapes.getFaceShape(var3, var7);
                }
             }
@@ -905,8 +900,8 @@ public abstract class BlockBehaviour implements FeatureElement {
                   .anyMatch(var1x -> this.collisionShape.min(var1x) < 0.0 || this.collisionShape.max(var1x) > 1.0);
                this.faceSturdy = new boolean[DIRECTIONS.length * SUPPORT_TYPE_COUNT];
 
-               for(Direction var14 : DIRECTIONS) {
-                  for(SupportType var10 : SupportType.values()) {
+               for (Direction var14 : DIRECTIONS) {
+                  for (SupportType var10 : SupportType.values()) {
                      this.faceSturdy[getFaceSupportIndex(var14, var10)] = var10.isSupporting(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO, var14);
                   }
                }
@@ -932,8 +927,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    public static enum OffsetType {
       NONE,
       XZ,
-      XYZ,
-      POTATO;
+      XYZ;
 
       private OffsetType() {
       }
@@ -1189,11 +1183,15 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public BlockBehaviour.Properties offsetType(BlockBehaviour.OffsetType var1) {
-         switch(var1) {
-            case POTATO:
+         switch (var1) {
+            case XZ:
                this.offsetFunction = Optional.of((var0, var1x, var2) -> {
-                  BlockPos var3 = var2.below();
-                  return var1x.getBlockState(var3).isCollisionShapeFullBlock(var1x, var3) ? new Vec3(0.0, 0.0625, 0.0) : Vec3.ZERO;
+                  Block var3 = var0.getBlock();
+                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
+                  float var6 = var3.getMaxHorizontalOffset();
+                  double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+                  double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+                  return new Vec3(var7, 0.0, var9);
                });
                break;
             case XYZ:
@@ -1205,16 +1203,6 @@ public abstract class BlockBehaviour implements FeatureElement {
                   double var9 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
                   double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
                   return new Vec3(var9, var6, var11);
-               });
-               break;
-            case XZ:
-               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
-                  Block var3 = var0.getBlock();
-                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
-                  float var6 = var3.getMaxHorizontalOffset();
-                  double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-                  double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-                  return new Vec3(var7, 0.0, var9);
                });
                break;
             default:

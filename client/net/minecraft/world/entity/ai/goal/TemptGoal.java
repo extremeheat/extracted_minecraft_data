@@ -39,7 +39,7 @@ public class TemptGoal extends Goal {
    @Override
    public boolean canUse() {
       if (this.calmDown > 0) {
-         --this.calmDown;
+         this.calmDown--;
          return false;
       } else {
          this.player = this.mob.level().getNearestPlayer(this.targetingConditions, this.mob);

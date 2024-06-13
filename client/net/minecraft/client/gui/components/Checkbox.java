@@ -118,7 +118,7 @@ public class Checkbox extends AbstractButton {
 
       public Checkbox.Builder selected(OptionInstance<Boolean> var1) {
          this.option = var1;
-         this.selected = var1.get();
+         this.selected = (Boolean)var1.get();
          return this;
       }
 

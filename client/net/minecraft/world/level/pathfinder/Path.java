@@ -28,7 +28,7 @@ public class Path {
    }
 
    public void advance() {
-      ++this.nextNodeIndex;
+      this.nextNodeIndex++;
    }
 
    public boolean notStarted() {
@@ -105,7 +105,7 @@ public class Path {
       } else if (var1.nodes.size() != this.nodes.size()) {
          return false;
       } else {
-         for(int var2 = 0; var2 < this.nodes.size(); ++var2) {
+         for (int var2 = 0; var2 < this.nodes.size(); var2++) {
             Node var3 = this.nodes.get(var2);
             Node var4 = var1.nodes.get(var2);
             if (var3.x != var4.x || var3.y != var4.y || var3.z != var4.z) {
@@ -169,7 +169,7 @@ public class Path {
    static Node[] readNodeArray(FriendlyByteBuf var0) {
       Node[] var1 = new Node[var0.readVarInt()];
 
-      for(int var2 = 0; var2 < var1.length; ++var2) {
+      for (int var2 = 0; var2 < var1.length; var2++) {
          var1[var2] = Node.createFromStream(var0);
       }
 
@@ -179,7 +179,7 @@ public class Path {
    static void writeNodeArray(FriendlyByteBuf var0, Node[] var1) {
       var0.writeVarInt(var1.length);
 
-      for(Node var5 : var1) {
+      for (Node var5 : var1) {
          var5.writeToStream(var0);
       }
    }
@@ -191,16 +191,13 @@ public class Path {
       return var1;
    }
 
-   public static record DebugData(Node[] a, Node[] b, Set<Target> c) {
-      private final Node[] openSet;
-      private final Node[] closedSet;
-      final Set<Target> targetNodes;
+   public static record DebugData(Node[] openSet, Node[] closedSet, Set<Target> targetNodes) {
 
-      public DebugData(Node[] var1, Node[] var2, Set<Target> var3) {
+      public DebugData(Node[] openSet, Node[] closedSet, Set<Target> targetNodes) {
          super();
-         this.openSet = var1;
-         this.closedSet = var2;
-         this.targetNodes = var3;
+         this.openSet = openSet;
+         this.closedSet = closedSet;
+         this.targetNodes = targetNodes;
       }
 
       public void write(FriendlyByteBuf var1) {

@@ -8,19 +8,16 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.login.custom.CustomQueryAnswerPayload;
 import net.minecraft.network.protocol.login.custom.DiscardedQueryAnswerPayload;
 
-public record ServerboundCustomQueryAnswerPacket(int b, @Nullable CustomQueryAnswerPayload c) implements Packet<ServerLoginPacketListener> {
-   private final int transactionId;
-   @Nullable
-   private final CustomQueryAnswerPayload payload;
+public record ServerboundCustomQueryAnswerPacket(int transactionId, @Nullable CustomQueryAnswerPayload payload) implements Packet<ServerLoginPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomQueryAnswerPacket> STREAM_CODEC = Packet.codec(
       ServerboundCustomQueryAnswerPacket::write, ServerboundCustomQueryAnswerPacket::read
    );
    private static final int MAX_PAYLOAD_SIZE = 1048576;
 
-   public ServerboundCustomQueryAnswerPacket(int var1, @Nullable CustomQueryAnswerPayload var2) {
+   public ServerboundCustomQueryAnswerPacket(int transactionId, @Nullable CustomQueryAnswerPayload payload) {
       super();
-      this.transactionId = var1;
-      this.payload = var2;
+      this.transactionId = transactionId;
+      this.payload = payload;
    }
 
    private static ServerboundCustomQueryAnswerPacket read(FriendlyByteBuf var0) {

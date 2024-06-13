@@ -16,7 +16,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.JukeboxBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -35,8 +34,6 @@ public class RecordItem extends Item {
       BY_NAME.put(this.sound, this);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
@@ -46,8 +43,7 @@ public class RecordItem extends Item {
          ItemStack var5 = var1.getItemInHand();
          if (!var2.isClientSide) {
             Player var6 = var1.getPlayer();
-            BlockEntity var8 = var2.getBlockEntity(var3);
-            if (var8 instanceof JukeboxBlockEntity var7) {
+            if (var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var7) {
                var7.setTheItem(var5.copy());
                var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var6, var4));
             }
@@ -69,7 +65,7 @@ public class RecordItem extends Item {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       var3.add(this.getDisplayName().withStyle(ChatFormatting.GRAY));
    }
 

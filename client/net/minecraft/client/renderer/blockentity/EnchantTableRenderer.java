@@ -29,11 +29,11 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantmentTabl
       var3.translate(0.0F, 0.1F + Mth.sin(var7 * 0.1F) * 0.01F, 0.0F);
       float var8 = var1.rot - var1.oRot;
 
-      while(var8 >= 3.1415927F) {
+      while (var8 >= 3.1415927F) {
          var8 -= 6.2831855F;
       }
 
-      while(var8 < -3.1415927F) {
+      while (var8 < -3.1415927F) {
          var8 += 6.2831855F;
       }
 

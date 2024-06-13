@@ -2,21 +2,18 @@ package net.minecraft.client.gui.navigation;
 
 import javax.annotation.Nullable;
 
-public record ScreenRectangle(ScreenPosition a, int b, int c) {
-   private final ScreenPosition position;
-   private final int width;
-   private final int height;
+public record ScreenRectangle(ScreenPosition position, int width, int height) {
    private static final ScreenRectangle EMPTY = new ScreenRectangle(0, 0, 0, 0);
 
    public ScreenRectangle(int var1, int var2, int var3, int var4) {
       this(new ScreenPosition(var1, var2), var3, var4);
    }
 
-   public ScreenRectangle(ScreenPosition var1, int var2, int var3) {
+   public ScreenRectangle(ScreenPosition position, int width, int height) {
       super();
-      this.position = var1;
-      this.width = var2;
-      this.height = var3;
+      this.position = position;
+      this.width = width;
+      this.height = height;
    }
 
    public static ScreenRectangle empty() {
@@ -24,7 +21,7 @@ public record ScreenRectangle(ScreenPosition a, int b, int c) {
    }
 
    public static ScreenRectangle of(ScreenAxis var0, int var1, int var2, int var3, int var4) {
-      return switch(var0) {
+      return switch (var0) {
          case HORIZONTAL -> new ScreenRectangle(var1, var2, var3, var4);
          case VERTICAL -> new ScreenRectangle(var2, var1, var4, var3);
       };
@@ -35,7 +32,7 @@ public record ScreenRectangle(ScreenPosition a, int b, int c) {
    }
 
    public int getLength(ScreenAxis var1) {
-      return switch(var1) {
+      return switch (var1) {
          case HORIZONTAL -> this.width;
          case VERTICAL -> this.height;
       };

@@ -127,11 +127,8 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof ResourceLocation)) {
-         return false;
       } else {
-         ResourceLocation var2 = (ResourceLocation)var1;
-         return this.namespace.equals(var2.namespace) && this.path.equals(var2.path);
+         return !(var1 instanceof ResourceLocation var2) ? false : this.namespace.equals(var2.namespace) && this.path.equals(var2.path);
       }
    }
 
@@ -172,7 +169,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    private static String readGreedy(StringReader var0) {
       int var1 = var0.getCursor();
 
-      while(var0.canRead() && isAllowedInResourceLocation(var0.peek())) {
+      while (var0.canRead() && isAllowedInResourceLocation(var0.peek())) {
          var0.skip();
       }
 
@@ -211,7 +208,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    }
 
    public static boolean isValidPath(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
+      for (int var1 = 0; var1 < var0.length(); var1++) {
          if (!validPathChar(var0.charAt(var1))) {
             return false;
          }
@@ -221,7 +218,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    }
 
    public static boolean isValidNamespace(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
+      for (int var1 = 0; var1 < var0.length(); var1++) {
          if (!validNamespaceChar(var0.charAt(var1))) {
             return false;
          }

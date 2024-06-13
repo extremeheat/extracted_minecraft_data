@@ -8,10 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundEditBookPacket(int c, List<String> d, Optional<String> e) implements Packet<ServerGamePacketListener> {
-   private final int slot;
-   private final List<String> pages;
-   private final Optional<String> title;
+public record ServerboundEditBookPacket(int slot, List<String> pages, Optional<String> title) implements Packet<ServerGamePacketListener> {
    public static final int MAX_BYTES_PER_CHAR = 4;
    private static final int TITLE_MAX_CHARS = 128;
    private static final int PAGE_MAX_CHARS = 8192;
@@ -26,12 +23,12 @@ public record ServerboundEditBookPacket(int c, List<String> d, Optional<String> 
       ServerboundEditBookPacket::new
    );
 
-   public ServerboundEditBookPacket(int var1, List<String> var2, Optional<String> var3) {
+   public ServerboundEditBookPacket(int slot, List<String> pages, Optional<String> title) {
       super();
-      var2 = List.copyOf(var2);
-      this.slot = var1;
-      this.pages = var2;
-      this.title = var3;
+      pages = List.copyOf(pages);
+      this.slot = slot;
+      this.pages = pages;
+      this.title = title;
    }
 
    @Override

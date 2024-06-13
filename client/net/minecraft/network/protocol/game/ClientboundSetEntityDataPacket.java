@@ -8,9 +8,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.syncher.SynchedEntityData;
 
-public record ClientboundSetEntityDataPacket(int c, List<SynchedEntityData.DataValue<?>> d) implements Packet<ClientGamePacketListener> {
-   private final int id;
-   private final List<SynchedEntityData.DataValue<?>> packedItems;
+public record ClientboundSetEntityDataPacket(int id, List<SynchedEntityData.DataValue<?>> packedItems) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetEntityDataPacket> STREAM_CODEC = Packet.codec(
       ClientboundSetEntityDataPacket::write, ClientboundSetEntityDataPacket::new
    );
@@ -20,14 +18,14 @@ public record ClientboundSetEntityDataPacket(int c, List<SynchedEntityData.DataV
       this(var1.readVarInt(), unpack(var1));
    }
 
-   public ClientboundSetEntityDataPacket(int var1, List<SynchedEntityData.DataValue<?>> var2) {
+   public ClientboundSetEntityDataPacket(int id, List<SynchedEntityData.DataValue<?>> packedItems) {
       super();
-      this.id = var1;
-      this.packedItems = var2;
+      this.id = id;
+      this.packedItems = packedItems;
    }
 
    private static void pack(List<SynchedEntityData.DataValue<?>> var0, RegistryFriendlyByteBuf var1) {
-      for(SynchedEntityData.DataValue var3 : var0) {
+      for (SynchedEntityData.DataValue var3 : var0) {
          var3.write(var1);
       }
 
@@ -38,7 +36,7 @@ public record ClientboundSetEntityDataPacket(int c, List<SynchedEntityData.DataV
       ArrayList var1 = new ArrayList();
 
       short var2;
-      while((var2 = var0.readUnsignedByte()) != true) {
+      while ((var2 = var0.readUnsignedByte()) != 255) {
          var1.add(SynchedEntityData.DataValue.read(var0, var2));
       }
 

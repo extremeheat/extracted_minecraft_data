@@ -6,8 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.ChunkPos;
 
-public record ClientboundForgetLevelChunkPacket(ChunkPos b) implements Packet<ClientGamePacketListener> {
-   private final ChunkPos pos;
+public record ClientboundForgetLevelChunkPacket(ChunkPos pos) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundForgetLevelChunkPacket> STREAM_CODEC = Packet.codec(
       ClientboundForgetLevelChunkPacket::write, ClientboundForgetLevelChunkPacket::new
    );
@@ -16,9 +15,9 @@ public record ClientboundForgetLevelChunkPacket(ChunkPos b) implements Packet<Cl
       this(var1.readChunkPos());
    }
 
-   public ClientboundForgetLevelChunkPacket(ChunkPos var1) {
+   public ClientboundForgetLevelChunkPacket(ChunkPos pos) {
       super();
-      this.pos = var1;
+      this.pos = pos;
    }
 
    private void write(FriendlyByteBuf var1) {

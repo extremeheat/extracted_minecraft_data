@@ -116,11 +116,10 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Object var4 = var1.getSource();
-      if (var4 instanceof SharedSuggestionProvider var3) {
+      if (var1.getSource() instanceof SharedSuggestionProvider var3) {
          StringReader var8 = new StringReader(var2.getInput());
          var8.setCursor(var2.getStart());
-         EntitySelectorParser var5 = new EntitySelectorParser(var8, ((SharedSuggestionProvider)var3).hasPermission(2));
+         EntitySelectorParser var5 = new EntitySelectorParser(var8, var3.hasPermission(2));
 
          try {
             var5.parse();
@@ -128,9 +127,9 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
          }
 
          return var5.fillSuggestions(var2, var2x -> {
-            Collection var3xx = var3.getOnlinePlayerNames();
-            Object var4xx = this.playersOnly ? var3xx : Iterables.concat(var3xx, var3.getSelectedEntities());
-            SharedSuggestionProvider.suggest((Iterable<String>)var4xx, var2x);
+            Collection var3x = var3.getOnlinePlayerNames();
+            Object var4 = this.playersOnly ? var3x : Iterables.concat(var3x, var3.getSelectedEntities());
+            SharedSuggestionProvider.suggest((Iterable<String>)var4, var2x);
          });
       } else {
          return Suggestions.empty();
@@ -150,7 +149,7 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
       }
 
       public void serializeToNetwork(EntityArgument.Info.Template var1, FriendlyByteBuf var2) {
-         int var3 = 0;
+         byte var3 = 0;
          if (var1.single) {
             var3 |= 1;
          }

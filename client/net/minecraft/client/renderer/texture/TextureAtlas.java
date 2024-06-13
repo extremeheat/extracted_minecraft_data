@@ -63,7 +63,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
          ArrayList var2 = new ArrayList();
          ArrayList var3 = new ArrayList();
 
-         for(TextureAtlasSprite var5 : var1.regions().values()) {
+         for (TextureAtlasSprite var5 : var1.regions().values()) {
             var2.add(var5.contents());
 
             try {
@@ -98,7 +98,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       Path var3 = var0.resolve(var1 + ".txt");
 
       try (BufferedWriter var4 = Files.newBufferedWriter(var3)) {
-         for(Entry var6 : var2.entrySet().stream().sorted(Entry.comparingByKey()).toList()) {
+         for (Entry var6 : var2.entrySet().stream().sorted(Entry.comparingByKey()).toList()) {
             TextureAtlasSprite var7 = (TextureAtlasSprite)var6.getValue();
             var4.write(
                String.format(
@@ -114,7 +114,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
    public void cycleAnimationFrames() {
       this.bind();
 
-      for(TextureAtlasSprite.Ticker var2 : this.animatedTextures) {
+      for (TextureAtlasSprite.Ticker var2 : this.animatedTextures) {
          var2.tickAndUpload();
       }
    }

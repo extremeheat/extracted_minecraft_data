@@ -263,7 +263,7 @@ public class ItemInHandRenderer {
       float var10 = 60.0F;
       float var11 = 150.0F;
       float var12 = -15.0F;
-      boolean var13 = true;
+      byte var13 = 2;
       float var14 = -15.0F + 75.0F * Mth.cos(var8 * 2.0F * 3.1415927F);
       if (var3 != HumanoidArm.RIGHT) {
          var1.translate(0.1, 0.83, 0.35);
@@ -424,7 +424,7 @@ public class ItemInHandRenderer {
             boolean var21 = var12 == HumanoidArm.RIGHT;
             if (var1.isUsingItem() && var1.getUseItemRemainingTicks() > 0 && var1.getUsedItemHand() == var4) {
                int var24 = var21 ? 1 : -1;
-               switch(var6.getUseAnimation()) {
+               switch (var6.getUseAnimation()) {
                   case NONE:
                      this.applyItemArmTransform(var8, var12, var7);
                      break;
@@ -530,8 +530,8 @@ public class ItemInHandRenderer {
          this.offHandHeight = Mth.clamp(this.offHandHeight - 0.4F, 0.0F, 1.0F);
       } else {
          float var4 = var1.getAttackStrengthScale(1.0F);
-         this.mainHandHeight += Mth.clamp((this.mainHandItem == var2 ? var4 * var4 * var4 : 0.0F) - this.mainHandHeight, -0.4F, 0.4F);
-         this.offHandHeight += Mth.clamp((float)(this.offHandItem == var3 ? 1 : 0) - this.offHandHeight, -0.4F, 0.4F);
+         this.mainHandHeight = this.mainHandHeight + Mth.clamp((this.mainHandItem == var2 ? var4 * var4 * var4 : 0.0F) - this.mainHandHeight, -0.4F, 0.4F);
+         this.offHandHeight = this.offHandHeight + Mth.clamp((float)(this.offHandItem == var3 ? 1 : 0) - this.offHandHeight, -0.4F, 0.4F);
       }
 
       if (this.mainHandHeight < 0.1F) {

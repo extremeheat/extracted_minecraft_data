@@ -80,8 +80,8 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
          this.placeBlock(var1, var11.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 0, 4, 8, var5);
          this.placeBlock(var1, var11.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 6, 4, 8, var5);
 
-         for(int var12 = 2; var12 <= 7; var12 += 5) {
-            for(int var13 = 1; var13 <= 5; var13 += 4) {
+         for (byte var12 = 2; var12 <= 7; var12 += 5) {
+            for (byte var13 = 1; var13 <= 5; var13 += 4) {
                this.fillColumnDown(var1, Blocks.OAK_LOG.defaultBlockState(), var13, -1, var12, var5);
             }
          }

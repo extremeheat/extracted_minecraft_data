@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,7 +15,7 @@ public class EnvironmentScanPlacement extends PlacementModifier {
    private final BlockPredicate targetCondition;
    private final BlockPredicate allowedSearchCondition;
    private final int maxSteps;
-   public static final Codec<EnvironmentScanPlacement> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<EnvironmentScanPlacement> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Direction.VERTICAL_CODEC.fieldOf("direction_of_search").forGetter(var0x -> var0x.directionOfSearch),
                BlockPredicate.CODEC.fieldOf("target_condition").forGetter(var0x -> var0x.targetCondition),
@@ -48,7 +48,7 @@ public class EnvironmentScanPlacement extends PlacementModifier {
       if (!this.allowedSearchCondition.test(var5, var4)) {
          return Stream.of();
       } else {
-         for(int var6 = 0; var6 < this.maxSteps; ++var6) {
+         for (int var6 = 0; var6 < this.maxSteps; var6++) {
             if (this.targetCondition.test(var5, var4)) {
                return Stream.of(var4);
             }

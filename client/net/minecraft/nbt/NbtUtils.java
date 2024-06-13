@@ -61,8 +61,6 @@ public final class NbtUtils {
       super();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @VisibleForTesting
    public static boolean compareNbt(@Nullable Tag var0, @Nullable Tag var1, boolean var2) {
       if (var0 == var1) {
@@ -78,7 +76,7 @@ public final class NbtUtils {
          if (var11.size() < var3.size()) {
             return false;
          } else {
-            for(String var13 : var3.getAllKeys()) {
+            for (String var13 : var3.getAllKeys()) {
                Tag var14 = var3.get(var13);
                if (!compareNbt(var14, var11.get(var13), var2)) {
                   return false;
@@ -98,10 +96,10 @@ public final class NbtUtils {
                return false;
             }
 
-            for(Tag var7 : var4) {
+            for (Tag var7 : var4) {
                boolean var8 = false;
 
-               for(Tag var10 : var5) {
+               for (Tag var10 : var5) {
                   if (compareNbt(var7, var10, var2)) {
                      var8 = true;
                      break;
@@ -161,7 +159,7 @@ public final class NbtUtils {
                CompoundTag var6 = var1.getCompound("Properties");
                StateDefinition var7 = var4.getStateDefinition();
 
-               for(String var9 : var6.getAllKeys()) {
+               for (String var9 : var6.getAllKeys()) {
                   Property var10 = var7.getProperty(var9);
                   if (var10 != null) {
                      var5 = setValueHelper(var5, var10, var9, var6, var1);
@@ -193,7 +191,7 @@ public final class NbtUtils {
       if (!var2.isEmpty()) {
          CompoundTag var3 = new CompoundTag();
 
-         for(Entry var5 : var2.entrySet()) {
+         for (Entry var5 : var2.entrySet()) {
             Property var6 = (Property)var5.getKey();
             var3.putString(var6.getName(), getName(var6, (Comparable<?>)var5.getValue()));
          }
@@ -211,7 +209,7 @@ public final class NbtUtils {
       if (!var2.isEmpty()) {
          CompoundTag var3 = new CompoundTag();
 
-         for(Entry var5 : var2.entrySet()) {
+         for (Entry var5 : var2.entrySet()) {
             Property var6 = (Property)var5.getKey();
             var3.putString(var6.getName(), getName(var6, (Comparable<?>)var5.getValue()));
          }
@@ -235,7 +233,7 @@ public final class NbtUtils {
    }
 
    public static StringBuilder prettyPrint(StringBuilder var0, Tag var1, int var2, boolean var3) {
-      switch(var1.getId()) {
+      switch (var1.getId()) {
          case 0:
             break;
          case 1:
@@ -255,7 +253,7 @@ public final class NbtUtils {
             if (var3) {
                indent(var2 + 1, var0);
 
-               for(int var28 = 0; var28 < var20.length; ++var28) {
+               for (int var28 = 0; var28 < var20.length; var28++) {
                   if (var28 != 0) {
                      var0.append(',');
                   }
@@ -288,7 +286,7 @@ public final class NbtUtils {
                var0.append('\n');
             }
 
-            for(int var33 = 0; var33 < var19; ++var33) {
+            for (int var33 = 0; var33 < var19; var33++) {
                if (var33 != 0) {
                   var0.append(",\n");
                }
@@ -316,7 +314,7 @@ public final class NbtUtils {
             int var22 = var18.stream().mapToInt(String::length).max().orElse(0);
             String var26 = Strings.repeat(" ", var22);
 
-            for(int var32 = 0; var32 < var18.size(); ++var32) {
+            for (int var32 = 0; var32 < var18.size(); var32++) {
                if (var32 != 0) {
                   var0.append(",\n");
                }
@@ -337,7 +335,7 @@ public final class NbtUtils {
             int[] var17 = var13.getAsIntArray();
             int var21 = 0;
 
-            for(int var37 : var17) {
+            for (int var37 : var17) {
                var21 = Math.max(var21, String.format(Locale.ROOT, "%X", var37).length());
             }
 
@@ -346,7 +344,7 @@ public final class NbtUtils {
             if (var3) {
                indent(var2 + 1, var0);
 
-               for(int var31 = 0; var31 < var17.length; ++var31) {
+               for (int var31 = 0; var31 < var17.length; var31++) {
                   if (var31 != 0) {
                      var0.append(',');
                   }
@@ -374,7 +372,7 @@ public final class NbtUtils {
             long[] var5 = var4.getAsLongArray();
             long var6 = 0L;
 
-            for(long var11 : var5) {
+            for (long var11 : var5) {
                var6 = Math.max(var6, (long)String.format(Locale.ROOT, "%X", var11).length());
             }
 
@@ -383,7 +381,7 @@ public final class NbtUtils {
             if (var3) {
                indent(var2 + 1, var0);
 
-               for(int var36 = 0; var36 < var5.length; ++var36) {
+               for (int var36 = 0; var36 < var5.length; var36++) {
                   if (var36 != 0) {
                      var0.append(',');
                   }
@@ -417,7 +415,7 @@ public final class NbtUtils {
       int var2 = var1.lastIndexOf("\n") + 1;
       int var3 = var1.length() - var2;
 
-      for(int var4 = 0; var4 < 2 * var0 - var3; ++var4) {
+      for (int var4 = 0; var4 < 2 * var0 - var3; var4++) {
          var1.append(' ');
       }
 
@@ -456,13 +454,13 @@ public final class NbtUtils {
          ListTag var4 = new ListTag();
          ListTag var5 = var0.getList("palettes", 9);
          var5.stream().map(ListTag.class::cast).forEach(var2x -> {
-            CompoundTag var3xx = new CompoundTag();
+            CompoundTag var3x = new CompoundTag();
 
-            for(int var4xx = 0; var4xx < var2x.size(); ++var4xx) {
-               var3xx.putString(var3.getString(var4xx), packBlockState(var2x.getCompound(var4xx)));
+            for (int var4x = 0; var4x < var2x.size(); var4x++) {
+               var3x.putString(var3.getString(var4x), packBlockState(var2x.getCompound(var4x)));
             }
 
-            var4.add(var3xx);
+            var4.add(var3x);
          });
          var0.put("palettes", var4);
       }
@@ -512,13 +510,13 @@ public final class NbtUtils {
          Object2IntOpenHashMap var3 = new Object2IntOpenHashMap();
          var3.defaultReturnValue(-1);
 
-         for(int var4 = 0; var4 < var1.size(); ++var4) {
+         for (int var4 = 0; var4 < var1.size(); var4++) {
             var3.put(var1.getString(var4), var4);
          }
 
          ListTag var9 = var0.getList("data", 10);
 
-         for(int var5 = 0; var5 < var9.size(); ++var5) {
+         for (int var5 = 0; var5 < var9.size(); var5++) {
             CompoundTag var6 = var9.getCompound(var5);
             String var7 = var6.getString("state");
             int var8 = var3.getInt(var7);
@@ -559,9 +557,9 @@ public final class NbtUtils {
          if (var2 + 2 <= var0.length()) {
             String var5 = var0.substring(var2 + 1, var0.indexOf(125, var2));
             COMMA_SPLITTER.split(var5).forEach(var2x -> {
-               List var3xx = COLON_SPLITTER.splitToList(var2x);
-               if (var3xx.size() == 2) {
-                  var4.putString((String)var3xx.get(0), (String)var3xx.get(1));
+               List var3x = COLON_SPLITTER.splitToList(var2x);
+               if (var3x.size() == 2) {
+                  var4.putString((String)var3x.get(0), (String)var3x.get(1));
                } else {
                   LOGGER.error("Something went wrong parsing: '{}' -- incorrect gamedata!", var0);
                }

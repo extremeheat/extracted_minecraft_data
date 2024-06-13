@@ -50,7 +50,7 @@ public class SwimNodeEvaluator extends NodeEvaluator {
       int var3 = 0;
       EnumMap var4 = Maps.newEnumMap(Direction.class);
 
-      for(Direction var8 : Direction.values()) {
+      for (Direction var8 : Direction.values()) {
          Node var9 = this.findAcceptedNode(var2.x + var8.getStepX(), var2.y + var8.getStepY(), var2.z + var8.getStepZ());
          var4.put(var8, var9);
          if (this.isNodeValid(var9)) {
@@ -58,7 +58,7 @@ public class SwimNodeEvaluator extends NodeEvaluator {
          }
       }
 
-      for(Direction var11 : Direction.Plane.HORIZONTAL) {
+      for (Direction var11 : Direction.Plane.HORIZONTAL) {
          Direction var12 = var11.getClockWise();
          if (hasMalus((Node)var4.get(var11)) && hasMalus((Node)var4.get(var12))) {
             Node var13 = this.findAcceptedNode(var2.x + var11.getStepX() + var12.getStepX(), var2.y, var2.z + var11.getStepZ() + var12.getStepZ());
@@ -112,9 +112,9 @@ public class SwimNodeEvaluator extends NodeEvaluator {
    public PathType getPathTypeOfMob(PathfindingContext var1, int var2, int var3, int var4, Mob var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-      for(int var7 = var2; var7 < var2 + this.entityWidth; ++var7) {
-         for(int var8 = var3; var8 < var3 + this.entityHeight; ++var8) {
-            for(int var9 = var4; var9 < var4 + this.entityDepth; ++var9) {
+      for (int var7 = var2; var7 < var2 + this.entityWidth; var7++) {
+         for (int var8 = var3; var8 < var3 + this.entityHeight; var8++) {
+            for (int var9 = var4; var9 < var4 + this.entityDepth; var9++) {
                BlockState var10 = var1.getBlockState(var6.set(var7, var8, var9));
                FluidState var11 = var10.getFluidState();
                if (var11.isEmpty() && var10.isPathfindable(PathComputationType.WATER) && var10.isAir()) {

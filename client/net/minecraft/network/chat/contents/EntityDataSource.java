@@ -5,7 +5,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -15,10 +14,7 @@ import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.nbt.CompoundTag;
 
-public record EntityDataSource(String d, @Nullable EntitySelector e) implements DataSource {
-   private final String selectorPattern;
-   @Nullable
-   private final EntitySelector compiledSelector;
+public record EntityDataSource(String selectorPattern, @Nullable EntitySelector compiledSelector) implements DataSource {
    public static final MapCodec<EntityDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(var0, EntityDataSource::new)
    );
@@ -28,10 +24,10 @@ public record EntityDataSource(String d, @Nullable EntitySelector e) implements 
       this(var1, compileSelector(var1));
    }
 
-   public EntityDataSource(String var1, @Nullable EntitySelector var2) {
+   public EntityDataSource(String selectorPattern, @Nullable EntitySelector compiledSelector) {
       super();
-      this.selectorPattern = var1;
-      this.compiledSelector = var2;
+      this.selectorPattern = selectorPattern;
+      this.compiledSelector = compiledSelector;
    }
 
    @Nullable

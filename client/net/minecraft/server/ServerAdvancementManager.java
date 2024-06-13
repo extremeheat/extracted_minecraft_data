@@ -11,10 +11,8 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
@@ -46,18 +44,18 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener {
       Builder var5 = ImmutableMap.builder();
       var1.forEach((var3x, var4x) -> {
          try {
-            Advancement var5xx = Util.getOrThrow(Advancement.CODEC.parse(var4, var4x), JsonParseException::new);
-            this.validate(var3x, var5xx);
-            var5.put(var3x, new AdvancementHolder(var3x, var5xx));
-         } catch (Exception var6xx) {
-            LOGGER.error("Parsing error loading custom advancement {}: {}", var3x, var6xx.getMessage());
+            Advancement var5x = (Advancement)Advancement.CODEC.parse(var4, var4x).getOrThrow(JsonParseException::new);
+            this.validate(var3x, var5x);
+            var5.put(var3x, new AdvancementHolder(var3x, var5x));
+         } catch (Exception var6x) {
+            LOGGER.error("Parsing error loading custom advancement {}: {}", var3x, var6x.getMessage());
          }
       });
       this.advancements = var5.buildOrThrow();
       AdvancementTree var6 = new AdvancementTree();
       var6.addAll(this.advancements.values());
 
-      for(AdvancementNode var8 : var6.roots()) {
+      for (AdvancementNode var8 : var6.roots()) {
          if (var8.holder().value().display().isPresent()) {
             TreeNodePosition.run(var8);
          }
@@ -82,7 +80,7 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener {
 
    @Nullable
    public AdvancementHolder get(ResourceLocation var1) {
-      return (AdvancementHolder)this.advancements.get(var1);
+      return this.advancements.get(var1);
    }
 
    public AdvancementTree tree() {

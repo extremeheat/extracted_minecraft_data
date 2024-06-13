@@ -4,6 +4,7 @@ import java.util.List;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.execution.CommandQueueEntry;
+import net.minecraft.commands.execution.EntryAction;
 import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.execution.Frame;
 import net.minecraft.commands.execution.TraceCallbacks;
@@ -33,6 +34,6 @@ public class CallFunction<T extends ExecutionCommandSource<T>> implements Unboun
       int var6 = var3.depth() + 1;
       Frame.FrameControl var7 = this.returnParentFrame ? var3.frameControl() : var2.frameControlForDepth(var6);
       Frame var8 = new Frame(var6, this.resultCallback, var7);
-      ContinuationTask.schedule(var2, var8, var4, (var1x, var2x) -> new CommandQueueEntry<>(var1x, var2x.bind(var1)));
+      ContinuationTask.schedule(var2, var8, var4, (var1x, var2x) -> new CommandQueueEntry<>(var1x, (EntryAction<T>)var2x.bind(var1)));
    }
 }

@@ -51,14 +51,14 @@ public class WetSpongeBlock extends Block {
                if (var5.getAxis() == Direction.Axis.X) {
                   var12 += var4.nextDouble();
                   if (var5 == Direction.EAST) {
-                     ++var8;
+                     var8++;
                   } else {
                      var8 += 0.05;
                   }
                } else {
                   var8 += var4.nextDouble();
                   if (var5 == Direction.SOUTH) {
-                     ++var12;
+                     var12++;
                   } else {
                      var12 += 0.05;
                   }

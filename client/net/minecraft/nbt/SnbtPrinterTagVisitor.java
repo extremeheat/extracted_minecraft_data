@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -93,7 +92,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
       StringBuilder var2 = new StringBuilder("[").append("B").append(";");
       byte[] var3 = var1.getAsByteArray();
 
-      for(int var4 = 0; var4 < var3.length; ++var4) {
+      for (int var4 = 0; var4 < var3.length; var4++) {
          var2.append(" ").append(var3[var4]).append("B");
          if (var4 != var3.length - 1) {
             var2.append(ELEMENT_SEPARATOR);
@@ -109,7 +108,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
       StringBuilder var2 = new StringBuilder("[").append("I").append(";");
       int[] var3 = var1.getAsIntArray();
 
-      for(int var4 = 0; var4 < var3.length; ++var4) {
+      for (int var4 = 0; var4 < var3.length; var4++) {
          var2.append(" ").append(var3[var4]);
          if (var4 != var3.length - 1) {
             var2.append(ELEMENT_SEPARATOR);
@@ -126,7 +125,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
       StringBuilder var3 = new StringBuilder("[").append("L").append(";");
       long[] var4 = var1.getAsLongArray();
 
-      for(int var5 = 0; var5 < var4.length; ++var5) {
+      for (int var5 = 0; var5 < var4.length; var5++) {
          var3.append(" ").append(var4[var5]).append("L");
          if (var5 != var4.length - 1) {
             var3.append(ELEMENT_SEPARATOR);
@@ -149,7 +148,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
             var2.append("\n");
          }
 
-         for(int var4 = 0; var4 < var1.size(); ++var4) {
+         for (int var4 = 0; var4 < var1.size(); var4++) {
             var2.append(Strings.repeat(var3, this.depth + 1));
             var2.append(new SnbtPrinterTagVisitor(var3, this.depth + 1, this.path).visit(var1.get(var4)));
             if (var4 != var1.size() - 1) {
@@ -182,7 +181,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
          List var4 = this.getKeys(var1);
          Iterator var5 = var4.iterator();
 
-         while(var5.hasNext()) {
+         while (var5.hasNext()) {
             String var6 = (String)var5.next();
             Tag var7 = var1.get(var6);
             this.pushPath(var6);
@@ -220,7 +219,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
       ArrayList var3 = Lists.newArrayList();
       List var4 = KEY_ORDER.get(this.pathString());
       if (var4 != null) {
-         for(String var6 : var4) {
+         for (String var6 : var4) {
             if (var2.remove(var6)) {
                var3.add(var6);
             }

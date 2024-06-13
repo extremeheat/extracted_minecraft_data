@@ -42,10 +42,9 @@ public class TargetBlock extends Block {
    @Override
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       int var5 = updateRedstoneOutput(var1, var2, var3, var4);
-      Entity var6 = var4.getOwner();
-      if (var6 instanceof ServerPlayer var7) {
-         ((ServerPlayer)var7).awardStat(Stats.TARGET_HIT);
-         CriteriaTriggers.TARGET_BLOCK_HIT.trigger((ServerPlayer)var7, var4, var3.getLocation(), var5);
+      if (var4.getOwner() instanceof ServerPlayer var7) {
+         var7.awardStat(Stats.TARGET_HIT);
+         CriteriaTriggers.TARGET_BLOCK_HIT.trigger(var7, var4, var3.getLocation(), var5);
       }
    }
 

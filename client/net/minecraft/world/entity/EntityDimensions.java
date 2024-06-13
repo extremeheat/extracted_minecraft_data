@@ -3,24 +3,18 @@ package net.minecraft.world.entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public record EntityDimensions(float a, float b, float c, EntityAttachments d, boolean e) {
-   private final float width;
-   private final float height;
-   private final float eyeHeight;
-   private final EntityAttachments attachments;
-   private final boolean fixed;
-
+public record EntityDimensions(float width, float height, float eyeHeight, EntityAttachments attachments, boolean fixed) {
    private EntityDimensions(float var1, float var2, boolean var3) {
       this(var1, var2, defaultEyeHeight(var2), EntityAttachments.createDefault(var1, var2), var3);
    }
 
-   public EntityDimensions(float var1, float var2, float var3, EntityAttachments var4, boolean var5) {
+   public EntityDimensions(float width, float height, float eyeHeight, EntityAttachments attachments, boolean fixed) {
       super();
-      this.width = var1;
-      this.height = var2;
-      this.eyeHeight = var3;
-      this.attachments = var4;
-      this.fixed = var5;
+      this.width = width;
+      this.height = height;
+      this.eyeHeight = eyeHeight;
+      this.attachments = attachments;
+      this.fixed = fixed;
    }
 
    private static float defaultEyeHeight(float var0) {

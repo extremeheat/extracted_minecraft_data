@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -22,48 +21,36 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
 public record Advancement(
-   Optional<ResourceLocation> c,
-   Optional<DisplayInfo> d,
-   AdvancementRewards e,
-   Map<String, Criterion<?>> f,
-   AdvancementRequirements g,
-   boolean h,
-   Optional<Component> i
+   Optional<ResourceLocation> parent,
+   Optional<DisplayInfo> display,
+   AdvancementRewards rewards,
+   Map<String, Criterion<?>> criteria,
+   AdvancementRequirements requirements,
+   boolean sendsTelemetryEvent,
+   Optional<Component> name
 ) {
-   private final Optional<ResourceLocation> parent;
-   private final Optional<DisplayInfo> display;
-   private final AdvancementRewards rewards;
-   private final Map<String, Criterion<?>> criteria;
-   private final AdvancementRequirements requirements;
-   private final boolean sendsTelemetryEvent;
-   private final Optional<Component> name;
-   private static final Codec<Map<String, Criterion<?>>> CRITERIA_CODEC = ExtraCodecs.validate(
-      Codec.unboundedMap(Codec.STRING, Criterion.CODEC),
-      var0 -> var0.isEmpty() ? DataResult.error(() -> "Advancement criteria cannot be empty") : DataResult.success(var0)
-   );
-   public static final Codec<Advancement> CODEC = ExtraCodecs.validate(
-      RecordCodecBuilder.create(
+   private static final Codec<Map<String, Criterion<?>>> CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, Criterion.CODEC)
+      .validate(var0 -> var0.isEmpty() ? DataResult.error(() -> "Advancement criteria cannot be empty") : DataResult.success(var0));
+   public static final Codec<Advancement> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "parent").forGetter(Advancement::parent),
-                  ExtraCodecs.strictOptionalField(DisplayInfo.CODEC, "display").forGetter(Advancement::display),
-                  ExtraCodecs.strictOptionalField(AdvancementRewards.CODEC, "rewards", AdvancementRewards.EMPTY).forGetter(Advancement::rewards),
+                  ResourceLocation.CODEC.optionalFieldOf("parent").forGetter(Advancement::parent),
+                  DisplayInfo.CODEC.optionalFieldOf("display").forGetter(Advancement::display),
+                  AdvancementRewards.CODEC.optionalFieldOf("rewards", AdvancementRewards.EMPTY).forGetter(Advancement::rewards),
                   CRITERIA_CODEC.fieldOf("criteria").forGetter(Advancement::criteria),
-                  ExtraCodecs.strictOptionalField(AdvancementRequirements.CODEC, "requirements").forGetter(var0x -> Optional.of(var0x.requirements())),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "sends_telemetry_event", false).forGetter(Advancement::sendsTelemetryEvent)
+                  AdvancementRequirements.CODEC.optionalFieldOf("requirements").forGetter(var0x -> Optional.of(var0x.requirements())),
+                  Codec.BOOL.optionalFieldOf("sends_telemetry_event", false).forGetter(Advancement::sendsTelemetryEvent)
                )
                .apply(var0, (var0x, var1, var2, var3, var4, var5) -> {
-                  AdvancementRequirements var6 = (AdvancementRequirements)var4.orElseGet(() -> AdvancementRequirements.allOf(var3.keySet()));
+                  AdvancementRequirements var6 = var4.orElseGet(() -> AdvancementRequirements.allOf(var3.keySet()));
                   return new Advancement(var0x, var1, var2, var3, var6, var5);
                })
-      ),
-      Advancement::validate
-   );
+      )
+      .validate(Advancement::validate);
    public static final StreamCodec<RegistryFriendlyByteBuf, Advancement> STREAM_CODEC = StreamCodec.ofMember(Advancement::write, Advancement::read);
 
    public Advancement(
@@ -78,22 +65,22 @@ public record Advancement(
    }
 
    public Advancement(
-      Optional<ResourceLocation> var1,
-      Optional<DisplayInfo> var2,
-      AdvancementRewards var3,
-      Map<String, Criterion<?>> var4,
-      AdvancementRequirements var5,
-      boolean var6,
-      Optional<Component> var7
+      Optional<ResourceLocation> parent,
+      Optional<DisplayInfo> display,
+      AdvancementRewards rewards,
+      Map<String, Criterion<?>> criteria,
+      AdvancementRequirements requirements,
+      boolean sendsTelemetryEvent,
+      Optional<Component> name
    ) {
       super();
-      this.parent = var1;
-      this.display = var2;
-      this.rewards = var3;
-      this.criteria = var4;
-      this.requirements = var5;
-      this.sendsTelemetryEvent = var6;
-      this.name = var7;
+      this.parent = parent;
+      this.display = display;
+      this.rewards = rewards;
+      this.criteria = criteria;
+      this.requirements = requirements;
+      this.sendsTelemetryEvent = sendsTelemetryEvent;
+      this.name = name;
    }
 
    private static DataResult<Advancement> validate(Advancement var0) {
@@ -223,7 +210,7 @@ public record Advancement(
 
       public AdvancementHolder build(ResourceLocation var1) {
          ImmutableMap var2 = this.criteria.buildOrThrow();
-         AdvancementRequirements var3 = (AdvancementRequirements)this.requirements.orElseGet(() -> this.requirementsStrategy.create(var2.keySet()));
+         AdvancementRequirements var3 = this.requirements.orElseGet(() -> this.requirementsStrategy.create(var2.keySet()));
          return new AdvancementHolder(var1, new Advancement(this.parent, this.display, this.rewards, var2, var3, this.sendsTelemetryEvent));
       }
 

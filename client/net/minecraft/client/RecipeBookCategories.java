@@ -52,7 +52,7 @@ public enum RecipeBookCategories {
    }
 
    public static List<RecipeBookCategories> getCategories(RecipeBookType var0) {
-      return switch(var0) {
+      return switch (var0) {
          case CRAFTING -> CRAFTING_CATEGORIES;
          case FURNACE -> FURNACE_CATEGORIES;
          case BLAST_FURNACE -> BLAST_FURNACE_CATEGORIES;

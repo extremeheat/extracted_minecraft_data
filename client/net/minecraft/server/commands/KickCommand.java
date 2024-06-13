@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
@@ -56,11 +55,11 @@ public class KickCommand {
       } else {
          int var3 = 0;
 
-         for(ServerPlayer var5 : var1) {
+         for (ServerPlayer var5 : var1) {
             if (!var0.getServer().isSingleplayerOwner(var5.getGameProfile())) {
                var5.connection.disconnect(var2);
                var0.sendSuccess(() -> Component.translatable("commands.kick.success", var5.getDisplayName(), var2), true);
-               ++var3;
+               var3++;
             }
          }
 

@@ -143,8 +143,6 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return new Vector3f(var3).rotateAxis(var2 * 0.017453292F, var6.x, var6.y, var6.z);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected Projectile createProjectile(Level var1, LivingEntity var2, ItemStack var3, ItemStack var4, boolean var5) {
       if (var4.is(Items.FIREWORK_ROCKET)) {
@@ -171,8 +169,8 @@ public class CrossbowItem extends ProjectileWeaponItem {
          if (var8 != null && !var8.isEmpty()) {
             this.shoot(var1, var2, var3, var4, var8.getItems(), var5, var6, var2 instanceof Player, var7);
             if (var2 instanceof ServerPlayer var9) {
-               CriteriaTriggers.SHOT_CROSSBOW.trigger((ServerPlayer)var9, var4);
-               ((ServerPlayer)var9).awardStat(Stats.ITEM_USED.get(var4.getItem()));
+               CriteriaTriggers.SHOT_CROSSBOW.trigger(var9, var4);
+               var9.awardStat(Stats.ITEM_USED.get(var4.getItem()));
             }
          }
       }
@@ -227,7 +225,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    private SoundEvent getStartSound(int var1) {
-      switch(var1) {
+      switch (var1) {
          case 1:
             return SoundEvents.CROSSBOW_QUICK_CHARGE_1;
          case 2:
@@ -249,7 +247,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       ChargedProjectiles var5 = var1.get(DataComponents.CHARGED_PROJECTILES);
       if (var5 != null && !var5.isEmpty()) {
          ItemStack var6 = var5.getItems().get(0);
@@ -258,7 +256,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
             ArrayList var7 = Lists.newArrayList();
             Items.FIREWORK_ROCKET.appendHoverText(var6, var2, var7, var4);
             if (!var7.isEmpty()) {
-               for(int var8 = 0; var8 < var7.size(); ++var8) {
+               for (int var8 = 0; var8 < var7.size(); var8++) {
                   var7.set(var8, Component.literal("  ").append((Component)var7.get(var8)).withStyle(ChatFormatting.GRAY));
                }
 

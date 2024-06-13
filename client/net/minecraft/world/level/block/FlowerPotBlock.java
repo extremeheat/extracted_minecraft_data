@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,7 +13,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -56,8 +54,8 @@ public class FlowerPotBlock extends Block {
 
    @Override
    protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      Item var10 = var1.getItem();
-      BlockState var8 = (var10 instanceof BlockItem var9 ? POTTED_BY_CONTENT.getOrDefault(var9.getBlock(), Blocks.AIR) : Blocks.AIR).defaultBlockState();
+      BlockState var8 = (var1.getItem() instanceof BlockItem var9 ? POTTED_BY_CONTENT.getOrDefault(var9.getBlock(), Blocks.AIR) : Blocks.AIR)
+         .defaultBlockState();
       if (var8.isAir()) {
          return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
       } else if (!this.isEmpty()) {

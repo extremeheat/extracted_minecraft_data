@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.DoubleStream;
 import net.minecraft.Util;
 import net.minecraft.util.profiling.jfr.Percentiles;
@@ -90,7 +89,7 @@ public class JfrResultJsonSerializer {
       var2.addProperty("durationNanosTotal", var1.stream().mapToDouble(var0 -> (double)((TimedStatSummary)var0.getSecond()).totalDuration().toNanos()).sum());
       JsonArray var3 = Util.make(new JsonArray(), var1x -> var2.add("status", var1x));
 
-      for(Pair var5 : var1) {
+      for (Pair var5 : var1) {
          TimedStatSummary var6 = (TimedStatSummary)var5.getSecond();
          JsonObject var7 = Util.make(new JsonObject(), var3::add);
          var7.addProperty("state", ((ChunkStatus)var5.getFirst()).toString());
@@ -100,14 +99,14 @@ public class JfrResultJsonSerializer {
          JsonObject var8 = Util.make(new JsonObject(), var1x -> var7.add("durationNanosPercentiles", var1x));
          var6.percentilesNanos().forEach((var1x, var2x) -> var8.addProperty("p" + var1x, var2x));
          Function var9 = var0 -> {
-            JsonObject var1xx = new JsonObject();
-            var1xx.addProperty("durationNanos", var0.duration().toNanos());
-            var1xx.addProperty("level", var0.level());
-            var1xx.addProperty("chunkPosX", var0.chunkPos().x);
-            var1xx.addProperty("chunkPosZ", var0.chunkPos().z);
-            var1xx.addProperty("worldPosX", var0.worldPos().x());
-            var1xx.addProperty("worldPosZ", var0.worldPos().z());
-            return var1xx;
+            JsonObject var1x = new JsonObject();
+            var1x.addProperty("durationNanos", var0.duration().toNanos());
+            var1x.addProperty("level", var0.level());
+            var1x.addProperty("chunkPosX", var0.chunkPos().x);
+            var1x.addProperty("chunkPosZ", var0.chunkPos().z);
+            var1x.addProperty("worldPosX", var0.worldPos().x());
+            var1x.addProperty("worldPosZ", var0.worldPos().z());
+            return var1x;
          };
          var7.add("fastest", (JsonElement)var9.apply((ChunkGenStat)var6.fastest()));
          var7.add("slowest", (JsonElement)var9.apply((ChunkGenStat)var6.slowest()));
@@ -162,10 +161,10 @@ public class JfrResultJsonSerializer {
       JsonArray var3 = new JsonArray();
       var2.add("topContributors", var3);
       var1.topTenContributorsByTotalBytes().forEach(var1x -> {
-         JsonObject var2xx = new JsonObject();
-         var3.add(var2xx);
-         var2xx.addProperty("path", (String)var1x.getFirst());
-         var2xx.addProperty("totalBytes", (Number)var1x.getSecond());
+         JsonObject var2x = new JsonObject();
+         var3.add(var2x);
+         var2x.addProperty("path", (String)var1x.getFirst());
+         var2x.addProperty("totalBytes", (Number)var1x.getSecond());
       });
       return var2;
    }
@@ -186,14 +185,14 @@ public class JfrResultJsonSerializer {
       JsonArray var4 = new JsonArray();
       var3.add("topContributors", var4);
       var1.largestSizeContributors().forEach(var2x -> {
-         JsonObject var3xx = new JsonObject();
-         var4.add(var3xx);
-         Object var4xx = var2x.getFirst();
+         JsonObject var3x = new JsonObject();
+         var4.add(var3x);
+         Object var4x = var2x.getFirst();
          IoSummary.CountAndSize var5 = (IoSummary.CountAndSize)var2x.getSecond();
-         var2.accept(var4xx, var3xx);
-         var3xx.addProperty("totalBytes", var5.totalSize());
-         var3xx.addProperty("count", var5.totalCount());
-         var3xx.addProperty("averageSize", var5.averageSize());
+         var2.accept(var4x, var3x);
+         var3x.addProperty("totalBytes", var5.totalSize());
+         var3x.addProperty("count", var5.totalCount());
+         var3x.addProperty("averageSize", var5.averageSize());
       });
       return var3;
    }
@@ -201,12 +200,12 @@ public class JfrResultJsonSerializer {
    private JsonElement cpu(List<CpuLoadStat> var1) {
       JsonObject var2 = new JsonObject();
       BiFunction var3 = (var0, var1x) -> {
-         JsonObject var2xx = new JsonObject();
-         DoubleSummaryStatistics var3xx = var0.stream().mapToDouble(var1x).summaryStatistics();
-         var2xx.addProperty("min", var3xx.getMin());
-         var2xx.addProperty("average", var3xx.getAverage());
-         var2xx.addProperty("max", var3xx.getMax());
-         return var2xx;
+         JsonObject var2x = new JsonObject();
+         DoubleSummaryStatistics var3x = var0.stream().mapToDouble(var1x).summaryStatistics();
+         var2x.addProperty("min", var3x.getMin());
+         var2x.addProperty("average", var3x.getAverage());
+         var2x.addProperty("max", var3x.getMax());
+         return var2x;
       };
       var2.add("jvm", (JsonElement)var3.apply(var1, CpuLoadStat::jvm));
       var2.add("userJvm", (JsonElement)var3.apply(var1, CpuLoadStat::userJvm));

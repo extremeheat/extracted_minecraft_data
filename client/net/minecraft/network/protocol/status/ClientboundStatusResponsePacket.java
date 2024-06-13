@@ -5,8 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundStatusResponsePacket(ServerStatus b) implements Packet<ClientStatusPacketListener> {
-   private final ServerStatus status;
+public record ClientboundStatusResponsePacket(ServerStatus status) implements Packet<ClientStatusPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundStatusResponsePacket> STREAM_CODEC = Packet.codec(
       ClientboundStatusResponsePacket::write, ClientboundStatusResponsePacket::new
    );
@@ -15,9 +14,9 @@ public record ClientboundStatusResponsePacket(ServerStatus b) implements Packet<
       this(var1.readJsonWithCodec(ServerStatus.CODEC));
    }
 
-   public ClientboundStatusResponsePacket(ServerStatus var1) {
+   public ClientboundStatusResponsePacket(ServerStatus status) {
       super();
-      this.status = var1;
+      this.status = status;
    }
 
    private void write(FriendlyByteBuf var1) {

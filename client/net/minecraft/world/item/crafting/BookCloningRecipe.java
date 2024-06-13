@@ -19,7 +19,7 @@ public class BookCloningRecipe extends CustomRecipe {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(Items.WRITTEN_BOOK)) {
@@ -33,7 +33,7 @@ public class BookCloningRecipe extends CustomRecipe {
                   return false;
                }
 
-               ++var3;
+               var3++;
             }
          }
       }
@@ -45,7 +45,7 @@ public class BookCloningRecipe extends CustomRecipe {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(Items.WRITTEN_BOOK)) {
@@ -59,7 +59,7 @@ public class BookCloningRecipe extends CustomRecipe {
                   return ItemStack.EMPTY;
                }
 
-               ++var3;
+               var3++;
             }
          }
       }
@@ -82,7 +82,7 @@ public class BookCloningRecipe extends CustomRecipe {
    public NonNullList<ItemStack> getRemainingItems(CraftingContainer var1) {
       NonNullList var2 = NonNullList.withSize(var1.getContainerSize(), ItemStack.EMPTY);
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
+      for (int var3 = 0; var3 < var2.size(); var3++) {
          ItemStack var4 = var1.getItem(var3);
          if (var4.getItem().hasCraftingRemainingItem()) {
             var2.set(var3, new ItemStack(var4.getItem().getCraftingRemainingItem()));

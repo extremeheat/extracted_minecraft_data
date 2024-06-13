@@ -33,10 +33,10 @@ public interface ServerRedirectHandler {
       return var1x -> {
          if (var1x.getPort() == 25565) {
             try {
-               Attributes var2xx = var0.getAttributes("_minecraft._tcp." + var1x.getHost(), new String[]{"SRV"});
-               Attribute var3xx = var2xx.get("srv");
-               if (var3xx != null) {
-                  String[] var4 = var3xx.get().toString().split(" ", 4);
+               Attributes var2x = var0.getAttributes("_minecraft._tcp." + var1x.getHost(), new String[]{"SRV"});
+               Attribute var3x = var2x.get("srv");
+               if (var3x != null) {
+                  String[] var4 = var3x.get().toString().split(" ", 4);
                   return Optional.of(new ServerAddress(var4[3], ServerAddress.parsePort(var4[2])));
                }
             } catch (Throwable var5) {

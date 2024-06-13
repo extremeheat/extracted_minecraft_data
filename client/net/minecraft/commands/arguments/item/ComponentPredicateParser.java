@@ -13,8 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.parsing.packrat.Atom;
 import net.minecraft.util.parsing.packrat.Dictionary;
-import net.minecraft.util.parsing.packrat.ParseState;
-import net.minecraft.util.parsing.packrat.Scope;
 import net.minecraft.util.parsing.packrat.Term;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 import net.minecraft.util.parsing.packrat.commands.ResourceLocationParseRule;
@@ -50,14 +48,14 @@ public class ComponentPredicateParser {
             Term.named(var2)
          ),
          var2x -> {
-            Builder var3xx = ImmutableList.builder();
-            var2x.<Optional>getOrThrow(var2).ifPresent(var3xx::add);
-            List var4xx = var2x.get(var6);
-            if (var4xx != null) {
-               var3xx.addAll(var4xx);
+            Builder var3x = ImmutableList.builder();
+            var2x.<Optional>getOrThrow(var2).ifPresent(var3x::add);
+            List var4x = var2x.get(var6);
+            if (var4x != null) {
+               var3x.addAll(var4x);
             }
-   
-            return var3xx.build();
+
+            return var3x.build();
          }
       );
       var15.put(
@@ -66,15 +64,15 @@ public class ComponentPredicateParser {
          var2x -> Optional.ofNullable(var2x.getAny(var4, var5))
       );
       var15.put(var3, StringReaderTerms.character('*'), var0x -> Unit.INSTANCE);
-      var15.put(var4, new ComponentPredicateParser.ElementLookupRule(var13, var0));
-      var15.put(var5, new ComponentPredicateParser.TagLookupRule(var13, var0));
+      var15.put(var4, new ComponentPredicateParser.ElementLookupRule<>(var13, var0));
+      var15.put(var5, new ComponentPredicateParser.TagLookupRule<>(var13, var0));
       var15.put(var6, Term.sequence(Term.named(var7), Term.optional(Term.sequence(StringReaderTerms.character(','), Term.named(var6)))), var3x -> {
-         Object var4xx = var0.anyOf(var3x.getOrThrow(var7));
-         return Optional.ofNullable((List)var3x.get(var6)).map(var1xx -> Util.copyAndAdd(var4x, (List<Object>)var1xx)).orElse(List.of(var4xx));
+         Object var4x = var0.anyOf(var3x.getOrThrow(var7));
+         return Optional.ofNullable((List)var3x.get(var6)).map(var1xx -> Util.copyAndAdd(var4x, (List<Object>)var1xx)).orElse(List.of(var4x));
       });
       var15.put(var7, Term.sequence(Term.named(var8), Term.optional(Term.sequence(StringReaderTerms.character('|'), Term.named(var7)))), var2x -> {
-         Object var3xx = var2x.getOrThrow(var8);
-         return Optional.ofNullable((List)var2x.get(var7)).map(var1xx -> Util.copyAndAdd(var3x, (List<Object>)var1xx)).orElse(List.of(var3xx));
+         Object var3x = var2x.getOrThrow(var8);
+         return Optional.ofNullable((List)var2x.get(var7)).map(var1xx -> Util.copyAndAdd(var3x, (List<Object>)var1xx)).orElse(List.of(var3x));
       });
       var15.put(
          var8,
@@ -90,29 +88,29 @@ public class ComponentPredicateParser {
             Term.named(var11)
          ),
          (var4x, var5x) -> {
-            Object var6xx = var5x.get(var12);
-   
+            Object var6x = var5x.get(var12);
+
             try {
-               if (var6xx != null) {
-                  Tag var10xx = var5x.getOrThrow(var14);
-                  return Optional.of(var0.createPredicateTest((ImmutableStringReader)var4x.input(), (Tag)var6xx, var10xx));
+               if (var6x != null) {
+                  Tag var10x = var5x.getOrThrow(var14);
+                  return Optional.of(var0.createPredicateTest((ImmutableStringReader)var4x.input(), var6x, var10x));
                } else {
-                  Object var7xx = var5x.getOrThrow(var11);
-                  Tag var8xx = var5x.get(var14);
+                  Object var7x = var5x.getOrThrow(var11);
+                  Tag var8x = var5x.get(var14);
                   return Optional.of(
-                     var8xx != null
-                        ? var0.createComponentTest((ImmutableStringReader)var4x.input(), (Tag)var7xx, var8xx)
-                        : var0.createComponentTest((ImmutableStringReader)var4x.input(), (C)var7xx)
+                     var8x != null
+                        ? var0.createComponentTest((ImmutableStringReader)var4x.input(), var7x, var8x)
+                        : var0.createComponentTest((ImmutableStringReader)var4x.input(), var7x)
                   );
                }
-            } catch (CommandSyntaxException var9xx) {
-               var4x.errorCollector().store(var4x.mark(), var9xx);
+            } catch (CommandSyntaxException var9x) {
+               var4x.errorCollector().store(var4x.mark(), var9x);
                return Optional.empty();
             }
          }
       );
-      var15.put(var11, new ComponentPredicateParser.ComponentLookupRule(var13, var0));
-      var15.put(var12, new ComponentPredicateParser.PredicateLookupRule(var13, var0));
+      var15.put(var11, new ComponentPredicateParser.ComponentLookupRule<>(var13, var0));
+      var15.put(var12, new ComponentPredicateParser.PredicateLookupRule<>(var13, var0));
       var15.put(var14, TagParseRule.INSTANCE);
       var15.put(var13, ResourceLocationParseRule.INSTANCE);
       return new Grammar<>(var15, var1);

@@ -8,9 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundDisguisedChatPacket(Component b, ChatType.Bound c) implements Packet<ClientGamePacketListener> {
-   private final Component message;
-   private final ChatType.Bound chatType;
+public record ClientboundDisguisedChatPacket(Component message, ChatType.Bound chatType) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDisguisedChatPacket> STREAM_CODEC = StreamCodec.composite(
       ComponentSerialization.TRUSTED_STREAM_CODEC,
       ClientboundDisguisedChatPacket::message,
@@ -19,10 +17,10 @@ public record ClientboundDisguisedChatPacket(Component b, ChatType.Bound c) impl
       ClientboundDisguisedChatPacket::new
    );
 
-   public ClientboundDisguisedChatPacket(Component var1, ChatType.Bound var2) {
+   public ClientboundDisguisedChatPacket(Component message, ChatType.Bound chatType) {
       super();
-      this.message = var1;
-      this.chatType = var2;
+      this.message = message;
+      this.chatType = chatType;
    }
 
    @Override

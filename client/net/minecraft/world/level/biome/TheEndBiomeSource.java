@@ -1,8 +1,7 @@
 package net.minecraft.world.level.biome;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -12,7 +11,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
 public class TheEndBiomeSource extends BiomeSource {
-   public static final Codec<TheEndBiomeSource> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<TheEndBiomeSource> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                RegistryOps.retrieveElement(Biomes.THE_END),
                RegistryOps.retrieveElement(Biomes.END_HIGHLANDS),
@@ -53,7 +52,7 @@ public class TheEndBiomeSource extends BiomeSource {
    }
 
    @Override
-   protected Codec<? extends BiomeSource> codec() {
+   protected MapCodec<? extends BiomeSource> codec() {
       return CODEC;
    }
 

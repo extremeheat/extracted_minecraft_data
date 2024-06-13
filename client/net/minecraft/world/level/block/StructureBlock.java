@@ -73,9 +73,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var2 instanceof ServerLevel) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof StructureBlockEntity) {
-            StructureBlockEntity var8 = (StructureBlockEntity)var7;
+         if (var2.getBlockEntity(var3) instanceof StructureBlockEntity var8) {
             boolean var9 = var2.hasNeighborSignal(var3);
             boolean var10 = var8.isPowered();
             if (var9 && !var10) {
@@ -89,7 +87,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    private void trigger(ServerLevel var1, StructureBlockEntity var2) {
-      switch(var2.getMode()) {
+      switch (var2.getMode()) {
          case SAVE:
             var2.saveStructure(false);
             break;

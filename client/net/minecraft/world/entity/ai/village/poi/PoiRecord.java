@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.village.poi;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -50,17 +49,17 @@ public class PoiRecord {
       if (this.freeTickets <= 0) {
          return false;
       } else {
-         --this.freeTickets;
+         this.freeTickets--;
          this.setDirty.run();
          return true;
       }
    }
 
    protected boolean releaseTicket() {
-      if (this.freeTickets >= ((PoiType)this.poiType.value()).maxTickets()) {
+      if (this.freeTickets >= this.poiType.value().maxTickets()) {
          return false;
       } else {
-         ++this.freeTickets;
+         this.freeTickets++;
          this.setDirty.run();
          return true;
       }
@@ -71,7 +70,7 @@ public class PoiRecord {
    }
 
    public boolean isOccupied() {
-      return this.freeTickets != ((PoiType)this.poiType.value()).maxTickets();
+      return this.freeTickets != this.poiType.value().maxTickets();
    }
 
    public BlockPos getPos() {

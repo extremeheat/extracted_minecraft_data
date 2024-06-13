@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -71,7 +70,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       super(var1, var2);
       BuiltInRegistries.VILLAGER_PROFESSION
          .getRandom(this.random)
-         .ifPresent(var1x -> this.setVillagerData(this.getVillagerData().setProfession((VillagerProfession)var1x.value())));
+         .ifPresent(var1x -> this.setVillagerData(this.getVillagerData().setProfession(var1x.value())));
    }
 
    @Override
@@ -90,11 +89,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          .ifPresent(var1x -> var1.put("VillagerData", var1x));
       if (this.tradeOffers != null) {
          var1.put(
-            "Offers",
-            Util.getOrThrow(
-               MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers),
-               IllegalStateException::new
-            )
+            "Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers).getOrThrow()
          );
       }
 
@@ -217,7 +212,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private void finishConversion(ServerLevel var1) {
       Villager var2 = this.convertTo(EntityType.VILLAGER, false);
 
-      for(EquipmentSlot var6 : EquipmentSlot.values()) {
+      for (EquipmentSlot var6 : EquipmentSlot.values()) {
          ItemStack var7 = this.getItemBySlot(var6);
          if (!var7.isEmpty()) {
             if (EnchantmentHelper.hasBindingCurse(var7)) {
@@ -263,16 +258,16 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          int var2 = 0;
          BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
 
-         for(int var4 = (int)this.getX() - 4; var4 < (int)this.getX() + 4 && var2 < 14; ++var4) {
-            for(int var5 = (int)this.getY() - 4; var5 < (int)this.getY() + 4 && var2 < 14; ++var5) {
-               for(int var6 = (int)this.getZ() - 4; var6 < (int)this.getZ() + 4 && var2 < 14; ++var6) {
+         for (int var4 = (int)this.getX() - 4; var4 < (int)this.getX() + 4 && var2 < 14; var4++) {
+            for (int var5 = (int)this.getY() - 4; var5 < (int)this.getY() + 4 && var2 < 14; var5++) {
+               for (int var6 = (int)this.getZ() - 4; var6 < (int)this.getZ() + 4 && var2 < 14; var6++) {
                   BlockState var7 = this.level().getBlockState(var3.set(var4, var5, var6));
                   if (var7.is(Blocks.IRON_BARS) || var7.getBlock() instanceof BedBlock) {
                      if (this.random.nextFloat() < 0.3F) {
-                        ++var1;
+                        var1++;
                      }
 
-                     ++var2;
+                     var2++;
                   }
                }
             }

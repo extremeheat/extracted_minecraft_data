@@ -9,7 +9,6 @@ import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.Library;
 import com.mojang.blaze3d.audio.Listener;
 import com.mojang.blaze3d.audio.ListenerTransform;
-import com.mojang.blaze3d.audio.SoundBuffer;
 import com.mojang.logging.LogUtils;
 import java.util.Iterator;
 import java.util.List;
@@ -18,7 +17,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -82,7 +80,7 @@ public class SoundEngine {
    public void reload() {
       ONLY_WARN_ONCE.clear();
 
-      for(SoundEvent var2 : BuiltInRegistries.SOUND_EVENT) {
+      for (SoundEvent var2 : BuiltInRegistries.SOUND_EVENT) {
          if (var2 != SoundEvents.EMPTY) {
             ResourceLocation var3 = var2.getLocation();
             if (this.soundManager.getSoundEvent(var3) == null) {
@@ -225,11 +223,11 @@ public class SoundEngine {
    }
 
    private void tickNonPaused() {
-      ++this.tickCount;
+      this.tickCount++;
       this.queuedTickableSounds.stream().filter(SoundInstance::canPlaySound).forEach(this::play);
       this.queuedTickableSounds.clear();
 
-      for(TickableSoundInstance var2 : this.tickingSounds) {
+      for (TickableSoundInstance var2 : this.tickingSounds) {
          if (!var2.canPlaySound()) {
             this.stop(var2);
          }
@@ -254,7 +252,7 @@ public class SoundEngine {
 
       Iterator var9 = this.instanceToChannel.entrySet().iterator();
 
-      while(var9.hasNext()) {
+      while (var9.hasNext()) {
          Entry var10 = (Entry)var9.next();
          ChannelAccess.ChannelHandle var12 = (ChannelAccess.ChannelHandle)var10.getValue();
          SoundInstance var14 = (SoundInstance)var10.getKey();
@@ -287,9 +285,9 @@ public class SoundEngine {
 
       Iterator var11 = this.queuedSounds.entrySet().iterator();
 
-      while(var11.hasNext()) {
+      while (var11.hasNext()) {
          Entry var13 = (Entry)var11.next();
-         if (this.tickCount >= var13.getValue()) {
+         if (this.tickCount >= (Integer)var13.getValue()) {
             SoundInstance var15 = (SoundInstance)var13.getKey();
             if (var15 instanceof TickableSoundInstance) {
                ((TickableSoundInstance)var15).tick();
@@ -352,7 +350,7 @@ public class SoundEngine {
                         if (!this.listeners.isEmpty()) {
                            float var13 = !var11 && var10 != SoundInstance.Attenuation.NONE ? var6 : 1.0F / 0.0F;
 
-                           for(SoundEventListener var15 : this.listeners) {
+                           for (SoundEventListener var15 : this.listeners) {
                               var15.onPlaySound(var1, var2, var13);
                            }
                         }
@@ -456,7 +454,7 @@ public class SoundEngine {
 
    public void stop(@Nullable ResourceLocation var1, @Nullable SoundSource var2) {
       if (var2 != null) {
-         for(SoundInstance var4 : this.instanceBySource.get(var2)) {
+         for (SoundInstance var4 : this.instanceBySource.get(var2)) {
             if (var1 == null || var4.getLocation().equals(var1)) {
                this.stop(var4);
             }
@@ -464,7 +462,7 @@ public class SoundEngine {
       } else if (var1 == null) {
          this.stopAll();
       } else {
-         for(SoundInstance var6 : this.instanceToChannel.keySet()) {
+         for (SoundInstance var6 : this.instanceToChannel.keySet()) {
             if (var6.getLocation().equals(var1)) {
                this.stop(var6);
             }

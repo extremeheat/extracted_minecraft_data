@@ -34,7 +34,7 @@ public class RconThread extends GenericThread {
    @Override
    public void run() {
       try {
-         while(this.running) {
+         while (this.running) {
             try {
                Socket var1 = this.socket.accept();
                RconClient var2 = new RconClient(this.serverInterface, this.rconPassword, var1);
@@ -96,7 +96,7 @@ public class RconThread extends GenericThread {
       this.closeSocket(this.socket);
       super.stop();
 
-      for(RconClient var2 : this.clients) {
+      for (RconClient var2 : this.clients) {
          if (var2.isRunning()) {
             var2.stop();
          }

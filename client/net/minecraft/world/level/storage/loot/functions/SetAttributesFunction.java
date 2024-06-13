@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -31,16 +31,23 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetAttributesFunction extends LootItemConditionalFunction {
-   public static final Codec<SetAttributesFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SetAttributesFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
-            .and(ExtraCodecs.nonEmptyList(SetAttributesFunction.Modifier.CODEC.listOf()).fieldOf("modifiers").forGetter(var0x -> var0x.modifiers))
+            .and(
+               var0.group(
+                  ExtraCodecs.nonEmptyList(SetAttributesFunction.Modifier.CODEC.listOf()).fieldOf("modifiers").forGetter(var0x -> var0x.modifiers),
+                  Codec.BOOL.optionalFieldOf("replace", true).forGetter(var0x -> var0x.replace)
+               )
+            )
             .apply(var0, SetAttributesFunction::new)
    );
    private final List<SetAttributesFunction.Modifier> modifiers;
+   private final boolean replace;
 
-   SetAttributesFunction(List<LootItemCondition> var1, List<SetAttributesFunction.Modifier> var2) {
+   SetAttributesFunction(List<LootItemCondition> var1, List<SetAttributesFunction.Modifier> var2, boolean var3) {
       super(var1);
       this.modifiers = List.copyOf(var2);
+      this.replace = var3;
    }
 
    @Override
@@ -55,18 +62,29 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
    @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
-      var1.update(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY, var2x -> {
-         RandomSource var3 = var2.getRandom();
+      if (this.replace) {
+         var1.set(DataComponents.ATTRIBUTE_MODIFIERS, this.updateModifiers(var2, ItemAttributeModifiers.EMPTY));
+      } else {
+         var1.update(
+            DataComponents.ATTRIBUTE_MODIFIERS,
+            ItemAttributeModifiers.EMPTY,
+            var3 -> var3.modifiers().isEmpty() ? this.updateModifiers(var2, var1.getItem().getDefaultAttributeModifiers()) : this.updateModifiers(var2, var3)
+         );
+      }
 
-         for(SetAttributesFunction.Modifier var5 : this.modifiers) {
-            UUID var6 = var5.id.orElseGet(UUID::randomUUID);
-            EquipmentSlotGroup var7 = Util.getRandom(var5.slots, var3);
-            var2x = var2x.withModifierAdded(var5.attribute, new AttributeModifier(var6, var5.name, (double)var5.amount.getFloat(var2), var5.operation), var7);
-         }
-
-         return var2x;
-      });
       return var1;
+   }
+
+   private ItemAttributeModifiers updateModifiers(LootContext var1, ItemAttributeModifiers var2) {
+      RandomSource var3 = var1.getRandom();
+
+      for (SetAttributesFunction.Modifier var5 : this.modifiers) {
+         UUID var6 = var5.id.orElseGet(UUID::randomUUID);
+         EquipmentSlotGroup var7 = Util.getRandom(var5.slots, var3);
+         var2 = var2.withModifierAdded(var5.attribute, new AttributeModifier(var6, var5.name, (double)var5.amount.getFloat(var1), var5.operation), var7);
+      }
+
+      return var2;
    }
 
    public static SetAttributesFunction.ModifierBuilder modifier(String var0, Holder<Attribute> var1, AttributeModifier.Operation var2, NumberProvider var3) {
@@ -78,10 +96,16 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<SetAttributesFunction.Builder> {
+      private final boolean replace;
       private final List<SetAttributesFunction.Modifier> modifiers = Lists.newArrayList();
 
-      public Builder() {
+      public Builder(boolean var1) {
          super();
+         this.replace = var1;
+      }
+
+      public Builder() {
+         this(false);
       }
 
       protected SetAttributesFunction.Builder getThis() {
@@ -95,22 +119,18 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
       @Override
       public LootItemFunction build() {
-         return new SetAttributesFunction(this.getConditions(), this.modifiers);
+         return new SetAttributesFunction(this.getConditions(), this.modifiers, this.replace);
       }
    }
 
-   static record Modifier(String b, Holder<Attribute> c, AttributeModifier.Operation d, NumberProvider e, List<EquipmentSlotGroup> f, Optional<UUID> g) {
-      final String name;
-      final Holder<Attribute> attribute;
-      final AttributeModifier.Operation operation;
-      final NumberProvider amount;
-      final List<EquipmentSlotGroup> slots;
-      final Optional<UUID> id;
+   static record Modifier(
+      String name, Holder<Attribute> attribute, AttributeModifier.Operation operation, NumberProvider amount, List<EquipmentSlotGroup> slots, Optional<UUID> id
+   ) {
       private static final Codec<List<EquipmentSlotGroup>> SLOTS_CODEC = ExtraCodecs.nonEmptyList(
          Codec.either(EquipmentSlotGroup.CODEC, EquipmentSlotGroup.CODEC.listOf())
             .xmap(
                var0 -> (List)var0.map(List::of, Function.identity()),
-               var0 -> var0.size() == 1 ? Either.left((EquipmentSlotGroup)var0.get(0)) : Either.right(var0)
+               var0 -> var0.size() == 1 ? Either.left((EquipmentSlotGroup)var0.getFirst()) : Either.right(var0)
             )
       );
       public static final Codec<SetAttributesFunction.Modifier> CODEC = RecordCodecBuilder.create(
@@ -120,19 +140,26 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
                   AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(SetAttributesFunction.Modifier::operation),
                   NumberProviders.CODEC.fieldOf("amount").forGetter(SetAttributesFunction.Modifier::amount),
                   SLOTS_CODEC.fieldOf("slot").forGetter(SetAttributesFunction.Modifier::slots),
-                  ExtraCodecs.strictOptionalField(UUIDUtil.STRING_CODEC, "id").forGetter(SetAttributesFunction.Modifier::id)
+                  UUIDUtil.STRING_CODEC.optionalFieldOf("id").forGetter(SetAttributesFunction.Modifier::id)
                )
                .apply(var0, SetAttributesFunction.Modifier::new)
       );
 
-      Modifier(String var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4, List<EquipmentSlotGroup> var5, Optional<UUID> var6) {
+      Modifier(
+         String name,
+         Holder<Attribute> attribute,
+         AttributeModifier.Operation operation,
+         NumberProvider amount,
+         List<EquipmentSlotGroup> slots,
+         Optional<UUID> id
+      ) {
          super();
-         this.name = var1;
-         this.attribute = var2;
-         this.operation = var3;
-         this.amount = var4;
-         this.slots = var5;
-         this.id = var6;
+         this.name = name;
+         this.attribute = attribute;
+         this.operation = operation;
+         this.amount = amount;
+         this.slots = slots;
+         this.id = id;
       }
    }
 

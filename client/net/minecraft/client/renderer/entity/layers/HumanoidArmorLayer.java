@@ -22,10 +22,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
-import net.minecraft.world.item.armortrim.TrimPattern;
 import net.minecraft.world.item.component.DyedItemColor;
 
 public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>, A extends HumanoidModel<T>> extends RenderLayer<T, M> {
@@ -36,8 +34,8 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
 
    public HumanoidArmorLayer(RenderLayerParent<T, M> var1, A var2, A var3, ModelManager var4) {
       super(var1);
-      this.innerModel = var2;
-      this.outerModel = var3;
+      this.innerModel = (A)var2;
+      this.outerModel = (A)var3;
       this.armorTrimAtlas = var4.getAtlas(Sheets.ARMOR_TRIMS_SHEET);
    }
 
@@ -50,17 +48,15 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
 
    private void renderArmorPiece(PoseStack var1, MultiBufferSource var2, T var3, EquipmentSlot var4, int var5, A var6) {
       ItemStack var7 = var3.getItemBySlot(var4);
-      Item var9 = var7.getItem();
-      if (var9 instanceof ArmorItem) {
-         ArmorItem var8 = (ArmorItem)var9;
+      if (var7.getItem() instanceof ArmorItem var8) {
          if (var8.getEquipmentSlot() == var4) {
             this.getParentModel().copyPropertiesTo(var6);
             this.setPartVisibility((A)var6, var4);
             boolean var17 = this.usesInnerModel(var4);
-            ArmorMaterial var10 = (ArmorMaterial)var8.getMaterial().value();
+            ArmorMaterial var10 = var8.getMaterial().value();
             int var11 = var7.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var7, -6265536) : -1;
 
-            for(ArmorMaterial.Layer var13 : var10.layers()) {
+            for (ArmorMaterial.Layer var13 : var10.layers()) {
                float var14;
                float var15;
                float var16;
@@ -91,7 +87,7 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
 
    protected void setPartVisibility(A var1, EquipmentSlot var2) {
       var1.setAllVisible(false);
-      switch(var2) {
+      switch (var2) {
          case HEAD:
             var1.head.visible = true;
             var1.hat.visible = true;
@@ -119,7 +115,7 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
 
    private void renderTrim(Holder<ArmorMaterial> var1, PoseStack var2, MultiBufferSource var3, int var4, ArmorTrim var5, A var6, boolean var7) {
       TextureAtlasSprite var8 = this.armorTrimAtlas.getSprite(var7 ? var5.innerTexture(var1) : var5.outerTexture(var1));
-      VertexConsumer var9 = var8.wrap(var3.getBuffer(Sheets.armorTrimsSheet(((TrimPattern)var5.pattern().value()).decal())));
+      VertexConsumer var9 = var8.wrap(var3.getBuffer(Sheets.armorTrimsSheet(var5.pattern().value().decal())));
       var6.renderToBuffer(var2, var9, var4, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
    }
 
@@ -128,7 +124,7 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
    }
 
    private A getArmorModel(EquipmentSlot var1) {
-      return (A)(this.usesInnerModel(var1) ? this.innerModel : this.outerModel);
+      return this.usesInnerModel(var1) ? this.innerModel : this.outerModel;
    }
 
    private boolean usesInnerModel(EquipmentSlot var1) {

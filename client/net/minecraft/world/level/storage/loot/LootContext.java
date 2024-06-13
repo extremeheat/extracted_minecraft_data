@@ -152,14 +152,11 @@ public class LootContext {
       }
    }
 
-   public static record VisitedEntry<T>(LootDataType<T> a, T b) {
-      private final LootDataType<T> type;
-      private final T value;
-
-      public VisitedEntry(LootDataType<T> var1, T var2) {
+   public static record VisitedEntry<T>(LootDataType<T> type, T value) {
+      public VisitedEntry(LootDataType<T> type, T value) {
          super();
-         this.type = var1;
-         this.value = (T)var2;
+         this.type = type;
+         this.value = (T)value;
       }
    }
 }

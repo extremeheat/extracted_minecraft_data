@@ -115,8 +115,8 @@ public abstract class HangingEntity extends Entity {
          Direction var4 = this.direction.getCounterClockWise();
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-         for(int var6 = 0; var6 < var1; ++var6) {
-            for(int var7 = 0; var7 < var2; ++var7) {
+         for (int var6 = 0; var6 < var1; var6++) {
+            for (int var7 = 0; var7 < var2; var7++) {
                int var8 = (var1 - 1) / -2;
                int var9 = (var2 - 1) / -2;
                var5.set(var3).move(var4, var6 + var8).move(Direction.UP, var7 + var9);
@@ -139,7 +139,7 @@ public abstract class HangingEntity extends Entity {
    @Override
    public boolean skipAttackInteraction(Entity var1) {
       if (var1 instanceof Player var2) {
-         return !this.level().mayInteract((Player)var2, this.pos) ? true : this.hurt(this.damageSources().playerAttack((Player)var2), 0.0F);
+         return !this.level().mayInteract(var2, this.pos) ? true : this.hurt(this.damageSources().playerAttack(var2), 0.0F);
       } else {
          return false;
       }
@@ -240,7 +240,7 @@ public abstract class HangingEntity extends Entity {
    @Override
    public float rotate(Rotation var1) {
       if (this.direction.getAxis() != Direction.Axis.Y) {
-         switch(var1) {
+         switch (var1) {
             case CLOCKWISE_180:
                this.direction = this.direction.getOpposite();
                break;
@@ -253,7 +253,7 @@ public abstract class HangingEntity extends Entity {
       }
 
       float var2 = Mth.wrapDegrees(this.getYRot());
-      switch(var1) {
+      switch (var1) {
          case CLOCKWISE_180:
             return var2 + 180.0F;
          case COUNTERCLOCKWISE_90:

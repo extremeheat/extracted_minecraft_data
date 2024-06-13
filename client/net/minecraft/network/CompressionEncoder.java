@@ -28,7 +28,7 @@ public class CompressionEncoder extends MessageToByteEncoder<ByteBuf> {
          this.deflater.setInput(var5, 0, var4);
          this.deflater.finish();
 
-         while(!this.deflater.finished()) {
+         while (!this.deflater.finished()) {
             int var6 = this.deflater.deflate(this.encodeBuf);
             var3.writeBytes(this.encodeBuf, 0, var6);
          }

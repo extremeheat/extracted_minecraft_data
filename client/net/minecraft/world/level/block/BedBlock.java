@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -199,7 +198,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       Direction var5 = getConnectedDirection(var1).getOpposite();
-      switch(var5) {
+      switch (var5) {
          case NORTH:
             return NORTH_SHAPE;
          case SOUTH:
@@ -268,7 +267,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    private static Optional<Vec3> findStandUpPositionAtOffset(EntityType<?> var0, CollisionGetter var1, BlockPos var2, int[][] var3, boolean var4) {
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-      for(int[] var9 : var3) {
+      for (int[] var9 : var3) {
          var5.set(var2.getX() + var9[0], var2.getY(), var2.getZ() + var9[1]);
          Vec3 var10 = DismountHelper.findSafeDismountLocation(var0, var1, var5, var4);
          if (var10 != null) {

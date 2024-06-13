@@ -3,8 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.HashSet;
 import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
@@ -47,14 +45,11 @@ public class DebugConfigCommand {
       );
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static Iterable<String> getUuidsInConfig(MinecraftServer var0) {
       HashSet var1 = new HashSet();
 
-      for(Connection var3 : var0.getConnection().getConnections()) {
-         PacketListener var5 = var3.getPacketListener();
-         if (var5 instanceof ServerConfigurationPacketListenerImpl var4) {
+      for (Connection var3 : var0.getConnection().getConnections()) {
+         if (var3.getPacketListener() instanceof ServerConfigurationPacketListenerImpl var4) {
             var1.add(var4.getOwner().getId().toString());
          }
       }
@@ -69,13 +64,14 @@ public class DebugConfigCommand {
       return 1;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static int unconfig(CommandSourceStack var0, UUID var1) {
-      for(Connection var3 : var0.getServer().getConnection().getConnections()) {
+      for (Connection var3 : var0.getServer().getConnection().getConnections()) {
          PacketListener var5 = var3.getPacketListener();
-         if (var5 instanceof ServerConfigurationPacketListenerImpl var4 && var4.getOwner().getId().equals(var1)) {
-            var4.returnToWorld();
+         if (var5 instanceof ServerConfigurationPacketListenerImpl) {
+            ServerConfigurationPacketListenerImpl var4 = (ServerConfigurationPacketListenerImpl)var5;
+            if (var4.getOwner().getId().equals(var1)) {
+               var4.returnToWorld();
+            }
          }
       }
 

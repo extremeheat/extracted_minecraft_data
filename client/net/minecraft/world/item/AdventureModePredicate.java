@@ -3,14 +3,12 @@ package net.minecraft.world.item;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.critereon.BlockPredicate;
-import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -25,11 +23,11 @@ public class AdventureModePredicate {
    private static final Codec<AdventureModePredicate> FULL_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf()).fieldOf("predicates").forGetter(var0x -> var0x.predicates),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(AdventureModePredicate::showInTooltip)
+               Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(AdventureModePredicate::showInTooltip)
             )
             .apply(var0, AdventureModePredicate::new)
    );
-   public static final Codec<AdventureModePredicate> CODEC = ExtraCodecs.withAlternative(FULL_CODEC, SIMPLE_CODEC);
+   public static final Codec<AdventureModePredicate> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
    public static final StreamCodec<RegistryFriendlyByteBuf, AdventureModePredicate> STREAM_CODEC = StreamCodec.composite(
       BlockPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()),
       var0 -> var0.predicates,
@@ -84,9 +82,9 @@ public class AdventureModePredicate {
          this.lastCheckedBlock = var1;
          this.checksBlockEntity = false;
 
-         for(BlockPredicate var3 : this.predicates) {
+         for (BlockPredicate var3 : this.predicates) {
             if (var3.matches(var1)) {
-               this.checksBlockEntity |= var3.requiresNbt();
+               this.checksBlockEntity = this.checksBlockEntity | var3.requiresNbt();
                this.lastResult = true;
                return true;
             }
@@ -106,7 +104,7 @@ public class AdventureModePredicate {
    }
 
    private static List<Component> computeTooltip(List<BlockPredicate> var0) {
-      for(BlockPredicate var2 : var0) {
+      for (BlockPredicate var2 : var0) {
          if (var2.blocks().isEmpty()) {
             return List.of(UNKNOWN_USE);
          }
@@ -127,11 +125,8 @@ public class AdventureModePredicate {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof AdventureModePredicate)) {
-         return false;
       } else {
-         AdventureModePredicate var2 = (AdventureModePredicate)var1;
-         return this.predicates.equals(var2.predicates) && this.showInTooltip == var2.showInTooltip;
+         return !(var1 instanceof AdventureModePredicate var2) ? false : this.predicates.equals(var2.predicates) && this.showInTooltip == var2.showInTooltip;
       }
    }
 

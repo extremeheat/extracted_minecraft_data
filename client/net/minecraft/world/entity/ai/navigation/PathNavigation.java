@@ -200,7 +200,7 @@ public abstract class PathNavigation {
    }
 
    public void tick() {
-      ++this.tick;
+      this.tick++;
       if (this.hasDelayedRecomputation) {
          this.recomputePath();
       }
@@ -291,7 +291,7 @@ public abstract class PathNavigation {
          BlockPos var7 = this.path.getNextNodePos();
          long var8 = this.level.getGameTime();
          if (var7.equals(this.timeoutCachedNode)) {
-            this.timeoutTimer += var8 - this.lastTimeoutCheck;
+            this.timeoutTimer = this.timeoutTimer + (var8 - this.lastTimeoutCheck);
          } else {
             this.timeoutCachedNode = var7;
             double var5 = var1.distanceTo(Vec3.atBottomCenterOf(this.timeoutCachedNode));
@@ -336,7 +336,7 @@ public abstract class PathNavigation {
 
    protected void trimPath() {
       if (this.path != null) {
-         for(int var1 = 0; var1 < this.path.getNodeCount(); ++var1) {
+         for (int var1 = 0; var1 < this.path.getNodeCount(); var1++) {
             Node var2 = this.path.getNode(var1);
             Node var3 = var1 + 1 < this.path.getNodeCount() ? this.path.getNode(var1 + 1) : null;
             BlockState var4 = this.level.getBlockState(new BlockPos(var2.x, var2.y, var2.z));

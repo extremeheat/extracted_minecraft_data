@@ -218,7 +218,7 @@ public class FileDownload {
    public static String findAvailableFolderName(String var0) {
       var0 = var0.replaceAll("[\\./\"]", "_");
 
-      for(String var4 : INVALID_FILE_NAMES) {
+      for (String var4 : INVALID_FILE_NAMES) {
          if (var0.equalsIgnoreCase(var4)) {
             var0 = "_" + var0 + "_";
          }
@@ -231,7 +231,7 @@ public class FileDownload {
       Pattern var4 = Pattern.compile(".*-([0-9]+)$");
       int var6 = 1;
 
-      for(char var10 : SharedConstants.ILLEGAL_FILE_CHARACTERS) {
+      for (char var10 : SharedConstants.ILLEGAL_FILE_CHARACTERS) {
          var1 = var1.replace(var10, '_');
       }
 
@@ -242,7 +242,7 @@ public class FileDownload {
       var1 = findAvailableFolderName(var1);
 
       try {
-         for(LevelStorageSource.LevelDirectory var48 : var3.findLevelCandidates()) {
+         for (LevelStorageSource.LevelDirectory var48 : var3.findLevelCandidates()) {
             String var50 = var48.directoryName();
             if (var50.toLowerCase(Locale.ROOT).startsWith(var1.toLowerCase(Locale.ROOT))) {
                Matcher var52 = var4.matcher(var50);
@@ -252,7 +252,7 @@ public class FileDownload {
                      var6 = var11;
                   }
                } else {
-                  ++var6;
+                  var6++;
                }
             }
          }
@@ -270,8 +270,8 @@ public class FileDownload {
          if (!var3.isNewLevelIdAcceptable(var5)) {
             boolean var46 = false;
 
-            while(!var46) {
-               ++var6;
+            while (!var46) {
+               var6++;
                var5 = var1 + (var6 == 1 ? "" : "-" + var6);
                if (var3.isNewLevelIdAcceptable(var5)) {
                   var46 = true;
@@ -287,7 +287,7 @@ public class FileDownload {
          var49.mkdir();
          var47 = new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(var2))));
 
-         for(TarArchiveEntry var51 = var47.getNextTarEntry(); var51 != null; var51 = var47.getNextTarEntry()) {
+         for (TarArchiveEntry var51 = var47.getNextTarEntry(); var51 != null; var51 = var47.getNextTarEntry()) {
             File var53 = new File(var49, var51.getName().replace("world", var5));
             if (var51.isDirectory()) {
                var53.mkdirs();

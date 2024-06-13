@@ -1,7 +1,6 @@
 package net.minecraft.world.inventory;
 
 import java.util.Optional;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -39,19 +38,19 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
       this.player = var2.player;
       this.addSlot(new ResultSlot(var2.player, this.craftSlots, this.resultSlots, 0, 124, 35));
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 3; ++var5) {
+      for (int var4 = 0; var4 < 3; var4++) {
+         for (int var5 = 0; var5 < 3; var5++) {
             this.addSlot(new Slot(this.craftSlots, var5 + var4 * 3, 30 + var5 * 18, 17 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 3; ++var6) {
-         for(int var8 = 0; var8 < 9; ++var8) {
+      for (int var6 = 0; var6 < 3; var6++) {
+         for (int var8 = 0; var8 < 9; var8++) {
             this.addSlot(new Slot(var2, var8 + var6 * 9 + 9, 8 + var8 * 18, 84 + var6 * 18));
          }
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
+      for (int var7 = 0; var7 < 9; var7++) {
          this.addSlot(new Slot(var2, var7, 8 + var7 * 18, 142));
       }
    }

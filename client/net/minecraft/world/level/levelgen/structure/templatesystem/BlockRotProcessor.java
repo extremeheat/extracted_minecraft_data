@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -14,7 +14,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 
 public class BlockRotProcessor extends StructureProcessor {
-   public static final Codec<BlockRotProcessor> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<BlockRotProcessor> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter(var0x -> var0x.rottableBlocks),
                Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter(var0x -> var0x.integrity)

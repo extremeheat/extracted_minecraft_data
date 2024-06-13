@@ -82,7 +82,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
       public static Optional<SpectatorMenuItem> create(Minecraft var0, PlayerTeam var1) {
          ArrayList var2 = new ArrayList();
 
-         for(String var4 : var1.getPlayers()) {
+         for (String var4 : var1.getPlayers()) {
             PlayerInfo var5 = var0.getConnection().getPlayerInfo(var4);
             if (var5 != null && var5.getGameMode() != GameType.SPECTATOR) {
                var2.add(var5);
@@ -119,7 +119,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
          }
 
          var1.setColor(var2, var2, var2, (float)var3 / 255.0F);
-         PlayerFaceRenderer.draw(var1, (PlayerSkin)this.iconSkin.get(), 2, 2, 12);
+         PlayerFaceRenderer.draw(var1, this.iconSkin.get(), 2, 2, 12);
          var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       }
 

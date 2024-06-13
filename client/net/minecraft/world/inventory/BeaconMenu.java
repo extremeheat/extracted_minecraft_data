@@ -49,16 +49,16 @@ public class BeaconMenu extends AbstractContainerMenu {
       this.paymentSlot = new BeaconMenu.PaymentSlot(this.beacon, 0, 136, 110);
       this.addSlot(this.paymentSlot);
       this.addDataSlots(var3);
-      boolean var5 = true;
-      boolean var6 = true;
+      byte var5 = 36;
+      short var6 = 137;
 
-      for(int var7 = 0; var7 < 3; ++var7) {
-         for(int var8 = 0; var8 < 9; ++var8) {
+      for (int var7 = 0; var7 < 3; var7++) {
+         for (int var8 = 0; var8 < 9; var8++) {
             this.addSlot(new Slot(var2, var8 + var7 * 9 + 9, 36 + var8 * 18, 137 + var7 * 18));
          }
       }
 
-      for(int var9 = 0; var9 < 9; ++var9) {
+      for (int var9 = 0; var9 < 9; var9++) {
          this.addSlot(new Slot(var2, var9, 36 + var9 * 18, 195));
       }
    }

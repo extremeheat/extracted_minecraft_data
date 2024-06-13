@@ -5,10 +5,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import java.util.HashSet;
 import net.minecraft.commands.CommandSourceStack;
@@ -69,7 +67,7 @@ public class TagCommand {
    private static Collection<String> getTags(Collection<? extends Entity> var0) {
       HashSet var1 = Sets.newHashSet();
 
-      for(Entity var3 : var0) {
+      for (Entity var3 : var0) {
          var1.addAll(var3.getTags());
       }
 
@@ -79,9 +77,9 @@ public class TagCommand {
    private static int addTag(CommandSourceStack var0, Collection<? extends Entity> var1, String var2) throws CommandSyntaxException {
       int var3 = 0;
 
-      for(Entity var5 : var1) {
+      for (Entity var5 : var1) {
          if (var5.addTag(var2)) {
-            ++var3;
+            var3++;
          }
       }
 
@@ -101,9 +99,9 @@ public class TagCommand {
    private static int removeTag(CommandSourceStack var0, Collection<? extends Entity> var1, String var2) throws CommandSyntaxException {
       int var3 = 0;
 
-      for(Entity var5 : var1) {
+      for (Entity var5 : var1) {
          if (var5.removeTag(var2)) {
-            ++var3;
+            var3++;
          }
       }
 
@@ -123,7 +121,7 @@ public class TagCommand {
    private static int listTags(CommandSourceStack var0, Collection<? extends Entity> var1) {
       HashSet var2 = Sets.newHashSet();
 
-      for(Entity var4 : var1) {
+      for (Entity var4 : var1) {
          var2.addAll(var4.getTags());
       }
 

@@ -68,7 +68,7 @@ public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
       float var24 = 0.0F;
       float var25 = 0.0F;
 
-      for(int var26 = var17; var26 < var18; ++var26) {
+      for (int var26 = var17; var26 < var18; var26++) {
          double var27 = 1.5 + (double)(Mth.sin((float)var26 * 3.1415927F / (float)var18) * var14);
          double var29 = var27 * var19;
          var27 *= (double)var2.shape.horizontalRadiusFactor.sample(var22);
@@ -113,7 +113,7 @@ public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
       float[] var5 = new float[var4];
       float var6 = 1.0F;
 
-      for(int var7 = 0; var7 < var4; ++var7) {
+      for (int var7 = 0; var7 < var4; var7++) {
          if (var7 == 0 || var3.nextInt(var2.shape.widthSmoothness) == 0) {
             var6 = 1.0F + var3.nextFloat() * var3.nextFloat();
          }

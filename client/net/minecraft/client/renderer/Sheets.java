@@ -66,7 +66,7 @@ public class Sheets {
    public static final Material[] BED_TEXTURES = Arrays.stream(DyeColor.values())
       .sorted(Comparator.comparingInt(DyeColor::getId))
       .map(var0 -> new Material(BED_SHEET, new ResourceLocation("entity/bed/" + var0.getName())))
-      .toArray(var0 -> new Material[var0]);
+      .toArray(Material[]::new);
    public static final Material CHEST_TRAP_LOCATION = chestMaterial("trapped");
    public static final Material CHEST_TRAP_LOCATION_LEFT = chestMaterial("trapped_left");
    public static final Material CHEST_TRAP_LOCATION_RIGHT = chestMaterial("trapped_right");
@@ -165,7 +165,7 @@ public class Sheets {
    }
 
    private static Material createDecoratedPotMaterial(ResourceKey<String> var0) {
-      return new Material(DECORATED_POT_SHEET, DecoratedPotPatterns.location(var0));
+      return new Material(DECORATED_POT_SHEET, DecoratedPotPatterns.location((ResourceKey<String>)var0));
    }
 
    @Nullable
@@ -186,7 +186,7 @@ public class Sheets {
    }
 
    private static Material chooseMaterial(ChestType var0, Material var1, Material var2, Material var3) {
-      switch(var0) {
+      switch (var0) {
          case LEFT:
             return var2;
          case RIGHT:

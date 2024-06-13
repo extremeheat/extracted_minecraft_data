@@ -108,7 +108,7 @@ public class Pufferfish extends AbstractFish {
                this.setPuffState(2);
             }
 
-            ++this.inflateCounter;
+            this.inflateCounter++;
          } else if (this.getPuffState() != 0) {
             if (this.deflateTimer > 60 && this.getPuffState() == 2) {
                this.makeSound(SoundEvents.PUFFER_FISH_BLOW_OUT);
@@ -118,7 +118,7 @@ public class Pufferfish extends AbstractFish {
                this.setPuffState(0);
             }
 
-            ++this.deflateTimer;
+            this.deflateTimer++;
          }
       }
 
@@ -129,7 +129,7 @@ public class Pufferfish extends AbstractFish {
    public void aiStep() {
       super.aiStep();
       if (this.isAlive() && this.getPuffState() > 0) {
-         for(Mob var3 : this.level().getEntitiesOfClass(Mob.class, this.getBoundingBox().inflate(0.3), var1 -> targetingConditions.test(this, var1))) {
+         for (Mob var3 : this.level().getEntitiesOfClass(Mob.class, this.getBoundingBox().inflate(0.3), var1 -> targetingConditions.test(this, var1))) {
             if (var3.isAlive()) {
                this.touch(var3);
             }
@@ -183,7 +183,7 @@ public class Pufferfish extends AbstractFish {
    }
 
    private static float getScale(int var0) {
-      switch(var0) {
+      switch (var0) {
          case 0:
             return 0.5F;
          case 1:

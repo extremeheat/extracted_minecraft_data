@@ -42,13 +42,13 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
       if (!this.pathMap.isEmpty()) {
          long var9 = Util.getMillis();
 
-         for(Integer var12 : this.pathMap.keySet()) {
+         for (Integer var12 : this.pathMap.keySet()) {
             Path var13 = this.pathMap.get(var12);
             float var14 = this.pathMaxDist.get(var12);
             renderPath(var1, var2, var13, var14, true, true, var3, var5, var7);
          }
 
-         for(Integer var18 : this.creationMap.keySet().toArray(new Integer[0])) {
+         for (Integer var18 : this.creationMap.keySet().toArray(new Integer[0])) {
             if (var9 - this.creationMap.get(var18) > 5000L) {
                this.pathMap.remove(var18);
                this.creationMap.remove(var18);
@@ -81,7 +81,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
             0.5F
          );
 
-         for(int var13 = 0; var13 < var2.getNodeCount(); ++var13) {
+         for (int var13 = 0; var13 < var2.getNodeCount(); var13++) {
             Node var14 = var2.getNode(var13);
             if (distanceToCamera(var14.asBlockPos(), var6, var8, var10) <= 80.0F) {
                float var15 = var13 == var2.getNextNodeIndex() ? 1.0F : 0.0F;
@@ -109,7 +109,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       Path.DebugData var18 = var2.debugData();
       if (var4 && var18 != null) {
-         for(Node var17 : var18.closedSet()) {
+         for (Node var17 : var18.closedSet()) {
             if (distanceToCamera(var17.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFilledBox(
                   var0,
@@ -131,7 +131,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
             }
          }
 
-         for(Node var27 : var18.openSet()) {
+         for (Node var27 : var18.openSet()) {
             if (distanceToCamera(var27.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFilledBox(
                   var0,
@@ -155,7 +155,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       if (var5) {
-         for(int var21 = 0; var21 < var2.getNodeCount(); ++var21) {
+         for (int var21 = 0; var21 < var2.getNodeCount(); var21++) {
             Node var24 = var2.getNode(var21);
             if (distanceToCamera(var24.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFloatingText(
@@ -180,7 +180,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public static void renderPathLine(PoseStack var0, VertexConsumer var1, Path var2, double var3, double var5, double var7) {
-      for(int var9 = 0; var9 < var2.getNodeCount(); ++var9) {
+      for (int var9 = 0; var9 < var2.getNodeCount(); var9++) {
          Node var10 = var2.getNode(var9);
          if (!(distanceToCamera(var10.asBlockPos(), var3, var5, var7) > 80.0F)) {
             float var11 = (float)var9 / (float)var2.getNodeCount() * 0.33F;

@@ -46,19 +46,19 @@ public class ItemColors {
             return -1;
          } else {
             FireworkExplosion var2 = var0x.get(DataComponents.FIREWORK_EXPLOSION);
-            IntList var3xx = var2 != null ? var2.colors() : IntList.of();
-            int var4 = var3xx.size();
+            IntList var3x = var2 != null ? var2.colors() : IntList.of();
+            int var4 = var3x.size();
             if (var4 == 0) {
                return -7697782;
             } else if (var4 == 1) {
-               return FastColor.ARGB32.opaque(var3xx.getInt(0));
+               return FastColor.ARGB32.opaque(var3x.getInt(0));
             } else {
                int var5 = 0;
                int var6 = 0;
                int var7 = 0;
 
-               for(int var8 = 0; var8 < var4; ++var8) {
-                  int var9 = var3xx.getInt(var8);
+               for (int var8 = 0; var8 < var4; var8++) {
+                  int var9 = var3x.getInt(var8);
                   var5 += FastColor.ARGB32.red(var9);
                   var6 += FastColor.ARGB32.green(var9);
                   var7 += FastColor.ARGB32.blue(var9);
@@ -69,29 +69,26 @@ public class ItemColors {
          }
       }, Items.FIREWORK_STAR);
       var1.register(
-         (var0x, var1x) -> var1x > 0
-               ? -1
-               : FastColor.ARGB32.opaque(((PotionContents)var0x.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).getColor()),
+         (var0x, var1x) -> var1x > 0 ? -1 : FastColor.ARGB32.opaque(var0x.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).getColor()),
          Items.POTION,
          Items.SPLASH_POTION,
          Items.LINGERING_POTION,
          Items.TIPPED_ARROW
       );
 
-      for(SpawnEggItem var3 : SpawnEggItem.eggs()) {
+      for (SpawnEggItem var3 : SpawnEggItem.eggs()) {
          var1.register((var1x, var2) -> FastColor.ARGB32.opaque(var3.getColor(var2)), var3);
       }
 
       var1.register(
          (var1x, var2) -> {
-            BlockState var3xx = ((BlockItem)var1x.getItem()).getBlock().defaultBlockState();
-            return var0.getColor(var3xx, null, null, var2);
+            BlockState var3x = ((BlockItem)var1x.getItem()).getBlock().defaultBlockState();
+            return var0.getColor(var3x, null, null, var2);
          },
          Blocks.GRASS_BLOCK,
          Blocks.SHORT_GRASS,
          Blocks.FERN,
          Blocks.VINE,
-         Blocks.POTATO_LEAVES,
          Blocks.OAK_LEAVES,
          Blocks.SPRUCE_LEAVES,
          Blocks.BIRCH_LEAVES,
@@ -102,7 +99,7 @@ public class ItemColors {
       );
       var1.register((var0x, var1x) -> FoliageColor.getMangroveColor(), Blocks.MANGROVE_LEAVES);
       var1.register(
-         (var0x, var1x) -> var1x == 0 ? -1 : FastColor.ARGB32.opaque(((MapItemColor)var0x.getOrDefault(DataComponents.MAP_COLOR, MapItemColor.DEFAULT)).rgb()),
+         (var0x, var1x) -> var1x == 0 ? -1 : FastColor.ARGB32.opaque(var0x.getOrDefault(DataComponents.MAP_COLOR, MapItemColor.DEFAULT).rgb()),
          Items.FILLED_MAP
       );
       return var1;
@@ -114,7 +111,7 @@ public class ItemColors {
    }
 
    public void register(ItemColor var1, ItemLike... var2) {
-      for(ItemLike var6 : var2) {
+      for (ItemLike var6 : var2) {
          this.itemColors.addMapping(var1, Item.getId(var6.asItem()));
       }
    }

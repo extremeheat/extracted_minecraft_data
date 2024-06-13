@@ -69,7 +69,7 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
             ((CrossbowAttackMob)var1).setChargingCrossbow(false);
          }
       } else if (this.crossbowState == CrossbowAttack.CrossbowState.CHARGED) {
-         --this.attackDelay;
+         this.attackDelay--;
          if (this.attackDelay == 0) {
             this.crossbowState = CrossbowAttack.CrossbowState.READY_TO_ATTACK;
          }

@@ -36,7 +36,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
 
 public class Tadpole extends AbstractFish {
    @VisibleForTesting
@@ -84,7 +83,7 @@ public class Tadpole extends AbstractFish {
 
    @Override
    public Brain<Tadpole> getBrain() {
-      return super.getBrain();
+      return (Brain<Tadpole>)super.getBrain();
    }
 
    @Override
@@ -225,12 +224,11 @@ public class Tadpole extends AbstractFish {
    }
 
    private void ageUp() {
-      Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
+      if (this.level() instanceof ServerLevel var1) {
          Frog var3 = EntityType.FROG.create(this.level());
          if (var3 != null) {
             var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var3.finalizeSpawn((ServerLevelAccessor)var1, this.level().getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null);
+            var3.finalizeSpawn(var1, this.level().getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null);
             var3.setNoAi(this.isNoAi());
             if (this.hasCustomName()) {
                var3.setCustomName(this.getCustomName());
@@ -239,7 +237,7 @@ public class Tadpole extends AbstractFish {
 
             var3.setPersistenceRequired();
             this.playSound(SoundEvents.TADPOLE_GROW_UP, 0.15F, 1.0F);
-            ((ServerLevel)var1).addFreshEntityWithPassengers(var3);
+            var1.addFreshEntityWithPassengers(var3);
             this.discard();
          }
       }

@@ -60,6 +60,6 @@ public class OfferFlowerGoal extends Goal {
    @Override
    public void tick() {
       this.golem.getLookControl().setLookAt(this.villager, 30.0F, 30.0F);
-      --this.tick;
+      this.tick--;
    }
 }

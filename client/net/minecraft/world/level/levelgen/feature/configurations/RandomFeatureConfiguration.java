@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
@@ -29,9 +28,6 @@ public class RandomFeatureConfiguration implements FeatureConfiguration {
 
    @Override
    public Stream<ConfiguredFeature<?, ?>> getFeatures() {
-      return Stream.concat(
-         this.features.stream().flatMap(var0 -> ((PlacedFeature)var0.feature.value()).getFeatures()),
-         ((PlacedFeature)this.defaultFeature.value()).getFeatures()
-      );
+      return Stream.concat(this.features.stream().flatMap(var0 -> var0.feature.value().getFeatures()), this.defaultFeature.value().getFeatures());
    }
 }

@@ -96,7 +96,7 @@ public class PiglinBrute extends AbstractPiglin {
 
    @Override
    public Brain<PiglinBrute> getBrain() {
-      return super.getBrain();
+      return (Brain<PiglinBrute>)super.getBrain();
    }
 
    @Override

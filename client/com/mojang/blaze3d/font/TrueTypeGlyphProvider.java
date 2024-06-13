@@ -113,7 +113,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       try {
          IntBuffer var4 = var3.mallocInt(1);
 
-         for(long var5 = FreeType.FT_Get_First_Char(var1, var4); var4.get(0) != 0; var5 = FreeType.FT_Get_Next_Char(var1, var5, var4)) {
+         for (long var5 = FreeType.FT_Get_First_Char(var1, var4); var4.get(0) != 0; var5 = FreeType.FT_Get_Next_Char(var1, var5, var4)) {
             var2.add((int)var5);
          }
       } catch (Throwable var8) {

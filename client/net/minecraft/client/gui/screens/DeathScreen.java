@@ -115,7 +115,11 @@ public class DeathScreen extends Screen {
 
    @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.fillGradient(0, 0, this.width, this.height, 1615855616, -1602211792);
+      renderDeathBackground(var1, this.width, this.height);
+   }
+
+   static void renderDeathBackground(GuiGraphics var0, int var1, int var2) {
+      var0.fillGradient(0, 0, var1, var2, 1615855616, -1602211792);
    }
 
    @Nullable
@@ -151,14 +155,14 @@ public class DeathScreen extends Screen {
    @Override
    public void tick() {
       super.tick();
-      ++this.delayTicker;
+      this.delayTicker++;
       if (this.delayTicker == 20) {
          this.setButtonsActive(true);
       }
    }
 
    private void setButtonsActive(boolean var1) {
-      for(Button var3 : this.exitButtons) {
+      for (Button var3 : this.exitButtons) {
          var3.active = var1;
       }
    }
@@ -166,6 +170,11 @@ public class DeathScreen extends Screen {
    public static class TitleConfirmScreen extends ConfirmScreen {
       public TitleConfirmScreen(BooleanConsumer var1, Component var2, Component var3, Component var4, Component var5) {
          super(var1, var2, var3, var4, var5);
+      }
+
+      @Override
+      public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+         DeathScreen.renderDeathBackground(var1, this.width, this.height);
       }
    }
 }

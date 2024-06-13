@@ -71,10 +71,8 @@ public class JigsawJunction {
             return false;
          } else if (this.sourceZ != var2.sourceZ) {
             return false;
-         } else if (this.deltaY != var2.deltaY) {
-            return false;
          } else {
-            return this.destProjection == var2.destProjection;
+            return this.deltaY != var2.deltaY ? false : this.destProjection == var2.destProjection;
          }
       } else {
          return false;

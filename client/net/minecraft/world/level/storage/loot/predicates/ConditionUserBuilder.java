@@ -8,7 +8,7 @@ public interface ConditionUserBuilder<T extends ConditionUserBuilder<T>> {
    default <E> T when(Iterable<E> var1, Function<E, LootItemCondition.Builder> var2) {
       ConditionUserBuilder var3 = this.unwrap();
 
-      for(Object var5 : var1) {
+      for (Object var5 : var1) {
          var3 = var3.when((LootItemCondition.Builder)var2.apply(var5));
       }
 

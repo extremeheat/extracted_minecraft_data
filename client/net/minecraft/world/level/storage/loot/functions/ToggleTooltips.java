@@ -2,8 +2,8 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,21 +30,21 @@ public class ToggleTooltips extends LootItemConditionalFunction {
          new ToggleTooltips.ComponentToggle<>(DataComponents.UNBREAKABLE, Unbreakable::withTooltip),
          new ToggleTooltips.ComponentToggle<>(DataComponents.CAN_BREAK, AdventureModePredicate::withTooltip),
          new ToggleTooltips.ComponentToggle<>(DataComponents.CAN_PLACE_ON, AdventureModePredicate::withTooltip),
-         new ToggleTooltips.ComponentToggle(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers::withTooltip)
+         new ToggleTooltips.ComponentToggle<>(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers::withTooltip)
       )
-      .collect(Collectors.toMap(ToggleTooltips.ComponentToggle::type, var0 -> var0));
+      .collect(Collectors.toMap(ToggleTooltips.ComponentToggle::type, var0 -> (ToggleTooltips.ComponentToggle<?>)var0));
    private static final Codec<ToggleTooltips.ComponentToggle<?>> TOGGLE_CODEC = BuiltInRegistries.DATA_COMPONENT_TYPE
       .byNameCodec()
       .comapFlatMap(
          var0 -> {
-            ToggleTooltips.ComponentToggle var1 = (ToggleTooltips.ComponentToggle)TOGGLES.get(var0);
+            ToggleTooltips.ComponentToggle var1 = TOGGLES.get(var0);
             return var1 != null
                ? DataResult.success(var1)
                : DataResult.error(() -> "Can't toggle tooltip visiblity for " + BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var0));
          },
          ToggleTooltips.ComponentToggle::type
       );
-   public static final Codec<ToggleTooltips> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<ToggleTooltips> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(Codec.unboundedMap(TOGGLE_CODEC, Codec.BOOL).fieldOf("toggles").forGetter(var0x -> var0x.values))
             .apply(var0, ToggleTooltips::new)
@@ -67,18 +67,15 @@ public class ToggleTooltips extends LootItemConditionalFunction {
       return LootItemFunctions.TOGGLE_TOOLTIPS;
    }
 
-   static record ComponentToggle<T>(DataComponentType<T> a, ToggleTooltips.TooltipWither<T> b) {
-      private final DataComponentType<T> type;
-      private final ToggleTooltips.TooltipWither<T> setter;
-
-      ComponentToggle(DataComponentType<T> var1, ToggleTooltips.TooltipWither<T> var2) {
+   static record ComponentToggle<T>(DataComponentType<T> type, ToggleTooltips.TooltipWither<T> setter) {
+      ComponentToggle(DataComponentType<T> type, ToggleTooltips.TooltipWither<T> setter) {
          super();
-         this.type = var1;
-         this.setter = var2;
+         this.type = type;
+         this.setter = setter;
       }
 
       public void applyIfPresent(ItemStack var1, boolean var2) {
-         Object var3 = var1.<T>get(this.type);
+         Object var3 = var1.get(this.type);
          if (var3 != null) {
             var1.set(this.type, this.setter.withTooltip((T)var3, var2));
          }

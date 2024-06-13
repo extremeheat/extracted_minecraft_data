@@ -12,7 +12,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -77,14 +76,14 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
       } else {
          var3.setDirection(var2);
          var4.removeIf(var1x -> {
-            var3.setVariant(var1x);
+            var3.setVariant((Holder<PaintingVariant>)var1x);
             return !var3.survives();
          });
          if (var4.isEmpty()) {
             return Optional.empty();
          } else {
             int var5 = var4.stream().mapToInt(Painting::variantArea).max().orElse(0);
-            var4.removeIf(var1x -> variantArea(var1x) < var5);
+            var4.removeIf(var1x -> variantArea((Holder<PaintingVariant>)var1x) < var5);
             Optional var6 = Util.getRandomSafe(var4, var3.random);
             if (var6.isEmpty()) {
                return Optional.empty();
@@ -128,7 +127,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    public static void storeVariant(CompoundTag var0, Holder<PaintingVariant> var1) {
-      VARIANT_CODEC.encodeStart(NbtOps.INSTANCE, var1).result().ifPresent(var1x -> var0.merge((CompoundTag)var1x));
+      VARIANT_CODEC.encodeStart(NbtOps.INSTANCE, var1).ifSuccess(var1x -> var0.merge((CompoundTag)var1x));
    }
 
    @Override

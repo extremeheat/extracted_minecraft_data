@@ -51,7 +51,7 @@ public class SnowLayerBlock extends Block {
 
    @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch(var2) {
+      switch (var2) {
          case LAND:
             return var1.getValue(LAYERS) < 5;
          case WATER:
@@ -98,10 +98,10 @@ public class SnowLayerBlock extends Block {
       BlockState var4 = var2.getBlockState(var3.below());
       if (var4.is(BlockTags.SNOW_LAYER_CANNOT_SURVIVE_ON)) {
          return false;
-      } else if (var4.is(BlockTags.SNOW_LAYER_CAN_SURVIVE_ON)) {
-         return true;
       } else {
-         return Block.isFaceFull(var4.getCollisionShape(var2, var3.below()), Direction.UP) || var4.is(this) && var4.getValue(LAYERS) == 8;
+         return var4.is(BlockTags.SNOW_LAYER_CAN_SURVIVE_ON)
+            ? true
+            : Block.isFaceFull(var4.getCollisionShape(var2, var3.below()), Direction.UP) || var4.is(this) && var4.getValue(LAYERS) == 8;
       }
    }
 
@@ -123,10 +123,8 @@ public class SnowLayerBlock extends Block {
       int var3 = var1.getValue(LAYERS);
       if (!var2.getItemInHand().is(this.asItem()) || var3 >= 8) {
          return var3 == 1;
-      } else if (var2.replacingClickedOnBlock()) {
-         return var2.getClickedFace() == Direction.UP;
       } else {
-         return true;
+         return var2.replacingClickedOnBlock() ? var2.getClickedFace() == Direction.UP : true;
       }
    }
 

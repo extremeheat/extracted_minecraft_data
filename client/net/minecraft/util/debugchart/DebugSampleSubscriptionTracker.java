@@ -5,7 +5,6 @@ import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Map.Entry;
 import net.minecraft.Util;
 import net.minecraft.network.protocol.game.ClientboundDebugSamplePacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,14 +15,14 @@ public class DebugSampleSubscriptionTracker {
    public static final int STOP_SENDING_AFTER_MS = 10000;
    private final PlayerList playerList;
    private final EnumMap<RemoteDebugSampleType, Map<ServerPlayer, DebugSampleSubscriptionTracker.SubscriptionStartedAt>> subscriptions;
-   private final Queue<DebugSampleSubscriptionTracker.SubscriptionRequest> subscriptionRequestQueue = new LinkedList();
+   private final Queue<DebugSampleSubscriptionTracker.SubscriptionRequest> subscriptionRequestQueue = new LinkedList<>();
 
    public DebugSampleSubscriptionTracker(PlayerList var1) {
       super();
       this.playerList = var1;
       this.subscriptions = new EnumMap<>(RemoteDebugSampleType.class);
 
-      for(RemoteDebugSampleType var5 : RemoteDebugSampleType.values()) {
+      for (RemoteDebugSampleType var5 : RemoteDebugSampleType.values()) {
          this.subscriptions.put(var5, Maps.newHashMap());
       }
    }
@@ -33,7 +32,7 @@ public class DebugSampleSubscriptionTracker {
    }
 
    public void broadcast(ClientboundDebugSamplePacket var1) {
-      for(ServerPlayer var4 : this.subscriptions.get(var1.debugSampleType()).keySet()) {
+      for (ServerPlayer var4 : this.subscriptions.get(var1.debugSampleType()).keySet()) {
          var4.connection.send(var1);
       }
    }
@@ -51,40 +50,34 @@ public class DebugSampleSubscriptionTracker {
    }
 
    private void handleSubscriptions(long var1, int var3) {
-      for(DebugSampleSubscriptionTracker.SubscriptionRequest var5 : this.subscriptionRequestQueue) {
+      for (DebugSampleSubscriptionTracker.SubscriptionRequest var5 : this.subscriptionRequestQueue) {
          this.subscriptions.get(var5.sampleType()).put(var5.player(), new DebugSampleSubscriptionTracker.SubscriptionStartedAt(var1, var3));
       }
    }
 
    private void handleUnsubscriptions(long var1, int var3) {
-      for(Map var5 : this.subscriptions.values()) {
+      for (Map var5 : this.subscriptions.values()) {
          var5.entrySet().removeIf(var4 -> {
-            boolean var5xx = !this.playerList.isOp(((ServerPlayer)var4.getKey()).getGameProfile());
+            boolean var5x = !this.playerList.isOp(((ServerPlayer)var4.getKey()).getGameProfile());
             DebugSampleSubscriptionTracker.SubscriptionStartedAt var6 = (DebugSampleSubscriptionTracker.SubscriptionStartedAt)var4.getValue();
-            return var5xx || var3 > var6.tick() + 200 && var1 > var6.millis() + 10000L;
+            return var5x || var3 > var6.tick() + 200 && var1 > var6.millis() + 10000L;
          });
       }
    }
 
-   static record SubscriptionRequest(ServerPlayer a, RemoteDebugSampleType b) {
-      private final ServerPlayer player;
-      private final RemoteDebugSampleType sampleType;
-
-      SubscriptionRequest(ServerPlayer var1, RemoteDebugSampleType var2) {
+   static record SubscriptionRequest(ServerPlayer player, RemoteDebugSampleType sampleType) {
+      SubscriptionRequest(ServerPlayer player, RemoteDebugSampleType sampleType) {
          super();
-         this.player = var1;
-         this.sampleType = var2;
+         this.player = player;
+         this.sampleType = sampleType;
       }
    }
 
-   static record SubscriptionStartedAt(long a, int b) {
-      private final long millis;
-      private final int tick;
-
-      SubscriptionStartedAt(long var1, int var3) {
+   static record SubscriptionStartedAt(long millis, int tick) {
+      SubscriptionStartedAt(long millis, int tick) {
          super();
-         this.millis = var1;
-         this.tick = var3;
+         this.millis = millis;
+         this.tick = tick;
       }
    }
 }

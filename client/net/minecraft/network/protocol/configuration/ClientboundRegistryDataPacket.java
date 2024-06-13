@@ -12,10 +12,8 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
-public record ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> b, List<RegistrySynchronization.PackedRegistryEntry> c)
+public record ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> registry, List<RegistrySynchronization.PackedRegistryEntry> entries)
    implements Packet<ClientConfigurationPacketListener> {
-   private final ResourceKey<? extends Registry<?>> registry;
-   private final List<RegistrySynchronization.PackedRegistryEntry> entries;
    private static final StreamCodec<ByteBuf, ResourceKey<? extends Registry<?>>> REGISTRY_KEY_STREAM_CODEC = ResourceLocation.STREAM_CODEC
       .map(ResourceKey::createRegistryKey, ResourceKey::location);
    public static final StreamCodec<FriendlyByteBuf, ClientboundRegistryDataPacket> STREAM_CODEC = StreamCodec.composite(
@@ -26,10 +24,10 @@ public record ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> b
       ClientboundRegistryDataPacket::new
    );
 
-   public ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> var1, List<RegistrySynchronization.PackedRegistryEntry> var2) {
+   public ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> registry, List<RegistrySynchronization.PackedRegistryEntry> entries) {
       super();
-      this.registry = var1;
-      this.entries = var2;
+      this.registry = registry;
+      this.entries = entries;
    }
 
    @Override

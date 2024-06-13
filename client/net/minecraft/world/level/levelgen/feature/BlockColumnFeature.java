@@ -20,8 +20,8 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
       int[] var6 = new int[var5];
       int var7 = 0;
 
-      for(int var8 = 0; var8 < var5; ++var8) {
-         var6[var8] = ((BlockColumnConfiguration.Layer)var3.layers().get(var8)).height().sample(var4);
+      for (int var8 = 0; var8 < var5; var8++) {
+         var6[var8] = var3.layers().get(var8).height().sample(var4);
          var7 += var6[var8];
       }
 
@@ -31,7 +31,7 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
          BlockPos.MutableBlockPos var14 = var1.origin().mutable();
          BlockPos.MutableBlockPos var9 = var14.mutable().move(var3.direction());
 
-         for(int var10 = 0; var10 < var7; ++var10) {
+         for (int var10 = 0; var10 < var7; var10++) {
             if (!var3.allowedPlacement().test(var2, var9)) {
                truncate(var6, var7, var10, var3.prioritizeTip());
                break;
@@ -40,12 +40,12 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
             var9.move(var3.direction());
          }
 
-         for(int var15 = 0; var15 < var5; ++var15) {
+         for (int var15 = 0; var15 < var5; var15++) {
             int var11 = var6[var15];
             if (var11 != 0) {
-               BlockColumnConfiguration.Layer var12 = (BlockColumnConfiguration.Layer)var3.layers().get(var15);
+               BlockColumnConfiguration.Layer var12 = var3.layers().get(var15);
 
-               for(int var13 = 0; var13 < var11; ++var13) {
+               for (int var13 = 0; var13 < var11; var13++) {
                   var2.setBlock(var14, var12.state().getState(var4, var14), 2);
                   var14.move(var3.direction());
                }
@@ -62,7 +62,7 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
       int var6 = var3 ? 0 : var0.length - 1;
       int var7 = var3 ? var0.length : -1;
 
-      for(int var8 = var6; var8 != var7 && var4 > 0; var8 += var5) {
+      for (int var8 = var6; var8 != var7 && var4 > 0; var8 += var5) {
          int var9 = var0[var8];
          int var10 = Math.min(var9, var4);
          var4 -= var10;

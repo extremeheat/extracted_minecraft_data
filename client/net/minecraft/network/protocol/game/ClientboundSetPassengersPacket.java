@@ -20,7 +20,7 @@ public class ClientboundSetPassengersPacket implements Packet<ClientGamePacketLi
       List var2 = var1.getPassengers();
       this.passengers = new int[var2.size()];
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
+      for (int var3 = 0; var3 < var2.size(); var3++) {
          this.passengers[var3] = ((Entity)var2.get(var3)).getId();
       }
    }

@@ -40,7 +40,7 @@ public class RandomLookAroundGoal extends Goal {
 
    @Override
    public void tick() {
-      --this.lookTime;
+      this.lookTime--;
       this.mob.getLookControl().setLookAt(this.mob.getX() + this.relX, this.mob.getEyeY(), this.mob.getZ() + this.relZ);
    }
 }

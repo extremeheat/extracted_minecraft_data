@@ -117,8 +117,6 @@ public class Vex extends Monster implements TraceableEntity {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
@@ -232,11 +230,9 @@ public class Vex extends Monster implements TraceableEntity {
       @Override
       public boolean canUse() {
          LivingEntity var1 = Vex.this.getTarget();
-         if (var1 != null && var1.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0) {
-            return Vex.this.distanceToSqr(var1) > 4.0;
-         } else {
-            return false;
-         }
+         return var1 != null && var1.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0
+            ? Vex.this.distanceToSqr(var1) > 4.0
+            : false;
       }
 
       @Override
@@ -356,7 +352,7 @@ public class Vex extends Monster implements TraceableEntity {
             var1 = Vex.this.blockPosition();
          }
 
-         for(int var2 = 0; var2 < 3; ++var2) {
+         for (int var2 = 0; var2 < 3; var2++) {
             BlockPos var3 = var1.offset(Vex.this.random.nextInt(15) - 7, Vex.this.random.nextInt(11) - 5, Vex.this.random.nextInt(15) - 7);
             if (Vex.this.level().isEmptyBlock(var3)) {
                Vex.this.moveControl.setWantedPosition((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, 0.25);

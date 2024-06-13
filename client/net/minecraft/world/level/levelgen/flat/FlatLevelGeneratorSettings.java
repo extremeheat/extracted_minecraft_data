@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -36,11 +35,13 @@ public class FlatLevelGeneratorSettings {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<FlatLevelGeneratorSettings> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  RegistryCodecs.homogeneousList(Registries.STRUCTURE_SET).optionalFieldOf("structure_overrides").forGetter(var0x -> var0x.structureOverrides),
+                  RegistryCodecs.homogeneousList(Registries.STRUCTURE_SET)
+                     .lenientOptionalFieldOf("structure_overrides")
+                     .forGetter(var0x -> var0x.structureOverrides),
                   FlatLayerInfo.CODEC.listOf().fieldOf("layers").forGetter(FlatLevelGeneratorSettings::getLayersInfo),
                   Codec.BOOL.fieldOf("lakes").orElse(false).forGetter(var0x -> var0x.addLakes),
                   Codec.BOOL.fieldOf("features").orElse(false).forGetter(var0x -> var0x.decoration),
-                  Biome.CODEC.optionalFieldOf("biome").orElseGet(Optional::empty).forGetter(var0x -> Optional.of(var0x.biome)),
+                  Biome.CODEC.lenientOptionalFieldOf("biome").orElseGet(Optional::empty).forGetter(var0x -> Optional.of(var0x.biome)),
                   RegistryOps.retrieveElement(Biomes.PLAINS),
                   RegistryOps.retrieveElement(MiscOverworldPlacements.LAKE_LAVA_UNDERGROUND),
                   RegistryOps.retrieveElement(MiscOverworldPlacements.LAKE_LAVA_SURFACE)
@@ -106,7 +107,7 @@ public class FlatLevelGeneratorSettings {
    public FlatLevelGeneratorSettings withBiomeAndLayers(List<FlatLayerInfo> var1, Optional<HolderSet<StructureSet>> var2, Holder<Biome> var3) {
       FlatLevelGeneratorSettings var4 = new FlatLevelGeneratorSettings(var2, var3, this.lakes);
 
-      for(FlatLayerInfo var6 : var1) {
+      for (FlatLayerInfo var6 : var1) {
          var4.layersInfo.add(new FlatLayerInfo(var6.getHeight(), var6.getBlockState().getBlock()));
          var4.updateLayers();
       }
@@ -137,7 +138,7 @@ public class FlatLevelGeneratorSettings {
          BiomeGenerationSettings var2 = this.getBiome().value().getGenerationSettings();
          BiomeGenerationSettings.PlainBuilder var3 = new BiomeGenerationSettings.PlainBuilder();
          if (this.addLakes) {
-            for(Holder var5 : this.lakes) {
+            for (Holder var5 : this.lakes) {
                var3.addFeature(GenerationStep.Decoration.LAKES, var5);
             }
          }
@@ -146,11 +147,11 @@ public class FlatLevelGeneratorSettings {
          if (var10) {
             List var11 = var2.features();
 
-            for(int var6 = 0; var6 < var11.size(); ++var6) {
+            for (int var6 = 0; var6 < var11.size(); var6++) {
                if (var6 != GenerationStep.Decoration.UNDERGROUND_STRUCTURES.ordinal()
                   && var6 != GenerationStep.Decoration.SURFACE_STRUCTURES.ordinal()
                   && (!this.addLakes || var6 != GenerationStep.Decoration.LAKES.ordinal())) {
-                  for(Holder var9 : (HolderSet)var11.get(var6)) {
+                  for (Holder var9 : (HolderSet)var11.get(var6)) {
                      var3.addFeature(var6, var9);
                   }
                }
@@ -159,7 +160,7 @@ public class FlatLevelGeneratorSettings {
 
          List var12 = this.getLayers();
 
-         for(int var13 = 0; var13 < var12.size(); ++var13) {
+         for (int var13 = 0; var13 < var12.size(); var13++) {
             BlockState var14 = (BlockState)var12.get(var13);
             if (!Heightmap.Types.MOTION_BLOCKING.isOpaque().test(var14)) {
                var12.set(var13, null);
@@ -192,8 +193,8 @@ public class FlatLevelGeneratorSettings {
    public void updateLayers() {
       this.layers.clear();
 
-      for(FlatLayerInfo var2 : this.layersInfo) {
-         for(int var3 = 0; var3 < var2.getHeight(); ++var3) {
+      for (FlatLayerInfo var2 : this.layersInfo) {
+         for (int var3 = 0; var3 < var2.getHeight(); var3++) {
             this.layers.add(var2.getBlockState());
          }
       }

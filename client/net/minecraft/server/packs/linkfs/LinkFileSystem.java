@@ -92,7 +92,7 @@ public class LinkFileSystem extends FileSystem {
       } else if (var4.startsWith("/")) {
          LinkFSPath var8 = this.root;
 
-         for(String var10 : PATH_SPLITTER.split(var4.substring(1))) {
+         for (String var10 : PATH_SPLITTER.split(var4.substring(1))) {
             if (var10.isEmpty()) {
                throw new IllegalArgumentException("Empty paths not allowed");
             }
@@ -104,7 +104,7 @@ public class LinkFileSystem extends FileSystem {
       } else {
          LinkFSPath var5 = null;
 
-         for(String var7 : PATH_SPLITTER.split(var4)) {
+         for (String var7 : PATH_SPLITTER.split(var4)) {
             if (var7.isEmpty()) {
                throw new IllegalArgumentException("Empty paths not allowed");
             }
@@ -157,8 +157,8 @@ public class LinkFileSystem extends FileSystem {
       public LinkFileSystem.Builder put(List<String> var1, String var2, Path var3) {
          LinkFileSystem.DirectoryEntry var4 = this.root;
 
-         for(String var6 : var1) {
-            var4 = (LinkFileSystem.DirectoryEntry)var4.children.computeIfAbsent(var6, var0 -> new LinkFileSystem.DirectoryEntry());
+         for (String var6 : var1) {
+            var4 = var4.children.computeIfAbsent(var6, var0 -> new LinkFileSystem.DirectoryEntry());
          }
 
          var4.files.put(var2, var3);
@@ -179,18 +179,16 @@ public class LinkFileSystem extends FileSystem {
       }
    }
 
-   static record DirectoryEntry(Map<String, LinkFileSystem.DirectoryEntry> a, Map<String, Path> b) {
-      final Map<String, LinkFileSystem.DirectoryEntry> children;
-      final Map<String, Path> files;
+   static record DirectoryEntry(Map<String, LinkFileSystem.DirectoryEntry> children, Map<String, Path> files) {
 
       public DirectoryEntry() {
          this(new HashMap<>(), new HashMap<>());
       }
 
-      private DirectoryEntry(Map<String, LinkFileSystem.DirectoryEntry> var1, Map<String, Path> var2) {
+      private DirectoryEntry(Map<String, LinkFileSystem.DirectoryEntry> children, Map<String, Path> files) {
          super();
-         this.children = var1;
-         this.files = var2;
+         this.children = children;
+         this.files = files;
       }
    }
 }

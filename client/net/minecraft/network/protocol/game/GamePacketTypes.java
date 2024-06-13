@@ -10,7 +10,6 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundBundleDelimiterPacket> CLIENTBOUND_BUNDLE_DELIMITER = createClientbound("bundle_delimiter");
    public static final PacketType<ClientboundAddEntityPacket> CLIENTBOUND_ADD_ENTITY = createClientbound("add_entity");
    public static final PacketType<ClientboundAddExperienceOrbPacket> CLIENTBOUND_ADD_EXPERIENCE_ORB = createClientbound("add_experience_orb");
-   public static final PacketType<ClientboundAddSubGridPacket> CLIENTBOUND_ADD_SUB_GRID = createClientbound("add_sub_grid");
    public static final PacketType<ClientboundAnimatePacket> CLIENTBOUND_ANIMATE = createClientbound("animate");
    public static final PacketType<ClientboundAwardStatsPacket> CLIENTBOUND_AWARD_STATS = createClientbound("award_stats");
    public static final PacketType<ClientboundBlockChangedAckPacket> CLIENTBOUND_BLOCK_CHANGED_ACK = createClientbound("block_changed_ack");
@@ -108,7 +107,6 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundSetTitlesAnimationPacket> CLIENTBOUND_SET_TITLES_ANIMATION = createClientbound("set_titles_animation");
    public static final PacketType<ClientboundSoundEntityPacket> CLIENTBOUND_SOUND_ENTITY = createClientbound("sound_entity");
    public static final PacketType<ClientboundSoundPacket> CLIENTBOUND_SOUND = createClientbound("sound");
-   public static final PacketType<ClientboundSoundSequencePacket> CLIENTBOUND_SOUND_SEQUENCE = createClientbound("sound_sequence");
    public static final PacketType<ClientboundStartConfigurationPacket> CLIENTBOUND_START_CONFIGURATION = createClientbound("start_configuration");
    public static final PacketType<ClientboundStopSoundPacket> CLIENTBOUND_STOP_SOUND = createClientbound("stop_sound");
    public static final PacketType<ClientboundSystemChatPacket> CLIENTBOUND_SYSTEM_CHAT = createClientbound("system_chat");
@@ -120,11 +118,13 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundUpdateAttributesPacket> CLIENTBOUND_UPDATE_ATTRIBUTES = createClientbound("update_attributes");
    public static final PacketType<ClientboundUpdateMobEffectPacket> CLIENTBOUND_UPDATE_MOB_EFFECT = createClientbound("update_mob_effect");
    public static final PacketType<ClientboundUpdateRecipesPacket> CLIENTBOUND_UPDATE_RECIPES = createClientbound("update_recipes");
+   public static final PacketType<ClientboundProjectilePowerPacket> CLIENTBOUND_PROJECTILE_POWER = createClientbound("projectile_power");
    public static final PacketType<ServerboundAcceptTeleportationPacket> SERVERBOUND_ACCEPT_TELEPORTATION = createServerbound("accept_teleportation");
    public static final PacketType<ServerboundBlockEntityTagQueryPacket> SERVERBOUND_BLOCK_ENTITY_TAG_QUERY = createServerbound("block_entity_tag_query");
    public static final PacketType<ServerboundChangeDifficultyPacket> SERVERBOUND_CHANGE_DIFFICULTY = createServerbound("change_difficulty");
    public static final PacketType<ServerboundChatAckPacket> SERVERBOUND_CHAT_ACK = createServerbound("chat_ack");
    public static final PacketType<ServerboundChatCommandPacket> SERVERBOUND_CHAT_COMMAND = createServerbound("chat_command");
+   public static final PacketType<ServerboundChatCommandSignedPacket> SERVERBOUND_CHAT_COMMAND_SIGNED = createServerbound("chat_command_signed");
    public static final PacketType<ServerboundChatPacket> SERVERBOUND_CHAT = createServerbound("chat");
    public static final PacketType<ServerboundChatSessionUpdatePacket> SERVERBOUND_CHAT_SESSION_UPDATE = createServerbound("chat_session_update");
    public static final PacketType<ServerboundChunkBatchReceivedPacket> SERVERBOUND_CHUNK_BATCH_RECEIVED = createServerbound("chunk_batch_received");

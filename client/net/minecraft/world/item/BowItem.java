@@ -23,8 +23,7 @@ public class BowItem extends ProjectileWeaponItem {
 
    @Override
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
-      if (var3 instanceof Player) {
-         Player var5 = (Player)var3;
+      if (var3 instanceof Player var5) {
          ItemStack var6 = var5.getProjectile(var1);
          if (!var6.isEmpty()) {
             int var7 = this.getUseDuration(var1) - var4;

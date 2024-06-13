@@ -40,7 +40,6 @@ public class ServerboundClientCommandPacket implements Packet<ServerGamePacketLi
 
    public static enum Action {
       PERFORM_RESPAWN,
-      SPROUT_RESPAWN,
       REQUEST_STATS;
 
       private Action() {

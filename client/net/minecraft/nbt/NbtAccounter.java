@@ -41,7 +41,7 @@ public class NbtAccounter {
       if (this.depth >= this.maxDepth) {
          throw new NbtAccounterException("Tried to read NBT tag with too high complexity, depth > " + this.maxDepth);
       } else {
-         ++this.depth;
+         this.depth++;
       }
    }
 
@@ -49,7 +49,7 @@ public class NbtAccounter {
       if (this.depth <= 0) {
          throw new NbtAccounterException("NBT-Accounter tried to pop stack-depth at top-level");
       } else {
-         --this.depth;
+         this.depth--;
       }
    }
 

@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -28,7 +27,7 @@ public class KillCommand {
    }
 
    private static int kill(CommandSourceStack var0, Collection<? extends Entity> var1) {
-      for(Entity var3 : var1) {
+      for (Entity var3 : var1) {
          var3.kill();
       }
 

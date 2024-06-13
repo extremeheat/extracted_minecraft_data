@@ -516,14 +516,14 @@ public abstract class RenderStateShard {
 
       MultiTextureStateShard(ImmutableList<Triple<ResourceLocation, Boolean, Boolean>> var1) {
          super(() -> {
-            int var1xx = 0;
+            int var1x = 0;
             UnmodifiableIterator var2 = var1.iterator();
 
-            while(var2.hasNext()) {
+            while (var2.hasNext()) {
                Triple var3 = (Triple)var2.next();
                TextureManager var4 = Minecraft.getInstance().getTextureManager();
-               var4.getTexture((ResourceLocation)var3.getLeft()).setFilter(var3.getMiddle(), var3.getRight());
-               RenderSystem.setShaderTexture(var1xx++, (ResourceLocation)var3.getLeft());
+               var4.getTexture((ResourceLocation)var3.getLeft()).setFilter((Boolean)var3.getMiddle(), (Boolean)var3.getRight());
+               RenderSystem.setShaderTexture(var1x++, (ResourceLocation)var3.getLeft());
             }
          }, () -> {
          });
@@ -540,9 +540,7 @@ public abstract class RenderStateShard {
       }
 
       public static final class Builder {
-         private final com.google.common.collect.ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new com.google.common.collect.ImmutableList.Builder(
-            
-         );
+         private final com.google.common.collect.ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new com.google.common.collect.ImmutableList.Builder();
 
          public Builder() {
             super();
@@ -613,8 +611,8 @@ public abstract class RenderStateShard {
 
       public TextureStateShard(ResourceLocation var1, boolean var2, boolean var3) {
          super(() -> {
-            TextureManager var3xx = Minecraft.getInstance().getTextureManager();
-            var3xx.getTexture(var1).setFilter(var2, var3);
+            TextureManager var3x = Minecraft.getInstance().getTextureManager();
+            var3x.getTexture(var1).setFilter(var2, var3);
             RenderSystem.setShaderTexture(0, var1);
          }, () -> {
          });

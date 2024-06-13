@@ -35,7 +35,7 @@ public class CriterionValidator {
    }
 
    public void validate(List<ContextAwarePredicate> var1, LootContextParamSet var2, String var3) {
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
+      for (int var4 = 0; var4 < var1.size(); var4++) {
          ContextAwarePredicate var5 = (ContextAwarePredicate)var1.get(var4);
          var5.validate(new ValidationContext(this.reporter.forChild(var3 + "[" + var4 + "]"), var2, this.lootData));
       }

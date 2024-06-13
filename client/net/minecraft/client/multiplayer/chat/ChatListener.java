@@ -35,10 +35,10 @@ public class ChatListener {
    public void tick() {
       if (this.messageDelay != 0L) {
          if (Util.getMillis() >= this.previousMessageTime + this.messageDelay) {
-            ChatListener.Message var1 = (ChatListener.Message)this.delayedMessageQueue.poll();
+            ChatListener.Message var1 = this.delayedMessageQueue.poll();
 
-            while(var1 != null && !var1.accept()) {
-               var1 = (ChatListener.Message)this.delayedMessageQueue.poll();
+            while (var1 != null && !var1.accept()) {
+               var1 = this.delayedMessageQueue.poll();
             }
          }
       }
@@ -55,7 +55,7 @@ public class ChatListener {
    }
 
    public void acceptNextDelayedMessage() {
-      ((ChatListener.Message)this.delayedMessageQueue.remove()).accept();
+      this.delayedMessageQueue.remove().accept();
    }
 
    public long queueSize() {
@@ -89,13 +89,13 @@ public class ChatListener {
       Component var6 = var3.decorate(var5.decoratedContent());
       Instant var7 = Instant.now();
       this.handleMessage(var1.signature(), () -> {
-         boolean var7xx = this.showMessageToPlayer(var3, var1, var6, var2, var4, var7);
+         boolean var7x = this.showMessageToPlayer(var3, var1, var6, var2, var4, var7);
          ClientPacketListener var8 = this.minecraft.getConnection();
          if (var8 != null) {
-            var8.markMessageAsProcessed(var1, var7xx);
+            var8.markMessageAsProcessed(var1, var7x);
          }
 
-         return var7xx;
+         return var7x;
       });
    }
 
@@ -197,15 +197,11 @@ public class ChatListener {
       }
    }
 
-   static record Message(@Nullable MessageSignature a, BooleanSupplier b) {
-      @Nullable
-      private final MessageSignature signature;
-      private final BooleanSupplier handler;
-
-      Message(@Nullable MessageSignature var1, BooleanSupplier var2) {
+   static record Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
+      Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
          super();
-         this.signature = var1;
-         this.handler = var2;
+         this.signature = signature;
+         this.handler = handler;
       }
 
       public boolean accept() {

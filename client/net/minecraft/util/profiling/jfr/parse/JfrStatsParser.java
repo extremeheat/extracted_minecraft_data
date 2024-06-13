@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Spliterators;
-import java.util.Map.Entry;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
@@ -117,7 +116,7 @@ public class JfrStatsParser {
          }
 
          String var2 = var1x.getEventType().getName();
-         switch(var2) {
+         switch (var2) {
             case "minecraft.ChunkGeneration":
                this.chunkGenStats.add(ChunkGenStat.from(var1x));
                break;
@@ -155,7 +154,7 @@ public class JfrStatsParser {
                this.appendFileIO(var1x, this.fileReads, "bytesRead");
                break;
             case "jdk.GarbageCollection":
-               ++this.garbageCollections;
+               this.garbageCollections++;
                this.gcTotalDuration = this.gcTotalDuration.plus(var1x.getDuration());
          }
       });
@@ -191,7 +190,7 @@ public class JfrStatsParser {
 
       public void increment(int var1) {
          this.totalSize += (long)var1;
-         ++this.count;
+         this.count++;
       }
 
       public IoSummary.CountAndSize toCountAndSize() {

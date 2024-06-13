@@ -126,7 +126,7 @@ public class HoneyBlock extends HalfTransparentBlock {
       if (var0.level().isClientSide) {
          BlockState var2 = Blocks.HONEY_BLOCK.defaultBlockState();
 
-         for(int var3 = 0; var3 < var1; ++var3) {
+         for (int var3 = 0; var3 < var1; var3++) {
             var0.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var2), var0.getX(), var0.getY(), var0.getZ(), 0.0, 0.0, 0.0);
          }
       }

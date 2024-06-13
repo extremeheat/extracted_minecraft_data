@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -85,7 +84,7 @@ public class AttachedStemBlock extends BushBlock {
 
    @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND) || var1.is(Blocks.POISON_FARMLAND);
+      return var1.is(Blocks.FARMLAND);
    }
 
    @Override

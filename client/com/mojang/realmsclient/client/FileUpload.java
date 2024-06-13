@@ -202,14 +202,14 @@ public class FileUpload {
             byte[] var3 = new byte[4096];
             int var10;
             if (this.length < 0L) {
-               while((var10 = var2.read(var3)) != -1) {
+               while ((var10 = var2.read(var3)) != -1) {
                   var1.write(var3, 0, var10);
                   this.uploadStatus.bytesWritten += (long)var10;
                }
             } else {
                long var5 = this.length;
 
-               while(var5 > 0L) {
+               while (var5 > 0L) {
                   var10 = var2.read(var3, 0, (int)Math.min(4096L, var5));
                   if (var10 == -1) {
                      break;

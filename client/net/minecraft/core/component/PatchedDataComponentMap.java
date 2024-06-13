@@ -43,7 +43,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
    private static boolean isPatchSanitized(DataComponentMap var0, Reference2ObjectMap<DataComponentType<?>, Optional<?>> var1) {
       ObjectIterator var2 = Reference2ObjectMaps.fastIterable(var1).iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          Entry var3 = (Entry)var2.next();
          Object var4 = var0.get((DataComponentType)var3.getKey());
          Optional var5 = (Optional)var3.getValue();
@@ -63,7 +63,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
    @Override
    public <T> T get(DataComponentType<? extends T> var1) {
       Optional var2 = (Optional)this.patch.get(var1);
-      return (T)(var2 != null ? var2.orElse((T)null) : this.prototype.get(var1));
+      return (T)(var2 != null ? var2.orElse(null) : this.prototype.get(var1));
    }
 
    @Nullable
@@ -91,14 +91,14 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          var3 = (Optional)this.patch.remove(var1);
       }
 
-      return (T)(var3 != null ? var3.orElse((T)null) : var2);
+      return (T)(var3 != null ? var3.orElse(null) : var2);
    }
 
    public void applyPatch(DataComponentPatch var1) {
       this.ensureMapOwnership();
       ObjectIterator var2 = Reference2ObjectMaps.fastIterable(var1.map).iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          Entry var3 = (Entry)var2.next();
          this.applyPatch((DataComponentType<?>)var3.getKey(), (Optional<?>)var3.getValue());
       }
@@ -120,7 +120,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
    }
 
    public void setAll(DataComponentMap var1) {
-      for(TypedDataComponent var3 : var1) {
+      for (TypedDataComponent var3 : var1) {
          var3.applyTo(this);
       }
    }
@@ -140,7 +140,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          ReferenceArraySet var1 = new ReferenceArraySet(this.prototype.keySet());
          ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var2.next();
             Optional var4 = (Optional)var3.getValue();
             if (var4.isPresent()) {
@@ -162,14 +162,14 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          ArrayList var1 = new ArrayList(this.patch.size() + this.prototype.size());
          ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var2.next();
             if (((Optional)var3.getValue()).isPresent()) {
                var1.add(TypedDataComponent.createUnchecked((DataComponentType)var3.getKey(), ((Optional)var3.getValue()).get()));
             }
          }
 
-         for(TypedDataComponent var5 : this.prototype) {
+         for (TypedDataComponent var5 : this.prototype) {
             if (!this.patch.containsKey(var5.type())) {
                var1.add(var5);
             }
@@ -184,7 +184,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       int var1 = this.prototype.size();
       ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var2.next();
          boolean var4 = ((Optional)var3.getValue()).isPresent();
          boolean var5 = this.prototype.has((DataComponentType<?>)var3.getKey());
@@ -230,6 +230,6 @@ public final class PatchedDataComponentMap implements DataComponentMap {
 
    @Override
    public String toString() {
-      return "{" + (String)this.stream().map(TypedDataComponent::toString).collect(Collectors.joining(", ")) + "}";
+      return "{" + this.stream().map(TypedDataComponent::toString).collect(Collectors.joining(", ")) + "}";
    }
 }

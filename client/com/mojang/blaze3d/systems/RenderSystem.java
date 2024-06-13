@@ -190,7 +190,7 @@ public class RenderSystem {
    public static void replayQueue() {
       isReplayingQueue = true;
 
-      while(!recordingQueue.isEmpty()) {
+      while (!recordingQueue.isEmpty()) {
          RenderCall var0 = recordingQueue.poll();
          var0.execute();
       }
@@ -202,7 +202,7 @@ public class RenderSystem {
       double var1 = lastDrawTime + 1.0 / (double)var0;
 
       double var3;
-      for(var3 = GLFW.glfwGetTime(); var3 < var1; var3 = GLFW.glfwGetTime()) {
+      for (var3 = GLFW.glfwGetTime(); var3 < var1; var3 = GLFW.glfwGetTime()) {
          GLFW.glfwWaitEventsTimeout(var1 - var3);
       }
 
@@ -596,7 +596,7 @@ public class RenderSystem {
          assertOnRenderThreadOrInit();
          int var0 = GlStateManager._getInteger(3379);
 
-         for(int var1 = Math.max(32768, var0); var1 >= 1024; var1 >>= 1) {
+         for (int var1 = Math.max(32768, var0); var1 >= 1024; var1 >>= 1) {
             GlStateManager._texImage2D(32868, 0, 6408, var1, var1, 0, 6408, 5121, null);
             int var2 = GlStateManager._getTexLevelParameter(32868, 0, 4096);
             if (var2 != 0) {
@@ -617,7 +617,7 @@ public class RenderSystem {
    }
 
    public static void glBindVertexArray(Supplier<Integer> var0) {
-      GlStateManager._glBindVertexArray(var0.get());
+      GlStateManager._glBindVertexArray((Integer)var0.get());
    }
 
    public static void glBufferData(int var0, ByteBuffer var1, int var2) {
@@ -913,7 +913,7 @@ public class RenderSystem {
    public static RenderSystem.AutoStorageIndexBuffer getSequentialBuffer(VertexFormat.Mode var0) {
       assertOnRenderThread();
 
-      return switch(var0) {
+      return switch (var0) {
          case QUADS -> sharedSequentialQuad;
          case LINES -> sharedSequentialLines;
          default -> sharedSequential;
@@ -983,7 +983,7 @@ public class RenderSystem {
                this.type = var4;
                it.unimi.dsi.fastutil.ints.IntConsumer var7 = this.intConsumer(var6);
 
-               for(int var8 = 0; var8 < var1; var8 += this.indexStride) {
+               for (int var8 = 0; var8 < var1; var8 += this.indexStride) {
                   this.generator.accept(var7, var8 * this.vertexStride / this.indexStride);
                }
 
@@ -994,7 +994,7 @@ public class RenderSystem {
       }
 
       private it.unimi.dsi.fastutil.ints.IntConsumer intConsumer(ByteBuffer var1) {
-         switch(this.type) {
+         switch (this.type) {
             case SHORT:
                return var1x -> var1.putShort((short)var1x);
             case INT:

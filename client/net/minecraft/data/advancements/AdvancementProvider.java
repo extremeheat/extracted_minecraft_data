@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -39,11 +38,11 @@ public class AdvancementProvider implements DataProvider {
             }
          };
 
-         for(AdvancementSubProvider var7 : this.subProviders) {
+         for (AdvancementSubProvider var7 : this.subProviders) {
             var7.generate(var2, var5);
          }
 
-         return CompletableFuture.allOf(var4.toArray(var0 -> new CompletableFuture[var0]));
+         return CompletableFuture.allOf(var4.toArray(CompletableFuture[]::new));
       });
    }
 

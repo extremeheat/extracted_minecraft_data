@@ -70,7 +70,7 @@ public class SlotRanges {
    private static void addSlotRange(List<SlotRange> var0, String var1, int var2, int var3) {
       IntArrayList var4 = new IntArrayList(var3);
 
-      for(int var5 = 0; var5 < var3; ++var5) {
+      for (int var5 = 0; var5 < var3; var5++) {
          int var6 = var2 + var5;
          var0.add(create(var1 + var5, var6));
          var4.add(var6);

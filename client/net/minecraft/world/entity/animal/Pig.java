@@ -18,7 +18,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ItemBasedSteering;
@@ -51,16 +50,10 @@ import net.minecraft.world.phys.Vec3;
 public class Pig extends Animal implements ItemSteerable, Saddleable {
    private static final EntityDataAccessor<Boolean> DATA_SADDLE_ID = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Boolean> DATA_CURIOUS = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.BOOLEAN);
    private final ItemBasedSteering steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME, DATA_SADDLE_ID);
 
    public Pig(EntityType<? extends Pig> var1, Level var2) {
       super(var1, var2);
-   }
-
-   @Override
-   public boolean hasPotatoVariant() {
-      return true;
    }
 
    @Override
@@ -69,39 +62,10 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.25));
       this.goalSelector.addGoal(3, new BreedGoal(this, 1.0));
       this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, var0 -> var0.is(Items.CARROT_ON_A_STICK), false));
-      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, var0 -> var0.is(ItemTags.PIG_FOOD), false) {
-         @Override
-         public void start() {
-            if (Pig.this.isPotato()) {
-               Pig.this.setCurious(true);
-            }
-
-            super.start();
-         }
-
-         @Override
-         public void stop() {
-            super.stop();
-            Pig.this.setCurious(false);
-         }
-      });
+      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, var0 -> var0.is(ItemTags.PIG_FOOD), false));
       this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.1));
       this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
-      this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F) {
-         @Override
-         public void start() {
-            super.start();
-            if (Pig.this.isPotato() && this.lookAt instanceof Player) {
-               Pig.this.setCurious(true);
-            }
-         }
-
-         @Override
-         public void stop() {
-            super.stop();
-            Pig.this.setCurious(false);
-         }
-      });
+      this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
    }
 
@@ -112,14 +76,9 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    @Nullable
    @Override
    public LivingEntity getControllingPassenger() {
-      if (this.isSaddled()) {
-         Entity var2 = this.getFirstPassenger();
-         if (var2 instanceof Player var1 && ((Player)var1).isHolding(Items.CARROT_ON_A_STICK)) {
-            return (LivingEntity)var1;
-         }
-      }
-
-      return super.getControllingPassenger();
+      return (LivingEntity)(this.isSaddled() && this.getFirstPassenger() instanceof Player var1 && var1.isHolding(Items.CARROT_ON_A_STICK)
+         ? var1
+         : super.getControllingPassenger());
    }
 
    @Override
@@ -136,7 +95,6 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
       super.defineSynchedData(var1);
       var1.define(DATA_SADDLE_ID, false);
       var1.define(DATA_BOOST_TIME, 0);
-      var1.define(DATA_CURIOUS, false);
    }
 
    @Override
@@ -228,11 +186,11 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
          UnmodifiableIterator var6 = var1.getDismountPoses().iterator();
 
-         while(var6.hasNext()) {
+         while (var6.hasNext()) {
             Pose var7 = (Pose)var6.next();
             AABB var8 = var1.getLocalBoundsForPose(var7);
 
-            for(int[] var12 : var3) {
+            for (int[] var12 : var3) {
                var5.set(var4.getX() + var12[0], var4.getY(), var4.getZ() + var12[1]);
                double var13 = this.level().getBlockFloorHeight(var5);
                if (DismountHelper.isBlockFloorValid(var13)) {
@@ -310,13 +268,5 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.6F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
-   }
-
-   public boolean isCurious() {
-      return this.entityData.get(DATA_CURIOUS);
-   }
-
-   public void setCurious(boolean var1) {
-      this.entityData.set(DATA_CURIOUS, var1);
    }
 }

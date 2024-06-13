@@ -21,7 +21,6 @@ import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.WallTorchBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -76,7 +75,7 @@ public class StrongholdPieces {
    public static void resetPieces() {
       currentPieces = Lists.newArrayList();
 
-      for(StrongholdPieces.PieceWeight var3 : STRONGHOLD_PIECE_WEIGHTS) {
+      for (StrongholdPieces.PieceWeight var3 : STRONGHOLD_PIECE_WEIGHTS) {
          var3.placeCount = 0;
          currentPieces.add(var3);
       }
@@ -88,12 +87,12 @@ public class StrongholdPieces {
       boolean var0 = false;
       totalWeight = 0;
 
-      for(StrongholdPieces.PieceWeight var2 : currentPieces) {
+      for (StrongholdPieces.PieceWeight var2 : currentPieces) {
          if (var2.maxPlaceCount > 0 && var2.placeCount < var2.maxPlaceCount) {
             var0 = true;
          }
 
-         totalWeight += var2.weight;
+         totalWeight = totalWeight + var2.weight;
       }
 
       return var0;
@@ -153,11 +152,11 @@ public class StrongholdPieces {
 
          int var13 = 0;
 
-         while(var13 < 5) {
-            ++var13;
+         while (var13 < 5) {
+            var13++;
             int var9 = var2.nextInt(totalWeight);
 
-            for(StrongholdPieces.PieceWeight var11 : currentPieces) {
+            for (StrongholdPieces.PieceWeight var11 : currentPieces) {
                var9 -= var11.weight;
                if (var9 < 0) {
                   if (!var11.doPlace(var7) || var11 == var0.previousPiece) {
@@ -166,7 +165,7 @@ public class StrongholdPieces {
 
                   StrongholdPieces.StrongholdPiece var12 = findAndCreatePieceFactory(var11.pieceClass, var1, var2, var3, var4, var5, var6, var7);
                   if (var12 != null) {
-                     ++var11.placeCount;
+                     var11.placeCount++;
                      var0.previousPiece = var11;
                      if (!var11.isValid()) {
                         currentPieces.remove(var11);
@@ -247,7 +246,7 @@ public class StrongholdPieces {
          this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 2, 2, var5);
          this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 2, 4, var5);
 
-         for(int var8 = 2; var8 <= 4; ++var8) {
+         for (int var8 = 2; var8 <= 4; var8++) {
             this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 2, 1, var8, var5);
          }
 
@@ -279,14 +278,14 @@ public class StrongholdPieces {
       }
 
       public static BoundingBox findPieceBox(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
-         boolean var6 = true;
+         byte var6 = 3;
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 5, 5, 4, var5);
          StructurePiece var8 = var0.findCollisionPiece(var7);
          if (var8 == null) {
             return null;
          } else {
             if (var8.getBoundingBox().minY() == var7.minY()) {
-               for(int var9 = 2; var9 >= 1; --var9) {
+               for (int var9 = 2; var9 >= 1; var9--) {
                   var7 = BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 5, 5, var9, var5);
                   if (!var8.getBoundingBox().intersects(var7)) {
                      return BoundingBox.orientBox(var2, var3, var4, -1, -1, 0, 5, 5, var9 + 1, var5);
@@ -300,14 +299,14 @@ public class StrongholdPieces {
 
       @Override
       public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         for(int var8 = 0; var8 < this.steps; ++var8) {
+         for (int var8 = 0; var8 < this.steps; var8++) {
             this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, 0, var8, var5);
             this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 0, var8, var5);
             this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 0, var8, var5);
             this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 0, var8, var5);
             this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 4, 0, var8, var5);
 
-            for(int var9 = 1; var9 <= 3; ++var9) {
+            for (int var9 = 1; var9 <= 3; var9++) {
                this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, var9, var8, var5);
                this.placeBlock(var1, Blocks.CAVE_AIR.defaultBlockState(), 1, var9, var8, var5);
                this.placeBlock(var1, Blocks.CAVE_AIR.defaultBlockState(), 2, var9, var8, var5);
@@ -534,9 +533,9 @@ public class StrongholdPieces {
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 4, 1, 0);
          this.generateMaybeBox(var1, var5, var4, 0.07F, 2, 1, 1, 11, 4, 13, Blocks.COBWEB.defaultBlockState(), Blocks.COBWEB.defaultBlockState(), false, false);
          boolean var9 = true;
-         boolean var10 = true;
+         byte var10 = 12;
 
-         for(int var11 = 1; var11 <= 13; ++var11) {
+         for (int var11 = 1; var11 <= 13; var11++) {
             if ((var11 - 1) % 4 == 0) {
                this.generateBox(var1, var5, 1, 1, var11, 1, 4, var11, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
                this.generateBox(var1, var5, 12, 1, var11, 12, 4, var11, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
@@ -556,7 +555,7 @@ public class StrongholdPieces {
             }
          }
 
-         for(int var20 = 3; var20 < 12; var20 += 2) {
+         for (byte var20 = 3; var20 < 12; var20 += 2) {
             this.generateBox(var1, var5, 3, 1, var20, 4, 3, var20, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
             this.generateBox(var1, var5, 6, 1, var20, 7, 3, var20, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
             this.generateBox(var1, var5, 9, 1, var20, 10, 3, var20, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
@@ -607,7 +606,7 @@ public class StrongholdPieces {
                var5
             );
 
-            for(int var13 = 0; var13 <= 2; ++var13) {
+            for (int var13 = 0; var13 <= 2; var13++) {
                this.placeBlock(
                   var1,
                   Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.SOUTH, Boolean.valueOf(true)).setValue(FenceBlock.WEST, Boolean.valueOf(true)),
@@ -636,8 +635,8 @@ public class StrongholdPieces {
             this.placeBlock(var1, var22, 10, 5, 13, var5);
             this.placeBlock(var1, var22, 10, 6, 13, var5);
             this.placeBlock(var1, var22, 10, 7, 13, var5);
-            boolean var14 = true;
-            boolean var15 = true;
+            byte var14 = 7;
+            byte var15 = 7;
             BlockState var16 = Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.EAST, Boolean.valueOf(true));
             this.placeBlock(var1, var16, 6, 9, 7, var5);
             BlockState var17 = Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WEST, Boolean.valueOf(true));
@@ -726,13 +725,11 @@ public class StrongholdPieces {
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new StrongholdPieces.PortalRoom(var5, var6, var4) : null;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 10, 7, 15, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.GRATES, 4, 1, 0);
-         boolean var8 = true;
+         byte var8 = 6;
          this.generateBox(var1, var5, 1, 6, 1, 1, 6, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 9, 6, 1, 9, 6, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 2, 6, 1, 8, 6, 2, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
@@ -752,12 +749,12 @@ public class StrongholdPieces {
             .setValue(IronBarsBlock.WEST, Boolean.valueOf(true))
             .setValue(IronBarsBlock.EAST, Boolean.valueOf(true));
 
-         for(int var11 = 3; var11 < 14; var11 += 2) {
+         for (byte var11 = 3; var11 < 14; var11 += 2) {
             this.generateBox(var1, var5, 0, 3, var11, 0, 4, var11, var9, var9, false);
             this.generateBox(var1, var5, 10, 3, var11, 10, 4, var11, var9, var9, false);
          }
 
-         for(int var21 = 2; var21 < 9; var21 += 2) {
+         for (byte var21 = 2; var21 < 9; var21 += 2) {
             this.generateBox(var1, var5, var21, 3, 15, var21, 4, 15, var10, var10, false);
          }
 
@@ -766,7 +763,7 @@ public class StrongholdPieces {
          this.generateBox(var1, var5, 4, 2, 6, 6, 2, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 4, 3, 7, 6, 3, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
 
-         for(int var12 = 4; var12 <= 6; ++var12) {
+         for (int var12 = 4; var12 <= 6; var12++) {
             this.placeBlock(var1, var22, var12, 1, 4, var5);
             this.placeBlock(var1, var22, var12, 2, 5, var5);
             this.placeBlock(var1, var22, var12, 3, 6, var5);
@@ -779,7 +776,7 @@ public class StrongholdPieces {
          boolean var16 = true;
          boolean[] var17 = new boolean[12];
 
-         for(int var18 = 0; var18 < var17.length; ++var18) {
+         for (int var18 = 0; var18 < var17.length; var18++) {
             var17[var18] = var4.nextFloat() > 0.9F;
             var16 &= var17[var18];
          }
@@ -796,7 +793,6 @@ public class StrongholdPieces {
          this.placeBlock(var1, var15.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[9])), 7, 3, 9, var5);
          this.placeBlock(var1, var15.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[10])), 7, 3, 10, var5);
          this.placeBlock(var1, var15.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[11])), 7, 3, 11, var5);
-         this.placeBlock(var1, Blocks.PEDESTAL.defaultBlockState(), 5, 2, 10, var5);
          if (var16) {
             BlockState var24 = Blocks.END_PORTAL.defaultBlockState();
             this.placeBlock(var1, var24, 4, 3, 9, var5);
@@ -815,8 +811,7 @@ public class StrongholdPieces {
             if (var5.isInside(var25)) {
                this.hasPlacedSpawner = true;
                var1.setBlock(var25, Blocks.SPAWNER.defaultBlockState(), 2);
-               BlockEntity var19 = var1.getBlockEntity(var25);
-               if (var19 instanceof SpawnerBlockEntity var20) {
+               if (var1.getBlockEntity(var25) instanceof SpawnerBlockEntity var20) {
                   var20.setEntityId(EntityType.SILVERFISH, var4);
                }
             }
@@ -861,7 +856,7 @@ public class StrongholdPieces {
          this.generateBox(var1, var5, 4, 1, 7, 4, 3, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 4, 1, 9, 4, 3, 9, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
 
-         for(int var8 = 1; var8 <= 3; ++var8) {
+         for (int var8 = 1; var8 <= 3; var8++) {
             this.placeBlock(
                var1,
                Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, Boolean.valueOf(true)).setValue(IronBarsBlock.SOUTH, Boolean.valueOf(true)),
@@ -1027,7 +1022,7 @@ public class StrongholdPieces {
          this.generateBox(var1, var5, 4, 1, 10, 6, 3, 10, CAVE_AIR, CAVE_AIR, false);
          this.generateBox(var1, var5, 0, 1, 4, 0, 3, 6, CAVE_AIR, CAVE_AIR, false);
          this.generateBox(var1, var5, 10, 1, 4, 10, 3, 6, CAVE_AIR, CAVE_AIR, false);
-         switch(this.type) {
+         switch (this.type) {
             case 0:
                this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 1, 5, var5);
                this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 2, 5, var5);
@@ -1046,7 +1041,7 @@ public class StrongholdPieces {
                this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 5, 1, 6, var5);
                break;
             case 1:
-               for(int var13 = 0; var13 < 5; ++var13) {
+               for (int var13 = 0; var13 < 5; var13++) {
                   this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 1, 3 + var13, var5);
                   this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 7, 1, 3 + var13, var5);
                   this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3 + var13, 1, 3, var5);
@@ -1059,12 +1054,12 @@ public class StrongholdPieces {
                this.placeBlock(var1, Blocks.WATER.defaultBlockState(), 5, 4, 5, var5);
                break;
             case 2:
-               for(int var8 = 1; var8 <= 9; ++var8) {
+               for (int var8 = 1; var8 <= 9; var8++) {
                   this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 1, 3, var8, var5);
                   this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 9, 3, var8, var5);
                }
 
-               for(int var9 = 1; var9 <= 9; ++var9) {
+               for (int var9 = 1; var9 <= 9; var9++) {
                   this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), var9, 3, 1, var5);
                   this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), var9, 3, 9, var5);
                }
@@ -1078,7 +1073,7 @@ public class StrongholdPieces {
                this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, 3, 5, var5);
                this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, 3, 5, var5);
 
-               for(int var10 = 1; var10 <= 3; ++var10) {
+               for (int var10 = 1; var10 <= 3; var10++) {
                   this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, var10, 4, var5);
                   this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, var10, 4, var5);
                   this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, var10, 6, var5);
@@ -1087,7 +1082,7 @@ public class StrongholdPieces {
 
                this.placeBlock(var1, Blocks.WALL_TORCH.defaultBlockState(), 5, 3, 5, var5);
 
-               for(int var11 = 2; var11 <= 8; ++var11) {
+               for (int var11 = 2; var11 <= 8; var11++) {
                   this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 2, 3, var11, var5);
                   this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 3, 3, var11, var5);
                   if (var11 <= 3 || var11 >= 7) {
@@ -1331,7 +1326,7 @@ public class StrongholdPieces {
          this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 7);
          BlockState var8 = Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
 
-         for(int var9 = 0; var9 < 6; ++var9) {
+         for (int var9 = 0; var9 < 6; var9++) {
             this.placeBlock(var1, var8, 1, 6 - var9, 1 + var9, var5);
             this.placeBlock(var1, var8, 2, 6 - var9, 1 + var9, var5);
             this.placeBlock(var1, var8, 3, 6 - var9, 1 + var9, var5);
@@ -1364,7 +1359,7 @@ public class StrongholdPieces {
       protected void generateSmallDoor(
          WorldGenLevel var1, RandomSource var2, BoundingBox var3, StrongholdPieces.StrongholdPiece.SmallDoorType var4, int var5, int var6, int var7
       ) {
-         switch(var4) {
+         switch (var4) {
             case OPENING:
                this.generateBox(var1, var3, var5, var6, var7, var5 + 3 - 1, var6 + 3 - 1, var7, CAVE_AIR, CAVE_AIR, false);
                break;
@@ -1428,7 +1423,7 @@ public class StrongholdPieces {
 
       protected StrongholdPieces.StrongholdPiece.SmallDoorType randomSmallDoor(RandomSource var1) {
          int var2 = var1.nextInt(5);
-         switch(var2) {
+         switch (var2) {
             case 0:
             case 1:
             default:
@@ -1448,7 +1443,7 @@ public class StrongholdPieces {
       ) {
          Direction var6 = this.getOrientation();
          if (var6 != null) {
-            switch(var6) {
+            switch (var6) {
                case NORTH:
                   return StrongholdPieces.generateAndAddPiece(
                      var1, var2, var3, this.boundingBox.minX() + var4, this.boundingBox.minY() + var5, this.boundingBox.minZ() - 1, var6, this.getGenDepth()
@@ -1475,7 +1470,7 @@ public class StrongholdPieces {
       protected StructurePiece generateSmallDoorChildLeft(StrongholdPieces.StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
          Direction var6 = this.getOrientation();
          if (var6 != null) {
-            switch(var6) {
+            switch (var6) {
                case NORTH:
                   return StrongholdPieces.generateAndAddPiece(
                      var1,
@@ -1530,7 +1525,7 @@ public class StrongholdPieces {
       protected StructurePiece generateSmallDoorChildRight(StrongholdPieces.StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
          Direction var6 = this.getOrientation();
          if (var6 != null) {
-            switch(var6) {
+            switch (var6) {
                case NORTH:
                   return StrongholdPieces.generateAndAddPiece(
                      var1,

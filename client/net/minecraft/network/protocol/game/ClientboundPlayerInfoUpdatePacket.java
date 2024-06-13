@@ -59,7 +59,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       this.entries = var1.readList(var1x -> {
          ClientboundPlayerInfoUpdatePacket.EntryBuilder var2 = new ClientboundPlayerInfoUpdatePacket.EntryBuilder(var1x.readUUID());
 
-         for(ClientboundPlayerInfoUpdatePacket.Action var4 : this.actions) {
+         for (ClientboundPlayerInfoUpdatePacket.Action var4 : this.actions) {
             var4.reader.read(var2, (RegistryFriendlyByteBuf)var1x);
          }
 
@@ -72,7 +72,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       var1.writeCollection(this.entries, (var1x, var2) -> {
          var1x.writeUUID(var2.profileId());
 
-         for(ClientboundPlayerInfoUpdatePacket.Action var4 : this.actions) {
+         for (ClientboundPlayerInfoUpdatePacket.Action var4 : this.actions) {
             var4.writer.write((RegistryFriendlyByteBuf)var1x, var2);
          }
       });
@@ -143,17 +143,15 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       }
    }
 
-   public static record Entry(UUID a, @Nullable GameProfile b, boolean c, int d, GameType e, @Nullable Component f, @Nullable RemoteChatSession.Data g) {
-      private final UUID profileId;
-      @Nullable
-      private final GameProfile profile;
-      private final boolean listed;
-      private final int latency;
-      private final GameType gameMode;
-      @Nullable
-      private final Component displayName;
-      @Nullable
-      final RemoteChatSession.Data chatSession;
+   public static record Entry(
+      UUID profileId,
+      @Nullable GameProfile profile,
+      boolean listed,
+      int latency,
+      GameType gameMode,
+      @Nullable Component displayName,
+      @Nullable RemoteChatSession.Data chatSession
+   ) {
 
       Entry(ServerPlayer var1) {
          this(
@@ -168,16 +166,22 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       }
 
       public Entry(
-         UUID var1, @Nullable GameProfile var2, boolean var3, int var4, GameType var5, @Nullable Component var6, @Nullable RemoteChatSession.Data var7
+         UUID profileId,
+         @Nullable GameProfile profile,
+         boolean listed,
+         int latency,
+         GameType gameMode,
+         @Nullable Component displayName,
+         @Nullable RemoteChatSession.Data chatSession
       ) {
          super();
-         this.profileId = var1;
-         this.profile = var2;
-         this.listed = var3;
-         this.latency = var4;
-         this.gameMode = var5;
-         this.displayName = var6;
-         this.chatSession = var7;
+         this.profileId = profileId;
+         this.profile = profile;
+         this.listed = listed;
+         this.latency = latency;
+         this.gameMode = gameMode;
+         this.displayName = displayName;
+         this.chatSession = chatSession;
       }
    }
 

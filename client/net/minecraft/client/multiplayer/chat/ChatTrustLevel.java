@@ -53,7 +53,7 @@ public enum ChatTrustLevel implements StringRepresentable {
 
    @Nullable
    public GuiMessageTag createTag(PlayerChatMessage var1) {
-      return switch(this) {
+      return switch (this) {
          case MODIFIED -> GuiMessageTag.chatModified(var1.signedContent());
          case NOT_SECURE -> GuiMessageTag.chatNotSecure();
          default -> null;

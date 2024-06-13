@@ -33,7 +33,7 @@ public class EntitySectionStorage<T extends EntityAccess> {
    }
 
    public void forEachAccessibleNonEmptySection(AABB var1, AbortableIterationConsumer<EntitySection<T>> var2) {
-      boolean var3 = true;
+      byte var3 = 2;
       int var4 = SectionPos.posToSectionCoord(var1.minX - 2.0);
       int var5 = SectionPos.posToSectionCoord(var1.minY - 4.0);
       int var6 = SectionPos.posToSectionCoord(var1.minZ - 2.0);
@@ -41,12 +41,12 @@ public class EntitySectionStorage<T extends EntityAccess> {
       int var8 = SectionPos.posToSectionCoord(var1.maxY + 0.0);
       int var9 = SectionPos.posToSectionCoord(var1.maxZ + 2.0);
 
-      for(int var10 = var4; var10 <= var7; ++var10) {
+      for (int var10 = var4; var10 <= var7; var10++) {
          long var11 = SectionPos.asLong(var10, 0, 0);
          long var13 = SectionPos.asLong(var10, -1, -1);
          LongBidirectionalIterator var15 = this.sectionIds.subSet(var11, var13 + 1L).iterator();
 
-         while(var15.hasNext()) {
+         while (var15.hasNext()) {
             long var16 = var15.nextLong();
             int var18 = SectionPos.y(var16);
             int var19 = SectionPos.z(var16);

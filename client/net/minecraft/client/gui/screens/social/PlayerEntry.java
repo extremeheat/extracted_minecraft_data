@@ -163,7 +163,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          var1.drawString(this.minecraft.font, var15, var13, var14 + 12, PLAYER_STATUS_COLOR, false);
       }
 
-      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skinGetter.get(), var11, var12, 24);
+      PlayerFaceRenderer.draw(var1, this.skinGetter.get(), var11, var12, 24);
       var1.drawString(this.minecraft.font, this.playerName, var13, var14, PLAYERNAME_COLOR, false);
       if (this.isRemoved) {
          var1.fill(var11, var12, var11 + 24, var12 + 24, SKIN_SHADE);

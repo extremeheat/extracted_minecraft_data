@@ -39,7 +39,7 @@ public class GlStateManager {
    private static int activeTexture;
    private static final GlStateManager.TextureState[] TEXTURES = IntStream.range(0, 12)
       .mapToObj(var0 -> new GlStateManager.TextureState())
-      .toArray(var0 -> new GlStateManager.TextureState[var0]);
+      .toArray(GlStateManager.TextureState[]::new);
    private static final GlStateManager.ColorMask COLOR_MASK = new GlStateManager.ColorMask();
 
    public GlStateManager() {
@@ -146,7 +146,7 @@ public class GlStateManager {
       RenderSystem.assertOnRenderThread();
       StringBuilder var2 = new StringBuilder();
 
-      for(String var4 : var1) {
+      for (String var4 : var1) {
          var2.append(var4);
       }
 
@@ -536,7 +536,7 @@ public class GlStateManager {
       RenderSystem.assertOnRenderThreadOrInit();
       GL11.glDeleteTextures(var0);
 
-      for(GlStateManager.TextureState var4 : TEXTURES) {
+      for (GlStateManager.TextureState var4 : TEXTURES) {
          if (var4.binding == var0) {
             var4.binding = -1;
          }
@@ -546,8 +546,8 @@ public class GlStateManager {
    public static void _deleteTextures(int[] var0) {
       RenderSystem.assertOnRenderThreadOrInit();
 
-      for(GlStateManager.TextureState var4 : TEXTURES) {
-         for(int var8 : var0) {
+      for (GlStateManager.TextureState var4 : TEXTURES) {
+         for (int var8 : var0) {
             if (var4.binding == var8) {
                var4.binding = -1;
             }

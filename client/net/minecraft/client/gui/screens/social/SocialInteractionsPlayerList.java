@@ -55,7 +55,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    private void addOnlinePlayers(Collection<UUID> var1, Map<UUID, PlayerEntry> var2) {
       ClientPacketListener var3 = this.minecraft.player.connection;
 
-      for(UUID var5 : var1) {
+      for (UUID var5 : var1) {
          PlayerInfo var6 = var3.getPlayerInfo(var5);
          if (var6 != null) {
             boolean var7 = var6.hasVerifiableChat();
@@ -65,7 +65,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    }
 
    private void updatePlayersFromChatLog(Map<UUID, PlayerEntry> var1, boolean var2) {
-      for(GameProfile var5 : collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog())) {
+      for (GameProfile var5 : collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog())) {
          PlayerEntry var6;
          if (var2) {
             var6 = var1.computeIfAbsent(
@@ -89,15 +89,16 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static Collection<GameProfile> collectProfilesFromChatLog(ChatLog var0) {
       ObjectLinkedOpenHashSet var1 = new ObjectLinkedOpenHashSet();
 
-      for(int var2 = var0.end(); var2 >= var0.start(); --var2) {
+      for (int var2 = var0.end(); var2 >= var0.start(); var2--) {
          LoggedChatEvent var3 = var0.lookup(var2);
-         if (var3 instanceof LoggedChatMessage.Player var4 && var4.message().hasSignature()) {
-            var1.add(var4.profile());
+         if (var3 instanceof LoggedChatMessage.Player) {
+            LoggedChatMessage.Player var4 = (LoggedChatMessage.Player)var3;
+            if (var4.message().hasSignature()) {
+               var1.add(var4.profile());
+            }
          }
       }
 
@@ -154,7 +155,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    public void addPlayer(PlayerInfo var1, SocialInteractionsScreen.Page var2) {
       UUID var3 = var1.getProfile().getId();
 
-      for(PlayerEntry var5 : this.players) {
+      for (PlayerEntry var5 : this.players) {
          if (var5.getPlayerId().equals(var3)) {
             var5.setRemoved(false);
             return;
@@ -173,7 +174,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    }
 
    public void removePlayer(UUID var1) {
-      for(PlayerEntry var3 : this.players) {
+      for (PlayerEntry var3 : this.players) {
          if (var3.getPlayerId().equals(var1)) {
             var3.setRemoved(true);
             return;

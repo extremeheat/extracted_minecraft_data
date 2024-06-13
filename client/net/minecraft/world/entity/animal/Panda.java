@@ -116,11 +116,7 @@ public class Panda extends Animal {
    @Override
    public boolean canTakeItem(ItemStack var1) {
       EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
-      if (!this.getItemBySlot(var2).isEmpty()) {
-         return false;
-      } else {
-         return var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
-      }
+      return !this.getItemBySlot(var2).isEmpty() ? false : var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
    }
 
    public int getUnhappyCounter() {
@@ -258,7 +254,7 @@ public class Panda extends Animal {
       Panda var3 = EntityType.PANDA.create(var1);
       if (var3 != null) {
          if (var2 instanceof Panda var4) {
-            var3.setGeneFromParents(this, (Panda)var4);
+            var3.setGeneFromParents(this, var4);
          }
 
          var3.setAttributes();
@@ -427,7 +423,7 @@ public class Panda extends Animal {
       if (this.getEatCounter() % 5 == 0) {
          this.playSound(SoundEvents.PANDA_EAT, 0.5F + 0.5F * (float)this.random.nextInt(2), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
 
-         for(int var1 = 0; var1 < 6; ++var1) {
+         for (int var1 = 0; var1 < 6; var1++) {
             Vec3 var2 = new Vec3(((double)this.random.nextFloat() - 0.5) * 0.1, Math.random() * 0.1 + 0.1, ((double)this.random.nextFloat() - 0.5) * 0.1);
             var2 = var2.xRot(-this.getXRot() * 0.017453292F);
             var2 = var2.yRot(-this.getYRot() * 0.017453292F);
@@ -483,7 +479,7 @@ public class Panda extends Animal {
    }
 
    private void handleRoll() {
-      ++this.rollCounter;
+      this.rollCounter++;
       if (this.rollCounter > 32) {
          this.roll(false);
       } else {
@@ -517,7 +513,7 @@ public class Panda extends Animal {
       );
       this.playSound(SoundEvents.PANDA_SNEEZE, 1.0F, 1.0F);
 
-      for(Panda var5 : var2.getEntitiesOfClass(Panda.class, this.getBoundingBox().inflate(10.0))) {
+      for (Panda var5 : var2.getEntitiesOfClass(Panda.class, this.getBoundingBox().inflate(10.0))) {
          if (!var5.isBaby() && var5.onGround() && !var5.isInWater() && var5.canPerformAction()) {
             var5.jumpFromGround();
          }
@@ -531,7 +527,7 @@ public class Panda extends Animal {
             .withParameter(LootContextParams.THIS_ENTITY, this)
             .create(LootContextParamSets.GIFT);
 
-         for(ItemStack var9 : var11.getRandomItems(var6)) {
+         for (ItemStack var9 : var11.getRandomItems(var6)) {
             this.spawnAtLocation(var9);
          }
       }
@@ -836,10 +832,10 @@ public class Panda extends Animal {
          BlockPos var1 = this.panda.blockPosition();
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
 
-         for(int var3 = 0; var3 < 3; ++var3) {
-            for(int var4 = 0; var4 < 8; ++var4) {
-               for(int var5 = 0; var5 <= var4; var5 = var5 > 0 ? -var5 : 1 - var5) {
-                  for(int var6 = var5 < var4 && var5 > -var4 ? var4 : 0; var6 <= var4; var6 = var6 > 0 ? -var6 : 1 - var6) {
+         for (int var3 = 0; var3 < 3; var3++) {
+            for (int var4 = 0; var4 < 8; var4++) {
+               for (int var5 = 0; var5 <= var4; var5 = var5 > 0 ? -var5 : 1 - var5) {
+                  for (int var6 = var5 < var4 && var5 > -var4 ? var4 : 0; var6 <= var4; var6 = var6 > 0 ? -var6 : 1 - var6) {
                      var2.setWithOffset(var1, var5, var3, var6);
                      if (this.level.getBlockState(var2).is(Blocks.BAMBOO)) {
                         return true;
@@ -898,11 +894,9 @@ public class Panda extends Animal {
 
       @Override
       public boolean canContinueToUse() {
-         if (!this.panda.isInWater() && (this.panda.isLazy() || this.panda.random.nextInt(reducedTickDelay(600)) != 1)) {
-            return this.panda.random.nextInt(reducedTickDelay(2000)) != 1;
-         } else {
-            return false;
-         }
+         return !this.panda.isInWater() && (this.panda.isLazy() || this.panda.random.nextInt(reducedTickDelay(600)) != 1)
+            ? this.panda.random.nextInt(reducedTickDelay(2000)) != 1
+            : false;
       }
 
       @Override
@@ -1035,10 +1029,10 @@ public class Panda extends Animal {
                int var5 = (double)Math.abs(var3) > 0.5 ? Mth.sign((double)var3) : 0;
                if (this.panda.level().getBlockState(this.panda.blockPosition().offset(var4, -1, var5)).isAir()) {
                   return true;
-               } else if (this.panda.isPlayful() && this.panda.random.nextInt(reducedTickDelay(60)) == 1) {
-                  return true;
                } else {
-                  return this.panda.random.nextInt(reducedTickDelay(500)) == 1;
+                  return this.panda.isPlayful() && this.panda.random.nextInt(reducedTickDelay(60)) == 1
+                     ? true
+                     : this.panda.random.nextInt(reducedTickDelay(500)) == 1;
                }
             }
          } else {
@@ -1086,11 +1080,9 @@ public class Panda extends Animal {
 
       @Override
       public boolean canContinueToUse() {
-         if (!Panda.this.isInWater() && (Panda.this.isLazy() || Panda.this.random.nextInt(reducedTickDelay(600)) != 1)) {
-            return Panda.this.random.nextInt(reducedTickDelay(2000)) != 1;
-         } else {
-            return false;
-         }
+         return !Panda.this.isInWater() && (Panda.this.isLazy() || Panda.this.random.nextInt(reducedTickDelay(600)) != 1)
+            ? Panda.this.random.nextInt(reducedTickDelay(2000)) != 1
+            : false;
       }
 
       @Override
@@ -1137,11 +1129,7 @@ public class Panda extends Animal {
       @Override
       public boolean canUse() {
          if (this.panda.isBaby() && this.panda.canPerformAction()) {
-            if (this.panda.isWeak() && this.panda.random.nextInt(reducedTickDelay(500)) == 1) {
-               return true;
-            } else {
-               return this.panda.random.nextInt(reducedTickDelay(6000)) == 1;
-            }
+            return this.panda.isWeak() && this.panda.random.nextInt(reducedTickDelay(500)) == 1 ? true : this.panda.random.nextInt(reducedTickDelay(6000)) == 1;
          } else {
             return false;
          }

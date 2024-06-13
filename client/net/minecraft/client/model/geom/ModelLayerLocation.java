@@ -24,11 +24,8 @@ public final class ModelLayerLocation {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof ModelLayerLocation)) {
-         return false;
       } else {
-         ModelLayerLocation var2 = (ModelLayerLocation)var1;
-         return this.model.equals(var2.model) && this.layer.equals(var2.layer);
+         return !(var1 instanceof ModelLayerLocation var2) ? false : this.model.equals(var2.model) && this.layer.equals(var2.layer);
       }
    }
 

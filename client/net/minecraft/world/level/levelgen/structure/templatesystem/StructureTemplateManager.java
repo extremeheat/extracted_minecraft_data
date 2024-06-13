@@ -94,7 +94,7 @@ public class StructureTemplateManager {
    }
 
    private Optional<StructureTemplate> tryLoad(ResourceLocation var1) {
-      for(StructureTemplateManager.Source var3 : this.sources) {
+      for (StructureTemplateManager.Source var3 : this.sources) {
          try {
             Optional var4 = var3.loader().apply(var1);
             if (var4.isPresent()) {
@@ -166,8 +166,8 @@ public class StructureTemplateManager {
             return Files.walk(var1).filter(var1x -> var1x.toString().endsWith(var3)).mapMulti((var4x, var5x) -> {
                try {
                   var5x.accept(new ResourceLocation(var2, (String)var5.apply(this.relativize(var1, var4x))));
-               } catch (ResourceLocationException var7xx) {
-                  LOGGER.error("Invalid location while listing pack contents", var7xx);
+               } catch (ResourceLocationException var7x) {
+                  LOGGER.error("Invalid location while listing pack contents", var7x);
                }
             });
          } catch (IOException var7) {
@@ -304,14 +304,11 @@ public class StructureTemplateManager {
       InputStream open() throws IOException;
    }
 
-   static record Source(Function<ResourceLocation, Optional<StructureTemplate>> a, Supplier<Stream<ResourceLocation>> b) {
-      private final Function<ResourceLocation, Optional<StructureTemplate>> loader;
-      private final Supplier<Stream<ResourceLocation>> lister;
-
-      Source(Function<ResourceLocation, Optional<StructureTemplate>> var1, Supplier<Stream<ResourceLocation>> var2) {
+   static record Source(Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
+      Source(Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
          super();
-         this.loader = var1;
-         this.lister = var2;
+         this.loader = loader;
+         this.lister = lister;
       }
    }
 }

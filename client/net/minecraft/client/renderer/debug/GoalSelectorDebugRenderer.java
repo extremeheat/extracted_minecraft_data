@@ -40,12 +40,12 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
       BlockPos var10 = BlockPos.containing(var9.getPosition().x, 0.0, var9.getPosition().z);
       ObjectIterator var11 = this.goalSelectors.values().iterator();
 
-      while(var11.hasNext()) {
+      while (var11.hasNext()) {
          GoalSelectorDebugRenderer.EntityGoalInfo var12 = (GoalSelectorDebugRenderer.EntityGoalInfo)var11.next();
          BlockPos var13 = var12.entityPos;
          if (var10.closerThan(var13, 160.0)) {
-            for(int var14 = 0; var14 < var12.goals.size(); ++var14) {
-               GoalDebugPayload.DebugGoal var15 = (GoalDebugPayload.DebugGoal)var12.goals.get(var14);
+            for (int var14 = 0; var14 < var12.goals.size(); var14++) {
+               GoalDebugPayload.DebugGoal var15 = var12.goals.get(var14);
                double var16 = (double)var13.getX() + 0.5;
                double var18 = (double)var13.getY() + 2.0 + (double)var14 * 0.25;
                double var20 = (double)var13.getZ() + 0.5;
@@ -56,14 +56,12 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
       }
    }
 
-   static record EntityGoalInfo(BlockPos a, List<GoalDebugPayload.DebugGoal> b) {
-      final BlockPos entityPos;
-      final List<GoalDebugPayload.DebugGoal> goals;
+   static record EntityGoalInfo(BlockPos entityPos, List<GoalDebugPayload.DebugGoal> goals) {
 
-      EntityGoalInfo(BlockPos var1, List<GoalDebugPayload.DebugGoal> var2) {
+      EntityGoalInfo(BlockPos entityPos, List<GoalDebugPayload.DebugGoal> goals) {
          super();
-         this.entityPos = var1;
-         this.goals = var2;
+         this.entityPos = entityPos;
+         this.goals = goals;
       }
    }
 }

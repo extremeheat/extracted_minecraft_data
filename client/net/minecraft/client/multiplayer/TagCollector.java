@@ -35,7 +35,7 @@ public class TagCollector {
    private void applyTags(RegistryAccess var1, Predicate<ResourceKey<? extends Registry<?>>> var2) {
       this.tags.forEach((var2x, var3) -> {
          if (var2.test(var2x)) {
-            var3.applyToRegistry(var1.registryOrThrow(var2x));
+            var3.applyToRegistry(var1.registryOrThrow((ResourceKey<? extends Registry<?>>)var2x));
          }
       });
    }

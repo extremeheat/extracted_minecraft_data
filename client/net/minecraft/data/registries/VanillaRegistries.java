@@ -21,7 +21,6 @@ import net.minecraft.data.worldgen.biome.BiomeData;
 import net.minecraft.data.worldgen.features.FeatureUtils;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.network.chat.ChatType;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.animal.WolfVariants;
@@ -74,8 +73,8 @@ public class VanillaRegistries {
          ResourceLocation var2 = var1x.key().location();
          List var3 = ((Biome)var1x.value()).getGenerationSettings().features();
          var3.stream().flatMap(HolderSet::stream).forEach(var3x -> var3x.unwrap().ifLeft(var2xx -> {
-               Holder.Reference var3xxx = var0.getOrThrow(var2xx);
-               if (!validatePlacedFeature((PlacedFeature)var3xxx.value())) {
+               Holder.Reference var3xx = var0.getOrThrow(var2xx);
+               if (!validatePlacedFeature((PlacedFeature)var3xx.value())) {
                   Util.logAndPauseIfInIde("Placed feature " + var2xx.location() + " in biome " + var2 + " is missing BiomeFilter.biome()");
                }
             }).ifRight(var1xxx -> {

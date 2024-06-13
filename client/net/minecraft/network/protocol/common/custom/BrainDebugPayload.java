@@ -11,8 +11,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
-public record BrainDebugPayload(BrainDebugPayload.BrainDump c) implements CustomPacketPayload {
-   private final BrainDebugPayload.BrainDump brainDump;
+public record BrainDebugPayload(BrainDebugPayload.BrainDump brainDump) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, BrainDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
       BrainDebugPayload::write, BrainDebugPayload::new
    );
@@ -22,9 +21,9 @@ public record BrainDebugPayload(BrainDebugPayload.BrainDump c) implements Custom
       this(new BrainDebugPayload.BrainDump(var1));
    }
 
-   public BrainDebugPayload(BrainDebugPayload.BrainDump var1) {
+   public BrainDebugPayload(BrainDebugPayload.BrainDump brainDump) {
       super();
-      this.brainDump = var1;
+      this.brainDump = brainDump;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -37,45 +36,25 @@ public record BrainDebugPayload(BrainDebugPayload.BrainDump c) implements Custom
    }
 
    public static record BrainDump(
-      UUID a,
-      int b,
-      String c,
-      String d,
-      int e,
-      float f,
-      float g,
-      Vec3 h,
-      String i,
-      @Nullable Path j,
-      boolean k,
-      int l,
-      List<String> m,
-      List<String> n,
-      List<String> o,
-      List<String> p,
-      Set<BlockPos> q,
-      Set<BlockPos> r
+      UUID uuid,
+      int id,
+      String name,
+      String profession,
+      int xp,
+      float health,
+      float maxHealth,
+      Vec3 pos,
+      String inventory,
+      @Nullable Path path,
+      boolean wantsGolem,
+      int angerLevel,
+      List<String> activities,
+      List<String> behaviors,
+      List<String> memories,
+      List<String> gossips,
+      Set<BlockPos> pois,
+      Set<BlockPos> potentialPois
    ) {
-      private final UUID uuid;
-      private final int id;
-      private final String name;
-      private final String profession;
-      private final int xp;
-      private final float health;
-      private final float maxHealth;
-      private final Vec3 pos;
-      private final String inventory;
-      @Nullable
-      private final Path path;
-      private final boolean wantsGolem;
-      private final int angerLevel;
-      private final List<String> activities;
-      private final List<String> behaviors;
-      private final List<String> memories;
-      private final List<String> gossips;
-      private final Set<BlockPos> pois;
-      private final Set<BlockPos> potentialPois;
-
       public BrainDump(FriendlyByteBuf var1) {
          this(
             var1.readUUID(),
@@ -100,44 +79,44 @@ public record BrainDebugPayload(BrainDebugPayload.BrainDump c) implements Custom
       }
 
       public BrainDump(
-         UUID var1,
-         int var2,
-         String var3,
-         String var4,
-         int var5,
-         float var6,
-         float var7,
-         Vec3 var8,
-         String var9,
-         @Nullable Path var10,
-         boolean var11,
-         int var12,
-         List<String> var13,
-         List<String> var14,
-         List<String> var15,
-         List<String> var16,
-         Set<BlockPos> var17,
-         Set<BlockPos> var18
+         UUID uuid,
+         int id,
+         String name,
+         String profession,
+         int xp,
+         float health,
+         float maxHealth,
+         Vec3 pos,
+         String inventory,
+         @Nullable Path path,
+         boolean wantsGolem,
+         int angerLevel,
+         List<String> activities,
+         List<String> behaviors,
+         List<String> memories,
+         List<String> gossips,
+         Set<BlockPos> pois,
+         Set<BlockPos> potentialPois
       ) {
          super();
-         this.uuid = var1;
-         this.id = var2;
-         this.name = var3;
-         this.profession = var4;
-         this.xp = var5;
-         this.health = var6;
-         this.maxHealth = var7;
-         this.pos = var8;
-         this.inventory = var9;
-         this.path = var10;
-         this.wantsGolem = var11;
-         this.angerLevel = var12;
-         this.activities = var13;
-         this.behaviors = var14;
-         this.memories = var15;
-         this.gossips = var16;
-         this.pois = var17;
-         this.potentialPois = var18;
+         this.uuid = uuid;
+         this.id = id;
+         this.name = name;
+         this.profession = profession;
+         this.xp = xp;
+         this.health = health;
+         this.maxHealth = maxHealth;
+         this.pos = pos;
+         this.inventory = inventory;
+         this.path = path;
+         this.wantsGolem = wantsGolem;
+         this.angerLevel = angerLevel;
+         this.activities = activities;
+         this.behaviors = behaviors;
+         this.memories = memories;
+         this.gossips = gossips;
+         this.pois = pois;
+         this.potentialPois = potentialPois;
       }
 
       public void write(FriendlyByteBuf var1) {

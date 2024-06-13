@@ -30,10 +30,8 @@ public class FontSet implements AutoCloseable {
    private BakedGlyph whiteGlyph;
    private List<GlyphProvider.Conditional> allProviders = List.of();
    private List<GlyphProvider> activeProviders = List.of();
-   private final CodepointMap<BakedGlyph> glyphs = new CodepointMap<>(var0 -> new BakedGlyph[var0], var0 -> new BakedGlyph[var0][]);
-   private final CodepointMap<FontSet.GlyphInfoFilter> glyphInfos = new CodepointMap(
-      var0 -> new FontSet.GlyphInfoFilter[var0], var0 -> new FontSet.GlyphInfoFilter[var0][]
-   );
+   private final CodepointMap<BakedGlyph> glyphs = new CodepointMap<>(BakedGlyph[]::new, BakedGlyph[][]::new);
+   private final CodepointMap<FontSet.GlyphInfoFilter> glyphInfos = new CodepointMap<>(FontSet.GlyphInfoFilter[]::new, FontSet.GlyphInfoFilter[][]::new);
    private final Int2ObjectMap<IntList> glyphsByWidth = new Int2ObjectOpenHashMap();
    private final List<FontTexture> textures = Lists.newArrayList();
 
@@ -67,7 +65,7 @@ public class FontSet implements AutoCloseable {
       IntOpenHashSet var3 = new IntOpenHashSet();
       ArrayList var4 = new ArrayList();
 
-      for(GlyphProvider.Conditional var6 : var1) {
+      for (GlyphProvider.Conditional var6 : var1) {
          if (var6.filter().apply(var2)) {
             var4.add(var6.provider());
             var3.addAll(var6.provider().getSupportedGlyphs());
@@ -76,12 +74,12 @@ public class FontSet implements AutoCloseable {
 
       HashSet var7 = Sets.newHashSet();
       var3.forEach(var3x -> {
-         for(GlyphProvider var5 : var4) {
-            GlyphInfo var6xx = var5.getGlyph(var3x);
-            if (var6xx != null) {
+         for (GlyphProvider var5 : var4) {
+            GlyphInfo var6x = var5.getGlyph(var3x);
+            if (var6x != null) {
                var7.add(var5);
-               if (var6xx != SpecialGlyphs.MISSING) {
-                  ((IntList)this.glyphsByWidth.computeIfAbsent(Mth.ceil(var6xx.getAdvance(false)), var0 -> new IntArrayList())).add(var3x);
+               if (var6x != SpecialGlyphs.MISSING) {
+                  ((IntList)this.glyphsByWidth.computeIfAbsent(Mth.ceil(var6x.getAdvance(false)), var0 -> new IntArrayList())).add(var3x);
                }
                break;
             }
@@ -96,7 +94,7 @@ public class FontSet implements AutoCloseable {
    }
 
    private void closeTextures() {
-      for(FontTexture var2 : this.textures) {
+      for (FontTexture var2 : this.textures) {
          var2.close();
       }
 
@@ -116,7 +114,7 @@ public class FontSet implements AutoCloseable {
    private FontSet.GlyphInfoFilter computeGlyphInfo(int var1) {
       GlyphInfo var2 = null;
 
-      for(GlyphProvider var4 : this.activeProviders) {
+      for (GlyphProvider var4 : this.activeProviders) {
          GlyphInfo var5 = var4.getGlyph(var1);
          if (var5 != null) {
             if (var2 == null) {
@@ -133,11 +131,11 @@ public class FontSet implements AutoCloseable {
    }
 
    public GlyphInfo getGlyphInfo(int var1, boolean var2) {
-      return ((FontSet.GlyphInfoFilter)this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo)).select(var2);
+      return this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo).select(var2);
    }
 
    private BakedGlyph computeBakedGlyph(int var1) {
-      for(GlyphProvider var3 : this.activeProviders) {
+      for (GlyphProvider var3 : this.activeProviders) {
          GlyphInfo var4 = var3.getGlyph(var1);
          if (var4 != null) {
             return var4.bake(this::stitch);
@@ -152,7 +150,7 @@ public class FontSet implements AutoCloseable {
    }
 
    private BakedGlyph stitch(SheetGlyphInfo var1) {
-      for(FontTexture var3 : this.textures) {
+      for (FontTexture var3 : this.textures) {
          BakedGlyph var4 = var3.add(var1);
          if (var4 != null) {
             return var4;
@@ -182,15 +180,13 @@ public class FontSet implements AutoCloseable {
       return this.whiteGlyph;
    }
 
-   static record GlyphInfoFilter(GlyphInfo a, GlyphInfo b) {
-      private final GlyphInfo glyphInfo;
-      private final GlyphInfo glyphInfoNotFishy;
+   static record GlyphInfoFilter(GlyphInfo glyphInfo, GlyphInfo glyphInfoNotFishy) {
       static final FontSet.GlyphInfoFilter MISSING = new FontSet.GlyphInfoFilter(SpecialGlyphs.MISSING, SpecialGlyphs.MISSING);
 
-      GlyphInfoFilter(GlyphInfo var1, GlyphInfo var2) {
+      GlyphInfoFilter(GlyphInfo glyphInfo, GlyphInfo glyphInfoNotFishy) {
          super();
-         this.glyphInfo = var1;
-         this.glyphInfoNotFishy = var2;
+         this.glyphInfo = glyphInfo;
+         this.glyphInfoNotFishy = glyphInfoNotFishy;
       }
 
       GlyphInfo select(boolean var1) {

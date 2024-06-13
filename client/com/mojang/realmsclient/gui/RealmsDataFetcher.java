@@ -29,10 +29,10 @@ public class RealmsDataFetcher {
          .createTask(
             "server list",
             () -> {
-               com.mojang.realmsclient.dto.RealmsServerList var1xx = var1.listRealms();
+               com.mojang.realmsclient.dto.RealmsServerList var1x = var1.listRealms();
                return RealmsMainScreen.isSnapshot()
-                  ? new RealmsDataFetcher.ServerListData(var1xx.servers, var1.listSnapshotEligibleRealms())
-                  : new RealmsDataFetcher.ServerListData(var1xx.servers, List.of());
+                  ? new RealmsDataFetcher.ServerListData(var1x.servers, var1.listSnapshotEligibleRealms())
+                  : new RealmsDataFetcher.ServerListData(var1x.servers, List.of());
             },
             Duration.ofSeconds(60L),
             RepeatedDelayStrategy.CONSTANT
@@ -50,14 +50,11 @@ public class RealmsDataFetcher {
       return this.tasks;
    }
 
-   public static record ServerListData(List<RealmsServer> a, List<RealmsServer> b) {
-      private final List<RealmsServer> serverList;
-      private final List<RealmsServer> availableSnapshotServers;
-
-      public ServerListData(List<RealmsServer> var1, List<RealmsServer> var2) {
+   public static record ServerListData(List<RealmsServer> serverList, List<RealmsServer> availableSnapshotServers) {
+      public ServerListData(List<RealmsServer> serverList, List<RealmsServer> availableSnapshotServers) {
          super();
-         this.serverList = var1;
-         this.availableSnapshotServers = var2;
+         this.serverList = serverList;
+         this.availableSnapshotServers = availableSnapshotServers;
       }
    }
 }

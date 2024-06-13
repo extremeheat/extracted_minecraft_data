@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Stream;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -60,7 +59,7 @@ public class CommandStorage {
       CommandStorage.Container load(CompoundTag var1) {
          CompoundTag var2 = var1.getCompound("contents");
 
-         for(String var4 : var2.getAllKeys()) {
+         for (String var4 : var2.getAllKeys()) {
             this.storage.put(var4, var2.getCompound(var4));
          }
 

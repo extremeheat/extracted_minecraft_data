@@ -4,16 +4,12 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
-public record GlyphRenderTypes(RenderType a, RenderType b, RenderType c) {
-   private final RenderType normal;
-   private final RenderType seeThrough;
-   private final RenderType polygonOffset;
-
-   public GlyphRenderTypes(RenderType var1, RenderType var2, RenderType var3) {
+public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderType polygonOffset) {
+   public GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderType polygonOffset) {
       super();
-      this.normal = var1;
-      this.seeThrough = var2;
-      this.polygonOffset = var3;
+      this.normal = normal;
+      this.seeThrough = seeThrough;
+      this.polygonOffset = polygonOffset;
    }
 
    public static GlyphRenderTypes createForIntensityTexture(ResourceLocation var0) {
@@ -25,7 +21,7 @@ public record GlyphRenderTypes(RenderType a, RenderType b, RenderType c) {
    }
 
    public RenderType select(Font.DisplayMode var1) {
-      return switch(var1) {
+      return switch (var1) {
          case NORMAL -> this.normal;
          case SEE_THROUGH -> this.seeThrough;
          case POLYGON_OFFSET -> this.polygonOffset;

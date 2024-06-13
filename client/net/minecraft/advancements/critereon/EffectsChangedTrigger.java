@@ -2,13 +2,11 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -28,25 +26,22 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<EffectsChanged
       this.trigger(var1, var2x -> var2x.matches(var1, var3));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<MobEffectsPredicate> c, Optional<ContextAwarePredicate> d)
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<MobEffectsPredicate> effects, Optional<ContextAwarePredicate> source)
       implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<MobEffectsPredicate> effects;
-      private final Optional<ContextAwarePredicate> source;
       public static final Codec<EffectsChangedTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(EffectsChangedTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(MobEffectsPredicate.CODEC, "effects").forGetter(EffectsChangedTrigger.TriggerInstance::effects),
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "source").forGetter(EffectsChangedTrigger.TriggerInstance::source)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(EffectsChangedTrigger.TriggerInstance::player),
+                  MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(EffectsChangedTrigger.TriggerInstance::effects),
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("source").forGetter(EffectsChangedTrigger.TriggerInstance::source)
                )
                .apply(var0, EffectsChangedTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<MobEffectsPredicate> var2, Optional<ContextAwarePredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<MobEffectsPredicate> effects, Optional<ContextAwarePredicate> source) {
          super();
-         this.player = var1;
-         this.effects = var2;
-         this.source = var3;
+         this.player = player;
+         this.effects = effects;
+         this.source = source;
       }
 
       public static Criterion<EffectsChangedTrigger.TriggerInstance> hasEffects(MobEffectsPredicate.Builder var0) {
@@ -59,11 +54,9 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<EffectsChanged
       }
 
       public boolean matches(ServerPlayer var1, @Nullable LootContext var2) {
-         if (this.effects.isPresent() && !((MobEffectsPredicate)this.effects.get()).matches((LivingEntity)var1)) {
-            return false;
-         } else {
-            return !this.source.isPresent() || var2 != null && this.source.get().matches(var2);
-         }
+         return this.effects.isPresent() && !this.effects.get().matches((LivingEntity)var1)
+            ? false
+            : !this.source.isPresent() || var2 != null && this.source.get().matches(var2);
       }
 
       @Override

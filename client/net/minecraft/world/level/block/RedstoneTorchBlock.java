@@ -39,7 +39,7 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
 
    @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      for(Direction var9 : Direction.values()) {
+      for (Direction var9 : Direction.values()) {
          var2.updateNeighborsAt(var3.relative(var9), this);
       }
    }
@@ -47,7 +47,7 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
    @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5) {
-         for(Direction var9 : Direction.values()) {
+         for (Direction var9 : Direction.values()) {
             var2.updateNeighborsAt(var3.relative(var9), this);
          }
       }
@@ -67,7 +67,7 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
       boolean var5 = this.hasNeighborSignal(var2, var3, var1);
       List var6 = RECENT_TOGGLES.get(var2);
 
-      while(var6 != null && !var6.isEmpty() && var2.getGameTime() - ((RedstoneTorchBlock.Toggle)var6.get(0)).when > 60L) {
+      while (var6 != null && !var6.isEmpty() && var2.getGameTime() - ((RedstoneTorchBlock.Toggle)var6.get(0)).when > 60L) {
          var6.remove(0);
       }
 
@@ -124,7 +124,7 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
 
       int var4 = 0;
 
-      for(RedstoneTorchBlock.Toggle var6 : var3) {
+      for (RedstoneTorchBlock.Toggle var6 : var3) {
          if (var6.pos.equals(var1)) {
             if (++var4 >= 8) {
                return true;

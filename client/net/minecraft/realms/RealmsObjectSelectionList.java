@@ -11,7 +11,7 @@ public abstract class RealmsObjectSelectionList<E extends ObjectSelectionList.En
 
    public void setSelectedItem(int var1) {
       if (var1 == -1) {
-         this.setSelected((E)null);
+         this.setSelected(null);
       } else if (super.getItemCount() != 0) {
          this.setSelected(this.getEntry(var1));
       }

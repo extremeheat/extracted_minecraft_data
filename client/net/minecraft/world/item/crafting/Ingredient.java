@@ -5,7 +5,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntComparators;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -23,7 +22,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +41,7 @@ public final class Ingredient implements Predicate<ItemStack> {
 
    private Ingredient(Stream<? extends Ingredient.Value> var1) {
       super();
-      this.values = var1.toArray(var0 -> new Ingredient.Value[var0]);
+      this.values = var1.toArray(Ingredient.Value[]::new);
    }
 
    private Ingredient(Ingredient.Value[] var1) {
@@ -53,7 +51,7 @@ public final class Ingredient implements Predicate<ItemStack> {
 
    public ItemStack[] getItems() {
       if (this.itemStacks == null) {
-         this.itemStacks = Arrays.stream(this.values).flatMap(var0 -> var0.getItems().stream()).distinct().toArray(var0 -> new ItemStack[var0]);
+         this.itemStacks = Arrays.stream(this.values).flatMap(var0 -> var0.getItems().stream()).distinct().toArray(ItemStack[]::new);
       }
 
       return this.itemStacks;
@@ -65,7 +63,7 @@ public final class Ingredient implements Predicate<ItemStack> {
       } else if (this.isEmpty()) {
          return var1.isEmpty();
       } else {
-         for(ItemStack var5 : this.getItems()) {
+         for (ItemStack var5 : this.getItems()) {
             if (var5.is(var1.getItem())) {
                return true;
             }
@@ -80,7 +78,7 @@ public final class Ingredient implements Predicate<ItemStack> {
          ItemStack[] var1 = this.getItems();
          this.stackingIds = new IntArrayList(var1.length);
 
-         for(ItemStack var5 : var1) {
+         for (ItemStack var5 : var1) {
             this.stackingIds.add(StackedContents.getStackingIndex(var5));
          }
 
@@ -132,7 +130,7 @@ public final class Ingredient implements Predicate<ItemStack> {
                   : DataResult.success(var1x.toArray(new Ingredient.Value[0])),
             List::of
          );
-      return ExtraCodecs.either(var1, Ingredient.Value.CODEC)
+      return Codec.either(var1, Ingredient.Value.CODEC)
          .flatComapMap(
             var0x -> (Ingredient)var0x.map(Ingredient::new, var0xx -> new Ingredient(new Ingredient.Value[]{var0xx})),
             var1x -> {
@@ -147,25 +145,21 @@ public final class Ingredient implements Predicate<ItemStack> {
          );
    }
 
-   static record ItemValue(ItemStack b) implements Ingredient.Value {
-      private final ItemStack item;
+   static record ItemValue(ItemStack item) implements Ingredient.Value {
       static final Codec<Ingredient.ItemValue> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(ItemStack.SIMPLE_ITEM_CODEC.fieldOf("item").forGetter(var0x -> var0x.item)).apply(var0, Ingredient.ItemValue::new)
       );
 
-      private ItemValue(ItemStack var1) {
+      private ItemValue(ItemStack item) {
          super();
-         this.item = var1;
+         this.item = item;
       }
 
       @Override
       public boolean equals(Object var1) {
-         if (!(var1 instanceof Ingredient.ItemValue)) {
-            return false;
-         } else {
-            Ingredient.ItemValue var2 = (Ingredient.ItemValue)var1;
-            return var2.item.getItem().equals(this.item.getItem()) && var2.item.getCount() == this.item.getCount();
-         }
+         return !(var1 instanceof Ingredient.ItemValue var2)
+            ? false
+            : var2.item.getItem().equals(this.item.getItem()) && var2.item.getCount() == this.item.getCount();
       }
 
       @Override
@@ -174,15 +168,14 @@ public final class Ingredient implements Predicate<ItemStack> {
       }
    }
 
-   static record TagValue(TagKey<Item> b) implements Ingredient.Value {
-      private final TagKey<Item> tag;
+   static record TagValue(TagKey<Item> tag) implements Ingredient.Value {
       static final Codec<Ingredient.TagValue> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(TagKey.codec(Registries.ITEM).fieldOf("tag").forGetter(var0x -> var0x.tag)).apply(var0, Ingredient.TagValue::new)
       );
 
-      TagValue(TagKey<Item> var1) {
+      TagValue(TagKey<Item> tag) {
          super();
-         this.tag = var1;
+         this.tag = tag;
       }
 
       @Override
@@ -194,7 +187,7 @@ public final class Ingredient implements Predicate<ItemStack> {
       public Collection<ItemStack> getItems() {
          ArrayList var1 = Lists.newArrayList();
 
-         for(Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(this.tag)) {
+         for (Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(this.tag)) {
             var1.add(new ItemStack(var3));
          }
 
@@ -203,7 +196,7 @@ public final class Ingredient implements Predicate<ItemStack> {
    }
 
    interface Value {
-      Codec<Ingredient.Value> CODEC = ExtraCodecs.xor(Ingredient.ItemValue.CODEC, Ingredient.TagValue.CODEC)
+      Codec<Ingredient.Value> CODEC = Codec.xor(Ingredient.ItemValue.CODEC, Ingredient.TagValue.CODEC)
          .xmap(var0 -> (Ingredient.Value)var0.map(var0x -> var0x, var0x -> var0x), var0 -> {
             if (var0 instanceof Ingredient.TagValue var1) {
                return Either.right(var1);

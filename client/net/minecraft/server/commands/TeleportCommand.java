@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -164,7 +163,7 @@ public class TeleportCommand {
    }
 
    private static int teleportToEntity(CommandSourceStack var0, Collection<? extends Entity> var1, Entity var2) throws CommandSyntaxException {
-      for(Entity var4 : var1) {
+      for (Entity var4 : var1) {
          performTeleport(
             var0,
             var4,
@@ -227,7 +226,7 @@ public class TeleportCommand {
          }
       }
 
-      for(Entity var10 : var1) {
+      for (Entity var10 : var1) {
          if (var4 == null) {
             performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var10.getYRot(), var10.getXRot(), var5);
          } else {
@@ -262,8 +261,6 @@ public class TeleportCommand {
       return String.format(Locale.ROOT, "%f", var0);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void performTeleport(
       CommandSourceStack var0,
       Entity var1,
@@ -304,18 +301,13 @@ public class TeleportCommand {
       void perform(CommandSourceStack var1, Entity var2);
    }
 
-   static record LookAtEntity(Entity a, EntityAnchorArgument.Anchor b) implements TeleportCommand.LookAt {
-      private final Entity entity;
-      private final EntityAnchorArgument.Anchor anchor;
-
-      LookAtEntity(Entity var1, EntityAnchorArgument.Anchor var2) {
+   static record LookAtEntity(Entity entity, EntityAnchorArgument.Anchor anchor) implements TeleportCommand.LookAt {
+      LookAtEntity(Entity entity, EntityAnchorArgument.Anchor anchor) {
          super();
-         this.entity = var1;
-         this.anchor = var2;
+         this.entity = entity;
+         this.anchor = anchor;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void perform(CommandSourceStack var1, Entity var2) {
          if (var2 instanceof ServerPlayer var3) {
@@ -326,12 +318,10 @@ public class TeleportCommand {
       }
    }
 
-   static record LookAtPosition(Vec3 a) implements TeleportCommand.LookAt {
-      private final Vec3 position;
-
-      LookAtPosition(Vec3 var1) {
+   static record LookAtPosition(Vec3 position) implements TeleportCommand.LookAt {
+      LookAtPosition(Vec3 position) {
          super();
-         this.position = var1;
+         this.position = position;
       }
 
       @Override

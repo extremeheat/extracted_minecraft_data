@@ -44,7 +44,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
    }
 
    static <T> HolderSet<T> empty() {
-      return HolderSet.Direct.EMPTY;
+      return (HolderSet<T>)HolderSet.Direct.EMPTY;
    }
 
    @SafeVarargs
@@ -198,7 +198,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
       @Override
       public Optional<TagKey<T>> unwrapKey() {
-         return Optional.of((T)this.key);
+         return Optional.of(this.key);
       }
 
       @Override

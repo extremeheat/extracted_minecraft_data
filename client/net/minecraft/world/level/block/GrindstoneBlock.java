@@ -8,7 +8,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.GrindstoneMenu;
@@ -110,7 +109,7 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    private VoxelShape getVoxelShape(BlockState var1) {
       Direction var2 = var1.getValue(FACING);
-      switch((AttachFace)var1.getValue(FACE)) {
+      switch ((AttachFace)var1.getValue(FACE)) {
          case FLOOR:
             if (var2 != Direction.NORTH && var2 != Direction.SOUTH) {
                return FLOOR_EAST_WEST_GRINDSTONE;

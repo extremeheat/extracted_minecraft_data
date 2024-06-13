@@ -36,8 +36,6 @@ public class BucketItem extends Item implements DispensibleContainerItem {
       this.content = var1;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
@@ -54,8 +52,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             return InteractionResultHolder.fail(var4);
          } else if (this.content == Fluids.EMPTY) {
             BlockState var13 = var1.getBlockState(var6);
-            Block var11 = var13.getBlock();
-            if (var11 instanceof BucketPickup var14) {
+            if (var13.getBlock() instanceof BucketPickup var14) {
                ItemStack var15 = var14.pickupBlock(var2, var1, var6, var13);
                if (!var15.isEmpty()) {
                   var2.awardStat(Stats.ITEM_USED.get(this));
@@ -97,20 +94,16 @@ public class BucketItem extends Item implements DispensibleContainerItem {
    public void checkExtraContent(@Nullable Player var1, Level var2, ItemStack var3, BlockPos var4) {
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean emptyContents(@Nullable Player var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
-      Fluid var6 = this.content;
-      if (!(var6 instanceof FlowingFluid)) {
+      if (!(this.content instanceof FlowingFluid var5)) {
          return false;
       } else {
-         FlowingFluid var5;
          Block var7;
          boolean var8;
+         BlockState var14;
          boolean var10000;
          label82: {
-            var5 = (FlowingFluid)var6;
             var14 = var2.getBlockState(var3);
             var7 = var14.getBlock();
             var8 = var14.canBeReplaced(this.content);
@@ -136,7 +129,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             int var12 = var3.getZ();
             var2.playSound(var1, var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 
-            for(int var13 = 0; var13 < 8; ++var13) {
+            for (int var13 = 0; var13 < 8; var13++) {
                var2.addParticle(
                   ParticleTypes.LARGE_SMOKE, (double)var16 + Math.random(), (double)var11 + Math.random(), (double)var12 + Math.random(), 0.0, 0.0, 0.0
                );

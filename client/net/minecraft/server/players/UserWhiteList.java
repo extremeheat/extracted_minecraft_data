@@ -21,7 +21,7 @@ public class UserWhiteList extends StoredUserList<GameProfile, UserWhiteListEntr
 
    @Override
    public String[] getUserList() {
-      return this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray(var0 -> new String[var0]);
+      return this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray(String[]::new);
    }
 
    protected String getKeyForUser(GameProfile var1) {

@@ -72,9 +72,4 @@ public class RenderChunkRegion implements BlockAndTintGetter {
    public int getHeight() {
       return this.level.getHeight();
    }
-
-   @Override
-   public boolean isPotato() {
-      return this.level.isPotato();
-   }
 }

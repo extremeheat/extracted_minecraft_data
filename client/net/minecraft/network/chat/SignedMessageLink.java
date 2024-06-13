@@ -3,7 +3,6 @@ package net.minecraft.network.chat;
 import com.google.common.primitives.Ints;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.security.SignatureException;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -12,10 +11,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 
-public record SignedMessageLink(int b, UUID c, UUID d) {
-   private final int index;
-   private final UUID sender;
-   private final UUID sessionId;
+public record SignedMessageLink(int index, UUID sender, UUID sessionId) {
    public static final Codec<SignedMessageLink> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ExtraCodecs.NON_NEGATIVE_INT.fieldOf("index").forGetter(SignedMessageLink::index),
@@ -25,11 +21,11 @@ public record SignedMessageLink(int b, UUID c, UUID d) {
             .apply(var0, SignedMessageLink::new)
    );
 
-   public SignedMessageLink(int var1, UUID var2, UUID var3) {
+   public SignedMessageLink(int index, UUID sender, UUID sessionId) {
       super();
-      this.index = var1;
-      this.sender = var2;
-      this.sessionId = var3;
+      this.index = index;
+      this.sender = sender;
+      this.sessionId = sessionId;
    }
 
    public static SignedMessageLink unsigned(UUID var0) {

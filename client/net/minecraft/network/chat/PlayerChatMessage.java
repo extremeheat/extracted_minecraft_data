@@ -3,7 +3,6 @@ package net.minecraft.network.chat;
 import com.google.common.primitives.Ints;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.security.SignatureException;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,14 +14,9 @@ import net.minecraft.Util;
 import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
 
-public record PlayerChatMessage(SignedMessageLink d, @Nullable MessageSignature e, SignedMessageBody f, @Nullable Component g, FilterMask h) {
-   private final SignedMessageLink link;
-   @Nullable
-   private final MessageSignature signature;
-   private final SignedMessageBody signedBody;
-   @Nullable
-   private final Component unsignedContent;
-   private final FilterMask filterMask;
+public record PlayerChatMessage(
+   SignedMessageLink link, @Nullable MessageSignature signature, SignedMessageBody signedBody, @Nullable Component unsignedContent, FilterMask filterMask
+) {
    public static final MapCodec<PlayerChatMessage> MAP_CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                SignedMessageLink.CODEC.fieldOf("link").forGetter(PlayerChatMessage::link),
@@ -40,13 +34,15 @@ public record PlayerChatMessage(SignedMessageLink d, @Nullable MessageSignature 
    public static final Duration MESSAGE_EXPIRES_AFTER_SERVER = Duration.ofMinutes(5L);
    public static final Duration MESSAGE_EXPIRES_AFTER_CLIENT = MESSAGE_EXPIRES_AFTER_SERVER.plus(Duration.ofMinutes(2L));
 
-   public PlayerChatMessage(SignedMessageLink var1, @Nullable MessageSignature var2, SignedMessageBody var3, @Nullable Component var4, FilterMask var5) {
+   public PlayerChatMessage(
+      SignedMessageLink link, @Nullable MessageSignature signature, SignedMessageBody signedBody, @Nullable Component unsignedContent, FilterMask filterMask
+   ) {
       super();
-      this.link = var1;
-      this.signature = var2;
-      this.signedBody = var3;
-      this.unsignedContent = var4;
-      this.filterMask = var5;
+      this.link = link;
+      this.signature = signature;
+      this.signedBody = signedBody;
+      this.unsignedContent = unsignedContent;
+      this.filterMask = filterMask;
    }
 
    public static PlayerChatMessage system(String var0) {

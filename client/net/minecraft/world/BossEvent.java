@@ -3,7 +3,6 @@ package net.minecraft.world;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.phys.Vec3;
 
 public abstract class BossEvent {
    private final UUID id;
@@ -11,20 +10,16 @@ public abstract class BossEvent {
    protected float progress;
    protected BossEvent.BossBarColor color;
    protected BossEvent.BossBarOverlay overlay;
-   protected Vec3 center;
-   protected int radius;
    protected boolean darkenScreen;
    protected boolean playBossMusic;
    protected boolean createWorldFog;
 
-   public BossEvent(UUID var1, Component var2, BossEvent.BossBarColor var3, BossEvent.BossBarOverlay var4, Vec3 var5, int var6) {
+   public BossEvent(UUID var1, Component var2, BossEvent.BossBarColor var3, BossEvent.BossBarOverlay var4) {
       super();
       this.id = var1;
       this.name = var2;
       this.color = var3;
       this.overlay = var4;
-      this.center = var5;
-      this.radius = var6;
       this.progress = 1.0F;
    }
 
@@ -91,19 +86,6 @@ public abstract class BossEvent {
       return this.createWorldFog;
    }
 
-   public void setLocation(Vec3 var1, int var2) {
-      this.center = var1;
-      this.radius = var2;
-   }
-
-   public Vec3 getCenter() {
-      return this.center;
-   }
-
-   public int getRadius() {
-      return this.radius;
-   }
-
    public static enum BossBarColor {
       PINK("pink", ChatFormatting.RED),
       BLUE("blue", ChatFormatting.BLUE),
@@ -130,7 +112,7 @@ public abstract class BossEvent {
       }
 
       public static BossEvent.BossBarColor byName(String var0) {
-         for(BossEvent.BossBarColor var4 : values()) {
+         for (BossEvent.BossBarColor var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }
@@ -158,7 +140,7 @@ public abstract class BossEvent {
       }
 
       public static BossEvent.BossBarOverlay byName(String var0) {
-         for(BossEvent.BossBarOverlay var4 : values()) {
+         for (BossEvent.BossBarOverlay var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }

@@ -25,7 +25,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
-import net.minecraft.world.level.levelgen.feature.rootplacers.RootPlacer;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -93,11 +92,11 @@ public class TreeFeature extends Feature<TreeConfiguration> {
    private int getMaxFreeTreeHeight(LevelSimulatedReader var1, int var2, BlockPos var3, TreeConfiguration var4) {
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-      for(int var6 = 0; var6 <= var2 + 1; ++var6) {
+      for (int var6 = 0; var6 <= var2 + 1; var6++) {
          int var7 = var4.minimumSize.getSizeAtHeight(var2, var6);
 
-         for(int var8 = -var7; var8 <= var7; ++var8) {
-            for(int var9 = -var7; var9 <= var7; ++var9) {
+         for (int var8 = -var7; var8 <= var7; var8++) {
+            for (int var9 = -var7; var9 <= var7; var9++) {
                var5.setWithOffset(var3, var8, var6, var9);
                if (!var4.trunkPlacer.isFree(var1, var5) || !var4.ignoreVines && isVine(var1, var5)) {
                   return var6 - 2;
@@ -156,8 +155,8 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          }
 
          return BoundingBox.encapsulatingPositions(Iterables.concat(var6, var7, var8, var9)).map(var4x -> {
-            DiscreteVoxelShape var5xx = updateLeaves(var2, var4x, var7, var9, var6);
-            StructureTemplate.updateShapeAtEdge(var2, 3, var5xx, var4x.minX(), var4x.minY(), var4x.minZ());
+            DiscreteVoxelShape var5x = updateLeaves(var2, var4x, var7, var9, var6);
+            StructureTemplate.updateShapeAtEdge(var2, 3, var5x, var4x.minX(), var4x.minY(), var4x.minZ());
             return true;
          }).orElse(false);
       } else {
@@ -167,14 +166,14 @@ public class TreeFeature extends Feature<TreeConfiguration> {
 
    private static DiscreteVoxelShape updateLeaves(LevelAccessor var0, BoundingBox var1, Set<BlockPos> var2, Set<BlockPos> var3, Set<BlockPos> var4) {
       BitSetDiscreteVoxelShape var5 = new BitSetDiscreteVoxelShape(var1.getXSpan(), var1.getYSpan(), var1.getZSpan());
-      boolean var6 = true;
+      byte var6 = 7;
       ArrayList var7 = Lists.newArrayList();
 
-      for(int var8 = 0; var8 < 7; ++var8) {
+      for (int var8 = 0; var8 < 7; var8++) {
          var7.add(Sets.newHashSet());
       }
 
-      for(BlockPos var9 : Lists.newArrayList(Sets.union(var3, var4))) {
+      for (BlockPos var9 : Lists.newArrayList(Sets.union(var3, var4))) {
          if (var1.isInside(var9)) {
             var5.fill(var9.getX() - var1.minX(), var9.getY() - var1.minY(), var9.getZ() - var1.minZ());
          }
@@ -184,8 +183,8 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       int var24 = 0;
       ((Set)var7.get(0)).addAll(var2);
 
-      while(true) {
-         while(var24 >= 7 || !((Set)var7.get(var24)).isEmpty()) {
+      while (true) {
+         while (var24 >= 7 || !((Set)var7.get(var24)).isEmpty()) {
             if (var24 >= 7) {
                return var5;
             }
@@ -201,7 +200,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
 
                var5.fill(var11.getX() - var1.minX(), var11.getY() - var1.minY(), var11.getZ() - var1.minZ());
 
-               for(Direction var15 : Direction.values()) {
+               for (Direction var15 : Direction.values()) {
                   var23.setWithOffset(var11, var15);
                   if (var1.isInside(var23)) {
                      int var16 = var23.getX() - var1.minX();
@@ -223,7 +222,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
             }
          }
 
-         ++var24;
+         var24++;
       }
    }
 }

@@ -5,8 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record RaidsDebugPayload(List<BlockPos> c) implements CustomPacketPayload {
-   private final List<BlockPos> raidCenters;
+public record RaidsDebugPayload(List<BlockPos> raidCenters) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, RaidsDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
       RaidsDebugPayload::write, RaidsDebugPayload::new
    );
@@ -16,9 +15,9 @@ public record RaidsDebugPayload(List<BlockPos> c) implements CustomPacketPayload
       this(var1.readList(BlockPos.STREAM_CODEC));
    }
 
-   public RaidsDebugPayload(List<BlockPos> var1) {
+   public RaidsDebugPayload(List<BlockPos> raidCenters) {
       super();
-      this.raidCenters = var1;
+      this.raidCenters = raidCenters;
    }
 
    private void write(FriendlyByteBuf var1) {

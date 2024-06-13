@@ -61,9 +61,7 @@ public class FarmBlock extends Block {
 
    @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return !this.defaultBlockState().canSurvive(var1.getLevel(), var1.getClickedPos())
-         ? (var1.getLevel().isPotato() ? Blocks.TERREDEPOMME : Blocks.DIRT).defaultBlockState()
-         : super.getStateForPlacement(var1);
+      return !this.defaultBlockState().canSurvive(var1.getLevel(), var1.getClickedPos()) ? Blocks.DIRT.defaultBlockState() : super.getStateForPlacement(var1);
    }
 
    @Override
@@ -111,17 +109,17 @@ public class FarmBlock extends Block {
    }
 
    public static void turnToDirt(@Nullable Entity var0, BlockState var1, Level var2, BlockPos var3) {
-      BlockState var4 = pushEntitiesUp(var1, (var2.isPotato() ? Blocks.TERREDEPOMME : Blocks.DIRT).defaultBlockState(), var2, var3);
+      BlockState var4 = pushEntitiesUp(var1, Blocks.DIRT.defaultBlockState(), var2, var3);
       var2.setBlockAndUpdate(var3, var4);
       var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var0, var4));
    }
 
    private static boolean shouldMaintainFarmland(BlockGetter var0, BlockPos var1) {
-      return var0.isPotato() ? true : var0.getBlockState(var1.above()).is(BlockTags.MAINTAINS_FARMLAND);
+      return var0.getBlockState(var1.above()).is(BlockTags.MAINTAINS_FARMLAND);
    }
 
    private static boolean isNearWater(LevelReader var0, BlockPos var1) {
-      for(BlockPos var3 : BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 1, 4))) {
+      for (BlockPos var3 : BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 1, 4))) {
          if (var0.getFluidState(var3).is(FluidTags.WATER)) {
             return true;
          }

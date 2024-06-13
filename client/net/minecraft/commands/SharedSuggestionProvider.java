@@ -76,7 +76,7 @@ public interface SharedSuggestionProvider {
    static <T> void filterResources(Iterable<T> var0, String var1, Function<T, ResourceLocation> var2, Consumer<T> var3) {
       boolean var4 = var1.indexOf(58) > -1;
 
-      for(Object var6 : var0) {
+      for (Object var6 : var0) {
          ResourceLocation var7 = (ResourceLocation)var2.apply(var6);
          if (var4) {
             String var8 = var7.toString();
@@ -140,7 +140,7 @@ public interface SharedSuggestionProvider {
    ) {
       ArrayList var4 = Lists.newArrayList();
       if (Strings.isNullOrEmpty(var0)) {
-         for(SharedSuggestionProvider.TextCoordinates var6 : var1) {
+         for (SharedSuggestionProvider.TextCoordinates var6 : var1) {
             String var7 = var6.x + " " + var6.y + " " + var6.z;
             if (var3.test(var7)) {
                var4.add(var6.x);
@@ -151,7 +151,7 @@ public interface SharedSuggestionProvider {
       } else {
          String[] var9 = var0.split(" ");
          if (var9.length == 1) {
-            for(SharedSuggestionProvider.TextCoordinates var12 : var1) {
+            for (SharedSuggestionProvider.TextCoordinates var12 : var1) {
                String var8 = var9[0] + " " + var12.y + " " + var12.z;
                if (var3.test(var8)) {
                   var4.add(var9[0] + " " + var12.y);
@@ -159,7 +159,7 @@ public interface SharedSuggestionProvider {
                }
             }
          } else if (var9.length == 2) {
-            for(SharedSuggestionProvider.TextCoordinates var13 : var1) {
+            for (SharedSuggestionProvider.TextCoordinates var13 : var1) {
                String var14 = var9[0] + " " + var9[1] + " " + var13.z;
                if (var3.test(var14)) {
                   var4.add(var14);
@@ -176,7 +176,7 @@ public interface SharedSuggestionProvider {
    ) {
       ArrayList var4 = Lists.newArrayList();
       if (Strings.isNullOrEmpty(var0)) {
-         for(SharedSuggestionProvider.TextCoordinates var6 : var1) {
+         for (SharedSuggestionProvider.TextCoordinates var6 : var1) {
             String var7 = var6.x + " " + var6.z;
             if (var3.test(var7)) {
                var4.add(var6.x);
@@ -186,7 +186,7 @@ public interface SharedSuggestionProvider {
       } else {
          String[] var9 = var0.split(" ");
          if (var9.length == 1) {
-            for(SharedSuggestionProvider.TextCoordinates var11 : var1) {
+            for (SharedSuggestionProvider.TextCoordinates var11 : var1) {
                String var8 = var9[0] + " " + var11.z;
                if (var3.test(var8)) {
                   var4.add(var8);
@@ -201,7 +201,7 @@ public interface SharedSuggestionProvider {
    static CompletableFuture<Suggestions> suggest(Iterable<String> var0, SuggestionsBuilder var1) {
       String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
 
-      for(String var4 : var0) {
+      for (String var4 : var0) {
          if (matchesSubStr(var2, var4.toLowerCase(Locale.ROOT))) {
             var1.suggest(var4);
          }
@@ -219,7 +219,7 @@ public interface SharedSuggestionProvider {
    static CompletableFuture<Suggestions> suggest(String[] var0, SuggestionsBuilder var1) {
       String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
 
-      for(String var6 : var0) {
+      for (String var6 : var0) {
          if (matchesSubStr(var2, var6.toLowerCase(Locale.ROOT))) {
             var1.suggest(var6);
          }
@@ -231,7 +231,7 @@ public interface SharedSuggestionProvider {
    static <T> CompletableFuture<Suggestions> suggest(Iterable<T> var0, SuggestionsBuilder var1, Function<T, String> var2, Function<T, Message> var3) {
       String var4 = var1.getRemaining().toLowerCase(Locale.ROOT);
 
-      for(Object var6 : var0) {
+      for (Object var6 : var0) {
          String var7 = (String)var2.apply(var6);
          if (matchesSubStr(var4, var7.toLowerCase(Locale.ROOT))) {
             var1.suggest(var7, (Message)var3.apply(var6));
@@ -242,7 +242,7 @@ public interface SharedSuggestionProvider {
    }
 
    static boolean matchesSubStr(String var0, String var1) {
-      for(int var5 = 0; !var1.startsWith(var0, var5); ++var5) {
+      for (int var5 = 0; !var1.startsWith(var0, var5); var5++) {
          int var3 = var1.indexOf(46, var5);
          int var4 = var1.indexOf(95, var5);
          if (Math.max(var3, var4) < 0) {

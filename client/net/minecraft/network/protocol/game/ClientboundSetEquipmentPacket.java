@@ -36,15 +36,15 @@ public class ClientboundSetEquipmentPacket implements Packet<ClientGamePacketLis
          EquipmentSlot var4 = var2[var3 & 127];
          ItemStack var5 = ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
          this.slots.add(Pair.of(var4, var5));
-      } while((var3 & -128) != 0);
+      } while ((var3 & -128) != 0);
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
       var1.writeVarInt(this.entity);
       int var2 = this.slots.size();
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         Pair var4 = (Pair)this.slots.get(var3);
+      for (int var3 = 0; var3 < var2; var3++) {
+         Pair var4 = this.slots.get(var3);
          EquipmentSlot var5 = (EquipmentSlot)var4.getFirst();
          boolean var6 = var3 != var2 - 1;
          int var7 = var5.ordinal();

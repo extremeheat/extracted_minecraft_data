@@ -9,8 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public record GameEvent(int aj) {
-   private final int notificationRadius;
+public record GameEvent(int notificationRadius) {
    public static final Holder.Reference<GameEvent> BLOCK_ACTIVATE = register("block_activate");
    public static final Holder.Reference<GameEvent> BLOCK_ATTACH = register("block_attach");
    public static final Holder.Reference<GameEvent> BLOCK_CHANGE = register("block_change");
@@ -73,9 +72,9 @@ public record GameEvent(int aj) {
    public static final Holder.Reference<GameEvent> RESONATE_15 = register("resonate_15");
    public static final int DEFAULT_NOTIFICATION_RADIUS = 16;
 
-   public GameEvent(int var1) {
+   public GameEvent(int notificationRadius) {
       super();
-      this.notificationRadius = var1;
+      this.notificationRadius = notificationRadius;
    }
 
    public static Holder<GameEvent> bootstrap(Registry<GameEvent> var0) {
@@ -90,16 +89,11 @@ public record GameEvent(int aj) {
       return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, new ResourceLocation(var0), new GameEvent(var1));
    }
 
-   public static record Context(@Nullable Entity a, @Nullable BlockState b) {
-      @Nullable
-      private final Entity sourceEntity;
-      @Nullable
-      private final BlockState affectedState;
-
-      public Context(@Nullable Entity var1, @Nullable BlockState var2) {
+   public static record Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
+      public Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
          super();
-         this.sourceEntity = var1;
-         this.affectedState = var2;
+         this.sourceEntity = sourceEntity;
+         this.affectedState = affectedState;
       }
 
       public static GameEvent.Context of(@Nullable Entity var0) {

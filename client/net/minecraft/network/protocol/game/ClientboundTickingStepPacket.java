@@ -6,8 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.TickRateManager;
 
-public record ClientboundTickingStepPacket(int b) implements Packet<ClientGamePacketListener> {
-   private final int tickSteps;
+public record ClientboundTickingStepPacket(int tickSteps) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundTickingStepPacket> STREAM_CODEC = Packet.codec(
       ClientboundTickingStepPacket::write, ClientboundTickingStepPacket::new
    );
@@ -16,9 +15,9 @@ public record ClientboundTickingStepPacket(int b) implements Packet<ClientGamePa
       this(var1.readVarInt());
    }
 
-   public ClientboundTickingStepPacket(int var1) {
+   public ClientboundTickingStepPacket(int tickSteps) {
       super();
-      this.tickSteps = var1;
+      this.tickSteps = tickSteps;
    }
 
    public static ClientboundTickingStepPacket from(TickRateManager var0) {

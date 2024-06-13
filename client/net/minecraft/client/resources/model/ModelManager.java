@@ -7,7 +7,6 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.BufferedReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,9 +93,15 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       var3.startTick();
       CompletableFuture var7 = loadBlockModels(var2, var5);
       CompletableFuture var8 = loadBlockStates(var2, var5);
-      CompletableFuture var9 = var7.thenCombineAsync(var8, (var2x, var3x) -> new ModelBakery(this.blockColors, var3, var2x, var3x), var5);
+      CompletableFuture var9 = var7.thenCombineAsync(
+         var8,
+         (var2x, var3x) -> new ModelBakery(
+               this.blockColors, var3, (Map<ResourceLocation, BlockModel>)var2x, (Map<ResourceLocation, List<ModelBakery.LoadedJson>>)var3x
+            ),
+         var5
+      );
       Map var10 = this.atlases.scheduleLoad(var2, this.maxMipmapLevels, var5);
-      return CompletableFuture.allOf(Stream.concat(var10.values().stream(), Stream.of(var9)).toArray(var0 -> new CompletableFuture[var0]))
+      return CompletableFuture.allOf(Stream.concat(var10.values().stream(), Stream.of(var9)).toArray(CompletableFuture[]::new))
          .thenApplyAsync(
             var4x -> this.loadModels(
                   var3,
@@ -107,7 +112,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
                ),
             var5
          )
-         .thenCompose(var0 -> var0.readyForUpload.thenApply(var1x -> var0))
+         .thenCompose(var0 -> var0.readyForUpload.thenApply(var1x -> (ModelManager.ReloadState)var0))
          .thenCompose(var1::wait)
          .thenAcceptAsync(var2x -> this.apply(var2x, var4), var6);
    }
@@ -117,15 +122,15 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
          .thenCompose(
             var1x -> {
                ArrayList var2 = new ArrayList(var1x.size());
-      
-               for(Entry var4 : var1x.entrySet()) {
+
+               for (Entry var4 : var1x.entrySet()) {
                   var2.add(CompletableFuture.supplyAsync(() -> {
                      try {
                         Pair var2x;
-                        try (BufferedReader var1xxx = ((Resource)var4.getValue()).openAsReader()) {
-                           var2x = Pair.of((ResourceLocation)var4.getKey(), BlockModel.fromStream(var1xxx));
+                        try (BufferedReader var1xx = ((Resource)var4.getValue()).openAsReader()) {
+                           var2x = Pair.of((ResourceLocation)var4.getKey(), BlockModel.fromStream(var1xx));
                         }
-      
+
                         return var2x;
                      } catch (Exception var6) {
                         LOGGER.error("Failed to load model {}", var4.getKey(), var6);
@@ -133,7 +138,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
                      }
                   }, var1));
                }
-      
+
                return Util.sequence(var2)
                   .thenApply(var0xx -> var0xx.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond)));
             }
@@ -145,25 +150,25 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
          .thenCompose(
             var1x -> {
                ArrayList var2 = new ArrayList(var1x.size());
-      
-               for(Entry var4 : var1x.entrySet()) {
+
+               for (Entry var4 : var1x.entrySet()) {
                   var2.add(CompletableFuture.supplyAsync(() -> {
-                     List var1xxx = (List)var4.getValue();
-                     ArrayList var2xx = new ArrayList(var1xxx.size());
-      
-                     for(Resource var4xx : var1xxx) {
-                        try (BufferedReader var5 = var4xx.openAsReader()) {
+                     List var1xx = (List)var4.getValue();
+                     ArrayList var2x = new ArrayList(var1xx.size());
+
+                     for (Resource var4x : var1xx) {
+                        try (BufferedReader var5 = var4x.openAsReader()) {
                            JsonObject var6 = GsonHelper.parse(var5);
-                           var2xx.add(new ModelBakery.LoadedJson(var4xx.sourcePackId(), var6));
+                           var2x.add(new ModelBakery.LoadedJson(var4x.sourcePackId(), var6));
                         } catch (Exception var10) {
-                           LOGGER.error("Failed to load blockstate {} from pack {}", new Object[]{var4.getKey(), var4xx.sourcePackId(), var10});
+                           LOGGER.error("Failed to load blockstate {} from pack {}", new Object[]{var4.getKey(), var4x.sourcePackId(), var10});
                         }
                      }
-      
-                     return Pair.of((ResourceLocation)var4.getKey(), var2xx);
+
+                     return Pair.of((ResourceLocation)var4.getKey(), var2x);
                   }, var1));
                }
-      
+
                return Util.sequence(var2)
                   .thenApply(var0xx -> var0xx.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond)));
             }
@@ -175,13 +180,13 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       var1.popPush("baking");
       HashMultimap var4 = HashMultimap.create();
       var3.bakeModels((var2x, var3x) -> {
-         AtlasSet.StitchResult var4xx = (AtlasSet.StitchResult)var2.get(var3x.atlasLocation());
-         TextureAtlasSprite var5xx = var4xx.getSprite(var3x.texture());
-         if (var5xx != null) {
-            return var5xx;
+         AtlasSet.StitchResult var4x = (AtlasSet.StitchResult)var2.get(var3x.atlasLocation());
+         TextureAtlasSprite var5x = var4x.getSprite(var3x.texture());
+         if (var5x != null) {
+            return var5x;
          } else {
             var4.put(var2x, var3x);
-            return var4xx.missing();
+            return var4x.missing();
          }
       });
       var4.asMap()
@@ -200,17 +205,15 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       BakedModel var6 = (BakedModel)var5.get(ModelBakery.MISSING_MODEL_LOCATION);
       IdentityHashMap var7 = new IdentityHashMap();
 
-      for(Block var9 : BuiltInRegistries.BLOCK) {
+      for (Block var9 : BuiltInRegistries.BLOCK) {
          var9.getStateDefinition().getPossibleStates().forEach(var3x -> {
-            ResourceLocation var4xx = var3x.getBlock().builtInRegistryHolder().key().location();
-            BakedModel var5xx = var5.getOrDefault(BlockModelShaper.stateToModelLocation(var4xx, var3x), var6);
-            var7.put(var3x, var5xx);
+            ResourceLocation var4x = var3x.getBlock().builtInRegistryHolder().key().location();
+            BakedModel var5x = var5.getOrDefault(BlockModelShaper.stateToModelLocation(var4x, var3x), var6);
+            var7.put(var3x, var5x);
          });
       }
 
-      CompletableFuture var10 = CompletableFuture.allOf(
-         var2.values().stream().map(AtlasSet.StitchResult::readyForUpload).toArray(var0 -> new CompletableFuture[var0])
-      );
+      CompletableFuture var10 = CompletableFuture.allOf(var2.values().stream().map(AtlasSet.StitchResult::readyForUpload).toArray(CompletableFuture[]::new));
       var1.pop();
       var1.endTick();
       return new ModelManager.ReloadState(var3, var6, var7, var2, var10);
@@ -262,23 +265,26 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    }
 
    static record ReloadState(
-      ModelBakery a, BakedModel b, Map<BlockState, BakedModel> c, Map<ResourceLocation, AtlasSet.StitchResult> d, CompletableFuture<Void> e
+      ModelBakery modelBakery,
+      BakedModel missingModel,
+      Map<BlockState, BakedModel> modelCache,
+      Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations,
+      CompletableFuture<Void> readyForUpload
    ) {
-      final ModelBakery modelBakery;
-      final BakedModel missingModel;
-      final Map<BlockState, BakedModel> modelCache;
-      final Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations;
-      final CompletableFuture<Void> readyForUpload;
 
       ReloadState(
-         ModelBakery var1, BakedModel var2, Map<BlockState, BakedModel> var3, Map<ResourceLocation, AtlasSet.StitchResult> var4, CompletableFuture<Void> var5
+         ModelBakery modelBakery,
+         BakedModel missingModel,
+         Map<BlockState, BakedModel> modelCache,
+         Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations,
+         CompletableFuture<Void> readyForUpload
       ) {
          super();
-         this.modelBakery = var1;
-         this.missingModel = var2;
-         this.modelCache = var3;
-         this.atlasPreparations = var4;
-         this.readyForUpload = var5;
+         this.modelBakery = modelBakery;
+         this.missingModel = missingModel;
+         this.modelCache = modelCache;
+         this.atlasPreparations = atlasPreparations;
+         this.readyForUpload = readyForUpload;
       }
    }
 }

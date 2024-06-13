@@ -51,7 +51,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
    }
 
    public ShapelessRecipeBuilder requires(ItemLike var1, int var2) {
-      for(int var3 = 0; var3 < var2; ++var3) {
+      for (int var3 = 0; var3 < var2; var3++) {
          this.requires(Ingredient.of(var1));
       }
 
@@ -63,7 +63,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
    }
 
    public ShapelessRecipeBuilder requires(Ingredient var1, int var2) {
-      for(int var3 = 0; var3 < var2; ++var3) {
+      for (int var3 = 0; var3 < var2; var3++) {
          this.ingredients.add(var1);
       }
 

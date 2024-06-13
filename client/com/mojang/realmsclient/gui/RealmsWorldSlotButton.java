@@ -47,9 +47,9 @@ public class RealmsWorldSlotButton extends Button {
    }
 
    private void setTooltipAndNarration(RealmsWorldSlotButton.State var1, @Nullable String var2) {
-      Component var3 = switch(var1.action) {
-         case JOIN -> SLOT_ACTIVE_TOOLTIP;
+      Component var3 = switch (var1.action) {
          case SWITCH_SLOT -> var1.minigame ? SWITCH_TO_MINIGAME_SLOT_TOOLTIP : SWITCH_TO_WORLD_SLOT_TOOLTIP;
+         case JOIN -> SLOT_ACTIVE_TOOLTIP;
          default -> null;
       };
       if (var3 != null) {

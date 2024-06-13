@@ -39,6 +39,6 @@ public class SoundOptionsScreen extends OptionsSubScreen {
       return Arrays.stream(SoundSource.values())
          .filter(var0 -> var0 != SoundSource.MASTER)
          .map(var1 -> this.options.getSoundSourceOptionInstance(var1))
-         .toArray(var0 -> new OptionInstance[var0]);
+         .toArray(OptionInstance[]::new);
    }
 }

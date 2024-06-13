@@ -24,6 +24,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -96,7 +97,7 @@ public class SectionRenderDispatcher {
             SectionBufferBuilderPack var2 = Objects.requireNonNull(this.bufferPool.acquire());
             this.toBatchCount = this.toBatchHighPriority.size() + this.toBatchLowPriority.size();
             CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName(var1.name(), () -> var1.doTask(var2)), this.executor)
-               .thenCompose(var0 -> var0)
+               .thenCompose(var0 -> (CompletionStage<SectionRenderDispatcher.SectionTaskResult>)var0)
                .whenComplete((var2x, var3) -> {
                   if (var3 != null) {
                      Minecraft.getInstance().delayCrash(CrashReport.forThrowable(var3, "Batching sections"));
@@ -107,7 +108,7 @@ public class SectionRenderDispatcher {
                         } else {
                            var2.discardAll();
                         }
-   
+
                         this.bufferPool.release(var2);
                         this.runTask();
                      });
@@ -129,7 +130,7 @@ public class SectionRenderDispatcher {
 
       SectionRenderDispatcher.RenderSection.CompileTask var2 = this.toBatchHighPriority.poll();
       if (var2 != null) {
-         --this.highPriorityQuota;
+         this.highPriorityQuota--;
          return var2;
       } else {
          this.highPriorityQuota = 2;
@@ -163,7 +164,7 @@ public class SectionRenderDispatcher {
 
    public void uploadAllPendingUploads() {
       Runnable var1;
-      while((var1 = this.toUpload.poll()) != null) {
+      while ((var1 = this.toUpload.poll()) != null) {
          var1.run();
       }
    }
@@ -206,14 +207,14 @@ public class SectionRenderDispatcher {
    }
 
    private void clearBatchQueue() {
-      while(!this.toBatchHighPriority.isEmpty()) {
+      while (!this.toBatchHighPriority.isEmpty()) {
          SectionRenderDispatcher.RenderSection.CompileTask var1 = this.toBatchHighPriority.poll();
          if (var1 != null) {
             var1.cancel();
          }
       }
 
-      while(!this.toBatchLowPriority.isEmpty()) {
+      while (!this.toBatchLowPriority.isEmpty()) {
          SectionRenderDispatcher.RenderSection.CompileTask var2 = this.toBatchLowPriority.poll();
          if (var2 != null) {
             var2.cancel();
@@ -279,13 +280,13 @@ public class SectionRenderDispatcher {
       private final Set<BlockEntity> globalBlockEntities = Sets.newHashSet();
       private final Map<RenderType, VertexBuffer> buffers = RenderType.chunkBufferLayers()
          .stream()
-         .collect(Collectors.toMap(var0 -> var0, var0 -> new VertexBuffer(VertexBuffer.Usage.STATIC)));
+         .collect(Collectors.toMap(var0 -> (RenderType)var0, var0 -> new VertexBuffer(VertexBuffer.Usage.STATIC)));
       private AABB bb;
       private boolean dirty = true;
       final BlockPos.MutableBlockPos origin = new BlockPos.MutableBlockPos(-1, -1, -1);
       private final BlockPos.MutableBlockPos[] relativeOrigins = Util.make(new BlockPos.MutableBlockPos[6], var0 -> {
-         for(int var1xx = 0; var1xx < var0.length; ++var1xx) {
-            var0[var1xx] = new BlockPos.MutableBlockPos();
+         for (int var1x = 0; var1x < var0.length; var1x++) {
+            var0[var1x] = new BlockPos.MutableBlockPos();
          }
       });
       private boolean playerChanged;
@@ -303,15 +304,13 @@ public class SectionRenderDispatcher {
       }
 
       public boolean hasAllNeighbors() {
-         boolean var1 = true;
-         if (!(this.getDistToPlayerSqr() > 576.0)) {
-            return true;
-         } else {
-            return this.doesChunkExistAt(this.relativeOrigins[Direction.WEST.ordinal()])
+         byte var1 = 24;
+         return !(this.getDistToPlayerSqr() > 576.0)
+            ? true
+            : this.doesChunkExistAt(this.relativeOrigins[Direction.WEST.ordinal()])
                && this.doesChunkExistAt(this.relativeOrigins[Direction.NORTH.ordinal()])
                && this.doesChunkExistAt(this.relativeOrigins[Direction.EAST.ordinal()])
                && this.doesChunkExistAt(this.relativeOrigins[Direction.SOUTH.ordinal()]);
-         }
       }
 
       public AABB getBoundingBox() {
@@ -327,7 +326,7 @@ public class SectionRenderDispatcher {
          this.origin.set(var1, var2, var3);
          this.bb = new AABB((double)var1, (double)var2, (double)var3, (double)(var1 + 16), (double)(var2 + 16), (double)(var3 + 16));
 
-         for(Direction var7 : Direction.values()) {
+         for (Direction var7 : Direction.values()) {
             this.relativeOrigins[var7.ordinal()].set(this.origin).move(var7, 16);
          }
       }
@@ -441,7 +440,7 @@ public class SectionRenderDispatcher {
       void updateGlobalBlockEntities(Collection<BlockEntity> var1) {
          HashSet var2 = Sets.newHashSet(var1);
          HashSet var3;
-         synchronized(this.globalBlockEntities) {
+         synchronized (this.globalBlockEntities) {
             var3 = Sets.newHashSet(this.globalBlockEntities);
             var2.removeAll(this.globalBlockEntities);
             var3.removeAll(var1);
@@ -469,7 +468,7 @@ public class SectionRenderDispatcher {
          protected final AtomicBoolean isCancelled = new AtomicBoolean(false);
          protected final boolean isHighPriority;
 
-         public CompileTask(double var2, boolean var4) {
+         public CompileTask(SectionRenderDispatcher.RenderSection var1, double var2, boolean var4) {
             super();
             this.distAtCreation = var2;
             this.isHighPriority = var4;
@@ -491,7 +490,7 @@ public class SectionRenderDispatcher {
          protected RenderChunkRegion region;
 
          public RebuildTask(double var2, @Nullable RenderChunkRegion var4, boolean var5) {
-            super(var2, var5);
+            super(RenderSection.this, var2, var5);
             this.region = var4;
          }
 
@@ -564,7 +563,7 @@ public class SectionRenderDispatcher {
                RandomSource var13 = RandomSource.create();
                BlockRenderDispatcher var14 = Minecraft.getInstance().getBlockRenderer();
 
-               for(BlockPos var16 : BlockPos.betweenClosed(var7, var8)) {
+               for (BlockPos var16 : BlockPos.betweenClosed(var7, var8)) {
                   BlockState var17 = var10.getBlockState(var16);
                   if (var17.isSolidRender(var10, var16)) {
                      var9.setOpaque(var16);
@@ -585,7 +584,7 @@ public class SectionRenderDispatcher {
                         RenderSection.this.beginLayer(var20);
                      }
 
-                     var14.renderLiquid(var16, var10, var20, var17, var25, var16.getX() & 15, var16.getY() & 15, var16.getZ() & 15);
+                     var14.renderLiquid(var16, var10, var20, var17, var25);
                   }
 
                   if (var17.getRenderShape() != RenderShape.INVISIBLE) {
@@ -610,7 +609,7 @@ public class SectionRenderDispatcher {
                   }
                }
 
-               for(RenderType var23 : var12) {
+               for (RenderType var23 : var12) {
                   BufferBuilder.RenderedBuffer var24 = var4.builder(var23).endOrDiscardIfEmpty();
                   if (var24 != null) {
                      var5.renderedLayers.put(var23, var24);
@@ -660,7 +659,7 @@ public class SectionRenderDispatcher {
          private final SectionRenderDispatcher.CompiledSection compiledSection;
 
          public ResortTransparencyTask(double var2, SectionRenderDispatcher.CompiledSection var4) {
-            super(var2, true);
+            super(RenderSection.this, var2, true);
             this.compiledSection = var4;
          }
 
@@ -708,7 +707,7 @@ public class SectionRenderDispatcher {
                            if (var2x != null && !(var2x instanceof CancellationException) && !(var2x instanceof InterruptedException)) {
                               Minecraft.getInstance().delayCrash(CrashReport.forThrowable(var2x, "Rendering section"));
                            }
-   
+
                            return this.isCancelled.get()
                               ? SectionRenderDispatcher.SectionTaskResult.CANCELLED
                               : SectionRenderDispatcher.SectionTaskResult.SUCCESSFUL;

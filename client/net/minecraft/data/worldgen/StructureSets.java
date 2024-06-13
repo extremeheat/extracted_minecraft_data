@@ -24,7 +24,6 @@ public interface StructureSets {
          new StructureSet(
             List.of(
                StructureSet.entry(var1.getOrThrow(BuiltinStructures.VILLAGE_PLAINS)),
-               StructureSet.entry(var1.getOrThrow(BuiltinStructures.VILLAGE_POTATO)),
                StructureSet.entry(var1.getOrThrow(BuiltinStructures.VILLAGE_DESERT)),
                StructureSet.entry(var1.getOrThrow(BuiltinStructures.VILLAGE_SAVANNA)),
                StructureSet.entry(var1.getOrThrow(BuiltinStructures.VILLAGE_SNOWY)),
@@ -91,11 +90,7 @@ public interface StructureSets {
       var0.register(
          BuiltinStructureSets.MINESHAFTS,
          new StructureSet(
-            List.of(
-               StructureSet.entry(var1.getOrThrow(BuiltinStructures.MINESHAFT)),
-               StructureSet.entry(var1.getOrThrow(BuiltinStructures.MINESHAFT_MESA)),
-               StructureSet.entry(var1.getOrThrow(BuiltinStructures.MINESHAFT_POTATO))
-            ),
+            List.of(StructureSet.entry(var1.getOrThrow(BuiltinStructures.MINESHAFT)), StructureSet.entry(var1.getOrThrow(BuiltinStructures.MINESHAFT_MESA))),
             new RandomSpreadStructurePlacement(
                Vec3i.ZERO, StructurePlacement.FrequencyReductionMethod.LEGACY_TYPE_3, 0.004F, 0, Optional.empty(), 1, 0, RandomSpreadType.LINEAR
             )
@@ -114,13 +109,6 @@ public interface StructureSets {
                StructureSet.entry(var1.getOrThrow(BuiltinStructures.RUINED_PORTAL_NETHER))
             ),
             new RandomSpreadStructurePlacement(40, 15, RandomSpreadType.LINEAR, 34222645)
-         )
-      );
-      var0.register(
-         BuiltinStructureSets.RUINED_PORTATOLS,
-         new StructureSet(
-            List.of(StructureSet.entry(var1.getOrThrow(BuiltinStructures.RUINED_PORTATOL))),
-            new RandomSpreadStructurePlacement(28, 8, RandomSpreadType.LINEAR, 31415926)
          )
       );
       var0.register(
@@ -147,10 +135,6 @@ public interface StructureSets {
             ),
             new RandomSpreadStructurePlacement(27, 4, RandomSpreadType.LINEAR, 30084232)
          )
-      );
-      var0.register(
-         BuiltinStructureSets.COLOSSEA,
-         new StructureSet(var1.getOrThrow(BuiltinStructures.COLOSSEUM), new RandomSpreadStructurePlacement(24, 5, RandomSpreadType.LINEAR, 123456789))
       );
       var0.register(
          BuiltinStructureSets.NETHER_FOSSILS,

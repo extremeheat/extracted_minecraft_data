@@ -29,7 +29,7 @@ public class RealmsServerPlayerLists extends ValueObject {
             JsonArray var4 = var3.get("lists").getAsJsonArray();
             Iterator var5 = var4.iterator();
 
-            while(var5.hasNext()) {
+            while (var5.hasNext()) {
                var1.servers.add(RealmsServerPlayerList.parse(((JsonElement)var5.next()).getAsJsonObject()));
             }
          }

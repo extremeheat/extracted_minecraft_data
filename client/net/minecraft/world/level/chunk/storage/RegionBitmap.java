@@ -24,7 +24,7 @@ public class RegionBitmap {
    public int allocate(int var1) {
       int var2 = 0;
 
-      while(true) {
+      while (true) {
          int var3 = this.used.nextClearBit(var2);
          int var4 = this.used.nextSetBit(var3);
          if (var4 == -1 || var4 - var3 >= var1) {

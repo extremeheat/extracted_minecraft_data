@@ -36,7 +36,7 @@ public enum AngerLevel {
    }
 
    public static AngerLevel byAnger(int var0) {
-      for(AngerLevel var4 : SORTED_LEVELS) {
+      for (AngerLevel var4 : SORTED_LEVELS) {
          if (var0 >= var4.minimumAnger) {
             return var4;
          }

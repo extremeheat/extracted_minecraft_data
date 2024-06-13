@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -197,13 +196,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    public Brain<Villager> getBrain() {
-      return super.getBrain();
+      return (Brain<Villager>)super.getBrain();
    }
 
    @Override
@@ -279,7 +273,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
 
       if (!this.isTrading() && this.updateMerchantTimer > 0) {
-         --this.updateMerchantTimer;
+         this.updateMerchantTimer--;
          if (this.updateMerchantTimer <= 0) {
             if (this.increaseProfessionLevelOnUpdate) {
                this.increaseMerchantCareer();
@@ -379,7 +373,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void resetSpecialPrices() {
-      for(MerchantOffer var2 : this.getOffers()) {
+      for (MerchantOffer var2 : this.getOffers()) {
          var2.resetSpecialPriceDiff();
       }
    }
@@ -397,13 +391,13 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void restock() {
       this.updateDemand();
 
-      for(MerchantOffer var2 : this.getOffers()) {
+      for (MerchantOffer var2 : this.getOffers()) {
          var2.resetUses();
       }
 
       this.resendOffersToTradingPlayer();
       this.lastRestockGameTime = this.level().getGameTime();
-      ++this.numberOfRestocksToday;
+      this.numberOfRestocksToday++;
    }
 
    private void resendOffersToTradingPlayer() {
@@ -417,7 +411,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private boolean needsToRestock() {
-      for(MerchantOffer var2 : this.getOffers()) {
+      for (MerchantOffer var2 : this.getOffers()) {
          if (var2.needsRestock()) {
             return true;
          }
@@ -453,12 +447,12 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void catchUpDemand() {
       int var1 = 2 - this.numberOfRestocksToday;
       if (var1 > 0) {
-         for(MerchantOffer var3 : this.getOffers()) {
+         for (MerchantOffer var3 : this.getOffers()) {
             var3.resetUses();
          }
       }
 
-      for(int var4 = 0; var4 < var1; ++var4) {
+      for (int var4 = 0; var4 < var1; var4++) {
          this.updateDemand();
       }
 
@@ -466,7 +460,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void updateDemand() {
-      for(MerchantOffer var2 : this.getOffers()) {
+      for (MerchantOffer var2 : this.getOffers()) {
          var2.updateDemand();
       }
    }
@@ -474,7 +468,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void updateSpecialPrices(Player var1) {
       int var2 = this.getPlayerReputation(var1);
       if (var2 != 0) {
-         for(MerchantOffer var4 : this.getOffers()) {
+         for (MerchantOffer var4 : this.getOffers()) {
             var4.addToSpecialPriceDiff(-Mth.floor((float)var2 * var4.getPriceMultiplier()));
          }
       }
@@ -483,7 +477,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          MobEffectInstance var10 = var1.getEffect(MobEffects.HERO_OF_THE_VILLAGE);
          int var11 = var10.getAmplifier();
 
-         for(MerchantOffer var6 : this.getOffers()) {
+         for (MerchantOffer var6 : this.getOffers()) {
             double var7 = 0.3 + 0.0625 * (double)var11;
             int var9 = (int)Math.floor(var7 * (double)var6.getBaseCostA().getCount());
             var6.addToSpecialPriceDiff(-Math.max(var9, 1));
@@ -595,7 +589,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    @Override
    protected void rewardTradeXp(MerchantOffer var1) {
       int var2 = 3 + this.random.nextInt(4);
-      this.villagerXp += var1.getXp();
+      this.villagerXp = this.villagerXp + var1.getXp();
       this.lastTradedPlayer = this.getTradingPlayer();
       if (this.shouldIncreaseLevel()) {
          this.updateMerchantTimer = 40;
@@ -648,8 +642,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void tellWitnessesThatIWasMurdered(Entity var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+      if (this.level() instanceof ServerLevel var2) {
          Optional var4 = this.brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
          if (!var4.isEmpty()) {
             ((NearestVisibleLivingEntities)var4.get())
@@ -662,7 +655,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void releasePoi(MemoryModuleType<GlobalPos> var1) {
       if (this.level() instanceof ServerLevel) {
          MinecraftServer var2 = ((ServerLevel)this.level()).getServer();
-         this.brain.getMemory(var1).ifPresent(var3 -> {
+         this.brain.<GlobalPos>getMemory(var1).ifPresent(var3 -> {
             ServerLevel var4 = var2.getLevel(var3.dimension());
             if (var4 != null) {
                PoiManager var5 = var4.getPoiManager();
@@ -688,15 +681,15 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private void eatUntilFull() {
       if (this.hungry() && this.countFoodPointsInInventory() != 0) {
-         for(int var1 = 0; var1 < this.getInventory().getContainerSize(); ++var1) {
+         for (int var1 = 0; var1 < this.getInventory().getContainerSize(); var1++) {
             ItemStack var2 = this.getInventory().getItem(var1);
             if (!var2.isEmpty()) {
                Integer var3 = FOOD_POINTS.get(var2.getItem());
                if (var3 != null) {
                   int var4 = var2.getCount();
 
-                  for(int var5 = var4; var5 > 0; --var5) {
-                     this.foodLevel += var3;
+                  for (int var5 = var4; var5 > 0; var5--) {
+                     this.foodLevel = this.foodLevel + var3;
                      this.getInventory().removeItem(var1, 1);
                      if (!this.hungry()) {
                         return;
@@ -851,10 +844,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       VillagerData var1 = this.getVillagerData();
       Int2ObjectMap var2;
       if (this.level().enabledFeatures().contains(FeatureFlags.TRADE_REBALANCE)) {
-         Int2ObjectMap var3 = (Int2ObjectMap)VillagerTrades.EXPERIMENTAL_TRADES.get(var1.getProfession());
-         var2 = var3 != null ? var3 : (Int2ObjectMap)VillagerTrades.TRADES.get(var1.getProfession());
+         Int2ObjectMap var3 = VillagerTrades.EXPERIMENTAL_TRADES.get(var1.getProfession());
+         var2 = var3 != null ? var3 : VillagerTrades.TRADES.get(var1.getProfession());
       } else {
-         var2 = (Int2ObjectMap)VillagerTrades.TRADES.get(var1.getProfession());
+         var2 = VillagerTrades.TRADES.get(var1.getProfession());
       }
 
       if (var2 != null && !var2.isEmpty()) {
@@ -902,11 +895,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    public boolean wantsToSpawnGolem(long var1) {
-      if (!this.golemSpawnConditionsMet(this.level().getGameTime())) {
-         return false;
-      } else {
-         return !this.brain.hasMemoryValue(MemoryModuleType.GOLEM_DETECTED_RECENTLY);
-      }
+      return !this.golemSpawnConditionsMet(this.level().getGameTime()) ? false : !this.brain.hasMemoryValue(MemoryModuleType.GOLEM_DETECTED_RECENTLY);
    }
 
    @Override
@@ -967,10 +956,6 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private boolean golemSpawnConditionsMet(long var1) {
       Optional var3 = this.brain.getMemory(MemoryModuleType.LAST_SLEPT);
-      if (var3.isPresent()) {
-         return var1 - var3.get() < 24000L;
-      } else {
-         return false;
-      }
+      return var3.isPresent() ? var1 - (Long)var3.get() < 24000L : false;
    }
 }

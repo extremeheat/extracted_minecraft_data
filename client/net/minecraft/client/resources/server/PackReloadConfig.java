@@ -15,14 +15,11 @@ public interface PackReloadConfig {
       List<PackReloadConfig.IdAndPath> packsToLoad();
    }
 
-   public static record IdAndPath(UUID a, Path b) {
-      private final UUID id;
-      private final Path path;
-
-      public IdAndPath(UUID var1, Path var2) {
+   public static record IdAndPath(UUID id, Path path) {
+      public IdAndPath(UUID id, Path path) {
          super();
-         this.id = var1;
-         this.path = var2;
+         this.id = id;
+         this.path = path;
       }
    }
 }

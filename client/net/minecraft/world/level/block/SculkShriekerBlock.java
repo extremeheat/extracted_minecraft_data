@@ -65,7 +65,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
       if (var1 instanceof ServerLevel var5) {
          ServerPlayer var6 = SculkShriekerBlockEntity.tryGetPlayer(var4);
          if (var6 != null) {
-            ((ServerLevel)var5).getBlockEntity(var2, BlockEntityType.SCULK_SHRIEKER).ifPresent(var2x -> var2x.tryShriek(var5, var6));
+            var5.getBlockEntity(var2, BlockEntityType.SCULK_SHRIEKER).ifPresent(var2x -> var2x.tryShriek(var5, var6));
          }
       }
 
@@ -75,7 +75,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var2 instanceof ServerLevel var6 && var1.getValue(SHRIEKING) && !var1.is(var4.getBlock())) {
-         ((ServerLevel)var6).getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent(var1x -> var1x.tryRespond(var6));
+         var6.getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent(var1x -> var1x.tryRespond(var6));
       }
 
       super.onRemove(var1, var2, var3, var4, var5);

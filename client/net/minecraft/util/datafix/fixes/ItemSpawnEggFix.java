@@ -100,10 +100,10 @@ public class ItemSpawnEggFix extends DataFix {
       OpticFinder var7 = DSL.typeFinder(var1.getTypeRaw(References.ENTITY));
       Type var8 = this.getOutputSchema().getTypeRaw(References.ENTITY);
       return this.fixTypeEverywhereTyped("ItemSpawnEggFix", var2, var6x -> {
-         Optional var7xx = var6x.getOptional(var3);
-         if (var7xx.isPresent() && Objects.equals(((Pair)var7xx.get()).getSecond(), "minecraft:spawn_egg")) {
-            Dynamic var8xx = (Dynamic)var6x.get(DSL.remainderFinder());
-            short var9 = var8xx.get("Damage").asShort((short)0);
+         Optional var7x = var6x.getOptional(var3);
+         if (var7x.isPresent() && Objects.equals(((Pair)var7x.get()).getSecond(), "minecraft:spawn_egg")) {
+            Dynamic var8x = (Dynamic)var6x.get(DSL.remainderFinder());
+            short var9 = var8x.get("Damage").asShort((short)0);
             Optional var10 = var6x.getOptionalTyped(var5);
             Optional var11 = var10.flatMap(var1xx -> var1xx.getOptionalTyped(var6));
             Optional var12 = var11.flatMap(var1xx -> var1xx.getOptionalTyped(var7));
@@ -119,8 +119,8 @@ public class ItemSpawnEggFix extends DataFix {
             }
 
             if (var9 != 0) {
-               var8xx = var8xx.set("Damage", var8xx.createShort((short)0));
-               var14 = var14.set(DSL.remainderFinder(), var8xx);
+               var8x = var8x.set("Damage", var8x.createShort((short)0));
+               var14 = var14.set(DSL.remainderFinder(), var8x);
             }
 
             return var14;

@@ -356,17 +356,17 @@ public class GameRenderer implements AutoCloseable {
             Map var3 = var1.listResources(
                "shaders",
                var0 -> {
-                  String var1xx = var0.getPath();
-                  return var1xx.endsWith(".json")
-                     || var1xx.endsWith(Program.Type.FRAGMENT.getExtension())
-                     || var1xx.endsWith(Program.Type.VERTEX.getExtension())
-                     || var1xx.endsWith(".glsl");
+                  String var1x = var0.getPath();
+                  return var1x.endsWith(".json")
+                     || var1x.endsWith(Program.Type.FRAGMENT.getExtension())
+                     || var1x.endsWith(Program.Type.VERTEX.getExtension())
+                     || var1x.endsWith(".glsl");
                }
             );
             HashMap var4 = new HashMap();
             var3.forEach((var1x, var2x) -> {
-               try (InputStream var3xx = var2x.open()) {
-                  byte[] var4xx = var3xx.readAllBytes();
+               try (InputStream var3x = var2x.open()) {
+                  byte[] var4x = var3x.readAllBytes();
                   var4.put(var1x, new Resource(var2x.source(), () -> new ByteArrayInputStream(var4x)));
                } catch (Exception var8) {
                   GameRenderer.LOGGER.warn("Failed to read resource {}", var1x, var8);
@@ -761,9 +761,9 @@ public class GameRenderer implements AutoCloseable {
 
       this.shutdownShaders();
       var3.forEach(var1x -> {
-         ShaderInstance var2xx = (ShaderInstance)var1x.getFirst();
-         this.shaders.put(var2xx.getName(), var2xx);
-         ((Consumer)var1x.getSecond()).accept(var2xx);
+         ShaderInstance var2x = (ShaderInstance)var1x.getFirst();
+         this.shaders.put(var2x.getName(), var2x);
+         ((Consumer)var1x.getSecond()).accept(var2x);
       });
    }
 
@@ -787,7 +787,7 @@ public class GameRenderer implements AutoCloseable {
 
       this.mainCamera.tick();
       this.itemInHandRenderer.tick();
-      ++this.confusionAnimationTick;
+      this.confusionAnimationTick++;
       if (this.minecraft.level.tickRateManager().runsNormally()) {
          this.minecraft.levelRenderer.tickRain(this.mainCamera);
          this.darkenWorldAmountO = this.darkenWorldAmount;
@@ -801,7 +801,7 @@ public class GameRenderer implements AutoCloseable {
          }
 
          if (this.itemActivationTicks > 0) {
-            --this.itemActivationTicks;
+            this.itemActivationTicks--;
             if (this.itemActivationTicks == 0) {
                this.itemActivationItem = null;
             }
@@ -871,17 +871,14 @@ public class GameRenderer implements AutoCloseable {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void tickFov() {
       float var1 = 1.0F;
-      Entity var3 = this.minecraft.getCameraEntity();
-      if (var3 instanceof AbstractClientPlayer var2) {
+      if (this.minecraft.getCameraEntity() instanceof AbstractClientPlayer var2) {
          var1 = var2.getFieldOfViewModifier();
       }
 
       this.oldFov = this.fov;
-      this.fov += (var1 - this.fov) * 0.5F;
+      this.fov = this.fov + (var1 - this.fov) * 0.5F;
       if (this.fov > 1.5F) {
          this.fov = 1.5F;
       }
@@ -915,11 +912,8 @@ public class GameRenderer implements AutoCloseable {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void bobHurt(PoseStack var1, float var2) {
-      Entity var4 = this.minecraft.getCameraEntity();
-      if (var4 instanceof LivingEntity var3) {
+      if (this.minecraft.getCameraEntity() instanceof LivingEntity var3) {
          float var7 = (float)var3.hurtTime - var2;
          if (var3.isDeadOrDying()) {
             float var5 = Math.min((float)var3.deathTime + var2, 20.0F);
@@ -930,30 +924,25 @@ public class GameRenderer implements AutoCloseable {
             return;
          }
 
-         float var8 = var7 / (float)var3.hurtDuration;
-         float var9 = Mth.sin(var8 * var8 * var8 * var8 * 3.1415927F);
+         var7 /= (float)var3.hurtDuration;
+         var7 = Mth.sin(var7 * var7 * var7 * var7 * 3.1415927F);
          float var10 = var3.getHurtDir();
          var1.mulPose(Axis.YP.rotationDegrees(-var10));
-         float var6 = (float)((double)(-var9) * 14.0 * this.minecraft.options.damageTiltStrength().get());
+         float var6 = (float)((double)(-var7) * 14.0 * this.minecraft.options.damageTiltStrength().get());
          var1.mulPose(Axis.ZP.rotationDegrees(var6));
          var1.mulPose(Axis.YP.rotationDegrees(var10));
       }
    }
 
    private void bobView(PoseStack var1, float var2) {
-      Entity var3 = this.minecraft.getCameraEntity();
-      if (var3 != null) {
-         Vec3 var4 = var3.lastScreenShakeOffset.lerp(var3.screenShakeOffset, (double)var2);
-         var1.translate(var4.x, var4.y, var4.z);
-         if (var3 instanceof Player) {
-            Player var5 = (Player)var3;
-            float var6 = var5.walkDist - var5.walkDistO;
-            float var7 = -(var5.walkDist + var6 * var2);
-            float var8 = Mth.lerp(var2, var5.oBob, var5.bob);
-            var1.translate(Mth.sin(var7 * 3.1415927F) * var8 * 0.5F, -Math.abs(Mth.cos(var7 * 3.1415927F) * var8), 0.0F);
-            var1.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var7 * 3.1415927F) * var8 * 3.0F));
-            var1.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(var7 * 3.1415927F - 0.2F) * var8) * 5.0F));
-         }
+      if (this.minecraft.getCameraEntity() instanceof Player) {
+         Player var3 = (Player)this.minecraft.getCameraEntity();
+         float var4 = var3.walkDist - var3.walkDistO;
+         float var5 = -(var3.walkDist + var4 * var2);
+         float var6 = Mth.lerp(var2, var3.oBob, var3.bob);
+         var1.translate(Mth.sin(var5 * 3.1415927F) * var6 * 0.5F, -Math.abs(Mth.cos(var5 * 3.1415927F) * var6), 0.0F);
+         var1.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
+         var1.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
       }
    }
 
@@ -1191,20 +1180,20 @@ public class GameRenderer implements AutoCloseable {
       if (this.minecraft.levelRenderer.countRenderedSections() > 10 && this.minecraft.levelRenderer.hasRenderedAllSections()) {
          NativeImage var2 = Screenshot.takeScreenshot(this.minecraft.getMainRenderTarget());
          Util.ioPool().execute(() -> {
-            int var2xx = var2.getWidth();
+            int var2x = var2.getWidth();
             int var3 = var2.getHeight();
             int var4 = 0;
             int var5 = 0;
-            if (var2xx > var3) {
-               var4 = (var2xx - var3) / 2;
-               var2xx = var3;
+            if (var2x > var3) {
+               var4 = (var2x - var3) / 2;
+               var2x = var3;
             } else {
-               var5 = (var3 - var2xx) / 2;
-               var3 = var2xx;
+               var5 = (var3 - var2x) / 2;
+               var3 = var2x;
             }
 
             try (NativeImage var6 = new NativeImage(64, 64, false)) {
-               var2.resizeSubRectTo(var4, var5, var2xx, var3, var6);
+               var2.resizeSubRectTo(var4, var5, var2x, var3, var6);
                var6.writeToFile(var1);
             } catch (IOException var16) {
                LOGGER.warn("Couldn't save auto screenshot", var16);
@@ -1688,14 +1677,11 @@ public class GameRenderer implements AutoCloseable {
       return rendertypeGuiGhostRecipeOverlayShader;
    }
 
-   public static record ResourceCache(ResourceProvider a, Map<ResourceLocation, Resource> c) implements ResourceProvider {
-      private final ResourceProvider original;
-      private final Map<ResourceLocation, Resource> cache;
-
-      public ResourceCache(ResourceProvider var1, Map<ResourceLocation, Resource> var2) {
+   public static record ResourceCache(ResourceProvider original, Map<ResourceLocation, Resource> cache) implements ResourceProvider {
+      public ResourceCache(ResourceProvider original, Map<ResourceLocation, Resource> cache) {
          super();
-         this.original = var1;
-         this.cache = var2;
+         this.original = original;
+         this.cache = cache;
       }
 
       @Override

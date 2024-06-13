@@ -34,7 +34,7 @@ public class SubStringSource {
          Style var5 = this.charStyles.get(var1);
          int var6 = var1;
 
-         for(int var7 = 1; var7 < var2; ++var7) {
+         for (int var7 = 1; var7 < var2; var7++) {
             int var8 = var1 + var7;
             Style var9 = this.charStyles.get(var8);
             if (!var9.equals(var5)) {
@@ -66,7 +66,7 @@ public class SubStringSource {
             var3.appendCodePoint(var4x);
             int var5 = Character.charCount(var4x);
 
-            for(int var6 = 0; var6 < var5; ++var6) {
+            for (int var6 = 0; var6 < var5; var6++) {
                var4.add(var3xx);
             }
 

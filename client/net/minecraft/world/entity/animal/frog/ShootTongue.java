@@ -100,7 +100,7 @@ public class ShootTongue extends Behavior<Frog> {
    protected void tick(ServerLevel var1, Frog var2, long var3) {
       LivingEntity var5 = var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
       var2.setTongueTarget(var5);
-      switch(this.state) {
+      switch (this.state) {
          case MOVE_TO_TARGET:
             if (var5.distanceTo(var2) < 1.75F) {
                var1.playSound(null, var2, this.tongueSound, SoundSource.NEUTRAL, 2.0F, 1.0F);
@@ -113,7 +113,7 @@ public class ShootTongue extends Behavior<Frog> {
                var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var5.position(), 2.0F, 0));
                this.calculatePathCounter = 10;
             } else {
-               --this.calculatePathCounter;
+               this.calculatePathCounter--;
             }
             break;
          case CATCH_ANIMATION:
@@ -126,7 +126,7 @@ public class ShootTongue extends Behavior<Frog> {
             if (this.eatAnimationTimer >= 10) {
                this.state = ShootTongue.State.DONE;
             } else {
-               ++this.eatAnimationTimer;
+               this.eatAnimationTimer++;
             }
          case DONE:
       }

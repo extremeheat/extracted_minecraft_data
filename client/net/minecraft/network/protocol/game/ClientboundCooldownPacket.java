@@ -8,9 +8,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.Item;
 
-public record ClientboundCooldownPacket(Item b, int c) implements Packet<ClientGamePacketListener> {
-   private final Item item;
-   private final int duration;
+public record ClientboundCooldownPacket(Item item, int duration) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCooldownPacket> STREAM_CODEC = StreamCodec.composite(
       ByteBufCodecs.registry(Registries.ITEM),
       ClientboundCooldownPacket::item,
@@ -19,10 +17,10 @@ public record ClientboundCooldownPacket(Item b, int c) implements Packet<ClientG
       ClientboundCooldownPacket::new
    );
 
-   public ClientboundCooldownPacket(Item var1, int var2) {
+   public ClientboundCooldownPacket(Item item, int duration) {
       super();
-      this.item = var1;
-      this.duration = var2;
+      this.item = item;
+      this.duration = duration;
    }
 
    @Override

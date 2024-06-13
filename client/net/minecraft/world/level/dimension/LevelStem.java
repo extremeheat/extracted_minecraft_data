@@ -2,16 +2,13 @@ package net.minecraft.world.level.dimension;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public record LevelStem(Holder<DimensionType> f, ChunkGenerator g) {
-   private final Holder<DimensionType> type;
-   private final ChunkGenerator generator;
+public record LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
    public static final Codec<LevelStem> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                DimensionType.CODEC.fieldOf("type").forGetter(LevelStem::type), ChunkGenerator.CODEC.fieldOf("generator").forGetter(LevelStem::generator)
@@ -21,11 +18,10 @@ public record LevelStem(Holder<DimensionType> f, ChunkGenerator g) {
    public static final ResourceKey<LevelStem> OVERWORLD = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("overworld"));
    public static final ResourceKey<LevelStem> NETHER = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("the_nether"));
    public static final ResourceKey<LevelStem> END = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("the_end"));
-   public static final ResourceKey<LevelStem> POTATO = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("potato"));
 
-   public LevelStem(Holder<DimensionType> var1, ChunkGenerator var2) {
+   public LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
       super();
-      this.type = var1;
-      this.generator = var2;
+      this.type = type;
+      this.generator = generator;
    }
 }

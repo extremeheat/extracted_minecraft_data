@@ -2,12 +2,10 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemDurabilityTrigger extends SimpleCriterionTrigger<ItemDurabilityTrigger.TriggerInstance> {
@@ -24,30 +22,25 @@ public class ItemDurabilityTrigger extends SimpleCriterionTrigger<ItemDurability
       this.trigger(var1, var2x -> var2x.matches(var2, var3));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ItemPredicate> c, MinMaxBounds.Ints d, MinMaxBounds.Ints e)
-      implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<ItemPredicate> item;
-      private final MinMaxBounds.Ints durability;
-      private final MinMaxBounds.Ints delta;
+   public static record TriggerInstance(
+      Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, MinMaxBounds.Ints durability, MinMaxBounds.Ints delta
+   ) implements SimpleCriterionTrigger.SimpleInstance {
       public static final Codec<ItemDurabilityTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(ItemDurabilityTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC, "item").forGetter(ItemDurabilityTrigger.TriggerInstance::item),
-                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "durability", MinMaxBounds.Ints.ANY)
-                     .forGetter(ItemDurabilityTrigger.TriggerInstance::durability),
-                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "delta", MinMaxBounds.Ints.ANY)
-                     .forGetter(ItemDurabilityTrigger.TriggerInstance::delta)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(ItemDurabilityTrigger.TriggerInstance::player),
+                  ItemPredicate.CODEC.optionalFieldOf("item").forGetter(ItemDurabilityTrigger.TriggerInstance::item),
+                  MinMaxBounds.Ints.CODEC.optionalFieldOf("durability", MinMaxBounds.Ints.ANY).forGetter(ItemDurabilityTrigger.TriggerInstance::durability),
+                  MinMaxBounds.Ints.CODEC.optionalFieldOf("delta", MinMaxBounds.Ints.ANY).forGetter(ItemDurabilityTrigger.TriggerInstance::delta)
                )
                .apply(var0, ItemDurabilityTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, MinMaxBounds.Ints var3, MinMaxBounds.Ints var4) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, MinMaxBounds.Ints durability, MinMaxBounds.Ints delta) {
          super();
-         this.player = var1;
-         this.item = var2;
-         this.durability = var3;
-         this.delta = var4;
+         this.player = player;
+         this.item = item;
+         this.durability = durability;
+         this.delta = delta;
       }
 
       public static Criterion<ItemDurabilityTrigger.TriggerInstance> changedDurability(Optional<ItemPredicate> var0, MinMaxBounds.Ints var1) {
@@ -61,12 +54,10 @@ public class ItemDurabilityTrigger extends SimpleCriterionTrigger<ItemDurability
       }
 
       public boolean matches(ItemStack var1, int var2) {
-         if (this.item.isPresent() && !((ItemPredicate)this.item.get()).matches(var1)) {
-            return false;
-         } else if (!this.durability.matches(var1.getMaxDamage() - var2)) {
+         if (this.item.isPresent() && !this.item.get().matches(var1)) {
             return false;
          } else {
-            return this.delta.matches(var1.getDamageValue() - var2);
+            return !this.durability.matches(var1.getMaxDamage() - var2) ? false : this.delta.matches(var1.getDamageValue() - var2);
          }
       }
    }

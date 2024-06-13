@@ -5,10 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundContainerSlotStateChangedPacket(int b, int c, boolean d) implements Packet<ServerGamePacketListener> {
-   private final int slotId;
-   private final int containerId;
-   private final boolean newState;
+public record ServerboundContainerSlotStateChangedPacket(int slotId, int containerId, boolean newState) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundContainerSlotStateChangedPacket> STREAM_CODEC = Packet.codec(
       ServerboundContainerSlotStateChangedPacket::write, ServerboundContainerSlotStateChangedPacket::new
    );
@@ -17,11 +14,11 @@ public record ServerboundContainerSlotStateChangedPacket(int b, int c, boolean d
       this(var1.readVarInt(), var1.readVarInt(), var1.readBoolean());
    }
 
-   public ServerboundContainerSlotStateChangedPacket(int var1, int var2, boolean var3) {
+   public ServerboundContainerSlotStateChangedPacket(int slotId, int containerId, boolean newState) {
       super();
-      this.slotId = var1;
-      this.containerId = var2;
-      this.newState = var3;
+      this.slotId = slotId;
+      this.containerId = containerId;
+      this.newState = newState;
    }
 
    private void write(FriendlyByteBuf var1) {

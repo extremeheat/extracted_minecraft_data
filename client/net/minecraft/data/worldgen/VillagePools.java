@@ -9,7 +9,6 @@ public class VillagePools {
 
    public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
       PlainVillagePools.bootstrap(var0);
-      PotatoVillagePools.bootstrap(var0);
       SnowyVillagePools.bootstrap(var0);
       SavannaVillagePools.bootstrap(var0);
       DesertVillagePools.bootstrap(var0);

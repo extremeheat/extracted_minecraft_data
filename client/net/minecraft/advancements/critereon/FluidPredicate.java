@@ -2,32 +2,28 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
-public record FluidPredicate(Optional<HolderSet<Fluid>> b, Optional<StatePropertiesPredicate> c) {
-   private final Optional<HolderSet<Fluid>> fluids;
-   private final Optional<StatePropertiesPredicate> properties;
+public record FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePropertiesPredicate> properties) {
    public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.FLUID), "fluids").forGetter(FluidPredicate::fluids),
-               ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "state").forGetter(FluidPredicate::properties)
+               RegistryCodecs.homogeneousList(Registries.FLUID).optionalFieldOf("fluids").forGetter(FluidPredicate::fluids),
+               StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(FluidPredicate::properties)
             )
             .apply(var0, FluidPredicate::new)
    );
 
-   public FluidPredicate(Optional<HolderSet<Fluid>> var1, Optional<StatePropertiesPredicate> var2) {
+   public FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePropertiesPredicate> properties) {
       super();
-      this.fluids = var1;
-      this.properties = var2;
+      this.fluids = fluids;
+      this.properties = properties;
    }
 
    public boolean matches(ServerLevel var1, BlockPos var2) {
@@ -35,11 +31,7 @@ public record FluidPredicate(Optional<HolderSet<Fluid>> b, Optional<StatePropert
          return false;
       } else {
          FluidState var3 = var1.getFluidState(var2);
-         if (this.fluids.isPresent() && !var3.is(this.fluids.get())) {
-            return false;
-         } else {
-            return !this.properties.isPresent() || ((StatePropertiesPredicate)this.properties.get()).matches(var3);
-         }
+         return this.fluids.isPresent() && !var3.is(this.fluids.get()) ? false : !this.properties.isPresent() || this.properties.get().matches(var3);
       }
    }
 

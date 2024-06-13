@@ -2,14 +2,12 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,30 +26,27 @@ public class BeeNestDestroyedTrigger extends SimpleCriterionTrigger<BeeNestDestr
       this.trigger(var1, var3x -> var3x.matches(var2, var3, var4));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<Holder<Block>> c, Optional<ItemPredicate> d, MinMaxBounds.Ints e)
-      implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<Holder<Block>> block;
-      private final Optional<ItemPredicate> item;
-      private final MinMaxBounds.Ints beesInside;
+   public static record TriggerInstance(
+      Optional<ContextAwarePredicate> player, Optional<Holder<Block>> block, Optional<ItemPredicate> item, MinMaxBounds.Ints beesInside
+   ) implements SimpleCriterionTrigger.SimpleInstance {
       public static final Codec<BeeNestDestroyedTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(BeeNestDestroyedTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(BuiltInRegistries.BLOCK.holderByNameCodec(), "block")
-                     .forGetter(BeeNestDestroyedTrigger.TriggerInstance::block),
-                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC, "item").forGetter(BeeNestDestroyedTrigger.TriggerInstance::item),
-                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "num_bees_inside", MinMaxBounds.Ints.ANY)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(BeeNestDestroyedTrigger.TriggerInstance::player),
+                  BuiltInRegistries.BLOCK.holderByNameCodec().optionalFieldOf("block").forGetter(BeeNestDestroyedTrigger.TriggerInstance::block),
+                  ItemPredicate.CODEC.optionalFieldOf("item").forGetter(BeeNestDestroyedTrigger.TriggerInstance::item),
+                  MinMaxBounds.Ints.CODEC
+                     .optionalFieldOf("num_bees_inside", MinMaxBounds.Ints.ANY)
                      .forGetter(BeeNestDestroyedTrigger.TriggerInstance::beesInside)
                )
                .apply(var0, BeeNestDestroyedTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Block>> var2, Optional<ItemPredicate> var3, MinMaxBounds.Ints var4) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Block>> block, Optional<ItemPredicate> item, MinMaxBounds.Ints beesInside) {
          super();
-         this.player = var1;
-         this.block = var2;
-         this.item = var3;
-         this.beesInside = var4;
+         this.player = player;
+         this.block = block;
+         this.item = item;
+         this.beesInside = beesInside;
       }
 
       public static Criterion<BeeNestDestroyedTrigger.TriggerInstance> destroyedBeeNest(Block var0, ItemPredicate.Builder var1, MinMaxBounds.Ints var2) {
@@ -65,7 +60,7 @@ public class BeeNestDestroyedTrigger extends SimpleCriterionTrigger<BeeNestDestr
          if (this.block.isPresent() && !var1.is(this.block.get())) {
             return false;
          } else {
-            return this.item.isPresent() && !((ItemPredicate)this.item.get()).matches(var2) ? false : this.beesInside.matches(var3);
+            return this.item.isPresent() && !this.item.get().matches(var2) ? false : this.beesInside.matches(var3);
          }
       }
    }

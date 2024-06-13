@@ -56,8 +56,8 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
       CompletableFuture var4 = filterPlainText(var1, var2);
       Component var5 = var3.getChatDecorator().decorate(var1.getPlayer(), var2.decoratedContent());
       var1.getChatMessageChainer().append(var4, var3x -> {
-         PlayerChatMessage var4xx = var2.withUnsignedContent(var5).filter(var3x.mask());
-         var0.accept(var4xx);
+         PlayerChatMessage var4x = var2.withUnsignedContent(var5).filter(var3x.mask());
+         var0.accept(var4x);
       });
    }
 
@@ -109,7 +109,7 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
             MutableComponent var3 = Component.literal(this.text.substring(0, this.parts[0].getStart()));
             int var4 = this.parts[0].getStart();
 
-            for(MessageArgument.Part var8 : this.parts) {
+            for (MessageArgument.Part var8 : this.parts) {
                Component var9 = var8.toComponent(var1);
                if (var4 < var8.getStart()) {
                   var3.append(this.text.substring(var4, var8.getStart()));
@@ -141,10 +141,10 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
             ArrayList var3 = Lists.newArrayList();
             int var4 = var0.getCursor();
 
-            while(true) {
+            while (true) {
                int var5;
                EntitySelector var6;
-               while(true) {
+               while (true) {
                   if (!var0.canRead()) {
                      return new MessageArgument.Message(var2, var3.toArray(new MessageArgument.Part[0]));
                   }

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -86,7 +85,7 @@ public class WallTorchBlock extends TorchBlock {
       BlockPos var4 = var1.getClickedPos();
       Direction[] var5 = var1.getNearestLookingDirections();
 
-      for(Direction var9 : var5) {
+      for (Direction var9 : var5) {
          if (var9.getAxis().isHorizontal()) {
             Direction var10 = var9.getOpposite();
             var2 = var2.setValue(FACING, var10);

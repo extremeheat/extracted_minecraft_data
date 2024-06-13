@@ -42,8 +42,8 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("CustomName", 8)) {
          this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
       }
@@ -62,49 +62,49 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
             float var9 = var3.flipT;
 
             do {
-               var3.flipT += (float)(RANDOM.nextInt(4) - RANDOM.nextInt(4));
-            } while(var9 == var3.flipT);
+               var3.flipT = var3.flipT + (float)(RANDOM.nextInt(4) - RANDOM.nextInt(4));
+            } while (var9 == var3.flipT);
          }
       } else {
          var3.tRot += 0.02F;
          var3.open -= 0.1F;
       }
 
-      while(var3.rot >= 3.1415927F) {
+      while (var3.rot >= 3.1415927F) {
          var3.rot -= 6.2831855F;
       }
 
-      while(var3.rot < -3.1415927F) {
+      while (var3.rot < -3.1415927F) {
          var3.rot += 6.2831855F;
       }
 
-      while(var3.tRot >= 3.1415927F) {
+      while (var3.tRot >= 3.1415927F) {
          var3.tRot -= 6.2831855F;
       }
 
-      while(var3.tRot < -3.1415927F) {
+      while (var3.tRot < -3.1415927F) {
          var3.tRot += 6.2831855F;
       }
 
       float var10 = var3.tRot - var3.rot;
 
-      while(var10 >= 3.1415927F) {
+      while (var10 >= 3.1415927F) {
          var10 -= 6.2831855F;
       }
 
-      while(var10 < -3.1415927F) {
+      while (var10 < -3.1415927F) {
          var10 += 6.2831855F;
       }
 
       var3.rot += var10 * 0.4F;
       var3.open = Mth.clamp(var3.open, 0.0F, 1.0F);
-      ++var3.time;
+      var3.time++;
       var3.oFlip = var3.flip;
       float var6 = (var3.flipT - var3.flip) * 0.4F;
       float var12 = 0.2F;
       var6 = Mth.clamp(var6, -0.2F, 0.2F);
-      var3.flipA += (var6 - var3.flipA) * 0.9F;
-      var3.flip += var3.flipA;
+      var3.flipA = var3.flipA + (var6 - var3.flipA) * 0.9F;
+      var3.flip = var3.flip + var3.flipA;
    }
 
    @Override
@@ -123,12 +123,14 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    }
 
    @Override
-   public void applyComponents(DataComponentMap var1) {
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
       this.name = var1.get(DataComponents.CUSTOM_NAME);
    }
 
    @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.CUSTOM_NAME, this.name);
    }
 

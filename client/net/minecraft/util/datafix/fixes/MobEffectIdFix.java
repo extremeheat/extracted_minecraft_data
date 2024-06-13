@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.Util;
-import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class MobEffectIdFix extends DataFix {
@@ -70,7 +69,7 @@ public class MobEffectIdFix extends DataFix {
 
    private static <T> Dynamic<T> updateMobEffectIdField(Dynamic<T> var0, String var1, Dynamic<T> var2, String var3) {
       Optional var4 = getAndConvertMobEffectId(var0, var1);
-      return ExtraDataFixUtils.replaceField(var2, var1, var3, var4);
+      return var2.replaceField(var1, var3, var4);
    }
 
    private static <T> Dynamic<T> updateMobEffectIdField(Dynamic<T> var0, String var1, String var2) {
@@ -79,24 +78,24 @@ public class MobEffectIdFix extends DataFix {
 
    private static <T> Dynamic<T> updateMobEffectInstance(Dynamic<T> var0) {
       var0 = updateMobEffectIdField(var0, "Id", "id");
-      var0 = ExtraDataFixUtils.renameField(var0, "Ambient", "ambient");
-      var0 = ExtraDataFixUtils.renameField(var0, "Amplifier", "amplifier");
-      var0 = ExtraDataFixUtils.renameField(var0, "Duration", "duration");
-      var0 = ExtraDataFixUtils.renameField(var0, "ShowParticles", "show_particles");
-      var0 = ExtraDataFixUtils.renameField(var0, "ShowIcon", "show_icon");
+      var0 = var0.renameField("Ambient", "ambient");
+      var0 = var0.renameField("Amplifier", "amplifier");
+      var0 = var0.renameField("Duration", "duration");
+      var0 = var0.renameField("ShowParticles", "show_particles");
+      var0 = var0.renameField("ShowIcon", "show_icon");
       Optional var1 = var0.get("HiddenEffect").result().map(MobEffectIdFix::updateMobEffectInstance);
-      return ExtraDataFixUtils.replaceField(var0, "HiddenEffect", "hidden_effect", var1);
+      return var0.replaceField("HiddenEffect", "hidden_effect", var1);
    }
 
    private static <T> Dynamic<T> updateMobEffectInstanceList(Dynamic<T> var0, String var1, String var2) {
       Optional var3 = var0.get(var1).asStreamOpt().result().map(var1x -> var0.createList(var1x.map(MobEffectIdFix::updateMobEffectInstance)));
-      return ExtraDataFixUtils.replaceField(var0, var1, var2, var3);
+      return var0.replaceField(var1, var2, var3);
    }
 
    private static <T> Dynamic<T> updateSuspiciousStewEntry(Dynamic<T> var0, Dynamic<T> var1) {
       var1 = updateMobEffectIdField(var0, "EffectId", var1, "id");
       Optional var2 = var0.get("EffectDuration").result();
-      return ExtraDataFixUtils.replaceField(var1, "EffectDuration", "duration", var2);
+      return var1.replaceField("EffectDuration", "duration", var2);
    }
 
    private static <T> Dynamic<T> updateSuspiciousStewEntry(Dynamic<T> var0) {
@@ -123,7 +122,7 @@ public class MobEffectIdFix extends DataFix {
       Dynamic var1 = var0.emptyMap();
       Dynamic var2 = updateSuspiciousStewEntry(var0, var1);
       if (!var2.equals(var1)) {
-         var0 = var0.set("stew_effects", var0.createList(Stream.of((T)var2)));
+         var0 = var0.set("stew_effects", var0.createList(Stream.of(var2)));
       }
 
       return var0.remove("EffectId").remove("EffectDuration");
@@ -158,7 +157,7 @@ public class MobEffectIdFix extends DataFix {
 
    private static <T> Dynamic<T> fixSuspiciousStewTag(Dynamic<T> var0) {
       Optional var1 = var0.get("Effects").asStreamOpt().result().map(var1x -> var0.createList(var1x.map(MobEffectIdFix::updateSuspiciousStewEntry)));
-      return ExtraDataFixUtils.replaceField(var0, "Effects", "effects", var1);
+      return var0.replaceField("Effects", "effects", var1);
    }
 
    private TypeRewriteRule itemStackFixer() {
@@ -169,13 +168,13 @@ public class MobEffectIdFix extends DataFix {
          "ItemStackMobEffectIdFix",
          var2,
          var2x -> {
-            Optional var3xx = var2x.getOptional(var1);
-            if (var3xx.isPresent()) {
-               String var4 = (String)((Pair)var3xx.get()).getSecond();
+            Optional var3x = var2x.getOptional(var1);
+            if (var3x.isPresent()) {
+               String var4 = (String)((Pair)var3x.get()).getSecond();
                if (var4.equals("minecraft:suspicious_stew")) {
                   return var2x.updateTyped(var3, var0x -> var0x.update(DSL.remainderFinder(), MobEffectIdFix::fixSuspiciousStewTag));
                }
-   
+
                if (MOB_EFFECT_INSTANCE_CARRIER_ITEMS.contains(var4)) {
                   return var2x.updateTyped(
                      var3,
@@ -183,7 +182,7 @@ public class MobEffectIdFix extends DataFix {
                   );
                }
             }
-   
+
             return var2x;
          }
       );

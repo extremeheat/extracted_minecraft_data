@@ -49,13 +49,13 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu<Container> {
       this.addSlot(new FurnaceFuelSlot(this, var6, 1, 56, 53));
       this.addSlot(new FurnaceResultSlot(var5.player, var6, 2, 116, 35));
 
-      for(int var8 = 0; var8 < 3; ++var8) {
-         for(int var9 = 0; var9 < 9; ++var9) {
+      for (int var8 = 0; var8 < 3; var8++) {
+         for (int var9 = 0; var9 < 9; var9++) {
             this.addSlot(new Slot(var5, var9 + var8 * 9 + 9, 8 + var9 * 18, 84 + var8 * 18));
          }
       }
 
-      for(int var10 = 0; var10 < 9; ++var10) {
+      for (int var10 = 0; var10 < 9; var10++) {
          this.addSlot(new Slot(var5, var10, 8 + var10 * 18, 142));
       }
 

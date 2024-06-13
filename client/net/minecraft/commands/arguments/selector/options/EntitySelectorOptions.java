@@ -13,11 +13,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
@@ -40,7 +37,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -181,49 +177,40 @@ public class EntitySelectorOptions {
             int var1 = var0.getReader().getCursor();
             String var2 = var0.getReader().readUnquotedString();
             var0.setSuggestions((var0x, var1x) -> SharedSuggestionProvider.suggest(Arrays.asList("nearest", "furthest", "random", "arbitrary"), var0x));
-            BiConsumer var10001;
-            switch(var2) {
-               case "nearest":
-                  var10001 = EntitySelectorParser.ORDER_NEAREST;
-                  break;
-               case "furthest":
-                  var10001 = EntitySelectorParser.ORDER_FURTHEST;
-                  break;
-               case "random":
-                  var10001 = EntitySelectorParser.ORDER_RANDOM;
-                  break;
-               case "arbitrary":
-                  var10001 = EntitySelector.ORDER_ARBITRARY;
-                  break;
-               default:
+
+            var0.setOrder(switch (var2) {
+               case "nearest" -> EntitySelectorParser.ORDER_NEAREST;
+               case "furthest" -> EntitySelectorParser.ORDER_FURTHEST;
+               case "random" -> EntitySelectorParser.ORDER_RANDOM;
+               case "arbitrary" -> EntitySelector.ORDER_ARBITRARY;
+               default -> {
                   var0.getReader().setCursor(var1);
                   throw ERROR_SORT_UNKNOWN.createWithContext(var0.getReader(), var2);
-            }
-
-            var0.setOrder(var10001);
+               }
+            });
             var0.setSorted(true);
          }, var0 -> !var0.isCurrentEntity() && !var0.isSorted(), Component.translatable("argument.entity.options.sort.description"));
          register("gamemode", var0 -> {
             var0.setSuggestions((var1x, var2x) -> {
-               String var3xx = var1x.getRemaining().toLowerCase(Locale.ROOT);
-               boolean var4xx = !var0.hasGamemodeNotEquals();
+               String var3x = var1x.getRemaining().toLowerCase(Locale.ROOT);
+               boolean var4x = !var0.hasGamemodeNotEquals();
                boolean var5 = true;
-               if (!var3xx.isEmpty()) {
-                  if (var3xx.charAt(0) == '!') {
-                     var4xx = false;
-                     var3xx = var3xx.substring(1);
+               if (!var3x.isEmpty()) {
+                  if (var3x.charAt(0) == '!') {
+                     var4x = false;
+                     var3x = var3x.substring(1);
                   } else {
                      var5 = false;
                   }
                }
 
-               for(GameType var9 : GameType.values()) {
-                  if (var9.getName().toLowerCase(Locale.ROOT).startsWith(var3xx)) {
+               for (GameType var9 : GameType.values()) {
+                  if (var9.getName().toLowerCase(Locale.ROOT).startsWith(var3x)) {
                      if (var5) {
                         var1x.suggest("!" + var9.getName());
                      }
 
-                     if (var4xx) {
+                     if (var4x) {
                         var1x.suggest(var9.getName());
                      }
                   }
@@ -248,8 +235,8 @@ public class EntitySelectorOptions {
                      if (!(var2x instanceof ServerPlayer)) {
                         return false;
                      } else {
-                        GameType var3xx = ((ServerPlayer)var2x).gameMode.getGameModeForPlayer();
-                        return var2 ? var3xx != var4 : var3xx == var4;
+                        GameType var3x = ((ServerPlayer)var2x).gameMode.getGameModeForPlayer();
+                        return var2 ? var3x != var4 : var3x == var4;
                      }
                   });
                   if (var2) {
@@ -322,13 +309,7 @@ public class EntitySelectorOptions {
          register("tag", var0 -> {
             boolean var1 = var0.shouldInvertValue();
             String var2 = var0.getReader().readUnquotedString();
-            var0.addPredicate(var2x -> {
-               if ("".equals(var2)) {
-                  return var2x.getTags().isEmpty() != var1;
-               } else {
-                  return var2x.getTags().contains(var2) != var1;
-               }
-            });
+            var0.addPredicate(var2x -> "".equals(var2) ? var2x.getTags().isEmpty() != var1 : var2x.getTags().contains(var2) != var1);
          }, var0 -> true, Component.translatable("argument.entity.options.tag.description"));
          register("nbt", var0 -> {
             boolean var1 = var0.shouldInvertValue();
@@ -351,7 +332,7 @@ public class EntitySelectorOptions {
             var1.expect('{');
             var1.skipWhitespace();
 
-            while(var1.canRead() && var1.peek() != '}') {
+            while (var1.canRead() && var1.peek() != '}') {
                var1.skipWhitespace();
                String var3 = var1.readUnquotedString();
                var1.skipWhitespace();
@@ -368,20 +349,20 @@ public class EntitySelectorOptions {
             var1.expect('}');
             if (!var2.isEmpty()) {
                var0.addPredicate(var1x -> {
-                  ServerScoreboard var2xx = var1x.getServer().getScoreboard();
+                  ServerScoreboard var2x = var1x.getServer().getScoreboard();
 
-                  for(Entry var4xx : var2.entrySet()) {
-                     Objective var5 = var2xx.getObjective((String)var4xx.getKey());
+                  for (Entry var4x : var2.entrySet()) {
+                     Objective var5 = var2x.getObjective((String)var4x.getKey());
                      if (var5 == null) {
                         return false;
                      }
 
-                     ReadOnlyScoreInfo var6 = var2xx.getPlayerScoreInfo(var1x, var5);
+                     ReadOnlyScoreInfo var6 = var2x.getPlayerScoreInfo(var1x, var5);
                      if (var6 == null) {
                         return false;
                      }
 
-                     if (!((MinMaxBounds.Ints)var4xx.getValue()).matches(var6.value())) {
+                     if (!((MinMaxBounds.Ints)var4x.getValue()).matches(var6.value())) {
                         return false;
                      }
                   }
@@ -398,7 +379,7 @@ public class EntitySelectorOptions {
             var1.expect('{');
             var1.skipWhitespace();
 
-            while(var1.canRead() && var1.peek() != '}') {
+            while (var1.canRead() && var1.peek() != '}') {
                var1.skipWhitespace();
                ResourceLocation var3 = ResourceLocation.read(var1);
                var1.skipWhitespace();
@@ -410,7 +391,7 @@ public class EntitySelectorOptions {
                   var1.expect('{');
                   var1.skipWhitespace();
 
-                  while(var1.canRead() && var1.peek() != '}') {
+                  while (var1.canRead() && var1.peek() != '}') {
                      var1.skipWhitespace();
                      String var5 = var1.readUnquotedString();
                      var1.skipWhitespace();
@@ -428,9 +409,9 @@ public class EntitySelectorOptions {
                   var1.expect('}');
                   var1.skipWhitespace();
                   var2.put(var3, var1x -> {
-                     for(Entry var3xx : var7.entrySet()) {
-                        CriterionProgress var4xx = var1x.getCriterion((String)var3xx.getKey());
-                        if (var4xx == null || !((Predicate)var3xx.getValue()).test(var4xx)) {
+                     for (Entry var3x : var7.entrySet()) {
+                        CriterionProgress var4x = var1x.getCriterion((String)var3x.getKey());
+                        if (var4x == null || !((Predicate)var3x.getValue()).test(var4x)) {
                            return false;
                         }
                      }
@@ -451,16 +432,15 @@ public class EntitySelectorOptions {
             var1.expect('}');
             if (!var2.isEmpty()) {
                var0.addPredicate(var1x -> {
-                  if (!(var1x instanceof ServerPlayer)) {
+                  if (!(var1x instanceof ServerPlayer var2x)) {
                      return false;
                   } else {
-                     ServerPlayer var2xx = (ServerPlayer)var1x;
-                     PlayerAdvancements var3xx = var2xx.getAdvancements();
-                     ServerAdvancementManager var4xx = var2xx.getServer().getAdvancements();
+                     PlayerAdvancements var3x = var2x.getAdvancements();
+                     ServerAdvancementManager var4x = var2x.getServer().getAdvancements();
 
-                     for(Entry var6xx : var2.entrySet()) {
-                        AdvancementHolder var7xx = var4xx.get((ResourceLocation)var6xx.getKey());
-                        if (var7xx == null || !((Predicate)var6xx.getValue()).test(var3xx.getOrStartProgress(var7xx))) {
+                     for (Entry var6x : var2.entrySet()) {
+                        AdvancementHolder var7x = var4x.get((ResourceLocation)var6x.getKey());
+                        if (var7x == null || !((Predicate)var6x.getValue()).test(var3x.getOrStartProgress(var7x))) {
                            return false;
                         }
                      }
@@ -507,7 +487,7 @@ public class EntitySelectorOptions {
    }
 
    public static EntitySelectorOptions.Modifier get(EntitySelectorParser var0, String var1, int var2) throws CommandSyntaxException {
-      EntitySelectorOptions.Option var3 = (EntitySelectorOptions.Option)OPTIONS.get(var1);
+      EntitySelectorOptions.Option var3 = OPTIONS.get(var1);
       if (var3 != null) {
          if (var3.canUse.test(var0)) {
             return var3.modifier;
@@ -523,7 +503,7 @@ public class EntitySelectorOptions {
    public static void suggestNames(EntitySelectorParser var0, SuggestionsBuilder var1) {
       String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
 
-      for(Entry var4 : OPTIONS.entrySet()) {
+      for (Entry var4 : OPTIONS.entrySet()) {
          if (((EntitySelectorOptions.Option)var4.getValue()).canUse.test(var0) && ((String)var4.getKey()).toLowerCase(Locale.ROOT).startsWith(var2)) {
             var1.suggest((String)var4.getKey() + "=", ((EntitySelectorOptions.Option)var4.getValue()).description);
          }
@@ -534,16 +514,13 @@ public class EntitySelectorOptions {
       void handle(EntitySelectorParser var1) throws CommandSyntaxException;
    }
 
-   static record Option(EntitySelectorOptions.Modifier a, Predicate<EntitySelectorParser> b, Component c) {
-      final EntitySelectorOptions.Modifier modifier;
-      final Predicate<EntitySelectorParser> canUse;
-      final Component description;
+   static record Option(EntitySelectorOptions.Modifier modifier, Predicate<EntitySelectorParser> canUse, Component description) {
 
-      Option(EntitySelectorOptions.Modifier var1, Predicate<EntitySelectorParser> var2, Component var3) {
+      Option(EntitySelectorOptions.Modifier modifier, Predicate<EntitySelectorParser> canUse, Component description) {
          super();
-         this.modifier = var1;
-         this.canUse = var2;
-         this.description = var3;
+         this.modifier = modifier;
+         this.canUse = canUse;
+         this.description = description;
       }
    }
 }

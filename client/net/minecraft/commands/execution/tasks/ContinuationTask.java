@@ -30,15 +30,15 @@ public class ContinuationTask<T, P> implements EntryAction<T> {
 
    public static <T, P> void schedule(ExecutionContext<T> var0, Frame var1, List<P> var2, ContinuationTask.TaskProvider<T, P> var3) {
       int var4 = var2.size();
-      switch(var4) {
+      switch (var4) {
          case 0:
             break;
          case 1:
-            var0.queueNext(var3.create(var1, (P)var2.get(0)));
+            var0.queueNext(var3.create(var1, var2.get(0)));
             break;
          case 2:
-            var0.queueNext(var3.create(var1, (P)var2.get(0)));
-            var0.queueNext(var3.create(var1, (P)var2.get(1)));
+            var0.queueNext(var3.create(var1, var2.get(0)));
+            var0.queueNext(var3.create(var1, var2.get(1)));
             break;
          default:
             var0.queueNext((new ContinuationTask(var3, var2, var1)).selfEntry);

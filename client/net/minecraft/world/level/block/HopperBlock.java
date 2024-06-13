@@ -62,7 +62,7 @@ public class HopperBlock extends BaseEntityBlock {
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((Direction)var1.getValue(FACING)) {
+      switch ((Direction)var1.getValue(FACING)) {
          case DOWN:
             return DOWN_SHAPE;
          case NORTH:
@@ -80,7 +80,7 @@ public class HopperBlock extends BaseEntityBlock {
 
    @Override
    protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      switch((Direction)var1.getValue(FACING)) {
+      switch ((Direction)var1.getValue(FACING)) {
          case DOWN:
             return DOWN_INTERACTION_SHAPE;
          case NORTH:

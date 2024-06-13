@@ -66,9 +66,6 @@ public class TreeFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> CRIMSON_FUNGUS = FeatureUtils.createKey("crimson_fungus");
    public static final ResourceKey<ConfiguredFeature<?, ?>> CRIMSON_FUNGUS_PLANTED = FeatureUtils.createKey("crimson_fungus_planted");
    public static final ResourceKey<ConfiguredFeature<?, ?>> WARPED_FUNGUS = FeatureUtils.createKey("warped_fungus");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> POTATO_TREE_TALL = FeatureUtils.createKey("potato_tree_tall");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> POTATO_TREE = FeatureUtils.createKey("potato_tree");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> MOTHER_POTATO_TREE = FeatureUtils.createKey("mother_potato_tree");
    public static final ResourceKey<ConfiguredFeature<?, ?>> WARPED_FUNGUS_PLANTED = FeatureUtils.createKey("warped_fungus_planted");
    public static final ResourceKey<ConfiguredFeature<?, ?>> HUGE_BROWN_MUSHROOM = FeatureUtils.createKey("huge_brown_mushroom");
    public static final ResourceKey<ConfiguredFeature<?, ?>> HUGE_RED_MUSHROOM = FeatureUtils.createKey("huge_red_mushroom");
@@ -191,7 +188,6 @@ public class TreeFeatures {
          Blocks.CORNFLOWER,
          Blocks.WITHER_ROSE,
          Blocks.LILY_OF_THE_VALLEY,
-         Blocks.POTATO_FLOWER,
          Blocks.BROWN_MUSHROOM,
          Blocks.RED_MUSHROOM,
          Blocks.WHEAT,
@@ -315,150 +311,11 @@ public class TreeFeatures {
             2
          )
       );
-      BeehiveDecorator var3 = new BeehiveDecorator(0.002F, true);
-      BeehiveDecorator var4 = new BeehiveDecorator(0.01F, true);
-      BeehiveDecorator var5 = new BeehiveDecorator(0.02F, true);
-      BeehiveDecorator var6 = new BeehiveDecorator(0.05F, true);
-      BeehiveDecorator var7 = new BeehiveDecorator(0.5F, false);
-      BeehiveDecorator var8 = new BeehiveDecorator(1.0F, true);
-      FeatureUtils.register(
-         var0,
-         MOTHER_POTATO_TREE,
-         Feature.TREE,
-         new TreeConfiguration.TreeConfigurationBuilder(
-               BlockStateProvider.simple(Blocks.POTATO_STEM),
-               new UpwardsBranchingTrunkPlacer(32, 1, 20, UniformInt.of(1, 10), 0.4F, UniformInt.of(0, 1), var1.getOrThrow(BlockTags.LOGS), false),
-               BlockStateProvider.simple(Blocks.POTATO_LEAVES),
-               new AcaciaFoliagePlacer(UniformInt.of(3, 4), ConstantInt.of(0)),
-               Optional.empty(),
-               new TwoLayersFeatureSize(3, 0, 2)
-            )
-            .decorators(
-               List.of(
-                  new AttachedToLeavesDecorator(
-                     0.1F,
-                     false,
-                     1,
-                     0,
-                     List.of(
-                        BlockStateProvider.simple(Blocks.POTATO_PEDICULE.defaultBlockState()),
-                        BlockStateProvider.simple(Blocks.POTATO_FRUIT.defaultBlockState())
-                     ),
-                     3,
-                     List.of(Direction.DOWN)
-                  ),
-                  new AttachedToLeavesDecorator(
-                     0.5F,
-                     true,
-                     1,
-                     0,
-                     List.of(
-                        BlockStateProvider.simple(Blocks.POTATO_PEDICULE.defaultBlockState()),
-                        BlockStateProvider.simple(Blocks.POTATO_FRUIT.defaultBlockState())
-                     ),
-                     3,
-                     List.of(Direction.DOWN)
-                  ),
-                  var8,
-                  var7,
-                  var7,
-                  var7,
-                  var7,
-                  var7,
-                  var7
-               )
-            )
-            .ignoreVines()
-            .build()
-      );
-      FeatureUtils.register(
-         var0,
-         POTATO_TREE_TALL,
-         Feature.TREE,
-         new TreeConfiguration.TreeConfigurationBuilder(
-               BlockStateProvider.simple(Blocks.POTATO_STEM),
-               new UpwardsBranchingTrunkPlacer(4, 20, 20, UniformInt.of(1, 8), 0.4F, UniformInt.of(0, 1), var1.getOrThrow(BlockTags.LOGS), false),
-               BlockStateProvider.simple(Blocks.POTATO_LEAVES),
-               new AcaciaFoliagePlacer(UniformInt.of(2, 4), ConstantInt.of(0)),
-               Optional.empty(),
-               new TwoLayersFeatureSize(3, 0, 2)
-            )
-            .decorators(
-               List.of(
-                  new AttachedToLeavesDecorator(
-                     0.02F,
-                     false,
-                     1,
-                     0,
-                     List.of(
-                        BlockStateProvider.simple(Blocks.POTATO_PEDICULE.defaultBlockState()),
-                        BlockStateProvider.simple(Blocks.POTATO_FRUIT.defaultBlockState())
-                     ),
-                     3,
-                     List.of(Direction.DOWN)
-                  ),
-                  new AttachedToLeavesDecorator(
-                     0.3F,
-                     true,
-                     1,
-                     0,
-                     List.of(
-                        BlockStateProvider.simple(Blocks.POTATO_PEDICULE.defaultBlockState()),
-                        BlockStateProvider.simple(Blocks.POTATO_FRUIT.defaultBlockState())
-                     ),
-                     3,
-                     List.of(Direction.DOWN)
-                  ),
-                  var7
-               )
-            )
-            .ignoreVines()
-            .build()
-      );
-      FeatureUtils.register(
-         var0,
-         POTATO_TREE,
-         Feature.TREE,
-         new TreeConfiguration.TreeConfigurationBuilder(
-               BlockStateProvider.simple(Blocks.POTATO_STEM),
-               new UpwardsBranchingTrunkPlacer(2, 1, 12, UniformInt.of(1, 6), 0.5F, UniformInt.of(0, 1), var1.getOrThrow(BlockTags.LOGS), false),
-               BlockStateProvider.simple(Blocks.POTATO_LEAVES),
-               new AcaciaFoliagePlacer(UniformInt.of(2, 3), ConstantInt.of(0)),
-               Optional.empty(),
-               new TwoLayersFeatureSize(3, 0, 2)
-            )
-            .decorators(
-               List.of(
-                  new AttachedToLeavesDecorator(
-                     0.005F,
-                     false,
-                     1,
-                     0,
-                     List.of(
-                        BlockStateProvider.simple(Blocks.POTATO_PEDICULE.defaultBlockState()),
-                        BlockStateProvider.simple(Blocks.POTATO_FRUIT.defaultBlockState())
-                     ),
-                     3,
-                     List.of(Direction.DOWN)
-                  ),
-                  new AttachedToLeavesDecorator(
-                     0.05F,
-                     true,
-                     1,
-                     0,
-                     List.of(
-                        BlockStateProvider.simple(Blocks.POTATO_PEDICULE.defaultBlockState()),
-                        BlockStateProvider.simple(Blocks.POTATO_FRUIT.defaultBlockState())
-                     ),
-                     3,
-                     List.of(Direction.DOWN)
-                  ),
-                  var4
-               )
-            )
-            .ignoreVines()
-            .build()
-      );
+      BeehiveDecorator var3 = new BeehiveDecorator(0.002F);
+      BeehiveDecorator var4 = new BeehiveDecorator(0.01F);
+      BeehiveDecorator var5 = new BeehiveDecorator(0.02F);
+      BeehiveDecorator var6 = new BeehiveDecorator(0.05F);
+      BeehiveDecorator var7 = new BeehiveDecorator(1.0F);
       FeatureUtils.register(var0, OAK, Feature.TREE, createOak().build());
       FeatureUtils.register(
          var0,
@@ -573,7 +430,7 @@ public class TreeFeatures {
             .build()
       );
       FeatureUtils.register(var0, SUPER_BIRCH_BEES_0002, Feature.TREE, createSuperBirch().decorators(ImmutableList.of(var3)).build());
-      FeatureUtils.register(var0, SUPER_BIRCH_BEES, Feature.TREE, createSuperBirch().decorators(ImmutableList.of(var8)).build());
+      FeatureUtils.register(var0, SUPER_BIRCH_BEES, Feature.TREE, createSuperBirch().decorators(ImmutableList.of(var7)).build());
       FeatureUtils.register(
          var0,
          SWAMP_OAK,
@@ -619,7 +476,7 @@ public class TreeFeatures {
          new TreeConfiguration.TreeConfigurationBuilder(
                BlockStateProvider.simple(Blocks.MANGROVE_LOG),
                new UpwardsBranchingTrunkPlacer(
-                  2, 1, 4, UniformInt.of(1, 4), 0.5F, UniformInt.of(0, 1), var1.getOrThrow(BlockTags.MANGROVE_LOGS_CAN_GROW_THROUGH), true
+                  2, 1, 4, UniformInt.of(1, 4), 0.5F, UniformInt.of(0, 1), var1.getOrThrow(BlockTags.MANGROVE_LOGS_CAN_GROW_THROUGH)
                ),
                BlockStateProvider.simple(Blocks.MANGROVE_LEAVES),
                new RandomSpreadFoliagePlacer(ConstantInt.of(3), ConstantInt.of(0), ConstantInt.of(2), 70),
@@ -645,17 +502,12 @@ public class TreeFeatures {
                   new LeaveVineDecorator(0.125F),
                   new AttachedToLeavesDecorator(
                      0.14F,
-                     false,
                      1,
                      0,
-                     List.of(
-                        new RandomizedIntStateProvider(
-                           BlockStateProvider.simple(
-                              Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, Boolean.valueOf(true))
-                           ),
-                           MangrovePropaguleBlock.AGE,
-                           UniformInt.of(0, 4)
-                        )
+                     new RandomizedIntStateProvider(
+                        BlockStateProvider.simple(Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, Boolean.valueOf(true))),
+                        MangrovePropaguleBlock.AGE,
+                        UniformInt.of(0, 4)
                      ),
                      2,
                      List.of(Direction.DOWN)
@@ -673,7 +525,7 @@ public class TreeFeatures {
          new TreeConfiguration.TreeConfigurationBuilder(
                BlockStateProvider.simple(Blocks.MANGROVE_LOG),
                new UpwardsBranchingTrunkPlacer(
-                  4, 1, 9, UniformInt.of(1, 6), 0.5F, UniformInt.of(0, 1), var1.getOrThrow(BlockTags.MANGROVE_LOGS_CAN_GROW_THROUGH), true
+                  4, 1, 9, UniformInt.of(1, 6), 0.5F, UniformInt.of(0, 1), var1.getOrThrow(BlockTags.MANGROVE_LOGS_CAN_GROW_THROUGH)
                ),
                BlockStateProvider.simple(Blocks.MANGROVE_LEAVES),
                new RandomSpreadFoliagePlacer(ConstantInt.of(3), ConstantInt.of(0), ConstantInt.of(2), 70),
@@ -699,17 +551,12 @@ public class TreeFeatures {
                   new LeaveVineDecorator(0.125F),
                   new AttachedToLeavesDecorator(
                      0.14F,
-                     false,
                      1,
                      0,
-                     List.of(
-                        new RandomizedIntStateProvider(
-                           BlockStateProvider.simple(
-                              Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, Boolean.valueOf(true))
-                           ),
-                           MangrovePropaguleBlock.AGE,
-                           UniformInt.of(0, 4)
-                        )
+                     new RandomizedIntStateProvider(
+                        BlockStateProvider.simple(Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, Boolean.valueOf(true))),
+                        MangrovePropaguleBlock.AGE,
+                        UniformInt.of(0, 4)
                      ),
                      2,
                      List.of(Direction.DOWN)
@@ -729,6 +576,6 @@ public class TreeFeatures {
       FeatureUtils.register(var0, FANCY_OAK_BEES_0002, Feature.TREE, createFancyOak().decorators(List.of(var3)).build());
       FeatureUtils.register(var0, FANCY_OAK_BEES_002, Feature.TREE, createFancyOak().decorators(List.of(var5)).build());
       FeatureUtils.register(var0, FANCY_OAK_BEES_005, Feature.TREE, createFancyOak().decorators(List.of(var6)).build());
-      FeatureUtils.register(var0, FANCY_OAK_BEES, Feature.TREE, createFancyOak().decorators(List.of(var8)).build());
+      FeatureUtils.register(var0, FANCY_OAK_BEES, Feature.TREE, createFancyOak().decorators(List.of(var7)).build());
    }
 }

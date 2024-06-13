@@ -30,7 +30,7 @@ public final class RecipeBookSettings {
 
    public RecipeBookSettings() {
       this(Util.make(Maps.newEnumMap(RecipeBookType.class), var0 -> {
-         for(RecipeBookType var4 : RecipeBookType.values()) {
+         for (RecipeBookType var4 : RecipeBookType.values()) {
             var0.put(var4, new RecipeBookSettings.TypeSettings(false, false));
          }
       }));
@@ -55,7 +55,7 @@ public final class RecipeBookSettings {
    public static RecipeBookSettings read(FriendlyByteBuf var0) {
       EnumMap var1 = Maps.newEnumMap(RecipeBookType.class);
 
-      for(RecipeBookType var5 : RecipeBookType.values()) {
+      for (RecipeBookType var5 : RecipeBookType.values()) {
          boolean var6 = var0.readBoolean();
          boolean var7 = var0.readBoolean();
          var1.put(var5, new RecipeBookSettings.TypeSettings(var6, var7));
@@ -65,7 +65,7 @@ public final class RecipeBookSettings {
    }
 
    public void write(FriendlyByteBuf var1) {
-      for(RecipeBookType var5 : RecipeBookType.values()) {
+      for (RecipeBookType var5 : RecipeBookType.values()) {
          RecipeBookSettings.TypeSettings var6 = this.states.get(var5);
          if (var6 == null) {
             var1.writeBoolean(false);
@@ -98,7 +98,7 @@ public final class RecipeBookSettings {
    public RecipeBookSettings copy() {
       EnumMap var1 = Maps.newEnumMap(RecipeBookType.class);
 
-      for(RecipeBookType var5 : RecipeBookType.values()) {
+      for (RecipeBookType var5 : RecipeBookType.values()) {
          RecipeBookSettings.TypeSettings var6 = this.states.get(var5);
          var1.put(var5, var6.copy());
       }
@@ -109,7 +109,7 @@ public final class RecipeBookSettings {
    public void replaceFrom(RecipeBookSettings var1) {
       this.states.clear();
 
-      for(RecipeBookType var5 : RecipeBookType.values()) {
+      for (RecipeBookType var5 : RecipeBookType.values()) {
          RecipeBookSettings.TypeSettings var6 = var1.states.get(var5);
          this.states.put(var5, var6.copy());
       }
@@ -143,11 +143,8 @@ public final class RecipeBookSettings {
       public boolean equals(Object var1) {
          if (this == var1) {
             return true;
-         } else if (!(var1 instanceof RecipeBookSettings.TypeSettings)) {
-            return false;
          } else {
-            RecipeBookSettings.TypeSettings var2 = (RecipeBookSettings.TypeSettings)var1;
-            return this.open == var2.open && this.filtering == var2.filtering;
+            return !(var1 instanceof RecipeBookSettings.TypeSettings var2) ? false : this.open == var2.open && this.filtering == var2.filtering;
          }
       }
 

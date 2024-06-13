@@ -61,7 +61,7 @@ public class CrashReport {
          var1.append("Thread: ").append(Thread.currentThread().getName()).append("\n");
          var1.append("Stacktrace:\n");
 
-         for(StackTraceElement var5 : this.uncategorizedStackTrace) {
+         for (StackTraceElement var5 : this.uncategorizedStackTrace) {
             var1.append("\t").append("at ").append(var5);
             var1.append("\n");
          }
@@ -69,7 +69,7 @@ public class CrashReport {
          var1.append("\n");
       }
 
-      for(CrashReportCategory var7 : this.details) {
+      for (CrashReportCategory var7 : this.details) {
          var7.getDetails(var1);
          var1.append("\n\n");
       }
@@ -122,7 +122,7 @@ public class CrashReport {
       var1.append(this.getExceptionMessage());
       var1.append("\n\nA detailed walkthrough of the error, its code path and all known details is as follows:\n");
 
-      for(int var2 = 0; var2 < 87; ++var2) {
+      for (int var2 = 0; var2 < 87; var2++) {
          var1.append("-");
       }
 
@@ -248,10 +248,8 @@ public class CrashReport {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static CrashReport forThrowable(Throwable var0, String var1) {
-      while(var0 instanceof CompletionException && var0.getCause() != null) {
+      while (var0 instanceof CompletionException && var0.getCause() != null) {
          var0 = var0.getCause();
       }
 

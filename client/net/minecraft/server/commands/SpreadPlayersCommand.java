@@ -8,7 +8,6 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic4CommandExceptionType;
@@ -133,7 +132,7 @@ public class SpreadPlayersCommand {
    private static int getNumberOfTeams(Collection<? extends Entity> var0) {
       HashSet var1 = Sets.newHashSet();
 
-      for(Entity var3 : var0) {
+      for (Entity var3 : var0) {
          if (var3 instanceof Player) {
             var1.add(var3.getTeam());
          } else {
@@ -161,24 +160,24 @@ public class SpreadPlayersCommand {
       double var18 = 3.4028234663852886E38;
 
       int var17;
-      for(var17 = 0; var17 < 10000 && var16; ++var17) {
+      for (var17 = 0; var17 < 10000 && var16; var17++) {
          var16 = false;
          var18 = 3.4028234663852886E38;
 
-         for(int var20 = 0; var20 < var14.length; ++var20) {
+         for (int var20 = 0; var20 < var14.length; var20++) {
             SpreadPlayersCommand.Position var21 = var14[var20];
             int var22 = 0;
             SpreadPlayersCommand.Position var23 = new SpreadPlayersCommand.Position();
 
-            for(int var24 = 0; var24 < var14.length; ++var24) {
+            for (int var24 = 0; var24 < var14.length; var24++) {
                if (var20 != var24) {
                   SpreadPlayersCommand.Position var25 = var14[var24];
                   double var26 = var21.dist(var25);
                   var18 = Math.min(var26, var18);
                   if (var26 < var1) {
-                     ++var22;
-                     var23.x += var25.x - var21.x;
-                     var23.z += var25.z - var21.z;
+                     var22++;
+                     var23.x = var23.x + (var25.x - var21.x);
+                     var23.z = var23.z + (var25.z - var21.z);
                   }
                }
             }
@@ -203,7 +202,7 @@ public class SpreadPlayersCommand {
          }
 
          if (!var16) {
-            for(SpreadPlayersCommand.Position var31 : var14) {
+            for (SpreadPlayersCommand.Position var31 : var14) {
                if (!var31.isSafe(var3, var13)) {
                   var31.randomize(var4, var5, var7, var9, var11);
                   var16 = true;
@@ -230,7 +229,7 @@ public class SpreadPlayersCommand {
       int var7 = 0;
       HashMap var8 = Maps.newHashMap();
 
-      for(Entity var10 : var0) {
+      for (Entity var10 : var0) {
          SpreadPlayersCommand.Position var11;
          if (var4) {
             PlayerTeam var12 = var10 instanceof Player ? var10.getTeam() : null;
@@ -254,7 +253,7 @@ public class SpreadPlayersCommand {
          );
          double var20 = 1.7976931348623157E308;
 
-         for(SpreadPlayersCommand.Position var17 : var2) {
+         for (SpreadPlayersCommand.Position var17 : var2) {
             if (var11 != var17) {
                double var18 = var11.dist(var17);
                var20 = Math.min(var18, var20);
@@ -270,7 +269,7 @@ public class SpreadPlayersCommand {
    private static SpreadPlayersCommand.Position[] createInitialPositions(RandomSource var0, int var1, double var2, double var4, double var6, double var8) {
       SpreadPlayersCommand.Position[] var10 = new SpreadPlayersCommand.Position[var1];
 
-      for(int var11 = 0; var11 < var10.length; ++var11) {
+      for (int var11 = 0; var11 < var10.length; var11++) {
          SpreadPlayersCommand.Position var12 = new SpreadPlayersCommand.Position();
          var12.randomize(var0, var2, var4, var6, var8);
          var10[var11] = var12;
@@ -304,8 +303,8 @@ public class SpreadPlayersCommand {
       }
 
       public void moveAway(SpreadPlayersCommand.Position var1) {
-         this.x -= var1.x;
-         this.z -= var1.z;
+         this.x = this.x - var1.x;
+         this.z = this.z - var1.z;
       }
 
       public boolean clamp(double var1, double var3, double var5, double var7) {
@@ -333,16 +332,17 @@ public class SpreadPlayersCommand {
          BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos(this.x, (double)(var2 + 1), this.z);
          boolean var4 = var1.getBlockState(var3).isAir();
          var3.move(Direction.DOWN);
+         boolean var5 = var1.getBlockState(var3).isAir();
 
-         boolean var6;
-         for(boolean var5 = var1.getBlockState(var3).isAir(); var3.getY() > var1.getMinBuildHeight(); var5 = var6) {
+         while (var3.getY() > var1.getMinBuildHeight()) {
             var3.move(Direction.DOWN);
-            var6 = var1.getBlockState(var3).isAir();
+            boolean var6 = var1.getBlockState(var3).isAir();
             if (!var6 && var5 && var4) {
                return var3.getY() + 1;
             }
 
             var4 = var5;
+            var5 = var6;
          }
 
          return var2 + 1;

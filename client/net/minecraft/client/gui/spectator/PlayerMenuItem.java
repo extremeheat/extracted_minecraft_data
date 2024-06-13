@@ -34,7 +34,7 @@ public class PlayerMenuItem implements SpectatorMenuItem {
    @Override
    public void renderIcon(GuiGraphics var1, float var2, int var3) {
       var1.setColor(1.0F, 1.0F, 1.0F, (float)var3 / 255.0F);
-      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skin.get(), 2, 2, 12);
+      PlayerFaceRenderer.draw(var1, this.skin.get(), 2, 2, 12);
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 

@@ -46,7 +46,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Mob var2) {
       if (this.remainingCooldown > 0) {
-         --this.remainingCooldown;
+         this.remainingCooldown--;
          return false;
       } else {
          Brain var3 = var2.getBrain();
@@ -146,7 +146,6 @@ public class MoveToTargetSink extends Behavior<Mob> {
    }
 
    private static boolean isWalkTargetSpectator(WalkTarget var0) {
-      PositionTracker var1 = var0.getTarget();
-      return var1 instanceof EntityTracker var2 ? var2.getEntity().isSpectator() : false;
+      return var0.getTarget() instanceof EntityTracker var2 ? var2.getEntity().isSpectator() : false;
    }
 }

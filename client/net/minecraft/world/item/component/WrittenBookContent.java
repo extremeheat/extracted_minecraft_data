@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -22,13 +21,8 @@ import net.minecraft.server.network.Filterable;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 
-public record WrittenBookContent(Filterable<String> l, String m, int n, List<Filterable<Component>> o, boolean p)
+public record WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved)
    implements BookContent<Component, WrittenBookContent> {
-   private final Filterable<String> title;
-   private final String author;
-   private final int generation;
-   private final List<Filterable<Component>> pages;
-   private final boolean resolved;
    public static final WrittenBookContent EMPTY = new WrittenBookContent(Filterable.passThrough(""), "", 0, List.of(), true);
    public static final int PAGE_LENGTH = 32767;
    public static final int MAX_PAGES = 100;
@@ -40,11 +34,11 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
    public static final Codec<List<Filterable<Component>>> PAGES_CODEC = pagesCodec(CONTENT_CODEC);
    public static final Codec<WrittenBookContent> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               Filterable.codec(ExtraCodecs.sizeLimitedString(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title),
+               Filterable.codec(Codec.string(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title),
                Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author),
-               ExtraCodecs.strictOptionalField(ExtraCodecs.intRange(0, 3), "generation", 0).forGetter(WrittenBookContent::generation),
-               ExtraCodecs.strictOptionalField(PAGES_CODEC, "pages", List.of()).forGetter(WrittenBookContent::pages),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "resolved", false).forGetter(WrittenBookContent::resolved)
+               ExtraCodecs.intRange(0, 3).optionalFieldOf("generation", 0).forGetter(WrittenBookContent::generation),
+               PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WrittenBookContent::pages),
+               Codec.BOOL.optionalFieldOf("resolved", false).forGetter(WrittenBookContent::resolved)
             )
             .apply(var0, WrittenBookContent::new)
    );
@@ -62,13 +56,13 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
       WrittenBookContent::new
    );
 
-   public WrittenBookContent(Filterable<String> var1, String var2, int var3, List<Filterable<Component>> var4, boolean var5) {
+   public WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) {
       super();
-      this.title = var1;
-      this.author = var2;
-      this.generation = var3;
-      this.pages = var4;
-      this.resolved = var5;
+      this.title = title;
+      this.author = author;
+      this.generation = generation;
+      this.pages = pages;
+      this.resolved = resolved;
    }
 
    private static Codec<Filterable<Component>> pageCodec(Codec<Component> var0) {
@@ -76,7 +70,7 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
    }
 
    public static Codec<List<Filterable<Component>>> pagesCodec(Codec<Component> var0) {
-      return ExtraCodecs.sizeLimitedList(pageCodec(var0).listOf(), 100);
+      return pageCodec(var0).sizeLimitedListOf(100);
    }
 
    @Nullable
@@ -91,7 +85,7 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
       } else {
          Builder var3 = ImmutableList.builderWithExpectedSize(this.pages.size());
 
-         for(Filterable var5 : this.pages) {
+         for (Filterable var5 : this.pages) {
             Optional var6 = resolvePage(var1, var2, var5);
             if (var6.isEmpty()) {
                return null;

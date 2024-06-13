@@ -55,7 +55,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       SlabType var5 = var1.getValue(TYPE);
-      switch(var5) {
+      switch (var5) {
          case DOUBLE:
             return Shapes.block();
          case TOP:
@@ -91,11 +91,9 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
       } else if (var2.replacingClickedOnBlock()) {
          boolean var5 = var2.getClickLocation().y - (double)var2.getClickedPos().getY() > 0.5;
          Direction var6 = var2.getClickedFace();
-         if (var4 == SlabType.BOTTOM) {
-            return var6 == Direction.UP || var5 && var6.getAxis().isHorizontal();
-         } else {
-            return var6 == Direction.DOWN || !var5 && var6.getAxis().isHorizontal();
-         }
+         return var4 == SlabType.BOTTOM
+            ? var6 == Direction.UP || var5 && var6.getAxis().isHorizontal()
+            : var6 == Direction.DOWN || !var5 && var6.getAxis().isHorizontal();
       } else {
          return true;
       }
@@ -127,7 +125,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
 
    @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch(var2) {
+      switch (var2) {
          case LAND:
             return false;
          case WATER:

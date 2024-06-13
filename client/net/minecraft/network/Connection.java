@@ -29,7 +29,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.flow.FlowControlHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.TimeoutException;
-import io.netty.util.concurrent.Future;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
@@ -171,7 +170,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                   this.disconnect(Component.translatable("multiplayer.disconnect.invalid_packet"));
                }
 
-               ++this.receivedPackets;
+               this.receivedPackets++;
             }
          }
       }
@@ -294,7 +293,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    private void sendPacket(Packet<?> var1, @Nullable PacketSendListener var2, boolean var3) {
-      ++this.sentPackets;
+      this.sentPackets++;
       if (this.channel.eventLoop().inEventLoop()) {
          this.doSendPacket(var1, var2, var3);
       } else {
@@ -309,10 +308,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             if (var2x.isSuccess()) {
                var2.onSuccess();
             } else {
-               Packet var3xx = var2.onFailure();
-               if (var3xx != null) {
-                  ChannelFuture var4xx = this.channel.writeAndFlush(var3xx);
-                  var4xx.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+               Packet var3x = var2.onFailure();
+               if (var3x != null) {
+                  ChannelFuture var4x = this.channel.writeAndFlush(var3x);
+                  var4x.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
                }
             }
          });
@@ -339,21 +338,18 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    private void flushQueue() {
       if (this.channel != null && this.channel.isOpen()) {
-         synchronized(this.pendingActions) {
+         synchronized (this.pendingActions) {
             Consumer var2;
-            while((var2 = this.pendingActions.poll()) != null) {
+            while ((var2 = this.pendingActions.poll()) != null) {
                var2.accept(this);
             }
          }
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void tick() {
       this.flushQueue();
-      PacketListener var2 = this.packetListener;
-      if (var2 instanceof TickablePacketListener var1) {
+      if (this.packetListener instanceof TickablePacketListener var1) {
          var1.tick();
       }
 
@@ -535,19 +531,15 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void setupCompression(int var1, boolean var2) {
       if (var1 >= 0) {
-         ChannelHandler var4 = this.channel.pipeline().get("decompress");
-         if (var4 instanceof CompressionDecoder var3) {
+         if (this.channel.pipeline().get("decompress") instanceof CompressionDecoder var3) {
             var3.setThreshold(var1, var2);
          } else {
             this.channel.pipeline().addAfter("splitter", "decompress", new CompressionDecoder(var1, var2));
          }
 
-         var4 = this.channel.pipeline().get("compress");
-         if (var4 instanceof CompressionEncoder var5) {
+         if (this.channel.pipeline().get("compress") instanceof CompressionEncoder var5) {
             var5.setThreshold(var1);
          } else {
             this.channel.pipeline().addAfter("prepender", "compress", new CompressionEncoder(var1));

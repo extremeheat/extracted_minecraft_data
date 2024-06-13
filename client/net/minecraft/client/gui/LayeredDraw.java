@@ -32,7 +32,7 @@ public class LayeredDraw {
    }
 
    private void renderInner(GuiGraphics var1, float var2) {
-      for(LayeredDraw.Layer var4 : this.layers) {
+      for (LayeredDraw.Layer var4 : this.layers) {
          var4.render(var1, var2);
          var1.pose().translate(0.0F, 0.0F, 200.0F);
       }

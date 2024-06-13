@@ -30,7 +30,7 @@ public enum GraphicsStatus implements OptionEnum {
 
    @Override
    public String toString() {
-      return switch(this) {
+      return switch (this) {
          case FAST -> "fast";
          case FANCY -> "fancy";
          case FABULOUS -> "fabulous";

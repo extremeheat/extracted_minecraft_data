@@ -57,7 +57,7 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
       Deque var2 = null;
       ObjectIterator var3 = Int2ObjectMaps.fastIterable(this.queuesByPriority).iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          Entry var4 = (Entry)var3.next();
          Deque var5 = (Deque)var4.getValue();
          int var6 = var4.getIntKey();

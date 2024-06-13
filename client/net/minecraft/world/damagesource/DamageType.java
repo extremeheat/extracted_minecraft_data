@@ -2,14 +2,8 @@ package net.minecraft.world.damagesource;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 
-public record DamageType(String b, DamageScaling c, float d, DamageEffects e, DeathMessageType f) {
-   private final String msgId;
-   private final DamageScaling scaling;
-   private final float exhaustion;
-   private final DamageEffects effects;
-   private final DeathMessageType deathMessageType;
+public record DamageType(String msgId, DamageScaling scaling, float exhaustion, DamageEffects effects, DeathMessageType deathMessageType) {
    public static final Codec<DamageType> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.STRING.fieldOf("message_id").forGetter(DamageType::msgId),
@@ -37,12 +31,12 @@ public record DamageType(String b, DamageScaling c, float d, DamageEffects e, De
       this(var1, DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, var2);
    }
 
-   public DamageType(String var1, DamageScaling var2, float var3, DamageEffects var4, DeathMessageType var5) {
+   public DamageType(String msgId, DamageScaling scaling, float exhaustion, DamageEffects effects, DeathMessageType deathMessageType) {
       super();
-      this.msgId = var1;
-      this.scaling = var2;
-      this.exhaustion = var3;
-      this.effects = var4;
-      this.deathMessageType = var5;
+      this.msgId = msgId;
+      this.scaling = scaling;
+      this.exhaustion = exhaustion;
+      this.effects = effects;
+      this.deathMessageType = deathMessageType;
    }
 }

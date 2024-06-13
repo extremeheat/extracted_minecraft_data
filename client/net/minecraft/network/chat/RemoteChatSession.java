@@ -7,14 +7,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 
-public record RemoteChatSession(UUID a, ProfilePublicKey b) {
-   private final UUID sessionId;
-   private final ProfilePublicKey profilePublicKey;
-
-   public RemoteChatSession(UUID var1, ProfilePublicKey var2) {
+public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKey) {
+   public RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKey) {
       super();
-      this.sessionId = var1;
-      this.profilePublicKey = var2;
+      this.sessionId = sessionId;
+      this.profilePublicKey = profilePublicKey;
    }
 
    public SignedMessageValidator createMessageValidator(Duration var1) {
@@ -33,14 +30,11 @@ public record RemoteChatSession(UUID a, ProfilePublicKey b) {
       return this.profilePublicKey.data().hasExpired();
    }
 
-   public static record Data(UUID a, ProfilePublicKey.Data b) {
-      private final UUID sessionId;
-      private final ProfilePublicKey.Data profilePublicKey;
-
-      public Data(UUID var1, ProfilePublicKey.Data var2) {
+   public static record Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
+      public Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
          super();
-         this.sessionId = var1;
-         this.profilePublicKey = var2;
+         this.sessionId = sessionId;
+         this.profilePublicKey = profilePublicKey;
       }
 
       public static RemoteChatSession.Data read(FriendlyByteBuf var0) {

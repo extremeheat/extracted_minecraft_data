@@ -71,7 +71,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
          var4.pushPose();
          var4.translate(0.0F, -1.0F, -2.0F);
 
-         for(int var15 = 0; (float)var15 < (var22 + var22 * var22) / 2.0F * 60.0F; ++var15) {
+         for (int var15 = 0; (float)var15 < (var22 + var22 * var22) / 2.0F * 60.0F; var15++) {
             var4.mulPose(Axis.XP.rotationDegrees(var13.nextFloat() * 360.0F));
             var4.mulPose(Axis.YP.rotationDegrees(var13.nextFloat() * 360.0F));
             var4.mulPose(Axis.ZP.rotationDegrees(var13.nextFloat() * 360.0F));
@@ -135,13 +135,13 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
       VertexConsumer var10 = var6.getBuffer(BEAM);
       float var11 = 0.0F - ((float)var4 + var3) * 0.01F;
       float var12 = Mth.sqrt(var0 * var0 + var1 * var1 + var2 * var2) / 32.0F - ((float)var4 + var3) * 0.01F;
-      boolean var13 = true;
+      byte var13 = 8;
       float var14 = 0.0F;
       float var15 = 0.75F;
       float var16 = 0.0F;
       PoseStack.Pose var17 = var5.last();
 
-      for(int var18 = 1; var18 <= 8; ++var18) {
+      for (int var18 = 1; var18 <= 8; var18++) {
          float var19 = Mth.sin((float)var18 * 6.2831855F / 8.0F) * 0.75F;
          float var20 = Mth.cos((float)var18 * 6.2831855F / 8.0F) * 0.75F;
          float var21 = (float)var18 / 8.0F;
@@ -351,7 +351,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
          float var17 = Mth.wrapDegrees((float)(this.entity.getLatencyPos(5, this.a)[0] + (double)(var16 / 2.0F)));
          float var18 = var9 * 6.2831855F;
 
-         for(int var19 = 0; var19 < 5; ++var19) {
+         for (int var19 = 0; var19 < 5; var19++) {
             double[] var20 = this.entity.getLatencyPos(5 - var19, this.a);
             float var21 = (float)Math.cos((double)((float)var19 * 0.45F + var18)) * 0.15F;
             this.neck.yRot = Mth.wrapDegrees((float)(var20[0] - var15[0])) * 0.017453292F * 1.5F;
@@ -427,7 +427,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
          var11 = 0.0F;
          var15 = this.entity.getLatencyPos(11, this.a);
 
-         for(int var22 = 0; var22 < 12; ++var22) {
+         for (int var22 = 0; var22 < 12; var22++) {
             var29 = this.entity.getLatencyPos(12 + var22, this.a);
             var32 += Mth.sin((float)var22 * 0.45F + var18) * 0.05F;
             this.neck.yRot = (Mth.wrapDegrees((float)(var29[0] - var15[0])) * 1.5F + 180.0F) * 0.017453292F;

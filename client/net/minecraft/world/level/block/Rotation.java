@@ -24,9 +24,9 @@ public enum Rotation implements StringRepresentable {
    }
 
    public Rotation getRotated(Rotation var1) {
-      switch(var1) {
+      switch (var1) {
          case CLOCKWISE_180:
-            switch(this) {
+            switch (this) {
                case NONE:
                   return CLOCKWISE_180;
                case CLOCKWISE_90:
@@ -37,7 +37,7 @@ public enum Rotation implements StringRepresentable {
                   return CLOCKWISE_90;
             }
          case COUNTERCLOCKWISE_90:
-            switch(this) {
+            switch (this) {
                case NONE:
                   return COUNTERCLOCKWISE_90;
                case CLOCKWISE_90:
@@ -48,7 +48,7 @@ public enum Rotation implements StringRepresentable {
                   return CLOCKWISE_180;
             }
          case CLOCKWISE_90:
-            switch(this) {
+            switch (this) {
                case NONE:
                   return CLOCKWISE_90;
                case CLOCKWISE_90:
@@ -71,7 +71,7 @@ public enum Rotation implements StringRepresentable {
       if (var1.getAxis() == Direction.Axis.Y) {
          return var1;
       } else {
-         switch(this) {
+         switch (this) {
             case CLOCKWISE_90:
                return var1.getClockWise();
             case CLOCKWISE_180:
@@ -85,7 +85,7 @@ public enum Rotation implements StringRepresentable {
    }
 
    public int rotate(int var1, int var2) {
-      switch(this) {
+      switch (this) {
          case CLOCKWISE_90:
             return (var1 + var2 / 4) % var2;
          case CLOCKWISE_180:

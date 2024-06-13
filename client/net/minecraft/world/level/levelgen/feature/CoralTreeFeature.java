@@ -19,7 +19,7 @@ public class CoralTreeFeature extends CoralFeature {
       BlockPos.MutableBlockPos var5 = var3.mutable();
       int var6 = var2.nextInt(3) + 1;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
+      for (int var7 = 0; var7 < var6; var7++) {
          if (!this.placeCoralBlock(var1, var2, var5, var4)) {
             return true;
          }
@@ -31,14 +31,14 @@ public class CoralTreeFeature extends CoralFeature {
       int var8 = var2.nextInt(3) + 2;
       List var9 = Direction.Plane.HORIZONTAL.shuffledCopy(var2);
 
-      for(Direction var12 : var9.subList(0, var8)) {
+      for (Direction var12 : var9.subList(0, var8)) {
          var5.set(var16);
          var5.move(var12);
          int var13 = var2.nextInt(5) + 2;
          int var14 = 0;
 
-         for(int var15 = 0; var15 < var13 && this.placeCoralBlock(var1, var2, var5, var4); ++var15) {
-            ++var14;
+         for (int var15 = 0; var15 < var13 && this.placeCoralBlock(var1, var2, var5, var4); var15++) {
+            var14++;
             var5.move(Direction.UP);
             if (var15 == 0 || var14 >= 2 && var2.nextFloat() < 0.25F) {
                var5.move(var12);

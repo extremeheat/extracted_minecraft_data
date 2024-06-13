@@ -25,7 +25,7 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
 
    @Override
    public void handleIntention(ClientIntentionPacket var1) {
-      switch(var1.intention()) {
+      switch (var1.intention()) {
          case LOGIN:
             this.beginLogin(var1, false);
             break;

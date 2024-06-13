@@ -4,14 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import java.util.List;
 
-public record StringTemplate(List<String> a, List<String> b) {
-   private final List<String> segments;
-   private final List<String> variables;
-
-   public StringTemplate(List<String> var1, List<String> var2) {
+public record StringTemplate(List<String> segments, List<String> variables) {
+   public StringTemplate(List<String> segments, List<String> variables) {
       super();
-      this.segments = var1;
-      this.variables = var2;
+      this.segments = segments;
+      this.variables = variables;
    }
 
    public static StringTemplate fromString(String var0, int var1) {
@@ -21,7 +18,7 @@ public record StringTemplate(List<String> a, List<String> b) {
       int var5 = 0;
       int var6 = var0.indexOf(36);
 
-      while(var6 != -1) {
+      while (var6 != -1) {
          if (var6 != var4 - 1 && var0.charAt(var6 + 1) == '(') {
             var2.add(var0.substring(var5, var6));
             int var7 = var0.indexOf(41, var6 + 1);
@@ -54,7 +51,7 @@ public record StringTemplate(List<String> a, List<String> b) {
    }
 
    private static boolean isValidVariableName(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
+      for (int var1 = 0; var1 < var0.length(); var1++) {
          char var2 = var0.charAt(var1);
          if (!Character.isLetterOrDigit(var2) && var2 != '_') {
             return false;
@@ -67,7 +64,7 @@ public record StringTemplate(List<String> a, List<String> b) {
    public String substitute(List<String> var1) {
       StringBuilder var2 = new StringBuilder();
 
-      for(int var3 = 0; var3 < this.variables.size(); ++var3) {
+      for (int var3 = 0; var3 < this.variables.size(); var3++) {
          var2.append(this.segments.get(var3)).append((String)var1.get(var3));
          CommandFunction.checkCommandLineLength(var2);
       }

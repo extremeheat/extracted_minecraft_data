@@ -156,11 +156,12 @@ public final class OverworldBiomeBuilder {
             Biomes.PLAINS
          )
       );
-      CubicSpline var7 = TerrainProvider.buildErosionOffsetSpline(var5, var6, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, ToFloatFunction.IDENTITY);
-      if (var7 instanceof CubicSpline.Multipoint var8) {
+      if (TerrainProvider.buildErosionOffsetSpline(var5, var6, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, ToFloatFunction.IDENTITY) instanceof CubicSpline.Multipoint var8
+         )
+       {
          ResourceKey var9 = Biomes.DESERT;
 
-         for(float var13 : var8.locations()) {
+         for (float var13 : var8.locations()) {
             var1.accept(
                Pair.of(
                   Climate.parameters(
@@ -173,9 +174,8 @@ public final class OverworldBiomeBuilder {
          }
       }
 
-      CubicSpline var14 = TerrainProvider.overworldOffset(var4, var5, var6, false);
-      if (var14 instanceof CubicSpline.Multipoint var15) {
-         for(float var19 : var15.locations()) {
+      if (TerrainProvider.overworldOffset(var4, var5, var6, false) instanceof CubicSpline.Multipoint var15) {
+         for (float var19 : var15.locations()) {
             var1.accept(
                Pair.of(
                   Climate.parameters(
@@ -193,7 +193,7 @@ public final class OverworldBiomeBuilder {
          var1, this.FULL_RANGE, this.FULL_RANGE, this.mushroomFieldsContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.MUSHROOM_FIELDS
       );
 
-      for(int var2 = 0; var2 < this.temperatures.length; ++var2) {
+      for (int var2 = 0; var2 < this.temperatures.length; var2++) {
          Climate.Parameter var3 = this.temperatures[var2];
          this.addSurfaceBiome(var1, var3, this.FULL_RANGE, this.deepOceanContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, this.OCEANS[0][var2]);
          this.addSurfaceBiome(var1, var3, this.FULL_RANGE, this.oceanContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, this.OCEANS[1][var2]);
@@ -217,10 +217,10 @@ public final class OverworldBiomeBuilder {
    }
 
    private void addPeaks(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2) {
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
+      for (int var3 = 0; var3 < this.temperatures.length; var3++) {
          Climate.Parameter var4 = this.temperatures[var3];
 
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
+         for (int var5 = 0; var5 < this.humidities.length; var5++) {
             Climate.Parameter var6 = this.humidities[var5];
             ResourceKey var7 = this.pickMiddleBiome(var3, var5, var2);
             ResourceKey var8 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
@@ -270,10 +270,10 @@ public final class OverworldBiomeBuilder {
    }
 
    private void addHighSlice(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2) {
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
+      for (int var3 = 0; var3 < this.temperatures.length; var3++) {
          Climate.Parameter var4 = this.temperatures[var3];
 
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
+         for (int var5 = 0; var5 < this.humidities.length; var5++) {
             Climate.Parameter var6 = this.humidities[var5];
             ResourceKey var7 = this.pickMiddleBiome(var3, var5, var2);
             ResourceKey var8 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
@@ -355,10 +355,10 @@ public final class OverworldBiomeBuilder {
          Biomes.MANGROVE_SWAMP
       );
 
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
+      for (int var3 = 0; var3 < this.temperatures.length; var3++) {
          Climate.Parameter var4 = this.temperatures[var3];
 
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
+         for (int var5 = 0; var5 < this.humidities.length; var5++) {
             Climate.Parameter var6 = this.humidities[var5];
             ResourceKey var7 = this.pickMiddleBiome(var3, var5, var2);
             ResourceKey var8 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
@@ -448,10 +448,10 @@ public final class OverworldBiomeBuilder {
          Biomes.MANGROVE_SWAMP
       );
 
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
+      for (int var3 = 0; var3 < this.temperatures.length; var3++) {
          Climate.Parameter var4 = this.temperatures[var3];
 
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
+         for (int var5 = 0; var5 < this.humidities.length; var5++) {
             Climate.Parameter var6 = this.humidities[var5];
             ResourceKey var7 = this.pickMiddleBiome(var3, var5, var2);
             ResourceKey var8 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
@@ -594,10 +594,10 @@ public final class OverworldBiomeBuilder {
          Biomes.FROZEN_RIVER
       );
 
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
+      for (int var3 = 0; var3 < this.temperatures.length; var3++) {
          Climate.Parameter var4 = this.temperatures[var3];
 
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
+         for (int var5 = 0; var5 < this.humidities.length; var5++) {
             Climate.Parameter var6 = this.humidities[var5];
             ResourceKey var7 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
             this.addSurfaceBiome(
@@ -795,7 +795,7 @@ public final class OverworldBiomeBuilder {
    private static String getDebugStringForNoiseValue(double var0, Climate.Parameter[] var2) {
       double var3 = (double)Climate.quantizeCoord((float)var0);
 
-      for(int var5 = 0; var5 < var2.length; ++var5) {
+      for (int var5 = 0; var5 < var2.length; var5++) {
          if (var3 < (double)var2[var5].max()) {
             return var5 + "";
          }

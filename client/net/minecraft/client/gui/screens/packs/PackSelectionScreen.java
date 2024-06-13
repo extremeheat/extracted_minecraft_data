@@ -27,10 +27,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -112,6 +112,7 @@ public class PackSelectionScreen extends Screen {
       this.doneButton = var2.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).build());
       this.reload();
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
@@ -155,10 +156,10 @@ public class PackSelectionScreen extends Screen {
       String var4 = var3 == null ? "" : var3.getPackId();
       var1.setSelected(null);
       var2.forEach(var3x -> {
-         TransferableSelectionList.PackEntry var4xx = new TransferableSelectionList.PackEntry(this.minecraft, var1, var3x);
-         var1.children().add(var4xx);
+         TransferableSelectionList.PackEntry var4x = new TransferableSelectionList.PackEntry(this.minecraft, var1, var3x);
+         var1.children().add(var4x);
          if (var3x.getId().equals(var4)) {
-            var1.setSelected(var4xx);
+            var1.setSelected(var4x);
          }
       });
    }
@@ -183,8 +184,8 @@ public class PackSelectionScreen extends Screen {
    protected static void copyPacks(Minecraft var0, List<Path> var1, Path var2) {
       MutableBoolean var3 = new MutableBoolean();
       var1.forEach(var2x -> {
-         try (Stream var3xx = Files.walk(var2x)) {
-            var3xx.forEach(var3xx -> {
+         try (Stream var3x = Files.walk(var2x)) {
+            var3x.forEach(var3xx -> {
                try {
                   Util.copyBetweenDirs(var2x.getParent(), var2, var3xx);
                } catch (IOException var5) {
@@ -216,14 +217,14 @@ public class PackSelectionScreen extends Screen {
                         protected Path createZipPack(Path var1) {
                            return var1;
                         }
-         
+
                         protected Path createDirectoryPack(Path var1) {
                            return var1;
                         }
                      };
                      ArrayList var6 = new ArrayList();
-         
-                     for(Path var8 : var1) {
+
+                     for (Path var8 : var1) {
                         try {
                            Path var9 = (Path)var5.detectPackResources(var8, var6);
                            if (var9 == null) {
@@ -236,17 +237,17 @@ public class PackSelectionScreen extends Screen {
                            LOGGER.warn("Failed to check {} for packs", var8, var10);
                         }
                      }
-         
+
                      if (!var6.isEmpty()) {
                         this.minecraft.setScreen(NoticeWithLinkScreen.createPackSymlinkWarningScreen(() -> this.minecraft.setScreen(this)));
                         return;
                      }
-         
+
                      if (!var3.isEmpty()) {
                         copyPacks(this.minecraft, var3, this.packDir);
                         this.reload();
                      }
-         
+
                      if (!var4.isEmpty()) {
                         String var11 = extractPackNames(var4).collect(Collectors.joining(", "));
                         this.minecraft
@@ -260,7 +261,7 @@ public class PackSelectionScreen extends Screen {
                         return;
                      }
                   }
-         
+
                   this.minecraft.setScreen(this);
                },
                Component.translatable("pack.dropConfirm"),
@@ -318,7 +319,7 @@ public class PackSelectionScreen extends Screen {
             this.watchDir(var1);
 
             try (DirectoryStream var2 = Files.newDirectoryStream(var1)) {
-               for(Path var4 : var2) {
+               for (Path var4 : var2) {
                   if (Files.isDirectory(var4, LinkOption.NOFOLLOW_LINKS)) {
                      this.watchDir(var4);
                   }
@@ -348,8 +349,8 @@ public class PackSelectionScreen extends Screen {
          boolean var1 = false;
 
          WatchKey var2;
-         while((var2 = this.watcher.poll()) != null) {
-            for(WatchEvent var5 : var2.pollEvents()) {
+         while ((var2 = this.watcher.poll()) != null) {
+            for (WatchEvent var5 : var2.pollEvents()) {
                var1 = true;
                if (var2.watchable() == this.packPath && var5.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                   Path var6 = this.packPath.resolve((Path)var5.context());

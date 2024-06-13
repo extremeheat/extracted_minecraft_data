@@ -88,18 +88,18 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
       this.verifyStarted();
       this.thisTickSamplers = this.metricsSamplerProvider.samplers(() -> this.singleTickProfiler);
 
-      for(MetricSampler var2 : this.thisTickSamplers) {
+      for (MetricSampler var2 : this.thisTickSamplers) {
          var2.onStartTick();
       }
 
-      ++this.currentTick;
+      this.currentTick++;
    }
 
    @Override
    public void endTick() {
       this.verifyStarted();
       if (this.currentTick != 0) {
-         for(MetricSampler var2 : this.thisTickSamplers) {
+         for (MetricSampler var2 : this.thisTickSamplers) {
             var2.onEndTick(this.currentTick);
             if (var2.triggersThreshold()) {
                RecordedDeviation var3 = new RecordedDeviation(Instant.now(), this.currentTick, this.singleTickProfiler.getResults());
@@ -145,7 +145,7 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
    }
 
    private void cleanup(Collection<MetricSampler> var1) {
-      for(MetricSampler var3 : var1) {
+      for (MetricSampler var3 : var1) {
          var3.onFinished();
       }
 

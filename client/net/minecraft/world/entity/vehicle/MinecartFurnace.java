@@ -52,7 +52,7 @@ public class MinecartFurnace extends AbstractMinecart {
       super.tick();
       if (!this.level().isClientSide()) {
          if (this.fuel > 0) {
-            --this.fuel;
+            this.fuel--;
          }
 
          if (this.fuel <= 0) {

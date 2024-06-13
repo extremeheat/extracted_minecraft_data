@@ -2,12 +2,10 @@ package net.minecraft.world.entity.ai.behavior;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,8 +25,8 @@ public class TryLaySpawnOnWaterNearLand {
                   (var1x, var2, var3) -> (var2x, var3x, var4) -> {
                         if (!var3x.isInWater() && var3x.onGround()) {
                            BlockPos var6 = var3x.blockPosition().below();
-         
-                           for(Direction var8 : Direction.Plane.HORIZONTAL) {
+
+                           for (Direction var8 : Direction.Plane.HORIZONTAL) {
                               BlockPos var9 = var6.relative(var8);
                               if (var2x.getBlockState(var9).getCollisionShape(var2x, var9).getFaceShape(Direction.UP).isEmpty()
                                  && var2x.getFluidState(var9).is(Fluids.WATER)) {
@@ -43,7 +41,7 @@ public class TryLaySpawnOnWaterNearLand {
                                  }
                               }
                            }
-         
+
                            return true;
                         } else {
                            return false;

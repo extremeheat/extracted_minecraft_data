@@ -15,7 +15,7 @@ public interface BonemealableBlock {
    void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4);
 
    default BlockPos getParticlePos(BlockPos var1) {
-      return switch(this.getType()) {
+      return switch (this.getType()) {
          case NEIGHBOR_SPREADER -> var1.above();
          case GROWER -> var1;
       };

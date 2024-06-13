@@ -12,14 +12,10 @@ public interface LayerLightEventListener extends LightEventListener {
 
    int getLightValue(BlockPos var1);
 
-   public static record ConstantLayer(int c) implements LayerLightEventListener {
-      private final int lightLevel;
-      public static final LayerLightEventListener.ConstantLayer ZERO = new LayerLightEventListener.ConstantLayer(0);
-      public static final LayerLightEventListener.ConstantLayer FULL_BRIGHT = new LayerLightEventListener.ConstantLayer(15);
+   public static enum DummyLightLayerEventListener implements LayerLightEventListener {
+      INSTANCE;
 
-      public ConstantLayer(int var1) {
-         super();
-         this.lightLevel = var1;
+      private DummyLightLayerEventListener() {
       }
 
       @Nullable
@@ -30,7 +26,7 @@ public interface LayerLightEventListener extends LightEventListener {
 
       @Override
       public int getLightValue(BlockPos var1) {
-         return this.lightLevel;
+         return 0;
       }
 
       @Override

@@ -31,7 +31,7 @@ public class ChunkLevel {
    }
 
    public static int byStatus(FullChunkStatus var0) {
-      return switch(var0) {
+      return switch (var0) {
          case INACCESSIBLE -> MAX_LEVEL;
          case FULL -> 33;
          case BLOCK_TICKING -> 32;

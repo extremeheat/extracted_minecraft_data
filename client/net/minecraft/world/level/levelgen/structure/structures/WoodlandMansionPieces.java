@@ -133,7 +133,7 @@ public class WoodlandMansionPieces {
       public MansionGrid(RandomSource var1) {
          super();
          this.random = var1;
-         boolean var2 = true;
+         byte var2 = 11;
          this.entranceX = 7;
          this.entranceY = 4;
          this.baseGrid = new WoodlandMansionPieces.SimpleGrid(11, 11, 5);
@@ -151,7 +151,7 @@ public class WoodlandMansionPieces {
          this.recursiveCorridor(this.baseGrid, this.entranceX - 2, this.entranceY - 1, Direction.WEST, 3);
          this.recursiveCorridor(this.baseGrid, this.entranceX - 2, this.entranceY + 2, Direction.WEST, 3);
 
-         while(this.cleanEdges(this.baseGrid)) {
+         while (this.cleanEdges(this.baseGrid)) {
          }
 
          this.floorRooms = new WoodlandMansionPieces.SimpleGrid[3];
@@ -178,7 +178,7 @@ public class WoodlandMansionPieces {
 
       @Nullable
       public Direction get1x2RoomDirection(WoodlandMansionPieces.SimpleGrid var1, int var2, int var3, int var4, int var5) {
-         for(Direction var7 : Direction.Plane.HORIZONTAL) {
+         for (Direction var7 : Direction.Plane.HORIZONTAL) {
             if (this.isRoomId(var1, var2 + var7.getStepX(), var3 + var7.getStepZ(), var4, var5)) {
                return var7;
             }
@@ -192,7 +192,7 @@ public class WoodlandMansionPieces {
             var1.set(var2, var3, 1);
             var1.setif(var2 + var4.getStepX(), var3 + var4.getStepZ(), 0, 1);
 
-            for(int var6 = 0; var6 < 8; ++var6) {
+            for (int var6 = 0; var6 < 8; var6++) {
                Direction var7 = Direction.from2DDataValue(this.random.nextInt(4));
                if (var7 != var4.getOpposite() && (var7 != Direction.EAST || !this.random.nextBoolean())) {
                   int var8 = var2 + var4.getStepX();
@@ -219,8 +219,8 @@ public class WoodlandMansionPieces {
       private boolean cleanEdges(WoodlandMansionPieces.SimpleGrid var1) {
          boolean var2 = false;
 
-         for(int var3 = 0; var3 < var1.height; ++var3) {
-            for(int var4 = 0; var4 < var1.width; ++var4) {
+         for (int var3 = 0; var3 < var1.height; var3++) {
+            for (int var4 = 0; var4 < var1.width; var4++) {
                if (var1.get(var4, var3) == 0) {
                   int var5 = 0;
                   var5 += isHouse(var1, var4 + 1, var3) ? 1 : 0;
@@ -252,8 +252,8 @@ public class WoodlandMansionPieces {
          ArrayList var1 = Lists.newArrayList();
          WoodlandMansionPieces.SimpleGrid var2 = this.floorRooms[1];
 
-         for(int var3 = 0; var3 < this.thirdFloorGrid.height; ++var3) {
-            for(int var4 = 0; var4 < this.thirdFloorGrid.width; ++var4) {
+         for (int var3 = 0; var3 < this.thirdFloorGrid.height; var3++) {
+            for (int var4 = 0; var4 < this.thirdFloorGrid.width; var4++) {
                int var5 = var2.get(var4, var3);
                int var6 = var5 & 983040;
                if (var6 == 131072 && (var5 & 2097152) == 2097152) {
@@ -266,17 +266,17 @@ public class WoodlandMansionPieces {
             this.thirdFloorGrid.set(0, 0, this.thirdFloorGrid.width, this.thirdFloorGrid.height, 5);
          } else {
             Tuple var11 = (Tuple)var1.get(this.random.nextInt(var1.size()));
-            int var12 = var2.get(var11.getA(), var11.getB());
-            var2.set(var11.getA(), var11.getB(), var12 | 4194304);
-            Direction var13 = this.get1x2RoomDirection(this.baseGrid, var11.getA(), var11.getB(), 1, var12 & 65535);
-            int var14 = var11.getA() + var13.getStepX();
-            int var7 = var11.getB() + var13.getStepZ();
+            int var12 = var2.get((Integer)var11.getA(), (Integer)var11.getB());
+            var2.set((Integer)var11.getA(), (Integer)var11.getB(), var12 | 4194304);
+            Direction var13 = this.get1x2RoomDirection(this.baseGrid, (Integer)var11.getA(), (Integer)var11.getB(), 1, var12 & 65535);
+            int var14 = (Integer)var11.getA() + var13.getStepX();
+            int var7 = (Integer)var11.getB() + var13.getStepZ();
 
-            for(int var8 = 0; var8 < this.thirdFloorGrid.height; ++var8) {
-               for(int var9 = 0; var9 < this.thirdFloorGrid.width; ++var9) {
+            for (int var8 = 0; var8 < this.thirdFloorGrid.height; var8++) {
+               for (int var9 = 0; var9 < this.thirdFloorGrid.width; var9++) {
                   if (!isHouse(this.baseGrid, var9, var8)) {
                      this.thirdFloorGrid.set(var9, var8, 5);
-                  } else if (var9 == var11.getA() && var8 == var11.getB()) {
+                  } else if (var9 == (Integer)var11.getA() && var8 == (Integer)var11.getB()) {
                      this.thirdFloorGrid.set(var9, var8, 3);
                   } else if (var9 == var14 && var8 == var7) {
                      this.thirdFloorGrid.set(var9, var8, 3);
@@ -287,7 +287,7 @@ public class WoodlandMansionPieces {
 
             ArrayList var15 = Lists.newArrayList();
 
-            for(Direction var10 : Direction.Plane.HORIZONTAL) {
+            for (Direction var10 : Direction.Plane.HORIZONTAL) {
                if (this.thirdFloorGrid.get(var14 + var10.getStepX(), var7 + var10.getStepZ()) == 0) {
                   var15.add(var10);
                }
@@ -295,12 +295,12 @@ public class WoodlandMansionPieces {
 
             if (var15.isEmpty()) {
                this.thirdFloorGrid.set(0, 0, this.thirdFloorGrid.width, this.thirdFloorGrid.height, 5);
-               var2.set(var11.getA(), var11.getB(), var12);
+               var2.set((Integer)var11.getA(), (Integer)var11.getB(), var12);
             } else {
                Direction var17 = (Direction)var15.get(this.random.nextInt(var15.size()));
                this.recursiveCorridor(this.thirdFloorGrid, var14 + var17.getStepX(), var7 + var17.getStepZ(), var17, 4);
 
-               while(this.cleanEdges(this.thirdFloorGrid)) {
+               while (this.cleanEdges(this.thirdFloorGrid)) {
                }
             }
          }
@@ -309,8 +309,8 @@ public class WoodlandMansionPieces {
       private void identifyRooms(WoodlandMansionPieces.SimpleGrid var1, WoodlandMansionPieces.SimpleGrid var2) {
          ObjectArrayList var3 = new ObjectArrayList();
 
-         for(int var4 = 0; var4 < var1.height; ++var4) {
-            for(int var5 = 0; var5 < var1.width; ++var5) {
+         for (int var4 = 0; var4 < var1.height; var4++) {
+            for (int var5 = 0; var5 < var1.width; var5++) {
                if (var1.get(var5, var4) == 2) {
                   var3.add(new Tuple<>(var5, var4));
                }
@@ -321,10 +321,10 @@ public class WoodlandMansionPieces {
          int var19 = 10;
          ObjectListIterator var20 = var3.iterator();
 
-         while(var20.hasNext()) {
+         while (var20.hasNext()) {
             Tuple var6 = (Tuple)var20.next();
-            int var7 = var6.getA();
-            int var8 = var6.getB();
+            int var7 = (Integer)var6.getA();
+            int var8 = (Integer)var6.getB();
             if (var2.get(var7, var8) == 0) {
                int var9 = var7;
                int var10 = var7;
@@ -392,8 +392,8 @@ public class WoodlandMansionPieces {
                   }
                }
 
-               for(int var17 = var11; var17 <= var12; ++var17) {
-                  for(int var18 = var9; var18 <= var10; ++var18) {
+               for (int var17 = var11; var17 <= var12; var17++) {
+                  for (int var18 = var9; var18 <= var10; var18++) {
                      if (var18 == var14 && var17 == var15) {
                         var2.set(var18, var17, 1048576 | var16 | var13 | var19);
                      } else {
@@ -402,7 +402,7 @@ public class WoodlandMansionPieces {
                   }
                }
 
-               ++var19;
+               var19++;
             }
          }
       }
@@ -447,8 +447,8 @@ public class WoodlandMansionPieces {
          var11.wallType = "wall_window";
          boolean var12 = false;
 
-         for(int var13 = 0; var13 < var8.height && !var12; ++var13) {
-            for(int var14 = var8.width - 1; var14 >= 0 && !var12; --var14) {
+         for (int var13 = 0; var13 < var8.height && !var12; var13++) {
+            for (int var14 = var8.width - 1; var14 >= 0 && !var12; var14--) {
                if (WoodlandMansionPieces.MansionGrid.isHouse(var8, var14, var13)) {
                   var11.position = var11.position.relative(var2.rotate(Direction.SOUTH), 8 + (var13 - this.startY) * 8);
                   var11.position = var11.position.relative(var2.rotate(Direction.EAST), (var14 - this.startX) * 8);
@@ -470,15 +470,15 @@ public class WoodlandMansionPieces {
             new WoodlandMansionPieces.ThirdFloorRoomCollection()
          };
 
-         for(int var34 = 0; var34 < 3; ++var34) {
+         for (int var34 = 0; var34 < 3; var34++) {
             BlockPos var15 = var1.above(8 * var34 + (var34 == 2 ? 3 : 0));
             WoodlandMansionPieces.SimpleGrid var16 = var4.floorRooms[var34];
             WoodlandMansionPieces.SimpleGrid var17 = var34 == 2 ? var8 : var7;
             String var18 = var34 == 0 ? "carpet_south_1" : "carpet_south_2";
             String var19 = var34 == 0 ? "carpet_west_1" : "carpet_west_2";
 
-            for(int var20 = 0; var20 < var17.height; ++var20) {
-               for(int var21 = 0; var21 < var17.width; ++var21) {
+            for (int var20 = 0; var20 < var17.height; var20++) {
+               for (int var21 = 0; var21 < var17.width; var21++) {
                   if (var17.get(var21, var20) == 1) {
                      BlockPos var22 = var15.relative(var2.rotate(Direction.SOUTH), 8 + (var20 - this.startY) * 8);
                      var22 = var22.relative(var2.rotate(Direction.EAST), (var21 - this.startX) * 8);
@@ -531,8 +531,8 @@ public class WoodlandMansionPieces {
             String var36 = var34 == 0 ? "indoors_door_1" : "indoors_door_2";
             ArrayList var38 = Lists.newArrayList();
 
-            for(int var23 = 0; var23 < var17.height; ++var23) {
-               for(int var24 = 0; var24 < var17.width; ++var24) {
+            for (int var23 = 0; var23 < var17.height; var23++) {
+               for (int var24 = 0; var24 < var17.width; var24++) {
                   boolean var25 = var34 == 2 && var17.get(var24, var23) == 3;
                   if (var17.get(var24, var23) == 2 || var25) {
                      int var26 = var16.get(var24, var23);
@@ -541,7 +541,7 @@ public class WoodlandMansionPieces {
                      var25 = var25 && (var26 & 8388608) == 8388608;
                      var38.clear();
                      if ((var26 & 2097152) == 2097152) {
-                        for(Direction var30 : Direction.Plane.HORIZONTAL) {
+                        for (Direction var30 : Direction.Plane.HORIZONTAL) {
                            if (var17.get(var24 + var30.getStepX(), var23 + var30.getStepZ()) == 1) {
                               var38.add(var30);
                            }
@@ -648,7 +648,7 @@ public class WoodlandMansionPieces {
                   this.traverseWallPiece(var1, var2);
                }
             }
-         } while(var9 != var7 || var10 != var8 || var11 != var4);
+         } while (var9 != var7 || var10 != var8 || var11 != var4);
       }
 
       private void createRoof(
@@ -658,8 +658,8 @@ public class WoodlandMansionPieces {
          WoodlandMansionPieces.SimpleGrid var4,
          @Nullable WoodlandMansionPieces.SimpleGrid var5
       ) {
-         for(int var6 = 0; var6 < var4.height; ++var6) {
-            for(int var7 = 0; var7 < var4.width; ++var7) {
+         for (int var6 = 0; var6 < var4.height; var6++) {
+            for (int var7 = 0; var7 < var4.width; var7++) {
                BlockPos var8 = var2.relative(var3.rotate(Direction.SOUTH), 8 + (var6 - this.startY) * 8);
                var8 = var8.relative(var3.rotate(Direction.EAST), (var7 - this.startX) * 8);
                boolean var9 = var5 != null && WoodlandMansionPieces.MansionGrid.isHouse(var5, var7, var6);
@@ -703,8 +703,8 @@ public class WoodlandMansionPieces {
          }
 
          if (var5 != null) {
-            for(int var12 = 0; var12 < var4.height; ++var12) {
-               for(int var14 = 0; var14 < var4.width; ++var14) {
+            for (int var12 = 0; var12 < var4.height; var12++) {
+               for (int var14 = 0; var14 < var4.width; var14++) {
                   BlockPos var17 = var2.relative(var3.rotate(Direction.SOUTH), 8 + (var12 - this.startY) * 8);
                   var17 = var17.relative(var3.rotate(Direction.EAST), (var14 - this.startX) * 8);
                   boolean var21 = WoodlandMansionPieces.MansionGrid.isHouse(var5, var14, var12);
@@ -788,8 +788,8 @@ public class WoodlandMansionPieces {
             }
          }
 
-         for(int var13 = 0; var13 < var4.height; ++var13) {
-            for(int var15 = 0; var15 < var4.width; ++var15) {
+         for (int var13 = 0; var13 < var4.height; var13++) {
+            for (int var15 = 0; var15 < var4.width; var15++) {
                BlockPos var19 = var2.relative(var3.rotate(Direction.SOUTH), 8 + (var13 - this.startY) * 8);
                var19 = var19.relative(var3.rotate(Direction.EAST), (var15 - this.startX) * 8);
                boolean var22 = var5 != null && WoodlandMansionPieces.MansionGrid.isHouse(var5, var15, var13);
@@ -1150,8 +1150,8 @@ public class WoodlandMansionPieces {
       }
 
       public void set(int var1, int var2, int var3, int var4, int var5) {
-         for(int var6 = var2; var6 <= var4; ++var6) {
-            for(int var7 = var1; var7 <= var3; ++var7) {
+         for (int var6 = var2; var6 <= var4; var6++) {
+            for (int var7 = var1; var7 <= var3; var7++) {
                this.set(var7, var6, var5);
             }
          }
@@ -1234,7 +1234,7 @@ public class WoodlandMansionPieces {
             this.createChest(var3, var5, var4, var2, BuiltInLootTables.WOODLAND_MANSION, var12);
          } else {
             ArrayList var6 = new ArrayList();
-            switch(var1) {
+            switch (var1) {
                case "Mage":
                   var6.add(EntityType.EVOKER.create(var3.getLevel()));
                   break;
@@ -1244,7 +1244,7 @@ public class WoodlandMansionPieces {
                case "Group of Allays":
                   int var9 = var3.getRandom().nextInt(3) + 1;
 
-                  for(int var10 = 0; var10 < var9; ++var10) {
+                  for (int var10 = 0; var10 < var9; var10++) {
                      var6.add(EntityType.ALLAY.create(var3.getLevel()));
                   }
                   break;
@@ -1252,7 +1252,7 @@ public class WoodlandMansionPieces {
                   return;
             }
 
-            for(Mob var13 : var6) {
+            for (Mob var13 : var6) {
                if (var13 != null) {
                   var13.setPersistenceRequired();
                   var13.moveTo(var2, 0.0F, 0.0F);

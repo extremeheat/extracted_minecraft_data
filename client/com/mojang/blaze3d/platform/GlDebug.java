@@ -37,7 +37,7 @@ public class GlDebug {
    }
 
    public static String sourceToString(int var0) {
-      switch(var0) {
+      switch (var0) {
          case 33350:
             return "API";
          case 33351:
@@ -56,7 +56,7 @@ public class GlDebug {
    }
 
    public static String typeToString(int var0) {
-      switch(var0) {
+      switch (var0) {
          case 33356:
             return "ERROR";
          case 33357:
@@ -77,7 +77,7 @@ public class GlDebug {
    }
 
    public static String severityToString(int var0) {
-      switch(var0) {
+      switch (var0) {
          case 33387:
             return "NOTIFICATION";
          case 37190:
@@ -94,10 +94,10 @@ public class GlDebug {
    private static void printDebugLog(int var0, int var1, int var2, int var3, int var4, long var5, long var7) {
       String var9 = GLDebugMessageCallback.getMessage(var4, var5);
       GlDebug.LogEntry var10;
-      synchronized(MESSAGE_BUFFER) {
+      synchronized (MESSAGE_BUFFER) {
          var10 = lastEntry;
          if (var10 != null && var10.isSame(var0, var1, var2, var3, var9)) {
-            ++var10.count;
+            var10.count++;
          } else {
             var10 = new GlDebug.LogEntry(var0, var1, var2, var3, var9);
             MESSAGE_BUFFER.add(var10);
@@ -109,10 +109,10 @@ public class GlDebug {
    }
 
    public static List<String> getLastOpenGlDebugMessages() {
-      synchronized(MESSAGE_BUFFER) {
+      synchronized (MESSAGE_BUFFER) {
          ArrayList var1 = Lists.newArrayListWithCapacity(MESSAGE_BUFFER.size());
 
-         for(GlDebug.LogEntry var3 : MESSAGE_BUFFER) {
+         for (GlDebug.LogEntry var3 : MESSAGE_BUFFER) {
             var1.add(var3 + " x " + var3.count);
          }
 
@@ -135,7 +135,7 @@ public class GlDebug {
                GL11.glEnable(33346);
             }
 
-            for(int var3 = 0; var3 < DEBUG_LEVELS.size(); ++var3) {
+            for (int var3 = 0; var3 < DEBUG_LEVELS.size(); var3++) {
                boolean var4 = var3 < var0;
                KHRDebug.glDebugMessageControl(4352, 4352, DEBUG_LEVELS.get(var3), (int[])null, var4);
             }
@@ -147,7 +147,7 @@ public class GlDebug {
                GL11.glEnable(33346);
             }
 
-            for(int var5 = 0; var5 < DEBUG_LEVELS_ARB.size(); ++var5) {
+            for (int var5 = 0; var5 < DEBUG_LEVELS_ARB.size(); var5++) {
                boolean var6 = var5 < var0;
                ARBDebugOutput.glDebugMessageControlARB(4352, 4352, DEBUG_LEVELS_ARB.get(var5), (int[])null, var6);
             }

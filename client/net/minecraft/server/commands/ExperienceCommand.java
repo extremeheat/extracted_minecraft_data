@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -144,7 +143,7 @@ public class ExperienceCommand {
    }
 
    private static int addExperience(CommandSourceStack var0, Collection<? extends ServerPlayer> var1, int var2, ExperienceCommand.Type var3) {
-      for(ServerPlayer var5 : var1) {
+      for (ServerPlayer var5 : var1) {
          var3.add.accept(var5, var2);
       }
 
@@ -165,9 +164,9 @@ public class ExperienceCommand {
    private static int setExperience(CommandSourceStack var0, Collection<? extends ServerPlayer> var1, int var2, ExperienceCommand.Type var3) throws CommandSyntaxException {
       int var4 = 0;
 
-      for(ServerPlayer var6 : var1) {
+      for (ServerPlayer var6 : var1) {
          if (var3.set.test(var6, var2)) {
-            ++var4;
+            var4++;
          }
       }
 

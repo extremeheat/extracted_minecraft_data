@@ -14,7 +14,7 @@ public class HeightmapTypeArgument extends StringRepresentableArgument<Heightmap
    );
 
    private static Heightmap.Types[] keptTypes() {
-      return Arrays.stream(Heightmap.Types.values()).filter(Heightmap.Types::keepAfterWorldgen).toArray(var0 -> new Heightmap.Types[var0]);
+      return Arrays.stream(Heightmap.Types.values()).filter(Heightmap.Types::keepAfterWorldgen).toArray(Heightmap.Types[]::new);
    }
 
    private HeightmapTypeArgument() {

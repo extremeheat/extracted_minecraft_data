@@ -27,7 +27,7 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
          int var6 = 2 + var4.nextInt(2);
          int var7 = 2 + var4.nextInt(2);
 
-         for(BlockPos var9 : BlockPos.betweenClosed(var2.offset(-var6, 0, -var7), var2.offset(var6, 1, var7))) {
+         for (BlockPos var9 : BlockPos.betweenClosed(var2.offset(-var6, 0, -var7), var2.offset(var6, 1, var7))) {
             int var10 = var2.getX() - var9.getX();
             int var11 = var2.getZ() - var9.getZ();
             if ((float)(var10 * var10 + var11 * var11) <= var4.nextFloat() * 10.0F - var4.nextFloat() * 6.0F) {
@@ -44,7 +44,7 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
    private boolean mayPlaceOn(LevelAccessor var1, BlockPos var2, RandomSource var3) {
       BlockPos var4 = var2.below();
       BlockState var5 = var1.getBlockState(var4);
-      return !var5.is(Blocks.DIRT_PATH) && !var5.is(Blocks.POISON_PATH) ? var5.isFaceSturdy(var1, var4, Direction.UP) : var3.nextBoolean();
+      return var5.is(Blocks.DIRT_PATH) ? var3.nextBoolean() : var5.isFaceSturdy(var1, var4, Direction.UP);
    }
 
    private void tryPlaceBlock(LevelAccessor var1, BlockPos var2, RandomSource var3, BlockPileConfiguration var4) {

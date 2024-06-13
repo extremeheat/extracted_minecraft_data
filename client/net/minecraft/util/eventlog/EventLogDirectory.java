@@ -101,7 +101,7 @@ public class EventLogDirectory {
          byte[] var3 = new byte[4096];
          ByteBuffer var4 = ByteBuffer.wrap(var3);
 
-         while(var0.read(var4) >= 0) {
+         while (var0.read(var4) >= 0) {
             var4.flip();
             var2.write(var3, 0, var4.limit());
             var4.clear();
@@ -116,21 +116,18 @@ public class EventLogDirectory {
       EventLogDirectory.FileId var3;
       do {
          var3 = new EventLogDirectory.FileId(var1, var2++);
-      } while(var4.contains(var3));
+      } while (var4.contains(var3));
 
       EventLogDirectory.RawFile var5 = new EventLogDirectory.RawFile(this.root.resolve(var3.toFileName(this.extension)), var3);
       Files.createFile(var5.path());
       return var5;
    }
 
-   public static record CompressedFile(Path a, EventLogDirectory.FileId b) implements EventLogDirectory.File {
-      private final Path path;
-      private final EventLogDirectory.FileId id;
-
-      public CompressedFile(Path var1, EventLogDirectory.FileId var2) {
+   public static record CompressedFile(Path path, EventLogDirectory.FileId id) implements EventLogDirectory.File {
+      public CompressedFile(Path path, EventLogDirectory.FileId id) {
          super();
-         this.path = var1;
-         this.id = var2;
+         this.path = path;
+         this.id = id;
       }
 
       @Nullable
@@ -156,15 +153,13 @@ public class EventLogDirectory {
       EventLogDirectory.CompressedFile compress() throws IOException;
    }
 
-   public static record FileId(LocalDate a, int b) {
-      private final LocalDate date;
-      private final int index;
+   public static record FileId(LocalDate date, int index) {
       private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
 
-      public FileId(LocalDate var1, int var2) {
+      public FileId(LocalDate date, int index) {
          super();
-         this.date = var1;
-         this.index = var2;
+         this.date = date;
+         this.index = index;
       }
 
       @Nullable
@@ -222,7 +217,7 @@ public class EventLogDirectory {
       public EventLogDirectory.FileList compressAll() {
          ListIterator var1 = this.files.listIterator();
 
-         while(var1.hasNext()) {
+         while (var1.hasNext()) {
             EventLogDirectory.File var2 = (EventLogDirectory.File)var1.next();
 
             try {
@@ -249,14 +244,11 @@ public class EventLogDirectory {
       }
    }
 
-   public static record RawFile(Path a, EventLogDirectory.FileId b) implements EventLogDirectory.File {
-      private final Path path;
-      private final EventLogDirectory.FileId id;
-
-      public RawFile(Path var1, EventLogDirectory.FileId var2) {
+   public static record RawFile(Path path, EventLogDirectory.FileId id) implements EventLogDirectory.File {
+      public RawFile(Path path, EventLogDirectory.FileId id) {
          super();
-         this.path = var1;
-         this.id = var2;
+         this.path = path;
+         this.id = id;
       }
 
       public FileChannel openChannel() throws IOException {

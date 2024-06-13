@@ -210,7 +210,7 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos rotate(Rotation var1) {
-      switch(var1) {
+      switch (var1) {
          case NONE:
          default:
             return this;
@@ -243,10 +243,6 @@ public class BlockPos extends Vec3i {
       return new BlockPos.MutableBlockPos(this.getX(), this.getY(), this.getZ());
    }
 
-   public BlockPos step(Direction var1) {
-      return this.offset(var1.getNormal());
-   }
-
    public static Iterable<BlockPos> randomInCube(RandomSource var0, int var1, BlockPos var2, int var3) {
       return randomBetweenClosed(
          var0, var1, var2.getX() - var3, var2.getY() - var3, var2.getZ() - var3, var2.getX() + var3, var2.getY() + var3, var2.getZ() + var3
@@ -271,7 +267,7 @@ public class BlockPos extends Vec3i {
                   return (BlockPos)this.endOfData();
                } else {
                   BlockPos.MutableBlockPos var1x = this.nextPos.set(var2 + var0.nextInt(var8), var3 + var0.nextInt(var9), var4 + var0.nextInt(var10));
-                  --this.counter;
+                  this.counter--;
                   return var1x;
                }
             }
@@ -299,11 +295,11 @@ public class BlockPos extends Vec3i {
                   return this.cursor;
                } else {
                   BlockPos.MutableBlockPos var1x;
-                  for(var1x = null; var1x == null; ++this.y) {
+                  for (var1x = null; var1x == null; this.y++) {
                      if (this.y > this.maxY) {
-                        ++this.x;
+                        this.x++;
                         if (this.x > this.maxX) {
-                           ++this.currentDepth;
+                           this.currentDepth++;
                            if (this.currentDepth > var4) {
                               return (BlockPos)this.endOfData();
                            }
@@ -332,7 +328,7 @@ public class BlockPos extends Vec3i {
    }
 
    public static Optional<BlockPos> findClosestMatch(BlockPos var0, int var1, int var2, Predicate<BlockPos> var3) {
-      for(BlockPos var5 : withinManhattan(var0, var1, var2, var1)) {
+      for (BlockPos var5 : withinManhattan(var0, var1, var2, var1)) {
          if (var3.test(var5)) {
             return Optional.of(var5);
          }
@@ -398,7 +394,7 @@ public class BlockPos extends Vec3i {
                   int var2x = this.index / var6;
                   int var3 = var2x % var7;
                   int var4 = var2x / var7;
-                  ++this.index;
+                  this.index++;
                   return this.cursor.set(var0 + var1x, var1 + var3, var2 + var4);
                }
             }
@@ -428,12 +424,12 @@ public class BlockPos extends Vec3i {
                      return (BlockPos.MutableBlockPos)this.endOfData();
                   }
 
-                  ++this.leg;
+                  this.leg++;
                   this.legIndex = 0;
                   this.legSize = this.leg / 2 + 1;
                }
 
-               ++this.legIndex;
+               this.legIndex++;
                return this.cursor;
             }
          };
@@ -445,10 +441,10 @@ public class BlockPos extends Vec3i {
       var5.add(Pair.of(var0, 0));
       int var7 = 0;
 
-      while(!var5.isEmpty()) {
+      while (!var5.isEmpty()) {
          Pair var8 = (Pair)var5.poll();
          BlockPos var9 = (BlockPos)var8.getLeft();
-         int var10 = var8.getRight();
+         int var10 = (Integer)var8.getRight();
          long var11 = var9.asLong();
          if (var6.add(var11) && var4.test(var9)) {
             if (++var7 >= var2) {
@@ -475,10 +471,6 @@ public class BlockPos extends Vec3i {
 
       public MutableBlockPos(double var1, double var3, double var5) {
          this(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5));
-      }
-
-      public MutableBlockPos(BlockPos var1) {
-         super(var1);
       }
 
       @Override
@@ -560,7 +552,7 @@ public class BlockPos extends Vec3i {
       }
 
       public BlockPos.MutableBlockPos clamp(Direction.Axis var1, int var2, int var3) {
-         switch(var1) {
+         switch (var1) {
             case X:
                return this.set(Mth.clamp(this.getX(), var2, var3), this.getY(), this.getZ());
             case Y:

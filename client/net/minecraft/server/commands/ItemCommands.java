@@ -6,13 +6,11 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -97,7 +95,7 @@ public class ItemCommands {
                                                                   )
                                                             ))
                                                          .then(
-                                                            Commands.argument("count", IntegerArgumentType.integer(1, 64))
+                                                            Commands.argument("count", IntegerArgumentType.integer(1, 99))
                                                                .executes(
                                                                   var0x -> setBlockItem(
                                                                         (CommandSourceStack)var0x.getSource(),
@@ -199,7 +197,7 @@ public class ItemCommands {
                                                                )
                                                          ))
                                                       .then(
-                                                         Commands.argument("count", IntegerArgumentType.integer(1, 64))
+                                                         Commands.argument("count", IntegerArgumentType.integer(1, 99))
                                                             .executes(
                                                                var0x -> setEntityItem(
                                                                      (CommandSourceStack)var0x.getSource(),
@@ -346,7 +344,7 @@ public class ItemCommands {
    private static int modifyEntityItem(CommandSourceStack var0, Collection<? extends Entity> var1, int var2, Holder<LootItemFunction> var3) throws CommandSyntaxException {
       HashMap var4 = Maps.newHashMapWithExpectedSize(var1.size());
 
-      for(Entity var6 : var1) {
+      for (Entity var6 : var1) {
          SlotAccess var7 = var6.getSlot(var2);
          if (var7 != SlotAccess.NULL) {
             ItemStack var8 = applyModifier(var0, var3, var7.get().copy());
@@ -401,7 +399,7 @@ public class ItemCommands {
    private static int setEntityItem(CommandSourceStack var0, Collection<? extends Entity> var1, int var2, ItemStack var3) throws CommandSyntaxException {
       ArrayList var4 = Lists.newArrayListWithCapacity(var1.size());
 
-      for(Entity var6 : var1) {
+      for (Entity var6 : var1) {
          SlotAccess var7 = var6.getSlot(var2);
          if (var7 != SlotAccess.NULL && var7.set(var3.copy())) {
             var4.add(var6);

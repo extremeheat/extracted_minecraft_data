@@ -51,8 +51,8 @@ public class ConduitBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.hasUUID("Target")) {
          this.destroyTargetUUID = var1.getUUID("Target");
       } else {
@@ -74,11 +74,11 @@ public class ConduitBlockEntity extends BlockEntity {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    public static void clientTick(Level var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3) {
-      ++var3.tickCount;
+      var3.tickCount++;
       long var4 = var0.getGameTime();
       List var6 = var3.effectBlocks;
       if (var4 % 40L == 0L) {
@@ -89,12 +89,12 @@ public class ConduitBlockEntity extends BlockEntity {
       updateClientTarget(var0, var1, var3);
       animationTick(var0, var1, var6, var3.destroyTarget, var3.tickCount);
       if (var3.isActive()) {
-         ++var3.activeRotation;
+         var3.activeRotation++;
       }
    }
 
    public static void serverTick(Level var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3) {
-      ++var3.tickCount;
+      var3.tickCount++;
       long var4 = var0.getGameTime();
       List var6 = var3.effectBlocks;
       if (var4 % 40L == 0L) {
@@ -131,9 +131,9 @@ public class ConduitBlockEntity extends BlockEntity {
    private static boolean updateShape(Level var0, BlockPos var1, List<BlockPos> var2) {
       var2.clear();
 
-      for(int var3 = -1; var3 <= 1; ++var3) {
-         for(int var4 = -1; var4 <= 1; ++var4) {
-            for(int var5 = -1; var5 <= 1; ++var5) {
+      for (int var3 = -1; var3 <= 1; var3++) {
+         for (int var4 = -1; var4 <= 1; var4++) {
+            for (int var5 = -1; var5 <= 1; var5++) {
                BlockPos var6 = var1.offset(var3, var4, var5);
                if (!var0.isWaterAt(var6)) {
                   return false;
@@ -142,9 +142,9 @@ public class ConduitBlockEntity extends BlockEntity {
          }
       }
 
-      for(int var15 = -2; var15 <= 2; ++var15) {
-         for(int var16 = -2; var16 <= 2; ++var16) {
-            for(int var17 = -2; var17 <= 2; ++var17) {
+      for (int var15 = -2; var15 <= 2; var15++) {
+         for (int var16 = -2; var16 <= 2; var16++) {
+            for (int var17 = -2; var17 <= 2; var17++) {
                int var18 = Math.abs(var15);
                int var7 = Math.abs(var16);
                int var8 = Math.abs(var17);
@@ -153,7 +153,7 @@ public class ConduitBlockEntity extends BlockEntity {
                   BlockPos var9 = var1.offset(var15, var16, var17);
                   BlockState var10 = var0.getBlockState(var9);
 
-                  for(Block var14 : VALID_BLOCKS) {
+                  for (Block var14 : VALID_BLOCKS) {
                      if (var10.is(var14)) {
                         var2.add(var9);
                      }
@@ -177,7 +177,7 @@ public class ConduitBlockEntity extends BlockEntity {
          .expandTowards(0.0, (double)var0.getHeight(), 0.0);
       List var9 = var0.getEntitiesOfClass(Player.class, var8);
       if (!var9.isEmpty()) {
-         for(Player var11 : var9) {
+         for (Player var11 : var9) {
             if (var1.closerThan(var11.blockPosition(), (double)var4) && var11.isInWaterOrRain()) {
                var11.addEffect(new MobEffectInstance(MobEffects.CONDUIT_POWER, 260, 0, true, true));
             }
@@ -251,7 +251,7 @@ public class ConduitBlockEntity extends BlockEntity {
       var6 = (var6 * var6 + var6) * 0.30000001192092896;
       Vec3 var8 = new Vec3((double)var1.getX() + 0.5, (double)var1.getY() + 1.5 + var6, (double)var1.getZ() + 0.5);
 
-      for(BlockPos var10 : var2) {
+      for (BlockPos var10 : var2) {
          if (var5.nextInt(50) == 0) {
             BlockPos var11 = var10.subtract(var1);
             float var12 = -0.5F + var5.nextFloat() + (float)var11.getX();

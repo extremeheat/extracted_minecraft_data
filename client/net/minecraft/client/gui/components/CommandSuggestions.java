@@ -122,11 +122,11 @@ public class CommandSuggestions {
 
    public void showSuggestions(boolean var1) {
       if (this.pendingSuggestions != null && this.pendingSuggestions.isDone()) {
-         Suggestions var2 = (Suggestions)this.pendingSuggestions.join();
+         Suggestions var2 = this.pendingSuggestions.join();
          if (!var2.isEmpty()) {
             int var3 = 0;
 
-            for(Suggestion var5 : var2.getList()) {
+            for (Suggestion var5 : var2.getList()) {
                var3 = Math.max(var3, this.font.width(var5.getText()));
             }
 
@@ -164,7 +164,7 @@ public class CommandSuggestions {
       ArrayList var5 = Lists.newArrayList();
       ArrayList var6 = Lists.newArrayList();
 
-      for(Suggestion var8 : var1.getList()) {
+      for (Suggestion var8 : var1.getList()) {
          if (!var8.getText().startsWith(var4) && !var8.getText().startsWith("minecraft:" + var4)) {
             var6.add(var8);
          } else {
@@ -226,7 +226,7 @@ public class CommandSuggestions {
          int var1 = 0;
          Matcher var2 = WHITESPACE_PATTERN.matcher(var0);
 
-         while(var2.find()) {
+         while (var2.find()) {
             var1 = var2.end();
          }
 
@@ -245,13 +245,13 @@ public class CommandSuggestions {
    private void updateUsageInfo() {
       boolean var1 = false;
       if (this.input.getCursorPosition() == this.input.getValue().length()) {
-         if (((Suggestions)this.pendingSuggestions.join()).isEmpty() && !this.currentParse.getExceptions().isEmpty()) {
+         if (this.pendingSuggestions.join().isEmpty() && !this.currentParse.getExceptions().isEmpty()) {
             int var2 = 0;
 
-            for(Entry var4 : this.currentParse.getExceptions().entrySet()) {
+            for (Entry var4 : this.currentParse.getExceptions().entrySet()) {
                CommandSyntaxException var5 = (CommandSyntaxException)var4.getValue();
                if (var5.getType() == CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect()) {
-                  ++var2;
+                  var2++;
                } else {
                   this.commandUsage.add(getExceptionMessage(var5));
                }
@@ -285,7 +285,7 @@ public class CommandSuggestions {
       int var6 = 0;
       Style var7 = Style.EMPTY.withColor(var1);
 
-      for(Entry var9 : var4.entrySet()) {
+      for (Entry var9 : var4.entrySet()) {
          if (!(var9.getKey() instanceof LiteralCommandNode)) {
             var5.add(FormattedCharSequence.forward((String)var9.getValue(), var7));
             var6 = Math.max(var6, this.font.width((String)var9.getValue()));
@@ -317,7 +317,7 @@ public class CommandSuggestions {
       int var5 = -1;
       CommandContextBuilder var6 = var0.getContext().getLastChild();
 
-      for(ParsedArgument var8 : var6.getArguments().values()) {
+      for (ParsedArgument var8 : var6.getArguments().values()) {
          if (++var5 >= ARGUMENT_STYLES.size()) {
             var5 = 0;
          }
@@ -367,11 +367,11 @@ public class CommandSuggestions {
    public void renderUsage(GuiGraphics var1) {
       int var2 = 0;
 
-      for(FormattedCharSequence var4 : this.commandUsage) {
+      for (FormattedCharSequence var4 : this.commandUsage) {
          int var5 = this.anchorToBottom ? this.screen.height - 14 - 13 - 12 * var2 : 72 + 12 * var2;
          var1.fill(this.commandUsagePosition - 1, var5, this.commandUsagePosition + this.commandUsageWidth + 1, var5 + 12, this.fillColor);
          var1.drawString(this.font, var4, this.commandUsagePosition, var5 + 2, -1);
-         ++var2;
+         var2++;
       }
    }
 
@@ -423,7 +423,7 @@ public class CommandSuggestions {
                CommandSuggestions.this.fillColor
             );
             if (var6) {
-               for(int var10 = 0; var10 < this.rect.getWidth(); ++var10) {
+               for (int var10 = 0; var10 < this.rect.getWidth(); var10++) {
                   if (var10 % 2 == 0) {
                      var1.fill(this.rect.getX() + var10, this.rect.getY() - 1, this.rect.getX() + var10 + 1, this.rect.getY(), -1);
                   }
@@ -431,7 +431,7 @@ public class CommandSuggestions {
             }
 
             if (var7) {
-               for(int var13 = 0; var13 < this.rect.getWidth(); ++var13) {
+               for (int var13 = 0; var13 < this.rect.getWidth(); var13++) {
                   if (var13 % 2 == 0) {
                      var1.fill(
                         this.rect.getX() + var13,
@@ -447,8 +447,8 @@ public class CommandSuggestions {
 
          boolean var14 = false;
 
-         for(int var11 = 0; var11 < var4; ++var11) {
-            Suggestion var12 = (Suggestion)this.suggestionList.get(var11 + this.offset);
+         for (int var11 = 0; var11 < var4; var11++) {
+            Suggestion var12 = this.suggestionList.get(var11 + this.offset);
             var1.fill(
                this.rect.getX(),
                this.rect.getY() + 12 * var11,
@@ -477,7 +477,7 @@ public class CommandSuggestions {
          }
 
          if (var14) {
-            Message var15 = ((Suggestion)this.suggestionList.get(this.current)).getTooltip();
+            Message var15 = this.suggestionList.get(this.current).getTooltip();
             if (var15 != null) {
                var1.renderTooltip(CommandSuggestions.this.font, ComponentUtils.fromMessage(var15), var2, var3);
             }
@@ -560,14 +560,14 @@ public class CommandSuggestions {
       public void select(int var1) {
          this.current = var1;
          if (this.current < 0) {
-            this.current += this.suggestionList.size();
+            this.current = this.current + this.suggestionList.size();
          }
 
          if (this.current >= this.suggestionList.size()) {
-            this.current -= this.suggestionList.size();
+            this.current = this.current - this.suggestionList.size();
          }
 
-         Suggestion var2 = (Suggestion)this.suggestionList.get(this.current);
+         Suggestion var2 = this.suggestionList.get(this.current);
          CommandSuggestions.this.input
             .setSuggestion(CommandSuggestions.calculateSuggestionSuffix(CommandSuggestions.this.input.getValue(), var2.apply(this.originalContents)));
          if (this.lastNarratedEntry != this.current) {
@@ -576,7 +576,7 @@ public class CommandSuggestions {
       }
 
       public void useSuggestion() {
-         Suggestion var1 = (Suggestion)this.suggestionList.get(this.current);
+         Suggestion var1 = this.suggestionList.get(this.current);
          CommandSuggestions.this.keepSuggestions = true;
          CommandSuggestions.this.input.setValue(var1.apply(this.originalContents));
          int var2 = var1.getRange().getStart() + var1.getText().length();
@@ -589,7 +589,7 @@ public class CommandSuggestions {
 
       Component getNarrationMessage() {
          this.lastNarratedEntry = this.current;
-         Suggestion var1 = (Suggestion)this.suggestionList.get(this.current);
+         Suggestion var1 = this.suggestionList.get(this.current);
          Message var2 = var1.getTooltip();
          return var2 != null
             ? Component.translatable(

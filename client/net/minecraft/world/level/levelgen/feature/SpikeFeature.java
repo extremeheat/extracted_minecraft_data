@@ -6,7 +6,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +56,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
          var6 = getSpikesForLevel(var3);
       }
 
-      for(SpikeFeature.EndSpike var8 : var6) {
+      for (SpikeFeature.EndSpike var8 : var6) {
          if (var8.isCenterWithinChunk(var5)) {
             this.placeSpike(var3, var4, var2, var8);
          }
@@ -69,7 +68,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
    private void placeSpike(ServerLevelAccessor var1, RandomSource var2, SpikeConfiguration var3, SpikeFeature.EndSpike var4) {
       int var5 = var4.getRadius();
 
-      for(BlockPos var7 : BlockPos.betweenClosed(
+      for (BlockPos var7 : BlockPos.betweenClosed(
          new BlockPos(var4.getCenterX() - var5, var1.getMinBuildHeight(), var4.getCenterZ() - var5),
          new BlockPos(var4.getCenterX() + var5, var4.getHeight() + 10, var4.getCenterZ() + var5)
       )) {
@@ -82,14 +81,14 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       }
 
       if (var4.isGuarded()) {
-         boolean var19 = true;
-         boolean var21 = true;
-         boolean var8 = true;
+         byte var19 = -2;
+         byte var21 = 2;
+         byte var8 = 3;
          BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
 
-         for(int var10 = -2; var10 <= 2; ++var10) {
-            for(int var11 = -2; var11 <= 2; ++var11) {
-               for(int var12 = 0; var12 <= 3; ++var12) {
+         for (int var10 = -2; var10 <= 2; var10++) {
+            for (int var11 = -2; var11 <= 2; var11++) {
+               for (int var12 = 0; var12 <= 3; var12++) {
                   boolean var13 = Mth.abs(var10) == 2;
                   boolean var14 = Mth.abs(var11) == 2;
                   boolean var15 = var12 == 3;
@@ -195,7 +194,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
          IntArrayList var2 = Util.toShuffledList(IntStream.range(0, 10), RandomSource.create(var1));
          ArrayList var3 = Lists.newArrayList();
 
-         for(int var4 = 0; var4 < 10; ++var4) {
+         for (int var4 = 0; var4 < 10; var4++) {
             int var5 = Mth.floor(42.0 * Math.cos(2.0 * (-3.141592653589793 + 0.3141592653589793 * (double)var4)));
             int var6 = Mth.floor(42.0 * Math.sin(2.0 * (-3.141592653589793 + 0.3141592653589793 * (double)var4)));
             int var7 = var2.get(var4);

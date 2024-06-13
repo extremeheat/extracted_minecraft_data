@@ -49,7 +49,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    public Collection<String> getOnlinePlayerNames() {
       ArrayList var1 = Lists.newArrayList();
 
-      for(PlayerInfo var3 : this.connection.getOnlinePlayers()) {
+      for (PlayerInfo var3 : this.connection.getOnlinePlayers()) {
          var1.add(var3.getProfile().getName());
       }
 
@@ -100,7 +100,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4
    ) {
       return this.registryAccess().registry(var1).map(var3x -> {
-         this.suggestRegistryElements(var3x, var2, var3);
+         this.suggestRegistryElements((Registry<?>)var3x, var2, var3);
          return var3.buildFuture();
       }).orElseGet(() -> this.customSuggestion(var4));
    }
@@ -111,7 +111,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
          this.pendingSuggestionsFuture.cancel(false);
       }
 
-      this.pendingSuggestionsFuture = new CompletableFuture();
+      this.pendingSuggestionsFuture = new CompletableFuture<>();
       int var2 = ++this.pendingSuggestionsId;
       this.connection.send(new ServerboundCommandSuggestionPacket(var2, var1.getInput()));
       return this.pendingSuggestionsFuture;
@@ -173,7 +173,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    }
 
    public void modifyCustomCompletions(ClientboundCustomChatCompletionsPacket.Action var1, List<String> var2) {
-      switch(var1) {
+      switch (var1) {
          case ADD:
             this.customCompletionSuggestions.addAll(var2);
             break;

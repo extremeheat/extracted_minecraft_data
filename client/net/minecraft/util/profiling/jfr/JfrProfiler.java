@@ -82,7 +82,7 @@ public class JfrProfiler implements JvmProfiler {
       FlightRecorder.addPeriodicEvent(NetworkSummaryEvent.class, () -> {
          Iterator var1 = this.networkTrafficByAddress.values().iterator();
 
-         while(var1.hasNext()) {
+         while (var1.hasNext()) {
             ((NetworkSummaryEvent.SumAggregation)var1.next()).commitEvent();
             var1.remove();
          }

@@ -45,10 +45,8 @@ public class Donkey extends AbstractChestedHorse {
    public boolean canMate(Animal var1) {
       if (var1 == this) {
          return false;
-      } else if (!(var1 instanceof Donkey) && !(var1 instanceof Horse)) {
-         return false;
       } else {
-         return this.canParent() && ((AbstractHorse)var1).canParent();
+         return !(var1 instanceof Donkey) && !(var1 instanceof Horse) ? false : this.canParent() && ((AbstractHorse)var1).canParent();
       }
    }
 

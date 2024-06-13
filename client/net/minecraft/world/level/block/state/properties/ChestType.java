@@ -19,7 +19,7 @@ public enum ChestType implements StringRepresentable {
    }
 
    public ChestType getOpposite() {
-      return switch(this) {
+      return switch (this) {
          case SINGLE -> SINGLE;
          case LEFT -> RIGHT;
          case RIGHT -> LEFT;

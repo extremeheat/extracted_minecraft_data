@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
@@ -49,11 +48,11 @@ public class BanPlayerCommands {
       UserBanList var3 = var0.getServer().getPlayerList().getBans();
       int var4 = 0;
 
-      for(GameProfile var6 : var1) {
+      for (GameProfile var6 : var1) {
          if (!var3.isBanned(var6)) {
             UserBanListEntry var7 = new UserBanListEntry(var6, null, var0.getTextName(), null, var2 == null ? null : var2.getString());
             var3.add(var7);
-            ++var4;
+            var4++;
             var0.sendSuccess(() -> Component.translatable("commands.ban.success", Component.literal(var6.getName()), var7.getReason()), true);
             ServerPlayer var8 = var0.getServer().getPlayerList().getPlayer(var6.getId());
             if (var8 != null) {

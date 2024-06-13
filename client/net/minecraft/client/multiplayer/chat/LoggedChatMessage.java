@@ -1,9 +1,8 @@
 package net.minecraft.client.multiplayer.chat;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -33,11 +32,8 @@ public interface LoggedChatMessage extends LoggedChatEvent {
 
    boolean canReport(UUID var1);
 
-   public static record Player(GameProfile c, PlayerChatMessage d, ChatTrustLevel e) implements LoggedChatMessage {
-      private final GameProfile profile;
-      private final PlayerChatMessage message;
-      private final ChatTrustLevel trustLevel;
-      public static final Codec<LoggedChatMessage.Player> CODEC = RecordCodecBuilder.create(
+   public static record Player(GameProfile profile, PlayerChatMessage message, ChatTrustLevel trustLevel) implements LoggedChatMessage {
+      public static final MapCodec<LoggedChatMessage.Player> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   ExtraCodecs.GAME_PROFILE.fieldOf("profile").forGetter(LoggedChatMessage.Player::profile),
                   PlayerChatMessage.MAP_CODEC.forGetter(LoggedChatMessage.Player::message),
@@ -47,11 +43,11 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       );
       private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
 
-      public Player(GameProfile var1, PlayerChatMessage var2, ChatTrustLevel var3) {
+      public Player(GameProfile profile, PlayerChatMessage message, ChatTrustLevel trustLevel) {
          super();
-         this.profile = var1;
-         this.message = var2;
-         this.trustLevel = var3;
+         this.profile = profile;
+         this.message = message;
+         this.trustLevel = trustLevel;
       }
 
       @Override
@@ -96,10 +92,8 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       }
    }
 
-   public static record System(Component c, Instant d) implements LoggedChatMessage {
-      private final Component message;
-      private final Instant timeStamp;
-      public static final Codec<LoggedChatMessage.System> CODEC = RecordCodecBuilder.create(
+   public static record System(Component message, Instant timeStamp) implements LoggedChatMessage {
+      public static final MapCodec<LoggedChatMessage.System> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   ComponentSerialization.CODEC.fieldOf("message").forGetter(LoggedChatMessage.System::message),
                   ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(LoggedChatMessage.System::timeStamp)
@@ -107,10 +101,10 @@ public interface LoggedChatMessage extends LoggedChatEvent {
                .apply(var0, LoggedChatMessage.System::new)
       );
 
-      public System(Component var1, Instant var2) {
+      public System(Component message, Instant timeStamp) {
          super();
-         this.message = var1;
-         this.timeStamp = var2;
+         this.message = message;
+         this.timeStamp = timeStamp;
       }
 
       @Override

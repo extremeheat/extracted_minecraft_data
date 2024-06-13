@@ -10,20 +10,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ExtraCodecs;
 import org.slf4j.Logger;
 
 public class BitmapProvider implements GlyphProvider {
@@ -53,16 +50,12 @@ public class BitmapProvider implements GlyphProvider {
       return IntSets.unmodifiable(this.glyphs.keySet());
    }
 
-   public static record Definition(ResourceLocation c, int d, int e, int[][] f) implements GlyphProviderDefinition {
-      private final ResourceLocation file;
-      private final int height;
-      private final int ascent;
-      private final int[][] codepointGrid;
-      private static final Codec<int[][]> CODEPOINT_GRID_CODEC = ExtraCodecs.validate(Codec.STRING.listOf().xmap(var0 -> {
+   public static record Definition(ResourceLocation file, int height, int ascent, int[][] codepointGrid) implements GlyphProviderDefinition {
+      private static final Codec<int[][]> CODEPOINT_GRID_CODEC = Codec.STRING.listOf().xmap(var0 -> {
          int var1 = var0.size();
          int[][] var2 = new int[var1][];
 
-         for(int var3 = 0; var3 < var1; ++var3) {
+         for (int var3 = 0; var3 < var1; var3++) {
             var2[var3] = ((String)var0.get(var3)).codePoints().toArray();
          }
 
@@ -70,14 +63,13 @@ public class BitmapProvider implements GlyphProvider {
       }, var0 -> {
          ArrayList var1 = new ArrayList(var0.length);
 
-         for(int[] var5 : var0) {
+         for (int[] var5 : var0) {
             var1.add(new String(var5, 0, var5.length));
          }
 
          return var1;
-      }), BitmapProvider.Definition::validateDimensions);
-      public static final MapCodec<BitmapProvider.Definition> CODEC = ExtraCodecs.validate(
-         RecordCodecBuilder.mapCodec(
+      }).validate(BitmapProvider.Definition::validateDimensions);
+      public static final MapCodec<BitmapProvider.Definition> CODEC = RecordCodecBuilder.mapCodec(
             var0 -> var0.group(
                      ResourceLocation.CODEC.fieldOf("file").forGetter(BitmapProvider.Definition::file),
                      Codec.INT.optionalFieldOf("height", 8).forGetter(BitmapProvider.Definition::height),
@@ -85,16 +77,15 @@ public class BitmapProvider implements GlyphProvider {
                      CODEPOINT_GRID_CODEC.fieldOf("chars").forGetter(BitmapProvider.Definition::codepointGrid)
                   )
                   .apply(var0, BitmapProvider.Definition::new)
-         ),
-         BitmapProvider.Definition::validate
-      );
+         )
+         .validate(BitmapProvider.Definition::validate);
 
-      public Definition(ResourceLocation var1, int var2, int var3, int[][] var4) {
+      public Definition(ResourceLocation file, int height, int ascent, int[][] codepointGrid) {
          super();
-         this.file = var1;
-         this.height = var2;
-         this.ascent = var3;
-         this.codepointGrid = var4;
+         this.file = file;
+         this.height = height;
+         this.ascent = ascent;
+         this.codepointGrid = codepointGrid;
       }
 
       private static DataResult<int[][]> validateDimensions(int[][] var0) {
@@ -107,7 +98,7 @@ public class BitmapProvider implements GlyphProvider {
             if (var3 == 0) {
                return DataResult.error(() -> "Expected to find data in codepoint grid");
             } else {
-               for(int var4 = 1; var4 < var1; ++var4) {
+               for (int var4 = 1; var4 < var1; var4++) {
                   int[] var5 = var0[var4];
                   if (var5.length != var3) {
                      return DataResult.error(
@@ -150,12 +141,12 @@ public class BitmapProvider implements GlyphProvider {
             int var7 = var5 / this.codepointGrid[0].length;
             int var8 = var6 / this.codepointGrid.length;
             float var9 = (float)this.height / (float)var8;
-            CodepointMap var10 = new CodepointMap<>(var0 -> new BitmapProvider.Glyph[var0], var0 -> new BitmapProvider.Glyph[var0][]);
+            CodepointMap var10 = new CodepointMap<>(BitmapProvider.Glyph[]::new, BitmapProvider.Glyph[][]::new);
 
-            for(int var11 = 0; var11 < this.codepointGrid.length; ++var11) {
+            for (int var11 = 0; var11 < this.codepointGrid.length; var11++) {
                int var12 = 0;
 
-               for(int var16 : this.codepointGrid[var11]) {
+               for (int var16 : this.codepointGrid[var11]) {
                   int var17 = var12++;
                   if (var16 != 0) {
                      int var18 = this.getActualGlyphWidth(var4, var7, var8, var17, var11);
@@ -180,10 +171,10 @@ public class BitmapProvider implements GlyphProvider {
 
       private int getActualGlyphWidth(NativeImage var1, int var2, int var3, int var4, int var5) {
          int var6;
-         for(var6 = var2 - 1; var6 >= 0; --var6) {
+         for (var6 = var2 - 1; var6 >= 0; var6--) {
             int var7 = var4 * var2 + var6;
 
-            for(int var8 = 0; var8 < var3; ++var8) {
+            for (int var8 = 0; var8 < var3; var8++) {
                int var9 = var5 * var3 + var8;
                if (var1.getLuminanceOrAlpha(var7, var9) != 0) {
                   return var6 + 1;
@@ -195,26 +186,18 @@ public class BitmapProvider implements GlyphProvider {
       }
    }
 
-   static record Glyph(float a, NativeImage b, int c, int d, int e, int f, int g, int h) implements GlyphInfo {
-      final float scale;
-      final NativeImage image;
-      final int offsetX;
-      final int offsetY;
-      final int width;
-      final int height;
-      private final int advance;
-      final int ascent;
+   static record Glyph(float scale, NativeImage image, int offsetX, int offsetY, int width, int height, int advance, int ascent) implements GlyphInfo {
 
-      Glyph(float var1, NativeImage var2, int var3, int var4, int var5, int var6, int var7, int var8) {
+      Glyph(float scale, NativeImage image, int offsetX, int offsetY, int width, int height, int advance, int ascent) {
          super();
-         this.scale = var1;
-         this.image = var2;
-         this.offsetX = var3;
-         this.offsetY = var4;
-         this.width = var5;
-         this.height = var6;
-         this.advance = var7;
-         this.ascent = var8;
+         this.scale = scale;
+         this.image = image;
+         this.offsetX = offsetX;
+         this.offsetY = offsetY;
+         this.width = width;
+         this.height = height;
+         this.advance = advance;
+         this.ascent = ascent;
       }
 
       @Override

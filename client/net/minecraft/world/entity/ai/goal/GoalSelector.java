@@ -6,7 +6,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -43,7 +42,7 @@ public class GoalSelector {
    }
 
    public void removeGoal(Goal var1) {
-      for(WrappedGoal var3 : this.availableGoals) {
+      for (WrappedGoal var3 : this.availableGoals) {
          if (var3.getGoal() == var1 && var3.isRunning()) {
             var3.stop();
          }
@@ -53,7 +52,7 @@ public class GoalSelector {
    }
 
    private static boolean goalContainsAnyFlags(WrappedGoal var0, EnumSet<Goal.Flag> var1) {
-      for(Goal.Flag var3 : var0.getFlags()) {
+      for (Goal.Flag var3 : var0.getFlags()) {
          if (var1.contains(var3)) {
             return true;
          }
@@ -63,7 +62,7 @@ public class GoalSelector {
    }
 
    private static boolean goalCanBeReplacedForAllFlags(WrappedGoal var0, Map<Goal.Flag, WrappedGoal> var1) {
-      for(Goal.Flag var3 : var0.getFlags()) {
+      for (Goal.Flag var3 : var0.getFlags()) {
          if (!var1.getOrDefault(var3, NO_GOAL).canBeReplacedBy(var0)) {
             return false;
          }
@@ -76,7 +75,7 @@ public class GoalSelector {
       ProfilerFiller var1 = this.profiler.get();
       var1.push("goalCleanup");
 
-      for(WrappedGoal var3 : this.availableGoals) {
+      for (WrappedGoal var3 : this.availableGoals) {
          if (var3.isRunning() && (goalContainsAnyFlags(var3, this.disabledFlags) || !var3.canContinueToUse())) {
             var3.stop();
          }
@@ -86,9 +85,9 @@ public class GoalSelector {
       var1.pop();
       var1.push("goalUpdate");
 
-      for(WrappedGoal var8 : this.availableGoals) {
+      for (WrappedGoal var8 : this.availableGoals) {
          if (!var8.isRunning() && !goalContainsAnyFlags(var8, this.disabledFlags) && goalCanBeReplacedForAllFlags(var8, this.lockedFlags) && var8.canUse()) {
-            for(Goal.Flag var5 : var8.getFlags()) {
+            for (Goal.Flag var5 : var8.getFlags()) {
                WrappedGoal var6 = this.lockedFlags.getOrDefault(var5, NO_GOAL);
                var6.stop();
                this.lockedFlags.put(var5, var8);
@@ -106,7 +105,7 @@ public class GoalSelector {
       ProfilerFiller var2 = this.profiler.get();
       var2.push("goalTick");
 
-      for(WrappedGoal var4 : this.availableGoals) {
+      for (WrappedGoal var4 : this.availableGoals) {
          if (var4.isRunning() && (var1 || var4.requiresUpdateEveryTick())) {
             var4.tick();
          }

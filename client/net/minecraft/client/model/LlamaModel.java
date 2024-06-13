@@ -66,8 +66,8 @@ public class LlamaModel<T extends AbstractChestedHorse> extends EntityModel<T> {
          CubeListBuilder.create().texOffs(45, 41).addBox(-3.0F, 0.0F, 0.0F, 8.0F, 8.0F, 3.0F, var0),
          PartPose.offsetAndRotation(5.5F, 3.0F, 3.0F, 0.0F, 1.5707964F, 0.0F)
       );
-      boolean var3 = true;
-      boolean var4 = true;
+      byte var3 = 4;
+      byte var4 = 14;
       CubeListBuilder var5 = CubeListBuilder.create().texOffs(29, 29).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 14.0F, 4.0F, var0);
       var2.addOrReplaceChild("right_hind_leg", var5, PartPose.offset(-3.5F, 10.0F, 6.0F));
       var2.addOrReplaceChild("left_hind_leg", var5, PartPose.offset(3.5F, 10.0F, 6.0F));

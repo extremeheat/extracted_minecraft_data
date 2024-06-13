@@ -50,7 +50,7 @@ public class IglooPieces {
          int var5 = var4.nextInt(8) + 4;
          var3.addPiece(new IglooPieces.IglooPiece(var0, STRUCTURE_LOCATION_LABORATORY, var1, var2, var5 * 3));
 
-         for(int var6 = 0; var6 < var5 - 1; ++var6) {
+         for (int var6 = 0; var6 < var5 - 1; var6++) {
             var3.addPiece(new IglooPieces.IglooPiece(var0, STRUCTURE_LOCATION_LADDER, var1, var2, var6 * 3));
          }
       }

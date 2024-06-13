@@ -3,7 +3,6 @@ package net.minecraft.world.inventory;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -17,7 +16,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
@@ -71,10 +69,6 @@ public class AnvilMenu extends ItemCombinerMenu {
 
    @Override
    protected void onTake(Player var1, ItemStack var2) {
-      if (var1.isChapterAndProgressPast("anvil_dropped", 0) && var2.is(Items.PAPER)) {
-         var1.setPotatoQuestChapter("wrote_thoughts");
-      }
-
       if (!var1.getAbilities().instabuild) {
          var1.giveExperienceLevels(-this.cost.get());
       }
@@ -94,9 +88,9 @@ public class AnvilMenu extends ItemCombinerMenu {
 
       this.cost.set(0);
       this.access.execute((var1x, var2x) -> {
-         BlockState var3xx = var1x.getBlockState(var2x);
-         if (!var1.hasInfiniteMaterials() && var3xx.is(BlockTags.ANVIL) && var1.getRandom().nextFloat() < 0.12F) {
-            BlockState var4 = AnvilBlock.damage(var3xx);
+         BlockState var3x = var1x.getBlockState(var2x);
+         if (!var1.hasInfiniteMaterials() && var3x.is(BlockTags.ANVIL) && var1.getRandom().nextFloat() < 0.12F) {
+            BlockState var4 = AnvilBlock.damage(var3x);
             if (var4 == null) {
                var1x.removeBlock(var2x, false);
                var1x.levelEvent(1029, var2x, 0);
@@ -135,10 +129,10 @@ public class AnvilMenu extends ItemCombinerMenu {
                }
 
                int var28;
-               for(var28 = 0; var25 > 0 && var28 < var7.getCount(); ++var28) {
+               for (var28 = 0; var25 > 0 && var28 < var7.getCount(); var28++) {
                   int var30 = var6.getDamageValue() - var25;
                   var6.setDamageValue(var30);
-                  ++var2;
+                  var2++;
                   var25 = Math.min(var6.getDamageValue(), var6.getMaxDamage() / 4);
                }
 
@@ -170,7 +164,7 @@ public class AnvilMenu extends ItemCombinerMenu {
                boolean var27 = false;
                boolean var29 = false;
 
-               for(Entry var32 : var24.entrySet()) {
+               for (Entry var32 : var24.entrySet()) {
                   Holder var15 = (Holder)var32.getKey();
                   Enchantment var16 = (Enchantment)var15.value();
                   int var17 = var8.getLevel(var16);
@@ -181,10 +175,10 @@ public class AnvilMenu extends ItemCombinerMenu {
                      var19 = true;
                   }
 
-                  for(Holder var21 : var8.keySet()) {
+                  for (Holder var21 : var8.keySet()) {
                      if (!var21.equals(var15) && !var16.isCompatibleWith((Enchantment)var21.value())) {
                         var19 = false;
-                        ++var2;
+                        var2++;
                      }
                   }
 

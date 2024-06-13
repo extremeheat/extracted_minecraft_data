@@ -96,10 +96,10 @@ public class MinecartItem extends Item {
             }
 
             AbstractMinecart var10 = AbstractMinecart.createMinecart(
-               (ServerLevel)var6, (double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var8, (double)var3.getZ() + 0.5, this.type, var5, var1.getPlayer()
+               var6, (double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var8, (double)var3.getZ() + 0.5, this.type, var5, var1.getPlayer()
             );
-            ((ServerLevel)var6).addFreshEntity(var10);
-            ((ServerLevel)var6).gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), ((ServerLevel)var6).getBlockState(var3.below())));
+            var6.addFreshEntity(var10);
+            var6.gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), var6.getBlockState(var3.below())));
          }
 
          var5.shrink(1);

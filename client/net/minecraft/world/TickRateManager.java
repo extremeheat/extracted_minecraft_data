@@ -60,7 +60,7 @@ public class TickRateManager {
    public void tick() {
       this.runGameElements = !this.isFrozen || this.frozenTicksToRun > 0;
       if (this.frozenTicksToRun > 0) {
-         --this.frozenTicksToRun;
+         this.frozenTicksToRun--;
       }
    }
 

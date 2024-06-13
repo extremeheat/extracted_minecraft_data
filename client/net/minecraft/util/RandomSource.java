@@ -57,7 +57,7 @@ public interface RandomSource {
    }
 
    default void consumeCount(int var1) {
-      for(int var2 = 0; var2 < var1; ++var2) {
+      for (int var2 = 0; var2 < var1; var2++) {
          this.nextInt();
       }
    }
@@ -68,9 +68,5 @@ public interface RandomSource {
       } else {
          return var1 + this.nextInt(var2 - var1);
       }
-   }
-
-   default float nextFloat(float var1, float var2) {
-      return var1 + this.nextFloat() * (var2 - var1);
    }
 }

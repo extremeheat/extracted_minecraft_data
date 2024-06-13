@@ -2,7 +2,6 @@ package net.minecraft.world.item.component;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -16,31 +15,26 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.TooltipFlag;
 
-public record FireworkExplosion(FireworkExplosion.Shape e, IntList f, IntList g, boolean h, boolean i) implements TooltipProvider {
-   private final FireworkExplosion.Shape shape;
-   private final IntList colors;
-   private final IntList fadeColors;
-   private final boolean hasTrail;
-   private final boolean hasTwinkle;
+public record FireworkExplosion(FireworkExplosion.Shape shape, IntList colors, IntList fadeColors, boolean hasTrail, boolean hasTwinkle)
+   implements TooltipProvider {
    public static final FireworkExplosion DEFAULT = new FireworkExplosion(FireworkExplosion.Shape.SMALL_BALL, IntList.of(), IntList.of(), false, false);
    public static final Codec<IntList> COLOR_LIST_CODEC = Codec.INT.listOf().xmap(IntArrayList::new, ArrayList::new);
    public static final Codec<FireworkExplosion> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                FireworkExplosion.Shape.CODEC.fieldOf("shape").forGetter(FireworkExplosion::shape),
-               ExtraCodecs.strictOptionalField(COLOR_LIST_CODEC, "colors", IntList.of()).forGetter(FireworkExplosion::colors),
-               ExtraCodecs.strictOptionalField(COLOR_LIST_CODEC, "fade_colors", IntList.of()).forGetter(FireworkExplosion::fadeColors),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "has_trail", false).forGetter(FireworkExplosion::hasTrail),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "has_twinkle", false).forGetter(FireworkExplosion::hasTwinkle)
+               COLOR_LIST_CODEC.optionalFieldOf("colors", IntList.of()).forGetter(FireworkExplosion::colors),
+               COLOR_LIST_CODEC.optionalFieldOf("fade_colors", IntList.of()).forGetter(FireworkExplosion::fadeColors),
+               Codec.BOOL.optionalFieldOf("has_trail", false).forGetter(FireworkExplosion::hasTrail),
+               Codec.BOOL.optionalFieldOf("has_twinkle", false).forGetter(FireworkExplosion::hasTwinkle)
             )
             .apply(var0, FireworkExplosion::new)
    );
    private static final StreamCodec<ByteBuf, IntList> COLOR_LIST_STREAM_CODEC = ByteBufCodecs.INT
-      .<ArrayList<E>>apply(ByteBufCodecs.list())
+      .apply(ByteBufCodecs.list())
       .map(IntArrayList::new, ArrayList::new);
    public static final StreamCodec<ByteBuf, FireworkExplosion> STREAM_CODEC = StreamCodec.composite(
       FireworkExplosion.Shape.STREAM_CODEC,
@@ -57,13 +51,13 @@ public record FireworkExplosion(FireworkExplosion.Shape e, IntList f, IntList g,
    );
    private static final Component CUSTOM_COLOR_NAME = Component.translatable("item.minecraft.firework_star.custom_color");
 
-   public FireworkExplosion(FireworkExplosion.Shape var1, IntList var2, IntList var3, boolean var4, boolean var5) {
+   public FireworkExplosion(FireworkExplosion.Shape shape, IntList colors, IntList fadeColors, boolean hasTrail, boolean hasTwinkle) {
       super();
-      this.shape = var1;
-      this.colors = var2;
-      this.fadeColors = var3;
-      this.hasTrail = var4;
-      this.hasTwinkle = var5;
+      this.shape = shape;
+      this.colors = colors;
+      this.fadeColors = fadeColors;
+      this.hasTrail = hasTrail;
+      this.hasTwinkle = hasTwinkle;
    }
 
    @Override
@@ -99,7 +93,7 @@ public record FireworkExplosion(FireworkExplosion.Shape e, IntList f, IntList g,
    }
 
    private static Component appendColors(MutableComponent var0, IntList var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
+      for (int var2 = 0; var2 < var1.size(); var2++) {
          if (var2 > 0) {
             var0.append(", ");
          }

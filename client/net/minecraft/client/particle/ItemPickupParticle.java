@@ -78,7 +78,7 @@ public class ItemPickupParticle extends Particle {
 
    @Override
    public void tick() {
-      ++this.life;
+      this.life++;
       if (this.life == 3) {
          this.remove();
       }

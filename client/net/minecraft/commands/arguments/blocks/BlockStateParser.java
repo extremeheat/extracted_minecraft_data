@@ -187,7 +187,7 @@ public class BlockStateParser {
    private CompletableFuture<Suggestions> suggestPropertyName(SuggestionsBuilder var1) {
       String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
 
-      for(Property var4 : this.state.getProperties()) {
+      for (Property var4 : this.state.getProperties()) {
          if (!this.properties.containsKey(var4) && var4.getName().startsWith(var2)) {
             var1.suggest(var4.getName() + "=");
          }
@@ -199,8 +199,8 @@ public class BlockStateParser {
    private CompletableFuture<Suggestions> suggestVaguePropertyName(SuggestionsBuilder var1) {
       String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
       if (this.tag != null) {
-         for(Holder var4 : this.tag) {
-            for(Property var6 : ((Block)var4.value()).getStateDefinition().getProperties()) {
+         for (Holder var4 : this.tag) {
+            for (Property var6 : ((Block)var4.value()).getStateDefinition().getProperties()) {
                if (!this.vagueProperties.containsKey(var6.getName()) && var6.getName().startsWith(var2)) {
                   var1.suggest(var6.getName() + "=");
                }
@@ -224,7 +224,7 @@ public class BlockStateParser {
          return this.state.hasBlockEntity();
       } else {
          if (this.tag != null) {
-            for(Holder var2 : this.tag) {
+            for (Holder var2 : this.tag) {
                if (((Block)var2.value()).defaultBlockState().hasBlockEntity()) {
                   return true;
                }
@@ -255,10 +255,8 @@ public class BlockStateParser {
       return var1.buildFuture();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static <T extends Comparable<T>> SuggestionsBuilder addSuggestions(SuggestionsBuilder var0, Property<T> var1) {
-      for(Comparable var3 : var1.getPossibleValues()) {
+      for (Comparable var3 : var1.getPossibleValues()) {
          if (var3 instanceof Integer var4) {
             var0.suggest(var4);
          } else {
@@ -272,7 +270,7 @@ public class BlockStateParser {
    private CompletableFuture<Suggestions> suggestVaguePropertyValue(SuggestionsBuilder var1, String var2) {
       boolean var3 = false;
       if (this.tag != null) {
-         for(Holder var5 : this.tag) {
+         for (Holder var5 : this.tag) {
             Block var6 = (Block)var5.value();
             Property var7 = var6.getStateDefinition().getProperty(var2);
             if (var7 != null) {
@@ -280,7 +278,7 @@ public class BlockStateParser {
             }
 
             if (!var3) {
-               for(Property var9 : var6.getStateDefinition().getProperties()) {
+               for (Property var9 : var6.getStateDefinition().getProperties()) {
                   if (!this.vagueProperties.containsKey(var9.getName())) {
                      var3 = true;
                      break;
@@ -303,7 +301,7 @@ public class BlockStateParser {
          boolean var2 = false;
          boolean var3 = false;
 
-         for(Holder var5 : this.tag) {
+         for (Holder var5 : this.tag) {
             Block var6 = (Block)var5.value();
             var2 |= !var6.getStateDefinition().getProperties().isEmpty();
             var3 |= var6.defaultBlockState().hasBlockEntity();
@@ -383,7 +381,7 @@ public class BlockStateParser {
       this.suggestions = this::suggestPropertyNameOrEnd;
       this.reader.skipWhitespace();
 
-      while(this.reader.canRead() && this.reader.peek() != ']') {
+      while (this.reader.canRead() && this.reader.peek() != ']') {
          this.reader.skipWhitespace();
          int var1 = this.reader.getCursor();
          String var2 = this.reader.readString();
@@ -437,7 +435,7 @@ public class BlockStateParser {
       int var1 = -1;
       this.reader.skipWhitespace();
 
-      while(this.reader.canRead() && this.reader.peek() != ']') {
+      while (this.reader.canRead() && this.reader.peek() != ']') {
          this.reader.skipWhitespace();
          int var2 = this.reader.getCursor();
          String var3 = this.reader.readString();
@@ -505,7 +503,7 @@ public class BlockStateParser {
          var1.append('[');
          boolean var2 = false;
 
-         for(Entry var4 : var0.getValues().entrySet()) {
+         for (Entry var4 : var0.getValues().entrySet()) {
             if (var2) {
                var1.append(',');
             }
@@ -526,31 +524,21 @@ public class BlockStateParser {
       var0.append(var1.getName((T)var2));
    }
 
-   public static record BlockResult(BlockState a, Map<Property<?>, Comparable<?>> b, @Nullable CompoundTag c) {
-      private final BlockState blockState;
-      private final Map<Property<?>, Comparable<?>> properties;
-      @Nullable
-      private final CompoundTag nbt;
-
-      public BlockResult(BlockState var1, Map<Property<?>, Comparable<?>> var2, @Nullable CompoundTag var3) {
+   public static record BlockResult(BlockState blockState, Map<Property<?>, Comparable<?>> properties, @Nullable CompoundTag nbt) {
+      public BlockResult(BlockState blockState, Map<Property<?>, Comparable<?>> properties, @Nullable CompoundTag nbt) {
          super();
-         this.blockState = var1;
-         this.properties = var2;
-         this.nbt = var3;
+         this.blockState = blockState;
+         this.properties = properties;
+         this.nbt = nbt;
       }
    }
 
-   public static record TagResult(HolderSet<Block> a, Map<String, String> b, @Nullable CompoundTag c) {
-      private final HolderSet<Block> tag;
-      private final Map<String, String> vagueProperties;
-      @Nullable
-      private final CompoundTag nbt;
-
-      public TagResult(HolderSet<Block> var1, Map<String, String> var2, @Nullable CompoundTag var3) {
+   public static record TagResult(HolderSet<Block> tag, Map<String, String> vagueProperties, @Nullable CompoundTag nbt) {
+      public TagResult(HolderSet<Block> tag, Map<String, String> vagueProperties, @Nullable CompoundTag nbt) {
          super();
-         this.tag = var1;
-         this.vagueProperties = var2;
-         this.nbt = var3;
+         this.tag = tag;
+         this.vagueProperties = vagueProperties;
+         this.nbt = nbt;
       }
    }
 }

@@ -89,7 +89,7 @@ public class DebugStickItem extends Item {
    }
 
    private static <T> T getRelative(Iterable<T> var0, @Nullable T var1, boolean var2) {
-      return (T)(var2 ? Util.findPreviousInIterable(var0, (T)var1) : Util.findNextInIterable(var0, (T)var1));
+      return var2 ? Util.findPreviousInIterable(var0, (T)var1) : Util.findNextInIterable(var0, (T)var1);
    }
 
    private static void message(Player var0, Component var1) {

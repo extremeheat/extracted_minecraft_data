@@ -134,13 +134,13 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
             var1.playSound(null, var2, this.getJumpSound.apply((E)var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
       } else {
-         --this.findJumpTries;
+         this.findJumpTries--;
          this.pickCandidate(var1, (E)var2, var3);
       }
    }
 
    protected void pickCandidate(ServerLevel var1, E var2, long var3) {
-      while(!this.jumpCandidates.isEmpty()) {
+      while (!this.jumpCandidates.isEmpty()) {
          Optional var5 = this.getJumpCandidate(var1);
          if (!var5.isEmpty()) {
             LongJumpToRandomPos.PossibleJump var6 = (LongJumpToRandomPos.PossibleJump)var5.get();
@@ -182,7 +182,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
       Collections.shuffle(var3);
       float var4 = (float)(var1.getAttributeValue(Attributes.JUMP_STRENGTH) * (double)this.maxJumpVelocityMultiplier);
 
-      for(int var6 : var3) {
+      for (int var6 : var3) {
          Optional var7 = LongJumpUtil.calculateJumpVectorForAngle(var1, var2, var4, var6, true);
          if (var7.isPresent()) {
             return (Vec3)var7.get();

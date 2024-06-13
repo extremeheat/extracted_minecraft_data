@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import java.util.Collection;
@@ -76,7 +75,7 @@ public class ClearInventoryCommands {
    private static int clearInventory(CommandSourceStack var0, Collection<ServerPlayer> var1, Predicate<ItemStack> var2, int var3) throws CommandSyntaxException {
       int var4 = 0;
 
-      for(ServerPlayer var6 : var1) {
+      for (ServerPlayer var6 : var1) {
          var4 += var6.getInventory().clearOrCountMatchingItems(var2, var3, var6.inventoryMenu.getCraftSlots());
          var6.containerMenu.broadcastChanges();
          var6.inventoryMenu.slotsChanged(var6.getInventory());

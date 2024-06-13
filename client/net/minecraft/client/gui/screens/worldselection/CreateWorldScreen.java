@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.worldselection;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
@@ -26,7 +25,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -40,7 +38,6 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
-import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -59,11 +56,9 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
-import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
-import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
@@ -117,7 +112,7 @@ public class CreateWorldScreen extends Screen {
       WorldLoader.InitConfig var3 = createDefaultLoadConfig(var2, WorldDataConfiguration.DEFAULT);
       CompletableFuture var4 = WorldLoader.load(
          var3,
-         var0x -> new WorldLoader.DataLoadOutput(
+         var0x -> new WorldLoader.DataLoadOutput<>(
                new CreateWorldScreen.DataPackReloadCookie(
                   new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(var0x.datapackWorldgen())),
                   var0x.dataConfiguration()
@@ -364,7 +359,7 @@ public class CreateWorldScreen extends Screen {
    private void applyNewPackConfig(PackRepository var1, WorldDataConfiguration var2, Consumer<WorldDataConfiguration> var3) {
       this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("dataPack.validation.working")));
       WorldLoader.InitConfig var4 = createDefaultLoadConfig(var1, var2);
-      WorldLoader.load(
+      WorldLoader.<CreateWorldScreen.DataPackReloadCookie, WorldCreationContext>load(
             var4,
             var1x -> {
                if (var1x.datapackWorldgen().registryOrThrow(Registries.WORLD_PRESET).size() == 0) {
@@ -372,13 +367,15 @@ public class CreateWorldScreen extends Screen {
                } else if (var1x.datapackWorldgen().registryOrThrow(Registries.BIOME).size() == 0) {
                   throw new IllegalStateException("Needs at least one biome continue");
                } else {
-                  WorldCreationContext var2xx = this.uiState.getSettings();
-                  RegistryOps var3xx = var2xx.worldgenLoadContext().createSerializationContext(JsonOps.INSTANCE);
-                  DataResult var4xx = WorldGenSettings.encode(var3xx, var2xx.options(), var2xx.selectedDimensions()).setLifecycle(Lifecycle.stable());
+                  WorldCreationContext var2x = this.uiState.getSettings();
+                  RegistryOps var3x = var2x.worldgenLoadContext().createSerializationContext(JsonOps.INSTANCE);
+                  DataResult var4x = WorldGenSettings.encode(var3x, var2x.options(), var2x.selectedDimensions()).setLifecycle(Lifecycle.stable());
                   RegistryOps var5 = var1x.datapackWorldgen().createSerializationContext(JsonOps.INSTANCE);
-                  WorldGenSettings var6 = (WorldGenSettings)var4xx.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
-                     .getOrThrow(false, Util.prefix("Error parsing worldgen settings after loading data packs: ", LOGGER::error));
-                  return new WorldLoader.DataLoadOutput(new CreateWorldScreen.DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions());
+                  WorldGenSettings var6 = (WorldGenSettings)var4x.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
+                     .getOrThrow(var0 -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + var0));
+                  return new WorldLoader.DataLoadOutput<>(
+                     new CreateWorldScreen.DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions()
+                  );
                }
             },
             (var0, var1x, var2x, var3x) -> {
@@ -412,7 +409,7 @@ public class CreateWorldScreen extends Screen {
                } else {
                   this.minecraft.setScreen(this);
                }
-      
+
                return null;
             }
          );
@@ -488,19 +485,19 @@ public class CreateWorldScreen extends Screen {
 
       try (Stream var3 = Files.walk(var0)) {
          var3.filter(var1x -> !var1x.equals(var0)).forEach(var2x -> {
-            Path var3xx = (Path)var2.getValue();
-            if (var3xx == null) {
+            Path var3x = (Path)var2.getValue();
+            if (var3x == null) {
                try {
-                  var3xx = Files.createTempDirectory("mcworld-");
+                  var3x = Files.createTempDirectory("mcworld-");
                } catch (IOException var5) {
                   LOGGER.warn("Failed to create temporary dir");
                   throw new UncheckedIOException(var5);
                }
 
-               var2.setValue(var3xx);
+               var2.setValue(var3x);
             }
 
-            copyBetweenDirs(var0, var3xx, var2x);
+            copyBetweenDirs(var0, var3x, var2x);
          });
       } catch (UncheckedIOException | IOException var8) {
          LOGGER.warn("Failed to copy datapacks from world {}", var0, var8);
@@ -527,14 +524,11 @@ public class CreateWorldScreen extends Screen {
       }
    }
 
-   static record DataPackReloadCookie(WorldGenSettings a, WorldDataConfiguration b) {
-      private final WorldGenSettings worldGenSettings;
-      private final WorldDataConfiguration dataConfiguration;
-
-      DataPackReloadCookie(WorldGenSettings var1, WorldDataConfiguration var2) {
+   static record DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataConfiguration dataConfiguration) {
+      DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataConfiguration dataConfiguration) {
          super();
-         this.worldGenSettings = var1;
-         this.dataConfiguration = var2;
+         this.worldGenSettings = worldGenSettings;
+         this.dataConfiguration = dataConfiguration;
       }
    }
 
@@ -670,9 +664,9 @@ public class CreateWorldScreen extends Screen {
          );
          var3.setValue(CreateWorldScreen.this.uiState.getWorldType());
          CreateWorldScreen.this.uiState.addListener(var2x -> {
-            WorldCreationUiState.WorldTypeEntry var3xx = var2x.getWorldType();
-            var3.setValue(var3xx);
-            if (var3xx.isAmplified()) {
+            WorldCreationUiState.WorldTypeEntry var3x = var2x.getWorldType();
+            var3.setValue(var3x);
+            if (var3x.isAmplified()) {
                var3.setTooltip(Tooltip.create(AMPLIFIED_HELP_TEXT));
             } else {
                var3.setTooltip(null);
@@ -726,7 +720,7 @@ public class CreateWorldScreen extends Screen {
       }
 
       private static MutableComponent createTypeButtonNarration(CycleButton<WorldCreationUiState.WorldTypeEntry> var0) {
-         return ((WorldCreationUiState.WorldTypeEntry)var0.getValue()).isAmplified()
+         return var0.getValue().isAmplified()
             ? CommonComponents.joinForNarration(var0.createDefaultNarrationMessage(), AMPLIFIED_HELP_TEXT)
             : var0.createDefaultNarrationMessage();
       }

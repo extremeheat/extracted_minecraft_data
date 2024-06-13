@@ -6,7 +6,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -45,12 +43,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
@@ -72,7 +68,6 @@ import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -93,36 +88,29 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
-   private static final Codec<Holder<Item>> ITEM_NON_AIR_CODEC = ExtraCodecs.validate(
-      BuiltInRegistries.ITEM.holderByNameCodec(),
-      var0 -> var0.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0)
-   );
-   public static final Codec<ItemStack> CODEC = ExtraCodecs.lazyInitializedCodec(
-      () -> ExtraCodecs.validate(
-            RecordCodecBuilder.create(
+   private static final Codec<Holder<Item>> ITEM_NON_AIR_CODEC = BuiltInRegistries.ITEM
+      .holderByNameCodec()
+      .validate(var0 -> var0.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
+   public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(
+      () -> RecordCodecBuilder.create(
                var0 -> var0.group(
                         ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
                         ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
-                        ExtraCodecs.strictOptionalField(DataComponentPatch.CODEC, "components", DataComponentPatch.EMPTY)
-                           .forGetter(var0x -> var0x.components.asPatch())
+                        DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
                      )
                      .apply(var0, ItemStack::new)
-            ),
-            ItemStack::validate
-         )
+            )
+            .validate(ItemStack::validate)
    );
-   public static final Codec<ItemStack> SINGLE_ITEM_CODEC = ExtraCodecs.lazyInitializedCodec(
-      () -> ExtraCodecs.validate(
-            RecordCodecBuilder.create(
+   public static final Codec<ItemStack> SINGLE_ITEM_CODEC = Codec.lazyInitialized(
+      () -> RecordCodecBuilder.create(
                var0 -> var0.group(
                         ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-                        ExtraCodecs.strictOptionalField(DataComponentPatch.CODEC, "components", DataComponentPatch.EMPTY)
-                           .forGetter(var0x -> var0x.components.asPatch())
+                        DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
                      )
                      .apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))
-            ),
-            ItemStack::validate
-         )
+            )
+            .validate(ItemStack::validate)
    );
    public static final Codec<ItemStack> OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC)
       .xmap(var0 -> var0.orElse(ItemStack.EMPTY), var0 -> var0.isEmpty() ? Optional.empty() : Optional.of(var0));
@@ -201,6 +189,10 @@ public final class ItemStack implements DataComponentHolder {
    @Override
    public DataComponentMap getComponents() {
       return (DataComponentMap)(!this.isEmpty() ? this.components : DataComponentMap.EMPTY);
+   }
+
+   public DataComponentMap getPrototype() {
+      return !this.isEmpty() ? this.getItem().components() : DataComponentMap.EMPTY;
    }
 
    public DataComponentPatch getComponentsPatch() {
@@ -339,7 +331,7 @@ public final class ItemStack implements DataComponentHolder {
       if (this.isEmpty()) {
          throw new IllegalStateException("Cannot encode empty ItemStack");
       } else {
-         return Util.getOrThrow(CODEC.encode(this, var1.createSerializationContext(NbtOps.INSTANCE), var2), var1x -> new IllegalStateException(var1x));
+         return (Tag)CODEC.encode(this, var1.createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow();
       }
    }
 
@@ -347,7 +339,7 @@ public final class ItemStack implements DataComponentHolder {
       if (this.isEmpty()) {
          throw new IllegalStateException("Cannot encode empty ItemStack");
       } else {
-         return Util.getOrThrow(CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this), IllegalStateException::new);
+         return (Tag)CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this).getOrThrow();
       }
    }
 
@@ -389,9 +381,9 @@ public final class ItemStack implements DataComponentHolder {
             int var5 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, this);
             int var6 = 0;
 
-            for(int var7 = 0; var5 > 0 && var7 < var1; ++var7) {
+            for (int var7 = 0; var5 > 0 && var7 < var1; var7++) {
                if (DigDurabilityEnchantment.shouldIgnoreDurabilityDrop(this, var5, var2)) {
-                  ++var6;
+                  var6++;
                }
             }
 
@@ -419,12 +411,12 @@ public final class ItemStack implements DataComponentHolder {
             return;
          }
 
-         this.hurtAndBreak(var1, var2.getRandom(), (ServerPlayer)(var2 instanceof ServerPlayer var5 ? var5 : null), () -> {
+         this.hurtAndBreak(var1, var2.getRandom(), var2 instanceof ServerPlayer var5 ? var5 : null, () -> {
             var2.broadcastBreakEvent(var3);
-            Item var3xx = this.getItem();
+            Item var3x = this.getItem();
             this.shrink(1);
             if (var2 instanceof Player) {
-               ((Player)var2).awardStat(Stats.ITEM_BROKEN.get(var3xx));
+               ((Player)var2).awardStat(Stats.ITEM_BROKEN.get(var3x));
             }
 
             this.setDamageValue(0);
@@ -515,7 +507,7 @@ public final class ItemStack implements DataComponentHolder {
       if (var0.size() != var1.size()) {
          return false;
       } else {
-         for(int var2 = 0; var2 < var0.size(); ++var2) {
+         for (int var2 = 0; var2 < var0.size(); var2++) {
             if (!matches((ItemStack)var0.get(var2), (ItemStack)var1.get(var2))) {
                return false;
             }
@@ -537,8 +529,8 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public static MapCodec<ItemStack> optionalFieldOf(String var0) {
-      return CODEC.optionalFieldOf(var0).xmap(var0x -> var0x.orElse(EMPTY), var0x -> var0x.isEmpty() ? Optional.empty() : Optional.of(var0x));
+   public static MapCodec<ItemStack> lenientOptionalFieldOf(String var0) {
+      return CODEC.lenientOptionalFieldOf(var0).xmap(var0x -> var0x.orElse(EMPTY), var0x -> var0x.isEmpty() ? Optional.empty() : Optional.of(var0x));
    }
 
    public static int hashItemAndComponents(@Nullable ItemStack var0) {
@@ -554,7 +546,7 @@ public final class ItemStack implements DataComponentHolder {
    public static int hashStackList(List<ItemStack> var0) {
       int var1 = 0;
 
-      for(ItemStack var3 : var0) {
+      for (ItemStack var3 : var0) {
          var1 = var1 * 31 + hashItemAndComponents(var3);
       }
 
@@ -572,7 +564,7 @@ public final class ItemStack implements DataComponentHolder {
 
    public void inventoryTick(Level var1, Entity var2, int var3, boolean var4) {
       if (this.popTime > 0) {
-         --this.popTime;
+         this.popTime--;
       }
 
       if (this.getItem() != null) {
@@ -638,7 +630,12 @@ public final class ItemStack implements DataComponentHolder {
 
    public Component getHoverName() {
       Component var1 = this.get(DataComponents.CUSTOM_NAME);
-      return var1 != null ? var1 : this.getItem().getName(this);
+      if (var1 != null) {
+         return var1;
+      } else {
+         Component var2 = this.get(DataComponents.ITEM_NAME);
+         return var2 != null ? var2 : this.getItem().getName(this);
+      }
    }
 
    private <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Consumer<Component> var2, TooltipFlag var3) {
@@ -648,91 +645,83 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public List<Component> getTooltipLines(@Nullable Player var1, TooltipFlag var2) {
-      if (!var2.isCreative() && this.has(DataComponents.HIDE_TOOLTIP)) {
+   public List<Component> getTooltipLines(Item.TooltipContext var1, @Nullable Player var2, TooltipFlag var3) {
+      if (!var3.isCreative() && this.has(DataComponents.HIDE_TOOLTIP)) {
          return List.of();
       } else {
-         ArrayList var3 = Lists.newArrayList();
-         MutableComponent var4 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
+         ArrayList var4 = Lists.newArrayList();
+         MutableComponent var5 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
          if (this.has(DataComponents.CUSTOM_NAME)) {
-            var4.withStyle(ChatFormatting.ITALIC);
+            var5.withStyle(ChatFormatting.ITALIC);
          }
 
-         var3.add(var4);
-         if (!var2.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME) && this.is(Items.FILLED_MAP)) {
-            MapId var5 = this.get(DataComponents.MAP_ID);
-            if (var5 != null) {
-               var3.add(MapItem.getTooltipForId(var5));
+         var4.add(var5);
+         if (!var3.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME) && this.is(Items.FILLED_MAP)) {
+            MapId var6 = this.get(DataComponents.MAP_ID);
+            if (var6 != null) {
+               var4.add(MapItem.getTooltipForId(var6));
             }
          }
 
-         Consumer var9 = var3::add;
+         Consumer var10 = var4::add;
          if (!this.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)) {
-            this.getItem().appendHoverText(this, var1 == null ? null : var1.level(), var3, var2);
+            this.getItem().appendHoverText(this, var1, var4, var3);
          }
 
-         this.addToTooltip(DataComponents.POTATO_BANE, var9, var2);
-         this.addToTooltip(DataComponents.TRIM, var9, var2);
-         this.addToTooltip(DataComponents.RESIN, var9, var2);
-         this.addToTooltip(DataComponents.FLETCHING, var9, var2);
-         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var9, var2);
-         this.addToTooltip(DataComponents.ENCHANTMENTS, var9, var2);
-         this.addToTooltip(DataComponents.DYED_COLOR, var9, var2);
-         this.addToTooltip(DataComponents.LORE, var9, var2);
-         this.addToTooltip(DataComponents.XP, var9, var2);
-         this.addAttributeTooltips(var9, var1);
-         this.addToTooltip(DataComponents.UNBREAKABLE, var9, var2);
-         this.addToTooltip(DataComponents.LUBRICATION, var9, var2);
-         this.addToTooltip(DataComponents.BASE_COLOR, var9, var2);
-         AdventureModePredicate var6 = this.get(DataComponents.CAN_BREAK);
-         if (var6 != null && var6.showInTooltip()) {
-            var9.accept(CommonComponents.EMPTY);
-            var9.accept(AdventureModePredicate.CAN_BREAK_HEADER);
-            var6.addToTooltip(var9);
-         }
-
-         AdventureModePredicate var7 = this.get(DataComponents.CAN_PLACE_ON);
+         this.addToTooltip(DataComponents.TRIM, var10, var3);
+         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var10, var3);
+         this.addToTooltip(DataComponents.ENCHANTMENTS, var10, var3);
+         this.addToTooltip(DataComponents.DYED_COLOR, var10, var3);
+         this.addToTooltip(DataComponents.LORE, var10, var3);
+         this.addAttributeTooltips(var10, var2);
+         this.addToTooltip(DataComponents.UNBREAKABLE, var10, var3);
+         AdventureModePredicate var7 = this.get(DataComponents.CAN_BREAK);
          if (var7 != null && var7.showInTooltip()) {
-            var9.accept(CommonComponents.EMPTY);
-            var9.accept(AdventureModePredicate.CAN_PLACE_HEADER);
-            var7.addToTooltip(var9);
+            var10.accept(CommonComponents.EMPTY);
+            var10.accept(AdventureModePredicate.CAN_BREAK_HEADER);
+            var7.addToTooltip(var10);
          }
 
-         if (var2.isAdvanced()) {
+         AdventureModePredicate var8 = this.get(DataComponents.CAN_PLACE_ON);
+         if (var8 != null && var8.showInTooltip()) {
+            var10.accept(CommonComponents.EMPTY);
+            var10.accept(AdventureModePredicate.CAN_PLACE_HEADER);
+            var8.addToTooltip(var10);
+         }
+
+         if (var3.isAdvanced()) {
             if (this.isDamaged()) {
-               var3.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
+               var4.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
             }
 
-            var3.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
-            int var8 = this.components.size();
-            if (var8 > 0) {
-               var3.add(Component.translatable("item.components", var8).withStyle(ChatFormatting.DARK_GRAY));
+            var4.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+            int var9 = this.components.size();
+            if (var9 > 0) {
+               var4.add(Component.translatable("item.components", var9).withStyle(ChatFormatting.DARK_GRAY));
             }
          }
 
-         if (var1 != null && !this.getItem().isEnabled(var1.level().enabledFeatures())) {
-            var3.add(DISABLED_ITEM_TOOLTIP);
+         if (var2 != null && !this.getItem().isEnabled(var2.level().enabledFeatures())) {
+            var4.add(DISABLED_ITEM_TOOLTIP);
          }
 
-         return var3;
+         return var4;
       }
    }
 
    private void addAttributeTooltips(Consumer<Component> var1, @Nullable Player var2) {
       ItemAttributeModifiers var3 = this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
       if (var3.showInTooltip()) {
-         for(EquipmentSlot var7 : EquipmentSlot.values()) {
+         for (EquipmentSlot var7 : EquipmentSlot.values()) {
             MutableBoolean var8 = new MutableBoolean(true);
             this.forEachModifier(var7, (var5, var6) -> {
-               if (var6.amount() != 0.0) {
-                  if (var8.isTrue()) {
-                     var1.accept(CommonComponents.EMPTY);
-                     var1.accept(Component.translatable("item.modifiers." + var7.getName()).withStyle(ChatFormatting.GRAY));
-                     var8.setFalse();
-                  }
-
-                  this.addModifierTooltip(var1, var2, var5, var6);
+               if (var8.isTrue()) {
+                  var1.accept(CommonComponents.EMPTY);
+                  var1.accept(Component.translatable("item.modifiers." + var7.getName()).withStyle(ChatFormatting.GRAY));
+                  var8.setFalse();
                }
+
+               this.addModifierTooltip(var1, var2, var5, var6);
             });
          }
       }
@@ -804,7 +793,7 @@ public final class ItemStack implements DataComponentHolder {
       if (!this.isEnchanted()) {
          return var1;
       } else {
-         return switch(var1) {
+         return switch (var1) {
             case COMMON, UNCOMMON -> Rarity.RARE;
             case RARE -> Rarity.EPIC;
             default -> var1;
@@ -827,6 +816,10 @@ public final class ItemStack implements DataComponentHolder {
 
    public boolean isEnchanted() {
       return !this.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY).isEmpty();
+   }
+
+   public ItemEnchantments getEnchantments() {
+      return this.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
    }
 
    public boolean isFramed() {
@@ -854,7 +847,7 @@ public final class ItemStack implements DataComponentHolder {
       if (!var3.modifiers().isEmpty()) {
          var3.forEach(var1, var2);
       } else {
-         this.getItem().getDefaultAttributeModifiers(var1).forEach(var2);
+         this.getItem().getDefaultAttributeModifiers().forEach(var1, var2);
       }
    }
 
@@ -932,8 +925,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public SoundEvent getEatingSound() {
-      FoodProperties var1 = this.get(DataComponents.FOOD);
-      return var1 == null ? SoundEvents.GENERIC_EAT.value() : var1.eatSound().value();
+      return this.getItem().getEatingSound();
    }
 
    public SoundEvent getBreakingSound() {
@@ -942,10 +934,5 @@ public final class ItemStack implements DataComponentHolder {
 
    public boolean canBeHurtBy(DamageSource var1) {
       return !this.has(DataComponents.FIRE_RESISTANT) || !var1.is(DamageTypeTags.IS_FIRE);
-   }
-
-   public ItemStack makeFoil() {
-      this.set(DataComponents.EXPLICIT_FOIL, true);
-      return this;
    }
 }

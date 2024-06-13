@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.AbstractFurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -72,12 +71,12 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       int var6 = this.topPos;
       var1.blit(this.texture, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       if (this.menu.isLit()) {
-         boolean var7 = true;
+         byte var7 = 14;
          int var8 = Mth.ceil(this.menu.getLitProgress() * 13.0F) + 1;
          var1.blitSprite(this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
       }
 
-      boolean var9 = true;
+      byte var9 = 24;
       int var10 = Mth.ceil(this.menu.getBurnProgress() * 24.0F);
       var1.blitSprite(this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
    }

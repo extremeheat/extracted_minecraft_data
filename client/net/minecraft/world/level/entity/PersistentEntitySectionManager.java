@@ -145,10 +145,10 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
       }
 
       this.sectionStorage.getExistingSectionsInChunk(var3).forEach(var2x -> {
-         Visibility var3xx = var2x.updateChunkStatus(var2);
-         boolean var4 = var3xx.isAccessible();
+         Visibility var3x = var2x.updateChunkStatus(var2);
+         boolean var4 = var3x.isAccessible();
          boolean var5 = var2.isAccessible();
-         boolean var6 = var3xx.isTicking();
+         boolean var6 = var3x.isTicking();
          boolean var7 = var2.isTicking();
          if (var6 && !var7) {
             var2x.getEntities().filter(var0 -> !var0.isAlwaysTicking()).forEach(this::stopTicking);
@@ -229,7 +229,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
 
    private void processPendingLoads() {
       ChunkEntities var1;
-      while((var1 = this.loadingInbox.poll()) != null) {
+      while ((var1 = this.loadingInbox.poll()) != null) {
          var1.getEntities().forEach(var1x -> this.addEntity((T)var1x, true));
          this.chunkLoadStatuses.put(var1.getPos().toLong(), PersistentEntitySectionManager.ChunkLoadStatus.LOADED);
       }
@@ -244,7 +244,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
       LongSet var1 = this.sectionStorage.getAllChunksWithExistingSections();
       ObjectIterator var2 = Long2ObjectMaps.fastIterable(this.chunkLoadStatuses).iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          Entry var3 = (Entry)var2.next();
          if (var3.getValue() == PersistentEntitySectionManager.ChunkLoadStatus.LOADED) {
             var1.add(var3.getLongKey());
@@ -269,7 +269,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
    public void saveAll() {
       LongSet var1 = this.getAllChunksToSave();
 
-      while(!var1.isEmpty()) {
+      while (!var1.isEmpty()) {
          this.permanentStorage.flush(false);
          this.processPendingLoads();
          var1.removeIf(var1x -> {
@@ -361,7 +361,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
 
       Callback(T var2, long var3, EntitySection<T> var5) {
          super();
-         this.entity = var2;
+         this.entity = (T)var2;
          this.currentSectionKey = var3;
          this.currentSection = var5;
       }

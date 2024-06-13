@@ -45,7 +45,7 @@ public class SubtitleOverlay implements SoundEventListener {
          Vec3 var6 = var3.right();
          this.audibleSubtitles.clear();
 
-         for(SubtitleOverlay.Subtitle var8 : this.subtitles) {
+         for (SubtitleOverlay.Subtitle var8 : this.subtitles) {
             if (var8.isAudibleFrom(var4)) {
                this.audibleSubtitles.add(var8);
             }
@@ -57,7 +57,7 @@ public class SubtitleOverlay implements SoundEventListener {
             double var9 = this.minecraft.options.notificationDisplayTime().get();
             Iterator var11 = this.audibleSubtitles.iterator();
 
-            while(var11.hasNext()) {
+            while (var11.hasNext()) {
                SubtitleOverlay.Subtitle var12 = (SubtitleOverlay.Subtitle)var11.next();
                if ((double)var12.getTime() + 3000.0 * var9 <= (double)Util.getMillis()) {
                   var11.remove();
@@ -68,8 +68,8 @@ public class SubtitleOverlay implements SoundEventListener {
 
             var30 += this.minecraft.font.width("<") + this.minecraft.font.width(" ") + this.minecraft.font.width(">") + this.minecraft.font.width(" ");
 
-            for(SubtitleOverlay.Subtitle var33 : this.audibleSubtitles) {
-               boolean var13 = true;
+            for (SubtitleOverlay.Subtitle var33 : this.audibleSubtitles) {
+               short var13 = 255;
                Component var14 = var33.getText();
                Vec3 var15 = var33.getLocation().subtract(var4).normalize();
                double var16 = var6.dot(var15);
@@ -98,7 +98,7 @@ public class SubtitleOverlay implements SoundEventListener {
 
                var1.drawString(this.minecraft.font, var14, -var25 / 2, -var23, var28);
                var1.pose().popPose();
-               ++var29;
+               var29++;
             }
          }
       }
@@ -109,7 +109,7 @@ public class SubtitleOverlay implements SoundEventListener {
       if (var2.getSubtitle() != null) {
          Component var4 = var2.getSubtitle();
          if (!this.subtitles.isEmpty()) {
-            for(SubtitleOverlay.Subtitle var6 : this.subtitles) {
+            for (SubtitleOverlay.Subtitle var6 : this.subtitles) {
                if (var6.getText().equals(var4)) {
                   var6.refresh(new Vec3(var1.getX(), var1.getY(), var1.getZ()));
                   return;

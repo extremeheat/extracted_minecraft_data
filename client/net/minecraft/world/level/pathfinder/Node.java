@@ -106,12 +106,7 @@ public class Node {
 
    @Override
    public boolean equals(Object var1) {
-      if (!(var1 instanceof Node)) {
-         return false;
-      } else {
-         Node var2 = (Node)var1;
-         return this.hash == var2.hash && this.x == var2.x && this.y == var2.y && this.z == var2.z;
-      }
+      return !(var1 instanceof Node var2) ? false : this.hash == var2.hash && this.x == var2.x && this.y == var2.y && this.z == var2.z;
    }
 
    @Override

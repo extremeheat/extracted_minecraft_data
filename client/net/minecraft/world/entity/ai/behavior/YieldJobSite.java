@@ -6,11 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.DebugPackets;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.npc.Villager;
@@ -39,7 +37,7 @@ public class YieldJobSite {
                         } else if (var7.getVillagerData().getProfession() != VillagerProfession.NONE) {
                            return false;
                         } else {
-                           BlockPos var10 = ((GlobalPos)var1.get(var2)).pos();
+                           BlockPos var10 = var1.<GlobalPos>get(var2).pos();
                            Optional var11 = var6x.getPoiManager().getType(var10);
                            if (var11.isEmpty()) {
                               return true;

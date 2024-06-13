@@ -73,7 +73,7 @@ public class FlatLevelGeneratorPresets {
             var12.setAddLakes();
          }
 
-         for(int var13 = var7.length - 1; var13 >= 0; --var13) {
+         for (int var13 = var7.length - 1; var13 >= 0; var13--) {
             var12.getLayersInfo().add(var7[var13]);
          }
 
@@ -127,9 +127,7 @@ public class FlatLevelGeneratorPresets {
                BuiltinStructureSets.MINESHAFTS,
                BuiltinStructureSets.PILLAGER_OUTPOSTS,
                BuiltinStructureSets.RUINED_PORTALS,
-               BuiltinStructureSets.RUINED_PORTATOLS,
-               BuiltinStructureSets.STRONGHOLDS,
-               new ResourceKey[0]
+               BuiltinStructureSets.STRONGHOLDS
             ),
             true,
             true,

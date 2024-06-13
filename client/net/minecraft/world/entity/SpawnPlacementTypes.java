@@ -28,11 +28,9 @@ public interface SpawnPlacementTypes {
             BlockPos var4 = var2.above();
             BlockPos var5 = var2.below();
             BlockState var6 = var1.getBlockState(var5);
-            if (!var6.isValidSpawn(var1, var5, var3)) {
-               return false;
-            } else {
-               return this.isValidEmptySpawnBlock(var1, var2, var3) && this.isValidEmptySpawnBlock(var1, var4, var3);
-            }
+            return !var6.isValidSpawn(var1, var5, var3)
+               ? false
+               : this.isValidEmptySpawnBlock(var1, var2, var3) && this.isValidEmptySpawnBlock(var1, var4, var3);
          } else {
             return false;
          }

@@ -86,8 +86,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Object var4 = var1.getSource();
-      return var4 instanceof SharedSuggestionProvider var3
+      return var1.getSource() instanceof SharedSuggestionProvider var3
          ? var3.suggestRegistryElements(this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, var2, var1)
          : var2.buildFuture();
    }

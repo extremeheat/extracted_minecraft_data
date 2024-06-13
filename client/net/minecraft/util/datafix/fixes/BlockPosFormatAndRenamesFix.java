@@ -26,8 +26,8 @@ public class BlockPosFormatAndRenamesFix extends DataFix {
 
    private Typed<?> fixFields(Typed<?> var1, Map<String, String> var2) {
       return var1.update(DSL.remainderFinder(), var1x -> {
-         for(Entry var3 : var2.entrySet()) {
-            var1x = ExtraDataFixUtils.renameAndFixField(var1x, (String)var3.getKey(), (String)var3.getValue(), ExtraDataFixUtils::fixBlockPos);
+         for (Entry var3 : var2.entrySet()) {
+            var1x = var1x.renameAndFixField((String)var3.getKey(), (String)var3.getValue(), ExtraDataFixUtils::fixBlockPos);
          }
 
          return var1x;
@@ -36,13 +36,13 @@ public class BlockPosFormatAndRenamesFix extends DataFix {
 
    private <T> Dynamic<T> fixMapSavedData(Dynamic<T> var1) {
       return var1.update("frames", var0 -> var0.createList(var0.asStream().map(var0x -> {
-            var0x = ExtraDataFixUtils.renameAndFixField(var0x, "Pos", "pos", ExtraDataFixUtils::fixBlockPos);
-            var0x = ExtraDataFixUtils.renameField(var0x, "Rotation", "rotation");
-            return ExtraDataFixUtils.renameField(var0x, "EntityId", "entity_id");
+            var0x = var0x.renameAndFixField("Pos", "pos", ExtraDataFixUtils::fixBlockPos);
+            var0x = var0x.renameField("Rotation", "rotation");
+            return var0x.renameField("EntityId", "entity_id");
          }))).update("banners", var0 -> var0.createList(var0.asStream().map(var0x -> {
-            var0x = ExtraDataFixUtils.renameField(var0x, "Pos", "pos");
-            var0x = ExtraDataFixUtils.renameField(var0x, "Color", "color");
-            return ExtraDataFixUtils.renameField(var0x, "Name", "name");
+            var0x = var0x.renameField("Pos", "pos");
+            var0x = var0x.renameField("Color", "color");
+            return var0x.renameField("Name", "name");
          })));
    }
 
@@ -73,7 +73,7 @@ public class BlockPosFormatAndRenamesFix extends DataFix {
       var1.add(this.createEntityFixer(References.ENTITY, "minecraft:end_crystal", Map.of("BeamTarget", "beam_target")));
       var1.add(this.createEntityFixer(References.ENTITY, "minecraft:wandering_trader", Map.of("WanderTarget", "wander_target")));
 
-      for(String var3 : PATROLLING_MOBS) {
+      for (String var3 : PATROLLING_MOBS) {
          var1.add(this.createEntityFixer(References.ENTITY, var3, Map.of("PatrolTarget", "patrol_target")));
       }
 
@@ -81,7 +81,7 @@ public class BlockPosFormatAndRenamesFix extends DataFix {
          this.fixTypeEverywhereTyped(
             "BlockPos format in Leash for mobs",
             this.getInputSchema().getType(References.ENTITY),
-            var0 -> var0.update(DSL.remainderFinder(), var0x -> ExtraDataFixUtils.renameAndFixField(var0x, "Leash", "leash", ExtraDataFixUtils::fixBlockPos))
+            var0 -> var0.update(DSL.remainderFinder(), var0x -> var0x.renameAndFixField("Leash", "leash", ExtraDataFixUtils::fixBlockPos))
          )
       );
    }

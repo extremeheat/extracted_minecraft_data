@@ -60,8 +60,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       new ResourceLocation("container/creative_inventory/tab_top_unselected_4"),
       new ResourceLocation("container/creative_inventory/tab_top_unselected_5"),
       new ResourceLocation("container/creative_inventory/tab_top_unselected_6"),
-      new ResourceLocation("container/creative_inventory/tab_top_unselected_7"),
-      new ResourceLocation("container/creative_inventory/tab_top_unselected_8")
+      new ResourceLocation("container/creative_inventory/tab_top_unselected_7")
    };
    private static final ResourceLocation[] SELECTED_TOP_TABS = new ResourceLocation[]{
       new ResourceLocation("container/creative_inventory/tab_top_selected_1"),
@@ -70,8 +69,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       new ResourceLocation("container/creative_inventory/tab_top_selected_4"),
       new ResourceLocation("container/creative_inventory/tab_top_selected_5"),
       new ResourceLocation("container/creative_inventory/tab_top_selected_6"),
-      new ResourceLocation("container/creative_inventory/tab_top_selected_7"),
-      new ResourceLocation("container/creative_inventory/tab_top_selected_8")
+      new ResourceLocation("container/creative_inventory/tab_top_selected_7")
    };
    private static final ResourceLocation[] UNSELECTED_BOTTOM_TABS = new ResourceLocation[]{
       new ResourceLocation("container/creative_inventory/tab_bottom_unselected_1"),
@@ -112,7 +110,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
    private CreativeInventoryListener listener;
    private boolean ignoreTextInput;
    private boolean hasClickedOutside;
-   private final Set<TagKey<Item>> visibleTags = new HashSet();
+   private final Set<TagKey<Item>> visibleTags = new HashSet<>();
    private final boolean displayOperatorCreativeTab;
 
    public CreativeModeInventoryScreen(Player var1, FeatureFlagSet var2, boolean var3) {
@@ -130,7 +128,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    private void tryRefreshInvalidatedTabs(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
       if (CreativeModeTabs.tryRebuildTabContents(var1, var2, var3)) {
-         for(CreativeModeTab var5 : CreativeModeTabs.allTabs()) {
+         for (CreativeModeTab var5 : CreativeModeTabs.allTabs()) {
             Collection var6 = var5.getDisplayItems();
             if (var5 == selectedTab) {
                if (var5.getType() == CreativeModeTab.Type.CATEGORY && var6.isEmpty()) {
@@ -201,7 +199,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          }
 
          if (var1 == this.destroyItemSlot && var5) {
-            for(int var13 = 0; var13 < this.minecraft.player.inventoryMenu.getItems().size(); ++var13) {
+            for (int var13 = 0; var13 < this.minecraft.player.inventoryMenu.getItems().size(); var13++) {
                this.minecraft.gameMode.handleCreativeModeItemAdd(ItemStack.EMPTY, var13);
             }
          } else if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
@@ -277,7 +275,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
             ItemStack var11 = var1 == null ? ItemStack.EMPTY : this.menu.getSlot(var1.index).getItem();
             this.menu.clicked(var1 == null ? var2 : var1.index, var3, var4, this.minecraft.player);
             if (AbstractContainerMenu.getQuickcraftHeader(var3) == 2) {
-               for(int var15 = 0; var15 < 9; ++var15) {
+               for (int var15 = 0; var15 < 9; var15++) {
                   this.minecraft.gameMode.handleCreativeModeItemAdd(this.menu.getSlot(45 + var15).getItem(), 36 + var15);
                }
             } else if (var1 != null) {
@@ -456,7 +454,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          double var6 = var1 - (double)this.leftPos;
          double var8 = var3 - (double)this.topPos;
 
-         for(CreativeModeTab var11 : CreativeModeTabs.tabs()) {
+         for (CreativeModeTab var11 : CreativeModeTabs.tabs()) {
             if (this.checkTabClicked(var11, var6, var8)) {
                return true;
             }
@@ -478,7 +476,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          double var8 = var3 - (double)this.topPos;
          this.scrolling = false;
 
-         for(CreativeModeTab var11 : CreativeModeTabs.tabs()) {
+         for (CreativeModeTab var11 : CreativeModeTabs.tabs()) {
             if (this.checkTabClicked(var11, var6, var8)) {
                this.selectTab(var11);
                return true;
@@ -502,16 +500,16 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       if (selectedTab.getType() == CreativeModeTab.Type.HOTBAR) {
          HotbarManager var3 = this.minecraft.getHotbarManager();
 
-         for(int var4 = 0; var4 < 9; ++var4) {
+         for (int var4 = 0; var4 < 9; var4++) {
             Hotbar var5 = var3.get(var4);
             if (var5.isEmpty()) {
-               for(int var6 = 0; var6 < 9; ++var6) {
+               for (int var6 = 0; var6 < 9; var6++) {
                   if (var6 == var4) {
                      ItemStack var7 = new ItemStack(Items.PAPER);
                      var7.set(DataComponents.CREATIVE_SLOT_LOCK, Unit.INSTANCE);
                      Component var8 = this.minecraft.options.keyHotbarSlots[var4].getTranslatedKeyMessage();
                      Component var9 = this.minecraft.options.keySaveHotbarActivator.getTranslatedKeyMessage();
-                     var7.set(DataComponents.CUSTOM_NAME, Component.translatable("inventory.hotbarInfo", var9, var8));
+                     var7.set(DataComponents.ITEM_NAME, Component.translatable("inventory.hotbarInfo", var9, var8));
                      this.menu.items.add(var7);
                   } else {
                      this.menu.items.add(ItemStack.EMPTY);
@@ -533,7 +531,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
          this.menu.slots.clear();
 
-         for(int var11 = 0; var11 < var10.slots.size(); ++var11) {
+         for (int var11 = 0; var11 < var10.slots.size(); var11++) {
             int var12;
             int var13;
             if (var11 >= 5 && var11 < 9) {
@@ -638,7 +636,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
 
-      for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
+      for (CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          if (this.checkTabHovering(var1, var6, var2, var3)) {
             break;
          }
@@ -660,14 +658,14 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       boolean var4 = selectedTab.getType() == CreativeModeTab.Type.SEARCH;
       TooltipFlag.Default var5 = this.minecraft.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL;
       TooltipFlag.Default var6 = var2 ? var5.asCreative() : var5;
-      List var7 = var1.getTooltipLines(this.minecraft.player, var6);
+      List var7 = var1.getTooltipLines(Item.TooltipContext.of(this.minecraft.level), this.minecraft.player, var6);
       if (var3 && var2) {
          return var7;
       } else {
          ArrayList var8 = Lists.newArrayList(var7);
          if (var4 && var2) {
             this.visibleTags.forEach(var2x -> {
-               if (var1.is(var2x)) {
+               if (var1.is((TagKey<Item>)var2x)) {
                   var8.add(1, Component.literal("#" + var2x.location()).withStyle(ChatFormatting.DARK_PURPLE));
                }
             });
@@ -675,7 +673,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
          int var9 = 1;
 
-         for(CreativeModeTab var11 : CreativeModeTabs.tabs()) {
+         for (CreativeModeTab var11 : CreativeModeTabs.tabs()) {
             if (var11.getType() != CreativeModeTab.Type.SEARCH && var11.contains(var1)) {
                var8.add(var9++, var11.getDisplayName().copy().withStyle(ChatFormatting.BLUE));
             }
@@ -687,7 +685,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
+      for (CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          if (var6 != selectedTab) {
             this.renderTabButton(var1, var6);
          }
@@ -721,7 +719,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    private int getTabX(CreativeModeTab var1) {
       int var2 = var1.column();
-      boolean var3 = true;
+      byte var3 = 27;
       int var4 = 27 * var2;
       if (var1.isAlignedRight()) {
          var4 = this.imageWidth - 27 * (7 - var2) + 1;
@@ -794,7 +792,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       if (var2) {
          List var8 = var7.load(var5);
 
-         for(int var9 = 0; var9 < Inventory.getSelectionSize(); ++var9) {
+         for (int var9 = 0; var9 < Inventory.getSelectionSize(); var9++) {
             ItemStack var10 = (ItemStack)var8.get(var9);
             var4.getInventory().setItem(var9, var10);
             var0.gameMode.handleCreativeModeItemAdd(var10, 36 + var9);
@@ -820,11 +818,9 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       @Override
       public boolean mayPickup(Player var1) {
          ItemStack var2 = this.getItem();
-         if (super.mayPickup(var1) && !var2.isEmpty()) {
-            return var2.isItemEnabled(var1.level().enabledFeatures()) && !var2.has(DataComponents.CREATIVE_SLOT_LOCK);
-         } else {
-            return var2.isEmpty();
-         }
+         return super.mayPickup(var1) && !var2.isEmpty()
+            ? var2.isItemEnabled(var1.level().enabledFeatures()) && !var2.has(DataComponents.CREATIVE_SLOT_LOCK)
+            : var2.isEmpty();
       }
    }
 
@@ -837,15 +833,15 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          this.inventoryMenu = var1.inventoryMenu;
          Inventory var2 = var1.getInventory();
 
-         for(int var3 = 0; var3 < 5; ++var3) {
-            for(int var4 = 0; var4 < 9; ++var4) {
+         for (int var3 = 0; var3 < 5; var3++) {
+            for (int var4 = 0; var4 < 9; var4++) {
                this.addSlot(
                   new CreativeModeInventoryScreen.CustomCreativeSlot(CreativeModeInventoryScreen.CONTAINER, var3 * 9 + var4, 9 + var4 * 18, 18 + var3 * 18)
                );
             }
          }
 
-         for(int var5 = 0; var5 < 9; ++var5) {
+         for (int var5 = 0; var5 < 9; var5++) {
             this.addSlot(new Slot(var2, var5, 9 + var5 * 18, 112));
          }
 
@@ -876,8 +872,8 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       public void scrollTo(float var1) {
          int var2 = this.getRowIndexForScroll(var1);
 
-         for(int var3 = 0; var3 < 5; ++var3) {
-            for(int var4 = 0; var4 < 9; ++var4) {
+         for (int var3 = 0; var3 < 5; var3++) {
+            for (int var4 = 0; var4 < 9; var4++) {
                int var5 = var4 + (var3 + var2) * 9;
                if (var5 >= 0 && var5 < this.items.size()) {
                   CreativeModeInventoryScreen.CONTAINER.setItem(var4 + var3 * 9, this.items.get(var5));

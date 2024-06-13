@@ -31,26 +31,22 @@ public class ItemOverrides {
 
    public ItemOverrides(ModelBaker var1, BlockModel var2, List<ItemOverride> var3) {
       super();
-      this.properties = var3.stream()
-         .flatMap(ItemOverride::getPredicates)
-         .map(ItemOverride.Predicate::getProperty)
-         .distinct()
-         .toArray(var0 -> new ResourceLocation[var0]);
+      this.properties = var3.stream().flatMap(ItemOverride::getPredicates).map(ItemOverride.Predicate::getProperty).distinct().toArray(ResourceLocation[]::new);
       Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
 
-      for(int var5 = 0; var5 < this.properties.length; ++var5) {
+      for (int var5 = 0; var5 < this.properties.length; var5++) {
          var4.put(this.properties[var5], var5);
       }
 
       ArrayList var10 = Lists.newArrayList();
 
-      for(int var6 = var3.size() - 1; var6 >= 0; --var6) {
+      for (int var6 = var3.size() - 1; var6 >= 0; var6--) {
          ItemOverride var7 = (ItemOverride)var3.get(var6);
          BakedModel var8 = this.bakeModel(var1, var2, var7);
          ItemOverrides.PropertyMatcher[] var9 = var7.getPredicates().map(var1x -> {
-            int var2xx = var4.getInt(var1x.getProperty());
-            return new ItemOverrides.PropertyMatcher(var2xx, var1x.getValue());
-         }).toArray(var0 -> new ItemOverrides.PropertyMatcher[var0]);
+            int var2x = var4.getInt(var1x.getProperty());
+            return new ItemOverrides.PropertyMatcher(var2x, var1x.getValue());
+         }).toArray(ItemOverrides.PropertyMatcher[]::new);
          var10.add(new ItemOverrides.BakedOverride(var9, var8));
       }
 
@@ -69,7 +65,7 @@ public class ItemOverrides {
          int var6 = this.properties.length;
          float[] var7 = new float[var6];
 
-         for(int var8 = 0; var8 < var6; ++var8) {
+         for (int var8 = 0; var8 < var6; var8++) {
             ResourceLocation var9 = this.properties[var8];
             ItemPropertyFunction var10 = ItemProperties.getProperty(var2, var9);
             if (var10 != null) {
@@ -79,7 +75,7 @@ public class ItemOverrides {
             }
          }
 
-         for(ItemOverrides.BakedOverride var11 : this.overrides) {
+         for (ItemOverrides.BakedOverride var11 : this.overrides) {
             if (var11.test(var7)) {
                BakedModel var12 = var11.model;
                if (var12 == null) {
@@ -106,7 +102,7 @@ public class ItemOverrides {
       }
 
       boolean test(float[] var1) {
-         for(ItemOverrides.PropertyMatcher var5 : this.matchers) {
+         for (ItemOverrides.PropertyMatcher var5 : this.matchers) {
             float var6 = var1[var5.index];
             if (var6 < var5.value) {
                return false;

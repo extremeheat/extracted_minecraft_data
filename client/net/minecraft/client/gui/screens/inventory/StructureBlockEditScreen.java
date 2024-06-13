@@ -256,7 +256,7 @@ public class StructureBlockEditScreen extends Screen {
       this.rot90Button.active = true;
       this.rot180Button.active = true;
       this.rot270Button.active = true;
-      switch(this.structure.getRotation()) {
+      switch (this.structure.getRotation()) {
          case NONE:
             this.rot0Button.active = false;
             break;
@@ -293,7 +293,7 @@ public class StructureBlockEditScreen extends Screen {
       this.rot270Button.visible = false;
       this.toggleAirButton.visible = false;
       this.toggleBoundingBox.visible = false;
-      switch(var1) {
+      switch (var1) {
          case SAVE:
             this.nameEdit.setVisible(true);
             this.posXEdit.setVisible(true);

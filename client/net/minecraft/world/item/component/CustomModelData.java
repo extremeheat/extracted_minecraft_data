@@ -5,14 +5,13 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-public record CustomModelData(int d) {
-   private final int value;
+public record CustomModelData(int value) {
    public static final CustomModelData DEFAULT = new CustomModelData(0);
    public static final Codec<CustomModelData> CODEC = Codec.INT.xmap(CustomModelData::new, CustomModelData::value);
    public static final StreamCodec<ByteBuf, CustomModelData> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(CustomModelData::new, CustomModelData::value);
 
-   public CustomModelData(int var1) {
+   public CustomModelData(int value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 }

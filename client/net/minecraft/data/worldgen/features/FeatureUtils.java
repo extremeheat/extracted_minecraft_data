@@ -76,6 +76,6 @@ public class FeatureUtils {
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> void register(
       BootstrapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, F var2, FC var3
    ) {
-      var0.register(var1, new ConfiguredFeature((F)var2, var3));
+      var0.register(var1, new ConfiguredFeature<>((F)var2, var3));
    }
 }

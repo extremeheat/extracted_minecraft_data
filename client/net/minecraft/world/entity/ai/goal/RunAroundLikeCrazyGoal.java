@@ -60,7 +60,7 @@ public class RunAroundLikeCrazyGoal extends Goal {
             int var3 = this.horse.getTemper();
             int var4 = this.horse.getMaxTemper();
             if (var4 > 0 && this.horse.getRandom().nextInt(var4) < var3) {
-               this.horse.tameWithName((Player)var2);
+               this.horse.tameWithName(var2);
                return;
             }
 

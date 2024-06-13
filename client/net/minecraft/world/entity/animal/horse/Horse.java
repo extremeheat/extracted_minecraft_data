@@ -28,7 +28,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.AnimalArmorItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -164,10 +163,8 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
    public boolean canMate(Animal var1) {
       if (var1 == this) {
          return false;
-      } else if (!(var1 instanceof Donkey) && !(var1 instanceof Horse)) {
-         return false;
       } else {
-         return this.canParent() && ((AbstractHorse)var1).canParent();
+         return !(var1 instanceof Donkey) && !(var1 instanceof Horse) ? false : this.canParent() && ((AbstractHorse)var1).canParent();
       }
    }
 
@@ -220,8 +217,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
 
    @Override
    public boolean isBodyArmorItem(ItemStack var1) {
-      Item var3 = var1.getItem();
-      if (var3 instanceof AnimalArmorItem var2 && var2.getBodyType() == AnimalArmorItem.BodyType.EQUESTRIAN) {
+      if (var1.getItem() instanceof AnimalArmorItem var2 && var2.getBodyType() == AnimalArmorItem.BodyType.EQUESTRIAN) {
          return true;
       }
 

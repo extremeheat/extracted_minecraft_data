@@ -26,7 +26,7 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
 
    public RangedCrossbowAttackGoal(T var1, double var2, float var4) {
       super();
-      this.mob = var1;
+      this.mob = (T)var1;
       this.speedModifier = var2;
       this.attackRadiusSqr = var4 * var4;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
@@ -79,15 +79,15 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
          }
 
          if (var2) {
-            ++this.seeTime;
+            this.seeTime++;
          } else {
-            --this.seeTime;
+            this.seeTime--;
          }
 
          double var4 = this.mob.distanceToSqr(var1);
          boolean var6 = (var4 > (double)this.attackRadiusSqr || this.seeTime < 5) && this.attackDelay == 0;
          if (var6) {
-            --this.updatePathDelay;
+            this.updatePathDelay--;
             if (this.updatePathDelay <= 0) {
                this.mob.getNavigation().moveTo(var1, this.canRun() ? this.speedModifier : this.speedModifier * 0.5);
                this.updatePathDelay = PATHFINDING_DELAY_RANGE.sample(this.mob.getRandom());
@@ -118,7 +118,7 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
                this.mob.setChargingCrossbow(false);
             }
          } else if (this.crossbowState == RangedCrossbowAttackGoal.CrossbowState.CHARGED) {
-            --this.attackDelay;
+            this.attackDelay--;
             if (this.attackDelay == 0) {
                this.crossbowState = RangedCrossbowAttackGoal.CrossbowState.READY_TO_ATTACK;
             }

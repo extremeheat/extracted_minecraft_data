@@ -41,7 +41,7 @@ public class SpinAttackEffectLayer<T extends LivingEntity> extends RenderLayer<T
       if (var4.isAutoSpinAttack()) {
          VertexConsumer var11 = var2.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
 
-         for(int var12 = 0; var12 < 3; ++var12) {
+         for (int var12 = 0; var12 < 3; var12++) {
             var1.pushPose();
             float var13 = var8 * (float)(-(45 + var12 * 5));
             var1.mulPose(Axis.YP.rotationDegrees(var13));

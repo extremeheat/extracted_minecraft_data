@@ -10,21 +10,20 @@ import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.SignatureUpdater;
 
-public record LastSeenMessages(List<MessageSignature> d) {
-   private final List<MessageSignature> entries;
+public record LastSeenMessages(List<MessageSignature> entries) {
    public static final Codec<LastSeenMessages> CODEC = MessageSignature.CODEC.listOf().xmap(LastSeenMessages::new, LastSeenMessages::entries);
    public static LastSeenMessages EMPTY = new LastSeenMessages(List.of());
    public static final int LAST_SEEN_MESSAGES_MAX_LENGTH = 20;
 
-   public LastSeenMessages(List<MessageSignature> var1) {
+   public LastSeenMessages(List<MessageSignature> entries) {
       super();
-      this.entries = var1;
+      this.entries = entries;
    }
 
    public void updateSignature(SignatureUpdater.Output var1) throws SignatureException {
       var1.update(Ints.toByteArray(this.entries.size()));
 
-      for(MessageSignature var3 : this.entries) {
+      for (MessageSignature var3 : this.entries) {
          var1.update(var3.bytes());
       }
    }
@@ -33,17 +32,16 @@ public record LastSeenMessages(List<MessageSignature> d) {
       return new LastSeenMessages.Packed(this.entries.stream().map(var1x -> var1x.pack(var1)).toList());
    }
 
-   public static record Packed(List<MessageSignature.Packed> b) {
-      private final List<MessageSignature.Packed> entries;
+   public static record Packed(List<MessageSignature.Packed> entries) {
       public static final LastSeenMessages.Packed EMPTY = new LastSeenMessages.Packed(List.of());
 
       public Packed(FriendlyByteBuf var1) {
          this(var1.readCollection(FriendlyByteBuf.limitValue(ArrayList::new, 20), MessageSignature.Packed::read));
       }
 
-      public Packed(List<MessageSignature.Packed> var1) {
+      public Packed(List<MessageSignature.Packed> entries) {
          super();
-         this.entries = var1;
+         this.entries = entries;
       }
 
       public void write(FriendlyByteBuf var1) {
@@ -53,7 +51,7 @@ public record LastSeenMessages(List<MessageSignature> d) {
       public Optional<LastSeenMessages> unpack(MessageSignatureCache var1) {
          ArrayList var2 = new ArrayList(this.entries.size());
 
-         for(MessageSignature.Packed var4 : this.entries) {
+         for (MessageSignature.Packed var4 : this.entries) {
             Optional var5 = var4.unpack(var1);
             if (var5.isEmpty()) {
                return Optional.empty();
@@ -66,18 +64,15 @@ public record LastSeenMessages(List<MessageSignature> d) {
       }
    }
 
-   public static record Update(int a, BitSet b) {
-      private final int offset;
-      private final BitSet acknowledged;
-
+   public static record Update(int offset, BitSet acknowledged) {
       public Update(FriendlyByteBuf var1) {
          this(var1.readVarInt(), var1.readFixedBitSet(20));
       }
 
-      public Update(int var1, BitSet var2) {
+      public Update(int offset, BitSet acknowledged) {
          super();
-         this.offset = var1;
-         this.acknowledged = var2;
+         this.offset = offset;
+         this.acknowledged = acknowledged;
       }
 
       public void write(FriendlyByteBuf var1) {

@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -10,7 +10,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class RandomSpreadFoliagePlacer extends FoliagePlacer {
-   public static final Codec<RandomSpreadFoliagePlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<RandomSpreadFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> foliagePlacerParts(var0)
             .and(
                var0.group(
@@ -49,7 +49,7 @@ public class RandomSpreadFoliagePlacer extends FoliagePlacer {
       BlockPos var10 = var6.pos();
       BlockPos.MutableBlockPos var11 = var10.mutable();
 
-      for(int var12 = 0; var12 < this.leafPlacementAttempts; ++var12) {
+      for (int var12 = 0; var12 < this.leafPlacementAttempts; var12++) {
          var11.setWithOffset(var10, var3.nextInt(var8) - var3.nextInt(var8), var3.nextInt(var7) - var3.nextInt(var7), var3.nextInt(var8) - var3.nextInt(var8));
          tryPlaceLeaf(var1, var2, var3, var4, var11);
       }

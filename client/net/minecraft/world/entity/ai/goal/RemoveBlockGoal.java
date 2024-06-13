@@ -38,7 +38,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
       if (!this.removerMob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
          return false;
       } else if (this.nextStartTick > 0) {
-         --this.nextStartTick;
+         this.nextStartTick--;
          return false;
       } else if (this.findNearestBlock()) {
          this.nextStartTick = reducedTickDelay(20);
@@ -106,7 +106,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
          if (this.ticksSinceReachedGoal > 60) {
             var1.removeBlock(var3, false);
             if (!var1.isClientSide) {
-               for(int var13 = 0; var13 < 20; ++var13) {
+               for (int var13 = 0; var13 < 20; var13++) {
                   double var14 = var4.nextGaussian() * 0.02;
                   double var8 = var4.nextGaussian() * 0.02;
                   double var10 = var4.nextGaussian() * 0.02;
@@ -128,7 +128,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
             }
          }
 
-         ++this.ticksSinceReachedGoal;
+         this.ticksSinceReachedGoal++;
       }
    }
 
@@ -139,7 +139,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
       } else {
          BlockPos[] var3 = new BlockPos[]{var1.below(), var1.west(), var1.east(), var1.north(), var1.south(), var1.below().below()};
 
-         for(BlockPos var7 : var3) {
+         for (BlockPos var7 : var3) {
             if (var2.getBlockState(var7).is(this.blockToRemove)) {
                return var7;
             }
@@ -152,10 +152,8 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
    @Override
    protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
       ChunkAccess var3 = var1.getChunk(SectionPos.blockToSectionCoord(var2.getX()), SectionPos.blockToSectionCoord(var2.getZ()), ChunkStatus.FULL, false);
-      if (var3 == null) {
-         return false;
-      } else {
-         return var3.getBlockState(var2).is(this.blockToRemove) && var3.getBlockState(var2.above()).isAir() && var3.getBlockState(var2.above(2)).isAir();
-      }
+      return var3 == null
+         ? false
+         : var3.getBlockState(var2).is(this.blockToRemove) && var3.getBlockState(var2.above()).isAir() && var3.getBlockState(var2.above(2)).isAir();
    }
 }

@@ -144,7 +144,7 @@ public abstract class PatrollingMonster extends Monster {
 
       public LongDistancePatrolGoal(T var1, double var2, double var4) {
          super();
-         this.mob = var1;
+         this.mob = (T)var1;
          this.speedModifier = var2;
          this.leaderSpeedModifier = var4;
          this.cooldownUntil = -1L;
@@ -187,7 +187,7 @@ public abstract class PatrollingMonster extends Monster {
                   this.moveRandomly();
                   this.cooldownUntil = this.mob.level().getGameTime() + 200L;
                } else if (var1) {
-                  for(PatrollingMonster var10 : var3) {
+                  for (PatrollingMonster var10 : var3) {
                      var10.setPatrolTarget(var8);
                   }
                }

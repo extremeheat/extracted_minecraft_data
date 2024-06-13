@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -116,7 +115,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    private void clearRemovedEntities() {
       this.brainDumpsPerEntity.entrySet().removeIf(var1 -> {
-         Entity var2 = this.minecraft.level.getEntity(((BrainDebugPayload.BrainDump)var1.getValue()).id());
+         Entity var2 = this.minecraft.level.getEntity(var1.getValue().id());
          return var2 == null || var2.isRemoved();
       });
    }
@@ -129,7 +128,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
       });
 
-      for(BlockPos var11 : this.pois.keySet()) {
+      for (BlockPos var11 : this.pois.keySet()) {
          if (var9.closerThan(var11, 30.0)) {
             highlightPoi(var1, var2, var11);
          }
@@ -142,7 +141,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       });
       this.getGhostPois().forEach((var4, var5x) -> {
          if (var9.closerThan(var4, 30.0)) {
-            this.renderGhostPoi(var1, var2, var4, var5x);
+            this.renderGhostPoi(var1, var2, var4, (List<String>)var5x);
          }
       });
    }
@@ -168,7 +167,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          renderTextOverPoi(var1, var2, var5.size() + " ticket holders", var3, var4, -256);
       }
 
-      ++var4;
+      var4++;
       Set var6 = this.getPotentialTicketHolderNames(var3);
       if (var6.size() < 4) {
          renderTextOverPoi(var1, var2, "Candidates: " + var6, var3, var4, -23296);
@@ -190,10 +189,10 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       boolean var10 = this.isMobSelected(var3);
       int var11 = 0;
       renderTextOverMob(var1, var2, var3.pos(), var11, var3.name(), -1, 0.03F);
-      ++var11;
+      var11++;
       if (var10) {
          renderTextOverMob(var1, var2, var3.pos(), var11, var3.profession() + " " + var3.xp() + " xp", -1, 0.02F);
-         ++var11;
+         var11++;
       }
 
       if (var10) {
@@ -207,54 +206,54 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
             var12,
             0.02F
          );
-         ++var11;
+         var11++;
       }
 
       if (var10 && !var3.inventory().equals("")) {
          renderTextOverMob(var1, var2, var3.pos(), var11, var3.inventory(), -98404, 0.02F);
-         ++var11;
+         var11++;
       }
 
       if (var10) {
-         for(String var13 : var3.behaviors()) {
+         for (String var13 : var3.behaviors()) {
             renderTextOverMob(var1, var2, var3.pos(), var11, var13, -16711681, 0.02F);
-            ++var11;
+            var11++;
          }
       }
 
       if (var10) {
-         for(String var19 : var3.activities()) {
+         for (String var19 : var3.activities()) {
             renderTextOverMob(var1, var2, var3.pos(), var11, var19, -16711936, 0.02F);
-            ++var11;
+            var11++;
          }
       }
 
       if (var3.wantsGolem()) {
          renderTextOverMob(var1, var2, var3.pos(), var11, "Wants Golem", -23296, 0.02F);
-         ++var11;
+         var11++;
       }
 
       if (var10 && var3.angerLevel() != -1) {
          renderTextOverMob(var1, var2, var3.pos(), var11, "Anger Level: " + var3.angerLevel(), -98404, 0.02F);
-         ++var11;
+         var11++;
       }
 
       if (var10) {
-         for(String var20 : var3.gossips()) {
+         for (String var20 : var3.gossips()) {
             if (var20.startsWith(var3.name())) {
                renderTextOverMob(var1, var2, var3.pos(), var11, var20, -1, 0.02F);
             } else {
                renderTextOverMob(var1, var2, var3.pos(), var11, var20, -23296, 0.02F);
             }
 
-            ++var11;
+            var11++;
          }
       }
 
       if (var10) {
-         for(String var21 : Lists.reverse(var3.memories())) {
+         for (String var21 : Lists.reverse(var3.memories())) {
             renderTextOverMob(var1, var2, var3.pos(), var11, var21, -3355444, 0.02F);
-            ++var11;
+            var11++;
          }
       }
 
@@ -322,8 +321,8 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private Map<BlockPos, List<String>> getGhostPois() {
       HashMap var1 = Maps.newHashMap();
 
-      for(BrainDebugPayload.BrainDump var3 : this.brainDumpsPerEntity.values()) {
-         for(BlockPos var5 : Iterables.concat(var3.pois(), var3.potentialPois())) {
+      for (BrainDebugPayload.BrainDump var3 : this.brainDumpsPerEntity.values()) {
+         for (BlockPos var5 : Iterables.concat(var3.pois(), var3.potentialPois())) {
             if (!this.pois.containsKey(var5)) {
                var1.computeIfAbsent(var5, var0 -> Lists.newArrayList()).add(var3.name());
             }

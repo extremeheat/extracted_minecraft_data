@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +35,7 @@ public class ReloadCommand {
       ArrayList var3 = Lists.newArrayList(var2);
       List var4 = var1.getDataConfiguration().dataPacks().getDisabled();
 
-      for(String var6 : var0.getAvailableIds()) {
+      for (String var6 : var0.getAvailableIds()) {
          if (!var4.contains(var6) && !var3.contains(var6)) {
             var3.add(var6);
          }

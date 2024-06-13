@@ -21,14 +21,14 @@ public class SuspiciousStewRecipe extends CustomRecipe {
       boolean var5 = false;
       boolean var6 = false;
 
-      for(int var7 = 0; var7 < var1.getContainerSize(); ++var7) {
+      for (int var7 = 0; var7 < var1.getContainerSize(); var7++) {
          ItemStack var8 = var1.getItem(var7);
          if (!var8.isEmpty()) {
             if (var8.is(Blocks.BROWN_MUSHROOM.asItem()) && !var5) {
                var5 = true;
             } else if (var8.is(Blocks.RED_MUSHROOM.asItem()) && !var4) {
                var4 = true;
-            } else if ((var8.is(ItemTags.SMALL_FLOWERS) || var8.is(Items.POISONOUS_POTATO)) && !var3) {
+            } else if (var8.is(ItemTags.SMALL_FLOWERS) && !var3) {
                var3 = true;
             } else {
                if (!var8.is(Items.BOWL) || var6) {
@@ -46,7 +46,7 @@ public class SuspiciousStewRecipe extends CustomRecipe {
    public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ItemStack var3 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
+      for (int var4 = 0; var4 < var1.getContainerSize(); var4++) {
          ItemStack var5 = var1.getItem(var4);
          if (!var5.isEmpty()) {
             SuspiciousEffectHolder var6 = SuspiciousEffectHolder.tryGet(var5.getItem());

@@ -25,7 +25,7 @@ public interface BitRandomSource extends RandomSource {
          do {
             var2 = this.next(31);
             var3 = var2 % var1;
-         } while(var2 - var3 + (var1 - 1) < 0);
+         } while (var2 - var3 + (var1 - 1) < 0);
 
          return var3;
       }

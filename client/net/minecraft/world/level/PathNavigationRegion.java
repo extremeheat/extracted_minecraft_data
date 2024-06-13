@@ -44,14 +44,14 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
       ChunkSource var6 = var1.getChunkSource();
       this.allEmpty = true;
 
-      for(int var7 = this.centerX; var7 <= var4; ++var7) {
-         for(int var8 = this.centerZ; var8 <= var5; ++var8) {
+      for (int var7 = this.centerX; var7 <= var4; var7++) {
+         for (int var8 = this.centerZ; var8 <= var5; var8++) {
             this.chunks[var7 - this.centerX][var8 - this.centerZ] = var6.getChunkNow(var7, var8);
          }
       }
 
-      for(int var10 = SectionPos.blockToSectionCoord(var2.getX()); var10 <= SectionPos.blockToSectionCoord(var3.getX()); ++var10) {
-         for(int var11 = SectionPos.blockToSectionCoord(var2.getZ()); var11 <= SectionPos.blockToSectionCoord(var3.getZ()); ++var11) {
+      for (int var10 = SectionPos.blockToSectionCoord(var2.getX()); var10 <= SectionPos.blockToSectionCoord(var3.getX()); var10++) {
+         for (int var11 = SectionPos.blockToSectionCoord(var2.getZ()); var11 <= SectionPos.blockToSectionCoord(var3.getZ()); var11++) {
             ChunkAccess var9 = this.chunks[var10 - this.centerX][var11 - this.centerZ];
             if (var9 != null && !var9.isYSpaceEmpty(var2.getY(), var3.getY())) {
                this.allEmpty = false;
@@ -130,10 +130,5 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
 
    public ProfilerFiller getProfiler() {
       return this.level.getProfiler();
-   }
-
-   @Override
-   public boolean isPotato() {
-      return this.level.isPotato();
    }
 }

@@ -21,7 +21,7 @@ public class SearchRegistry implements ResourceManagerReloadListener {
 
    @Override
    public void onResourceManagerReload(ResourceManager var1) {
-      for(SearchRegistry.TreeEntry var3 : this.searchTrees.values()) {
+      for (SearchRegistry.TreeEntry var3 : this.searchTrees.values()) {
          var3.refresh();
       }
    }
@@ -66,7 +66,7 @@ public class SearchRegistry implements ResourceManagerReloadListener {
       }
 
       void populate(List<T> var1) {
-         this.tree = this.factory.apply((T)var1);
+         this.tree = this.factory.apply(var1);
          this.tree.refresh();
       }
 

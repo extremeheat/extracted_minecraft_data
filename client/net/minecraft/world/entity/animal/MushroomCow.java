@@ -8,7 +8,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -53,11 +52,6 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
 
    public MushroomCow(EntityType<? extends MushroomCow> var1, Level var2) {
       super(var1, var2);
-   }
-
-   @Override
-   public boolean hasPotatoVariant() {
-      return false;
    }
 
    @Override
@@ -121,7 +115,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
          return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else if (this.getVariant() == MushroomCow.MushroomType.BROWN && var3.is(ItemTags.SMALL_FLOWERS)) {
          if (this.stewEffects != null) {
-            for(int var4 = 0; var4 < 2; ++var4) {
+            for (int var4 = 0; var4 < 2; var4++) {
                this.level()
                   .addParticle(
                      ParticleTypes.SMOKE,
@@ -141,7 +135,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
 
             var3.consume(1, var1);
 
-            for(int var5 = 0; var5 < 4; ++var5) {
+            for (int var5 = 0; var5 < 4; var5++) {
                this.level()
                   .addParticle(
                      ParticleTypes.EFFECT,
@@ -187,7 +181,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
             var2.setInvulnerable(this.isInvulnerable());
             this.level().addFreshEntity(var2);
 
-            for(int var3 = 0; var3 < 5; ++var3) {
+            for (int var3 = 0; var3 < 5; var3++) {
                this.level()
                   .addFreshEntity(
                      new ItemEntity(this.level(), this.getX(), this.getY(1.0), this.getZ(), new ItemStack(this.getVariant().blockState.getBlock()))
@@ -207,7 +201,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
       super.addAdditionalSaveData(var1);
       var1.putString("Type", this.getVariant().getSerializedName());
       if (this.stewEffects != null) {
-         SuspiciousStewEffects.CODEC.encodeStart(NbtOps.INSTANCE, this.stewEffects).result().ifPresent(var1x -> var1.put("stew_effects", var1x));
+         SuspiciousStewEffects.CODEC.encodeStart(NbtOps.INSTANCE, this.stewEffects).ifSuccess(var1x -> var1.put("stew_effects", var1x));
       }
    }
 
@@ -216,7 +210,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
       super.readAdditionalSaveData(var1);
       this.setVariant(MushroomCow.MushroomType.byType(var1.getString("Type")));
       if (var1.contains("stew_effects", 9)) {
-         SuspiciousStewEffects.CODEC.parse(NbtOps.INSTANCE, var1.get("stew_effects")).result().ifPresent(var1x -> this.stewEffects = var1x);
+         SuspiciousStewEffects.CODEC.parse(NbtOps.INSTANCE, var1.get("stew_effects")).ifSuccess(var1x -> this.stewEffects = var1x);
       }
    }
 

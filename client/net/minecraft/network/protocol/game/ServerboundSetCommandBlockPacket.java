@@ -46,7 +46,7 @@ public class ServerboundSetCommandBlockPacket implements Packet<ServerGamePacket
       var1.writeBlockPos(this.pos);
       var1.writeUtf(this.command);
       var1.writeEnum(this.mode);
-      int var2 = 0;
+      byte var2 = 0;
       if (this.trackOutput) {
          var2 |= 1;
       }

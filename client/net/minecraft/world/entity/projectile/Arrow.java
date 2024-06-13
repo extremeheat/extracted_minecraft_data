@@ -85,7 +85,7 @@ public class Arrow extends AbstractArrow {
    private void makeParticle(int var1) {
       int var2 = this.getColor();
       if (var2 != -1 && var1 > 0) {
-         for(int var3 = 0; var3 < var1; ++var3) {
+         for (int var3 = 0; var3 < var1; var3++) {
             this.level()
                .addParticle(
                   ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 0.0, 0.0, 0.0
@@ -104,7 +104,7 @@ public class Arrow extends AbstractArrow {
       Entity var2 = this.getEffectSource();
       PotionContents var3 = this.getPotionContents();
       if (var3.potion().isPresent()) {
-         for(MobEffectInstance var5 : var3.potion().get().value().getEffects()) {
+         for (MobEffectInstance var5 : var3.potion().get().value().getEffects()) {
             var1.addEffect(
                new MobEffectInstance(var5.getEffect(), Math.max(var5.mapDuration(var0 -> var0 / 8), 1), var5.getAmplifier(), var5.isAmbient(), var5.isVisible()),
                var2
@@ -112,7 +112,7 @@ public class Arrow extends AbstractArrow {
          }
       }
 
-      for(MobEffectInstance var7 : var3.customEffects()) {
+      for (MobEffectInstance var7 : var3.customEffects()) {
          var1.addEffect(var7, var2);
       }
    }
@@ -131,7 +131,7 @@ public class Arrow extends AbstractArrow {
             float var4 = (float)(var2 >> 8 & 0xFF) / 255.0F;
             float var5 = (float)(var2 >> 0 & 0xFF) / 255.0F;
 
-            for(int var6 = 0; var6 < 20; ++var6) {
+            for (int var6 = 0; var6 < 20; var6++) {
                this.level()
                   .addParticle(
                      ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var3, var4, var5),

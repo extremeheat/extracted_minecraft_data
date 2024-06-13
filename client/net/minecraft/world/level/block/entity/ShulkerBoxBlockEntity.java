@@ -65,7 +65,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
    private void updateAnimation(Level var1, BlockPos var2, BlockState var3) {
       this.progressOld = this.progress;
-      switch(this.animationStatus) {
+      switch (this.animationStatus) {
          case CLOSED:
             this.progress = 0.0F;
             break;
@@ -83,6 +83,9 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
             this.moveCollidedEntities(var1, var2, var3);
             break;
+         case OPENED:
+            this.progress = 1.0F;
+            break;
          case CLOSING:
             this.progress -= 0.1F;
             if (this.progressOld == 1.0F) {
@@ -94,9 +97,6 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
                this.progress = 0.0F;
                doNeighborUpdates(var1, var2, var3);
             }
-            break;
-         case OPENED:
-            this.progress = 1.0F;
       }
    }
 
@@ -114,7 +114,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          AABB var5 = Shulker.getProgressDeltaAabb(1.0F, var4, this.progressOld, this.progress).move(var2);
          List var6 = var1.getEntities(null, var5);
          if (!var6.isEmpty()) {
-            for(Entity var8 : var6) {
+            for (Entity var8 : var6) {
                if (var8.getPistonPushReaction() != PushReaction.IGNORE) {
                   var8.move(
                      MoverType.SHULKER_BOX,
@@ -165,7 +165,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
             this.openCount = 0;
          }
 
-         ++this.openCount;
+         this.openCount++;
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount == 1) {
             this.level.gameEvent(var1, GameEvent.CONTAINER_OPEN, this.worldPosition);
@@ -177,7 +177,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    @Override
    public void stopOpen(Player var1) {
       if (!this.remove && !var1.isSpectator()) {
-         --this.openCount;
+         this.openCount--;
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount <= 0) {
             this.level.gameEvent(var1, GameEvent.CONTAINER_CLOSE, this.worldPosition);
@@ -193,8 +193,8 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.loadFromTag(var1, var2);
    }
 

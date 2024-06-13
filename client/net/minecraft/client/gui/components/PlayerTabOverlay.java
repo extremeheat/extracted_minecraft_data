@@ -102,7 +102,7 @@ public class PlayerTabOverlay {
       int var8 = 0;
       int var9 = 0;
 
-      for(PlayerInfo var11 : var5) {
+      for (PlayerInfo var11 : var5) {
          Component var12 = this.getNameForDisplay(var11);
          var8 = Math.max(var8, this.minecraft.font.width(var12));
          int var13 = 0;
@@ -135,8 +135,8 @@ public class PlayerTabOverlay {
       int var35 = var34;
 
       int var36;
-      for(var36 = 1; var35 > 20; var35 = (var34 + var36 - 1) / var36) {
-         ++var36;
+      for (var36 = 1; var35 > 20; var35 = (var34 + var36 - 1) / var36) {
+         var36++;
       }
 
       boolean var37 = this.minecraft.isLocalServer() || this.minecraft.getConnection().getConnection().isEncrypted();
@@ -159,7 +159,7 @@ public class PlayerTabOverlay {
       if (this.header != null) {
          var19 = this.minecraft.font.split(this.header, var2 - 50);
 
-         for(FormattedCharSequence var21 : var19) {
+         for (FormattedCharSequence var21 : var19) {
             var43 = Math.max(var43, this.minecraft.font.width(var21));
          }
       }
@@ -168,7 +168,7 @@ public class PlayerTabOverlay {
       if (this.footer != null) {
          var44 = this.minecraft.font.split(this.footer, var2 - 50);
 
-         for(FormattedCharSequence var22 : var44) {
+         for (FormattedCharSequence var22 : var44) {
             var43 = Math.max(var43, this.minecraft.font.width(var22));
          }
       }
@@ -176,19 +176,19 @@ public class PlayerTabOverlay {
       if (var19 != null) {
          var1.fill(var2 / 2 - var43 / 2 - 1, var41 - 1, var2 / 2 + var43 / 2 + 1, var41 + var19.size() * 9, -2147483648);
 
-         for(FormattedCharSequence var48 : var19) {
+         for (FormattedCharSequence var48 : var19) {
             int var23 = this.minecraft.font.width(var48);
             var1.drawString(this.minecraft.font, var48, var2 / 2 - var23 / 2, var41, -1);
             var41 += 9;
          }
 
-         ++var41;
+         var41++;
       }
 
       var1.fill(var2 / 2 - var43 / 2 - 1, var41 - 1, var2 / 2 + var43 / 2 + 1, var41 + var35 * 9, -2147483648);
       int var47 = this.minecraft.options.getBackgroundColor(553648127);
 
-      for(int var49 = 0; var49 < var34; ++var49) {
+      for (int var49 = 0; var49 < var34; var49++) {
          int var51 = var49 / var35;
          int var24 = var49 % var35;
          int var25 = var40 + var51 * var39 + var51 * 5;
@@ -224,7 +224,7 @@ public class PlayerTabOverlay {
          var41 += var35 * 9 + 1;
          var1.fill(var2 / 2 - var43 / 2 - 1, var41 - 1, var2 / 2 + var43 / 2 + 1, var41 + var44.size() * 9, -2147483648);
 
-         for(FormattedCharSequence var52 : var44) {
+         for (FormattedCharSequence var52 : var44) {
             int var53 = this.minecraft.font.width(var52);
             var1.drawString(this.minecraft.font, var52, var2 / 2 - var53 / 2, var41, -1);
             var41 += 9;
@@ -286,11 +286,11 @@ public class PlayerTabOverlay {
          } else {
             ResourceLocation var12 = var10 ? HEART_CONTAINER_BLINKING_SPRITE : HEART_CONTAINER_SPRITE;
 
-            for(int var13 = var8; var13 < var9; ++var13) {
+            for (int var13 = var8; var13 < var9; var13++) {
                var5.blitSprite(var12, var2 + var13 * var11, var1, 9, 9);
             }
 
-            for(int var18 = 0; var18 < var8; ++var18) {
+            for (int var18 = 0; var18 < var8; var18++) {
                var5.blitSprite(var12, var2 + var18 * var11, var1, 9, 9);
                if (var10) {
                   if (var18 * 2 + 1 < var7.displayedValue()) {
@@ -364,19 +364,14 @@ public class PlayerTabOverlay {
       }
    }
 
-   static record ScoreDisplayEntry(Component a, int b, @Nullable Component c, int d) {
-      final Component name;
-      final int score;
-      @Nullable
-      final Component formattedScore;
-      final int scoreWidth;
+   static record ScoreDisplayEntry(Component name, int score, @Nullable Component formattedScore, int scoreWidth) {
 
-      ScoreDisplayEntry(Component var1, int var2, @Nullable Component var3, int var4) {
+      ScoreDisplayEntry(Component name, int score, @Nullable Component formattedScore, int scoreWidth) {
          super();
-         this.name = var1;
-         this.score = var2;
-         this.formattedScore = var3;
-         this.scoreWidth = var4;
+         this.name = name;
+         this.score = score;
+         this.formattedScore = formattedScore;
+         this.scoreWidth = scoreWidth;
       }
    }
 }

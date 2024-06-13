@@ -41,7 +41,7 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
       } else {
          int var2 = var1.getCursor();
 
-         while(var1.canRead() && var1.peek() != ' ') {
+         while (var1.canRead() && var1.peek() != ' ') {
             var1.skip();
          }
 
@@ -66,7 +66,7 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
    }
 
    private static OperationArgument.SimpleOperation getSimpleOperation(String var0) throws CommandSyntaxException {
-      return switch(var0) {
+      return switch (var0) {
          case "=" -> (var0x, var1) -> var1;
          case "+=" -> Integer::sum;
          case "-=" -> (var0x, var1) -> var0x - var1;

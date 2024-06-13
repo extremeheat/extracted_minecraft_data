@@ -35,7 +35,7 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
       int var9 = SectionPos.sectionToBlockCoord(this.getRange() * 2 - 1);
       int var10 = var5.nextInt(var5.nextInt(var5.nextInt(this.getCaveBound()) + 1) + 1);
 
-      for(int var11 = 0; var11 < var10; ++var11) {
+      for (int var11 = 0; var11 < var10; var11++) {
          double var12 = (double)var7.getBlockX(var5.nextInt(16));
          double var14 = (double)var2.y.sample(var5, var1);
          double var16 = (double)var7.getBlockZ(var5.nextInt(16));
@@ -51,7 +51,7 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
             var25 += var5.nextInt(4);
          }
 
-         for(int var32 = 0; var32 < var25; ++var32) {
+         for (int var32 = 0; var32 < var25; var32++) {
             float var27 = var5.nextFloat() * 6.2831855F;
             float var33 = (var5.nextFloat() - 0.5F) / 4.0F;
             float var29 = this.getThickness(var5);
@@ -129,7 +129,7 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
       float var30 = 0.0F;
       float var31 = 0.0F;
 
-      for(int var32 = var21; var32 < var22; ++var32) {
+      for (int var32 = var21; var32 < var22; var32++) {
          double var33 = 1.5 + (double)(Mth.sin(3.1415927F * (float)var32 / (float)var22) * var18);
          double var35 = var33 * var23;
          float var37 = Mth.cos(var20);
@@ -200,10 +200,6 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
    }
 
    private static boolean shouldSkip(double var0, double var2, double var4, double var6) {
-      if (var2 <= var6) {
-         return true;
-      } else {
-         return var0 * var0 + var2 * var2 + var4 * var4 >= 1.0;
-      }
+      return var2 <= var6 ? true : var0 * var0 + var2 * var2 + var4 * var4 >= 1.0;
    }
 }

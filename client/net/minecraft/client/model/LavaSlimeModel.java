@@ -29,7 +29,7 @@ public class LavaSlimeModel<T extends Slime> extends HierarchicalModel<T> {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
 
-      for(int var2 = 0; var2 < 8; ++var2) {
+      for (int var2 = 0; var2 < 8; var2++) {
          byte var3 = 0;
          int var4 = var2;
          if (var2 == 2) {
@@ -58,7 +58,7 @@ public class LavaSlimeModel<T extends Slime> extends HierarchicalModel<T> {
          var5 = 0.0F;
       }
 
-      for(int var6 = 0; var6 < this.bodyCubes.length; ++var6) {
+      for (int var6 = 0; var6 < this.bodyCubes.length; var6++) {
          this.bodyCubes[var6].y = (float)(-(4 - var6)) * var5 * 1.7F;
       }
    }

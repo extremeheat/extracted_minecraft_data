@@ -96,7 +96,7 @@ public class ItemFrame extends HangingEntity {
          double var11 = (double)this.getHeight();
          double var13 = (double)this.getWidth();
          Direction.Axis var15 = this.direction.getAxis();
-         switch(var15) {
+         switch (var15) {
             case X:
                var9 = 1.0;
                break;

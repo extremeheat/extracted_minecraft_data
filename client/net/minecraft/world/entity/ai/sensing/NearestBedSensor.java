@@ -3,13 +3,11 @@ package net.minecraft.world.entity.ai.sensing;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2LongMap.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.AcquirePoi;
@@ -41,13 +39,13 @@ public class NearestBedSensor extends Sensor<Mob> {
          this.lastUpdate = var1.getGameTime() + (long)var1.getRandom().nextInt(20);
          PoiManager var3 = var1.getPoiManager();
          Predicate var4 = var1x -> {
-            long var2xx = var1x.asLong();
-            if (this.batchCache.containsKey(var2xx)) {
+            long var2x = var1x.asLong();
+            if (this.batchCache.containsKey(var2x)) {
                return false;
             } else if (++this.triedCount >= 5) {
                return false;
             } else {
-               this.batchCache.put(var2xx, this.lastUpdate + 40L);
+               this.batchCache.put(var2x, this.lastUpdate + 40L);
                return true;
             }
          };

@@ -70,8 +70,8 @@ public class HoglinModel<T extends Mob & HoglinBase> extends AgeableListModel<T>
       var3.addOrReplaceChild(
          "left_horn", CubeListBuilder.create().texOffs(1, 13).addBox(-1.0F, -11.0F, -1.0F, 2.0F, 11.0F, 2.0F), PartPose.offset(7.0F, 2.0F, -12.0F)
       );
-      boolean var4 = true;
-      boolean var5 = true;
+      byte var4 = 14;
+      byte var5 = 11;
       var1.addOrReplaceChild(
          "right_front_leg", CubeListBuilder.create().texOffs(66, 42).addBox(-3.0F, 0.0F, -3.0F, 6.0F, 14.0F, 6.0F), PartPose.offset(-4.0F, 10.0F, -8.5F)
       );

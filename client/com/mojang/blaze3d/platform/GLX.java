@@ -19,9 +19,7 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
-import org.lwjgl.glfw.GLFWNativeGLX;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import oshi.SystemInfo;
@@ -61,21 +59,20 @@ public class GLX {
 
    public static LongSupplier _initGlfw() {
       RenderSystem.assertInInitPhase();
-      GLFWNativeGLX.setPath(GL.getFunctionProvider());
       Window.checkGlfwError((var0x, var1x) -> {
          throw new IllegalStateException(String.format(Locale.ROOT, "GLFW error before init: [0x%X]%s", var0x, var1x));
       });
       ArrayList var0 = Lists.newArrayList();
       GLFWErrorCallback var1 = GLFW.glfwSetErrorCallback((var1x, var2x) -> {
-         String var4xx = var2x == 0L ? "" : MemoryUtil.memUTF8(var2x);
-         var0.add(String.format(Locale.ROOT, "GLFW error during init: [0x%X]%s", var1x, var4xx));
+         String var4x = var2x == 0L ? "" : MemoryUtil.memUTF8(var2x);
+         var0.add(String.format(Locale.ROOT, "GLFW error during init: [0x%X]%s", var1x, var4x));
       });
       if (!GLFW.glfwInit()) {
          throw new IllegalStateException("Failed to initialize GLFW, errors: " + Joiner.on(",").join(var0));
       } else {
          LongSupplier var2 = () -> (long)(GLFW.glfwGetTime() * 1.0E9);
 
-         for(String var4 : var0) {
+         for (String var4 : var0) {
             LOGGER.error("GLFW error collected during initialization: {}", var4);
          }
 

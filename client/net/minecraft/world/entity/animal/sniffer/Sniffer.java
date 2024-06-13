@@ -156,21 +156,23 @@ public class Sniffer extends Animal {
       if (DATA_STATE.equals(var1)) {
          Sniffer.State var2 = this.getState();
          this.resetAnimations();
-         switch(var2) {
+         switch (var2) {
+            case FEELING_HAPPY:
+               this.feelingHappyAnimationState.startIfStopped(this.tickCount);
+               break;
             case SCENTING:
                this.scentingAnimationState.startIfStopped(this.tickCount);
                break;
             case SNIFFING:
                this.sniffingAnimationState.startIfStopped(this.tickCount);
+            case SEARCHING:
+            default:
                break;
             case DIGGING:
                this.diggingAnimationState.startIfStopped(this.tickCount);
                break;
             case RISING:
                this.risingAnimationState.startIfStopped(this.tickCount);
-               break;
-            case FEELING_HAPPY:
-               this.feelingHappyAnimationState.startIfStopped(this.tickCount);
          }
 
          this.refreshDimensions();
@@ -188,7 +190,14 @@ public class Sniffer extends Animal {
    }
 
    public Sniffer transitionTo(Sniffer.State var1) {
-      switch(var1) {
+      switch (var1) {
+         case IDLING:
+            this.setState(Sniffer.State.IDLING);
+            break;
+         case FEELING_HAPPY:
+            this.playSound(SoundEvents.SNIFFER_HAPPY, 1.0F, 1.0F);
+            this.setState(Sniffer.State.FEELING_HAPPY);
+            break;
          case SCENTING:
             this.setState(Sniffer.State.SCENTING).onScentingStart();
             break;
@@ -196,22 +205,15 @@ public class Sniffer extends Animal {
             this.playSound(SoundEvents.SNIFFER_SNIFFING, 1.0F, 1.0F);
             this.setState(Sniffer.State.SNIFFING);
             break;
+         case SEARCHING:
+            this.setState(Sniffer.State.SEARCHING);
+            break;
          case DIGGING:
             this.setState(Sniffer.State.DIGGING).onDiggingStart();
             break;
          case RISING:
             this.playSound(SoundEvents.SNIFFER_DIGGING_STOP, 1.0F, 1.0F);
             this.setState(Sniffer.State.RISING);
-            break;
-         case FEELING_HAPPY:
-            this.playSound(SoundEvents.SNIFFER_HAPPY, 1.0F, 1.0F);
-            this.setState(Sniffer.State.FEELING_HAPPY);
-            break;
-         case IDLING:
-            this.setState(Sniffer.State.IDLING);
-            break;
-         case SEARCHING:
-            this.setState(Sniffer.State.SEARCHING);
       }
 
       return this;
@@ -274,7 +276,7 @@ public class Sniffer extends Animal {
          ObjectArrayList var4 = var2.getRandomItems(var3);
          BlockPos var5 = this.getHeadBlock();
 
-         for(ItemStack var7 : var4) {
+         for (ItemStack var7 : var4) {
             ItemEntity var8 = new ItemEntity(var1, (double)var5.getX(), (double)var5.getY(), (double)var5.getZ(), var7);
             var8.setDefaultPickUpDelay();
             var1.addFreshEntity(var8);
@@ -290,7 +292,7 @@ public class Sniffer extends Animal {
          BlockPos var3 = this.getHeadBlock();
          BlockState var4 = this.level().getBlockState(var3.below());
          if (var4.getRenderShape() != RenderShape.INVISIBLE) {
-            for(int var5 = 0; var5 < 30; ++var5) {
+            for (int var5 = 0; var5 < 30; var5++) {
                Vec3 var6 = Vec3.atCenterOf(var3).add(0.0, -0.6499999761581421, 0.0);
                this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var4), var6.x, var6.y, var6.z, 0.0, 0.0, 0.0);
             }
@@ -349,12 +351,12 @@ public class Sniffer extends Animal {
 
    @Override
    public void tick() {
-      switch(this.getState()) {
-         case DIGGING:
-            this.emitDiggingParticles(this.diggingAnimationState).dropSeed();
-            break;
+      switch (this.getState()) {
          case SEARCHING:
             this.playSearchingSound();
+            break;
+         case DIGGING:
+            this.emitDiggingParticles(this.diggingAnimationState).dropSeed();
       }
 
       super.tick();
@@ -420,10 +422,9 @@ public class Sniffer extends Animal {
 
    @Override
    public boolean canMate(Animal var1) {
-      if (!(var1 instanceof Sniffer)) {
+      if (!(var1 instanceof Sniffer var2)) {
          return false;
       } else {
-         Sniffer var2 = (Sniffer)var1;
          Set var3 = Set.of(Sniffer.State.IDLING, Sniffer.State.SCENTING, Sniffer.State.FEELING_HAPPY);
          return var3.contains(this.getState()) && var3.contains(var2.getState()) && super.canMate(var1);
       }
@@ -446,7 +447,7 @@ public class Sniffer extends Animal {
 
    @Override
    public Brain<Sniffer> getBrain() {
-      return super.getBrain();
+      return (Brain<Sniffer>)super.getBrain();
    }
 
    @Override

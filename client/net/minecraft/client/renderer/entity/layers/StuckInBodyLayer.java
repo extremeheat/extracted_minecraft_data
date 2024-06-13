@@ -23,7 +23,7 @@ public abstract class StuckInBodyLayer<T extends LivingEntity, M extends PlayerM
       int var11 = this.numStuck((T)var4);
       RandomSource var12 = RandomSource.create((long)var4.getId());
       if (var11 > 0) {
-         for(int var13 = 0; var13 < var11; ++var13) {
+         for (int var13 = 0; var13 < var11; var13++) {
             var1.pushPose();
             ModelPart var14 = this.getParentModel().getRandomModelPart(var12);
             ModelPart.Cube var15 = var14.getRandomCube(var12);

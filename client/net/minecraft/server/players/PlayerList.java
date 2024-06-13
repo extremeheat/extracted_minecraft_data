@@ -26,10 +26,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.LayeredRegistryAccess;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
@@ -43,7 +40,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
-import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
@@ -85,15 +81,10 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -233,7 +224,7 @@ public abstract class PlayerList {
       var10.addNewPlayer(var2);
       this.server.getCustomBossEvents().onPlayerConnect(var2);
 
-      for(MobEffectInstance var21 : var2.getActiveEffects()) {
+      for (MobEffectInstance var21 : var2.getActiveEffects()) {
          var13.send(new ClientboundUpdateMobEffectPacket(var2.getId(), var21, false));
       }
 
@@ -251,7 +242,7 @@ public abstract class PlayerList {
             if (var27.getUUID().equals(var22)) {
                var2.startRiding(var27, true);
             } else {
-               for(Entity var24 : var27.getIndirectPassengers()) {
+               for (Entity var24 : var27.getIndirectPassengers()) {
                   if (var24.getUUID().equals(var22)) {
                      var2.startRiding(var24, true);
                      break;
@@ -263,7 +254,7 @@ public abstract class PlayerList {
                LOGGER.warn("Couldn't reattach entity to player");
                var27.discard();
 
-               for(Entity var29 : var27.getIndirectPassengers()) {
+               for (Entity var29 : var27.getIndirectPassengers()) {
                   var29.discard();
                }
             }
@@ -276,14 +267,14 @@ public abstract class PlayerList {
    protected void updateEntireScoreboard(ServerScoreboard var1, ServerPlayer var2) {
       HashSet var3 = Sets.newHashSet();
 
-      for(PlayerTeam var5 : var1.getPlayerTeams()) {
+      for (PlayerTeam var5 : var1.getPlayerTeams()) {
          var2.connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(var5, true));
       }
 
-      for(DisplaySlot var7 : DisplaySlot.values()) {
+      for (DisplaySlot var7 : DisplaySlot.values()) {
          Objective var8 = var1.getDisplayObjective(var7);
          if (var8 != null && !var3.contains(var8)) {
-            for(Packet var11 : var1.getStartTrackingPackets(var8)) {
+            for (Packet var11 : var1.getStartTrackingPackets(var8)) {
                var2.connection.send(var11);
             }
 
@@ -420,7 +411,7 @@ public abstract class PlayerList {
       UUID var2 = var1.getId();
       Set var3 = Sets.newIdentityHashSet();
 
-      for(ServerPlayer var5 : this.players) {
+      for (ServerPlayer var5 : this.players) {
          if (var5.getUUID().equals(var2)) {
             var3.add(var5);
          }
@@ -431,48 +422,11 @@ public abstract class PlayerList {
          var3.add(var7);
       }
 
-      for(ServerPlayer var6 : var3) {
+      for (ServerPlayer var6 : var3) {
          var6.connection.disconnect(DUPLICATE_LOGIN_DISCONNECT_MESSAGE);
       }
 
       return !var3.isEmpty();
-   }
-
-   public ServerPlayer sproutRespawn(ServerPlayer var1) {
-      ServerPlayer var2 = this.respawn(var1, true);
-      RandomSource var3 = RandomSource.create();
-      double var4 = var3.nextGaussian() * 0.3;
-      double var6 = var3.nextGaussian() * 0.3;
-      double var8 = var2.position().x();
-      double var10 = var2.position().y() + 1.0;
-      double var12 = var2.position().z();
-      SimpleParticleType var14 = ParticleTypes.SMOKE;
-      SimpleParticleType var15 = ParticleTypes.REVERSE_POTATO_LIGHTNING;
-      Holder.Reference var16 = SoundEvents.EMPTY_HOLDER;
-      ItemStack var17 = var2.getInventory().armor.get(EquipmentSlot.FEET.getIndex());
-      if (var17 != ItemStack.EMPTY) {
-         var2.spawnAtLocation(var17, 2.0F);
-      }
-
-      var2.setItemSlot(EquipmentSlot.FEET, Items.POISONOUS_POTA_TOES.getDefaultInstance());
-      Explosion var18 = var2.level().explode(null, null, null, var8, var10, var12, 2.0F, false, Level.ExplosionInteraction.NONE, false, var14, var15, var16);
-      var2.connection
-         .send(
-            new ClientboundExplodePacket(
-               var2.position().x,
-               var2.position().y,
-               var2.position().z,
-               5.0F,
-               var18.getToBlow(),
-               new Vec3(var4, 5.0, var6),
-               Explosion.BlockInteraction.KEEP,
-               var14,
-               var15,
-               var16
-            )
-         );
-      var2.level().playSound(null, var2.blockPosition(), SoundEvents.PLAYER_SPROUT_RESPAWN_2, SoundSource.PLAYERS);
-      return var2;
    }
 
    public ServerPlayer respawn(ServerPlayer var1, boolean var2) {
@@ -496,7 +450,7 @@ public abstract class PlayerList {
       var9.setId(var1.getId());
       var9.setMainArm(var1.getMainArm());
 
-      for(String var11 : var1.getTags()) {
+      for (String var11 : var1.getTags()) {
          var9.addTag(var11);
       }
 
@@ -520,7 +474,7 @@ public abstract class PlayerList {
          var9.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
       }
 
-      while(!var8.noCollision(var9) && var9.getY() < (double)var8.getMaxBuildHeight()) {
+      while (!var8.noCollision(var9) && var9.getY() < (double)var8.getMaxBuildHeight()) {
          var9.setPos(var9.getX(), var9.getY() + 1.0, var9.getZ());
       }
 
@@ -572,13 +526,13 @@ public abstract class PlayerList {
    }
 
    public void broadcastAll(Packet<?> var1) {
-      for(ServerPlayer var3 : this.players) {
+      for (ServerPlayer var3 : this.players) {
          var3.connection.send(var1);
       }
    }
 
    public void broadcastAll(Packet<?> var1, ResourceKey<Level> var2) {
-      for(ServerPlayer var4 : this.players) {
+      for (ServerPlayer var4 : this.players) {
          if (var4.level().dimension() == var2) {
             var4.connection.send(var1);
          }
@@ -588,7 +542,7 @@ public abstract class PlayerList {
    public void broadcastSystemToTeam(Player var1, Component var2) {
       PlayerTeam var3 = var1.getTeam();
       if (var3 != null) {
-         for(String var6 : var3.getPlayers()) {
+         for (String var6 : var3.getPlayers()) {
             ServerPlayer var7 = this.getPlayerByName(var6);
             if (var7 != null && var7 != var1) {
                var7.sendSystemMessage(var2);
@@ -602,7 +556,7 @@ public abstract class PlayerList {
       if (var3 == null) {
          this.broadcastSystemMessage(var2, false);
       } else {
-         for(int var4 = 0; var4 < this.players.size(); ++var4) {
+         for (int var4 = 0; var4 < this.players.size(); var4++) {
             ServerPlayer var5 = this.players.get(var4);
             if (var5.getTeam() != var3) {
                var5.sendSystemMessage(var2);
@@ -614,7 +568,7 @@ public abstract class PlayerList {
    public String[] getPlayerNamesArray() {
       String[] var1 = new String[this.players.size()];
 
-      for(int var2 = 0; var2 < this.players.size(); ++var2) {
+      for (int var2 = 0; var2 < this.players.size(); var2++) {
          var1[var2] = this.players.get(var2).getGameProfile().getName();
       }
 
@@ -676,7 +630,7 @@ public abstract class PlayerList {
    public ServerPlayer getPlayerByName(String var1) {
       int var2 = this.players.size();
 
-      for(int var3 = 0; var3 < var2; ++var3) {
+      for (int var3 = 0; var3 < var2; var3++) {
          ServerPlayer var4 = this.players.get(var3);
          if (var4.getGameProfile().getName().equalsIgnoreCase(var1)) {
             return var4;
@@ -687,7 +641,7 @@ public abstract class PlayerList {
    }
 
    public void broadcast(@Nullable Player var1, double var2, double var4, double var6, double var8, ResourceKey<Level> var10, Packet<?> var11) {
-      for(int var12 = 0; var12 < this.players.size(); ++var12) {
+      for (int var12 = 0; var12 < this.players.size(); var12++) {
          ServerPlayer var13 = this.players.get(var12);
          if (var13 != var1 && var13.level().dimension() == var10) {
             double var14 = var2 - var13.getX();
@@ -701,7 +655,7 @@ public abstract class PlayerList {
    }
 
    public void saveAll() {
-      for(int var1 = 0; var1 < this.players.size(); ++var1) {
+      for (int var1 = 0; var1 < this.players.size(); var1++) {
          this.save(this.players.get(var1));
       }
    }
@@ -765,7 +719,7 @@ public abstract class PlayerList {
    public List<ServerPlayer> getPlayersWithAddress(String var1) {
       ArrayList var2 = Lists.newArrayList();
 
-      for(ServerPlayer var4 : this.players) {
+      for (ServerPlayer var4 : this.players) {
          if (var4.getIpAddress().equals(var1)) {
             var2.add(var4);
          }
@@ -796,7 +750,7 @@ public abstract class PlayerList {
    }
 
    public void removeAll() {
-      for(int var1 = 0; var1 < this.players.size(); ++var1) {
+      for (int var1 = 0; var1 < this.players.size(); var1++) {
          this.players.get(var1).connection.disconnect(Component.translatable("multiplayer.disconnect.server_shutdown"));
       }
    }
@@ -808,7 +762,7 @@ public abstract class PlayerList {
    public void broadcastSystemMessage(Component var1, Function<ServerPlayer, Component> var2, boolean var3) {
       this.server.sendSystemMessage(var1);
 
-      for(ServerPlayer var5 : this.players) {
+      for (ServerPlayer var5 : this.players) {
          Component var6 = (Component)var2.apply(var5);
          if (var6 != null) {
             var5.sendSystemMessage(var6, var3);
@@ -830,7 +784,7 @@ public abstract class PlayerList {
       OutgoingChatMessage var6 = OutgoingChatMessage.create(var1);
       boolean var7 = false;
 
-      for(ServerPlayer var9 : this.players) {
+      for (ServerPlayer var9 : this.players) {
          boolean var10 = var2.test(var9);
          var9.sendChatMessage(var6, var10, var4);
          var7 |= var10 && var1.isFullyFiltered();
@@ -883,7 +837,7 @@ public abstract class PlayerList {
       this.viewDistance = var1;
       this.broadcastAll(new ClientboundSetChunkCacheRadiusPacket(var1));
 
-      for(ServerLevel var3 : this.server.getAllLevels()) {
+      for (ServerLevel var3 : this.server.getAllLevels()) {
          if (var3 != null) {
             var3.getChunkSource().setViewDistance(var1);
          }
@@ -894,7 +848,7 @@ public abstract class PlayerList {
       this.simulationDistance = var1;
       this.broadcastAll(new ClientboundSetSimulationDistancePacket(var1));
 
-      for(ServerLevel var3 : this.server.getAllLevels()) {
+      for (ServerLevel var3 : this.server.getAllLevels()) {
          if (var3 != null) {
             var3.getChunkSource().setSimulationDistance(var1);
          }
@@ -915,14 +869,14 @@ public abstract class PlayerList {
    }
 
    public void reloadResources() {
-      for(PlayerAdvancements var2 : this.advancements.values()) {
+      for (PlayerAdvancements var2 : this.advancements.values()) {
          var2.reload(this.server.getAdvancements());
       }
 
       this.broadcastAll(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
       ClientboundUpdateRecipesPacket var4 = new ClientboundUpdateRecipesPacket(this.server.getRecipeManager().getRecipes());
 
-      for(ServerPlayer var3 : this.players) {
+      for (ServerPlayer var3 : this.players) {
          var3.connection.send(var4);
          var3.getRecipeBook().sendInitialRecipeBook(var3);
       }

@@ -8,30 +8,29 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.SignedArgument;
 
-public record SignableCommand<S>(List<SignableCommand.Argument<S>> a) {
-   private final List<SignableCommand.Argument<S>> arguments;
-
-   public SignableCommand(List<SignableCommand.Argument<S>> var1) {
+public record SignableCommand<S>(List<SignableCommand.Argument<S>> arguments) {
+   public SignableCommand(List<SignableCommand.Argument<S>> arguments) {
       super();
-      this.arguments = var1;
+      this.arguments = arguments;
+   }
+
+   public static <S> boolean hasSignableArguments(ParseResults<S> var0) {
+      return !of(var0).arguments().isEmpty();
    }
 
    public static <S> SignableCommand<S> of(ParseResults<S> var0) {
       String var1 = var0.getReader().getString();
       CommandContextBuilder var2 = var0.getContext();
       CommandContextBuilder var3 = var2;
+      List var4 = collectArguments(var1, var2);
 
-      List var4;
       CommandContextBuilder var5;
-      for(var4 = collectArguments(var1, var2); (var5 = var3.getChild()) != null; var3 = var5) {
-         boolean var6 = var5.getRootNode() != var2.getRootNode();
-         if (!var6) {
-            break;
-         }
-
+      while ((var5 = var3.getChild()) != null && var5.getRootNode() != var2.getRootNode()) {
          var4.addAll(collectArguments(var1, var5));
+         var3 = var5;
       }
 
       return new SignableCommand<>(var4);
@@ -40,13 +39,16 @@ public record SignableCommand<S>(List<SignableCommand.Argument<S>> a) {
    private static <S> List<SignableCommand.Argument<S>> collectArguments(String var0, CommandContextBuilder<S> var1) {
       ArrayList var2 = new ArrayList();
 
-      for(ParsedCommandNode var4 : var1.getNodes()) {
+      for (ParsedCommandNode var4 : var1.getNodes()) {
          CommandNode var6 = var4.getNode();
-         if (var6 instanceof ArgumentCommandNode var5 && var5.getType() instanceof SignedArgument) {
-            ParsedArgument var8 = (ParsedArgument)var1.getArguments().get(var5.getName());
-            if (var8 != null) {
-               String var7 = var8.getRange().get(var0);
-               var2.add(new SignableCommand.Argument((ArgumentCommandNode<S, ?>)var5, var7));
+         if (var6 instanceof ArgumentCommandNode) {
+            ArgumentCommandNode var5 = (ArgumentCommandNode)var6;
+            if (var5.getType() instanceof SignedArgument) {
+               ParsedArgument var8 = (ParsedArgument)var1.getArguments().get(var5.getName());
+               if (var8 != null) {
+                  String var7 = var8.getRange().get(var0);
+                  var2.add(new SignableCommand.Argument(var5, var7));
+               }
             }
          }
       }
@@ -54,14 +56,22 @@ public record SignableCommand<S>(List<SignableCommand.Argument<S>> a) {
       return var2;
    }
 
-   public static record Argument<S>(ArgumentCommandNode<S, ?> a, String b) {
-      private final ArgumentCommandNode<S, ?> node;
-      private final String value;
+   @Nullable
+   public SignableCommand.Argument<S> getArgument(String var1) {
+      for (SignableCommand.Argument var3 : this.arguments) {
+         if (var1.equals(var3.name())) {
+            return var3;
+         }
+      }
 
-      public Argument(ArgumentCommandNode<S, ?> var1, String var2) {
+      return null;
+   }
+
+   public static record Argument<S>(ArgumentCommandNode<S, ?> node, String value) {
+      public Argument(ArgumentCommandNode<S, ?> node, String value) {
          super();
-         this.node = var1;
-         this.value = var2;
+         this.node = node;
+         this.value = value;
       }
 
       public String name() {

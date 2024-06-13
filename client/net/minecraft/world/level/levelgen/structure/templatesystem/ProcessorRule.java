@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -17,10 +16,10 @@ public class ProcessorRule {
       var0 -> var0.group(
                RuleTest.CODEC.fieldOf("input_predicate").forGetter(var0x -> var0x.inputPredicate),
                RuleTest.CODEC.fieldOf("location_predicate").forGetter(var0x -> var0x.locPredicate),
-               PosRuleTest.CODEC.optionalFieldOf("position_predicate", PosAlwaysTrueTest.INSTANCE).forGetter(var0x -> var0x.posPredicate),
+               PosRuleTest.CODEC.lenientOptionalFieldOf("position_predicate", PosAlwaysTrueTest.INSTANCE).forGetter(var0x -> var0x.posPredicate),
                BlockState.CODEC.fieldOf("output_state").forGetter(var0x -> var0x.outputState),
                RuleBlockEntityModifier.CODEC
-                  .optionalFieldOf("block_entity_modifier", DEFAULT_BLOCK_ENTITY_MODIFIER)
+                  .lenientOptionalFieldOf("block_entity_modifier", DEFAULT_BLOCK_ENTITY_MODIFIER)
                   .forGetter(var0x -> var0x.blockEntityModifier)
             )
             .apply(var0, ProcessorRule::new)

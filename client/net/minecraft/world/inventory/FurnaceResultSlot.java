@@ -23,7 +23,7 @@ public class FurnaceResultSlot extends Slot {
    @Override
    public ItemStack remove(int var1) {
       if (this.hasItem()) {
-         this.removeCount += Math.min(var1, this.getItem().getCount());
+         this.removeCount = this.removeCount + Math.min(var1, this.getItem().getCount());
       }
 
       return super.remove(var1);
@@ -41,16 +41,11 @@ public class FurnaceResultSlot extends Slot {
       this.checkTakeAchievements(var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Override
    protected void checkTakeAchievements(ItemStack var1) {
       var1.onCraftedBy(this.player.level(), this.player, this.removeCount);
-      Player var4 = this.player;
-      if (var4 instanceof ServerPlayer var2) {
-         Container var5 = this.container;
-         if (var5 instanceof AbstractFurnaceBlockEntity var3) {
-            var3.awardUsedRecipesAndPopExperience((ServerPlayer)var2);
-         }
+      if (this.player instanceof ServerPlayer var2 && this.container instanceof AbstractFurnaceBlockEntity var3) {
+         var3.awardUsedRecipesAndPopExperience(var2);
       }
 
       this.removeCount = 0;

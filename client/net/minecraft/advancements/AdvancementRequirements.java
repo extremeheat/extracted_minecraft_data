@@ -11,8 +11,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.network.FriendlyByteBuf;
 
-public record AdvancementRequirements(List<List<String>> c) {
-   private final List<List<String>> requirements;
+public record AdvancementRequirements(List<List<String>> requirements) {
    public static final Codec<AdvancementRequirements> CODEC = Codec.STRING
       .listOf()
       .listOf()
@@ -23,9 +22,9 @@ public record AdvancementRequirements(List<List<String>> c) {
       this(var1.readList(var0 -> var0.readList(FriendlyByteBuf::readUtf)));
    }
 
-   public AdvancementRequirements(List<List<String>> var1) {
+   public AdvancementRequirements(List<List<String>> requirements) {
       super();
-      this.requirements = var1;
+      this.requirements = requirements;
    }
 
    public void write(FriendlyByteBuf var1) {
@@ -48,7 +47,7 @@ public record AdvancementRequirements(List<List<String>> c) {
       if (this.requirements.isEmpty()) {
          return false;
       } else {
-         for(List var3 : this.requirements) {
+         for (List var3 : this.requirements) {
             if (!anyMatch(var3, var1)) {
                return false;
             }
@@ -61,9 +60,9 @@ public record AdvancementRequirements(List<List<String>> c) {
    public int count(Predicate<String> var1) {
       int var2 = 0;
 
-      for(List var4 : this.requirements) {
+      for (List var4 : this.requirements) {
          if (anyMatch(var4, var1)) {
-            ++var2;
+            var2++;
          }
       }
 
@@ -71,7 +70,7 @@ public record AdvancementRequirements(List<List<String>> c) {
    }
 
    private static boolean anyMatch(List<String> var0, Predicate<String> var1) {
-      for(String var3 : var0) {
+      for (String var3 : var0) {
          if (var1.test(var3)) {
             return true;
          }
@@ -83,7 +82,7 @@ public record AdvancementRequirements(List<List<String>> c) {
    public DataResult<AdvancementRequirements> validate(Set<String> var1) {
       ObjectOpenHashSet var2 = new ObjectOpenHashSet();
 
-      for(List var4 : this.requirements) {
+      for (List var4 : this.requirements) {
          if (var4.isEmpty() && var1.isEmpty()) {
             return DataResult.error(() -> "Requirement entry cannot be empty");
          }
@@ -111,7 +110,7 @@ public record AdvancementRequirements(List<List<String>> c) {
    public Set<String> names() {
       ObjectOpenHashSet var1 = new ObjectOpenHashSet();
 
-      for(List var3 : this.requirements) {
+      for (List var3 : this.requirements) {
          var1.addAll(var3);
       }
 

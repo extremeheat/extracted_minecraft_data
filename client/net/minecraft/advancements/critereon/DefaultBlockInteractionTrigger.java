@@ -2,12 +2,10 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -36,22 +34,20 @@ public class DefaultBlockInteractionTrigger extends SimpleCriterionTrigger<Defau
       this.trigger(var1, var1x -> var1x.matches(var6));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ContextAwarePredicate> c) implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<ContextAwarePredicate> location;
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> location)
+      implements SimpleCriterionTrigger.SimpleInstance {
       public static final Codec<DefaultBlockInteractionTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player")
-                     .forGetter(DefaultBlockInteractionTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(ContextAwarePredicate.CODEC, "location").forGetter(DefaultBlockInteractionTrigger.TriggerInstance::location)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(DefaultBlockInteractionTrigger.TriggerInstance::player),
+                  ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(DefaultBlockInteractionTrigger.TriggerInstance::location)
                )
                .apply(var0, DefaultBlockInteractionTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> location) {
          super();
-         this.player = var1;
-         this.location = var2;
+         this.player = player;
+         this.location = location;
       }
 
       public boolean matches(LootContext var1) {

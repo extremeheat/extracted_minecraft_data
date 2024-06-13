@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 
 public class JsonEventLog<T> implements Closeable {
    private static final Gson GSON = new Gson();
@@ -35,7 +34,7 @@ public class JsonEventLog<T> implements Closeable {
    }
 
    public void write(T var1) throws IOException, JsonIOException {
-      JsonElement var2 = Util.getOrThrow(this.codec.encodeStart(JsonOps.INSTANCE, var1), IOException::new);
+      JsonElement var2 = (JsonElement)this.codec.encodeStart(JsonOps.INSTANCE, var1).getOrThrow(IOException::new);
       this.channel.position(this.channel.size());
       Writer var3 = Channels.newWriter(this.channel, StandardCharsets.UTF_8);
       GSON.toJson(var2, var3);

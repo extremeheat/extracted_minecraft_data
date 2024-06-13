@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -22,7 +22,7 @@ public class NetherFortressStructure extends Structure {
       new MobSpawnSettings.SpawnerData(EntityType.SKELETON, 2, 5, 5),
       new MobSpawnSettings.SpawnerData(EntityType.MAGMA_CUBE, 3, 4, 4)
    );
-   public static final Codec<NetherFortressStructure> CODEC = simpleCodec(NetherFortressStructure::new);
+   public static final MapCodec<NetherFortressStructure> CODEC = simpleCodec(NetherFortressStructure::new);
 
    public NetherFortressStructure(Structure.StructureSettings var1) {
       super(var1);
@@ -41,7 +41,7 @@ public class NetherFortressStructure extends Structure {
       var2.addChildren(var2, var0, var1.random());
       List var3 = var2.pendingChildren;
 
-      while(!var3.isEmpty()) {
+      while (!var3.isEmpty()) {
          int var4 = var1.random().nextInt(var3.size());
          StructurePiece var5 = (StructurePiece)var3.remove(var4);
          var5.addChildren(var2, var0, var1.random());

@@ -6,8 +6,8 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,7 +41,7 @@ public class SinglePoolElement extends StructurePoolElement {
    private static final Codec<Either<ResourceLocation, StructureTemplate>> TEMPLATE_CODEC = Codec.of(
       SinglePoolElement::encodeTemplate, ResourceLocation.CODEC.map(Either::left)
    );
-   public static final Codec<SinglePoolElement> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SinglePoolElement> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(templateCodec(), processorsCodec(), projectionCodec()).apply(var0, SinglePoolElement::new)
    );
    protected final Either<ResourceLocation, StructureTemplate> template;
@@ -83,7 +83,7 @@ public class SinglePoolElement extends StructurePoolElement {
       ObjectArrayList var6 = var5.filterBlocks(var2, new StructurePlaceSettings().setRotation(var3), Blocks.STRUCTURE_BLOCK, var4);
       ArrayList var7 = Lists.newArrayList();
 
-      for(StructureTemplate.StructureBlockInfo var9 : var6) {
+      for (StructureTemplate.StructureBlockInfo var9 : var6) {
          CompoundTag var10 = var9.nbt();
          if (var10 != null) {
             StructureMode var11 = StructureMode.valueOf(var10.getString("mode"));
@@ -107,7 +107,12 @@ public class SinglePoolElement extends StructurePoolElement {
 
    @VisibleForTesting
    static void sortBySelectionPriority(List<StructureTemplate.StructureBlockInfo> var0) {
-      var0.sort(Comparator.comparingInt(var0x -> Optionull.mapOrDefault(var0x.nbt(), var0xx -> var0xx.getInt("selection_priority"), 0)).reversed());
+      var0.sort(
+         Comparator.<StructureTemplate.StructureBlockInfo>comparingInt(
+               var0x -> Optionull.mapOrDefault(var0x.nbt(), var0xx -> var0xx.getInt("selection_priority"), 0)
+            )
+            .reversed()
+      );
    }
 
    @Override
@@ -134,7 +139,7 @@ public class SinglePoolElement extends StructurePoolElement {
       if (!var11.placeInWorld(var2, var5, var6, var12, var9, 18)) {
          return false;
       } else {
-         for(StructureTemplate.StructureBlockInfo var15 : StructureTemplate.processBlockInfos(
+         for (StructureTemplate.StructureBlockInfo var15 : StructureTemplate.processBlockInfos(
             var2, var5, var6, var12, this.getDataMarkers(var1, var5, var7, false)
          )) {
             this.handleDataMarker(var2, var15, var5, var7, var9, var8);

@@ -12,7 +12,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -33,7 +32,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 
 public interface CauldronInteraction {
    Map<String, CauldronInteraction.InteractionMap> INTERACTIONS = new Object2ObjectArrayMap();
-   Codec<CauldronInteraction.InteractionMap> CODEC = ExtraCodecs.stringResolverCodec(CauldronInteraction.InteractionMap::name, INTERACTIONS::get);
+   Codec<CauldronInteraction.InteractionMap> CODEC = Codec.stringResolver(CauldronInteraction.InteractionMap::name, INTERACTIONS::get);
    CauldronInteraction.InteractionMap EMPTY = newInteractionMap("empty");
    CauldronInteraction.InteractionMap WATER = newInteractionMap("water");
    CauldronInteraction.InteractionMap LAVA = newInteractionMap("lava");
@@ -306,14 +305,11 @@ public interface CauldronInteraction {
       return ItemInteractionResult.sidedSuccess(var0.isClientSide);
    }
 
-   public static record InteractionMap(String a, Map<Item, CauldronInteraction> b) {
-      private final String name;
-      private final Map<Item, CauldronInteraction> map;
-
-      public InteractionMap(String var1, Map<Item, CauldronInteraction> var2) {
+   public static record InteractionMap(String name, Map<Item, CauldronInteraction> map) {
+      public InteractionMap(String name, Map<Item, CauldronInteraction> map) {
          super();
-         this.name = var1;
-         this.map = var2;
+         this.name = name;
+         this.map = map;
       }
    }
 }

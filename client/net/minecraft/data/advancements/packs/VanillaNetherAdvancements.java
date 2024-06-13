@@ -50,7 +50,6 @@ import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
-import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
@@ -142,7 +141,7 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "fortress",
             PlayerTrigger.TriggerInstance.located(
-               LocationPredicate.Builder.inStructure(var1.<Structure>lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.FORTRESS))
+               LocationPredicate.Builder.inStructure(var1.lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.FORTRESS))
             )
          )
          .save(var2, "nether/find_fortress");
@@ -508,7 +507,7 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "bastion",
             PlayerTrigger.TriggerInstance.located(
-               LocationPredicate.Builder.inStructure(var1.<Structure>lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.BASTION_REMNANT))
+               LocationPredicate.Builder.inStructure(var1.lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.BASTION_REMNANT))
             )
          )
          .save(var2, "nether/find_bastion");

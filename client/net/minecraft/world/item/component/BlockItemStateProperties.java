@@ -13,8 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 
-public record BlockItemStateProperties(Map<String, String> d) {
-   private final Map<String, String> properties;
+public record BlockItemStateProperties(Map<String, String> properties) {
    public static final BlockItemStateProperties EMPTY = new BlockItemStateProperties(Map.of());
    public static final Codec<BlockItemStateProperties> CODEC = Codec.unboundedMap(Codec.STRING, Codec.STRING)
       .xmap(BlockItemStateProperties::new, BlockItemStateProperties::properties);
@@ -25,9 +24,9 @@ public record BlockItemStateProperties(Map<String, String> d) {
       BlockItemStateProperties::new, BlockItemStateProperties::properties
    );
 
-   public BlockItemStateProperties(Map<String, String> var1) {
+   public BlockItemStateProperties(Map<String, String> properties) {
       super();
-      this.properties = var1;
+      this.properties = (Map<String, String>)properties;
    }
 
    public <T extends Comparable<T>> BlockItemStateProperties with(Property<T> var1, T var2) {
@@ -41,13 +40,13 @@ public record BlockItemStateProperties(Map<String, String> d) {
    @Nullable
    public <T extends Comparable<T>> T get(Property<T> var1) {
       String var2 = this.properties.get(var1.getName());
-      return (T)(var2 == null ? null : var1.getValue(var2).orElse((T)null));
+      return (T)(var2 == null ? null : var1.getValue(var2).orElse(null));
    }
 
    public BlockState apply(BlockState var1) {
       StateDefinition var2 = var1.getBlock().getStateDefinition();
 
-      for(Entry var4 : this.properties.entrySet()) {
+      for (Entry var4 : this.properties.entrySet()) {
          Property var5 = var2.getProperty((String)var4.getKey());
          if (var5 != null) {
             var1 = updateState(var1, var5, (String)var4.getValue());

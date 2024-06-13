@@ -42,7 +42,7 @@ public abstract class SingleQuadParticle extends Particle {
       };
       float var9 = this.getQuadSize(var3);
 
-      for(int var10 = 0; var10 < 4; ++var10) {
+      for (int var10 = 0; var10 < 4; var10++) {
          Vector3f var11 = var8[var10];
          var11.rotate(this.rotation);
          var11.mul(var9);

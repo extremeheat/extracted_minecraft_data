@@ -48,7 +48,7 @@ public class SpriteSourceList {
          public void removeAll(Predicate<ResourceLocation> var1) {
             Iterator var2x = var2.entrySet().iterator();
 
-            while(var2x.hasNext()) {
+            while (var2x.hasNext()) {
                Entry var3 = (Entry)var2x.next();
                if (var1.test((ResourceLocation)var3.getKey())) {
                   ((SpriteSource.SpriteSupplier)var3.getValue()).discard();
@@ -68,12 +68,12 @@ public class SpriteSourceList {
       ResourceLocation var2 = ATLAS_INFO_CONVERTER.idToFile(var1);
       ArrayList var3 = new ArrayList();
 
-      for(Resource var5 : var0.getResourceStack(var2)) {
+      for (Resource var5 : var0.getResourceStack(var2)) {
          try (BufferedReader var6 = var5.openAsReader()) {
             Dynamic var7 = new Dynamic(JsonOps.INSTANCE, JsonParser.parseReader(var6));
-            var3.addAll((Collection)SpriteSources.FILE_CODEC.parse(var7).getOrThrow(false, LOGGER::error));
+            var3.addAll((Collection)SpriteSources.FILE_CODEC.parse(var7).getOrThrow());
          } catch (Exception var11) {
-            LOGGER.warn("Failed to parse atlas definition {} in pack {}", new Object[]{var2, var5.sourcePackId(), var11});
+            LOGGER.error("Failed to parse atlas definition {} in pack {}", new Object[]{var2, var5.sourcePackId(), var11});
          }
       }
 

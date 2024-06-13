@@ -38,7 +38,7 @@ public class BottleItem extends Item {
          var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
          var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var2.position());
          if (var2 instanceof ServerPlayer var9) {
-            CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger((ServerPlayer)var9, var5, var8);
+            CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(var9, var5, var8);
          }
 
          return InteractionResultHolder.sidedSuccess(this.turnBottleIntoItem(var5, var2, new ItemStack(Items.DRAGON_BREATH)), var1.isClientSide());

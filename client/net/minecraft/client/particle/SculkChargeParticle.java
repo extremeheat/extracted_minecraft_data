@@ -31,12 +31,10 @@ public class SculkChargeParticle extends TextureSheetParticle {
       this.setSpriteFromAge(this.sprites);
    }
 
-   public static record Provider(SpriteSet a) implements ParticleProvider<SculkChargeParticleOptions> {
-      private final SpriteSet sprite;
-
-      public Provider(SpriteSet var1) {
+   public static record Provider(SpriteSet sprite) implements ParticleProvider<SculkChargeParticleOptions> {
+      public Provider(SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
       public Particle createParticle(

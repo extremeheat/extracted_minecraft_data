@@ -2,20 +2,20 @@ package net.minecraft.world.level.levelgen.feature.rootplacers;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public record MangroveRootPlacement(HolderSet<Block> b, HolderSet<Block> c, BlockStateProvider d, int e, int f, float g) {
-   private final HolderSet<Block> canGrowThrough;
-   private final HolderSet<Block> muddyRootsIn;
-   private final BlockStateProvider muddyRootsProvider;
-   private final int maxRootWidth;
-   private final int maxRootLength;
-   private final float randomSkewChance;
+public record MangroveRootPlacement(
+   HolderSet<Block> canGrowThrough,
+   HolderSet<Block> muddyRootsIn,
+   BlockStateProvider muddyRootsProvider,
+   int maxRootWidth,
+   int maxRootLength,
+   float randomSkewChance
+) {
    public static final Codec<MangroveRootPlacement> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter(var0x -> var0x.canGrowThrough),
@@ -28,13 +28,20 @@ public record MangroveRootPlacement(HolderSet<Block> b, HolderSet<Block> c, Bloc
             .apply(var0, MangroveRootPlacement::new)
    );
 
-   public MangroveRootPlacement(HolderSet<Block> var1, HolderSet<Block> var2, BlockStateProvider var3, int var4, int var5, float var6) {
+   public MangroveRootPlacement(
+      HolderSet<Block> canGrowThrough,
+      HolderSet<Block> muddyRootsIn,
+      BlockStateProvider muddyRootsProvider,
+      int maxRootWidth,
+      int maxRootLength,
+      float randomSkewChance
+   ) {
       super();
-      this.canGrowThrough = var1;
-      this.muddyRootsIn = var2;
-      this.muddyRootsProvider = var3;
-      this.maxRootWidth = var4;
-      this.maxRootLength = var5;
-      this.randomSkewChance = var6;
+      this.canGrowThrough = canGrowThrough;
+      this.muddyRootsIn = muddyRootsIn;
+      this.muddyRootsProvider = muddyRootsProvider;
+      this.maxRootWidth = maxRootWidth;
+      this.maxRootLength = maxRootLength;
+      this.randomSkewChance = randomSkewChance;
    }
 }

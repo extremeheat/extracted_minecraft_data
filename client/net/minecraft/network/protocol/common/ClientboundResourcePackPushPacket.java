@@ -11,12 +11,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundResourcePackPushPacket(UUID c, String d, String e, boolean f, Optional<Component> g) implements Packet<ClientCommonPacketListener> {
-   private final UUID id;
-   private final String url;
-   private final String hash;
-   private final boolean required;
-   private final Optional<Component> prompt;
+public record ClientboundResourcePackPushPacket(UUID id, String url, String hash, boolean required, Optional<Component> prompt)
+   implements Packet<ClientCommonPacketListener> {
    public static final int MAX_HASH_LENGTH = 40;
    public static final StreamCodec<ByteBuf, ClientboundResourcePackPushPacket> STREAM_CODEC = StreamCodec.composite(
       UUIDUtil.STREAM_CODEC,
@@ -32,16 +28,16 @@ public record ClientboundResourcePackPushPacket(UUID c, String d, String e, bool
       ClientboundResourcePackPushPacket::new
    );
 
-   public ClientboundResourcePackPushPacket(UUID var1, String var2, String var3, boolean var4, Optional<Component> var5) {
+   public ClientboundResourcePackPushPacket(UUID id, String url, String hash, boolean required, Optional<Component> prompt) {
       super();
-      if (var3.length() > 40) {
-         throw new IllegalArgumentException("Hash is too long (max 40, was " + var3.length() + ")");
+      if (hash.length() > 40) {
+         throw new IllegalArgumentException("Hash is too long (max 40, was " + hash.length() + ")");
       } else {
-         this.id = var1;
-         this.url = var2;
-         this.hash = var3;
-         this.required = var4;
-         this.prompt = var5;
+         this.id = id;
+         this.url = url;
+         this.hash = hash;
+         this.required = required;
+         this.prompt = prompt;
       }
    }
 

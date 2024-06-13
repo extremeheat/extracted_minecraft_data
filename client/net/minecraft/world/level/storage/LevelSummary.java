@@ -8,7 +8,6 @@ import net.minecraft.WorldVersion;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -119,11 +118,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public boolean isDisabled() {
-      if (!this.isLocked() && !this.requiresManualConversion()) {
-         return !this.isCompatible();
-      } else {
-         return true;
-      }
+      return !this.isLocked() && !this.requiresManualConversion() ? !this.isCompatible() : true;
    }
 
    public boolean isCompatible() {

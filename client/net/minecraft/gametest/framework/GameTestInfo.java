@@ -15,7 +15,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -85,7 +84,7 @@ public class GameTestInfo {
       if (this.placedStructure) {
          return true;
       } else if (this.ticksToWaitForChunkLoading > 0) {
-         --this.ticksToWaitForChunkLoading;
+         this.ticksToWaitForChunkLoading--;
          return false;
       } else {
          this.placeStructure().startExecution(0);
@@ -127,7 +126,7 @@ public class GameTestInfo {
 
          ObjectIterator var1 = this.runAtTickTimeMap.object2LongEntrySet().iterator();
 
-         while(var1.hasNext()) {
+         while (var1.hasNext()) {
             Entry var2 = (Entry)var1.next();
             if (var2.getLongValue() <= this.tickCount) {
                try {

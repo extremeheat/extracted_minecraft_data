@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
@@ -82,8 +81,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       var0.put(EntityType.CREEPER, SoundEvents.PARROT_IMITATE_CREEPER);
       var0.put(EntityType.DROWNED, SoundEvents.PARROT_IMITATE_DROWNED);
       var0.put(EntityType.ELDER_GUARDIAN, SoundEvents.PARROT_IMITATE_ELDER_GUARDIAN);
-      var0.put(EntityType.TOXIFIN, SoundEvents.PARROT_IMITATE_GUARDIAN);
-      var0.put(EntityType.PLAGUEWHALE, SoundEvents.PARROT_IMITATE_ELDER_GUARDIAN);
       var0.put(EntityType.ENDER_DRAGON, SoundEvents.PARROT_IMITATE_ENDER_DRAGON);
       var0.put(EntityType.ENDERMITE, SoundEvents.PARROT_IMITATE_ENDERMITE);
       var0.put(EntityType.EVOKER, SoundEvents.PARROT_IMITATE_EVOKER);
@@ -204,7 +201,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    private void calculateFlapping() {
       this.oFlap = this.flap;
       this.oFlapSpeed = this.flapSpeed;
-      this.flapSpeed += (float)(!this.onGround() && !this.isPassenger() ? 4 : -1) * 0.3F;
+      this.flapSpeed = this.flapSpeed + (float)(!this.onGround() && !this.isPassenger() ? 4 : -1) * 0.3F;
       this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
       if (!this.onGround() && this.flapping < 1.0F) {
          this.flapping = 1.0F;
@@ -216,7 +213,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
          this.setDeltaMovement(var1.multiply(1.0, 0.6, 1.0));
       }
 
-      this.flap += this.flapping * 2.0F;
+      this.flap = this.flap + this.flapping * 2.0F;
    }
 
    public static boolean imitateNearbyMobs(Level var0, Entity var1) {
@@ -462,7 +459,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
          BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
 
-         for(BlockPos var6 : BlockPos.betweenClosed(
+         for (BlockPos var6 : BlockPos.betweenClosed(
             Mth.floor(this.mob.getX() - 3.0),
             Mth.floor(this.mob.getY() - 6.0),
             Mth.floor(this.mob.getZ() - 3.0),

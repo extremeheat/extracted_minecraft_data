@@ -32,7 +32,6 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
@@ -61,7 +60,7 @@ public class KeyboardHandler {
    }
 
    private boolean handleChunkDebugKeys(int var1) {
-      switch(var1) {
+      switch (var1) {
          case 69:
             this.minecraft.sectionPath = !this.minecraft.sectionPath;
             this.debugFeedback("SectionPath: {0}", this.minecraft.sectionPath ? "shown" : "hidden");
@@ -122,7 +121,7 @@ public class KeyboardHandler {
       if (this.debugCrashKeyTime > 0L && this.debugCrashKeyTime < Util.getMillis() - 100L) {
          return true;
       } else {
-         switch(var1) {
+         switch (var1) {
             case 49:
                this.minecraft.getDebugOverlay().toggleProfilerChart();
                return true;
@@ -261,7 +260,7 @@ public class KeyboardHandler {
    private void copyRecreateCommand(boolean var1, boolean var2) {
       HitResult var3 = this.minecraft.hitResult;
       if (var3 != null) {
-         switch(var3.getType()) {
+         switch (var3.getType()) {
             case BLOCK:
                BlockPos var9 = ((BlockHitResult)var3).getBlockPos();
                Level var10 = this.minecraft.player.level();
@@ -346,7 +345,7 @@ public class KeyboardHandler {
 
          Screen var8 = this.minecraft.screen;
          if (var8 != null) {
-            switch(var3) {
+            switch (var3) {
                case 258:
                   this.minecraft.setLastInputType(InputType.KEYBOARD_TAB);
                case 259:
@@ -385,7 +384,7 @@ public class KeyboardHandler {
          if (var5 != 0) {
             boolean var9 = var8 == null || !(var8.getFocused() instanceof EditBox) || !((EditBox)var8.getFocused()).canConsumeInput();
             if (var9) {
-               if (Screen.hasControlDown() && var3 == 66 && this.minecraft.getNarrator().isActive()) {
+               if (Screen.hasControlDown() && var3 == 66 && this.minecraft.getNarrator().isActive() && this.minecraft.options.narratorHotkey().get()) {
                   boolean var10 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
                   this.minecraft.options.narrator().set(NarratorStatus.byId(this.minecraft.options.narrator().get().getId() + 1));
                   this.minecraft.options.save();
@@ -420,18 +419,17 @@ public class KeyboardHandler {
          InputConstants.Key var15;
          boolean var17;
          boolean var10000;
-         label185: {
+         label187: {
             var15 = InputConstants.getKey(var3, var4);
             var17 = this.minecraft.screen == null;
-            label145:
+            label147:
             if (!var17) {
-               Screen var13 = this.minecraft.screen;
-               if (var13 instanceof PauseScreen var12 && !var12.showsPauseMenu()) {
-                  break label145;
+               if (this.minecraft.screen instanceof PauseScreen var12 && !var12.showsPauseMenu()) {
+                  break label147;
                }
 
                var10000 = false;
-               break label185;
+               break label187;
             }
 
             var10000 = true;
@@ -489,7 +487,7 @@ public class KeyboardHandler {
             if (Character.charCount(var3) == 1) {
                Screen.wrapScreenError(() -> var5.charTyped((char)var3, var4), "charTyped event handler", var5.getClass().getCanonicalName());
             } else {
-               for(char var9 : Character.toChars(var3)) {
+               for (char var9 : Character.toChars(var3)) {
                   Screen.wrapScreenError(() -> var5.charTyped(var9, var4), "charTyped event handler", var5.getClass().getCanonicalName());
                }
             }
@@ -544,7 +542,7 @@ public class KeyboardHandler {
             }
 
             this.debugCrashKeyReportedTime = var1;
-            ++this.debugCrashKeyReportedCount;
+            this.debugCrashKeyReportedCount++;
          }
       }
    }

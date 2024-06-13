@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BundleContents;
+import org.apache.commons.lang3.math.Fraction;
 
 public class ClientBundleTooltip implements ClientTooltipComponent {
    private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("container/bundle/background");
@@ -43,11 +44,11 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       int var5 = this.gridSizeX();
       int var6 = this.gridSizeY();
       var4.blitSprite(BACKGROUND_SPRITE, var2, var3, this.backgroundWidth(), this.backgroundHeight());
-      boolean var7 = this.contents.weight() >= 64;
+      boolean var7 = this.contents.weight().compareTo(Fraction.ONE) >= 0;
       int var8 = 0;
 
-      for(int var9 = 0; var9 < var6; ++var9) {
-         for(int var10 = 0; var10 < var5; ++var10) {
+      for (int var9 = 0; var9 < var6; var9++) {
+         for (int var10 = 0; var10 < var5; var10++) {
             int var11 = var2 + var10 * 18 + 1;
             int var12 = var3 + var9 * 20 + 1;
             this.renderSlot(var11, var12, var8++, var7, var4, var1);

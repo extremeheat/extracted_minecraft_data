@@ -7,7 +7,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSource;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterLists;
 import net.minecraft.world.level.biome.TheEndBiomeSource;
@@ -33,24 +31,23 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 
-public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
-   private final Map<ResourceKey<LevelStem>, LevelStem> dimensions;
+public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions) {
    public static final MapCodec<WorldDimensions> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter(WorldDimensions::dimensions)
             )
             .apply(var0, var0.stable(WorldDimensions::new))
    );
-   private static final Set<ResourceKey<LevelStem>> BUILTIN_ORDER = ImmutableSet.of(LevelStem.OVERWORLD, LevelStem.NETHER, LevelStem.END, LevelStem.POTATO);
+   private static final Set<ResourceKey<LevelStem>> BUILTIN_ORDER = ImmutableSet.of(LevelStem.OVERWORLD, LevelStem.NETHER, LevelStem.END);
    private static final int VANILLA_DIMENSION_COUNT = BUILTIN_ORDER.size();
 
-   public WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> var1) {
+   public WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions) {
       super();
-      LevelStem var2 = (LevelStem)var1.get(LevelStem.OVERWORLD);
+      LevelStem var2 = dimensions.get(LevelStem.OVERWORLD);
       if (var2 == null) {
          throw new IllegalStateException("Overworld settings missing");
       } else {
-         this.dimensions = var1;
+         this.dimensions = dimensions;
       }
    }
 
@@ -86,7 +83,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
    }
 
    public ChunkGenerator overworld() {
-      LevelStem var1 = (LevelStem)this.dimensions.get(LevelStem.OVERWORLD);
+      LevelStem var1 = this.dimensions.get(LevelStem.OVERWORLD);
       if (var1 == null) {
          throw new IllegalStateException("Overworld settings missing");
       } else {
@@ -95,7 +92,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
    }
 
    public Optional<LevelStem> get(ResourceKey<LevelStem> var1) {
-      return Optional.ofNullable((LevelStem)this.dimensions.get(var1));
+      return Optional.ofNullable(this.dimensions.get(var1));
    }
 
    public ImmutableSet<ResourceKey<Level>> levels() {
@@ -126,10 +123,8 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
          return isStableOverworld(var1);
       } else if (var0 == LevelStem.NETHER) {
          return isStableNether(var1);
-      } else if (var0 == LevelStem.END) {
-         return isStableEnd(var1);
       } else {
-         return var0 == LevelStem.POTATO ? isStablePotato(var1) : false;
+         return var0 == LevelStem.END ? isStableEnd(var1) : false;
       }
    }
 
@@ -138,8 +133,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
       if (!var1.is(BuiltinDimensionTypes.OVERWORLD) && !var1.is(BuiltinDimensionTypes.OVERWORLD_CAVES)) {
          return false;
       } else {
-         BiomeSource var3 = var0.generator().getBiomeSource();
-         if (var3 instanceof MultiNoiseBiomeSource var2 && !var2.stable(MultiNoiseBiomeSourceParameterLists.OVERWORLD)) {
+         if (var0.generator().getBiomeSource() instanceof MultiNoiseBiomeSource var2 && !var2.stable(MultiNoiseBiomeSourceParameterLists.OVERWORLD)) {
             return false;
          }
 
@@ -147,73 +141,31 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static boolean isStableNether(LevelStem var0) {
-      if (var0.type().is(BuiltinDimensionTypes.NETHER)) {
-         ChunkGenerator var3 = var0.generator();
-         if (var3 instanceof NoiseBasedChunkGenerator var2 && var2.stable(NoiseGeneratorSettings.NETHER)) {
-            BiomeSource var4 = var2.getBiomeSource();
-            if (var4 instanceof MultiNoiseBiomeSource var1 && var1.stable(MultiNoiseBiomeSourceParameterLists.NETHER)) {
-               return true;
-            }
-         }
-      }
-
-      return false;
+      return var0.type().is(BuiltinDimensionTypes.NETHER)
+         && var0.generator() instanceof NoiseBasedChunkGenerator var2
+         && var2.stable(NoiseGeneratorSettings.NETHER)
+         && var2.getBiomeSource() instanceof MultiNoiseBiomeSource var1
+         && var1.stable(MultiNoiseBiomeSourceParameterLists.NETHER);
    }
 
    private static boolean isStableEnd(LevelStem var0) {
-      if (var0.type().is(BuiltinDimensionTypes.END)) {
-         ChunkGenerator var2 = var0.generator();
-         if (var2 instanceof NoiseBasedChunkGenerator var1 && var1.stable(NoiseGeneratorSettings.END) && var1.getBiomeSource() instanceof TheEndBiomeSource) {
-            return true;
-         }
-      }
-
-      return false;
-   }
-
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private static boolean isStablePotato(LevelStem var0) {
-      if (var0.type().is(BuiltinDimensionTypes.POTATO)) {
-         ChunkGenerator var3 = var0.generator();
-         if (var3 instanceof NoiseBasedChunkGenerator var2 && var2.stable(NoiseGeneratorSettings.POTATO)) {
-            BiomeSource var4 = var2.getBiomeSource();
-            if (var4 instanceof MultiNoiseBiomeSource var1 && var1.stable(MultiNoiseBiomeSourceParameterLists.POTATO)) {
-               return true;
-            }
-         }
-      }
-
-      return false;
+      return var0.type().is(BuiltinDimensionTypes.END)
+         && var0.generator() instanceof NoiseBasedChunkGenerator var1
+         && var1.stable(NoiseGeneratorSettings.END)
+         && var1.getBiomeSource() instanceof TheEndBiomeSource;
    }
 
    public WorldDimensions.Complete bake(Registry<LevelStem> var1) {
       Stream var2 = Stream.concat(var1.registryKeySet().stream(), this.dimensions.keySet().stream()).distinct();
       ArrayList var3 = new ArrayList();
-      keysInOrder(var2)
-         .forEach(
-            var3x -> var1.getOptional(var3x)
-                  .or(() -> Optional.ofNullable(this.dimensions.get(var3x)))
-                  .ifPresent(var2xx -> var3.add(new 1Entry(var3x, (LevelStem)var2xx)))
-         );
-      Lifecycle var4 = var3.size() == VANILLA_DIMENSION_COUNT ? Lifecycle.stable() : Lifecycle.experimental();
-      MappedRegistry var5 = new MappedRegistry(Registries.LEVEL_STEM, var4);
-      var3.forEach(var1x -> var5.register(var1x.key, var1x.value, var1x.registrationInfo()));
-      Registry var6 = var5.freeze();
-      PrimaryLevelData.SpecialWorldProperty var7 = specialWorldProperty(var6);
-      return new WorldDimensions.Complete(var6.freeze(), var7);
 
-      record 1Entry(ResourceKey<LevelStem> a, LevelStem b) {
-         final ResourceKey<LevelStem> key;
-         final LevelStem value;
+      record 1Entry(ResourceKey<LevelStem> key, LevelStem value) {
 
-         _Entry/* $VF was: 1Entry*/(ResourceKey<LevelStem> var1, LevelStem var2) {
+         _Entry/* $VF was: 1Entry*/(ResourceKey<LevelStem> key, LevelStem value) {
             super();
-            this.key = var1;
-            this.value = var2;
+            this.key = key;
+            this.value = value;
          }
 
          RegistrationInfo registrationInfo() {
@@ -221,16 +173,25 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
          }
       }
 
+      keysInOrder(var2)
+         .forEach(
+            var3x -> var1.getOptional((ResourceKey<LevelStem>)var3x)
+                  .or(() -> Optional.ofNullable(this.dimensions.get(var3x)))
+                  .ifPresent(var2xx -> var3.add(new 1Entry(var3x, var2xx)))
+         );
+      Lifecycle var4 = var3.size() == VANILLA_DIMENSION_COUNT ? Lifecycle.stable() : Lifecycle.experimental();
+      MappedRegistry var5 = new MappedRegistry<>(Registries.LEVEL_STEM, var4);
+      var3.forEach(var1x -> var5.register(var1x.key, var1x.value, var1x.registrationInfo()));
+      Registry var6 = var5.freeze();
+      PrimaryLevelData.SpecialWorldProperty var7 = specialWorldProperty(var6);
+      return new WorldDimensions.Complete(var6.freeze(), var7);
    }
 
-   public static record Complete(Registry<LevelStem> a, PrimaryLevelData.SpecialWorldProperty b) {
-      private final Registry<LevelStem> dimensions;
-      private final PrimaryLevelData.SpecialWorldProperty specialWorldProperty;
-
-      public Complete(Registry<LevelStem> var1, PrimaryLevelData.SpecialWorldProperty var2) {
+   public static record Complete(Registry<LevelStem> dimensions, PrimaryLevelData.SpecialWorldProperty specialWorldProperty) {
+      public Complete(Registry<LevelStem> dimensions, PrimaryLevelData.SpecialWorldProperty specialWorldProperty) {
          super();
-         this.dimensions = var1;
-         this.specialWorldProperty = var2;
+         this.dimensions = dimensions;
+         this.specialWorldProperty = specialWorldProperty;
       }
 
       public Lifecycle lifecycle() {

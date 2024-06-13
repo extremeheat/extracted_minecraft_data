@@ -32,7 +32,7 @@ public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
          int var10 = Math.max(var7, Math.max(var8, var9));
          boolean var11 = false;
 
-         for(BlockPos var13 : BlockPos.withinManhattan(var6, var7, var8, var9)) {
+         for (BlockPos var13 : BlockPos.withinManhattan(var6, var7, var8, var9)) {
             if (var13.distManhattan(var6) > var10) {
                break;
             }
@@ -50,7 +50,7 @@ public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
 
    @Nullable
    private static BlockPos findTarget(LevelAccessor var0, BlockPos.MutableBlockPos var1, Block var2) {
-      while(var1.getY() > var0.getMinBuildHeight() + 1) {
+      while (var1.getY() > var0.getMinBuildHeight() + 1) {
          BlockState var3 = var0.getBlockState(var1);
          if (var3.is(var2)) {
             return var1;

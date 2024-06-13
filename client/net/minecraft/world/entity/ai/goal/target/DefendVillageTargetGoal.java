@@ -29,10 +29,10 @@ public class DefendVillageTargetGoal extends TargetGoal {
       List var2 = this.golem.level().getNearbyEntities(Villager.class, this.attackTargeting, this.golem, var1);
       List var3 = this.golem.level().getNearbyPlayers(this.attackTargeting, this.golem, var1);
 
-      for(LivingEntity var5 : var2) {
+      for (LivingEntity var5 : var2) {
          Villager var6 = (Villager)var5;
 
-         for(Player var8 : var3) {
+         for (Player var8 : var3) {
             int var9 = var6.getPlayerReputation(var8);
             if (var9 <= -100) {
                this.potentialTarget = var8;
@@ -40,11 +40,9 @@ public class DefendVillageTargetGoal extends TargetGoal {
          }
       }
 
-      if (this.potentialTarget == null) {
-         return false;
-      } else {
-         return !(this.potentialTarget instanceof Player) || !this.potentialTarget.isSpectator() && !((Player)this.potentialTarget).isCreative();
-      }
+      return this.potentialTarget == null
+         ? false
+         : !(this.potentialTarget instanceof Player) || !this.potentialTarget.isSpectator() && !((Player)this.potentialTarget).isCreative();
    }
 
    @Override

@@ -38,11 +38,8 @@ public class NarrationThunk<T> {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof NarrationThunk)) {
-         return false;
       } else {
-         NarrationThunk var2 = (NarrationThunk)var1;
-         return var2.converter == this.converter && var2.contents.equals(this.contents);
+         return !(var1 instanceof NarrationThunk var2) ? false : var2.converter == this.converter && var2.contents.equals(this.contents);
       }
    }
 

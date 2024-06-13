@@ -30,14 +30,14 @@ public class ChatLog {
 
    private ChatLog(int var1, List<LoggedChatEvent> var2) {
       super();
-      this.buffer = var2.toArray(var1x -> new LoggedChatEvent[var1]);
+      this.buffer = var2.toArray(LoggedChatEvent[]::new);
       this.nextId = var2.size();
    }
 
    private List<LoggedChatEvent> loggedChatEvents() {
       ArrayList var1 = new ArrayList(this.size());
 
-      for(int var2 = this.start(); var2 <= this.end(); ++var2) {
+      for (int var2 = this.start(); var2 <= this.end(); var2++) {
          var1.add(this.lookup(var2));
       }
 

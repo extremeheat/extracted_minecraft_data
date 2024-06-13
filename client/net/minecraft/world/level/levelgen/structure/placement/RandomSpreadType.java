@@ -21,7 +21,7 @@ public enum RandomSpreadType implements StringRepresentable {
    }
 
    public int evaluate(RandomSource var1, int var2) {
-      return switch(this) {
+      return switch (this) {
          case LINEAR -> var1.nextInt(var2);
          case TRIANGULAR -> (var1.nextInt(var2) + var1.nextInt(var2)) / 2;
       };

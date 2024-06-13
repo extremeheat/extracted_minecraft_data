@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -13,12 +12,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.DebugPackets;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
@@ -39,8 +36,8 @@ public class AcquirePoi {
    public static BehaviorControl<PathfinderMob> create(
       Predicate<Holder<PoiType>> var0, MemoryModuleType<GlobalPos> var1, MemoryModuleType<GlobalPos> var2, boolean var3, Optional<Byte> var4
    ) {
-      boolean var5 = true;
-      boolean var6 = true;
+      byte var5 = 5;
+      byte var6 = 20;
       MutableLong var7 = new MutableLong(0L);
       Long2ObjectOpenHashMap var8 = new Long2ObjectOpenHashMap();
       OneShot var9 = BehaviorBuilder.create(
@@ -60,13 +57,13 @@ public class AcquirePoi {
                            PoiManager var10 = var6xx.getPoiManager();
                            var8.long2ObjectEntrySet().removeIf(var2xxxx -> !((AcquirePoi.JitteredLinearRetry)var2xxxx.getValue()).isStillValid(var8x));
                            Predicate var11 = var3xxxx -> {
-                              AcquirePoi.JitteredLinearRetry var4xxxxx = (AcquirePoi.JitteredLinearRetry)var8.get(var3xxxx.asLong());
-                              if (var4xxxxx == null) {
+                              AcquirePoi.JitteredLinearRetry var4xxxx = (AcquirePoi.JitteredLinearRetry)var8.get(var3xxxx.asLong());
+                              if (var4xxxx == null) {
                                  return true;
-                              } else if (!var4xxxxx.shouldRetry(var8x)) {
+                              } else if (!var4xxxx.shouldRetry(var8x)) {
                                  return false;
                               } else {
-                                 var4xxxxx.markAttempt(var8x);
+                                 var4xxxx.markAttempt(var8x);
                                  return true;
                               }
                            };
@@ -84,13 +81,13 @@ public class AcquirePoi {
                                  DebugPackets.sendPoiTicketCountPacket(var6xx, var16);
                               });
                            } else {
-                              for(Pair var15 : var12) {
+                              for (Pair var15 : var12) {
                                  var8.computeIfAbsent(
                                     ((BlockPos)var15.getSecond()).asLong(), var3xxxx -> new AcquirePoi.JitteredLinearRetry(var6xx.random, var8x)
                                  );
                               }
                            }
-         
+
                            return true;
                         }
                      }
@@ -107,7 +104,7 @@ public class AcquirePoi {
          HashSet var2 = new HashSet();
          int var3 = 1;
 
-         for(Pair var5 : var1) {
+         for (Pair var5 : var1) {
             var3 = Math.max(var3, ((PoiType)((Holder)var5.getFirst()).value()).validRange());
             var2.add((BlockPos)var5.getSecond());
          }

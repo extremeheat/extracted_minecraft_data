@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Collection;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -11,10 +11,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.block.state.properties.Property;
 
 public class RandomizedIntStateProvider extends BlockStateProvider {
-   public static final Codec<RandomizedIntStateProvider> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<RandomizedIntStateProvider> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                BlockStateProvider.CODEC.fieldOf("source").forGetter(var0x -> var0x.source),
                Codec.STRING.fieldOf("property").forGetter(var0x -> var0x.propertyName),
@@ -36,7 +35,7 @@ public class RandomizedIntStateProvider extends BlockStateProvider {
       this.values = var3;
       Collection var4 = var2.getPossibleValues();
 
-      for(int var5 = var3.getMinValue(); var5 <= var3.getMaxValue(); ++var5) {
+      for (int var5 = var3.getMinValue(); var5 <= var3.getMaxValue(); var5++) {
          if (!var4.contains(var5)) {
             throw new IllegalArgumentException("Property value out of range: " + var2.getName() + ": " + var5);
          }

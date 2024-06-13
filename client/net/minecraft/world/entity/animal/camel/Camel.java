@@ -161,7 +161,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
       }
 
       if (this.dashCooldown > 0) {
-         --this.dashCooldown;
+         this.dashCooldown--;
          if (this.dashCooldown == 0) {
             this.level().playSound(null, this.blockPosition(), SoundEvents.CAMEL_DASH_READY, SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
@@ -185,7 +185,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
          this.idleAnimationTimeout = this.random.nextInt(40) + 80;
          this.idleAnimationState.start(this.tickCount);
       } else {
-         --this.idleAnimationTimeout;
+         this.idleAnimationTimeout--;
       }
 
       if (this.isCamelVisuallySitting()) {

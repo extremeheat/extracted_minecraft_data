@@ -63,7 +63,7 @@ public class XoroshiroRandomSource implements RandomSource {
          long var4 = var2 * (long)var1;
          long var6 = var4 & 4294967295L;
          if (var6 < (long)var1) {
-            for(int var8 = Integer.remainderUnsigned(~var1 + 1, var1); var6 < (long)var8; var6 = var4 & 4294967295L) {
+            for (int var8 = Integer.remainderUnsigned(~var1 + 1, var1); var6 < (long)var8; var6 = var4 & 4294967295L) {
                var2 = Integer.toUnsignedLong(this.nextInt());
                var4 = var2 * (long)var1;
             }
@@ -101,7 +101,7 @@ public class XoroshiroRandomSource implements RandomSource {
 
    @Override
    public void consumeCount(int var1) {
-      for(int var2 = 0; var2 < var1; ++var2) {
+      for (int var2 = 0; var2 < var1; var2++) {
          this.randomNumberGenerator.nextLong();
       }
    }

@@ -45,7 +45,7 @@ public class ClientAdvancements {
       this.tree.remove(var1.getRemoved());
       this.tree.addAll(var1.getAdded());
 
-      for(Entry var3 : var1.getProgress().entrySet()) {
+      for (Entry var3 : var1.getProgress().entrySet()) {
          AdvancementNode var4 = this.tree.get((ResourceLocation)var3.getKey());
          if (var4 != null) {
             AdvancementProgress var5 = (AdvancementProgress)var3.getValue();

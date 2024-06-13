@@ -2,10 +2,8 @@ package net.minecraft.world.entity.ai.behavior;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import org.apache.commons.lang3.mutable.MutableInt;
 
@@ -25,11 +23,11 @@ public class SetHiddenState {
                      long var10 = var3x.<Long>get(var5);
                      boolean var12 = var10 + 300L <= var8;
                      if (var3.getValue() <= var2 && !var12) {
-                        BlockPos var13 = ((GlobalPos)var3x.get(var4)).pos();
+                        BlockPos var13 = var3x.<GlobalPos>get(var4).pos();
                         if (var13.closerThan(var7.blockPosition(), (double)var1)) {
                            var3.increment();
                         }
-      
+
                         return true;
                      } else {
                         var5.erase();

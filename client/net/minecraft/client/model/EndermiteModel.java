@@ -21,7 +21,7 @@ public class EndermiteModel<T extends Entity> extends HierarchicalModel<T> {
       this.root = var1;
       this.bodyParts = new ModelPart[4];
 
-      for(int var2 = 0; var2 < 4; ++var2) {
+      for (int var2 = 0; var2 < 4; var2++) {
          this.bodyParts[var2] = var1.getChild(createSegmentName(var2));
       }
    }
@@ -35,7 +35,7 @@ public class EndermiteModel<T extends Entity> extends HierarchicalModel<T> {
       PartDefinition var1 = var0.getRoot();
       float var2 = -3.5F;
 
-      for(int var3 = 0; var3 < 4; ++var3) {
+      for (int var3 = 0; var3 < 4; var3++) {
          var1.addOrReplaceChild(
             createSegmentName(var3),
             CubeListBuilder.create()
@@ -65,7 +65,7 @@ public class EndermiteModel<T extends Entity> extends HierarchicalModel<T> {
 
    @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      for(int var7 = 0; var7 < this.bodyParts.length; ++var7) {
+      for (int var7 = 0; var7 < this.bodyParts.length; var7++) {
          this.bodyParts[var7].yRot = Mth.cos(var4 * 0.9F + (float)var7 * 0.15F * 3.1415927F) * 3.1415927F * 0.01F * (float)(1 + Math.abs(var7 - 2));
          this.bodyParts[var7].x = Mth.sin(var4 * 0.9F + (float)var7 * 0.15F * 3.1415927F) * 3.1415927F * 0.1F * (float)Math.abs(var7 - 2);
       }

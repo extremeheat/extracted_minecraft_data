@@ -20,7 +20,7 @@ public enum ItemInteractionResult {
    }
 
    public InteractionResult result() {
-      return switch(this) {
+      return switch (this) {
          case SUCCESS -> InteractionResult.SUCCESS;
          case CONSUME -> InteractionResult.CONSUME;
          case CONSUME_PARTIAL -> InteractionResult.CONSUME_PARTIAL;

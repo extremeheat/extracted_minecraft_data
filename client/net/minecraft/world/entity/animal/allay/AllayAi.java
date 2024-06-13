@@ -11,7 +11,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
@@ -144,18 +143,15 @@ public class AllayAi {
       return getLikedPlayer(var0).map(var0x -> new EntityTracker(var0x, true));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static Optional<ServerPlayer> getLikedPlayer(LivingEntity var0) {
       Level var1 = var0.level();
       if (!var1.isClientSide() && var1 instanceof ServerLevel var2) {
          Optional var3 = var0.getBrain().getMemory(MemoryModuleType.LIKED_PLAYER);
          if (var3.isPresent()) {
-            Entity var4 = var2.getEntity((UUID)var3.get());
-            if (var4 instanceof ServerPlayer var5
-               && (((ServerPlayer)var5).gameMode.isSurvival() || ((ServerPlayer)var5).gameMode.isCreative())
-               && ((ServerPlayer)var5).closerThan(var0, 64.0)) {
-               return Optional.of((ServerPlayer)var5);
+            if (var2.getEntity((UUID)var3.get()) instanceof ServerPlayer var5
+               && (var5.gameMode.isSurvival() || var5.gameMode.isCreative())
+               && var5.closerThan(var0, 64.0)) {
+               return Optional.of(var5);
             }
 
             return Optional.empty();

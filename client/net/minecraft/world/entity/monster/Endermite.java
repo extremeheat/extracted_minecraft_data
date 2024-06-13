@@ -103,7 +103,7 @@ public class Endermite extends Monster {
    public void aiStep() {
       super.aiStep();
       if (this.level().isClientSide) {
-         for(int var1 = 0; var1 < 2; ++var1) {
+         for (int var1 = 0; var1 < 2; var1++) {
             this.level()
                .addParticle(
                   ParticleTypes.PORTAL,
@@ -117,7 +117,7 @@ public class Endermite extends Monster {
          }
       } else {
          if (!this.isPersistenceRequired()) {
-            ++this.life;
+            this.life++;
          }
 
          if (this.life >= 2400) {

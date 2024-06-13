@@ -20,7 +20,7 @@ public abstract class BushBlock extends Block {
    protected abstract MapCodec<? extends BushBlock> codec();
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(BlockTags.DIRT) || var1.is(Blocks.FARMLAND) || var1.is(Blocks.POISON_FARMLAND);
+      return var1.is(BlockTags.DIRT) || var1.is(Blocks.FARMLAND);
    }
 
    @Override

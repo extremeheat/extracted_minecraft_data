@@ -202,7 +202,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
    @Override
    public Item getDropItem() {
-      return switch(this.getVariant()) {
+      return switch (this.getVariant()) {
          case SPRUCE -> Items.SPRUCE_BOAT;
          case BIRCH -> Items.BIRCH_BOAT;
          case JUNGLE -> Items.JUNGLE_BOAT;
@@ -274,7 +274,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       if (this.status != Boat.Status.UNDER_WATER && this.status != Boat.Status.UNDER_FLOWING_WATER) {
          this.outOfControlTicks = 0.0F;
       } else {
-         ++this.outOfControlTicks;
+         this.outOfControlTicks++;
       }
 
       if (!this.level().isClientSide && this.outOfControlTicks >= 60.0F) {
@@ -309,7 +309,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
       this.tickBubbleColumn();
 
-      for(int var1 = 0; var1 <= 1; ++var1) {
+      for (int var1 = 0; var1 <= 1; var1++) {
          if (this.getPaddleState(var1)) {
             if (!this.isSilent()
                && (double)(this.paddlePositions[var1] % 6.2831855F) <= 0.7853981852531433
@@ -326,7 +326,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
                }
             }
 
-            this.paddlePositions[var1] += 0.3926991F;
+            this.paddlePositions[var1] = this.paddlePositions[var1] + 0.3926991F;
          } else {
             this.paddlePositions[var1] = 0.0F;
          }
@@ -338,7 +338,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       if (!var8.isEmpty()) {
          boolean var9 = !this.level().isClientSide && !(this.getControllingPassenger() instanceof Player);
 
-         for(Entity var11 : var8) {
+         for (Entity var11 : var8) {
             if (!var11.hasPassenger(this)) {
                if (var9
                   && this.getPassengers().size() < this.getMaxPassengers()
@@ -395,7 +395,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
    @Nullable
    protected SoundEvent getPaddleSound() {
-      switch(this.getStatus()) {
+      switch (this.getStatus()) {
          case IN_WATER:
          case UNDER_WATER:
          case UNDER_FLOWING_WATER:
@@ -416,7 +416,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
       if (this.lerpSteps > 0) {
          this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
-         --this.lerpSteps;
+         this.lerpSteps--;
       }
    }
 
@@ -458,11 +458,11 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
 
       label39:
-      for(int var9 = var4; var9 < var5; ++var9) {
+      for (int var9 = var4; var9 < var5; var9++) {
          float var10 = 0.0F;
 
-         for(int var11 = var2; var11 < var3; ++var11) {
-            for(int var12 = var6; var12 < var7; ++var12) {
+         for (int var11 = var2; var11 < var3; var11++) {
+            for (int var12 = var6; var12 < var7; var12++) {
                var8.set(var11, var9, var12);
                FluidState var13 = this.level().getFluidState(var8);
                if (var13.is(FluidTags.WATER)) {
@@ -497,11 +497,11 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       int var11 = 0;
       BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
 
-      for(int var13 = var3; var13 < var4; ++var13) {
-         for(int var14 = var7; var14 < var8; ++var14) {
+      for (int var13 = var3; var13 < var4; var13++) {
+         for (int var14 = var7; var14 < var8; var14++) {
             int var15 = (var13 != var3 && var13 != var4 - 1 ? 0 : 1) + (var14 != var7 && var14 != var8 - 1 ? 0 : 1);
             if (var15 != 2) {
-               for(int var16 = var5; var16 < var6; ++var16) {
+               for (int var16 = var5; var16 < var6; var16++) {
                   if (var15 <= 0 || var16 != var5 && var16 != var6 - 1) {
                      var12.set(var13, var16, var14);
                      BlockState var17 = this.level().getBlockState(var12);
@@ -510,7 +510,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
                            var17.getCollisionShape(this.level(), var12).move((double)var13, (double)var16, (double)var14), var9, BooleanOp.AND
                         )) {
                         var10 += var17.getBlock().getFriction();
-                        ++var11;
+                        var11++;
                      }
                   }
                }
@@ -533,9 +533,9 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       this.waterLevel = -1.7976931348623157E308;
       BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
 
-      for(int var10 = var2; var10 < var3; ++var10) {
-         for(int var11 = var4; var11 < var5; ++var11) {
-            for(int var12 = var6; var12 < var7; ++var12) {
+      for (int var10 = var2; var10 < var3; var10++) {
+         for (int var11 = var4; var11 < var5; var11++) {
+            for (int var12 = var6; var12 < var7; var12++) {
                var9.set(var10, var11, var12);
                FluidState var13 = this.level().getFluidState(var9);
                if (var13.is(FluidTags.WATER)) {
@@ -563,9 +563,9 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       boolean var10 = false;
       BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
 
-      for(int var12 = var4; var12 < var5; ++var12) {
-         for(int var13 = var6; var13 < var7; ++var13) {
-            for(int var14 = var8; var14 < var9; ++var14) {
+      for (int var12 = var4; var12 < var5; var12++) {
+         for (int var13 = var6; var13 < var7; var13++) {
+            for (int var14 = var8; var14 < var9; var14++) {
                var11.set(var12, var13, var14);
                FluidState var15 = this.level().getFluidState(var11);
                if (var15.is(FluidTags.WATER) && var2 < (double)((float)var11.getY() + var15.getHeight(this.level(), var11))) {
@@ -618,7 +618,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
          Vec3 var5 = this.getDeltaMovement();
          this.setDeltaMovement(var5.x * (double)this.invFriction, var5.y + var1, var5.z * (double)this.invFriction);
-         this.deltaRotation *= this.invFriction;
+         this.deltaRotation = this.deltaRotation * this.invFriction;
          if (var3 > 0.0) {
             Vec3 var6 = this.getDeltaMovement();
             this.setDeltaMovement(var6.x, (var6.y + var3 * (this.getDefaultGravity() / 0.65)) * 0.75, var6.z);
@@ -630,11 +630,11 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       if (this.isVehicle()) {
          float var1 = 0.0F;
          if (this.inputLeft) {
-            --this.deltaRotation;
+            this.deltaRotation--;
          }
 
          if (this.inputRight) {
-            ++this.deltaRotation;
+            this.deltaRotation++;
          }
 
          if (this.inputRight != this.inputLeft && !this.inputUp && !this.inputDown) {
@@ -701,10 +701,10 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
          UnmodifiableIterator var14 = var1.getDismountPoses().iterator();
 
-         while(var14.hasNext()) {
+         while (var14.hasNext()) {
             Pose var15 = (Pose)var14.next();
 
-            for(Vec3 var17 : var9) {
+            for (Vec3 var17 : var9) {
                if (DismountHelper.canDismountTo(this.level(), var17, var1, var15)) {
                   var1.setPose(var15);
                   return var17;
@@ -772,11 +772,11 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
                if (!this.level().isClientSide && !this.isRemoved()) {
                   this.kill();
                   if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-                     for(int var6 = 0; var6 < 3; ++var6) {
+                     for (int var6 = 0; var6 < 3; var6++) {
                         this.spawnAtLocation(this.getVariant().getPlanks());
                      }
 
-                     for(int var7 = 0; var7 < 2; ++var7) {
+                     for (int var7 = 0; var7 < 2; var7++) {
                         this.spawnAtLocation(Items.STICK);
                      }
                   }
@@ -791,7 +791,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    }
 
    public boolean getPaddleState(int var1) {
-      return this.entityData.<Boolean>get(var1 == 0 ? DATA_ID_PADDLE_LEFT : DATA_ID_PADDLE_RIGHT) && this.getControllingPassenger() != null;
+      return this.entityData.get(var1 == 0 ? DATA_ID_PADDLE_LEFT : DATA_ID_PADDLE_RIGHT) && this.getControllingPassenger() != null;
    }
 
    private void setBubbleTime(int var1) {
@@ -826,8 +826,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    @Nullable
    @Override
    public LivingEntity getControllingPassenger() {
-      Entity var2 = this.getFirstPassenger();
-      return var2 instanceof LivingEntity var1 ? var1 : super.getControllingPassenger();
+      return this.getFirstPassenger() instanceof LivingEntity var1 ? var1 : super.getControllingPassenger();
    }
 
    public void setInput(boolean var1, boolean var2, boolean var3, boolean var4) {

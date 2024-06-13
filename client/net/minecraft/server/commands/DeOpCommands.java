@@ -3,10 +3,8 @@ package net.minecraft.server.commands;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -39,10 +37,10 @@ public class DeOpCommands {
       PlayerList var2 = var0.getServer().getPlayerList();
       int var3 = 0;
 
-      for(GameProfile var5 : var1) {
+      for (GameProfile var5 : var1) {
          if (var2.isOp(var5)) {
             var2.deop(var5);
-            ++var3;
+            var3++;
             var0.sendSuccess(() -> Component.translatable("commands.deop.success", ((GameProfile)var1.iterator().next()).getName()), true);
          }
       }

@@ -5,16 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public record AnimationDefinition(float a, boolean b, Map<String, List<AnimationChannel>> c) {
-   private final float lengthInSeconds;
-   private final boolean looping;
-   private final Map<String, List<AnimationChannel>> boneAnimations;
-
-   public AnimationDefinition(float var1, boolean var2, Map<String, List<AnimationChannel>> var3) {
+public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<String, List<AnimationChannel>> boneAnimations) {
+   public AnimationDefinition(float lengthInSeconds, boolean looping, Map<String, List<AnimationChannel>> boneAnimations) {
       super();
-      this.lengthInSeconds = var1;
-      this.looping = var2;
-      this.boneAnimations = var3;
+      this.lengthInSeconds = lengthInSeconds;
+      this.looping = looping;
+      this.boneAnimations = boneAnimations;
    }
 
    public static class Builder {
@@ -37,7 +33,7 @@ public record AnimationDefinition(float a, boolean b, Map<String, List<Animation
       }
 
       public AnimationDefinition.Builder addAnimation(String var1, AnimationChannel var2) {
-         this.animationByBone.computeIfAbsent(var1, var0 -> new ArrayList()).add(var2);
+         this.animationByBone.computeIfAbsent(var1, var0 -> new ArrayList<>()).add(var2);
          return this;
       }
 

@@ -67,11 +67,6 @@ public class Armadillo extends Animal {
       this.scuteTime = this.pickNextScuteDropTime();
    }
 
-   @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
    @Nullable
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
@@ -136,7 +131,7 @@ public class Armadillo extends Animal {
    @Override
    protected void customServerAiStep() {
       this.level().getProfiler().push("armadilloBrain");
-      this.brain.tick((ServerLevel)this.level(), this);
+      ((Brain<Armadillo>)this.brain).tick((ServerLevel)this.level(), this);
       this.level().getProfiler().pop();
       this.level().getProfiler().push("armadilloActivityUpdate");
       ArmadilloAi.updateActivity(this);
@@ -166,7 +161,7 @@ public class Armadillo extends Animal {
          this.clampHeadRotationToBody();
       }
 
-      ++this.inStateTicks;
+      this.inStateTicks++;
    }
 
    @Override
@@ -175,14 +170,9 @@ public class Armadillo extends Animal {
    }
 
    private void setupAnimationStates() {
-      switch(this.getState()) {
+      switch (this.getState()) {
          case IDLE:
             this.rollOutAnimationState.stop();
-            this.rollUpAnimationState.stop();
-            this.peekAnimationState.stop();
-            break;
-         case UNROLLING:
-            this.rollOutAnimationState.startIfStopped(this.tickCount);
             this.rollUpAnimationState.stop();
             this.peekAnimationState.stop();
             break;
@@ -205,6 +195,11 @@ public class Armadillo extends Animal {
             } else {
                this.peekAnimationState.startIfStopped(this.tickCount);
             }
+            break;
+         case UNROLLING:
+            this.rollOutAnimationState.startIfStopped(this.tickCount);
+            this.rollUpAnimationState.stop();
+            this.peekAnimationState.stop();
       }
    }
 
@@ -227,8 +222,6 @@ public class Armadillo extends Animal {
       return var1.getBlockState(var3.below()).is(BlockTags.ARMADILLO_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public boolean isScaredBy(LivingEntity var1) {
       if (!this.getBoundingBox().inflate(7.0, 2.0, 7.0).intersects(var1.getBoundingBox())) {
          return false;
@@ -237,11 +230,7 @@ public class Armadillo extends Animal {
       } else if (this.getLastHurtByMob() == var1) {
          return true;
       } else if (var1 instanceof Player var2) {
-         if (var2.isSpectator()) {
-            return false;
-         } else {
-            return var2.isSprinting() || var2.isPassenger();
-         }
+         return var2.isSpectator() ? false : var2.isSprinting() || var2.isPassenger();
       } else {
          return false;
       }

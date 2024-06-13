@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.TickRateManager;
 
-public record ClientboundTickingStatePacket(float b, boolean c) implements Packet<ClientGamePacketListener> {
-   private final float tickRate;
-   private final boolean isFrozen;
+public record ClientboundTickingStatePacket(float tickRate, boolean isFrozen) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundTickingStatePacket> STREAM_CODEC = Packet.codec(
       ClientboundTickingStatePacket::write, ClientboundTickingStatePacket::new
    );
@@ -17,10 +15,10 @@ public record ClientboundTickingStatePacket(float b, boolean c) implements Packe
       this(var1.readFloat(), var1.readBoolean());
    }
 
-   public ClientboundTickingStatePacket(float var1, boolean var2) {
+   public ClientboundTickingStatePacket(float tickRate, boolean isFrozen) {
       super();
-      this.tickRate = var1;
-      this.isFrozen = var2;
+      this.tickRate = tickRate;
+      this.isFrozen = isFrozen;
    }
 
    public static ClientboundTickingStatePacket from(TickRateManager var0) {

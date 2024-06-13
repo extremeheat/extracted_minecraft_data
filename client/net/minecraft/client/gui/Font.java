@@ -9,7 +9,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.font.FontSet;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
@@ -109,19 +108,19 @@ public class Font {
       int var9 = adjustColor(var5);
       Font.StringRenderOutput var10 = new Font.StringRenderOutput(var7, 0.0F, 0.0F, var9, false, var6, Font.DisplayMode.NORMAL, var8);
 
-      for(int var11 = -1; var11 <= 1; ++var11) {
-         for(int var12 = -1; var12 <= 1; ++var12) {
+      for (int var11 = -1; var11 <= 1; var11++) {
+         for (int var12 = -1; var12 <= 1; var12++) {
             if (var11 != 0 || var12 != 0) {
                float[] var13 = new float[]{var2};
                int var14 = var11;
                int var15 = var12;
                var1.accept((var7x, var8x, var9x) -> {
-                  boolean var10xx = var8x.isBold();
-                  FontSet var11xx = this.getFontSet(var8x.getFont());
-                  GlyphInfo var12xx = var11xx.getGlyphInfo(var9x, this.filterFishyGlyphs);
-                  var10.x = var13[0] + (float)var14 * var12xx.getShadowOffset();
-                  var10.y = var3 + (float)var15 * var12xx.getShadowOffset();
-                  var13[0] += var12xx.getAdvance(var10xx);
+                  boolean var10x = var8x.isBold();
+                  FontSet var11x = this.getFontSet(var8x.getFont());
+                  GlyphInfo var12x = var11x.getGlyphInfo(var9x, this.filterFishyGlyphs);
+                  var10.x = var13[0] + (float)var14 * var12x.getShadowOffset();
+                  var10.y = var3 + (float)var15 * var12x.getShadowOffset();
+                  var13[0] += var12x.getAdvance(var10x);
                   return var10.accept(var7x, var8x.withColor(var9), var9x);
                });
             }
@@ -349,28 +348,21 @@ public class Font {
             var10 = this.b;
          }
 
-         float var17;
-         if (var3 == 129364) {
-            var17 = 1.5F * Mth.sin(this.x + (float)Util.getNanos() / 1.0E8F);
-         } else {
-            var17 = 0.0F;
-         }
-
          if (!(var6 instanceof EmptyGlyph)) {
-            float var14 = var7 ? var5.getBoldOffset() : 0.0F;
-            float var15 = this.dropShadow ? var5.getShadowOffset() : 0.0F;
-            VertexConsumer var16 = this.bufferSource.getBuffer(var6.renderType(this.mode));
+            float var16 = var7 ? var5.getBoldOffset() : 0.0F;
+            float var14 = this.dropShadow ? var5.getShadowOffset() : 0.0F;
+            VertexConsumer var15 = this.bufferSource.getBuffer(var6.renderType(this.mode));
             Font.this.renderChar(
-               var6, var7, var2.isItalic(), var14, this.x + var15, this.y + var15 + var17, this.pose, var16, var8, var9, var10, var11, this.packedLightCoords
+               var6, var7, var2.isItalic(), var16, this.x + var14, this.y + var14, this.pose, var15, var8, var9, var10, var11, this.packedLightCoords
             );
          }
 
-         float var18 = var5.getAdvance(var7);
-         float var19 = this.dropShadow ? 1.0F : 0.0F;
+         float var17 = var5.getAdvance(var7);
+         float var18 = this.dropShadow ? 1.0F : 0.0F;
          if (var2.isStrikethrough()) {
             this.addEffect(
                new BakedGlyph.Effect(
-                  this.x + var19 - 1.0F, this.y + var19 + 4.5F, this.x + var19 + var18, this.y + var19 + 4.5F - 1.0F, 0.01F, var8, var9, var10, var11
+                  this.x + var18 - 1.0F, this.y + var18 + 4.5F, this.x + var18 + var17, this.y + var18 + 4.5F - 1.0F, 0.01F, var8, var9, var10, var11
                )
             );
          }
@@ -378,12 +370,12 @@ public class Font {
          if (var2.isUnderlined()) {
             this.addEffect(
                new BakedGlyph.Effect(
-                  this.x + var19 - 1.0F, this.y + var19 + 9.0F, this.x + var19 + var18, this.y + var19 + 9.0F - 1.0F, 0.01F, var8, var9, var10, var11
+                  this.x + var18 - 1.0F, this.y + var18 + 9.0F, this.x + var18 + var17, this.y + var18 + 9.0F - 1.0F, 0.01F, var8, var9, var10, var11
                )
             );
          }
 
-         this.x += var18;
+         this.x += var17;
          return true;
       }
 
@@ -400,7 +392,7 @@ public class Font {
             BakedGlyph var7 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
             VertexConsumer var8 = this.bufferSource.getBuffer(var7.renderType(this.mode));
 
-            for(BakedGlyph.Effect var10 : this.effects) {
+            for (BakedGlyph.Effect var10 : this.effects) {
                var7.renderEffect(var10, this.pose, var8, this.packedLightCoords);
             }
          }

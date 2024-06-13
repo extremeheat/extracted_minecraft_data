@@ -67,30 +67,33 @@ public class PiglinSpecificSensor extends Sensor<LivingEntity> {
       ArrayList var13 = Lists.newArrayList();
       NearestVisibleLivingEntities var14 = var3.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
 
-      for(LivingEntity var16 : var14.findAll(var0 -> true)) {
-         if (var16 instanceof Hoglin var17) {
-            if (((Hoglin)var17).isBaby() && var6.isEmpty()) {
+      for (LivingEntity var16 : var14.findAll(var0 -> true)) {
+         if (var16 instanceof Hoglin) {
+            Hoglin var17 = (Hoglin)var16;
+            if (var17.isBaby() && var6.isEmpty()) {
                var6 = Optional.of(var17);
-            } else if (((Hoglin)var17).isAdult()) {
-               ++var11;
-               if (var5.isEmpty() && ((Hoglin)var17).canBeHunted()) {
+            } else if (var17.isAdult()) {
+               var11++;
+               if (var5.isEmpty() && var17.canBeHunted()) {
                   var5 = Optional.of(var17);
                }
             }
          } else if (var16 instanceof PiglinBrute var18) {
             var12.add(var18);
-         } else if (var16 instanceof Piglin var19) {
-            if (((Piglin)var19).isBaby() && var7.isEmpty()) {
+         } else if (var16 instanceof Piglin) {
+            Piglin var19 = (Piglin)var16;
+            if (var19.isBaby() && var7.isEmpty()) {
                var7 = Optional.of(var19);
-            } else if (((Piglin)var19).isAdult()) {
+            } else if (var19.isAdult()) {
                var12.add(var19);
             }
-         } else if (var16 instanceof Player var20) {
-            if (var9.isEmpty() && !PiglinAi.isWearingGold((LivingEntity)var20) && var2.canAttack(var16)) {
+         } else if (var16 instanceof Player) {
+            Player var20 = (Player)var16;
+            if (var9.isEmpty() && !PiglinAi.isWearingGold(var20) && var2.canAttack(var16)) {
                var9 = Optional.of(var20);
             }
 
-            if (var10.isEmpty() && !((Player)var20).isSpectator() && PiglinAi.isPlayerHoldingLovedItem((LivingEntity)var20)) {
+            if (var10.isEmpty() && !var20.isSpectator() && PiglinAi.isPlayerHoldingLovedItem(var20)) {
                var10 = Optional.of(var20);
             }
          } else if (!var4.isEmpty() || !(var16 instanceof WitherSkeleton) && !(var16 instanceof WitherBoss)) {
@@ -102,9 +105,12 @@ public class PiglinSpecificSensor extends Sensor<LivingEntity> {
          }
       }
 
-      for(LivingEntity var23 : var3.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).orElse(ImmutableList.of())) {
-         if (var23 instanceof AbstractPiglin var24 && ((AbstractPiglin)var24).isAdult()) {
-            var13.add(var24);
+      for (LivingEntity var23 : var3.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).orElse(ImmutableList.of())) {
+         if (var23 instanceof AbstractPiglin) {
+            AbstractPiglin var24 = (AbstractPiglin)var23;
+            if (var24.isAdult()) {
+               var13.add(var24);
+            }
          }
       }
 

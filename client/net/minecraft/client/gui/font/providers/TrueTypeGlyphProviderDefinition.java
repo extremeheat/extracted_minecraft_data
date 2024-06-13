@@ -7,7 +7,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -15,21 +14,15 @@ import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ExtraCodecs;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.freetype.FT_Face;
 import org.lwjgl.util.freetype.FreeType;
 
-public record TrueTypeGlyphProviderDefinition(ResourceLocation c, float d, float e, TrueTypeGlyphProviderDefinition.Shift f, String g)
+public record TrueTypeGlyphProviderDefinition(ResourceLocation location, float size, float oversample, TrueTypeGlyphProviderDefinition.Shift shift, String skip)
    implements GlyphProviderDefinition {
-   private final ResourceLocation location;
-   private final float size;
-   private final float oversample;
-   private final TrueTypeGlyphProviderDefinition.Shift shift;
-   private final String skip;
-   private static final Codec<String> SKIP_LIST_CODEC = ExtraCodecs.withAlternative(Codec.STRING, Codec.STRING.listOf(), var0 -> String.join("", var0));
+   private static final Codec<String> SKIP_LIST_CODEC = Codec.withAlternative(Codec.STRING, Codec.STRING.listOf(), var0 -> String.join("", var0));
    public static final MapCodec<TrueTypeGlyphProviderDefinition> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                ResourceLocation.CODEC.fieldOf("file").forGetter(TrueTypeGlyphProviderDefinition::location),
@@ -43,13 +36,13 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation c, float d, float
             .apply(var0, TrueTypeGlyphProviderDefinition::new)
    );
 
-   public TrueTypeGlyphProviderDefinition(ResourceLocation var1, float var2, float var3, TrueTypeGlyphProviderDefinition.Shift var4, String var5) {
+   public TrueTypeGlyphProviderDefinition(ResourceLocation location, float size, float oversample, TrueTypeGlyphProviderDefinition.Shift shift, String skip) {
       super();
-      this.location = var1;
-      this.size = var2;
-      this.oversample = var3;
-      this.shift = var4;
-      this.skip = var5;
+      this.location = location;
+      this.size = size;
+      this.oversample = oversample;
+      this.shift = shift;
+      this.skip = skip;
    }
 
    @Override
@@ -113,21 +106,19 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation c, float d, float
       }
    }
 
-   public static record Shift(float c, float d) {
-      final float x;
-      final float y;
+   public static record Shift(float x, float y) {
       public static final TrueTypeGlyphProviderDefinition.Shift NONE = new TrueTypeGlyphProviderDefinition.Shift(0.0F, 0.0F);
       public static final Codec<TrueTypeGlyphProviderDefinition.Shift> CODEC = Codec.FLOAT
          .listOf()
          .comapFlatMap(
-            var0 -> Util.fixedSize(var0, 2).map(var0x -> new TrueTypeGlyphProviderDefinition.Shift(var0x.get(0), var0x.get(1))),
+            var0 -> Util.fixedSize(var0, 2).map(var0x -> new TrueTypeGlyphProviderDefinition.Shift((Float)var0x.get(0), (Float)var0x.get(1))),
             var0 -> List.of(var0.x, var0.y)
          );
 
-      public Shift(float var1, float var2) {
+      public Shift(float x, float y) {
          super();
-         this.x = var1;
-         this.y = var2;
+         this.x = x;
+         this.y = y;
       }
    }
 }

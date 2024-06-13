@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -53,10 +52,6 @@ public class DoorBlock extends Block {
    protected static final VoxelShape EAST_AABB = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
    private final BlockSetType type;
 
-   public static boolean shouldTrigger(Level var0, BlockPos var1) {
-      return var0.hasNeighborSignal(var1) || var0.hasNeighborSignal(var1.above());
-   }
-
    @Override
    public MapCodec<? extends DoorBlock> codec() {
       return CODEC;
@@ -86,7 +81,7 @@ public class DoorBlock extends Block {
       boolean var6 = !var1.getValue(OPEN);
       boolean var7 = var1.getValue(HINGE) == DoorHingeSide.RIGHT;
 
-      return switch(var5) {
+      return switch (var5) {
          case SOUTH -> var6 ? SOUTH_AABB : (var7 ? EAST_AABB : WEST_AABB);
          case WEST -> var6 ? WEST_AABB : (var7 ? SOUTH_AABB : NORTH_AABB);
          case NORTH -> var6 ? NORTH_AABB : (var7 ? WEST_AABB : EAST_AABB);
@@ -130,7 +125,7 @@ public class DoorBlock extends Block {
 
    @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      return switch(var2) {
+      return switch (var2) {
          case LAND, AIR -> var1.getValue(OPEN);
          case WATER -> false;
       };
@@ -142,7 +137,7 @@ public class DoorBlock extends Block {
       BlockPos var2 = var1.getClickedPos();
       Level var3 = var1.getLevel();
       if (var2.getY() < var3.getMaxBuildHeight() - 1 && var3.getBlockState(var2.above()).canBeReplaced(var1)) {
-         boolean var4 = shouldTrigger(var3, var2);
+         boolean var4 = var3.hasNeighborSignal(var2) || var3.hasNeighborSignal(var2.above());
          return this.defaultBlockState()
             .setValue(FACING, var1.getHorizontalDirection())
             .setValue(HINGE, this.getHinge(var1))
@@ -273,8 +268,7 @@ public class DoorBlock extends Block {
    }
 
    public static boolean isWoodenDoor(BlockState var0) {
-      Block var2 = var0.getBlock();
-      if (var2 instanceof DoorBlock var1 && var1.type().canOpenByHand()) {
+      if (var0.getBlock() instanceof DoorBlock var1 && var1.type().canOpenByHand()) {
          return true;
       }
 

@@ -46,7 +46,7 @@ public class TextureMapping {
    }
 
    public ResourceLocation get(TextureSlot var1) {
-      for(TextureSlot var2 = var1; var2 != null; var2 = var2.getParent()) {
+      for (TextureSlot var2 = var1; var2 != null; var2 = var2.getParent()) {
          ResourceLocation var3 = this.slots.get(var2);
          if (var3 != null) {
             return var3;
@@ -331,10 +331,6 @@ public class TextureMapping {
 
    public static TextureMapping campfire(Block var0) {
       return new TextureMapping().put(TextureSlot.LIT_LOG, getBlockTexture(var0, "_log_lit")).put(TextureSlot.FIRE, getBlockTexture(var0, "_fire"));
-   }
-
-   public static TextureMapping fryingTable(Block var0) {
-      return new TextureMapping().put(TextureSlot.FRYING_TABLE, getBlockTexture(var0));
    }
 
    public static TextureMapping candleCake(Block var0, boolean var1) {

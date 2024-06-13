@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -113,9 +112,9 @@ public class VineBlock extends Block {
    private int countFaces(BlockState var1) {
       int var2 = 0;
 
-      for(BooleanProperty var4 : PROPERTY_BY_DIRECTION.values()) {
+      for (BooleanProperty var4 : PROPERTY_BY_DIRECTION.values()) {
          if (var1.getValue(var4)) {
-            ++var2;
+            var2++;
          }
       }
 
@@ -151,7 +150,7 @@ public class VineBlock extends Block {
 
       BlockState var5 = null;
 
-      for(Direction var7 : Direction.Plane.HORIZONTAL) {
+      for (Direction var7 : Direction.Plane.HORIZONTAL) {
          BooleanProperty var8 = getPropertyForFace(var7);
          if (var1.getValue(var8)) {
             boolean var9 = this.canSupportAtFace(var2, var3, var7);
@@ -229,7 +228,7 @@ public class VineBlock extends Block {
 
                      BlockState var16 = var1;
 
-                     for(Direction var20 : Direction.Plane.HORIZONTAL) {
+                     for (Direction var20 : Direction.Plane.HORIZONTAL) {
                         if (var4.nextBoolean() || !isAcceptableNeighbour(var2, var6.relative(var20), var20)) {
                            var16 = var16.setValue(getPropertyForFace(var20), Boolean.valueOf(false));
                         }
@@ -260,7 +259,7 @@ public class VineBlock extends Block {
    }
 
    private BlockState copyRandomFaces(BlockState var1, BlockState var2, RandomSource var3) {
-      for(Direction var5 : Direction.Plane.HORIZONTAL) {
+      for (Direction var5 : Direction.Plane.HORIZONTAL) {
          if (var3.nextBoolean()) {
             BooleanProperty var6 = getPropertyForFace(var5);
             if (var1.getValue(var6)) {
@@ -277,11 +276,11 @@ public class VineBlock extends Block {
    }
 
    private boolean canSpread(BlockGetter var1, BlockPos var2) {
-      boolean var3 = true;
+      byte var3 = 4;
       Iterable var4 = BlockPos.betweenClosed(var2.getX() - 4, var2.getY() - 1, var2.getZ() - 4, var2.getX() + 4, var2.getY() + 1, var2.getZ() + 4);
       int var5 = 5;
 
-      for(BlockPos var7 : var4) {
+      for (BlockPos var7 : var4) {
          if (var1.getBlockState(var7).is(this)) {
             if (--var5 <= 0) {
                return false;
@@ -295,11 +294,7 @@ public class VineBlock extends Block {
    @Override
    protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       BlockState var3 = var2.getLevel().getBlockState(var2.getClickedPos());
-      if (var3.is(this)) {
-         return this.countFaces(var3) < PROPERTY_BY_DIRECTION.size();
-      } else {
-         return super.canBeReplaced(var1, var2);
-      }
+      return var3.is(this) ? this.countFaces(var3) < PROPERTY_BY_DIRECTION.size() : super.canBeReplaced(var1, var2);
    }
 
    @Nullable
@@ -309,7 +304,7 @@ public class VineBlock extends Block {
       boolean var3 = var2.is(this);
       BlockState var4 = var3 ? var2 : this.defaultBlockState();
 
-      for(Direction var8 : var1.getNearestLookingDirections()) {
+      for (Direction var8 : var1.getNearestLookingDirections()) {
          if (var8 != Direction.DOWN) {
             BooleanProperty var9 = getPropertyForFace(var8);
             boolean var10 = var3 && var2.getValue(var9);
@@ -329,7 +324,7 @@ public class VineBlock extends Block {
 
    @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+      switch (var2) {
          case CLOCKWISE_180:
             return var1.setValue(NORTH, var1.getValue(SOUTH))
                .setValue(EAST, var1.getValue(WEST))
@@ -352,7 +347,7 @@ public class VineBlock extends Block {
 
    @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
             return var1.setValue(NORTH, var1.getValue(SOUTH)).setValue(SOUTH, var1.getValue(NORTH));
          case FRONT_BACK:

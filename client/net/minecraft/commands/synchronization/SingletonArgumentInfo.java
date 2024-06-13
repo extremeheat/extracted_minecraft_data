@@ -47,7 +47,7 @@ public class SingletonArgumentInfo<A extends ArgumentType<?>> implements Argumen
 
       @Override
       public A instantiate(CommandBuildContext var1) {
-         return (A)this.constructor.apply(var1);
+         return this.constructor.apply(var1);
       }
 
       @Override

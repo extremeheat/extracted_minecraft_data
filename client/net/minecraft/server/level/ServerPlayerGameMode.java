@@ -90,7 +90,7 @@ public class ServerPlayerGameMode {
    }
 
    public void tick() {
-      ++this.gameTicks;
+      this.gameTicks++;
       if (this.hasDelayedDestroy) {
          BlockState var1 = this.level.getBlockState(this.delayedDestroyPos);
          if (var1.isAir()) {

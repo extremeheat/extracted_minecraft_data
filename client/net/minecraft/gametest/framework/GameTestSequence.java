@@ -97,7 +97,7 @@ public class GameTestSequence {
    private void tick(long var1) {
       Iterator var3 = this.events.iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          GameTestEvent var4 = (GameTestEvent)var3.next();
          var4.assertion.run();
          var3.remove();

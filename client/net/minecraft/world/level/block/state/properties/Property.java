@@ -17,9 +17,9 @@ public abstract class Property<T extends Comparable<T>> {
    private Integer hashCode;
    private final Codec<T> codec = Codec.STRING
       .comapFlatMap(
-         var1x -> (DataResult)this.getValue(var1x)
-               .map(DataResult::success)
-               .orElseGet(() -> (T)DataResult.error(() -> "Unable to read property: " + this + " with value: " + var1x)),
+         var1x -> this.getValue(var1x)
+               .<DataResult>map(DataResult::success)
+               .orElseGet(() -> DataResult.error(() -> "Unable to read property: " + this + " with value: " + var1x)),
          this::getName
       );
    private final Codec<Property.Value<T>> valueCodec = this.codec.xmap(this::value, Property.Value::value);
@@ -73,11 +73,8 @@ public abstract class Property<T extends Comparable<T>> {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof Property)) {
-         return false;
       } else {
-         Property var2 = (Property)var1;
-         return this.clazz.equals(var2.clazz) && this.name.equals(var2.name);
+         return !(var1 instanceof Property var2) ? false : this.clazz.equals(var2.clazz) && this.name.equals(var2.name);
       }
    }
 
@@ -99,17 +96,14 @@ public abstract class Property<T extends Comparable<T>> {
       return var4.map(var2x -> (StateHolder)var2.setValue(this, var2x)).setPartial(var2);
    }
 
-   public static record Value<T extends Comparable<T>>(Property<T> a, T b) {
-      private final Property<T> property;
-      private final T value;
-
-      public Value(Property<T> var1, T var2) {
+   public static record Value<T extends Comparable<T>>(Property<T> property, T value) {
+      public Value(Property<T> property, T value) {
          super();
-         if (!var1.getPossibleValues().contains(var2)) {
-            throw new IllegalArgumentException("Value " + var2 + " does not belong to property " + var1);
+         if (!property.getPossibleValues().contains(value)) {
+            throw new IllegalArgumentException("Value " + value + " does not belong to property " + property);
          } else {
-            this.property = var1;
-            this.value = var2;
+            this.property = property;
+            this.value = (T)value;
          }
       }
 

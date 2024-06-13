@@ -78,7 +78,7 @@ public abstract class AbstractPiglin extends Monster {
    protected void customServerAiStep() {
       super.customServerAiStep();
       if (this.isConverting()) {
-         ++this.timeInOverworld;
+         this.timeInOverworld++;
       } else {
          this.timeInOverworld = 0;
       }

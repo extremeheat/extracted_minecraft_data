@@ -31,7 +31,6 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private Entity cachedOwner;
    private boolean leftOwner;
    private boolean hasBeenShot;
-   protected boolean isDeflected;
 
    Projectile(EntityType<? extends Projectile> var1, Level var2) {
       super(var1, var2);
@@ -44,22 +43,15 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public Entity getOwner() {
       if (this.cachedOwner != null && !this.cachedOwner.isRemoved()) {
          return this.cachedOwner;
+      } else if (this.ownerUUID != null && this.level() instanceof ServerLevel var1) {
+         this.cachedOwner = var1.getEntity(this.ownerUUID);
+         return this.cachedOwner;
       } else {
-         if (this.ownerUUID != null) {
-            Level var2 = this.level();
-            if (var2 instanceof ServerLevel var1) {
-               this.cachedOwner = var1.getEntity(this.ownerUUID);
-               return this.cachedOwner;
-            }
-         }
-
          return null;
       }
    }
@@ -96,8 +88,6 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.hasBeenShot = var1.getBoolean("HasBeenShot");
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
@@ -123,7 +113,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private boolean checkLeftOwner() {
       Entity var1 = this.getOwner();
       if (var1 != null) {
-         for(Entity var3 : this.level()
+         for (Entity var3 : this.level()
             .getEntities(this, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), var0 -> !var0.isSpectator() && var0.isPickable())) {
             if (var3.getRootVehicle() == var1.getRootVehicle()) {
                return false;
@@ -134,8 +124,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return true;
    }
 
-   public void shoot(double var1, double var3, double var5, float var7, float var8) {
-      Vec3 var9 = new Vec3(var1, var3, var5)
+   public Vec3 getMovementToShoot(double var1, double var3, double var5, float var7, float var8) {
+      return new Vec3(var1, var3, var5)
          .normalize()
          .add(
             this.random.triangle(0.0, 0.0172275 * (double)var8),
@@ -143,6 +133,10 @@ public abstract class Projectile extends Entity implements TraceableEntity {
             this.random.triangle(0.0, 0.0172275 * (double)var8)
          )
          .scale((double)var7);
+   }
+
+   public void shoot(double var1, double var3, double var5, float var7, float var8) {
+      Vec3 var9 = this.getMovementToShoot(var1, var3, var5, var7, var8);
       this.setDeltaMovement(var9);
       double var10 = var9.horizontalDistance();
       this.setYRot((float)(Mth.atan2(var9.x, var9.z) * 57.2957763671875));
@@ -160,26 +154,32 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
    }
 
+   protected ProjectileDeflection hitOrDeflect(HitResult var1) {
+      if (var1.getType() == HitResult.Type.ENTITY) {
+         EntityHitResult var2 = (EntityHitResult)var1;
+         ProjectileDeflection var3 = var2.getEntity().deflection(this);
+         if (var3 != ProjectileDeflection.NONE) {
+            var3.deflect(this, var2.getEntity(), this.random);
+            this.markHurt();
+            return var3;
+         }
+      }
+
+      this.onHit(var1);
+      return ProjectileDeflection.NONE;
+   }
+
    protected void onHit(HitResult var1) {
       HitResult.Type var2 = var1.getType();
       if (var2 == HitResult.Type.ENTITY) {
          EntityHitResult var3 = (EntityHitResult)var1;
-         if (!this.isDeflected) {
-            ProjectileDeflection var4 = var3.getEntity().deflection(this);
-            if (var4 != ProjectileDeflection.NONE) {
-               var4.deflect(this, var3.getEntity(), this.random);
-               this.isDeflected = true;
-               return;
-            }
-         }
-
          this.onHitEntity(var3);
          this.level().gameEvent(GameEvent.PROJECTILE_LAND, var1.getLocation(), GameEvent.Context.of(this, null));
       } else if (var2 == HitResult.Type.BLOCK) {
          BlockHitResult var5 = (BlockHitResult)var1;
          this.onHitBlock(var5);
-         BlockPos var6 = var5.getBlockPos();
-         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var6, GameEvent.Context.of(this, this.level().getBlockState(var6)));
+         BlockPos var4 = var5.getBlockPos();
+         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var4, GameEvent.Context.of(this, this.level().getBlockState(var4)));
       }
    }
 
@@ -221,11 +221,11 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected static float lerpRotation(float var0, float var1) {
-      while(var1 - var0 < -180.0F) {
+      while (var1 - var0 < -180.0F) {
          var0 -= 360.0F;
       }
 
-      while(var1 - var0 >= 180.0F) {
+      while (var1 - var0 >= 180.0F) {
          var0 += 360.0F;
       }
 
@@ -250,14 +250,13 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    @Override
    public boolean mayInteract(Level var1, BlockPos var2) {
       Entity var3 = this.getOwner();
-      if (var3 instanceof Player) {
-         return var3.mayInteract(var1, var2);
-      } else {
-         return var3 == null || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-      }
+      return var3 instanceof Player ? var3.mayInteract(var1, var2) : var3 == null || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
    }
 
    public boolean mayBreak(Level var1) {
       return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && var1.getGameRules().getBoolean(GameRules.RULE_PROJECTILESCANBREAKBLOCKS);
+   }
+
+   public void onDeflection() {
    }
 }

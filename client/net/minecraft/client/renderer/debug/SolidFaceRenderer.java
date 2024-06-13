@@ -28,12 +28,12 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
       Level var10 = this.minecraft.player.level();
       BlockPos var11 = BlockPos.containing(var3, var5, var7);
 
-      for(BlockPos var13 : BlockPos.betweenClosed(var11.offset(-6, -6, -6), var11.offset(6, 6, 6))) {
+      for (BlockPos var13 : BlockPos.betweenClosed(var11.offset(-6, -6, -6), var11.offset(6, 6, 6))) {
          BlockState var14 = var10.getBlockState(var13);
          if (!var14.is(Blocks.AIR)) {
             VoxelShape var15 = var14.getShape(var10, var13);
 
-            for(AABB var17 : var15.toAabbs()) {
+            for (AABB var17 : var15.toAabbs()) {
                AABB var18 = var17.move(var13).inflate(0.002);
                float var19 = (float)(var18.minX - var3);
                float var20 = (float)(var18.minY - var5);

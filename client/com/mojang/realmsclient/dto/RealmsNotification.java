@@ -59,7 +59,7 @@ public class RealmsNotification {
       ArrayList var1 = new ArrayList();
 
       try {
-         for(JsonElement var4 : JsonParser.parseString(var0).getAsJsonObject().get("notifications").getAsJsonArray()) {
+         for (JsonElement var4 : JsonParser.parseString(var0).getAsJsonObject().get("notifications").getAsJsonArray()) {
             var1.add(parse(var4.getAsJsonObject()));
          }
       } catch (Exception var5) {
@@ -79,7 +79,7 @@ public class RealmsNotification {
          String var4 = JsonUtils.getRequiredString("type", var0);
          RealmsNotification var5 = new RealmsNotification(var1, var2, var3, var4);
 
-         return (RealmsNotification)(switch(var4) {
+         return (RealmsNotification)(switch (var4) {
             case "visitUrl" -> RealmsNotification.VisitUrl.parse(var5, var0);
             case "infoPopup" -> RealmsNotification.InfoPopup.parse(var5, var0);
             default -> var5;
@@ -126,8 +126,8 @@ public class RealmsNotification {
                .setMessage(this.message.createComponent(CommonComponents.EMPTY));
             if (this.urlButton != null) {
                var4.addButton(this.urlButton.urlText.createComponent(RealmsNotification.BUTTON_TEXT_FALLBACK), var3x -> {
-                  Minecraft var4xx = Minecraft.getInstance();
-                  var4xx.setScreen(new ConfirmLinkScreen(var4xx -> {
+                  Minecraft var4x = Minecraft.getInstance();
+                  var4x.setScreen(new ConfirmLinkScreen(var4xx -> {
                      if (var4xx) {
                         Util.getPlatform().openUri(this.urlButton.url);
                         var4x.setScreen(var1);
@@ -149,16 +149,14 @@ public class RealmsNotification {
       }
    }
 
-   static record UrlButton(String a, RealmsText b) {
-      final String url;
-      final RealmsText urlText;
+   static record UrlButton(String url, RealmsText urlText) {
       private static final String URL = "url";
       private static final String URL_TEXT = "urlText";
 
-      private UrlButton(String var1, RealmsText var2) {
+      private UrlButton(String url, RealmsText urlText) {
          super();
-         this.url = var1;
-         this.urlText = var2;
+         this.url = url;
+         this.urlText = urlText;
       }
 
       public static RealmsNotification.UrlButton parse(JsonObject var0) {

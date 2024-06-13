@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.Codec;
-import java.util.HashMap;
+import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -14,13 +13,12 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlackstoneReplaceProcessor extends StructureProcessor {
-   public static final Codec<BlackstoneReplaceProcessor> CODEC = Codec.unit(() -> BlackstoneReplaceProcessor.INSTANCE);
+   public static final MapCodec<BlackstoneReplaceProcessor> CODEC = MapCodec.unit(() -> BlackstoneReplaceProcessor.INSTANCE);
    public static final BlackstoneReplaceProcessor INSTANCE = new BlackstoneReplaceProcessor();
    private final Map<Block, Block> replacements = Util.make(Maps.newHashMap(), var0 -> {
       var0.put(Blocks.COBBLESTONE, Blocks.BLACKSTONE);
       var0.put(Blocks.MOSSY_COBBLESTONE, Blocks.BLACKSTONE);
       var0.put(Blocks.STONE, Blocks.POLISHED_BLACKSTONE);
-      var0.put(Blocks.POTONE, Blocks.POLISHED_BLACKSTONE);
       var0.put(Blocks.STONE_BRICKS, Blocks.POLISHED_BLACKSTONE_BRICKS);
       var0.put(Blocks.MOSSY_STONE_BRICKS, Blocks.POLISHED_BLACKSTONE_BRICKS);
       var0.put(Blocks.COBBLESTONE_STAIRS, Blocks.BLACKSTONE_STAIRS);

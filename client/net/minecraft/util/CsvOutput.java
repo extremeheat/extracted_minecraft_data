@@ -35,7 +35,7 @@ public class CsvOutput {
    }
 
    private void writeLine(Stream<?> var1) throws IOException {
-      this.output.write((String)var1.map(CsvOutput::getStringValue).collect(Collectors.joining(",")) + "\r\n");
+      this.output.write(var1.map(CsvOutput::getStringValue).collect(Collectors.joining(",")) + "\r\n");
    }
 
    private static String getStringValue(@Nullable Object var0) {

@@ -25,7 +25,7 @@ public abstract class RodBlock extends DirectionalBlock {
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch(var1.getValue(FACING).getAxis()) {
+      switch (var1.getValue(FACING).getAxis()) {
          case X:
          default:
             return X_AXIS_AABB;

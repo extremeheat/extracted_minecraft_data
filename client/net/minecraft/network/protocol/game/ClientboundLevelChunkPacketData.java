@@ -32,7 +32,7 @@ public class ClientboundLevelChunkPacketData {
       super();
       this.heightmaps = new CompoundTag();
 
-      for(Entry var3 : var1.getHeightmaps()) {
+      for (Entry var3 : var1.getHeightmaps()) {
          if (((Heightmap.Types)var3.getKey()).sendToClient()) {
             this.heightmaps.put(((Heightmap.Types)var3.getKey()).getSerializationKey(), new LongArrayTag(((Heightmap)var3.getValue()).getRawData()));
          }
@@ -42,7 +42,7 @@ public class ClientboundLevelChunkPacketData {
       extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), var1);
       this.blockEntitiesData = Lists.newArrayList();
 
-      for(Entry var5 : var1.getBlockEntities().entrySet()) {
+      for (Entry var5 : var1.getBlockEntities().entrySet()) {
          this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create((BlockEntity)var5.getValue()));
       }
    }
@@ -74,7 +74,7 @@ public class ClientboundLevelChunkPacketData {
    private static int calculateChunkSize(LevelChunk var0) {
       int var1 = 0;
 
-      for(LevelChunkSection var5 : var0.getSections()) {
+      for (LevelChunkSection var5 : var0.getSections()) {
          var1 += var5.getSerializedSize();
       }
 
@@ -88,7 +88,7 @@ public class ClientboundLevelChunkPacketData {
    }
 
    public static void extractChunkData(FriendlyByteBuf var0, LevelChunk var1) {
-      for(LevelChunkSection var5 : var1.getSections()) {
+      for (LevelChunkSection var5 : var1.getSections()) {
          var5.write(var0);
       }
    }
@@ -102,7 +102,7 @@ public class ClientboundLevelChunkPacketData {
       int var5 = 16 * var3;
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-      for(ClientboundLevelChunkPacketData.BlockEntityInfo var8 : this.blockEntitiesData) {
+      for (ClientboundLevelChunkPacketData.BlockEntityInfo var8 : this.blockEntitiesData) {
          int var9 = var4 + SectionPos.sectionRelative(var8.packedXZ >> 4);
          int var10 = var5 + SectionPos.sectionRelative(var8.packedXZ);
          var6.set(var9, var8.y, var10);

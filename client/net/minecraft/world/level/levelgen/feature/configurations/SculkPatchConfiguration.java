@@ -2,17 +2,11 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.util.valueproviders.IntProvider;
 
-public record SculkPatchConfiguration(int b, int c, int d, int e, int f, IntProvider g, float h) implements FeatureConfiguration {
-   private final int chargeCount;
-   private final int amountPerCharge;
-   private final int spreadAttempts;
-   private final int growthRounds;
-   private final int spreadRounds;
-   private final IntProvider extraRareGrowths;
-   private final float catalystChance;
+public record SculkPatchConfiguration(
+   int chargeCount, int amountPerCharge, int spreadAttempts, int growthRounds, int spreadRounds, IntProvider extraRareGrowths, float catalystChance
+) implements FeatureConfiguration {
    public static final Codec<SculkPatchConfiguration> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.intRange(1, 32).fieldOf("charge_count").forGetter(SculkPatchConfiguration::chargeCount),
@@ -26,14 +20,16 @@ public record SculkPatchConfiguration(int b, int c, int d, int e, int f, IntProv
             .apply(var0, SculkPatchConfiguration::new)
    );
 
-   public SculkPatchConfiguration(int var1, int var2, int var3, int var4, int var5, IntProvider var6, float var7) {
+   public SculkPatchConfiguration(
+      int chargeCount, int amountPerCharge, int spreadAttempts, int growthRounds, int spreadRounds, IntProvider extraRareGrowths, float catalystChance
+   ) {
       super();
-      this.chargeCount = var1;
-      this.amountPerCharge = var2;
-      this.spreadAttempts = var3;
-      this.growthRounds = var4;
-      this.spreadRounds = var5;
-      this.extraRareGrowths = var6;
-      this.catalystChance = var7;
+      this.chargeCount = chargeCount;
+      this.amountPerCharge = amountPerCharge;
+      this.spreadAttempts = spreadAttempts;
+      this.growthRounds = growthRounds;
+      this.spreadRounds = spreadRounds;
+      this.extraRareGrowths = extraRareGrowths;
+      this.catalystChance = catalystChance;
    }
 }

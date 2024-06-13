@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -91,7 +90,7 @@ public class SystemReport {
    private void putPhysicalMemory(List<PhysicalMemory> var1) {
       int var2 = 0;
 
-      for(PhysicalMemory var4 : var1) {
+      for (PhysicalMemory var4 : var1) {
          String var5 = String.format(Locale.ROOT, "Memory slot #%d ", var2++);
          this.setDetail(var5 + "capacity (MB)", () -> String.format(Locale.ROOT, "%.2f", (float)var4.getCapacity() / 1048576.0F));
          this.setDetail(var5 + "clockSpeed (GHz)", () -> String.format(Locale.ROOT, "%.2f", (float)var4.getClockSpeed() / 1.0E9F));
@@ -114,7 +113,7 @@ public class SystemReport {
    private void putGraphics(List<GraphicsCard> var1) {
       int var2 = 0;
 
-      for(GraphicsCard var4 : var1) {
+      for (GraphicsCard var4 : var1) {
          String var5 = String.format(Locale.ROOT, "Graphics card #%d ", var2++);
          this.setDetail(var5 + "name", var4::getName);
          this.setDetail(var5 + "vendor", var4::getVendor);
@@ -148,10 +147,6 @@ public class SystemReport {
    }
 
    public String toLineSeparatedString() {
-      return this.entries
-         .entrySet()
-         .stream()
-         .map(var0 -> (String)var0.getKey() + ": " + (String)var0.getValue())
-         .collect(Collectors.joining(System.lineSeparator()));
+      return this.entries.entrySet().stream().map(var0 -> var0.getKey() + ": " + var0.getValue()).collect(Collectors.joining(System.lineSeparator()));
    }
 }

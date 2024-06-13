@@ -61,17 +61,17 @@ public class TickingTracker extends ChunkTracker {
       ArrayList var2 = new ArrayList();
       ObjectIterator var3 = this.tickets.long2ObjectEntrySet().iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          Entry var4 = (Entry)var3.next();
 
-         for(Ticket var6 : (SortedArraySet)var4.getValue()) {
+         for (Ticket var6 : (SortedArraySet)var4.getValue()) {
             if (var6.getType() == TicketType.PLAYER) {
                var2.add(Pair.of(var6, var4.getLongKey()));
             }
          }
       }
 
-      for(Pair var10 : var2) {
+      for (Pair var10 : var2) {
          Long var11 = (Long)var10.getSecond();
          Ticket var12 = (Ticket)var10.getFirst();
          this.removeTicket(var11, var12);

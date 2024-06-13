@@ -101,7 +101,7 @@ enum AdvancementTabType {
    public void drawIcon(GuiGraphics var1, int var2, int var3, int var4, ItemStack var5) {
       int var6 = var2 + this.getX(var4);
       int var7 = var3 + this.getY(var4);
-      switch(this) {
+      switch (this) {
          case ABOVE:
             var6 += 6;
             var7 += 9;
@@ -123,7 +123,7 @@ enum AdvancementTabType {
    }
 
    public int getX(int var1) {
-      switch(this) {
+      switch (this) {
          case ABOVE:
             return (this.width + 4) * var1;
          case BELOW:
@@ -138,7 +138,7 @@ enum AdvancementTabType {
    }
 
    public int getY(int var1) {
-      switch(this) {
+      switch (this) {
          case ABOVE:
             return -this.height + 4;
          case BELOW:
@@ -158,16 +158,12 @@ enum AdvancementTabType {
       return var4 > (double)var8 && var4 < (double)(var8 + this.width) && var6 > (double)var9 && var6 < (double)(var9 + this.height);
    }
 
-   static record Sprites(ResourceLocation a, ResourceLocation b, ResourceLocation c) {
-      private final ResourceLocation first;
-      private final ResourceLocation middle;
-      private final ResourceLocation last;
-
-      Sprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
+   static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
+      Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
          super();
-         this.first = var1;
-         this.middle = var2;
-         this.last = var3;
+         this.first = first;
+         this.middle = middle;
+         this.last = last;
       }
    }
 }

@@ -27,7 +27,7 @@ public enum TutorialSteps {
    }
 
    public static TutorialSteps getByName(String var0) {
-      for(TutorialSteps var4 : values()) {
+      for (TutorialSteps var4 : values()) {
          if (var4.name.equals(var0)) {
             return var4;
          }

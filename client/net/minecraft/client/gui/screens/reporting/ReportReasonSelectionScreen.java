@@ -5,9 +5,9 @@ import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
@@ -51,14 +51,15 @@ public class ReportReasonSelectionScreen extends Screen {
       LinearLayout var3 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var3.addChild(Button.builder(READ_INFO_LABEL, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/aboutjavareporting")).build());
       var3.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> {
-         ReportReasonSelectionScreen.ReasonSelectionList.Entry var2xx = this.reasonSelectionList.getSelected();
-         if (var2xx != null) {
-            this.onSelectedReason.accept(var2xx.getReason());
+         ReportReasonSelectionScreen.ReasonSelectionList.Entry var2x = this.reasonSelectionList.getSelected();
+         if (var2x != null) {
+            this.onSelectedReason.accept(var2x.getReason());
          }
 
          this.minecraft.setScreen(this.lastScreen);
       }).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
@@ -133,7 +134,7 @@ public class ReportReasonSelectionScreen extends Screen {
             18
          );
 
-         for(ReportReason var6 : ReportReason.values()) {
+         for (ReportReason var6 : ReportReason.values()) {
             this.addEntry(new ReportReasonSelectionScreen.ReasonSelectionList.Entry(var6));
          }
       }

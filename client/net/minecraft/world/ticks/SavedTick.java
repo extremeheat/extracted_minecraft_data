@@ -10,11 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.ChunkPos;
 
-public record SavedTick<T>(T b, BlockPos c, int d, TickPriority e) {
-   private final T type;
-   private final BlockPos pos;
-   private final int delay;
-   private final TickPriority priority;
+public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priority) {
    private static final String TAG_ID = "i";
    private static final String TAG_X = "x";
    private static final String TAG_Y = "y";
@@ -29,26 +25,24 @@ public record SavedTick<T>(T b, BlockPos c, int d, TickPriority e) {
       public boolean equals(@Nullable SavedTick<?> var1, @Nullable SavedTick<?> var2) {
          if (var1 == var2) {
             return true;
-         } else if (var1 != null && var2 != null) {
-            return var1.type() == var2.type() && var1.pos().equals(var2.pos());
          } else {
-            return false;
+            return var1 != null && var2 != null ? var1.type() == var2.type() && var1.pos().equals(var2.pos()) : false;
          }
       }
    };
 
-   public SavedTick(T var1, BlockPos var2, int var3, TickPriority var4) {
+   public SavedTick(T type, BlockPos pos, int delay, TickPriority priority) {
       super();
-      this.type = (T)var1;
-      this.pos = var2;
-      this.delay = var3;
-      this.priority = var4;
+      this.type = (T)type;
+      this.pos = pos;
+      this.delay = delay;
+      this.priority = priority;
    }
 
    public static <T> void loadTickList(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2, Consumer<SavedTick<T>> var3) {
       long var4 = var2.toLong();
 
-      for(int var6 = 0; var6 < var0.size(); ++var6) {
+      for (int var6 = 0; var6 < var0.size(); var6++) {
          CompoundTag var7 = var0.getCompound(var6);
          loadTick(var7, var1).ifPresent(var3x -> {
             if (ChunkPos.asLong(var3x.pos()) == var4) {
@@ -61,7 +55,7 @@ public record SavedTick<T>(T b, BlockPos c, int d, TickPriority e) {
    public static <T> Optional<SavedTick<T>> loadTick(CompoundTag var0, Function<String, Optional<T>> var1) {
       return ((Optional)var1.apply(var0.getString("i"))).map(var1x -> {
          BlockPos var2 = new BlockPos(var0.getInt("x"), var0.getInt("y"), var0.getInt("z"));
-         return new SavedTick<>(var1x, var2, var0.getInt("t"), TickPriority.byValue(var0.getInt("p")));
+         return new SavedTick<>((T)var1x, var2, var0.getInt("t"), TickPriority.byValue(var0.getInt("p")));
       });
    }
 

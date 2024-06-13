@@ -8,7 +8,6 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FurnaceBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
@@ -54,7 +53,7 @@ public class CatSitOnBlockGoal extends MoveToBlockGoal {
          } else {
             return var3.is(Blocks.FURNACE) && var3.getValue(FurnaceBlock.LIT)
                ? true
-               : var3.is(BlockTags.BEDS, var0 -> var0.<BedPart>getOptionalValue(BedBlock.PART).map(var0x -> var0x != BedPart.HEAD).orElse(true));
+               : var3.is(BlockTags.BEDS, var0 -> var0.getOptionalValue(BedBlock.PART).map(var0x -> var0x != BedPart.HEAD).orElse(true));
          }
       }
    }

@@ -2,7 +2,6 @@ package net.minecraft.world.item.enchantment;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
@@ -18,7 +17,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
 
@@ -33,11 +31,11 @@ public class ItemEnchantments implements TooltipProvider {
    private static final Codec<ItemEnchantments> FULL_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                LEVELS_CODEC.fieldOf("levels").forGetter(var0x -> var0x.enchantments),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
+               Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
             )
             .apply(var0, ItemEnchantments::new)
    );
-   public static final Codec<ItemEnchantments> CODEC = ExtraCodecs.withAlternative(FULL_CODEC, LEVELS_CODEC, var0 -> new ItemEnchantments(var0, true));
+   public static final Codec<ItemEnchantments> CODEC = Codec.withAlternative(FULL_CODEC, LEVELS_CODEC, var0 -> new ItemEnchantments(var0, true));
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemEnchantments> STREAM_CODEC = StreamCodec.composite(
       ByteBufCodecs.map(Object2IntLinkedOpenHashMap::new, ByteBufCodecs.holderRegistry(Registries.ENCHANTMENT), ByteBufCodecs.VAR_INT),
       var0 -> var0.enchantments,
@@ -63,7 +61,7 @@ public class ItemEnchantments implements TooltipProvider {
       if (this.showInTooltip) {
          ObjectBidirectionalIterator var3 = this.enchantments.object2IntEntrySet().iterator();
 
-         while(var3.hasNext()) {
+         while (var3.hasNext()) {
             Entry var4 = (Entry)var3.next();
             var1.accept(((Enchantment)((Holder)var4.getKey()).value()).getFullname(var4.getIntValue()));
          }
@@ -94,11 +92,8 @@ public class ItemEnchantments implements TooltipProvider {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof ItemEnchantments)) {
-         return false;
       } else {
-         ItemEnchantments var2 = (ItemEnchantments)var1;
-         return this.showInTooltip == var2.showInTooltip && this.enchantments.equals(var2.enchantments);
+         return !(var1 instanceof ItemEnchantments var2) ? false : this.showInTooltip == var2.showInTooltip && this.enchantments.equals(var2.enchantments);
       }
    }
 

@@ -10,9 +10,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -141,6 +141,7 @@ public class SocialInteractionsScreen extends Screen {
       this.showPage(this.page);
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).width(200).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
@@ -175,7 +176,7 @@ public class SocialInteractionsScreen extends Screen {
       this.hiddenButton.setMessage(TAB_HIDDEN);
       this.blockedButton.setMessage(TAB_BLOCKED);
       boolean var2 = false;
-      switch(var1) {
+      switch (var1) {
          case ALL:
             this.allButton.setMessage(TAB_ALL_SELECTED);
             Collection var6 = this.minecraft.player.connection.getOnlinePlayerIds();

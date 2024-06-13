@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.world.entity.PathfinderMob;
@@ -68,9 +67,9 @@ public class MoveThroughVillageGoal extends Goal {
                      if (!var1.isVillage(var3x)) {
                         return -1.0 / 0.0;
                      } else {
-                        Optional var4xx = var1.getPoiManager()
+                        Optional var4x = var1.getPoiManager()
                            .find(var0 -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
-                        return var4xx.<Double>map(var1xx -> -var1xx.distSqr(var2)).orElse(-1.0 / 0.0);
+                        return var4x.<Double>map(var1xx -> -var1xx.distSqr(var2)).orElse(-1.0 / 0.0);
                      }
                   }
                );
@@ -102,7 +101,7 @@ public class MoveThroughVillageGoal extends Goal {
                         }
                      }
 
-                     for(int var10 = 0; var10 < this.path.getNodeCount(); ++var10) {
+                     for (int var10 = 0; var10 < this.path.getNodeCount(); var10++) {
                         Node var8 = this.path.getNode(var10);
                         BlockPos var9 = new BlockPos(var8.x, var8.y + 1, var8.z);
                         if (DoorBlock.isWoodenDoor(this.mob.level(), var9)) {
@@ -121,11 +120,9 @@ public class MoveThroughVillageGoal extends Goal {
 
    @Override
    public boolean canContinueToUse() {
-      if (this.mob.getNavigation().isDone()) {
-         return false;
-      } else {
-         return !this.poiPos.closerToCenterThan(this.mob.position(), (double)(this.mob.getBbWidth() + (float)this.distanceToPoi));
-      }
+      return this.mob.getNavigation().isDone()
+         ? false
+         : !this.poiPos.closerToCenterThan(this.mob.position(), (double)(this.mob.getBbWidth() + (float)this.distanceToPoi));
    }
 
    @Override
@@ -141,7 +138,7 @@ public class MoveThroughVillageGoal extends Goal {
    }
 
    private boolean hasNotVisited(BlockPos var1) {
-      for(BlockPos var3 : this.visited) {
+      for (BlockPos var3 : this.visited) {
          if (Objects.equals(var1, var3)) {
             return false;
          }

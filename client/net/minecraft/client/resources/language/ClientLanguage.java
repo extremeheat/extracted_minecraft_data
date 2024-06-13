@@ -31,10 +31,10 @@ public class ClientLanguage extends Language {
    public static ClientLanguage loadFrom(ResourceManager var0, List<String> var1, boolean var2) {
       HashMap var3 = Maps.newHashMap();
 
-      for(String var5 : var1) {
+      for (String var5 : var1) {
          String var6 = String.format(Locale.ROOT, "lang/%s.json", var5);
 
-         for(String var8 : var0.getNamespaces()) {
+         for (String var8 : var0.getNamespaces()) {
             try {
                ResourceLocation var9 = new ResourceLocation(var8, var6);
                appendFrom(var5, var0.getResourceStack(var9), var3);
@@ -48,7 +48,7 @@ public class ClientLanguage extends Language {
    }
 
    private static void appendFrom(String var0, List<Resource> var1, Map<String, String> var2) {
-      for(Resource var4 : var1) {
+      for (Resource var4 : var1) {
          try (InputStream var5 = var4.open()) {
             Language.loadFromJson(var5, var2::put);
          } catch (IOException var10) {

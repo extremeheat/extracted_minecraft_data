@@ -67,7 +67,7 @@ public class EffectInstance implements Effect, AutoCloseable {
          if (var9 != null) {
             int var10 = 0;
 
-            for(JsonElement var12 : var9) {
+            for (JsonElement var12 : var9) {
                try {
                   this.parseSamplerNode(var12);
                } catch (Exception var20) {
@@ -76,7 +76,7 @@ public class EffectInstance implements Effect, AutoCloseable {
                   throw var14;
                }
 
-               ++var10;
+               var10++;
             }
          }
 
@@ -86,7 +86,7 @@ public class EffectInstance implements Effect, AutoCloseable {
             this.attributes = Lists.newArrayListWithCapacity(var24.size());
             this.attributeNames = Lists.newArrayListWithCapacity(var24.size());
 
-            for(JsonElement var13 : var24) {
+            for (JsonElement var13 : var24) {
                try {
                   this.attributeNames.add(GsonHelper.convertToString(var13, "attribute"));
                } catch (Exception var19) {
@@ -95,7 +95,7 @@ public class EffectInstance implements Effect, AutoCloseable {
                   throw var15;
                }
 
-               ++var25;
+               var25++;
             }
          } else {
             this.attributes = null;
@@ -106,7 +106,7 @@ public class EffectInstance implements Effect, AutoCloseable {
          if (var26 != null) {
             int var28 = 0;
 
-            for(JsonElement var32 : var26) {
+            for (JsonElement var32 : var26) {
                try {
                   this.parseUniformNode(var32);
                } catch (Exception var18) {
@@ -115,7 +115,7 @@ public class EffectInstance implements Effect, AutoCloseable {
                   throw var16;
                }
 
-               ++var28;
+               var28++;
             }
          }
 
@@ -126,7 +126,7 @@ public class EffectInstance implements Effect, AutoCloseable {
          ProgramManager.linkShader(this);
          this.updateLocations();
          if (this.attributeNames != null) {
-            for(String var31 : this.attributeNames) {
+            for (String var31 : this.attributeNames) {
                int var33 = Uniform.glGetAttribLocation(this.programId, var31);
                this.attributes.add(var33);
             }
@@ -221,7 +221,7 @@ public class EffectInstance implements Effect, AutoCloseable {
 
    @Override
    public void close() {
-      for(Uniform var2 : this.uniforms) {
+      for (Uniform var2 : this.uniforms) {
          var2.close();
       }
 
@@ -234,7 +234,7 @@ public class EffectInstance implements Effect, AutoCloseable {
       lastProgramId = -1;
       lastAppliedEffect = null;
 
-      for(int var1 = 0; var1 < this.samplerLocations.size(); ++var1) {
+      for (int var1 = 0; var1 < this.samplerLocations.size(); var1++) {
          if (this.samplerMap.get(this.samplerNames.get(var1)) != null) {
             GlStateManager._activeTexture(33984 + var1);
             GlStateManager._bindTexture(0);
@@ -252,7 +252,7 @@ public class EffectInstance implements Effect, AutoCloseable {
          lastProgramId = this.programId;
       }
 
-      for(int var1 = 0; var1 < this.samplerLocations.size(); ++var1) {
+      for (int var1 = 0; var1 < this.samplerLocations.size(); var1++) {
          String var2 = this.samplerNames.get(var1);
          IntSupplier var3 = this.samplerMap.get(var2);
          if (var3 != null) {
@@ -265,7 +265,7 @@ public class EffectInstance implements Effect, AutoCloseable {
          }
       }
 
-      for(Uniform var6 : this.uniforms) {
+      for (Uniform var6 : this.uniforms) {
          var6.upload();
       }
    }
@@ -291,7 +291,7 @@ public class EffectInstance implements Effect, AutoCloseable {
       RenderSystem.assertOnRenderThread();
       IntArrayList var1 = new IntArrayList();
 
-      for(int var2 = 0; var2 < this.samplerNames.size(); ++var2) {
+      for (int var2 = 0; var2 < this.samplerNames.size(); var2++) {
          String var3 = this.samplerNames.get(var2);
          int var4 = Uniform.glGetUniformLocation(this.programId, var3);
          if (var4 == -1) {
@@ -303,11 +303,11 @@ public class EffectInstance implements Effect, AutoCloseable {
          }
       }
 
-      for(int var6 = var1.size() - 1; var6 >= 0; --var6) {
+      for (int var6 = var1.size() - 1; var6 >= 0; var6--) {
          this.samplerNames.remove(var1.getInt(var6));
       }
 
-      for(Uniform var8 : this.uniforms) {
+      for (Uniform var8 : this.uniforms) {
          String var9 = var8.getName();
          int var5 = Uniform.glGetUniformLocation(this.programId, var9);
          if (var5 == -1) {
@@ -352,7 +352,7 @@ public class EffectInstance implements Effect, AutoCloseable {
       } else {
          int var8 = 0;
 
-         for(JsonElement var10 : var7) {
+         for (JsonElement var10 : var7) {
             try {
                var6[var8] = GsonHelper.convertToFloat(var10, "value");
             } catch (Exception var13) {
@@ -361,13 +361,13 @@ public class EffectInstance implements Effect, AutoCloseable {
                throw var12;
             }
 
-            ++var8;
+            var8++;
          }
 
          if (var5 > 1 && var7.size() == 1) {
-            while(var8 < var5) {
+            while (var8 < var5) {
                var6[var8] = var6[0];
-               ++var8;
+               var8++;
             }
          }
 

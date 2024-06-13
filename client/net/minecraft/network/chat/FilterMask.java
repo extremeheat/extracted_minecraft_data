@@ -1,6 +1,7 @@
 package net.minecraft.network.chat;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.BitSet;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -17,9 +18,9 @@ public class FilterMask {
    public static final Style FILTERED_STYLE = Style.EMPTY
       .withColor(ChatFormatting.DARK_GRAY)
       .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.filtered")));
-   static final Codec<FilterMask> PASS_THROUGH_CODEC = Codec.unit(PASS_THROUGH);
-   static final Codec<FilterMask> FULLY_FILTERED_CODEC = Codec.unit(FULLY_FILTERED);
-   static final Codec<FilterMask> PARTIALLY_FILTERED_CODEC = ExtraCodecs.BIT_SET.xmap(FilterMask::new, FilterMask::mask);
+   static final MapCodec<FilterMask> PASS_THROUGH_CODEC = MapCodec.unit(PASS_THROUGH);
+   static final MapCodec<FilterMask> FULLY_FILTERED_CODEC = MapCodec.unit(FULLY_FILTERED);
+   static final MapCodec<FilterMask> PARTIALLY_FILTERED_CODEC = ExtraCodecs.BIT_SET.xmap(FilterMask::new, FilterMask::mask).fieldOf("value");
    private static final char HASH = '#';
    private final BitSet mask;
    private final FilterMask.Type type;
@@ -51,7 +52,7 @@ public class FilterMask {
    public static FilterMask read(FriendlyByteBuf var0) {
       FilterMask.Type var1 = var0.readEnum(FilterMask.Type.class);
 
-      return switch(var1) {
+      return switch (var1) {
          case PASS_THROUGH -> PASS_THROUGH;
          case FULLY_FILTERED -> FULLY_FILTERED;
          case PARTIALLY_FILTERED -> new FilterMask(var0.readBitSet(), FilterMask.Type.PARTIALLY_FILTERED);
@@ -71,13 +72,13 @@ public class FilterMask {
 
    @Nullable
    public String apply(String var1) {
-      return switch(this.type) {
+      return switch (this.type) {
          case PASS_THROUGH -> var1;
          case FULLY_FILTERED -> null;
          case PARTIALLY_FILTERED -> {
             char[] var2 = var1.toCharArray();
 
-            for(int var3 = 0; var3 < var2.length && var3 < this.mask.length(); ++var3) {
+            for (int var3 = 0; var3 < var2.length && var3 < this.mask.length(); var3++) {
                if (this.mask.get(var3)) {
                   var2[var3] = '#';
                }
@@ -90,7 +91,7 @@ public class FilterMask {
 
    @Nullable
    public Component applyWithFormatting(String var1) {
-      return switch(this.type) {
+      return switch (this.type) {
          case PASS_THROUGH -> Component.literal(var1);
          case FULLY_FILTERED -> null;
          case PARTIALLY_FILTERED -> {
@@ -98,7 +99,7 @@ public class FilterMask {
             int var3 = 0;
             boolean var4 = this.mask.get(0);
 
-            while(true) {
+            while (true) {
                int var5 = var4 ? this.mask.nextClearBit(var3) : this.mask.nextSetBit(var3);
                var5 = var5 < 0 ? var1.length() : var5;
                if (var5 == var3) {
@@ -150,9 +151,9 @@ public class FilterMask {
       PARTIALLY_FILTERED("partially_filtered", () -> FilterMask.PARTIALLY_FILTERED_CODEC);
 
       private final String serializedName;
-      private final Supplier<Codec<FilterMask>> codec;
+      private final Supplier<MapCodec<FilterMask>> codec;
 
-      private Type(String var3, Supplier<Codec<FilterMask>> var4) {
+      private Type(String var3, Supplier<MapCodec<FilterMask>> var4) {
          this.serializedName = var3;
          this.codec = var4;
       }
@@ -162,8 +163,8 @@ public class FilterMask {
          return this.serializedName;
       }
 
-      private Codec<FilterMask> codec() {
-         return (Codec<FilterMask>)this.codec.get();
+      private MapCodec<FilterMask> codec() {
+         return this.codec.get();
       }
    }
 }

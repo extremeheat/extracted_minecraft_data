@@ -1,7 +1,6 @@
 package net.minecraft.world.inventory;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -92,7 +91,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
             int var2 = 0;
             ItemEnchantments var3x = EnchantmentHelper.getEnchantmentsForCrafting(var1);
 
-            for(Entry var5 : var3x.entrySet()) {
+            for (Entry var5 : var3x.entrySet()) {
                Enchantment var6 = (Enchantment)((Holder)var5.getKey()).value();
                int var7 = var5.getIntValue();
                if (!var6.isCurse()) {
@@ -104,13 +103,13 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          }
       });
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 9; ++var5) {
+      for (int var4 = 0; var4 < 3; var4++) {
+         for (int var5 = 0; var5 < 9; var5++) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
+      for (int var6 = 0; var6 < 9; var6++) {
          this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
       }
    }
@@ -175,9 +174,9 @@ public class GrindstoneMenu extends AbstractContainerMenu {
 
    private void mergeEnchantsFrom(ItemStack var1, ItemStack var2) {
       EnchantmentHelper.updateEnchantments(var1, var1x -> {
-         ItemEnchantments var2xx = EnchantmentHelper.getEnchantmentsForCrafting(var2);
+         ItemEnchantments var2x = EnchantmentHelper.getEnchantmentsForCrafting(var2);
 
-         for(Entry var4 : var2xx.entrySet()) {
+         for (Entry var4 : var2x.entrySet()) {
             Enchantment var5 = (Enchantment)((Holder)var4.getKey()).value();
             if (!var5.isCurse() || var1x.getLevel(var5) == 0) {
                var1x.upgrade(var5, var4.getIntValue());
@@ -194,7 +193,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
 
       int var3 = 0;
 
-      for(int var4 = 0; var4 < var2.size(); ++var4) {
+      for (int var4 = 0; var4 < var2.size(); var4++) {
          var3 = AnvilMenu.calculateIncreasedRepairCost(var3);
       }
 

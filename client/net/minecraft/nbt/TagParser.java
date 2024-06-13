@@ -163,7 +163,7 @@ public class TagParser {
       CompoundTag var1 = new CompoundTag();
       this.reader.skipWhitespace();
 
-      while(this.reader.canRead() && this.reader.peek() != '}') {
+      while (this.reader.canRead() && this.reader.peek() != '}') {
          int var2 = this.reader.getCursor();
          String var3 = this.readKey();
          if (var3.isEmpty()) {
@@ -195,7 +195,7 @@ public class TagParser {
          ListTag var1 = new ListTag();
          TagType var2 = null;
 
-         while(this.reader.peek() != ']') {
+         while (this.reader.peek() != ']') {
             int var3 = this.reader.getCursor();
             Tag var4 = this.readValue();
             TagType var5 = var4.getType();
@@ -244,7 +244,7 @@ public class TagParser {
    private <T extends Number> List<T> readArray(TagType<?> var1, TagType<?> var2) throws CommandSyntaxException {
       ArrayList var3 = Lists.newArrayList();
 
-      while(this.reader.peek() != ']') {
+      while (this.reader.peek() != ']') {
          int var4 = this.reader.getCursor();
          Tag var5 = this.readValue();
          TagType var6 = var5.getType();

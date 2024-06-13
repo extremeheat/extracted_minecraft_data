@@ -4,14 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.Util;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -33,8 +31,8 @@ public class LootPool {
    public static final Codec<LootPool> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter(var0x -> var0x.entries),
-               ExtraCodecs.strictOptionalField(LootItemConditions.DIRECT_CODEC.listOf(), "conditions", List.of()).forGetter(var0x -> var0x.conditions),
-               ExtraCodecs.strictOptionalField(LootItemFunctions.ROOT_CODEC.listOf(), "functions", List.of()).forGetter(var0x -> var0x.functions),
+               LootItemConditions.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter(var0x -> var0x.conditions),
+               LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter(var0x -> var0x.functions),
                NumberProviders.CODEC.fieldOf("rolls").forGetter(var0x -> var0x.rolls),
                NumberProviders.CODEC.fieldOf("bonus_rolls").orElse(ConstantValue.exactly(0.0F)).forGetter(var0x -> var0x.bonusRolls)
             )
@@ -64,12 +62,12 @@ public class LootPool {
       ArrayList var4 = Lists.newArrayList();
       MutableInt var5 = new MutableInt();
 
-      for(LootPoolEntryContainer var7 : this.entries) {
+      for (LootPoolEntryContainer var7 : this.entries) {
          var7.expand(var2, var3x -> {
-            int var4xx = var3x.getWeight(var2.getLuck());
-            if (var4xx > 0) {
+            int var4x = var3x.getWeight(var2.getLuck());
+            if (var4x > 0) {
                var4.add(var3x);
-               var5.add(var4xx);
+               var5.add(var4x);
             }
          });
       }
@@ -81,7 +79,7 @@ public class LootPool {
          } else {
             int var11 = var3.nextInt(var5.intValue());
 
-            for(LootPoolEntry var9 : var4) {
+            for (LootPoolEntry var9 : var4) {
                var11 -= var9.getWeight(var2.getLuck());
                if (var11 < 0) {
                   var9.createItemStack(var1, var2);
@@ -97,22 +95,22 @@ public class LootPool {
          Consumer var3 = LootItemFunction.decorate(this.compositeFunction, var1, var2);
          int var4 = this.rolls.getInt(var2) + Mth.floor(this.bonusRolls.getFloat(var2) * var2.getLuck());
 
-         for(int var5 = 0; var5 < var4; ++var5) {
+         for (int var5 = 0; var5 < var4; var5++) {
             this.addRandomItem(var3, var2);
          }
       }
    }
 
    public void validate(ValidationContext var1) {
-      for(int var2 = 0; var2 < this.conditions.size(); ++var2) {
+      for (int var2 = 0; var2 < this.conditions.size(); var2++) {
          this.conditions.get(var2).validate(var1.forChild(".condition[" + var2 + "]"));
       }
 
-      for(int var3 = 0; var3 < this.functions.size(); ++var3) {
+      for (int var3 = 0; var3 < this.functions.size(); var3++) {
          this.functions.get(var3).validate(var1.forChild(".functions[" + var3 + "]"));
       }
 
-      for(int var4 = 0; var4 < this.entries.size(); ++var4) {
+      for (int var4 = 0; var4 < this.entries.size(); var4++) {
          this.entries.get(var4).validate(var1.forChild(".entries[" + var4 + "]"));
       }
 

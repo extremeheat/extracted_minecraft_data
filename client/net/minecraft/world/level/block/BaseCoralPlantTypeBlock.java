@@ -41,7 +41,7 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
       if (var0.getValue(WATERLOGGED)) {
          return true;
       } else {
-         for(Direction var6 : Direction.values()) {
+         for (Direction var6 : Direction.values()) {
             if (var1.getFluidState(var2.relative(var6)).is(FluidTags.WATER)) {
                return true;
             }

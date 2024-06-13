@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -10,7 +10,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class CherryFoliagePlacer extends FoliagePlacer {
-   public static final Codec<CherryFoliagePlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<CherryFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> foliagePlacerParts(var0)
             .and(
                var0.group(
@@ -61,7 +61,7 @@ public class CherryFoliagePlacer extends FoliagePlacer {
       this.placeLeavesRow(var1, var2, var3, var4, var11, var12 - 2, var7 - 3, var10);
       this.placeLeavesRow(var1, var2, var3, var4, var11, var12 - 1, var7 - 4, var10);
 
-      for(int var13 = var7 - 5; var13 >= 0; --var13) {
+      for (int var13 = var7 - 5; var13 >= 0; var13--) {
          this.placeLeavesRow(var1, var2, var3, var4, var11, var12, var13, var10);
       }
 
@@ -83,11 +83,7 @@ public class CherryFoliagePlacer extends FoliagePlacer {
       } else {
          boolean var7 = var2 == var5 && var4 == var5;
          boolean var8 = var5 > 2;
-         if (var8) {
-            return var7 || var2 + var4 > var5 * 2 - 2 && var1.nextFloat() < this.cornerHoleChance;
-         } else {
-            return var7 && var1.nextFloat() < this.cornerHoleChance;
-         }
+         return var8 ? var7 || var2 + var4 > var5 * 2 - 2 && var1.nextFloat() < this.cornerHoleChance : var7 && var1.nextFloat() < this.cornerHoleChance;
       }
    }
 }

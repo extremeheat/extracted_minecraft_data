@@ -2,12 +2,10 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public class EnchantedItemTrigger extends SimpleCriterionTrigger<EnchantedItemTrigger.TriggerInstance> {
@@ -24,26 +22,22 @@ public class EnchantedItemTrigger extends SimpleCriterionTrigger<EnchantedItemTr
       this.trigger(var1, var2x -> var2x.matches(var2, var3));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ItemPredicate> c, MinMaxBounds.Ints d)
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, MinMaxBounds.Ints levels)
       implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<ItemPredicate> item;
-      private final MinMaxBounds.Ints levels;
       public static final Codec<EnchantedItemTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(EnchantedItemTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC, "item").forGetter(EnchantedItemTrigger.TriggerInstance::item),
-                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "levels", MinMaxBounds.Ints.ANY)
-                     .forGetter(EnchantedItemTrigger.TriggerInstance::levels)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(EnchantedItemTrigger.TriggerInstance::player),
+                  ItemPredicate.CODEC.optionalFieldOf("item").forGetter(EnchantedItemTrigger.TriggerInstance::item),
+                  MinMaxBounds.Ints.CODEC.optionalFieldOf("levels", MinMaxBounds.Ints.ANY).forGetter(EnchantedItemTrigger.TriggerInstance::levels)
                )
                .apply(var0, EnchantedItemTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, MinMaxBounds.Ints var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, MinMaxBounds.Ints levels) {
          super();
-         this.player = var1;
-         this.item = var2;
-         this.levels = var3;
+         this.player = player;
+         this.item = item;
+         this.levels = levels;
       }
 
       public static Criterion<EnchantedItemTrigger.TriggerInstance> enchantedItem() {
@@ -52,11 +46,7 @@ public class EnchantedItemTrigger extends SimpleCriterionTrigger<EnchantedItemTr
       }
 
       public boolean matches(ItemStack var1, int var2) {
-         if (this.item.isPresent() && !((ItemPredicate)this.item.get()).matches(var1)) {
-            return false;
-         } else {
-            return this.levels.matches(var2);
-         }
+         return this.item.isPresent() && !this.item.get().matches(var1) ? false : this.levels.matches(var2);
       }
    }
 }

@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -27,7 +26,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -66,9 +64,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    protected static final VoxelShape WEST_AABB = Block.box(0.0, 0.0, 1.0, 15.0, 14.0, 15.0);
    protected static final VoxelShape EAST_AABB = Block.box(1.0, 0.0, 1.0, 16.0, 14.0, 15.0);
    protected static final VoxelShape AABB = Block.box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0);
-   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>> CHEST_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>>(
-      
-   ) {
+   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>> CHEST_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>>() {
       public Optional<Container> acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
          return Optional.of(new CompoundContainer(var1, var2));
       }
@@ -81,9 +77,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          return Optional.empty();
       }
    };
-   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>(
-      
-   ) {
+   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() {
       public Optional<MenuProvider> acceptDouble(final ChestBlockEntity var1, final ChestBlockEntity var2) {
          final CompoundContainer var3 = new CompoundContainer(var1, var2);
          return Optional.of(new MenuProvider() {
@@ -171,7 +165,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       if (var1.getValue(TYPE) == ChestType.SINGLE) {
          return AABB;
       } else {
-         switch(getConnectedDirection(var1)) {
+         switch (getConnectedDirection(var1)) {
             case NORTH:
             default:
                return NORTH_AABB;
@@ -245,16 +239,6 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
             PiglinAi.angerNearbyPiglins(var4, true);
          }
 
-         Container var7 = getContainer(this, var1, var2, var3, false);
-         if (var7 != null) {
-            var7.forEach(var3x -> {
-               if (var3x.has(DataComponents.VIEWS)) {
-                  var3x.set(DataComponents.VIEWS, var3x.getOrDefault(DataComponents.VIEWS, Integer.valueOf(0)) + 1);
-                  var3x.getItem().onViewedInContainer(var3x, var2, var3, var7);
-               }
-            });
-         }
-
          return InteractionResult.CONSUME;
       }
    }
@@ -269,7 +253,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
 
    @Nullable
    public static Container getContainer(ChestBlock var0, BlockState var1, Level var2, BlockPos var3, boolean var4) {
-      return var0.combine(var1, var2, var3, var4).<Optional<Container>>apply(CHEST_COMBINER).orElse(null);
+      return var0.combine(var1, var2, var3, var4).apply(CHEST_COMBINER).orElse(null);
    }
 
    @Override
@@ -289,7 +273,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    @Nullable
    @Override
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return this.combine(var1, var2, var3, false).<Optional<MenuProvider>>apply(MENU_PROVIDER_COMBINER).orElse(null);
+      return this.combine(var1, var2, var3, false).apply(MENU_PROVIDER_COMBINER).orElse(null);
    }
 
    public static DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction> opennessCombiner(final LidBlockEntity var0) {
@@ -341,7 +325,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          )
       );
       if (!var2.isEmpty()) {
-         for(Cat var4 : var2) {
+         for (Cat var4 : var2) {
             if (var4.isInSittingPose()) {
                return true;
             }

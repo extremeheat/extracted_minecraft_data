@@ -71,11 +71,11 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       this.addBeaconButton(new BeaconScreen.BeaconConfirmButton(this.leftPos + 164, this.topPos + 107));
       this.addBeaconButton(new BeaconScreen.BeaconCancelButton(this.leftPos + 190, this.topPos + 107));
 
-      for(int var1 = 0; var1 <= 2; ++var1) {
+      for (int var1 = 0; var1 <= 2; var1++) {
          int var2 = BeaconBlockEntity.BEACON_EFFECTS.get(var1).size();
          int var3 = var2 * 22 + (var2 - 1) * 2;
 
-         for(int var4 = 0; var4 < var2; ++var4) {
+         for (int var4 = 0; var4 < var2; var4++) {
             Holder var5 = BeaconBlockEntity.BEACON_EFFECTS.get(var1).get(var4);
             BeaconScreen.BeaconPowerButton var6 = new BeaconScreen.BeaconPowerButton(
                this.leftPos + 76 + var4 * 24 - var3 / 2, this.topPos + 22 + var1 * 25, var5, true, var1
@@ -85,11 +85,11 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          }
       }
 
-      boolean var7 = true;
+      byte var7 = 3;
       int var8 = BeaconBlockEntity.BEACON_EFFECTS.get(3).size() + 1;
       int var9 = var8 * 22 + (var8 - 1) * 2;
 
-      for(int var10 = 0; var10 < var8 - 1; ++var10) {
+      for (int var10 = 0; var10 < var8 - 1; var10++) {
          Holder var12 = BeaconBlockEntity.BEACON_EFFECTS.get(3).get(var10);
          BeaconScreen.BeaconPowerButton var14 = new BeaconScreen.BeaconPowerButton(
             this.leftPos + 167 + var10 * 24 - var9 / 2, this.topPos + 47, var12, false, 3
@@ -131,11 +131,10 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
       var1.renderItem(new ItemStack(Items.NETHERITE_INGOT), var5 + 20, var6 + 109);
-      var1.renderItem(new ItemStack(Items.AMBER_GEM), var5 + 41, var6 + 109);
-      var1.renderItem(new ItemStack(Items.DIAMOND), var5 + 41 + 18, var6 + 109);
-      var1.renderItem(new ItemStack(Items.EMERALD), var5 + 41 + 37, var6 + 109);
-      var1.renderItem(new ItemStack(Items.GOLD_INGOT), var5 + 42 + 55, var6 + 109);
-      var1.renderItem(new ItemStack(Items.IRON_INGOT), var5 + 42 + 74, var6 + 109);
+      var1.renderItem(new ItemStack(Items.EMERALD), var5 + 41, var6 + 109);
+      var1.renderItem(new ItemStack(Items.DIAMOND), var5 + 41 + 22, var6 + 109);
+      var1.renderItem(new ItemStack(Items.GOLD_INGOT), var5 + 42 + 44, var6 + 109);
+      var1.renderItem(new ItemStack(Items.IRON_INGOT), var5 + 42 + 66, var6 + 109);
       var1.pose().popPose();
    }
 

@@ -72,13 +72,13 @@ public interface MultiBufferSource {
 
       public void endBatch() {
          this.lastState.ifPresent(var1 -> {
-            VertexConsumer var2xx = this.getBuffer(var1);
-            if (var2xx == this.builder) {
+            VertexConsumer var2x = this.getBuffer(var1);
+            if (var2x == this.builder) {
                this.endBatch(var1);
             }
          });
 
-         for(RenderType var2 : this.fixedBuffers.keySet()) {
+         for (RenderType var2 : this.fixedBuffers.keySet()) {
             this.endBatch(var2);
          }
       }

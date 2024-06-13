@@ -11,20 +11,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
 
 public class ServerBossEvent extends BossEvent {
    private final Set<ServerPlayer> players = Sets.newHashSet();
    private final Set<ServerPlayer> unmodifiablePlayers = Collections.unmodifiableSet(this.players);
    private boolean visible = true;
 
-   public ServerBossEvent(Entity var1, BossEvent.BossBarColor var2, BossEvent.BossBarOverlay var3) {
-      super(var1.getUUID(), var1.getDisplayName(), var2, var3, var1.position(), -1);
-   }
-
    public ServerBossEvent(Component var1, BossEvent.BossBarColor var2, BossEvent.BossBarOverlay var3) {
-      super(Mth.createInsecureUUID(), var1, var2, var3, Vec3.ZERO, 0);
+      super(Mth.createInsecureUUID(), var1, var2, var3);
    }
 
    @Override
@@ -82,14 +76,6 @@ public class ServerBossEvent extends BossEvent {
    }
 
    @Override
-   public void setLocation(Vec3 var1, int var2) {
-      if (var1.distanceToSqr(this.center) > 1.0 || var2 != this.radius) {
-         super.setLocation(var1, var2);
-         this.broadcast(ClientboundBossEventPacket::createUpdatePositionPacket);
-      }
-   }
-
-   @Override
    public void setName(Component var1) {
       if (!Objects.equal(var1, this.name)) {
          super.setName(var1);
@@ -101,7 +87,7 @@ public class ServerBossEvent extends BossEvent {
       if (this.visible) {
          ClientboundBossEventPacket var2 = (ClientboundBossEventPacket)var1.apply(this);
 
-         for(ServerPlayer var4 : this.players) {
+         for (ServerPlayer var4 : this.players) {
             var4.connection.send(var2);
          }
       }
@@ -121,7 +107,7 @@ public class ServerBossEvent extends BossEvent {
 
    public void removeAllPlayers() {
       if (!this.players.isEmpty()) {
-         for(ServerPlayer var2 : Lists.newArrayList(this.players)) {
+         for (ServerPlayer var2 : Lists.newArrayList(this.players)) {
             this.removePlayer(var2);
          }
       }
@@ -135,7 +121,7 @@ public class ServerBossEvent extends BossEvent {
       if (var1 != this.visible) {
          this.visible = var1;
 
-         for(ServerPlayer var3 : this.players) {
+         for (ServerPlayer var3 : this.players) {
             var3.connection.send(var1 ? ClientboundBossEventPacket.createAddPacket(this) : ClientboundBossEventPacket.createRemovePacket(this.getId()));
          }
       }

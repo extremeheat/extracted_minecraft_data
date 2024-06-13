@@ -5,7 +5,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.List;
@@ -73,7 +72,7 @@ public class BanIpCommands {
             var0.sendSuccess(() -> Component.translatable("commands.banip.info", var4.size(), EntitySelector.joinNames(var4)), true);
          }
 
-         for(ServerPlayer var7 : var4) {
+         for (ServerPlayer var7 : var4) {
             var7.connection.disconnect(Component.translatable("multiplayer.disconnect.ip_banned"));
          }
 

@@ -19,7 +19,7 @@ public class PotionBrewing {
    private static final List<PotionBrewing.Mix<Item>> CONTAINER_MIXES = Lists.newArrayList();
    private static final List<Ingredient> ALLOWED_CONTAINERS = Lists.newArrayList();
    private static final Predicate<ItemStack> ALLOWED_CONTAINER = var0 -> {
-      for(Ingredient var2 : ALLOWED_CONTAINERS) {
+      for (Ingredient var2 : ALLOWED_CONTAINERS) {
          if (var2.test(var0)) {
             return true;
          }
@@ -37,7 +37,7 @@ public class PotionBrewing {
    }
 
    protected static boolean isContainerIngredient(ItemStack var0) {
-      for(PotionBrewing.Mix var2 : CONTAINER_MIXES) {
+      for (PotionBrewing.Mix var2 : CONTAINER_MIXES) {
          if (var2.ingredient.test(var0)) {
             return true;
          }
@@ -47,7 +47,7 @@ public class PotionBrewing {
    }
 
    protected static boolean isPotionIngredient(ItemStack var0) {
-      for(PotionBrewing.Mix var2 : POTION_MIXES) {
+      for (PotionBrewing.Mix var2 : POTION_MIXES) {
          if (var2.ingredient.test(var0)) {
             return true;
          }
@@ -57,7 +57,7 @@ public class PotionBrewing {
    }
 
    public static boolean isBrewablePotion(Holder<Potion> var0) {
-      for(PotionBrewing.Mix var2 : POTION_MIXES) {
+      for (PotionBrewing.Mix var2 : POTION_MIXES) {
          if (var2.to.is(var0)) {
             return true;
          }
@@ -67,15 +67,11 @@ public class PotionBrewing {
    }
 
    public static boolean hasMix(ItemStack var0, ItemStack var1) {
-      if (!ALLOWED_CONTAINER.test(var0)) {
-         return false;
-      } else {
-         return hasContainerMix(var0, var1) || hasPotionMix(var0, var1);
-      }
+      return !ALLOWED_CONTAINER.test(var0) ? false : hasContainerMix(var0, var1) || hasPotionMix(var0, var1);
    }
 
    protected static boolean hasContainerMix(ItemStack var0, ItemStack var1) {
-      for(PotionBrewing.Mix var3 : CONTAINER_MIXES) {
+      for (PotionBrewing.Mix var3 : CONTAINER_MIXES) {
          if (var0.is(var3.from) && var3.ingredient.test(var1)) {
             return true;
          }
@@ -85,11 +81,11 @@ public class PotionBrewing {
    }
 
    protected static boolean hasPotionMix(ItemStack var0, ItemStack var1) {
-      Optional var2 = ((PotionContents)var0.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
+      Optional var2 = var0.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion();
       if (var2.isEmpty()) {
          return false;
       } else {
-         for(PotionBrewing.Mix var4 : POTION_MIXES) {
+         for (PotionBrewing.Mix var4 : POTION_MIXES) {
             if (var4.from.is((Holder)var2.get()) && var4.ingredient.test(var1)) {
                return true;
             }
@@ -103,17 +99,17 @@ public class PotionBrewing {
       if (var1.isEmpty()) {
          return var1;
       } else {
-         Optional var2 = ((PotionContents)var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
+         Optional var2 = var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion();
          if (var2.isEmpty()) {
             return var1;
          } else {
-            for(PotionBrewing.Mix var4 : CONTAINER_MIXES) {
+            for (PotionBrewing.Mix var4 : CONTAINER_MIXES) {
                if (var1.is(var4.from) && var4.ingredient.test(var0)) {
                   return PotionContents.createItemStack((Item)var4.to.value(), (Holder<Potion>)var2.get());
                }
             }
 
-            for(PotionBrewing.Mix var6 : POTION_MIXES) {
+            for (PotionBrewing.Mix var6 : POTION_MIXES) {
                if (var6.from.is((Holder)var2.get()) && var6.ingredient.test(var0)) {
                   return PotionContents.createItemStack(var1.getItem(), var6.to);
                }
@@ -137,9 +133,17 @@ public class PotionBrewing {
       addMix(Potions.WATER, Items.SPIDER_EYE, Potions.MUNDANE);
       addMix(Potions.WATER, Items.SUGAR, Potions.MUNDANE);
       addMix(Potions.WATER, Items.MAGMA_CREAM, Potions.MUNDANE);
+      addMix(Potions.WATER, Items.BREEZE_ROD, Potions.MUNDANE);
+      addMix(Potions.WATER, Items.SLIME_BLOCK, Potions.MUNDANE);
+      addMix(Potions.WATER, Items.STONE, Potions.MUNDANE);
+      addMix(Potions.WATER, Items.COBWEB, Potions.MUNDANE);
       addMix(Potions.WATER, Items.GLOWSTONE_DUST, Potions.THICK);
       addMix(Potions.WATER, Items.REDSTONE, Potions.MUNDANE);
       addMix(Potions.WATER, Items.NETHER_WART, Potions.AWKWARD);
+      addMix(Potions.AWKWARD, Items.BREEZE_ROD, Potions.WIND_CHARGED);
+      addMix(Potions.AWKWARD, Items.SLIME_BLOCK, Potions.OOZING);
+      addMix(Potions.AWKWARD, Items.STONE, Potions.INFESTED);
+      addMix(Potions.AWKWARD, Items.COBWEB, Potions.WEAVING);
       addMix(Potions.AWKWARD, Items.GOLDEN_CARROT, Potions.NIGHT_VISION);
       addMix(Potions.NIGHT_VISION, Items.REDSTONE, Potions.LONG_NIGHT_VISION);
       addMix(Potions.NIGHT_VISION, Items.FERMENTED_SPIDER_EYE, Potions.INVISIBILITY);
@@ -193,7 +197,7 @@ public class PotionBrewing {
       } else if (!(var2 instanceof PotionItem)) {
          throw new IllegalArgumentException("Expected a potion, got: " + BuiltInRegistries.ITEM.getKey(var2));
       } else {
-         CONTAINER_MIXES.add(new PotionBrewing.Mix<Item>(var0.builtInRegistryHolder(), Ingredient.of(var1), var2.builtInRegistryHolder()));
+         CONTAINER_MIXES.add(new PotionBrewing.Mix<>(var0.builtInRegistryHolder(), Ingredient.of(var1), var2.builtInRegistryHolder()));
       }
    }
 
@@ -206,19 +210,16 @@ public class PotionBrewing {
    }
 
    private static void addMix(Holder<Potion> var0, Item var1, Holder<Potion> var2) {
-      POTION_MIXES.add(new PotionBrewing.Mix(var0, Ingredient.of(var1), var2));
+      POTION_MIXES.add(new PotionBrewing.Mix<>(var0, Ingredient.of(var1), var2));
    }
 
-   static record Mix<T>(Holder<T> a, Ingredient b, Holder<T> c) {
-      final Holder<T> from;
-      final Ingredient ingredient;
-      final Holder<T> to;
+   static record Mix<T>(Holder<T> from, Ingredient ingredient, Holder<T> to) {
 
-      Mix(Holder<T> var1, Ingredient var2, Holder<T> var3) {
+      Mix(Holder<T> from, Ingredient ingredient, Holder<T> to) {
          super();
-         this.from = var1;
-         this.ingredient = var2;
-         this.to = var3;
+         this.from = from;
+         this.ingredient = ingredient;
+         this.to = to;
       }
    }
 }

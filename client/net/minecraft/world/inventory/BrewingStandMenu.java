@@ -47,13 +47,13 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       this.addSlot(new BrewingStandMenu.FuelSlot(var3, 4, 17, 17));
       this.addDataSlots(var4);
 
-      for(int var5 = 0; var5 < 3; ++var5) {
-         for(int var6 = 0; var6 < 9; ++var6) {
+      for (int var5 = 0; var5 < 3; var5++) {
+         for (int var6 = 0; var6 < 9; var6++) {
             this.addSlot(new Slot(var2, var6 + var5 * 9 + 9, 8 + var6 * 18, 84 + var5 * 18));
          }
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
+      for (int var7 = 0; var7 < 9; var7++) {
          this.addSlot(new Slot(var2, var7, 8 + var7 * 18, 142));
       }
    }
@@ -179,9 +179,9 @@ public class BrewingStandMenu extends AbstractContainerMenu {
 
       @Override
       public void onTake(Player var1, ItemStack var2) {
-         Optional var3 = ((PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
+         Optional var3 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion();
          if (var3.isPresent() && var1 instanceof ServerPlayer var4) {
-            CriteriaTriggers.BREWED_POTION.trigger((ServerPlayer)var4, (Holder<Potion>)var3.get());
+            CriteriaTriggers.BREWED_POTION.trigger(var4, (Holder<Potion>)var3.get());
          }
 
          super.onTake(var1, var2);

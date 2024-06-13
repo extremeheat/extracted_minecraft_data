@@ -22,7 +22,7 @@ public interface ContainerEventHandler extends GuiEventListener {
    List<? extends GuiEventListener> children();
 
    default Optional<GuiEventListener> getChildAt(double var1, double var3) {
-      for(GuiEventListener var6 : this.children()) {
+      for (GuiEventListener var6 : this.children()) {
          if (var6.isMouseOver(var1, var3)) {
             return Optional.of(var6);
          }
@@ -33,7 +33,7 @@ public interface ContainerEventHandler extends GuiEventListener {
 
    @Override
    default boolean mouseClicked(double var1, double var3, int var5) {
-      for(GuiEventListener var7 : this.children()) {
+      for (GuiEventListener var7 : this.children()) {
          if (var7.mouseClicked(var1, var3, var5)) {
             this.setFocused(var7);
             if (var5 == 0) {
@@ -115,7 +115,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       }
 
       if (var1 instanceof FocusNavigationEvent.TabNavigation var5) {
-         return this.handleTabNavigation((FocusNavigationEvent.TabNavigation)var5);
+         return this.handleTabNavigation(var5);
       } else {
          return var1 instanceof FocusNavigationEvent.ArrowNavigation var4 ? this.handleArrowNavigation(var4) : null;
       }
@@ -141,7 +141,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       BooleanSupplier var8 = var2 ? var7::hasNext : var7::hasPrevious;
       Supplier var9 = var2 ? var7::next : var7::previous;
 
-      while(var8.getAsBoolean()) {
+      while (var8.getAsBoolean()) {
          GuiEventListener var10 = (GuiEventListener)var9.get();
          ComponentPath var11 = var10.nextFocusPath(var1);
          if (var11 != null) {
@@ -173,7 +173,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       int var8 = var1.getBoundInDirection(var2.getOpposite());
       ArrayList var9 = new ArrayList();
 
-      for(GuiEventListener var11 : this.children()) {
+      for (GuiEventListener var11 : this.children()) {
          if (var11 != var3) {
             ScreenRectangle var12 = var11.getRectangle();
             if (var12.overlapsInAxis(var1, var6)) {
@@ -191,7 +191,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       Comparator var16 = Comparator.comparing(var1x -> var1x.getRectangle().getBoundInDirection(var7.getOpposite()), var7.coordinateValueComparator());
       var9.sort(var15.thenComparing(var16));
 
-      for(GuiEventListener var18 : var9) {
+      for (GuiEventListener var18 : var9) {
          ComponentPath var14 = var18.nextFocusPath(var4);
          if (var14 != null) {
             return var14;
@@ -208,7 +208,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       ArrayList var7 = new ArrayList();
       ScreenPosition var8 = ScreenPosition.of(var5, var1.getBoundInDirection(var2), var1.getCenterInAxis(var6));
 
-      for(GuiEventListener var10 : this.children()) {
+      for (GuiEventListener var10 : this.children()) {
          if (var10 != var3) {
             ScreenRectangle var11 = var10.getRectangle();
             ScreenPosition var12 = ScreenPosition.of(var5, var11.getBoundInDirection(var2.getOpposite()), var11.getCenterInAxis(var6));
@@ -221,7 +221,7 @@ public interface ContainerEventHandler extends GuiEventListener {
 
       var7.sort(Comparator.comparingDouble(Pair::getSecond));
 
-      for(Pair var16 : var7) {
+      for (Pair var16 : var7) {
          ComponentPath var17 = ((GuiEventListener)var16.getFirst()).nextFocusPath(var4);
          if (var17 != null) {
             return var17;

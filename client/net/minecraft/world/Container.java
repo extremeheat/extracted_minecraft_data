@@ -1,10 +1,6 @@
 package net.minecraft.world;
 
-import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
@@ -57,7 +53,7 @@ public interface Container extends Clearable {
    default int countItem(Item var1) {
       int var2 = 0;
 
-      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
+      for (int var3 = 0; var3 < this.getContainerSize(); var3++) {
          ItemStack var4 = this.getItem(var3);
          if (var4.getItem().equals(var1)) {
             var2 += var4.getCount();
@@ -71,27 +67,8 @@ public interface Container extends Clearable {
       return this.hasAnyMatching(var1x -> !var1x.isEmpty() && var1.contains(var1x.getItem()));
    }
 
-   default List<ItemStack> getMatching(Predicate<ItemStack> var1) {
-      ArrayList var2 = Lists.newArrayList();
-      this.forEach(var2x -> {
-         if (var1.test(var2x)) {
-            var2.add(var2x);
-         }
-      });
-      return var2;
-   }
-
-   default void forEach(Consumer<ItemStack> var1) {
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (!var3.isEmpty()) {
-            var1.accept(var3);
-         }
-      }
-   }
-
    default boolean hasAnyMatching(Predicate<ItemStack> var1) {
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
+      for (int var2 = 0; var2 < this.getContainerSize(); var2++) {
          ItemStack var3 = this.getItem(var2);
          if (var1.test(var3)) {
             return true;

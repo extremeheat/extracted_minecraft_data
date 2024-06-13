@@ -33,7 +33,7 @@ public class MerchantOffers extends ArrayList<MerchantOffer> {
          MerchantOffer var6 = this.get(var3);
          return var6.satisfiedBy(var1, var2) ? var6 : null;
       } else {
-         for(int var4 = 0; var4 < this.size(); ++var4) {
+         for (int var4 = 0; var4 < this.size(); var4++) {
             MerchantOffer var5 = this.get(var4);
             if (var5.satisfiedBy(var1, var2)) {
                return var5;
@@ -47,7 +47,7 @@ public class MerchantOffers extends ArrayList<MerchantOffer> {
    public MerchantOffers copy() {
       MerchantOffers var1 = new MerchantOffers(this.size());
 
-      for(MerchantOffer var3 : this) {
+      for (MerchantOffer var3 : this) {
          var1.add(var3.copy());
       }
 

@@ -3,13 +3,12 @@ package net.minecraft.client.gui.screens.reporting;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.FrameLayout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.chat.report.NameReport;
@@ -57,6 +56,7 @@ public class NameReportScreen extends AbstractReportScreen<NameReport.Builder> {
       this.sendButton = var2.addChild(Button.builder(SEND_REPORT, var1x -> this.sendReport()).width(120).build());
       this.onReportChanged();
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }

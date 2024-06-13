@@ -24,7 +24,7 @@ public class EntityTickList {
          this.passive.clear();
          ObjectIterator var1 = Int2ObjectMaps.fastIterable(this.active).iterator();
 
-         while(var1.hasNext()) {
+         while (var1.hasNext()) {
             Entry var2 = (Entry)var1.next();
             this.passive.put(var2.getIntKey(), (Entity)var2.getValue());
          }
@@ -58,7 +58,7 @@ public class EntityTickList {
          try {
             ObjectIterator var2 = this.active.values().iterator();
 
-            while(var2.hasNext()) {
+            while (var2.hasNext()) {
                Entity var3 = (Entity)var2.next();
                var1.accept(var3);
             }

@@ -32,7 +32,7 @@ public class TransientCraftingContainer implements CraftingContainer {
 
    @Override
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
+      for (ItemStack var2 : this.items) {
          if (!var2.isEmpty()) {
             return false;
          }
@@ -98,7 +98,7 @@ public class TransientCraftingContainer implements CraftingContainer {
 
    @Override
    public void fillStackedContents(StackedContents var1) {
-      for(ItemStack var3 : this.items) {
+      for (ItemStack var3 : this.items) {
          var1.accountSimpleStack(var3);
       }
    }

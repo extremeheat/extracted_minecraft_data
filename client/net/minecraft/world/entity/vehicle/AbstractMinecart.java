@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -101,7 +100,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    public static AbstractMinecart createMinecart(
       ServerLevel var0, double var1, double var3, double var5, AbstractMinecart.Type var7, ItemStack var8, @Nullable Player var9
    ) {
-      Object var10 = switch(var7) {
+      Object var10 = switch (var7) {
          case CHEST -> new MinecartChest(var0, var1, var3, var5);
          case FURNACE -> new MinecartFurnace(var0, var1, var3, var5);
          case TNT -> new MinecartTNT(var0, var1, var3, var5);
@@ -160,16 +159,16 @@ public abstract class AbstractMinecart extends VehicleEntity {
          ImmutableList var6 = var1.getDismountPoses();
          UnmodifiableIterator var7 = var6.iterator();
 
-         while(var7.hasNext()) {
+         while (var7.hasNext()) {
             Pose var8 = (Pose)var7.next();
             EntityDimensions var9 = var1.getDimensions(var8);
             float var10 = Math.min(var9.width(), 1.0F) / 2.0F;
             UnmodifiableIterator var11 = ((ImmutableList)POSE_DISMOUNT_HEIGHTS.get(var8)).iterator();
 
-            while(var11.hasNext()) {
-               int var12 = var11.next();
+            while (var11.hasNext()) {
+               int var12 = (Integer)var11.next();
 
-               for(int[] var16 : var3) {
+               for (int[] var16 : var3) {
                   var5.set(var4.getX() + var16[0], var4.getY() + var12, var4.getZ() + var16[1]);
                   double var17 = this.level()
                      .getBlockFloorHeight(
@@ -191,7 +190,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
          var5.set((double)var4.getX(), var21, (double)var4.getZ());
          UnmodifiableIterator var22 = var6.iterator();
 
-         while(var22.hasNext()) {
+         while (var22.hasNext()) {
             Pose var23 = (Pose)var22.next();
             double var24 = (double)var1.getDimensions(var23).height();
             int var25 = Mth.ceil(var21 - (double)var5.getY() + var24);
@@ -225,7 +224,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    private static Pair<Vec3i, Vec3i> exits(RailShape var0) {
-      return (Pair<Vec3i, Vec3i>)EXITS.get(var0);
+      return EXITS.get(var0);
    }
 
    @Override
@@ -253,7 +252,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       if (this.level().isClientSide) {
          if (this.lerpSteps > 0) {
             this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
-            --this.lerpSteps;
+            this.lerpSteps--;
          } else {
             this.reapplyPosition();
             this.setRot(this.getYRot(), this.getXRot());
@@ -264,7 +263,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
          int var2 = Mth.floor(this.getY());
          int var3 = Mth.floor(this.getZ());
          if (this.level().getBlockState(new BlockPos(var1, var2 - 1, var3)).is(BlockTags.RAILS)) {
-            --var2;
+            var2--;
          }
 
          BlockPos var4 = new BlockPos(var1, var2, var3);
@@ -301,7 +300,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
             List var15 = this.level()
                .getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224), EntitySelector.pushableBy(this));
             if (!var15.isEmpty()) {
-               for(Entity var14 : var15) {
+               for (Entity var14 : var15) {
                   if (!(var14 instanceof Player)
                      && !(var14 instanceof IronGolem)
                      && !(var14 instanceof AbstractMinecart)
@@ -314,7 +313,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
                }
             }
          } else {
-            for(Entity var13 : this.level().getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224))) {
+            for (Entity var13 : this.level().getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224))) {
                if (!this.hasPassenger(var13) && var13.isPushable() && var13 instanceof AbstractMinecart) {
                   var13.push(this);
                }
@@ -373,22 +372,22 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
       Vec3 var14 = this.getDeltaMovement();
       RailShape var15 = var2.getValue(((BaseRailBlock)var2.getBlock()).getShapeProperty());
-      switch(var15) {
+      switch (var15) {
          case ASCENDING_EAST:
             this.setDeltaMovement(var14.add(-var12, 0.0, 0.0));
-            ++var5;
+            var5++;
             break;
          case ASCENDING_WEST:
             this.setDeltaMovement(var14.add(var12, 0.0, 0.0));
-            ++var5;
+            var5++;
             break;
          case ASCENDING_NORTH:
             this.setDeltaMovement(var14.add(0.0, 0.0, var12));
-            ++var5;
+            var5++;
             break;
          case ASCENDING_SOUTH:
             this.setDeltaMovement(var14.add(0.0, 0.0, -var12));
-            ++var5;
+            var5++;
       }
 
       var14 = this.getDeltaMovement();
@@ -537,7 +536,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       int var10 = Mth.floor(var3);
       int var11 = Mth.floor(var5);
       if (this.level().getBlockState(new BlockPos(var9, var10 - 1, var11)).is(BlockTags.RAILS)) {
-         --var10;
+         var10--;
       }
 
       BlockState var12 = this.level().getBlockState(new BlockPos(var9, var10, var11));
@@ -576,7 +575,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       int var8 = Mth.floor(var3);
       int var9 = Mth.floor(var5);
       if (this.level().getBlockState(new BlockPos(var7, var8 - 1, var9)).is(BlockTags.RAILS)) {
-         --var8;
+         var8--;
       }
 
       BlockState var10 = this.level().getBlockState(new BlockPos(var7, var8, var9));
@@ -609,7 +608,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
          var3 = var17 + var29 * var33;
          var5 = var19 + var31 * var33;
          if (var29 < 0.0) {
-            ++var3;
+            var3++;
          } else if (var29 > 0.0) {
             var3 += 0.5;
          }
@@ -787,7 +786,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
    @Override
    public ItemStack getPickResult() {
-      return new ItemStack(switch(this.getMinecartType()) {
+      return new ItemStack(switch (this.getMinecartType()) {
          case CHEST -> Items.CHEST_MINECART;
          case FURNACE -> Items.FURNACE_MINECART;
          case TNT -> Items.TNT_MINECART;

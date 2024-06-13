@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.models.ItemModelGenerators;
 import net.minecraft.resources.ResourceLocation;
@@ -21,15 +20,11 @@ import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.LashingPotatoItem;
-import net.minecraft.world.item.PoisonousPolytraItem;
 import net.minecraft.world.item.armortrim.ArmorTrim;
-import net.minecraft.world.item.armortrim.TrimMaterial;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.LodestoneTracker;
-import net.minecraft.world.item.component.SnekComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LightBlock;
 
@@ -89,12 +84,10 @@ public class ItemProperties {
       );
       ClampedItemPropertyFunction var0 = (var0x, var1, var2, var3) -> {
          ArmorTrim var4 = var0x.get(DataComponents.TRIM);
-         return var4 != null ? ((TrimMaterial)var4.material().value()).itemModelIndex() : -1.0F / 0.0F;
+         return var4 != null ? var4.material().value().itemModelIndex() : -1.0F / 0.0F;
       };
       registerGeneric(ItemModelGenerators.TRIM_TYPE_PREDICATE_ID, var0);
-      registerCustomModelData(
-         (var0x, var1, var2, var3) -> (float)((CustomModelData)var0x.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT)).value()
-      );
+      registerCustomModelData((var0x, var1, var2, var3) -> (float)var0x.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value());
       register(Items.BOW, new ResourceLocation("pull"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;
@@ -159,12 +152,12 @@ public class ItemProperties {
       });
       register(Items.COMPASS, new ResourceLocation("angle"), new CompassItemPropertyFunction((var0x, var1, var2) -> {
          LodestoneTracker var3 = var1.get(DataComponents.LODESTONE_TRACKER);
-         return var3 != null ? (GlobalPos)var3.target().orElse(null) : CompassItem.getSpawnPosition(var0x);
+         return var3 != null ? var3.target().orElse(null) : CompassItem.getSpawnPosition(var0x);
       }));
       register(
          Items.RECOVERY_COMPASS,
          new ResourceLocation("angle"),
-         new CompassItemPropertyFunction((var0x, var1, var2) -> var2 instanceof Player var3 ? (GlobalPos)var3.getLastDeathLocation().orElse(null) : null)
+         new CompassItemPropertyFunction((var0x, var1, var2) -> var2 instanceof Player var3 ? var3.getLastDeathLocation().orElse(null) : null)
       );
       register(
          Items.CROSSBOW,
@@ -190,7 +183,6 @@ public class ItemProperties {
          return var4 != null && var4.contains(Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
       });
       register(Items.ELYTRA, new ResourceLocation("broken"), (var0x, var1, var2, var3) -> ElytraItem.isFlyEnabled(var0x) ? 0.0F : 1.0F);
-      register(Items.POISONOUS_POLYTRA, new ResourceLocation("broken"), (var0x, var1, var2, var3) -> PoisonousPolytraItem.isFlyEnabled(var0x) ? 0.0F : 1.0F);
       register(Items.FISHING_ROD, new ResourceLocation("cast"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;
@@ -202,19 +194,6 @@ public class ItemProperties {
             }
 
             return (var4 || var5) && var2 instanceof Player && ((Player)var2).fishing != null ? 1.0F : 0.0F;
-         }
-      });
-      register(Items.LASHING_POTATO, new ResourceLocation("lashing_potato_extended"), (var0x, var1, var2, var3) -> {
-         if (var2 == null) {
-            return 0.0F;
-         } else {
-            boolean var4 = var2.getMainHandItem() == var0x;
-            boolean var5 = var2.getOffhandItem() == var0x;
-            if (var2.getMainHandItem().getItem() instanceof LashingPotatoItem) {
-               var5 = false;
-            }
-
-            return (var4 || var5) && var2 instanceof Player && ((Player)var2).grappling != null ? 1.0F : 0.0F;
          }
       });
       register(
@@ -236,14 +215,6 @@ public class ItemProperties {
          Items.GOAT_HORN,
          new ResourceLocation("tooting"),
          (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
-      );
-      register(
-         Items.VENOMOUS_POTATO,
-         new ResourceLocation("hidden"),
-         (var0x, var1, var2, var3) -> ((SnekComponent)var0x.getOrDefault(DataComponents.SNEK, SnekComponent.HIDDEN_SNEK)).revealed() ? 0.0F : 1.0F
-      );
-      registerGeneric(
-         new ResourceLocation("hovered"), (var0x, var1, var2, var3) -> var0x.getOrDefault(DataComponents.HOVERED, Boolean.valueOf(false)) ? 1.0F : 0.0F
       );
    }
 }

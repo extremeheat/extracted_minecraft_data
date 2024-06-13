@@ -112,7 +112,7 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch(var1.getValue(CANDLES)) {
+      switch (var1.getValue(CANDLES)) {
          case 1:
          default:
             return ONE_AABB;

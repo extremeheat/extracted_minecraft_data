@@ -51,7 +51,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    private static final float[] RESONANCE_PITCH_BEND = Util.make(new float[16], var0 -> {
       int[] var1 = new int[]{0, 0, 2, 4, 6, 7, 9, 10, 12, 14, 15, 18, 19, 21, 22, 24};
 
-      for(int var2 = 0; var2 < 16; ++var2) {
+      for (int var2 = 0; var2 < 16; var2++) {
          var0[var2] = NoteBlock.getPitchFromNote(var1[var2]);
       }
    });
@@ -99,17 +99,15 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
-      if (!var1.isClientSide() && canActivate(var3) && var4.getType() != EntityType.WARDEN) {
-         BlockEntity var5 = var1.getBlockEntity(var2);
-         if (var5 instanceof SculkSensorBlockEntity var6
-            && var1 instanceof ServerLevel var7
-            && var6.getVibrationUser().canReceiveVibration((ServerLevel)var7, var2, GameEvent.STEP, GameEvent.Context.of(var3))) {
-            var6.getListener().forceScheduleVibration((ServerLevel)var7, GameEvent.STEP, GameEvent.Context.of(var4), var4.position());
-         }
+      if (!var1.isClientSide()
+         && canActivate(var3)
+         && var4.getType() != EntityType.WARDEN
+         && var1.getBlockEntity(var2) instanceof SculkSensorBlockEntity var6
+         && var1 instanceof ServerLevel var7
+         && var6.getVibrationUser().canReceiveVibration(var7, var2, GameEvent.STEP, GameEvent.Context.of(var3))) {
+         var6.getListener().forceScheduleVibration(var7, GameEvent.STEP, GameEvent.Context.of(var4), var4.position());
       }
 
       super.stepOn(var1, var2, var3, var4);
@@ -233,7 +231,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    public static void tryResonateVibration(@Nullable Entity var0, Level var1, BlockPos var2, int var3) {
-      for(Direction var7 : Direction.values()) {
+      for (Direction var7 : Direction.values()) {
          BlockPos var8 = var2.relative(var7);
          BlockState var9 = var1.getBlockState(var8);
          if (var9.is(BlockTags.VIBRATION_RESONATORS)) {
@@ -268,12 +266,9 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       return true;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var4 = var2.getBlockEntity(var3);
-      if (var4 instanceof SculkSensorBlockEntity var5) {
+      if (var2.getBlockEntity(var3) instanceof SculkSensorBlockEntity var5) {
          return getPhase(var1) == SculkSensorPhase.ACTIVE ? var5.getLastVibrationFrequency() : 0;
       } else {
          return 0;

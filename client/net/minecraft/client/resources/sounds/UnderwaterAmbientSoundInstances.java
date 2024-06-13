@@ -48,7 +48,7 @@ public class UnderwaterAmbientSoundInstances {
       public void tick() {
          if (!this.player.isRemoved() && this.fade >= 0) {
             if (this.player.isUnderWater()) {
-               ++this.fade;
+               this.fade++;
             } else {
                this.fade -= 2;
             }

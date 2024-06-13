@@ -43,15 +43,15 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-      for(int var6 = 0; var6 < 200; ++var6) {
+      for (int var6 = 0; var6 < 200; var6++) {
          var4.setWithOffset(var3, var2.nextInt(6) - var2.nextInt(6), var2.nextInt(2) - var2.nextInt(5), var2.nextInt(6) - var2.nextInt(6));
          if (var1.isEmptyBlock(var4)) {
             int var7 = 0;
 
-            for(Direction var11 : DIRECTIONS) {
+            for (Direction var11 : DIRECTIONS) {
                BlockState var12 = var1.getBlockState(var5.setWithOffset(var4, var11));
                if (var12.is(Blocks.NETHERRACK) || var12.is(Blocks.NETHER_WART_BLOCK)) {
-                  ++var7;
+                  var7++;
                }
 
                if (var7 > 1) {
@@ -69,7 +69,7 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
    private void placeRoofWeepingVines(LevelAccessor var1, RandomSource var2, BlockPos var3) {
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
 
-      for(int var5 = 0; var5 < 100; ++var5) {
+      for (int var5 = 0; var5 < 100; var5++) {
          var4.setWithOffset(var3, var2.nextInt(8) - var2.nextInt(8), var2.nextInt(2) - var2.nextInt(7), var2.nextInt(8) - var2.nextInt(8));
          if (var1.isEmptyBlock(var4)) {
             BlockState var6 = var1.getBlockState(var4.above());
@@ -83,8 +83,8 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
                   var7 = 1;
                }
 
-               boolean var8 = true;
-               boolean var9 = true;
+               byte var8 = 17;
+               byte var9 = 25;
                placeWeepingVinesColumn(var1, var2, var4, var7, 17, 25);
             }
          }
@@ -92,7 +92,7 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
    }
 
    public static void placeWeepingVinesColumn(LevelAccessor var0, RandomSource var1, BlockPos.MutableBlockPos var2, int var3, int var4, int var5) {
-      for(int var6 = 0; var6 <= var3; ++var6) {
+      for (int var6 = 0; var6 <= var3; var6++) {
          if (var0.isEmptyBlock(var2)) {
             if (var6 == var3 || !var0.isEmptyBlock(var2.below())) {
                var0.setBlock(

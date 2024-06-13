@@ -100,7 +100,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
       do {
          var5.move(Direction.UP);
-      } while(var1.getFluidState(var5).is(FluidTags.LAVA));
+      } while (var1.getFluidState(var5).is(FluidTags.LAVA));
 
       return var1.getBlockState(var5).isAir();
    }
@@ -203,14 +203,9 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    @Nullable
    @Override
    public LivingEntity getControllingPassenger() {
-      if (this.isSaddled()) {
-         Entity var2 = this.getFirstPassenger();
-         if (var2 instanceof Player var1 && ((Player)var1).isHolding(Items.WARPED_FUNGUS_ON_A_STICK)) {
-            return (LivingEntity)var1;
-         }
-      }
-
-      return super.getControllingPassenger();
+      return (LivingEntity)(this.isSaddled() && this.getFirstPassenger() instanceof Player var1 && var1.isHolding(Items.WARPED_FUNGUS_ON_A_STICK)
+         ? var1
+         : super.getControllingPassenger());
    }
 
    @Override
@@ -227,23 +222,23 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       double var6 = this.getBoundingBox().minY - 0.5;
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
 
-      for(Vec3 var12 : var2) {
+      for (Vec3 var12 : var2) {
          var8.set(this.getX() + var12.x, var4, this.getZ() + var12.z);
 
-         for(double var13 = var4; var13 > var6; --var13) {
+         for (double var13 = var4; var13 > var6; var13--) {
             var3.add(var8.immutable());
             var8.move(Direction.DOWN);
          }
       }
 
-      for(BlockPos var18 : var3) {
+      for (BlockPos var18 : var3) {
          if (!this.level().getFluidState(var18).is(FluidTags.LAVA)) {
             double var19 = this.level().getBlockFloorHeight(var18);
             if (DismountHelper.isBlockFloorValid(var19)) {
                Vec3 var20 = Vec3.upFromBottomCenterOf(var18, var19);
                UnmodifiableIterator var14 = var1.getDismountPoses().iterator();
 
-               while(var14.hasNext()) {
+               while (var14.hasNext()) {
                   Pose var15 = (Pose)var14.next();
                   AABB var16 = var1.getLocalBoundsForPose(var15);
                   if (DismountHelper.canDismountTo(this.level(), var1, var16.move(var20))) {
@@ -316,8 +311,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
             BlockState var1 = this.level().getBlockState(this.blockPosition());
             BlockState var2 = this.getBlockStateOnLegacy();
             var3 = var1.is(BlockTags.STRIDER_WARM_BLOCKS) || var2.is(BlockTags.STRIDER_WARM_BLOCKS) || this.getFluidHeight(FluidTags.LAVA) > 0.0;
-            Entity var6 = this.getVehicle();
-            if (var6 instanceof Strider var5 && var5.isSuffocating()) {
+            if (this.getVehicle() instanceof Strider var5 && var5.isSuffocating()) {
                var10000 = true;
                break label36;
             }

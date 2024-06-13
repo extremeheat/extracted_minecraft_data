@@ -2,7 +2,6 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,7 +10,6 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTrigger.TriggerInstance> {
@@ -28,26 +26,22 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTr
       this.trigger(var1, var2x -> var2x.matches(var2, var3));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, ResourceLocation c, List<ItemPredicate> d)
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, ResourceLocation recipeId, List<ItemPredicate> ingredients)
       implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final ResourceLocation recipeId;
-      private final List<ItemPredicate> ingredients;
       public static final Codec<RecipeCraftedTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(RecipeCraftedTrigger.TriggerInstance::player),
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(RecipeCraftedTrigger.TriggerInstance::player),
                   ResourceLocation.CODEC.fieldOf("recipe_id").forGetter(RecipeCraftedTrigger.TriggerInstance::recipeId),
-                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC.listOf(), "ingredients", List.of())
-                     .forGetter(RecipeCraftedTrigger.TriggerInstance::ingredients)
+                  ItemPredicate.CODEC.listOf().optionalFieldOf("ingredients", List.of()).forGetter(RecipeCraftedTrigger.TriggerInstance::ingredients)
                )
                .apply(var0, RecipeCraftedTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceLocation var2, List<ItemPredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, ResourceLocation recipeId, List<ItemPredicate> ingredients) {
          super();
-         this.player = var1;
-         this.recipeId = var2;
-         this.ingredients = var3;
+         this.player = player;
+         this.recipeId = recipeId;
+         this.ingredients = ingredients;
       }
 
       public static Criterion<RecipeCraftedTrigger.TriggerInstance> craftedItem(ResourceLocation var0, List<ItemPredicate.Builder> var1) {
@@ -69,11 +63,11 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTr
          } else {
             ArrayList var3 = new ArrayList(var2);
 
-            for(ItemPredicate var5 : this.ingredients) {
+            for (ItemPredicate var5 : this.ingredients) {
                boolean var6 = false;
                Iterator var7 = var3.iterator();
 
-               while(var7.hasNext()) {
+               while (var7.hasNext()) {
                   if (var5.matches((ItemStack)var7.next())) {
                      var7.remove();
                      var6 = true;

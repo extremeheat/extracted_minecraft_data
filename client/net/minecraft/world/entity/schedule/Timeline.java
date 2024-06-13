@@ -48,7 +48,7 @@ public class Timeline {
          int var5 = var4 ? 0 : this.previousIndex;
          float var6 = var4 ? var3.getValue() : var2.getValue();
 
-         for(int var7 = var5; var7 < this.keyframes.size(); ++var7) {
+         for (int var7 = var5; var7 < this.keyframes.size(); var7++) {
             Keyframe var8 = this.keyframes.get(var7);
             if (var8.getTimeStamp() > var1) {
                break;

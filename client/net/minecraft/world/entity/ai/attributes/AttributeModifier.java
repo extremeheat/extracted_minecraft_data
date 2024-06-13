@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import java.util.function.IntFunction;
@@ -19,11 +18,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import org.slf4j.Logger;
 
-public record AttributeModifier(UUID d, String e, double f, AttributeModifier.Operation g) {
-   private final UUID id;
-   private final String name;
-   private final double amount;
-   private final AttributeModifier.Operation operation;
+public record AttributeModifier(UUID id, String name, double amount, AttributeModifier.Operation operation) {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final MapCodec<AttributeModifier> MAP_CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
@@ -51,12 +46,12 @@ public record AttributeModifier(UUID d, String e, double f, AttributeModifier.Op
       this(Mth.createInsecureUUID(RandomSource.createNewThreadLocalInstance()), var1, var2, var4);
    }
 
-   public AttributeModifier(UUID var1, String var2, double var3, AttributeModifier.Operation var5) {
+   public AttributeModifier(UUID id, String name, double amount, AttributeModifier.Operation operation) {
       super();
-      this.id = var1;
-      this.name = var2;
-      this.amount = var3;
-      this.operation = var5;
+      this.id = id;
+      this.name = name;
+      this.amount = amount;
+      this.operation = operation;
    }
 
    public CompoundTag save() {

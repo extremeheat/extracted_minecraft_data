@@ -40,8 +40,11 @@ public class ModelResourceLocation extends ResourceLocation {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
+      } else if (var1 instanceof ModelResourceLocation && super.equals(var1)) {
+         ModelResourceLocation var2 = (ModelResourceLocation)var1;
+         return this.variant.equals(var2.variant);
       } else {
-         return var1 instanceof ModelResourceLocation var2 && super.equals(var1) ? this.variant.equals(var2.variant) : false;
+         return false;
       }
    }
 

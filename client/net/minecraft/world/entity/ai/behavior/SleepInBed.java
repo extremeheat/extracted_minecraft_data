@@ -29,13 +29,13 @@ public class SleepInBed extends Behavior<LivingEntity> {
          return false;
       } else {
          Brain var3 = var2.getBrain();
-         GlobalPos var4 = (GlobalPos)var3.getMemory(MemoryModuleType.HOME).get();
+         GlobalPos var4 = var3.getMemory(MemoryModuleType.HOME).get();
          if (var1.dimension() != var4.dimension()) {
             return false;
          } else {
             Optional var5 = var3.getMemory(MemoryModuleType.LAST_WOKEN);
             if (var5.isPresent()) {
-               long var6 = var1.getGameTime() - var5.get();
+               long var6 = var1.getGameTime() - (Long)var5.get();
                if (var6 > 0L && var6 < 100L) {
                   return false;
                }
@@ -74,7 +74,7 @@ public class SleepInBed extends Behavior<LivingEntity> {
             InteractWithDoor.closeDoorsThatIHaveOpenedOrPassedThrough(var1, var2, null, null, var6, var7);
          }
 
-         var2.startSleeping(((GlobalPos)var2.getBrain().getMemory(MemoryModuleType.HOME).get()).pos());
+         var2.startSleeping(var2.getBrain().getMemory(MemoryModuleType.HOME).get().pos());
       }
    }
 

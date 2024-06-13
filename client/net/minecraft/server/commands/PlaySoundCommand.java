@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
@@ -49,7 +48,7 @@ public class PlaySoundCommand {
                )
          );
 
-      for(SoundSource var5 : SoundSource.values()) {
+      for (SoundSource var5 : SoundSource.values()) {
          var1.then(source(var5));
       }
 
@@ -107,7 +106,7 @@ public class PlaySoundCommand {
                                        ResourceLocationArgument.getId(var1, "sound"),
                                        var0,
                                        Vec3Argument.getVec3(var1, "pos"),
-                                       var1.getArgument("volume", Float.class),
+                                       (Float)var1.getArgument("volume", Float.class),
                                        1.0F,
                                        0.0F
                                     )
@@ -121,8 +120,8 @@ public class PlaySoundCommand {
                                              ResourceLocationArgument.getId(var1, "sound"),
                                              var0,
                                              Vec3Argument.getVec3(var1, "pos"),
-                                             var1.getArgument("volume", Float.class),
-                                             var1.getArgument("pitch", Float.class),
+                                             (Float)var1.getArgument("volume", Float.class),
+                                             (Float)var1.getArgument("pitch", Float.class),
                                              0.0F
                                           )
                                     ))
@@ -135,9 +134,9 @@ public class PlaySoundCommand {
                                                 ResourceLocationArgument.getId(var1, "sound"),
                                                 var0,
                                                 Vec3Argument.getVec3(var1, "pos"),
-                                                var1.getArgument("volume", Float.class),
-                                                var1.getArgument("pitch", Float.class),
-                                                var1.getArgument("minVolume", Float.class)
+                                                (Float)var1.getArgument("volume", Float.class),
+                                                (Float)var1.getArgument("pitch", Float.class),
+                                                (Float)var1.getArgument("minVolume", Float.class)
                                              )
                                        )
                                  )
@@ -159,7 +158,7 @@ public class PlaySoundCommand {
       int var11 = 0;
       long var12 = var0.getLevel().getRandom().nextLong();
 
-      for(ServerPlayer var15 : var1) {
+      for (ServerPlayer var15 : var1) {
          double var16 = var4.x - var15.getX();
          double var18 = var4.y - var15.getY();
          double var20 = var4.z - var15.getZ();
@@ -177,7 +176,7 @@ public class PlaySoundCommand {
          }
 
          var15.connection.send(new ClientboundSoundPacket(var8, var3, var24.x(), var24.y(), var24.z(), var25, var6, var12));
-         ++var11;
+         var11++;
       }
 
       if (var11 == 0) {

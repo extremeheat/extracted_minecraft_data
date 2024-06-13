@@ -51,7 +51,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       LevelStorageSource.LevelCandidates var1 = this.minecraft.getLevelSource().findLevelCandidates();
       this.levelList = this.minecraft.getLevelSource().loadLevelSummaries(var1).join().stream().filter(LevelSummary::canUpload).collect(Collectors.toList());
 
-      for(LevelSummary var3 : this.levelList) {
+      for (LevelSummary var3 : this.levelList) {
          this.worldSelectionList.addEntry(var3);
       }
    }

@@ -39,6 +39,12 @@ public class ThrownTrident extends AbstractArrow {
       this.entityData.set(ID_FOIL, var3.hasFoil());
    }
 
+   public ThrownTrident(Level var1, double var2, double var4, double var6, ItemStack var8) {
+      super(EntityType.TRIDENT, var2, var4, var6, var1, var8);
+      this.entityData.set(ID_LOYALTY, (byte)EnchantmentHelper.getLoyalty(var8));
+      this.entityData.set(ID_FOIL, var8.hasFoil());
+   }
+
    @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
@@ -75,7 +81,7 @@ public class ThrownTrident extends AbstractArrow {
                this.playSound(SoundEvents.TRIDENT_RETURN, 10.0F, 1.0F);
             }
 
-            ++this.clientSideReturnTridentTickCount;
+            this.clientSideReturnTridentTickCount++;
          }
       }
 
@@ -84,11 +90,7 @@ public class ThrownTrident extends AbstractArrow {
 
    private boolean isAcceptibleReturnOwner() {
       Entity var1 = this.getOwner();
-      if (var1 == null || !var1.isAlive()) {
-         return false;
-      } else {
-         return !(var1 instanceof ServerPlayer) || !var1.isSpectator();
-      }
+      return var1 == null || !var1.isAlive() ? false : !(var1 instanceof ServerPlayer) || !var1.isSpectator();
    }
 
    public boolean isFoil() {
@@ -101,8 +103,6 @@ public class ThrownTrident extends AbstractArrow {
       return this.dealtDamage ? null : super.findHitEntity(var1, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       Entity var2 = var1.getEntity();
@@ -122,11 +122,11 @@ public class ThrownTrident extends AbstractArrow {
 
          if (var2 instanceof LivingEntity var7) {
             if (var10 instanceof LivingEntity) {
-               EnchantmentHelper.doPostHurtEffects((LivingEntity)var7, var10);
-               EnchantmentHelper.doPostDamageEffects((LivingEntity)var10, (Entity)var7);
+               EnchantmentHelper.doPostHurtEffects(var7, var10);
+               EnchantmentHelper.doPostDamageEffects((LivingEntity)var10, var7);
             }
 
-            this.doPostHurtEffects((LivingEntity)var7);
+            this.doPostHurtEffects(var7);
          }
       }
 

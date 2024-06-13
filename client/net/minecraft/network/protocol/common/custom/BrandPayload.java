@@ -3,8 +3,7 @@ package net.minecraft.network.protocol.common.custom;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record BrandPayload(String c) implements CustomPacketPayload {
-   private final String brand;
+public record BrandPayload(String brand) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, BrandPayload> STREAM_CODEC = CustomPacketPayload.codec(BrandPayload::write, BrandPayload::new);
    public static final CustomPacketPayload.Type<BrandPayload> TYPE = CustomPacketPayload.createType("brand");
 
@@ -12,9 +11,9 @@ public record BrandPayload(String c) implements CustomPacketPayload {
       this(var1.readUtf());
    }
 
-   public BrandPayload(String var1) {
+   public BrandPayload(String brand) {
       super();
-      this.brand = var1;
+      this.brand = brand;
    }
 
    private void write(FriendlyByteBuf var1) {

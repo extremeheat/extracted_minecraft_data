@@ -1,7 +1,6 @@
 package net.minecraft.network.protocol.common;
 
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.network.FriendlyByteBuf;
@@ -30,12 +29,10 @@ import net.minecraft.network.protocol.common.custom.RaidsDebugPayload;
 import net.minecraft.network.protocol.common.custom.StructuresDebugPayload;
 import net.minecraft.network.protocol.common.custom.VillageSectionsDebugPayload;
 import net.minecraft.network.protocol.common.custom.WorldGenAttemptDebugPayload;
-import net.minecraft.resources.ResourceLocation;
 
-public record ClientboundCustomPayloadPacket(CustomPacketPayload c) implements Packet<ClientCommonPacketListener> {
-   private final CustomPacketPayload payload;
+public record ClientboundCustomPayloadPacket(CustomPacketPayload payload) implements Packet<ClientCommonPacketListener> {
    private static final int MAX_PAYLOAD_SIZE = 1048576;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC = CustomPacketPayload.codec(
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC = CustomPacketPayload.<RegistryFriendlyByteBuf>codec(
          var0 -> DiscardedPayload.codec(var0, 1048576),
          Util.make(
             Lists.newArrayList(
@@ -66,15 +63,14 @@ public record ClientboundCustomPayloadPacket(CustomPacketPayload c) implements P
          )
       )
       .map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
-   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC = CustomPacketPayload.codec(
-         var0 -> DiscardedPayload.codec(var0, 1048576),
-         List.of(new CustomPacketPayload.TypeAndCodec<FriendlyByteBuf, BrandPayload>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC = CustomPacketPayload.<FriendlyByteBuf>codec(
+         var0 -> DiscardedPayload.codec(var0, 1048576), List.of(new CustomPacketPayload.TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))
       )
       .map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
 
-   public ClientboundCustomPayloadPacket(CustomPacketPayload var1) {
+   public ClientboundCustomPayloadPacket(CustomPacketPayload payload) {
       super();
-      this.payload = var1;
+      this.payload = payload;
    }
 
    @Override

@@ -6,7 +6,6 @@ import net.minecraft.world.entity.decoration.PaintingVariant;
 
 public class PaintingVariantTags {
    public static final TagKey<PaintingVariant> PLACEABLE = create("placeable");
-   public static final TagKey<PaintingVariant> POTATO = create("potato");
 
    private PaintingVariantTags() {
       super();

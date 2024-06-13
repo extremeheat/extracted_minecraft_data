@@ -6,9 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.EndFeatures;
 import net.minecraft.nbt.CompoundTag;
@@ -28,7 +26,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
 import net.minecraft.world.phys.AABB;
@@ -66,26 +63,26 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.age = var1.getLong("Age");
       NbtUtils.readBlockPos(var1, "exit_portal").filter(Level::isInSpawnableBounds).ifPresent(var1x -> this.exitPortal = var1x);
       this.exactTeleport = var1.getBoolean("ExactTeleport");
    }
 
    public static void beamAnimationTick(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
-      ++var3.age;
+      var3.age++;
       if (var3.isCoolingDown()) {
-         --var3.teleportCooldown;
+         var3.teleportCooldown--;
       }
    }
 
    public static void teleportTick(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
       boolean var4 = var3.isSpawning();
       boolean var5 = var3.isCoolingDown();
-      ++var3.age;
+      var3.age++;
       if (var5) {
-         --var3.teleportCooldown;
+         var3.teleportCooldown--;
       } else {
          List var6 = var0.getEntitiesOfClass(Entity.class, new AABB(var1), TheEndGatewayBlockEntity::canEntityTeleport);
          if (!var6.isEmpty()) {
@@ -128,7 +125,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    private static void triggerCooldown(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
@@ -150,13 +147,14 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    public static void teleportEntity(Level var0, BlockPos var1, BlockState var2, Entity var3, TheEndGatewayBlockEntity var4) {
-      if (var0 instanceof ServerLevel var5 && !var4.isCoolingDown()) {
+      if (var0 instanceof ServerLevel && !var4.isCoolingDown()) {
+         ServerLevel var5 = (ServerLevel)var0;
          var4.teleportCooldown = 100;
          if (var4.exitPortal == null && var0.dimension() == Level.END) {
-            BlockPos var6 = findOrCreateValidTeleportPos((ServerLevel)var5, var1);
+            BlockPos var6 = findOrCreateValidTeleportPos(var5, var1);
             var6 = var6.above(10);
             LOGGER.debug("Creating portal at {}", var6);
-            spawnGatewayPortal((ServerLevel)var5, var6, EndGatewayConfiguration.knownExit(var1, false));
+            spawnGatewayPortal(var5, var6, EndGatewayConfiguration.knownExit(var1, false));
             var4.exitPortal = var6;
          }
 
@@ -203,7 +201,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
          var0.registryAccess()
             .registry(Registries.CONFIGURED_FEATURE)
             .flatMap(var0x -> var0x.getHolder(EndFeatures.END_ISLAND))
-            .ifPresent(var2x -> ((ConfiguredFeature)var2x.value()).place(var0, var0.getChunkSource().getGenerator(), RandomSource.create(var5.asLong()), var5));
+            .ifPresent(var2x -> var2x.value().place(var0, var0.getChunkSource().getGenerator(), RandomSource.create(var5.asLong()), var5));
          var4 = var5;
       } else {
          LOGGER.debug("Found suitable block to teleport to: {}", var4);
@@ -214,14 +212,14 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
 
    private static Vec3 findExitPortalXZPosTentative(ServerLevel var0, BlockPos var1) {
       Vec3 var2 = new Vec3((double)var1.getX(), 0.0, (double)var1.getZ()).normalize();
-      boolean var3 = true;
+      short var3 = 1024;
       Vec3 var4 = var2.scale(1024.0);
 
-      for(int var5 = 16; !isChunkEmpty(var0, var4) && var5-- > 0; var4 = var4.add(var2.scale(-16.0))) {
+      for (int var5 = 16; !isChunkEmpty(var0, var4) && var5-- > 0; var4 = var4.add(var2.scale(-16.0))) {
          LOGGER.debug("Skipping backwards past nonempty chunk at {}", var4);
       }
 
-      for(int var6 = 16; isChunkEmpty(var0, var4) && var6-- > 0; var4 = var4.add(var2.scale(16.0))) {
+      for (int var6 = 16; isChunkEmpty(var0, var4) && var6-- > 0; var4 = var4.add(var2.scale(16.0))) {
          LOGGER.debug("Skipping forward past empty chunk at {}", var4);
       }
 
@@ -236,10 +234,10 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    private static BlockPos findTallestBlock(BlockGetter var0, BlockPos var1, int var2, boolean var3) {
       BlockPos var4 = null;
 
-      for(int var5 = -var2; var5 <= var2; ++var5) {
-         for(int var6 = -var2; var6 <= var2; ++var6) {
+      for (int var5 = -var2; var5 <= var2; var5++) {
+         for (int var6 = -var2; var6 <= var2; var6++) {
             if (var5 != 0 || var6 != 0 || var3) {
-               for(int var7 = var0.getMaxBuildHeight() - 1; var7 > (var4 == null ? var0.getMinBuildHeight() : var4.getY()); --var7) {
+               for (int var7 = var0.getMaxBuildHeight() - 1; var7 > (var4 == null ? var0.getMinBuildHeight() : var4.getY()); var7--) {
                   BlockPos var8 = new BlockPos(var1.getX() + var5, var7, var1.getZ() + var6);
                   BlockState var9 = var0.getBlockState(var8);
                   if (var9.isCollisionShapeFullBlock(var0, var8) && (var3 || !var9.is(Blocks.BEDROCK))) {
@@ -267,7 +265,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       BlockPos var5 = null;
       double var6 = 0.0;
 
-      for(BlockPos var9 : BlockPos.betweenClosed(var2, var4)) {
+      for (BlockPos var9 : BlockPos.betweenClosed(var2, var4)) {
          BlockState var10 = var0.getBlockState(var9);
          BlockPos var11 = var9.above();
          BlockPos var12 = var9.above(2);
@@ -297,7 +295,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    public int getParticleAmount() {
       int var1 = 0;
 
-      for(Direction var5 : Direction.values()) {
+      for (Direction var5 : Direction.values()) {
          var1 += this.shouldRenderFace(var5) ? 1 : 0;
       }
 

@@ -47,8 +47,8 @@ public class FossilFeature extends Feature<FossilFeatureConfiguration> {
       BlockPos var15 = var4.offset(-var14.getX() / 2, 0, -var14.getZ() / 2);
       int var16 = var4.getY();
 
-      for(int var17 = 0; var17 < var14.getX(); ++var17) {
-         for(int var18 = 0; var18 < var14.getZ(); ++var18) {
+      for (int var17 = 0; var17 < var14.getX(); var17++) {
+         for (int var18 = 0; var18 < var14.getZ(); var18++) {
             var16 = Math.min(var16, var3.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, var15.getX() + var17, var15.getZ() + var18));
          }
       }

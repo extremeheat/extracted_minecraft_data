@@ -41,7 +41,6 @@ import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.BlockModelDefinition;
 import net.minecraft.client.renderer.block.model.ItemModelGenerator;
-import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.block.model.multipart.MultiPart;
 import net.minecraft.client.renderer.block.model.multipart.Selector;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -140,13 +139,13 @@ public class ModelBakery {
       );
       var2.popPush("blocks");
 
-      for(Block var6 : BuiltInRegistries.BLOCK) {
+      for (Block var6 : BuiltInRegistries.BLOCK) {
          var6.getStateDefinition().getPossibleStates().forEach(var1x -> this.loadTopLevel(BlockModelShaper.stateToModelLocation(var1x)));
       }
 
       var2.popPush("items");
 
-      for(ResourceLocation var9 : BuiltInRegistries.ITEM.keySet()) {
+      for (ResourceLocation var9 : BuiltInRegistries.ITEM.keySet()) {
          this.loadTopLevel(new ModelResourceLocation(var9, "inventory"));
       }
 
@@ -176,7 +175,7 @@ public class ModelBakery {
    private static Predicate<BlockState> predicate(StateDefinition<Block, BlockState> var0, String var1) {
       HashMap var2 = Maps.newHashMap();
 
-      for(String var4 : COMMA_SPLITTER.split(var1)) {
+      for (String var4 : COMMA_SPLITTER.split(var1)) {
          Iterator var5 = EQUAL_SPLITTER.split(var4).iterator();
          if (var5.hasNext()) {
             String var6 = (String)var5.next();
@@ -198,8 +197,8 @@ public class ModelBakery {
       Block var10 = (Block)var0.getOwner();
       return var2x -> {
          if (var2x != null && var2x.is(var10)) {
-            for(Entry var4xx : var2.entrySet()) {
-               if (!Objects.equals(var2x.getValue((Property)var4xx.getKey()), var4xx.getValue())) {
+            for (Entry var4x : var2.entrySet()) {
+               if (!Objects.equals(var2x.getValue((Property)var4x.getKey()), var4x.getValue())) {
                   return false;
                }
             }
@@ -213,7 +212,7 @@ public class ModelBakery {
 
    @Nullable
    static <T extends Comparable<T>> T getValueHelper(Property<T> var0, String var1) {
-      return (T)var0.getValue(var1).orElse((T)null);
+      return (T)var0.getValue(var1).orElse(null);
    }
 
    public UnbakedModel getModel(ResourceLocation var1) {
@@ -225,7 +224,7 @@ public class ModelBakery {
          this.loadingStack.add(var1);
          UnbakedModel var2 = this.unbakedCache.get(MISSING_MODEL_LOCATION);
 
-         while(!this.loadingStack.isEmpty()) {
+         while (!this.loadingStack.isEmpty()) {
             ResourceLocation var3 = this.loadingStack.iterator().next();
 
             try {
@@ -248,10 +247,9 @@ public class ModelBakery {
    }
 
    private void loadModel(ResourceLocation var1) throws Exception {
-      if (!(var1 instanceof ModelResourceLocation)) {
+      if (!(var1 instanceof ModelResourceLocation var2)) {
          this.cacheAndQueueDependencies(var1, this.loadBlockModel(var1));
       } else {
-         ModelResourceLocation var2 = (ModelResourceLocation)var1;
          if (Objects.equals(var2.getVariant(), "inventory")) {
             ResourceLocation var3 = var1.withPrefix("item/");
             BlockModel var4 = this.loadBlockModel(var3);
@@ -272,21 +270,17 @@ public class ModelBakery {
             Pair var12 = Pair.of(var10, (Supplier<ModelBakery.ModelGroupKey>)() -> var11);
 
             try {
-               for(Pair var15 : this.blockStateResources
+               for (Pair var15 : this.blockStateResources
                   .getOrDefault(var9, List.of())
                   .stream()
                   .map(
                      var2x -> {
                         try {
                            return Pair.of(var2x.source, BlockModelDefinition.fromJsonElement(this.context, var2x.data));
-                        } catch (Exception var4xx) {
+                        } catch (Exception var4x) {
                            throw new ModelBakery.BlockStateDefinitionException(
                               String.format(
-                                 Locale.ROOT,
-                                 "Exception loading blockstate definition: '%s' in resourcepack: '%s': %s",
-                                 var9,
-                                 var2x.source,
-                                 var4xx.getMessage()
+                                 Locale.ROOT, "Exception loading blockstate definition: '%s' in resourcepack: '%s': %s", var9, var2x.source, var4x.getMessage()
                               )
                            );
                         }
@@ -315,15 +309,15 @@ public class ModelBakery {
                                  .filter(predicate(var28, var9x))
                                  .forEach(
                                     var6xx -> {
-                                       Pair var7xxx = (Pair)var17.put(
+                                       Pair var7xx = var17.put(
                                           var6xx,
                                           Pair.of(var10x, (Supplier<ModelBakery.ModelGroupKey>)() -> ModelBakery.ModelGroupKey.create(var6xx, var10x, var5))
                                        );
-                                       if (var7xxx != null && var7xxx.getFirst() != var18) {
+                                       if (var7xx != null && var7xx.getFirst() != var18) {
                                           var17.put(var6xx, var12);
                                           throw new RuntimeException(
                                              "Overlapping definition with: "
-                                                + (String)var16.getVariants()
+                                                + var16.getVariants()
                                                    .entrySet()
                                                    .stream()
                                                    .filter(var1xxx -> var1xxx.getValue() == var7xx.getFirst())
@@ -334,10 +328,10 @@ public class ModelBakery {
                                        }
                                     }
                                  );
-                           } catch (Exception var12xx) {
+                           } catch (Exception var12x) {
                               LOGGER.warn(
                                  "Exception loading blockstate definition: '{}' in resourcepack: '{}' for variant: '{}': {}",
-                                 new Object[]{var9, var15.getFirst(), var9x, var12xx.getMessage()}
+                                 new Object[]{var9, var15.getFirst(), var9x, var12x.getMessage()}
                               );
                            }
                         }
@@ -351,29 +345,29 @@ public class ModelBakery {
             } finally {
                HashMap var20 = Maps.newHashMap();
                var7.forEach((var5x, var6x) -> {
-                  Pair var7xx = (Pair)var8.get(var6x);
-                  if (var7xx == null) {
+                  Pair var7x = (Pair)var8.get(var6x);
+                  if (var7x == null) {
                      LOGGER.warn("Exception loading blockstate definition: '{}' missing model for variant: '{}'", var9, var5x);
-                     var7xx = var12;
+                     var7x = var12;
                   }
 
-                  this.cacheAndQueueDependencies(var5x, (UnbakedModel)var7xx.getFirst());
+                  this.cacheAndQueueDependencies(var5x, (UnbakedModel)var7x.getFirst());
 
                   try {
-                     ModelBakery.ModelGroupKey var8xx = (ModelBakery.ModelGroupKey)((Supplier)var7xx.getSecond()).get();
-                     var20.computeIfAbsent(var8xx, var0 -> Sets.newIdentityHashSet()).add(var6x);
-                  } catch (Exception var9xx) {
-                     LOGGER.warn("Exception evaluating model definition: '{}'", var5x, var9xx);
+                     ModelBakery.ModelGroupKey var8x = (ModelBakery.ModelGroupKey)((Supplier)var7x.getSecond()).get();
+                     var20.computeIfAbsent(var8x, var0 -> Sets.newIdentityHashSet()).add(var6x);
+                  } catch (Exception var9x) {
+                     LOGGER.warn("Exception evaluating model definition: '{}'", var5x, var9x);
                   }
                });
                var20.forEach((var1x, var2x) -> {
-                  Iterator var3xx = var2x.iterator();
+                  Iterator var3x = var2x.iterator();
 
-                  while(var3xx.hasNext()) {
-                     BlockState var4xx = (BlockState)var3xx.next();
-                     if (var4xx.getRenderShape() != RenderShape.MODEL) {
-                        var3xx.remove();
-                        this.modelGroups.put(var4xx, 0);
+                  while (var3x.hasNext()) {
+                     BlockState var4x = (BlockState)var3x.next();
+                     if (var4x.getRenderShape() != RenderShape.MODEL) {
+                        var3x.remove();
+                        this.modelGroups.put(var4x, 0);
                      }
                   }
 
@@ -439,16 +433,12 @@ public class ModelBakery {
       return this.modelGroups;
    }
 
-   static record BakedCacheKey(ResourceLocation a, Transformation b, boolean c) {
-      private final ResourceLocation id;
-      private final Transformation transformation;
-      private final boolean isUvLocked;
-
-      BakedCacheKey(ResourceLocation var1, Transformation var2, boolean var3) {
+   static record BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
+      BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
          super();
-         this.id = var1;
-         this.transformation = var2;
-         this.isUvLocked = var3;
+         this.id = id;
+         this.transformation = transformation;
+         this.isUvLocked = isUvLocked;
       }
    }
 
@@ -458,14 +448,12 @@ public class ModelBakery {
       }
    }
 
-   public static record LoadedJson(String a, JsonElement b) {
-      final String source;
-      final JsonElement data;
+   public static record LoadedJson(String source, JsonElement data) {
 
-      public LoadedJson(String var1, JsonElement var2) {
+      public LoadedJson(String source, JsonElement data) {
          super();
-         this.source = var1;
-         this.data = var2;
+         this.source = source;
+         this.data = data;
       }
    }
 
@@ -490,10 +478,10 @@ public class ModelBakery {
             return var4;
          } else {
             UnbakedModel var5 = this.getModel(var1);
-            if (var5 instanceof BlockModel var6 && ((BlockModel)var6).getRootModel() == ModelBakery.GENERATION_MARKER) {
+            if (var5 instanceof BlockModel var6 && var6.getRootModel() == ModelBakery.GENERATION_MARKER) {
                return ModelBakery.ITEM_MODEL_GENERATOR
-                  .generateBlockModel(this.modelTextureGetter, (BlockModel)var6)
-                  .bake(this, (BlockModel)var6, this.modelTextureGetter, var2, var1, false);
+                  .generateBlockModel(this.modelTextureGetter, var6)
+                  .bake(this, var6, this.modelTextureGetter, var2, var1, false);
             }
 
             BakedModel var7 = var5.bake(this, this.modelTextureGetter, var2, var1);
@@ -517,11 +505,10 @@ public class ModelBakery {
       public boolean equals(Object var1) {
          if (this == var1) {
             return true;
-         } else if (!(var1 instanceof ModelBakery.ModelGroupKey)) {
-            return false;
          } else {
-            ModelBakery.ModelGroupKey var2 = (ModelBakery.ModelGroupKey)var1;
-            return Objects.equals(this.models, var2.models) && Objects.equals(this.coloringValues, var2.coloringValues);
+            return !(var1 instanceof ModelBakery.ModelGroupKey var2)
+               ? false
+               : Objects.equals(this.models, var2.models) && Objects.equals(this.coloringValues, var2.coloringValues);
          }
       }
 

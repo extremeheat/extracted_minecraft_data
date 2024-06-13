@@ -7,9 +7,7 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,7 +29,7 @@ public class ReorganizePoi extends DataFix {
    private static <T> Dynamic<T> cap(Dynamic<T> var0) {
       HashMap var1 = Maps.newHashMap();
 
-      for(int var2 = 0; var2 < 16; ++var2) {
+      for (int var2 = 0; var2 < 16; var2++) {
          String var3 = String.valueOf(var2);
          Optional var4 = var0.get(var3).result();
          if (var4.isPresent()) {

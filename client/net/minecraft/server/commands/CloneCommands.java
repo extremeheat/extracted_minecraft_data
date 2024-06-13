@@ -21,6 +21,7 @@ import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -239,9 +240,9 @@ public class CloneCommands {
             LinkedList var19 = Lists.newLinkedList();
             BlockPos var20 = new BlockPos(var11.minX() - var8.minX(), var11.minY() - var8.minY(), var11.minZ() - var8.minZ());
 
-            for(int var21 = var8.minZ(); var21 <= var8.maxZ(); ++var21) {
-               for(int var22 = var8.minY(); var22 <= var8.maxY(); ++var22) {
-                  for(int var23 = var8.minX(); var23 <= var8.maxX(); ++var23) {
+            for (int var21 = var8.minZ(); var21 <= var8.maxZ(); var21++) {
+               for (int var22 = var8.minY(); var22 <= var8.maxY(); var22++) {
+                  for (int var23 = var8.minX(); var23 <= var8.maxX(); var23++) {
                      BlockPos var24 = new BlockPos(var23, var22, var21);
                      BlockPos var25 = var24.offset(var20);
                      BlockInWorld var26 = new BlockInWorld(var12, var24, false);
@@ -249,7 +250,9 @@ public class CloneCommands {
                      if (var4.test(var26)) {
                         BlockEntity var28 = var12.getBlockEntity(var24);
                         if (var28 != null) {
-                           CompoundTag var29 = var28.saveWithoutMetadata(var0.registryAccess());
+                           CloneCommands.CloneBlockEntityInfo var29 = new CloneCommands.CloneBlockEntityInfo(
+                              var28.saveCustomOnly(var0.registryAccess()), var28.components()
+                           );
                            var17.add(new CloneCommands.CloneBlockInfo(var25, var27, var29));
                            var19.addLast(var24);
                         } else if (!var27.isSolidRender(var12, var24) && !var27.isCollisionShapeFullBlock(var12, var24)) {
@@ -265,13 +268,13 @@ public class CloneCommands {
             }
 
             if (var5 == CloneCommands.Mode.MOVE) {
-               for(BlockPos var33 : var19) {
+               for (BlockPos var33 : var19) {
                   BlockEntity var36 = var12.getBlockEntity(var33);
                   Clearable.tryClear(var36);
                   var12.setBlock(var33, Blocks.BARRIER.defaultBlockState(), 2);
                }
 
-               for(BlockPos var34 : var19) {
+               for (BlockPos var34 : var19) {
                   var12.setBlock(var34, Blocks.AIR.defaultBlockState(), 3);
                }
             }
@@ -282,7 +285,7 @@ public class CloneCommands {
             var32.addAll(var18);
             List var35 = Lists.reverse(var32);
 
-            for(CloneCommands.CloneBlockInfo var39 : var35) {
+            for (CloneCommands.CloneBlockInfo var39 : var35) {
                BlockEntity var44 = var13.getBlockEntity(var39.pos);
                Clearable.tryClear(var44);
                var13.setBlock(var39.pos, Blocks.BARRIER.defaultBlockState(), 2);
@@ -290,23 +293,24 @@ public class CloneCommands {
 
             int var38 = 0;
 
-            for(CloneCommands.CloneBlockInfo var45 : var32) {
+            for (CloneCommands.CloneBlockInfo var45 : var32) {
                if (var13.setBlock(var45.pos, var45.state, 2)) {
-                  ++var38;
+                  var38++;
                }
             }
 
-            for(CloneCommands.CloneBlockInfo var46 : var17) {
+            for (CloneCommands.CloneBlockInfo var46 : var17) {
                BlockEntity var48 = var13.getBlockEntity(var46.pos);
-               if (var46.tag != null && var48 != null) {
-                  var48.load(var46.tag, var13.registryAccess());
+               if (var46.blockEntityInfo != null && var48 != null) {
+                  var48.loadCustomOnly(var46.blockEntityInfo.tag, var13.registryAccess());
+                  var48.setComponents(var46.blockEntityInfo.components);
                   var48.setChanged();
                }
 
                var13.setBlock(var46.pos, var46.state, 2);
             }
 
-            for(CloneCommands.CloneBlockInfo var47 : var35) {
+            for (CloneCommands.CloneBlockInfo var47 : var35) {
                var13.blockUpdated(var47.pos, var47.state.getBlock());
             }
 
@@ -324,17 +328,22 @@ public class CloneCommands {
       }
    }
 
-   static class CloneBlockInfo {
-      public final BlockPos pos;
-      public final BlockState state;
-      @Nullable
-      public final CompoundTag tag;
+   static record CloneBlockEntityInfo(CompoundTag tag, DataComponentMap components) {
 
-      public CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CompoundTag var3) {
+      CloneBlockEntityInfo(CompoundTag tag, DataComponentMap components) {
          super();
-         this.pos = var1;
-         this.state = var2;
-         this.tag = var3;
+         this.tag = tag;
+         this.components = components;
+      }
+   }
+
+   static record CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneCommands.CloneBlockEntityInfo blockEntityInfo) {
+
+      CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneCommands.CloneBlockEntityInfo blockEntityInfo) {
+         super();
+         this.pos = pos;
+         this.state = state;
+         this.blockEntityInfo = blockEntityInfo;
       }
    }
 
@@ -343,14 +352,11 @@ public class CloneCommands {
       R apply(T var1) throws CommandSyntaxException;
    }
 
-   static record DimensionAndPosition(ServerLevel a, BlockPos b) {
-      private final ServerLevel dimension;
-      private final BlockPos position;
-
-      DimensionAndPosition(ServerLevel var1, BlockPos var2) {
+   static record DimensionAndPosition(ServerLevel dimension, BlockPos position) {
+      DimensionAndPosition(ServerLevel dimension, BlockPos position) {
          super();
-         this.dimension = var1;
-         this.position = var2;
+         this.dimension = dimension;
+         this.position = position;
       }
    }
 

@@ -90,7 +90,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
          var1.translate(var12, var13, var14);
       }
 
-      for(int var16 = 0; var16 < var8; ++var16) {
+      for (int var16 = 0; var16 < var8; var16++) {
          var1.pushPose();
          if (var16 > 0) {
             if (var6) {

@@ -3,8 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
-import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Calendar;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -20,7 +18,6 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractChestBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
@@ -98,9 +95,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       boolean var8 = var7 != null;
       BlockState var9 = var8 ? var1.getBlockState() : Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
       ChestType var10 = var9.hasProperty(ChestBlock.TYPE) ? var9.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
-      Block var11 = var9.getBlock();
-      if (var11 instanceof AbstractChestBlock) {
-         AbstractChestBlock var12 = (AbstractChestBlock)var11;
+      if (var9.getBlock() instanceof AbstractChestBlock var12) {
          boolean var13 = var10 != ChestType.SINGLE;
          var3.pushPose();
          float var14 = var9.getValue(ChestBlock.FACING).toYRot();
@@ -114,10 +109,10 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
             var15 = DoubleBlockCombiner.Combiner::acceptNone;
          }
 
-         float var16 = ((Float2FloatFunction)var15.apply(ChestBlock.opennessCombiner((LidBlockEntity)var1))).get(var2);
+         float var16 = var15.apply(ChestBlock.opennessCombiner((LidBlockEntity)var1)).get(var2);
          var16 = 1.0F - var16;
          var16 = 1.0F - var16 * var16 * var16;
-         int var17 = ((Int2IntFunction)var15.apply(new BrightnessCombiner())).applyAsInt(var5);
+         int var17 = var15.apply(new BrightnessCombiner()).applyAsInt(var5);
          Material var18 = Sheets.chooseMaterial(var1, var10, this.xmasTextures);
          VertexConsumer var19 = var18.buffer(var4, RenderType::entityCutout);
          if (var13) {

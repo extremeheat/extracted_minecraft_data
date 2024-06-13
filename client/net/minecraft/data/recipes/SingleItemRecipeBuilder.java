@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.PoisonousPotatoCutterRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.ItemLike;
@@ -43,10 +42,6 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
 
    public static SingleItemRecipeBuilder stonecutting(Ingredient var0, RecipeCategory var1, ItemLike var2, int var3) {
       return new SingleItemRecipeBuilder(var1, StonecutterRecipe::new, var0, var2, var3);
-   }
-
-   public static SingleItemRecipeBuilder poisonous_potato_cutting(Ingredient var0, RecipeCategory var1, ItemLike var2, int var3) {
-      return new SingleItemRecipeBuilder(var1, PoisonousPotatoCutterRecipe::new, var0, var2, var3);
    }
 
    public SingleItemRecipeBuilder unlockedBy(String var1, Criterion<?> var2) {

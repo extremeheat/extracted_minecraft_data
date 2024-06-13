@@ -81,7 +81,7 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       int var5 = var1.getValue(AGE);
-      switch((Direction)var1.getValue(FACING)) {
+      switch ((Direction)var1.getValue(FACING)) {
          case SOUTH:
             return SOUTH_AABB[var5];
          case NORTH:
@@ -101,7 +101,7 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();
 
-      for(Direction var8 : var1.getNearestLookingDirections()) {
+      for (Direction var8 : var1.getNearestLookingDirections()) {
          if (var8.getAxis().isHorizontal()) {
             var2 = var2.setValue(FACING, var8);
             if (var2.canSurvive(var3, var4)) {

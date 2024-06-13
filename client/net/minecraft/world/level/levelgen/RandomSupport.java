@@ -45,14 +45,11 @@ public final class RandomSupport {
       return SEED_UNIQUIFIER.updateAndGet(var0 -> var0 * 1181783497276652981L) ^ System.nanoTime();
    }
 
-   public static record Seed128bit(long a, long b) {
-      private final long seedLo;
-      private final long seedHi;
-
-      public Seed128bit(long var1, long var3) {
+   public static record Seed128bit(long seedLo, long seedHi) {
+      public Seed128bit(long seedLo, long seedHi) {
          super();
-         this.seedLo = var1;
-         this.seedHi = var3;
+         this.seedLo = seedLo;
+         this.seedHi = seedHi;
       }
 
       public RandomSupport.Seed128bit xor(long var1, long var3) {

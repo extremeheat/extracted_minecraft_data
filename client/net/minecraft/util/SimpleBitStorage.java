@@ -213,10 +213,10 @@ public class SimpleBitStorage implements BitStorage {
       int var5 = 0;
 
       int var4;
-      for(var4 = 0; var4 <= var2 - this.valuesPerLong; var4 += this.valuesPerLong) {
+      for (var4 = 0; var4 <= var2 - this.valuesPerLong; var4 += this.valuesPerLong) {
          long var6 = 0L;
 
-         for(int var8 = this.valuesPerLong - 1; var8 >= 0; --var8) {
+         for (int var8 = this.valuesPerLong - 1; var8 >= 0; var8--) {
             var6 <<= var1;
             var6 |= (long)var3[var4 + var8] & this.mask;
          }
@@ -228,7 +228,7 @@ public class SimpleBitStorage implements BitStorage {
       if (var11 > 0) {
          long var7 = 0L;
 
-         for(int var9 = var11 - 1; var9 >= 0; --var9) {
+         for (int var9 = var11 - 1; var9 >= 0; var9--) {
             var7 <<= var1;
             var7 |= (long)var3[var4 + var9] & this.mask;
          }
@@ -320,8 +320,8 @@ public class SimpleBitStorage implements BitStorage {
    public void getAll(IntConsumer var1) {
       int var2 = 0;
 
-      for(long var6 : this.data) {
-         for(int var8 = 0; var8 < this.valuesPerLong; ++var8) {
+      for (long var6 : this.data) {
+         for (int var8 = 0; var8 < this.valuesPerLong; var8++) {
             var1.accept((int)(var6 & this.mask));
             var6 >>= this.bits;
             if (++var2 >= this.size) {
@@ -336,10 +336,10 @@ public class SimpleBitStorage implements BitStorage {
       int var2 = this.data.length;
       int var3 = 0;
 
-      for(int var4 = 0; var4 < var2 - 1; ++var4) {
+      for (int var4 = 0; var4 < var2 - 1; var4++) {
          long var5 = this.data[var4];
 
-         for(int var7 = 0; var7 < this.valuesPerLong; ++var7) {
+         for (int var7 = 0; var7 < this.valuesPerLong; var7++) {
             var1[var3 + var7] = (int)(var5 & this.mask);
             var5 >>= this.bits;
          }
@@ -351,7 +351,7 @@ public class SimpleBitStorage implements BitStorage {
       if (var8 > 0) {
          long var9 = this.data[var2 - 1];
 
-         for(int var10 = 0; var10 < var8; ++var10) {
+         for (int var10 = 0; var10 < var8; var10++) {
             var1[var3 + var10] = (int)(var9 & this.mask);
             var9 >>= this.bits;
          }

@@ -27,7 +27,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
-import net.minecraft.world.level.levelgen.structure.Structure;
 
 public class VanillaStoryAdvancements implements AdvancementSubProvider {
    public VanillaStoryAdvancements() {
@@ -261,7 +260,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "in_stronghold",
             PlayerTrigger.TriggerInstance.located(
-               LocationPredicate.Builder.inStructure(var1.<Structure>lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.STRONGHOLD))
+               LocationPredicate.Builder.inStructure(var1.lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.STRONGHOLD))
             )
          )
          .save(var2, "story/follow_ender_eye");

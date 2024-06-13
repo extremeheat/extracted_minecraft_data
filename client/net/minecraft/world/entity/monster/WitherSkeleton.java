@@ -56,13 +56,10 @@ public class WitherSkeleton extends AbstractSkeleton {
       return SoundEvents.WITHER_SKELETON_STEP;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var1.getEntity();
-      if (var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
+      if (var1.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          var5.increaseDroppedSkulls();
          this.spawnAtLocation(Items.WITHER_SKELETON_SKULL);
       }

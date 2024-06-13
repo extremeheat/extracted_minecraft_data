@@ -38,7 +38,7 @@ public interface RecipeBuilder {
    }
 
    static CraftingBookCategory determineBookCategory(RecipeCategory var0) {
-      return switch(var0) {
+      return switch (var0) {
          case BUILDING_BLOCKS -> CraftingBookCategory.BUILDING;
          case TOOLS, COMBAT -> CraftingBookCategory.EQUIPMENT;
          case REDSTONE -> CraftingBookCategory.REDSTONE;

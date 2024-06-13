@@ -8,7 +8,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -63,7 +62,7 @@ public class MobSpawnSettings {
 
    @Nullable
    public MobSpawnSettings.MobSpawnCost getMobSpawnCost(EntityType<?> var1) {
-      return (MobSpawnSettings.MobSpawnCost)this.mobSpawnCosts.get(var1);
+      return this.mobSpawnCosts.get(var1);
    }
 
    public float getCreatureProbability() {
@@ -104,9 +103,7 @@ public class MobSpawnSettings {
       }
    }
 
-   public static record MobSpawnCost(double b, double c) {
-      private final double energyBudget;
-      private final double charge;
+   public static record MobSpawnCost(double energyBudget, double charge) {
       public static final Codec<MobSpawnSettings.MobSpawnCost> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Codec.DOUBLE.fieldOf("energy_budget").forGetter(var0x -> var0x.energyBudget), Codec.DOUBLE.fieldOf("charge").forGetter(var0x -> var0x.charge)
@@ -114,16 +111,15 @@ public class MobSpawnSettings {
                .apply(var0, MobSpawnSettings.MobSpawnCost::new)
       );
 
-      public MobSpawnCost(double var1, double var3) {
+      public MobSpawnCost(double energyBudget, double charge) {
          super();
-         this.energyBudget = var1;
-         this.charge = var3;
+         this.energyBudget = energyBudget;
+         this.charge = charge;
       }
    }
 
    public static class SpawnerData extends WeightedEntry.IntrusiveBase {
-      public static final Codec<MobSpawnSettings.SpawnerData> CODEC = ExtraCodecs.validate(
-         RecordCodecBuilder.create(
+      public static final Codec<MobSpawnSettings.SpawnerData> CODEC = RecordCodecBuilder.create(
             var0 -> var0.group(
                      BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("type").forGetter(var0x -> var0x.type),
                      Weight.CODEC.fieldOf("weight").forGetter(WeightedEntry.IntrusiveBase::getWeight),
@@ -131,9 +127,10 @@ public class MobSpawnSettings {
                      ExtraCodecs.POSITIVE_INT.fieldOf("maxCount").forGetter(var0x -> var0x.maxCount)
                   )
                   .apply(var0, MobSpawnSettings.SpawnerData::new)
-         ),
-         var0 -> var0.minCount > var0.maxCount ? DataResult.error(() -> "minCount needs to be smaller or equal to maxCount") : DataResult.success(var0)
-      );
+         )
+         .validate(
+            var0 -> var0.minCount > var0.maxCount ? DataResult.error(() -> "minCount needs to be smaller or equal to maxCount") : DataResult.success(var0)
+         );
       public final EntityType<?> type;
       public final int minCount;
       public final int maxCount;

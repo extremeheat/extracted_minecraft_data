@@ -48,13 +48,13 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
       this.owner = var3;
       this.addSlot(new ResultSlot(var1.player, this.craftSlots, this.resultSlots, 0, 154, 28));
 
-      for(int var4 = 0; var4 < 2; ++var4) {
-         for(int var5 = 0; var5 < 2; ++var5) {
+      for (int var4 = 0; var4 < 2; var4++) {
+         for (int var5 = 0; var5 < 2; var5++) {
             this.addSlot(new Slot(this.craftSlots, var5 + var4 * 2, 98 + var5 * 18, 18 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 4; ++var6) {
+      for (int var6 = 0; var6 < 4; var6++) {
          final EquipmentSlot var9 = SLOT_IDS[var6];
          this.addSlot(new Slot(var1, 39 - var6, 8, 8 + var6 * 18) {
             @Override
@@ -65,7 +65,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
             @Override
             public int getMaxStackSize() {
-               return var9 == EquipmentSlot.FEET ? 64 : 1;
+               return 1;
             }
 
             @Override
@@ -86,13 +86,13 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
          });
       }
 
-      for(int var7 = 0; var7 < 3; ++var7) {
-         for(int var10 = 0; var10 < 9; ++var10) {
+      for (int var7 = 0; var7 < 3; var7++) {
+         for (int var10 = 0; var10 < 9; var10++) {
             this.addSlot(new Slot(var1, var10 + (var7 + 1) * 9, 8 + var10 * 18, 84 + var7 * 18));
          }
       }
 
-      for(int var8 = 0; var8 < 9; ++var8) {
+      for (int var8 = 0; var8 < 9; var8++) {
          this.addSlot(new Slot(var1, var8, 8 + var8 * 18, 142));
       }
 

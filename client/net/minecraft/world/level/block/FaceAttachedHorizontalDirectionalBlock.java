@@ -36,7 +36,7 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
    @Nullable
    @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      for(Direction var5 : var1.getNearestLookingDirections()) {
+      for (Direction var5 : var1.getNearestLookingDirections()) {
          BlockState var6;
          if (var5.getAxis() == Direction.Axis.Y) {
             var6 = this.defaultBlockState()
@@ -62,7 +62,7 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
    }
 
    protected static Direction getConnectedDirection(BlockState var0) {
-      switch((AttachFace)var0.getValue(FACE)) {
+      switch ((AttachFace)var0.getValue(FACE)) {
          case CEILING:
             return Direction.DOWN;
          case FLOOR:

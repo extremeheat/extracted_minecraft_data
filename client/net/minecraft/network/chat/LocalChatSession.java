@@ -4,14 +4,11 @@ import java.util.UUID;
 import net.minecraft.util.Signer;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 
-public record LocalChatSession(UUID a, ProfileKeyPair b) {
-   private final UUID sessionId;
-   private final ProfileKeyPair keyPair;
-
-   public LocalChatSession(UUID var1, ProfileKeyPair var2) {
+public record LocalChatSession(UUID sessionId, ProfileKeyPair keyPair) {
+   public LocalChatSession(UUID sessionId, ProfileKeyPair keyPair) {
       super();
-      this.sessionId = var1;
-      this.keyPair = var2;
+      this.sessionId = sessionId;
+      this.keyPair = keyPair;
    }
 
    public static LocalChatSession create(ProfileKeyPair var0) {

@@ -87,7 +87,7 @@ public class BrushableBlockEntity extends BlockEntity {
       if (this.lootTable != null && this.level != null && !this.level.isClientSide() && this.level.getServer() != null) {
          LootTable var2 = this.level.getServer().reloadableRegistries().getLootTable(this.lootTable);
          if (var1 instanceof ServerPlayer var3) {
-            CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var3, this.lootTable);
+            CriteriaTriggers.GENERATE_LOOT.trigger(var3, this.lootTable);
          }
 
          LootParams var5 = new LootParams.Builder((ServerLevel)this.level)
@@ -97,7 +97,7 @@ public class BrushableBlockEntity extends BlockEntity {
             .create(LootContextParamSets.CHEST);
          ObjectArrayList var4 = var2.getRandomItems(var5, this.lootTableSeed);
 
-         this.item = switch(var4.size()) {
+         this.item = switch (var4.size()) {
             case 0 -> ItemStack.EMPTY;
             case 1 -> (ItemStack)var4.get(0);
             default -> {
@@ -110,16 +110,13 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void brushingCompleted(Player var1) {
       if (this.level != null && this.level.getServer() != null) {
          this.dropContent(var1);
          BlockState var2 = this.getBlockState();
          this.level.levelEvent(3008, this.getBlockPos(), Block.getId(var2));
-         Block var3 = this.getBlockState().getBlock();
          Block var4;
-         if (var3 instanceof BrushableBlock var5) {
+         if (this.getBlockState().getBlock() instanceof BrushableBlock var5) {
             var4 = var5.getTurnsInto();
          } else {
             var4 = Blocks.AIR;
@@ -159,7 +156,7 @@ public class BrushableBlockEntity extends BlockEntity {
                this.level.setBlock(this.getBlockPos(), this.getBlockState().setValue(BlockStateProperties.DUSTED, Integer.valueOf(var2)), 3);
             }
 
-            boolean var3 = true;
+            byte var3 = 4;
             this.brushCountResetsAtTick = this.level.getGameTime() + 4L;
          }
 
@@ -215,7 +212,8 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (!this.tryLoadLootTable(var1) && var1.contains("item")) {
          this.item = ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);
       } else {
@@ -229,6 +227,7 @@ public class BrushableBlockEntity extends BlockEntity {
 
    @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
          var1.put("item", this.item.save(var2));
       }

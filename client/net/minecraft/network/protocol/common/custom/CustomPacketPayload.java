@@ -34,7 +34,7 @@ public interface CustomPacketPayload {
          private <T extends CustomPacketPayload> void writeCap(B var1, CustomPacketPayload.Type<T> var2x, CustomPacketPayload var3) {
             var1.writeResourceLocation(var2x.id());
             StreamCodec var4 = this.findCodec(var2x.id);
-            var4.encode(var1, var3);
+            var4.encode((B)var1, var3);
          }
 
          public void encode(B var1, CustomPacketPayload var2x) {
@@ -43,7 +43,7 @@ public interface CustomPacketPayload {
 
          public CustomPacketPayload decode(B var1) {
             ResourceLocation var2x = var1.readResourceLocation();
-            return (CustomPacketPayload)this.findCodec(var2x).decode(var1);
+            return (CustomPacketPayload)this.findCodec(var2x).decode((B)var1);
          }
       };
    }
@@ -52,23 +52,19 @@ public interface CustomPacketPayload {
       StreamCodec<B, ? extends CustomPacketPayload> create(ResourceLocation var1);
    }
 
-   public static record Type<T extends CustomPacketPayload>(ResourceLocation a) {
-      final ResourceLocation id;
+   public static record Type<T extends CustomPacketPayload>(ResourceLocation id) {
 
-      public Type(ResourceLocation var1) {
+      public Type(ResourceLocation id) {
          super();
-         this.id = var1;
+         this.id = id;
       }
    }
 
-   public static record TypeAndCodec<B extends FriendlyByteBuf, T extends CustomPacketPayload>(CustomPacketPayload.Type<T> a, StreamCodec<B, T> b) {
-      private final CustomPacketPayload.Type<T> type;
-      private final StreamCodec<B, T> codec;
-
-      public TypeAndCodec(CustomPacketPayload.Type<T> var1, StreamCodec<B, T> var2) {
+   public static record TypeAndCodec<B extends FriendlyByteBuf, T extends CustomPacketPayload>(CustomPacketPayload.Type<T> type, StreamCodec<B, T> codec) {
+      public TypeAndCodec(CustomPacketPayload.Type<T> type, StreamCodec<B, T> codec) {
          super();
-         this.type = var1;
-         this.codec = var2;
+         this.type = type;
+         this.codec = codec;
       }
    }
 }

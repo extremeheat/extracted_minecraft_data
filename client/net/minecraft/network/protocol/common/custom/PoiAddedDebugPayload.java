@@ -4,10 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record PoiAddedDebugPayload(BlockPos c, String d, int e) implements CustomPacketPayload {
-   private final BlockPos pos;
-   private final String poiType;
-   private final int freeTicketCount;
+public record PoiAddedDebugPayload(BlockPos pos, String poiType, int freeTicketCount) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, PoiAddedDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
       PoiAddedDebugPayload::write, PoiAddedDebugPayload::new
    );
@@ -17,11 +14,11 @@ public record PoiAddedDebugPayload(BlockPos c, String d, int e) implements Custo
       this(var1.readBlockPos(), var1.readUtf(), var1.readInt());
    }
 
-   public PoiAddedDebugPayload(BlockPos var1, String var2, int var3) {
+   public PoiAddedDebugPayload(BlockPos pos, String poiType, int freeTicketCount) {
       super();
-      this.pos = var1;
-      this.poiType = var2;
-      this.freeTicketCount = var3;
+      this.pos = pos;
+      this.poiType = poiType;
+      this.freeTicketCount = freeTicketCount;
    }
 
    private void write(FriendlyByteBuf var1) {

@@ -6,9 +6,7 @@ import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -38,7 +36,7 @@ public abstract class AbstractPoiSectionFix extends DataFix {
    }
 
    private <T> Dynamic<T> processSectionRecords(Dynamic<T> var1) {
-      return (Dynamic<T>)DataFixUtils.orElse(var1.asStreamOpt().result().map(var2 -> var1.createList(this.processRecords(var2))), var1);
+      return (Dynamic<T>)DataFixUtils.orElse(var1.asStreamOpt().result().map(var2 -> var1.createList(this.processRecords((Stream<Dynamic<T>>)var2))), var1);
    }
 
    protected abstract <T> Stream<Dynamic<T>> processRecords(Stream<Dynamic<T>> var1);

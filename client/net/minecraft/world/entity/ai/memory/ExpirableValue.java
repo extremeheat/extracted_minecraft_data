@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.memory;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.util.VisibleForDebug;
 
@@ -18,7 +17,7 @@ public class ExpirableValue<T> {
 
    public void tick() {
       if (this.canExpire()) {
-         --this.timeToLive;
+         this.timeToLive--;
       }
    }
 
@@ -56,7 +55,7 @@ public class ExpirableValue<T> {
       return RecordCodecBuilder.create(
          var1 -> var1.group(
                   var0.fieldOf("value").forGetter(var0xx -> var0xx.value),
-                  Codec.LONG.optionalFieldOf("ttl").forGetter(var0xx -> var0xx.canExpire() ? Optional.of(var0xx.timeToLive) : Optional.empty())
+                  Codec.LONG.lenientOptionalFieldOf("ttl").forGetter(var0xx -> var0xx.canExpire() ? Optional.of(var0xx.timeToLive) : Optional.empty())
                )
                .apply(var1, (var0xx, var1x) -> new ExpirableValue<>(var0xx, var1x.orElse(9223372036854775807L)))
       );

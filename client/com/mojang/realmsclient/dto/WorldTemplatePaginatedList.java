@@ -44,7 +44,7 @@ public class WorldTemplatePaginatedList extends ValueObject {
          if (var3.get("templates").isJsonArray()) {
             Iterator var4 = var3.get("templates").getAsJsonArray().iterator();
 
-            while(var4.hasNext()) {
+            while (var4.hasNext()) {
                var1.templates.add(WorldTemplate.parse(((JsonElement)var4.next()).getAsJsonObject()));
             }
          }

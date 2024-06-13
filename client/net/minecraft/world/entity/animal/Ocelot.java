@@ -45,6 +45,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -202,7 +203,7 @@ public class Ocelot extends Animal {
          var2 = ParticleTypes.SMOKE;
       }
 
-      for(int var3 = 0; var3 < 7; ++var3) {
+      for (int var3 = 0; var3 < 7; var3++) {
          double var4 = this.random.nextGaussian() * 0.02;
          double var6 = this.random.nextGaussian() * 0.02;
          double var8 = this.random.nextGaussian() * 0.02;
@@ -244,7 +245,7 @@ public class Ocelot extends Animal {
          }
 
          BlockState var3 = var1.getBlockState(var2.below());
-         if (var3.is(BlockTags.ANIMALS_SPAWNABLE_ON) || var3.is(BlockTags.LEAVES)) {
+         if (var3.is(Blocks.GRASS_BLOCK) || var3.is(BlockTags.LEAVES)) {
             return true;
          }
       }

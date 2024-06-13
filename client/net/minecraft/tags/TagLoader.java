@@ -44,15 +44,15 @@ public class TagLoader<T> {
       HashMap var2 = Maps.newHashMap();
       FileToIdConverter var3 = FileToIdConverter.json(this.directory);
 
-      for(Entry var5 : var3.listMatchingResourceStacks(var1).entrySet()) {
+      for (Entry var5 : var3.listMatchingResourceStacks(var1).entrySet()) {
          ResourceLocation var6 = (ResourceLocation)var5.getKey();
          ResourceLocation var7 = var3.fileToId(var6);
 
-         for(Resource var9 : (List)var5.getValue()) {
+         for (Resource var9 : (List)var5.getValue()) {
             try (BufferedReader var10 = var9.openAsReader()) {
                JsonElement var11 = JsonParser.parseReader(var10);
                List var12 = var2.computeIfAbsent(var7, var0 -> new ArrayList());
-               TagFile var13 = (TagFile)TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, var11)).getOrThrow(false, LOGGER::error);
+               TagFile var13 = (TagFile)TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, var11)).getOrThrow();
                if (var13.replace()) {
                   var12.clear();
                }
@@ -72,7 +72,7 @@ public class TagLoader<T> {
       Builder var3 = ImmutableSet.builder();
       ArrayList var4 = new ArrayList();
 
-      for(TagLoader.EntryWithSource var6 : var2) {
+      for (TagLoader.EntryWithSource var6 : var2) {
          if (!var6.entry().build(var1, var3::add)) {
             var4.add(var6);
          }
@@ -87,7 +87,7 @@ public class TagLoader<T> {
          @Nullable
          @Override
          public T element(ResourceLocation var1) {
-            return TagLoader.this.idToValue.apply(var1).orElse((T)null);
+            return (T)TagLoader.this.idToValue.apply(var1).orElse(null);
          }
 
          @Nullable
@@ -97,7 +97,7 @@ public class TagLoader<T> {
          }
       };
       DependencySorter var4 = new DependencySorter();
-      var1.forEach((var1x, var2x) -> var4.addEntry(var1x, new TagLoader.SortingEntry(var2x)));
+      var1.forEach((var1x, var2x) -> var4.addEntry(var1x, new TagLoader.SortingEntry((List<TagLoader.EntryWithSource>)var2x)));
       var4.orderByDependencies(
          (var3x, var4x) -> this.build(var3, var4x.entries)
                .ifLeft(
@@ -116,14 +116,12 @@ public class TagLoader<T> {
       return this.build(this.load(var1));
    }
 
-   public static record EntryWithSource(TagEntry a, String b) {
-      final TagEntry entry;
-      private final String source;
+   public static record EntryWithSource(TagEntry entry, String source) {
 
-      public EntryWithSource(TagEntry var1, String var2) {
+      public EntryWithSource(TagEntry entry, String source) {
          super();
-         this.entry = var1;
-         this.source = var2;
+         this.entry = entry;
+         this.source = source;
       }
 
       public String toString() {
@@ -131,12 +129,11 @@ public class TagLoader<T> {
       }
    }
 
-   static record SortingEntry(List<TagLoader.EntryWithSource> a) implements DependencySorter.Entry<ResourceLocation> {
-      final List<TagLoader.EntryWithSource> entries;
+   static record SortingEntry(List<TagLoader.EntryWithSource> entries) implements DependencySorter.Entry<ResourceLocation> {
 
-      SortingEntry(List<TagLoader.EntryWithSource> var1) {
+      SortingEntry(List<TagLoader.EntryWithSource> entries) {
          super();
-         this.entries = var1;
+         this.entries = entries;
       }
 
       @Override

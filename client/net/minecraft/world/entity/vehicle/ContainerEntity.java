@@ -121,7 +121,7 @@ public interface ContainerEntity extends Container, MenuProvider {
    }
 
    default boolean isChestVehicleEmpty() {
-      for(ItemStack var2 : this.getItemStacks()) {
+      for (ItemStack var2 : this.getItemStacks()) {
          if (!var2.isEmpty()) {
             return false;
          }

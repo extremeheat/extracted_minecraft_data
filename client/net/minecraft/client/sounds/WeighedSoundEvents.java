@@ -22,7 +22,7 @@ public class WeighedSoundEvents implements Weighted<Sound> {
    public int getWeight() {
       int var1 = 0;
 
-      for(Weighted var3 : this.list) {
+      for (Weighted var3 : this.list) {
          var1 += var3.getWeight();
       }
 
@@ -34,7 +34,7 @@ public class WeighedSoundEvents implements Weighted<Sound> {
       if (!this.list.isEmpty() && var2 != 0) {
          int var3 = var1.nextInt(var2);
 
-         for(Weighted var5 : this.list) {
+         for (Weighted var5 : this.list) {
             var3 -= var5.getWeight();
             if (var3 < 0) {
                return (Sound)var5.getSound(var1);
@@ -58,7 +58,7 @@ public class WeighedSoundEvents implements Weighted<Sound> {
 
    @Override
    public void preloadIfRequired(SoundEngine var1) {
-      for(Weighted var3 : this.list) {
+      for (Weighted var3 : this.list) {
          var3.preloadIfRequired(var1);
       }
    }

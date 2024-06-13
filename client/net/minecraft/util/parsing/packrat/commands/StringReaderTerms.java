@@ -17,12 +17,10 @@ public interface StringReaderTerms {
       return new StringReaderTerms.TerminalCharacter(var0);
    }
 
-   public static record TerminalCharacter(char a) implements Term<StringReader> {
-      private final char value;
-
-      public TerminalCharacter(char var1) {
+   public static record TerminalCharacter(char value) implements Term<StringReader> {
+      public TerminalCharacter(char value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       @Override
@@ -39,12 +37,10 @@ public interface StringReaderTerms {
       }
    }
 
-   public static record TerminalWord(String a) implements Term<StringReader> {
-      private final String value;
-
-      public TerminalWord(String var1) {
+   public static record TerminalWord(String value) implements Term<StringReader> {
+      public TerminalWord(String value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       @Override

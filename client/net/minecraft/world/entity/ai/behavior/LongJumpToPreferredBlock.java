@@ -42,7 +42,7 @@ public class LongJumpToPreferredBlock<E extends Mob> extends LongJumpToRandomPos
       } else {
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
 
-         while(!this.jumpCandidates.isEmpty()) {
+         while (!this.jumpCandidates.isEmpty()) {
             Optional var3 = super.getJumpCandidate(var1);
             if (var3.isPresent()) {
                LongJumpToRandomPos.PossibleJump var4 = (LongJumpToRandomPos.PossibleJump)var3.get();

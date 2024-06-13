@@ -40,19 +40,14 @@ public abstract class SpreadingSnowyDirtBlock extends SnowyDirtBlock {
    @Override
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!canBeGrass(var1, var2, var3)) {
-         var2.setBlockAndUpdate(var3, (var2.isPotato() ? Blocks.TERREDEPOMME : Blocks.DIRT).defaultBlockState());
+         var2.setBlockAndUpdate(var3, Blocks.DIRT.defaultBlockState());
       } else {
          if (var2.getMaxLocalRawBrightness(var3.above()) >= 9) {
             BlockState var5 = this.defaultBlockState();
 
-            for(int var6 = 0; var6 < 4; ++var6) {
+            for (int var6 = 0; var6 < 4; var6++) {
                BlockPos var7 = var3.offset(var4.nextInt(3) - 1, var4.nextInt(5) - 3, var4.nextInt(3) - 1);
-               BlockState var8 = var2.getBlockState(var7);
-               if (var5.is(Blocks.CORRUPTED_PEELGRASS_BLOCK) && var4.nextInt(20) == 0 && var8.is(Blocks.PEELGRASS_BLOCK) && canPropagate(var5, var2, var7)) {
-                  var2.setBlockAndUpdate(var7, var5);
-               }
-
-               if ((var8.is(Blocks.DIRT) || var8.is(Blocks.TERREDEPOMME)) && canPropagate(var5, var2, var7)) {
+               if (var2.getBlockState(var7).is(Blocks.DIRT) && canPropagate(var5, var2, var7)) {
                   var2.setBlockAndUpdate(var7, var5.setValue(SNOWY, Boolean.valueOf(var2.getBlockState(var7.above()).is(Blocks.SNOW))));
                }
             }

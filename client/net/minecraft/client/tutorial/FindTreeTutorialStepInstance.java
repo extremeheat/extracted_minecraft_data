@@ -30,7 +30,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
 
    @Override
    public void tick() {
-      ++this.timeWaiting;
+      this.timeWaiting++;
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
@@ -79,7 +79,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
    }
 
    public static boolean hasPunchedTreesPreviously(LocalPlayer var0) {
-      for(Holder var2 : BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
+      for (Holder var2 : BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
          Block var3 = (Block)var2.value();
          if (var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) > 0) {
             return true;

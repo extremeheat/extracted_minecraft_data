@@ -9,6 +9,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -158,12 +159,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       super.addAdditionalSaveData(var1);
       MerchantOffers var2 = this.getOffers();
       if (!var2.isEmpty()) {
-         var1.put(
-            "Offers",
-            Util.getOrThrow(
-               MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2), IllegalStateException::new
-            )
-         );
+         var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow());
       }
 
       this.writeInventoryToTag(var1, this.registryAccess());
@@ -184,9 +180,9 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    @Nullable
    @Override
-   public Entity changeDimension(ServerLevel var1, boolean var2) {
+   public Entity changeDimension(ServerLevel var1) {
       this.stopTrading();
-      return super.changeDimension(var1, var2);
+      return super.changeDimension(var1);
    }
 
    protected void stopTrading() {
@@ -200,7 +196,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    protected void addParticlesAroundSelf(ParticleOptions var1) {
-      for(int var2 = 0; var2 < 5; ++var2) {
+      for (int var2 = 0; var2 < 5; var2++) {
          double var3 = this.random.nextGaussian() * 0.02;
          double var5 = this.random.nextGaussian() * 0.02;
          double var7 = this.random.nextGaussian() * 0.02;
@@ -230,11 +226,11 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       ArrayList var4 = Lists.newArrayList(var2);
       int var5 = 0;
 
-      while(var5 < var3 && !var4.isEmpty()) {
+      while (var5 < var3 && !var4.isEmpty()) {
          MerchantOffer var6 = ((VillagerTrades.ItemListing)var4.remove(this.random.nextInt(var4.size()))).getOffer(this, this.random);
          if (var6 != null) {
             var1.add(var6);
-            ++var5;
+            var5++;
          }
       }
    }

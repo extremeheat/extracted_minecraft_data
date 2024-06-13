@@ -38,7 +38,7 @@ public abstract class GlslPreprocessor {
       ArrayList var7 = Lists.newArrayList();
       Matcher var8 = REGEX_MOJ_IMPORT.matcher(var1);
 
-      while(var8.find()) {
+      while (var8.find()) {
          if (!isDirectiveDisabled(var1, var8, var5)) {
             String var9 = var8.group(2);
             boolean var10 = var9 != null;
@@ -55,7 +55,7 @@ public abstract class GlslPreprocessor {
                      var13 = var13 + System.lineSeparator();
                   }
 
-                  ++var2.sourceId;
+                  var2.sourceId++;
                   int var14 = var2.sourceId;
                   List var15 = this.processImports(var13, var2, var10 ? FileUtil.getFullResourcePath(var12) : "");
                   var15.set(0, String.format(Locale.ROOT, "#line %d %d\n%s", 0, var14, this.processVersions((String)var15.get(0), var2)));

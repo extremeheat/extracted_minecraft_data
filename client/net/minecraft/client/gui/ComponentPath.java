@@ -17,7 +17,7 @@ public interface ComponentPath {
    static ComponentPath path(GuiEventListener var0, ContainerEventHandler... var1) {
       ComponentPath var2 = leaf(var0);
 
-      for(ContainerEventHandler var6 : var1) {
+      for (ContainerEventHandler var6 : var1) {
          var2 = path(var6, var2);
       }
 
@@ -28,12 +28,10 @@ public interface ComponentPath {
 
    void applyFocus(boolean var1);
 
-   public static record Leaf(GuiEventListener a) implements ComponentPath {
-      private final GuiEventListener component;
-
-      public Leaf(GuiEventListener var1) {
+   public static record Leaf(GuiEventListener component) implements ComponentPath {
+      public Leaf(GuiEventListener component) {
          super();
-         this.component = var1;
+         this.component = component;
       }
 
       @Override
@@ -42,14 +40,11 @@ public interface ComponentPath {
       }
    }
 
-   public static record Path(ContainerEventHandler a, ComponentPath b) implements ComponentPath {
-      private final ContainerEventHandler component;
-      private final ComponentPath childPath;
-
-      public Path(ContainerEventHandler var1, ComponentPath var2) {
+   public static record Path(ContainerEventHandler component, ComponentPath childPath) implements ComponentPath {
+      public Path(ContainerEventHandler component, ComponentPath childPath) {
          super();
-         this.component = var1;
-         this.childPath = var2;
+         this.component = component;
+         this.childPath = childPath;
       }
 
       @Override

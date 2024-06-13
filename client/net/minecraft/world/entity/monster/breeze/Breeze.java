@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
@@ -77,7 +76,7 @@ public class Breeze extends Monster {
 
    @Override
    public Brain<Breeze> getBrain() {
-      return super.getBrain();
+      return (Brain<Breeze>)super.getBrain();
    }
 
    @Override
@@ -90,7 +89,7 @@ public class Breeze extends Monster {
       if (this.level().isClientSide() && DATA_POSE.equals(var1)) {
          this.resetAnimations();
          Pose var2 = this.getPose();
-         switch(var2) {
+         switch (var2) {
             case SHOOTING:
                this.shoot.startIfStopped(this.tickCount);
                break;
@@ -115,7 +114,7 @@ public class Breeze extends Monster {
    @Override
    public void tick() {
       Pose var1 = this.getPose();
-      switch(var1) {
+      switch (var1) {
          case SHOOTING:
          case INHALING:
          case STANDING:
@@ -152,7 +151,7 @@ public class Breeze extends Monster {
          Vec3 var2 = this.getDeltaMovement();
          Vec3 var3 = this.position().add(var2).add(0.0, 0.10000000149011612, 0.0);
 
-         for(int var4 = 0; var4 < 3; ++var4) {
+         for (int var4 = 0; var4 < 3; var4++) {
             this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var1), var3.x, var3.y, var3.z, 0.0, 0.0, 0.0);
          }
       }
@@ -164,7 +163,7 @@ public class Breeze extends Monster {
          Vec3 var3 = new Vec3(var2.x, this.position().y, var2.z);
          BlockState var4 = !this.getInBlockState().isAir() ? this.getInBlockState() : this.getBlockStateOn();
          if (var4.getRenderShape() != RenderShape.INVISIBLE) {
-            for(int var5 = 0; var5 < var1; ++var5) {
+            for (int var5 = 0; var5 < var1; var5++) {
                this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var4), var3.x, var3.y, var3.z, 0.0, 0.0, 0.0);
             }
          }
@@ -186,7 +185,7 @@ public class Breeze extends Monster {
 
    @Override
    public ProjectileDeflection deflection(Projectile var1) {
-      return var1.getType() == EntityType.BREEZE_WIND_CHARGE ? ProjectileDeflection.NONE : PROJECTILE_DEFLECTION;
+      return var1.getType() != EntityType.BREEZE_WIND_CHARGE && var1.getType() != EntityType.WIND_CHARGE ? PROJECTILE_DEFLECTION : ProjectileDeflection.NONE;
    }
 
    @Override

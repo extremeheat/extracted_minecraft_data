@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,7 +50,7 @@ public class CoralBlock extends Block {
    }
 
    protected boolean scanForWater(BlockGetter var1, BlockPos var2) {
-      for(Direction var6 : Direction.values()) {
+      for (Direction var6 : Direction.values()) {
          FluidState var7 = var1.getFluidState(var2.relative(var6));
          if (var7.is(FluidTags.WATER)) {
             return true;

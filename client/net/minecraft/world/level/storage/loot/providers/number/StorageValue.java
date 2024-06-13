@@ -1,9 +1,8 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.arguments.NbtPathArgument;
@@ -12,10 +11,8 @@ import net.minecraft.nbt.NumericTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.LootContext;
 
-public record StorageValue(ResourceLocation b, NbtPathArgument.NbtPath c) implements NumberProvider {
-   private final ResourceLocation storage;
-   private final NbtPathArgument.NbtPath path;
-   public static final Codec<StorageValue> CODEC = RecordCodecBuilder.create(
+public record StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath path) implements NumberProvider {
+   public static final MapCodec<StorageValue> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageValue::storage),
                NbtPathArgument.NbtPath.CODEC.fieldOf("path").forGetter(StorageValue::path)
@@ -23,10 +20,10 @@ public record StorageValue(ResourceLocation b, NbtPathArgument.NbtPath c) implem
             .apply(var0, StorageValue::new)
    );
 
-   public StorageValue(ResourceLocation var1, NbtPathArgument.NbtPath var2) {
+   public StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath path) {
       super();
-      this.storage = var1;
-      this.path = var2;
+      this.storage = storage;
+      this.path = path;
    }
 
    @Override
@@ -39,11 +36,8 @@ public record StorageValue(ResourceLocation b, NbtPathArgument.NbtPath c) implem
 
       try {
          List var3 = this.path.get(var2);
-         if (var3.size() == 1) {
-            Object var5 = var3.get(0);
-            if (var5 instanceof NumericTag var4) {
-               return Optional.of((NumericTag)var4);
-            }
+         if (var3.size() == 1 && var3.get(0) instanceof NumericTag var4) {
+            return Optional.of(var4);
          }
       } catch (CommandSyntaxException var6) {
       }

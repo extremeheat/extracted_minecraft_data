@@ -69,7 +69,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    public ItemStack removeItemType(Item var1, int var2) {
       ItemStack var3 = new ItemStack(var1, 0);
 
-      for(int var4 = this.size - 1; var4 >= 0; --var4) {
+      for (int var4 = this.size - 1; var4 >= 0; var4--) {
          ItemStack var5 = this.getItem(var4);
          if (var5.getItem().equals(var1)) {
             int var6 = var2 - var3.getCount();
@@ -106,7 +106,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    public boolean canAddItem(ItemStack var1) {
       boolean var2 = false;
 
-      for(ItemStack var4 : this.items) {
+      for (ItemStack var4 : this.items) {
          if (var4.isEmpty() || ItemStack.isSameItemSameComponents(var4, var1) && var4.getCount() < var4.getMaxStackSize()) {
             var2 = true;
             break;
@@ -141,7 +141,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
    @Override
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
+      for (ItemStack var2 : this.items) {
          if (!var2.isEmpty()) {
             return false;
          }
@@ -153,7 +153,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    @Override
    public void setChanged() {
       if (this.listeners != null) {
-         for(ContainerListener var2 : this.listeners) {
+         for (ContainerListener var2 : this.listeners) {
             var2.containerChanged(this);
          }
       }
@@ -172,7 +172,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
    @Override
    public void fillStackedContents(StackedContents var1) {
-      for(ItemStack var3 : this.items) {
+      for (ItemStack var3 : this.items) {
          var1.accountStack(var3);
       }
    }
@@ -183,7 +183,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    }
 
    private void moveItemToEmptySlots(ItemStack var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
+      for (int var2 = 0; var2 < this.size; var2++) {
          ItemStack var3 = this.getItem(var2);
          if (var3.isEmpty()) {
             this.setItem(var2, var1.copyAndClear());
@@ -193,7 +193,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    }
 
    private void moveItemToOccupiedSlotsWithSameType(ItemStack var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
+      for (int var2 = 0; var2 < this.size; var2++) {
          ItemStack var3 = this.getItem(var2);
          if (ItemStack.isSameItemSameComponents(var3, var1)) {
             this.moveItemsBetweenStacks(var1, var3);
@@ -217,7 +217,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    public void fromTag(ListTag var1, HolderLookup.Provider var2) {
       this.clearContent();
 
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
+      for (int var3 = 0; var3 < var1.size(); var3++) {
          ItemStack.parse(var2, var1.getCompound(var3)).ifPresent(this::addItem);
       }
    }
@@ -225,7 +225,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    public ListTag createTag(HolderLookup.Provider var1) {
       ListTag var2 = new ListTag();
 
-      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
+      for (int var3 = 0; var3 < this.getContainerSize(); var3++) {
          ItemStack var4 = this.getItem(var3);
          if (!var4.isEmpty()) {
             var2.add(var4.save(var1));

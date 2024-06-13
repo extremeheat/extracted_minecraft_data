@@ -54,23 +54,17 @@ public class BiomeDefaultFeatures {
    }
 
    public static void addDefaultOres(BiomeGenerationSettings.Builder var0) {
-      addDefaultOres(var0, false, false);
+      addDefaultOres(var0, false);
    }
 
-   public static void addDefaultOres(BiomeGenerationSettings.Builder var0, boolean var1, boolean var2) {
+   public static void addDefaultOres(BiomeGenerationSettings.Builder var0, boolean var1) {
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_COAL_UPPER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_COAL_LOWER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_IRON_UPPER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_IRON_MIDDLE);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_IRON_SMALL);
-      var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_POISONOUS_POTATO);
-      if (var2) {
-         var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GOLD_ABOVE_ZERO);
-      } else {
-         var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GOLD);
-         var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GOLD_LOWER);
-      }
-
+      var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GOLD);
+      var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GOLD_LOWER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_REDSTONE);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_REDSTONE_LOWER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIAMOND);
@@ -79,12 +73,7 @@ public class BiomeDefaultFeatures {
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIAMOND_BURIED);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_LAPIS);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_LAPIS_BURIED);
-      if (var2) {
-         var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_COPPER_SMALL);
-      } else {
-         var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, var1 ? OrePlacements.ORE_COPPER_LARGE : OrePlacements.ORE_COPPER);
-      }
-
+      var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, var1 ? OrePlacements.ORE_COPPER_LARGE : OrePlacements.ORE_COPPER);
       var0.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, CavePlacements.UNDERWATER_MAGMA);
    }
 
@@ -410,7 +399,6 @@ public class BiomeDefaultFeatures {
 
    public static void addDefaultCrystalFormations(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, CavePlacements.AMETHYST_GEODE);
-      var0.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, CavePlacements.POTATO_GEODE);
    }
 
    public static void farmAnimals(MobSpawnSettings.Builder var0) {
@@ -422,7 +410,6 @@ public class BiomeDefaultFeatures {
 
    public static void caveSpawns(MobSpawnSettings.Builder var0) {
       var0.addSpawn(MobCategory.AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.BAT, 10, 8, 8));
-      var0.addSpawn(MobCategory.AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.BATATO, 13, 8, 16));
       var0.addSpawn(MobCategory.UNDERGROUND_WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.GLOW_SQUID, 10, 4, 6));
    }
 
@@ -470,7 +457,7 @@ public class BiomeDefaultFeatures {
 
    public static void dripstoneCavesSpawns(MobSpawnSettings.Builder var0) {
       caveSpawns(var0);
-      boolean var1 = true;
+      byte var1 = 95;
       monsters(var0, 95, 5, 100, false);
       var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 95, 4, 4));
    }
@@ -478,7 +465,6 @@ public class BiomeDefaultFeatures {
    public static void monsters(MobSpawnSettings.Builder var0, int var1, int var2, int var3, boolean var4) {
       var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SPIDER, 100, 4, 4));
       var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(var4 ? EntityType.DROWNED : EntityType.ZOMBIE, var1, 4, 4));
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.POISONOUS_POTATO_ZOMBIE, 25, 1, 4));
       var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIE_VILLAGER, var2, 1, 1));
       var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SKELETON, var3, 4, 4));
       var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.CREEPER, 100, 4, 4));

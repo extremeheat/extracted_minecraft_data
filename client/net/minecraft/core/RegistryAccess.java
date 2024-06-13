@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.resources.ResourceKey;
@@ -66,7 +65,7 @@ public interface RegistryAccess extends HolderLookup.Provider {
    }
 
    default Lifecycle allRegistriesLifecycle() {
-      return (Lifecycle)this.registries().map(var0 -> var0.value.registryLifecycle()).reduce(Lifecycle.stable(), Lifecycle::add);
+      return this.registries().map(var0 -> var0.value.registryLifecycle()).reduce(Lifecycle.stable(), Lifecycle::add);
    }
 
    public interface Frozen extends RegistryAccess {
@@ -77,7 +76,7 @@ public interface RegistryAccess extends HolderLookup.Provider {
 
       public ImmutableRegistryAccess(List<? extends Registry<?>> var1) {
          super();
-         this.registries = var1.stream().collect(Collectors.toUnmodifiableMap(Registry::key, (Function<? super Registry, ? extends Registry>)(var0 -> var0)));
+         this.registries = var1.stream().collect(Collectors.toUnmodifiableMap(Registry::key, var0 -> (Registry<?>)var0));
       }
 
       public ImmutableRegistryAccess(Map<? extends ResourceKey<? extends Registry<?>>, ? extends Registry<?>> var1) {
@@ -92,7 +91,7 @@ public interface RegistryAccess extends HolderLookup.Provider {
 
       @Override
       public <E> Optional<Registry<E>> registry(ResourceKey<? extends Registry<? extends E>> var1) {
-         return Optional.ofNullable(this.registries.get(var1)).map((Function<? super Registry<?>, ? extends Registry<E>>)(var0 -> var0));
+         return Optional.ofNullable(this.registries.get(var1)).map(var0 -> (Registry<E>)var0);
       }
 
       @Override
@@ -101,14 +100,12 @@ public interface RegistryAccess extends HolderLookup.Provider {
       }
    }
 
-   public static record RegistryEntry<T>(ResourceKey<? extends Registry<T>> a, Registry<T> b) {
-      private final ResourceKey<? extends Registry<T>> key;
-      final Registry<T> value;
+   public static record RegistryEntry<T>(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
 
-      public RegistryEntry(ResourceKey<? extends Registry<T>> var1, Registry<T> var2) {
+      public RegistryEntry(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
          super();
-         this.key = var1;
-         this.value = var2;
+         this.key = key;
+         this.value = value;
       }
 
       private static <T, R extends Registry<? extends T>> RegistryAccess.RegistryEntry<T> fromMapEntry(

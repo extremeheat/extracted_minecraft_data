@@ -109,7 +109,7 @@ public class PresetFlatWorldScreen extends Screen {
       String[] var3 = var1.split(",");
       int var4 = 0;
 
-      for(String var8 : var3) {
+      for (String var8 : var3) {
          FlatLayerInfo var9 = getLayerInfoFromString(var0, var8, var4);
          if (var9 == null) {
             return Collections.emptyList();
@@ -159,7 +159,7 @@ public class PresetFlatWorldScreen extends Screen {
    static String save(FlatLevelGeneratorSettings var0) {
       StringBuilder var1 = new StringBuilder();
 
-      for(int var2 = 0; var2 < var0.getLayersInfo().size(); ++var2) {
+      for (int var2 = 0; var2 < var0.getLayersInfo().size(); var2++) {
          if (var2 > 0) {
             var1.append(",");
          }
@@ -190,8 +190,8 @@ public class PresetFlatWorldScreen extends Screen {
       this.addWidget(this.export);
       this.list = this.addRenderableWidget(new PresetFlatWorldScreen.PresetsList(var2, var3));
       this.selectButton = this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.presets.select"), var5x -> {
-         FlatLevelGeneratorSettings var6xx = fromString(var7, var4, var5, var6, this.export.getValue(), this.settings);
-         this.parent.setConfig(var6xx);
+         FlatLevelGeneratorSettings var6x = fromString(var7, var4, var5, var6, this.export.getValue(), this.settings);
+         this.parent.setConfig(var6x);
          this.minecraft.setScreen(this.parent);
       }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build());
       this.addRenderableWidget(
@@ -239,7 +239,7 @@ public class PresetFlatWorldScreen extends Screen {
       public PresetsList(RegistryAccess var2, FeatureFlagSet var3) {
          super(PresetFlatWorldScreen.this.minecraft, PresetFlatWorldScreen.this.width, PresetFlatWorldScreen.this.height - 117, 80, 24);
 
-         for(Holder var5 : var2.registryOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE)) {
+         for (Holder var5 : var2.registryOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE)) {
             Set var6 = ((FlatLevelGeneratorPreset)var5.value())
                .settings()
                .getLayersInfo()

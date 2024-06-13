@@ -13,7 +13,7 @@ public class VarLong {
    }
 
    public static int getByteSize(long var0) {
-      for(int var2 = 1; var2 < 10; ++var2) {
+      for (int var2 = 1; var2 < 10; var2++) {
          if ((var0 & -1L << var2 * 7) == 0L) {
             return var2;
          }
@@ -37,13 +37,13 @@ public class VarLong {
          if (var3 > 10) {
             throw new RuntimeException("VarLong too big");
          }
-      } while(hasContinuationBit(var4));
+      } while (hasContinuationBit(var4));
 
       return var1;
    }
 
    public static ByteBuf write(ByteBuf var0, long var1) {
-      while((var1 & -128L) != 0L) {
+      while ((var1 & -128L) != 0L) {
          var0.writeByte((int)(var1 & 127L) | 128);
          var1 >>>= 7;
       }

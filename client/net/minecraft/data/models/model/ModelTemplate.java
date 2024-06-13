@@ -36,7 +36,7 @@ public class ModelTemplate {
    }
 
    public ResourceLocation createWithSuffix(Block var1, String var2, TextureMapping var3, BiConsumer<ResourceLocation, Supplier<JsonElement>> var4) {
-      return this.create(ModelLocationUtils.getModelLocation(var1, var2 + (String)this.suffix.orElse("")), var3, var4);
+      return this.create(ModelLocationUtils.getModelLocation(var1, var2 + this.suffix.orElse("")), var3, var4);
    }
 
    public ResourceLocation createWithOverride(Block var1, String var2, TextureMapping var3, BiConsumer<ResourceLocation, Supplier<JsonElement>> var4) {

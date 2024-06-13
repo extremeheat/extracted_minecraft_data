@@ -7,14 +7,12 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.NbtPathArgument;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
@@ -29,8 +27,8 @@ public class NbtContents implements ComponentContents {
    public static final MapCodec<NbtContents> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath),
-               Codec.BOOL.optionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting),
-               ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(NbtContents::getSeparator),
+               Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting),
+               ComponentSerialization.CODEC.lenientOptionalFieldOf("separator").forGetter(NbtContents::getSeparator),
                DataSource.CODEC.forGetter(NbtContents::getDataSource)
             )
             .apply(var0, NbtContents::new)
@@ -117,7 +115,7 @@ public class NbtContents implements ComponentContents {
          Stream var4 = this.dataSource.getData(var1).flatMap(var1x -> {
             try {
                return this.compiledNbtPath.get(var1x).stream();
-            } catch (CommandSyntaxException var3xx) {
+            } catch (CommandSyntaxException var3x) {
                return Stream.empty();
             }
          }).map(Tag::getAsString);
@@ -127,10 +125,10 @@ public class NbtContents implements ComponentContents {
             );
             return var4.flatMap(var3x -> {
                try {
-                  MutableComponent var4xx = Component.Serializer.fromJson(var3x, var1.registryAccess());
-                  return Stream.of(ComponentUtils.updateForEntity(var1, var4xx, var2, var3));
-               } catch (Exception var5xx) {
-                  LOGGER.warn("Failed to parse component: {}", var3x, var5xx);
+                  MutableComponent var4x = Component.Serializer.fromJson(var3x, var1.registryAccess());
+                  return Stream.of(ComponentUtils.updateForEntity(var1, var4x, var2, var3));
+               } catch (Exception var5x) {
+                  LOGGER.warn("Failed to parse component: {}", var3x, var5x);
                   return Stream.of();
                }
             }).reduce((var1x, var2x) -> var1x.append(var5).append(var2x)).orElseGet(Component::empty);

@@ -18,7 +18,7 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
    protected void placeTrunk(
       LevelAccessor var1, RandomSource var2, BlockPos var3, HugeMushroomFeatureConfiguration var4, int var5, BlockPos.MutableBlockPos var6
    ) {
-      for(int var7 = 0; var7 < var5; ++var7) {
+      for (int var7 = 0; var7 < var5; var7++) {
          var6.set(var3).move(Direction.UP, var7);
          if (!var1.getBlockState(var6).isSolidRender(var1, var6)) {
             this.setBlock(var1, var6, var4.stemProvider.getState(var2, var3));
@@ -42,11 +42,11 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
          if (!isDirt(var7) && !var7.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
             return false;
          } else {
-            for(int var8 = 0; var8 <= var3; ++var8) {
+            for (int var8 = 0; var8 <= var3; var8++) {
                int var9 = this.getTreeRadiusForHeight(-1, -1, var5.foliageRadius, var8);
 
-               for(int var10 = -var9; var10 <= var9; ++var10) {
-                  for(int var11 = -var9; var11 <= var9; ++var11) {
+               for (int var10 = -var9; var10 <= var9; var10++) {
+                  for (int var11 = -var9; var11 <= var9; var11++) {
                      BlockState var12 = var1.getBlockState(var4.setWithOffset(var2, var10, var8, var11));
                      if (!var12.isAir() && !var12.is(BlockTags.LEAVES)) {
                         return false;

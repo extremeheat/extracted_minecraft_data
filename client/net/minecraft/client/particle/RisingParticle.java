@@ -9,9 +9,9 @@ public abstract class RisingParticle extends TextureSheetParticle {
       this.xd = this.xd * 0.009999999776482582 + var8;
       this.yd = this.yd * 0.009999999776482582 + var10;
       this.zd = this.zd * 0.009999999776482582 + var12;
-      this.x += (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);
-      this.y += (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);
-      this.z += (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);
+      this.x = this.x + (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);
+      this.y = this.y + (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);
+      this.z = this.z + (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.05F);
       this.lifetime = (int)(8.0 / (Math.random() * 0.8 + 0.2)) + 4;
    }
 }

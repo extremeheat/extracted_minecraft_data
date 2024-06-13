@@ -243,9 +243,9 @@ public abstract class VoxelShape {
          int var18 = Math.min(this.shape.getSize(var8), this.findIndex(var8, var2.max(var8) - 1.0E-7) + 1);
          int var19 = this.shape.getSize(var6);
          if (var3 > 0.0) {
-            for(int var20 = var14 + 1; var20 < var19; ++var20) {
-               for(int var21 = var15; var21 < var16; ++var21) {
-                  for(int var22 = var17; var22 < var18; ++var22) {
+            for (int var20 = var14 + 1; var20 < var19; var20++) {
+               for (int var21 = var15; var21 < var16; var21++) {
+                  for (int var22 = var17; var22 < var18; var22++) {
                      if (this.shape.isFullWide(var5, var20, var21, var22)) {
                         double var23 = this.get(var6, var20) - var9;
                         if (var23 >= -1.0E-7) {
@@ -258,9 +258,9 @@ public abstract class VoxelShape {
                }
             }
          } else if (var3 < 0.0) {
-            for(int var25 = var13 - 1; var25 >= 0; --var25) {
-               for(int var26 = var15; var26 < var16; ++var26) {
-                  for(int var27 = var17; var27 < var18; ++var27) {
+            for (int var25 = var13 - 1; var25 >= 0; var25--) {
+               for (int var26 = var15; var26 < var16; var26++) {
+                  for (int var27 = var17; var27 < var18; var27++) {
                      if (this.shape.isFullWide(var5, var25, var26, var27)) {
                         double var28 = this.get(var6, var25 + 1) - var11;
                         if (var28 <= 1.0E-7) {

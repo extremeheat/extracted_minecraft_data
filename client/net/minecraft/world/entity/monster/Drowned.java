@@ -106,10 +106,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
             && (MobSpawnType.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER));
          if (var6 && MobSpawnType.isSpawner(var2)) {
             return true;
-         } else if (var5.is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)) {
-            return var4.nextInt(15) == 0 && var6;
          } else {
-            return var4.nextInt(40) == 0 && isDeepEnoughToSpawn(var1, var3) && var6;
+            return var5.is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)
+               ? var4.nextInt(15) == 0 && var6
+               : var4.nextInt(40) == 0 && isDeepEnoughToSpawn(var1, var3) && var6;
          }
       }
    }
@@ -170,11 +170,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       if (var2.is(Items.NAUTILUS_SHELL)) {
          return false;
       } else if (var2.is(Items.TRIDENT)) {
-         if (var1.is(Items.TRIDENT)) {
-            return var1.getDamageValue() < var2.getDamageValue();
-         } else {
-            return false;
-         }
+         return var1.is(Items.TRIDENT) ? var1.getDamageValue() < var2.getDamageValue() : false;
       } else {
          return var1.is(Items.TRIDENT) ? true : super.canReplaceCurrentItem(var1, var2);
       }
@@ -191,11 +187,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    public boolean okTarget(@Nullable LivingEntity var1) {
-      if (var1 != null) {
-         return !this.level().isDay() || var1.isInWater();
-      } else {
-         return false;
-      }
+      return var1 != null ? !this.level().isDay() || var1.isInWater() : false;
    }
 
    @Override
@@ -381,7 +373,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
          RandomSource var1 = this.mob.getRandom();
          BlockPos var2 = this.mob.blockPosition();
 
-         for(int var3 = 0; var3 < 10; ++var3) {
+         for (int var3 = 0; var3 < 10; var3++) {
             BlockPos var4 = var2.offset(var1.nextInt(20) - 10, 2 - var1.nextInt(8), var1.nextInt(20) - 10);
             if (this.level.getBlockState(var4).is(Blocks.WATER)) {
                return Vec3.atBottomCenterOf(var4);

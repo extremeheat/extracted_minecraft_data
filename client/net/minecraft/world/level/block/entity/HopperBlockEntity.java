@@ -43,8 +43,8 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.items, var2);
@@ -93,7 +93,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    public static void pushItemsTick(Level var0, BlockPos var1, BlockState var2, HopperBlockEntity var3) {
-      --var3.cooldownTime;
+      var3.cooldownTime--;
       var3.tickedGameTime = var0.getGameTime();
       if (!var3.isOnCooldown()) {
          var3.setCooldown(0);
@@ -127,7 +127,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    private boolean inventoryFull() {
-      for(ItemStack var2 : this.items) {
+      for (ItemStack var2 : this.items) {
          if (var2.isEmpty() || var2.getCount() != var2.getMaxStackSize()) {
             return false;
          }
@@ -145,7 +145,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          if (isFullContainer(var3, var4)) {
             return false;
          } else {
-            for(int var5 = 0; var5 < var2.getContainerSize(); ++var5) {
+            for (int var5 = 0; var5 < var2.getContainerSize(); var5++) {
                ItemStack var6 = var2.getItem(var5);
                if (!var6.isEmpty()) {
                   int var7 = var6.getCount();
@@ -167,8 +167,6 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static int[] getSlots(Container var0, Direction var1) {
       if (var0 instanceof WorldlyContainer var5) {
          return var5.getSlotsForFace(var1);
@@ -193,7 +191,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       int[] var1 = new int[var0];
       int var2 = 0;
 
-      while(var2 < var1.length) {
+      while (var2 < var1.length) {
          var1[var2] = var2++;
       }
 
@@ -203,7 +201,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    private static boolean isFullContainer(Container var0, Direction var1) {
       int[] var2 = getSlots(var0, var1);
 
-      for(int var6 : var2) {
+      for (int var6 : var2) {
          ItemStack var7 = var0.getItem(var6);
          if (var7.getCount() < var7.getMaxStackSize()) {
             return false;
@@ -220,7 +218,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       if (var4 != null) {
          Direction var10 = Direction.DOWN;
 
-         for(int var9 : getSlots(var4, var10)) {
+         for (int var9 : getSlots(var4, var10)) {
             if (tryTakeInItemFromSlot(var1, var4, var9, var10)) {
                return true;
             }
@@ -230,7 +228,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       } else {
          boolean var5 = var1.isGridAligned() && var3.isCollisionShapeFullBlock(var0, var2) && !var3.is(BlockTags.DOES_NOT_BLOCK_HOPPERS);
          if (!var5) {
-            for(ItemEntity var7 : getItemsAtAndAbove(var0, var1)) {
+            for (ItemEntity var7 : getItemsAtAndAbove(var0, var1)) {
                if (addItem(var1, var7)) {
                   return true;
                }
@@ -275,13 +273,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return var2;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static ItemStack addItem(@Nullable Container var0, Container var1, ItemStack var2, @Nullable Direction var3) {
       if (var1 instanceof WorldlyContainer var4 && var3 != null) {
          int[] var7 = var4.getSlotsForFace(var3);
 
-         for(int var8 = 0; var8 < var7.length && !var2.isEmpty(); ++var8) {
+         for (int var8 = 0; var8 < var7.length && !var2.isEmpty(); var8++) {
             var2 = tryMoveInItem(var0, var1, var2, var7[var8], var3);
          }
 
@@ -290,7 +286,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
 
       int var5 = var1.getContainerSize();
 
-      for(int var6 = 0; var6 < var5 && !var2.isEmpty(); ++var6) {
+      for (int var6 = 0; var6 < var5 && !var2.isEmpty(); var6++) {
          var2 = tryMoveInItem(var0, var1, var2, var6, var3);
       }
 
@@ -321,8 +317,6 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static ItemStack tryMoveInItem(@Nullable Container var0, Container var1, ItemStack var2, int var3, @Nullable Direction var4) {
       ItemStack var5 = var1.getItem(var3);
       if (canPlaceItemInContainer(var1, var2, var3, var4)) {
@@ -392,18 +386,13 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       Block var3 = var2.getBlock();
       if (var3 instanceof WorldlyContainerHolder) {
          return ((WorldlyContainerHolder)var3).getContainer(var2, var0, var1);
-      } else {
-         if (var2.hasBlockEntity()) {
-            BlockEntity var4 = var0.getBlockEntity(var1);
-            if (var4 instanceof Container var5) {
-               if (var5 instanceof ChestBlockEntity && var3 instanceof ChestBlock) {
-                  var5 = ChestBlock.getContainer((ChestBlock)var3, var2, var0, var1, true);
-               }
-
-               return var5;
-            }
+      } else if (var2.hasBlockEntity() && var0.getBlockEntity(var1) instanceof Container var5) {
+         if (var5 instanceof ChestBlockEntity && var3 instanceof ChestBlock) {
+            var5 = ChestBlock.getContainer((ChestBlock)var3, var2, var0, var1, true);
          }
 
+         return var5;
+      } else {
          return null;
       }
    }
@@ -464,7 +453,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
 
    public static void entityInside(Level var0, BlockPos var1, BlockState var2, Entity var3, HopperBlockEntity var4) {
       if (var3 instanceof ItemEntity var5
-         && !((ItemEntity)var5).getItem().isEmpty()
+         && !var5.getItem().isEmpty()
          && var3.getBoundingBox().move((double)(-var1.getX()), (double)(-var1.getY()), (double)(-var1.getZ())).intersects(var4.getSuckAabb())) {
          tryMoveItems(var0, var1, var2, var4, () -> addItem(var4, var5));
       }

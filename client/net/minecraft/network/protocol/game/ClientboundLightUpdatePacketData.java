@@ -32,7 +32,7 @@ public class ClientboundLightUpdatePacketData {
       this.skyUpdates = Lists.newArrayList();
       this.blockUpdates = Lists.newArrayList();
 
-      for(int var5 = 0; var5 < var2.getLightSectionCount(); ++var5) {
+      for (int var5 = 0; var5 < var2.getLightSectionCount(); var5++) {
          if (var3 == null || var3.get(var5)) {
             this.prepareSectionData(var1, var2, LightLayer.SKY, var5, this.skyYMask, this.emptySkyYMask, this.skyUpdates);
          }

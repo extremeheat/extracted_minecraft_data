@@ -67,7 +67,7 @@ public class DataCommands {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("data").requires(var0x -> var0x.hasPermission(2));
 
-      for(DataCommands.DataProvider var3 : TARGET_PROVIDERS) {
+      for (DataCommands.DataProvider var3 : TARGET_PROVIDERS) {
          ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(
                      var3.wrap(
                         Commands.literal("merge"),
@@ -135,34 +135,32 @@ public class DataCommands {
                         .then(Commands.literal("set").then(var1x.create((var0xx, var1xx, var2, var3x) -> var2.set(var1xx, (Tag)Iterables.getLast(var3x)))))
                         .then(Commands.literal("merge").then(var1x.create((var0xx, var1xx, var2, var3x) -> {
                            CompoundTag var4 = new CompoundTag();
-            
-                           for(Tag var6 : var3x) {
+
+                           for (Tag var6 : var3x) {
                               if (NbtPathArgument.NbtPath.isTooDeep(var6, 0)) {
                                  throw NbtPathArgument.ERROR_DATA_TOO_DEEP.create();
                               }
-            
-                              if (!(var6 instanceof CompoundTag)) {
+
+                              if (!(var6 instanceof CompoundTag var7)) {
                                  throw ERROR_EXPECTED_OBJECT.create(var6);
                               }
-            
-                              CompoundTag var7 = (CompoundTag)var6;
+
                               var4.merge(var7);
                            }
-            
+
                            List var11 = var2.getOrCreate(var1xx, CompoundTag::new);
                            int var12 = 0;
-            
-                           for(Tag var8 : var11) {
-                              if (!(var8 instanceof CompoundTag)) {
+
+                           for (Tag var8 : var11) {
+                              if (!(var8 instanceof CompoundTag var9)) {
                                  throw ERROR_EXPECTED_OBJECT.create(var8);
                               }
-            
-                              CompoundTag var9 = (CompoundTag)var8;
+
                               CompoundTag var10 = var9.copy();
                               var9.merge(var4);
                               var12 += var10.equals(var9) ? 0 : 1;
                            }
-            
+
                            return var12;
                         })))
                )
@@ -183,7 +181,7 @@ public class DataCommands {
    private static List<Tag> stringifyTagList(List<Tag> var0, DataCommands.StringProcessor var1) throws CommandSyntaxException {
       ArrayList var2 = new ArrayList(var0.size());
 
-      for(Tag var4 : var0) {
+      for (Tag var4 : var0) {
          String var5 = getAsText(var4);
          var2.add(StringTag.valueOf(var1.process(var5)));
       }
@@ -196,15 +194,15 @@ public class DataCommands {
    ) {
       LiteralArgumentBuilder var1 = Commands.literal("modify");
 
-      for(DataCommands.DataProvider var3 : TARGET_PROVIDERS) {
+      for (DataCommands.DataProvider var3 : TARGET_PROVIDERS) {
          var3.wrap(
             var1,
             var2 -> {
-               RequiredArgumentBuilder var3xx = Commands.argument("targetPath", NbtPathArgument.nbtPath());
-   
-               for(DataCommands.DataProvider var5 : SOURCE_PROVIDERS) {
+               RequiredArgumentBuilder var3x = Commands.argument("targetPath", NbtPathArgument.nbtPath());
+
+               for (DataCommands.DataProvider var5 : SOURCE_PROVIDERS) {
                   var0.accept(
-                     var3xx,
+                     var3x,
                      var2x -> var5.wrap(
                            Commands.literal("from"),
                            var3xx -> var3xx.executes(var3xxx -> manipulateData(var3xxx, var3, var2x, getSingletonSource(var3xxx, var5)))
@@ -215,7 +213,7 @@ public class DataCommands {
                         )
                   );
                   var0.accept(
-                     var3xx,
+                     var3x,
                      var2x -> var5.wrap(
                            Commands.literal("string"),
                            var3xx -> var3xx.executes(
@@ -264,12 +262,12 @@ public class DataCommands {
                         )
                   );
                }
-   
-               var0.accept(var3xx, var1xx -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes(var2x -> {
-                     List var3xxx = Collections.singletonList(NbtTagArgument.getNbtTag(var2x, "value"));
-                     return manipulateData(var2x, var3, var1xx, var3xxx);
+
+               var0.accept(var3x, var1xx -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes(var2x -> {
+                     List var3xx = Collections.singletonList(NbtTagArgument.getNbtTag(var2x, "value"));
+                     return manipulateData(var2x, var3, var1xx, var3xx);
                   })));
-               return var2.then(var3xx);
+               return var2.then(var3x);
             }
          );
       }

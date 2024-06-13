@@ -15,7 +15,7 @@ public class LastSeenMessagesValidator {
       super();
       this.lastSeenCount = var1;
 
-      for(int var2 = 0; var2 < var1; ++var2) {
+      for (int var2 = 0; var2 < var1; var2++) {
          this.trackedMessages.add(null);
       }
    }
@@ -49,7 +49,7 @@ public class LastSeenMessagesValidator {
          if (var1.acknowledged().length() > this.lastSeenCount) {
             return Optional.empty();
          } else {
-            for(int var3 = 0; var3 < this.lastSeenCount; ++var3) {
+            for (int var3 = 0; var3 < this.lastSeenCount; var3++) {
                boolean var4 = var1.acknowledged().get(var3);
                LastSeenTrackedEntry var5 = (LastSeenTrackedEntry)this.trackedMessages.get(var3);
                if (var4) {

@@ -17,8 +17,8 @@ public class FillLayerFeature extends Feature<LayerConfiguration> {
       WorldGenLevel var4 = var1.level();
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-      for(int var6 = 0; var6 < 16; ++var6) {
-         for(int var7 = 0; var7 < 16; ++var7) {
+      for (int var6 = 0; var6 < 16; var6++) {
+         for (int var7 = 0; var7 < 16; var7++) {
             int var8 = var2.getX() + var6;
             int var9 = var2.getZ() + var7;
             int var10 = var4.getMinBuildHeight() + var3.height;

@@ -90,7 +90,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
       if (!canSupportRigidBlock(var1, var0.below())) {
          return true;
       } else {
-         switch(var2) {
+         switch (var2) {
             case ASCENDING_EAST:
                return !canSupportRigidBlock(var1, var0.east());
             case ASCENDING_WEST:

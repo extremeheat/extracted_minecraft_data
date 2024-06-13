@@ -107,7 +107,7 @@ public class ConnectScreen extends Screen {
 
                var1x = (InetSocketAddress)var2x.get();
                Connection var10;
-               synchronized(ConnectScreen.this) {
+               synchronized (ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
                      return;
                   }
@@ -118,7 +118,7 @@ public class ConnectScreen extends Screen {
                }
 
                ConnectScreen.this.channelFuture.syncUninterruptibly();
-               synchronized(ConnectScreen.this) {
+               synchronized (ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
                      var10.disconnect(ConnectScreen.ABORT_CONNECTION);
                      return;
@@ -145,10 +145,9 @@ public class ConnectScreen extends Screen {
                   return;
                }
 
-               Throwable var5 = var9.getCause();
                Exception var3x;
-               if (var5 instanceof Exception var4x) {
-                  var3x = (Exception)var4x;
+               if (var9.getCause() instanceof Exception var4x) {
+                  var3x = var4x;
                } else {
                   var3x = var9;
                }
@@ -168,7 +167,7 @@ public class ConnectScreen extends Screen {
          }
 
          private static ServerPackManager.PackPromptStatus convertPackStatus(ServerData.ServerPackStatus var0) {
-            return switch(var0) {
+            return switch (var0) {
                case ENABLED -> ServerPackManager.PackPromptStatus.ALLOWED;
                case DISABLED -> ServerPackManager.PackPromptStatus.DECLINED;
                case PROMPT -> ServerPackManager.PackPromptStatus.PENDING;
@@ -202,7 +201,7 @@ public class ConnectScreen extends Screen {
    @Override
    protected void init() {
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1 -> {
-         synchronized(this) {
+         synchronized (this) {
             this.aborted = true;
             if (this.channelFuture != null) {
                this.channelFuture.cancel(true);

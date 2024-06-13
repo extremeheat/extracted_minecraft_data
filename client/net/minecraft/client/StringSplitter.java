@@ -150,14 +150,14 @@ public class StringSplitter {
       boolean var5 = var1 < 0;
       int var6 = Math.abs(var1);
 
-      for(int var7 = 0; var7 < var6; ++var7) {
+      for (int var7 = 0; var7 < var6; var7++) {
          if (var5) {
-            while(var3 && var4 > 0 && (var0.charAt(var4 - 1) == ' ' || var0.charAt(var4 - 1) == '\n')) {
-               --var4;
+            while (var3 && var4 > 0 && (var0.charAt(var4 - 1) == ' ' || var0.charAt(var4 - 1) == '\n')) {
+               var4--;
             }
 
-            while(var4 > 0 && var0.charAt(var4 - 1) != ' ' && var0.charAt(var4 - 1) != '\n') {
-               --var4;
+            while (var4 > 0 && var0.charAt(var4 - 1) != ' ' && var0.charAt(var4 - 1) != '\n') {
+               var4--;
             }
          } else {
             int var8 = var0.length();
@@ -176,8 +176,8 @@ public class StringSplitter {
             if (var4 == -1) {
                var4 = var8;
             } else {
-               while(var3 && var4 < var8 && (var0.charAt(var4) == ' ' || var0.charAt(var4) == '\n')) {
-                  ++var4;
+               while (var3 && var4 < var8 && (var0.charAt(var4) == ' ' || var0.charAt(var4) == '\n')) {
+                  var4++;
                }
             }
          }
@@ -189,10 +189,10 @@ public class StringSplitter {
    public void splitLines(String var1, int var2, Style var3, boolean var4, StringSplitter.LinePosConsumer var5) {
       int var6 = 0;
       int var7 = var1.length();
+      Style var8 = var3;
 
-      StringSplitter.LineBreakFinder var9;
-      for(Style var8 = var3; var6 < var7; var8 = var9.getSplitStyle()) {
-         var9 = new StringSplitter.LineBreakFinder((float)var2);
+      while (var6 < var7) {
+         StringSplitter.LineBreakFinder var9 = new StringSplitter.LineBreakFinder((float)var2);
          boolean var10 = StringDecomposer.iterateFormatted(var1, var6, var8, var3, var9);
          if (var10) {
             var5.accept(var8, var6, var7);
@@ -204,6 +204,7 @@ public class StringSplitter {
          int var13 = var12 != '\n' && var12 != ' ' ? var11 : var11 + 1;
          var5.accept(var8, var6, var4 ? var13 : var11);
          var6 = var13;
+         var8 = var9.getSplitStyle();
       }
    }
 
@@ -239,11 +240,11 @@ public class StringSplitter {
       boolean var8 = false;
       boolean var9 = false;
 
-      while(var7) {
+      while (var7) {
          var7 = false;
          StringSplitter.LineBreakFinder var10 = new StringSplitter.LineBreakFinder((float)var2);
 
-         for(StringSplitter.LineComponent var12 : var6.parts) {
+         for (StringSplitter.LineComponent var12 : var6.parts) {
             boolean var13 = StringDecomposer.iterateFormatted(var12.contents, 0, var12.style, var3, var10);
             if (!var13) {
                int var14 = var10.getSplitPosition();
@@ -291,7 +292,7 @@ public class StringSplitter {
          int var6 = var1;
          boolean var7 = false;
 
-         while(var5.hasNext()) {
+         while (var5.hasNext()) {
             StringSplitter.LineComponent var8 = (StringSplitter.LineComponent)var5.next();
             String var9 = var8.contents;
             int var10 = var9.length();
@@ -359,7 +360,7 @@ public class StringSplitter {
       @Override
       public boolean accept(int var1, Style var2, int var3) {
          int var4 = var1 + this.offset;
-         switch(var3) {
+         switch (var3) {
             case 10:
                return this.finishIteration(var4, var2);
             case 32:
@@ -438,7 +439,7 @@ public class StringSplitter {
 
       @Override
       public boolean accept(int var1, Style var2, int var3) {
-         this.maxWidth -= StringSplitter.this.widthProvider.getWidth(var3, var2);
+         this.maxWidth = this.maxWidth - StringSplitter.this.widthProvider.getWidth(var3, var2);
          if (this.maxWidth >= 0.0F) {
             this.position = var1 + Character.charCount(var3);
             return true;

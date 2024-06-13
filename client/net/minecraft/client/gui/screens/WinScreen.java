@@ -149,29 +149,27 @@ public class WinScreen extends Screen {
       RandomSource var3 = RandomSource.create(8124371L);
 
       String var4;
-      while((var4 = var2.readLine()) != null) {
+      while ((var4 = var2.readLine()) != null) {
+         var4 = var4.replaceAll("PLAYERNAME", this.minecraft.getUser().getName());
+
          int var5;
-         String var6;
-         String var7;
-         for(var4 = var4.replaceAll("PLAYERNAME", this.minecraft.getUser().getName());
-            (var5 = var4.indexOf(OBFUSCATE_TOKEN)) != -1;
-            var4 = var6 + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + "XXXXXXXX".substring(0, var3.nextInt(4) + 3) + var7
-         ) {
-            var6 = var4.substring(0, var5);
-            var7 = var4.substring(var5 + OBFUSCATE_TOKEN.length());
+         while ((var5 = var4.indexOf(OBFUSCATE_TOKEN)) != -1) {
+            Object var6 = var4.substring(0, var5);
+            String var7 = var4.substring(var5 + OBFUSCATE_TOKEN.length());
+            var4 = var6 + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + "XXXXXXXX".substring(0, var3.nextInt(4) + 3) + var7;
          }
 
          this.addPoemLines(var4);
          this.addEmptyLine();
       }
 
-      for(int var9 = 0; var9 < 8; ++var9) {
+      for (int var9 = 0; var9 < 8; var9++) {
          this.addEmptyLine();
       }
    }
 
    private void addCreditsFile(Reader var1) {
-      for(JsonElement var4 : GsonHelper.parseArray(var1)) {
+      for (JsonElement var4 : GsonHelper.parseArray(var1)) {
          JsonObject var5 = var4.getAsJsonObject();
          String var6 = var5.get("section").getAsString();
          this.addCreditsLine(SECTION_HEADING, true);
@@ -180,7 +178,7 @@ public class WinScreen extends Screen {
          this.addEmptyLine();
          this.addEmptyLine();
 
-         for(JsonElement var9 : var5.getAsJsonArray("disciplines")) {
+         for (JsonElement var9 : var5.getAsJsonArray("disciplines")) {
             JsonObject var10 = var9.getAsJsonObject();
             String var11 = var10.get("discipline").getAsString();
             if (StringUtils.isNotEmpty(var11)) {
@@ -189,13 +187,13 @@ public class WinScreen extends Screen {
                this.addEmptyLine();
             }
 
-            for(JsonElement var14 : var10.getAsJsonArray("titles")) {
+            for (JsonElement var14 : var10.getAsJsonArray("titles")) {
                JsonObject var15 = var14.getAsJsonObject();
                String var16 = var15.get("title").getAsString();
                JsonArray var17 = var15.getAsJsonArray("names");
                this.addCreditsLine(Component.literal(var16).withStyle(ChatFormatting.GRAY), false);
 
-               for(JsonElement var19 : var17) {
+               for (JsonElement var19 : var17) {
                   String var20 = var19.getAsString();
                   this.addCreditsLine(Component.literal("           ").append(var20).withStyle(ChatFormatting.WHITE), false);
                }
@@ -236,7 +234,7 @@ public class WinScreen extends Screen {
       this.logoRenderer.renderLogo(var1, this.width, 1.0F, var6);
       int var8 = var6 + 100;
 
-      for(int var9 = 0; var9 < this.lines.size(); ++var9) {
+      for (int var9 = 0; var9 < this.lines.size(); var9++) {
          if (var9 == this.lines.size() - 1) {
             float var10 = (float)var8 + var7 - (float)(this.height / 2 - 6);
             if (var10 < 0.0F) {

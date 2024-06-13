@@ -19,6 +19,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractHurtingProjectile extends Projectile {
+   public static final double DEFLECTION_SCALE = 0.05;
    public double xPower;
    public double yPower;
    public double zPower;
@@ -77,7 +78,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
          HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
          if (var2.getType() != HitResult.Type.MISS) {
-            this.onHit(var2);
+            this.hitOrDeflect(var2);
          }
 
          this.checkInsideBlocks();
@@ -88,7 +89,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
          ProjectileUtil.rotateTowardsMovement(this, 0.2F);
          float var10;
          if (this.isInWater()) {
-            for(int var11 = 0; var11 < 4; ++var11) {
+            for (int var11 = 0; var11 < 4; var11++) {
                float var12 = 0.25F;
                this.level().addParticle(ParticleTypes.BUBBLE, var4 - var3.x * 0.25, var6 - var3.y * 0.25, var8 - var3.z * 0.25, var3.x, var3.y, var3.z);
             }
@@ -108,12 +109,6 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       } else {
          this.discard();
       }
-   }
-
-   @Override
-   public void lerpMotion(double var1, double var3, double var5) {
-      super.lerpMotion(var1, var3, var5);
-      this.assignPower(var1, var3, var5);
    }
 
    @Override
@@ -231,5 +226,12 @@ public abstract class AbstractHurtingProjectile extends Projectile {
          this.yPower = var3 / var7 * 0.1;
          this.zPower = var5 / var7 * 0.1;
       }
+   }
+
+   @Override
+   public void onDeflection() {
+      this.xPower = this.getDeltaMovement().x * 0.05;
+      this.yPower = this.getDeltaMovement().y * 0.05;
+      this.zPower = this.getDeltaMovement().z * 0.05;
    }
 }

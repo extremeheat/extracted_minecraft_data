@@ -14,7 +14,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public abstract class FoliagePlacer {
@@ -94,8 +93,8 @@ public abstract class FoliagePlacer {
       int var9 = var8 ? 1 : 0;
       BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
 
-      for(int var11 = -var6; var11 <= var6 + var9; ++var11) {
-         for(int var12 = -var6; var12 <= var6 + var9; ++var12) {
+      for (int var11 = -var6; var11 <= var6 + var9; var11++) {
+         for (int var12 = -var6; var12 <= var6 + var9; var12++) {
             if (!this.shouldSkipLocationSigned(var3, var11, var7, var12, var6, var8)) {
                var10.setWithOffset(var5, var11, var7, var12);
                tryPlaceLeaf(var1, var2, var3, var4, var10);
@@ -121,13 +120,13 @@ public abstract class FoliagePlacer {
       BlockPos var12 = var5.below();
       BlockPos.MutableBlockPos var13 = new BlockPos.MutableBlockPos();
 
-      for(Direction var15 : Direction.Plane.HORIZONTAL) {
+      for (Direction var15 : Direction.Plane.HORIZONTAL) {
          Direction var16 = var15.getClockWise();
          int var17 = var16.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var6 + var11 : var6;
          var13.setWithOffset(var5, 0, var7 - 1, 0).move(var16, var17).move(var15, -var6);
          int var18 = -var6;
 
-         while(var18 < var6 + var11) {
+         while (var18 < var6 + var11) {
             boolean var19 = var2.isSet(var13.move(Direction.UP));
             var13.move(Direction.DOWN);
             if (var19 && tryPlaceExtension(var1, var2, var3, var4, var9, var12, var13)) {
@@ -136,7 +135,7 @@ public abstract class FoliagePlacer {
                var13.move(Direction.UP);
             }
 
-            ++var18;
+            var18++;
             var13.move(var15);
          }
       }

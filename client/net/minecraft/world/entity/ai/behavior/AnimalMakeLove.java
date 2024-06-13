@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -102,7 +101,7 @@ public class AnimalMakeLove extends Behavior<Animal> {
 
    private Optional<? extends Animal> findValidBreedPartner(Animal var1) {
       return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get().findClosest(var2 -> {
-         if (var2.getType() == this.partnerType && var2 instanceof Animal var3 && var1.canMate((Animal)var3) && !((Animal)var3).isPanicking()) {
+         if (var2.getType() == this.partnerType && var2 instanceof Animal var3 && var1.canMate(var3) && !var3.isPanicking()) {
             return true;
          }
 

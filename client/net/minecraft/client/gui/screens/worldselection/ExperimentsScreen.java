@@ -6,11 +6,10 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
@@ -36,7 +35,7 @@ public class ExperimentsScreen extends Screen {
       this.packRepository = var2;
       this.output = var3;
 
-      for(Pack var5 : var2.getAvailablePacks()) {
+      for (Pack var5 : var2.getAvailablePacks()) {
          if (var5.getPackSource() == PackSource.FEATURE) {
             this.packs.put(var5, var2.getSelectedPacks().contains(var5));
          }
@@ -59,6 +58,7 @@ public class ExperimentsScreen extends Screen {
       var3.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onDone()).build());
       var3.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }

@@ -176,8 +176,6 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
@@ -282,21 +280,18 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       }
    }
 
-   public static record Variant(TropicalFish.Pattern b, DyeColor c, DyeColor d) {
-      private final TropicalFish.Pattern pattern;
-      private final DyeColor baseColor;
-      private final DyeColor patternColor;
+   public static record Variant(TropicalFish.Pattern pattern, DyeColor baseColor, DyeColor patternColor) {
       public static final Codec<TropicalFish.Variant> CODEC = Codec.INT.xmap(TropicalFish.Variant::new, TropicalFish.Variant::getPackedId);
 
       public Variant(int var1) {
          this(TropicalFish.getPattern(var1), TropicalFish.getBaseColor(var1), TropicalFish.getPatternColor(var1));
       }
 
-      public Variant(TropicalFish.Pattern var1, DyeColor var2, DyeColor var3) {
+      public Variant(TropicalFish.Pattern pattern, DyeColor baseColor, DyeColor patternColor) {
          super();
-         this.pattern = var1;
-         this.baseColor = var2;
-         this.patternColor = var3;
+         this.pattern = pattern;
+         this.baseColor = baseColor;
+         this.patternColor = patternColor;
       }
 
       public int getPackedId() {

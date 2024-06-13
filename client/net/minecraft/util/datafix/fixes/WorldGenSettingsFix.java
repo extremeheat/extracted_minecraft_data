@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
@@ -14,13 +13,11 @@ import com.mojang.serialization.DynamicLike;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.OptionalDynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -105,7 +102,7 @@ public class WorldGenSettingsFix extends DataFix {
          var4 = defaultOverworld(var0, var2);
       } else {
          String var8 = (String)var5.get();
-         switch(var8) {
+         switch (var8) {
             case "flat":
                OptionalDynamic var10 = var0.get("generatorOptions");
                Map var11 = fixFlatStructures(var1, var10);
@@ -119,12 +116,12 @@ public class WorldGenSettingsFix extends DataFix {
                            var0.createString("structures"),
                            var0.createMap(var11),
                            var0.createString("layers"),
-                           (Dynamic)var10.get("layers")
+                           var10.get("layers")
                               .result()
                               .orElseGet(
-                                 () -> (T)var0.createList(
+                                 () -> var0.createList(
                                        Stream.of(
-                                          (T[])(var0.createMap(
+                                          var0.createMap(
                                              ImmutableMap.of(
                                                 var0.createString("height"),
                                                 var0.createInt(1),
@@ -144,7 +141,7 @@ public class WorldGenSettingsFix extends DataFix {
                                                 var0.createString("block"),
                                                 var0.createString("minecraft:grass_block")
                                              )
-                                          ))
+                                          )
                                        )
                                     )
                               ),
@@ -172,18 +169,18 @@ public class WorldGenSettingsFix extends DataFix {
                   var15 = var0.createString("minecraft:overworld");
                }
 
-               Dynamic var16 = (Dynamic)var12.get("biome_source")
+               Dynamic var16 = var12.get("biome_source")
                   .result()
-                  .orElseGet(() -> (T)var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:fixed"))));
+                  .orElseGet(() -> var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:fixed"))));
                Dynamic var17;
                if (var16.get("type").asString().result().equals(Optional.of("minecraft:fixed"))) {
-                  String var18 = var16.get("options")
+                  String var25 = var16.get("options")
                      .get("biomes")
                      .asStream()
                      .findFirst()
                      .flatMap(var0x -> var0x.asString().result())
                      .orElse("minecraft:ocean");
-                  var17 = var16.remove("options").set("biome", var0.createString(var18));
+                  var17 = var16.remove("options").set("biome", var0.createString(var25));
                } else {
                   var17 = var16;
                }
@@ -191,8 +188,8 @@ public class WorldGenSettingsFix extends DataFix {
                var4 = noise(var2, var0, var15, var17);
                break;
             default:
-               boolean var25 = ((String)var5.get()).equals("default");
-               boolean var19 = ((String)var5.get()).equals("default_1_1") || var25 && var0.get("generatorVersion").asInt(0) == 0;
+               boolean var18 = ((String)var5.get()).equals("default");
+               boolean var19 = ((String)var5.get()).equals("default_1_1") || var18 && var0.get("generatorVersion").asInt(0) == 0;
                boolean var20 = ((String)var5.get()).equals("amplified");
                boolean var21 = ((String)var5.get()).equals("largebiomes");
                var4 = noise(var2, var0, var0.createString(var20 ? "minecraft:amplified" : "minecraft:overworld"), vanillaBiomeSource(var0, var2, var19, var21));
@@ -282,8 +279,7 @@ public class WorldGenSettingsFix extends DataFix {
 
       var1.get("structures")
          .flatMap(Dynamic::getMapValues)
-         .result()
-         .ifPresent(
+         .ifSuccess(
             var5x -> var5x.forEach(
                   (var5xx, var6x) -> var6x.getMapValues()
                         .result()
@@ -295,7 +291,7 @@ public class WorldGenSettingsFix extends DataFix {
                                     String var10 = var7x.asString("");
                                     if ("stronghold".equals(var8)) {
                                        var5.setTrue();
-                                       switch(var9) {
+                                       switch (var9) {
                                           case "distance":
                                              var2.setValue(getInt(var10, var2.getValue(), 1));
                                              return;
@@ -307,9 +303,9 @@ public class WorldGenSettingsFix extends DataFix {
                                              return;
                                        }
                                     } else {
-                                       switch(var9) {
+                                       switch (var9) {
                                           case "distance":
-                                             switch(var8) {
+                                             switch (var8) {
                                                 case "village":
                                                    setSpacing(var6, "minecraft:village", var10, 9);
                                                    return;
@@ -340,13 +336,13 @@ public class WorldGenSettingsFix extends DataFix {
                                                    new WorldGenSettingsFix.StructureFeatureConfiguration(var14, var13.separation, var13.salt)
                                                 );
                                              }
-                  
+
                                              return;
                                           case "spacing":
                                              if ("oceanmonument".equals(var8)) {
                                                 setSpacing(var6, "minecraft:monument", var10, 1);
                                              }
-                  
+
                                              return;
                                        }
                                     }

@@ -32,7 +32,7 @@ public enum Unit {
    }
 
    public static String humanReadable(long var0) {
-      boolean var2 = true;
+      short var2 = 1024;
       if (var0 < 1024L) {
          return var0 + " B";
       } else {

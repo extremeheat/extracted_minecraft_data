@@ -10,11 +10,11 @@ import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.RealmsUtil;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.SpriteIconButton;
@@ -62,6 +62,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
       );
       var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
@@ -78,7 +79,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
       if (this.invitedList != null) {
          this.invitedList.children().clear();
 
-         for(PlayerInfo var2 : this.serverData.players) {
+         for (PlayerInfo var2 : this.serverData.players) {
             this.invitedList.children().add(new RealmsPlayerScreen.Entry(var2));
          }
       }
@@ -196,7 +197,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
       }
 
       private void updateOps(Ops var1) {
-         for(PlayerInfo var3 : RealmsPlayerScreen.this.serverData.players) {
+         for (PlayerInfo var3 : RealmsPlayerScreen.this.serverData.players) {
             var3.setOperator(var1.ops.contains(var3.getName()));
          }
       }

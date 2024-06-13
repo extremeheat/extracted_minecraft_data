@@ -4,9 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record NeighborUpdatesDebugPayload(long c, BlockPos d) implements CustomPacketPayload {
-   private final long time;
-   private final BlockPos pos;
+public record NeighborUpdatesDebugPayload(long time, BlockPos pos) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, NeighborUpdatesDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
       NeighborUpdatesDebugPayload::write, NeighborUpdatesDebugPayload::new
    );
@@ -16,10 +14,10 @@ public record NeighborUpdatesDebugPayload(long c, BlockPos d) implements CustomP
       this(var1.readVarLong(), var1.readBlockPos());
    }
 
-   public NeighborUpdatesDebugPayload(long var1, BlockPos var3) {
+   public NeighborUpdatesDebugPayload(long time, BlockPos pos) {
       super();
-      this.time = var1;
-      this.pos = var3;
+      this.time = time;
+      this.pos = pos;
    }
 
    private void write(FriendlyByteBuf var1) {

@@ -1,35 +1,33 @@
 package net.minecraft.core.component;
 
+import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Unit;
 
 public final class DataComponentPatch {
    public static final DataComponentPatch EMPTY = new DataComponentPatch(Reference2ObjectMaps.emptyMap());
-   public static final Codec<DataComponentPatch> CODEC = ExtraCodecs.unboundedDispatchMap(
-         DataComponentPatch.PatchKey.CODEC, DataComponentPatch.PatchKey::valueCodec
-      )
+   public static final Codec<DataComponentPatch> CODEC = Codec.dispatchedMap(DataComponentPatch.PatchKey.CODEC, DataComponentPatch.PatchKey::valueCodec)
       .xmap(var0 -> {
          if (var0.isEmpty()) {
             return EMPTY;
          } else {
             Reference2ObjectArrayMap var1 = new Reference2ObjectArrayMap(var0.size());
-   
-            for(Entry var3 : var0.entrySet()) {
+
+            for (Entry var3 : var0.entrySet()) {
                DataComponentPatch.PatchKey var4 = (DataComponentPatch.PatchKey)var3.getKey();
                if (var4.removed()) {
                   var1.put(var4.type(), Optional.empty());
@@ -37,14 +35,14 @@ public final class DataComponentPatch {
                   var1.put(var4.type(), Optional.of(var3.getValue()));
                }
             }
-   
+
             return new DataComponentPatch(var1);
          }
       }, var0 -> {
          Reference2ObjectArrayMap var1 = new Reference2ObjectArrayMap(var0.map.size());
          ObjectIterator var2 = Reference2ObjectMaps.fastIterable(var0.map).iterator();
-   
-         while(var2.hasNext()) {
+
+         while (var2.hasNext()) {
             Entry var3 = (Entry)var2.next();
             DataComponentType var4 = (DataComponentType)var3.getKey();
             if (!var4.isTransient()) {
@@ -56,7 +54,7 @@ public final class DataComponentPatch {
                }
             }
          }
-   
+
          return var1;
       });
    public static final StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch> STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch>() {
@@ -68,13 +66,13 @@ public final class DataComponentPatch {
          } else {
             Reference2ObjectArrayMap var4 = new Reference2ObjectArrayMap(var2 + var3);
 
-            for(int var5 = 0; var5 < var2; ++var5) {
+            for (int var5 = 0; var5 < var2; var5++) {
                DataComponentType var6 = DataComponentType.STREAM_CODEC.decode(var1);
                Object var7 = var6.streamCodec().decode(var1);
                var4.put(var6, Optional.of(var7));
             }
 
-            for(int var8 = 0; var8 < var3; ++var8) {
+            for (int var8 = 0; var8 < var3; var8++) {
                DataComponentType var9 = DataComponentType.STREAM_CODEC.decode(var1);
                var4.put(var9, Optional.empty());
             }
@@ -92,12 +90,12 @@ public final class DataComponentPatch {
             int var4 = 0;
             ObjectIterator var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
 
-            while(var5.hasNext()) {
+            while (var5.hasNext()) {
                it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var6 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var5.next();
                if (((Optional)var6.getValue()).isPresent()) {
-                  ++var3;
+                  var3++;
                } else {
-                  ++var4;
+                  var4++;
                }
             }
 
@@ -105,7 +103,7 @@ public final class DataComponentPatch {
             var1.writeVarInt(var4);
             var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
 
-            while(var5.hasNext()) {
+            while (var5.hasNext()) {
                it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var11 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var5.next();
                Optional var7 = (Optional)var11.getValue();
                if (var7.isPresent()) {
@@ -117,7 +115,7 @@ public final class DataComponentPatch {
 
             var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
 
-            while(var5.hasNext()) {
+            while (var5.hasNext()) {
                it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var12 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var5.next();
                if (((Optional)var12.getValue()).isEmpty()) {
                   DataComponentType var13 = (DataComponentType)var12.getKey();
@@ -156,8 +154,35 @@ public final class DataComponentPatch {
       return this.map.size();
    }
 
+   public DataComponentPatch forget(Predicate<DataComponentType<?>> var1) {
+      if (this.isEmpty()) {
+         return EMPTY;
+      } else {
+         Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(this.map);
+         var2.keySet().removeIf(var1);
+         return var2.isEmpty() ? EMPTY : new DataComponentPatch(var2);
+      }
+   }
+
    public boolean isEmpty() {
       return this.map.isEmpty();
+   }
+
+   public DataComponentPatch.SplitResult split() {
+      if (this.isEmpty()) {
+         return DataComponentPatch.SplitResult.EMPTY;
+      } else {
+         DataComponentMap.Builder var1 = DataComponentMap.builder();
+         Set var2 = Sets.newIdentityHashSet();
+         this.map.forEach((var2x, var3) -> {
+            if (var3.isPresent()) {
+               var1.setUnchecked(var2x, var3.get());
+            } else {
+               var2.add(var2x);
+            }
+         });
+         return new DataComponentPatch.SplitResult(var1.build(), var2);
+      }
    }
 
    @Override
@@ -189,7 +214,7 @@ public final class DataComponentPatch {
       boolean var2 = true;
       ObjectIterator var3 = Reference2ObjectMaps.fastIterable(var0).iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          Entry var4 = (Entry)var3.next();
          if (var2) {
             var2 = false;
@@ -230,17 +255,15 @@ public final class DataComponentPatch {
       }
 
       public <T> DataComponentPatch.Builder set(TypedDataComponent<T> var1) {
-         return this.set(var1.type(), (T)var1.value());
+         return this.set(var1.type(), var1.value());
       }
 
       public DataComponentPatch build() {
-         return new DataComponentPatch(this.map);
+         return this.map.isEmpty() ? DataComponentPatch.EMPTY : new DataComponentPatch(this.map);
       }
    }
 
-   static record PatchKey(DataComponentType<?> b, boolean c) {
-      private final DataComponentType<?> type;
-      private final boolean removed;
+   static record PatchKey(DataComponentType<?> type, boolean removed) {
       public static final Codec<DataComponentPatch.PatchKey> CODEC = Codec.STRING
          .flatXmap(
             var0 -> {
@@ -248,7 +271,7 @@ public final class DataComponentPatch {
                if (var1) {
                   var0 = var0.substring("!".length());
                }
-      
+
                ResourceLocation var2 = ResourceLocation.tryParse(var0);
                DataComponentType var3 = BuiltInRegistries.DATA_COMPONENT_TYPE.get(var2);
                if (var3 == null) {
@@ -268,14 +291,24 @@ public final class DataComponentPatch {
             }
          );
 
-      PatchKey(DataComponentType<?> var1, boolean var2) {
+      PatchKey(DataComponentType<?> type, boolean removed) {
          super();
-         this.type = var1;
-         this.removed = var2;
+         this.type = type;
+         this.removed = removed;
       }
 
       public Codec<?> valueCodec() {
          return this.removed ? Codec.unit(Unit.INSTANCE) : this.type.codecOrThrow();
+      }
+   }
+
+   public static record SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
+      public static final DataComponentPatch.SplitResult EMPTY = new DataComponentPatch.SplitResult(DataComponentMap.EMPTY, Set.of());
+
+      public SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
+         super();
+         this.added = added;
+         this.removed = removed;
       }
    }
 }

@@ -42,7 +42,7 @@ public class NativeModuleLister {
          int var0 = Kernel32.INSTANCE.GetCurrentProcessId();
          Builder var1 = ImmutableList.builder();
 
-         for(MODULEENTRY32W var4 : Kernel32Util.getModules(var0)) {
+         for (MODULEENTRY32W var4 : Kernel32Util.getModules(var0)) {
             String var5 = var4.szModule();
             Optional var6 = tryGetVersion(var4.szExePath());
             var1.add(new NativeModuleLister.NativeModuleInfo(var5, var6));
@@ -98,7 +98,7 @@ public class NativeModuleLister {
    private static OptionalInt findLangAndCodepage(int[] var0) {
       OptionalInt var1 = OptionalInt.empty();
 
-      for(int var5 : var0) {
+      for (int var5 : var0) {
          if ((var5 & -65536) == 78643200 && (var5 & 65535) == 1033) {
             return OptionalInt.of(var5);
          }

@@ -195,15 +195,15 @@ public class Silverfish extends Monster {
 
       @Override
       public void tick() {
-         --this.lookForFriends;
+         this.lookForFriends--;
          if (this.lookForFriends <= 0) {
             Level var1 = this.silverfish.level();
             RandomSource var2 = this.silverfish.getRandom();
             BlockPos var3 = this.silverfish.blockPosition();
 
-            for(int var4 = 0; var4 <= 5 && var4 >= -5; var4 = (var4 <= 0 ? 1 : 0) - var4) {
-               for(int var5 = 0; var5 <= 10 && var5 >= -10; var5 = (var5 <= 0 ? 1 : 0) - var5) {
-                  for(int var6 = 0; var6 <= 10 && var6 >= -10; var6 = (var6 <= 0 ? 1 : 0) - var6) {
+            for (int var4 = 0; var4 <= 5 && var4 >= -5; var4 = (var4 <= 0 ? 1 : 0) - var4) {
+               for (int var5 = 0; var5 <= 10 && var5 >= -10; var5 = (var5 <= 0 ? 1 : 0) - var5) {
+                  for (int var6 = 0; var6 <= 10 && var6 >= -10; var6 = (var6 <= 0 ? 1 : 0) - var6) {
                      BlockPos var7 = var3.offset(var5, var4, var6);
                      BlockState var8 = var1.getBlockState(var7);
                      Block var9 = var8.getBlock();

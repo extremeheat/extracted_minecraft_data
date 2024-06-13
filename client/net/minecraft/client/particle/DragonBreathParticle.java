@@ -57,10 +57,10 @@ public class DragonBreathParticle extends TextureSheetParticle {
             this.zd *= 1.1;
          }
 
-         this.xd *= (double)this.friction;
-         this.zd *= (double)this.friction;
+         this.xd = this.xd * (double)this.friction;
+         this.zd = this.zd * (double)this.friction;
          if (this.hasHitGround) {
-            this.yd *= (double)this.friction;
+            this.yd = this.yd * (double)this.friction;
          }
       }
    }

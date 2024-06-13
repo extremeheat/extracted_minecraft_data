@@ -69,7 +69,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       this.itemModelShaper = new ItemModelShaper(var3);
       this.blockEntityRenderer = var5;
 
-      for(Item var7 : BuiltInRegistries.ITEM) {
+      for (Item var7 : BuiltInRegistries.ITEM) {
          if (!IGNORED.contains(var7)) {
             this.itemModelShaper.register(var7, new ModelResourceLocation(BuiltInRegistries.ITEM.getKey(var7), "inventory"));
          }
@@ -86,7 +86,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       RandomSource var7 = RandomSource.create();
       long var8 = 42L;
 
-      for(Direction var13 : Direction.values()) {
+      for (Direction var13 : Direction.values()) {
          var7.setSeed(42L);
          this.renderQuadList(var5, var6, var1.getQuads(null, var13, var7), var2, var3, var4);
       }
@@ -186,7 +186,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       boolean var7 = !var4.isEmpty();
       PoseStack.Pose var8 = var1.last();
 
-      for(BakedQuad var10 : var3) {
+      for (BakedQuad var10 : var3) {
          int var11 = -1;
          if (var7 && var10.isTinted()) {
             var11 = this.itemColors.getColor(var4, var10.getTintIndex());

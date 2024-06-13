@@ -2,7 +2,6 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -11,67 +10,58 @@ import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
 public record LocationPredicate(
-   Optional<LocationPredicate.PositionPredicate> b,
-   Optional<HolderSet<Biome>> c,
-   Optional<HolderSet<Structure>> d,
-   Optional<ResourceKey<Level>> e,
-   Optional<Boolean> f,
-   Optional<LightPredicate> g,
-   Optional<BlockPredicate> h,
-   Optional<FluidPredicate> i
+   Optional<LocationPredicate.PositionPredicate> position,
+   Optional<HolderSet<Biome>> biomes,
+   Optional<HolderSet<Structure>> structures,
+   Optional<ResourceKey<Level>> dimension,
+   Optional<Boolean> smokey,
+   Optional<LightPredicate> light,
+   Optional<BlockPredicate> block,
+   Optional<FluidPredicate> fluid
 ) {
-   private final Optional<LocationPredicate.PositionPredicate> position;
-   private final Optional<HolderSet<Biome>> biomes;
-   private final Optional<HolderSet<Structure>> structures;
-   private final Optional<ResourceKey<Level>> dimension;
-   private final Optional<Boolean> smokey;
-   private final Optional<LightPredicate> light;
-   private final Optional<BlockPredicate> block;
-   private final Optional<FluidPredicate> fluid;
    public static final Codec<LocationPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(LocationPredicate.PositionPredicate.CODEC, "position").forGetter(LocationPredicate::position),
-               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.BIOME), "biomes").forGetter(LocationPredicate::biomes),
-               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.STRUCTURE), "structures").forGetter(LocationPredicate::structures),
-               ExtraCodecs.strictOptionalField(ResourceKey.codec(Registries.DIMENSION), "dimension").forGetter(LocationPredicate::dimension),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "smokey").forGetter(LocationPredicate::smokey),
-               ExtraCodecs.strictOptionalField(LightPredicate.CODEC, "light").forGetter(LocationPredicate::light),
-               ExtraCodecs.strictOptionalField(BlockPredicate.CODEC, "block").forGetter(LocationPredicate::block),
-               ExtraCodecs.strictOptionalField(FluidPredicate.CODEC, "fluid").forGetter(LocationPredicate::fluid)
+               LocationPredicate.PositionPredicate.CODEC.optionalFieldOf("position").forGetter(LocationPredicate::position),
+               RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(LocationPredicate::biomes),
+               RegistryCodecs.homogeneousList(Registries.STRUCTURE).optionalFieldOf("structures").forGetter(LocationPredicate::structures),
+               ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(LocationPredicate::dimension),
+               Codec.BOOL.optionalFieldOf("smokey").forGetter(LocationPredicate::smokey),
+               LightPredicate.CODEC.optionalFieldOf("light").forGetter(LocationPredicate::light),
+               BlockPredicate.CODEC.optionalFieldOf("block").forGetter(LocationPredicate::block),
+               FluidPredicate.CODEC.optionalFieldOf("fluid").forGetter(LocationPredicate::fluid)
             )
             .apply(var0, LocationPredicate::new)
    );
 
    public LocationPredicate(
-      Optional<LocationPredicate.PositionPredicate> var1,
-      Optional<HolderSet<Biome>> var2,
-      Optional<HolderSet<Structure>> var3,
-      Optional<ResourceKey<Level>> var4,
-      Optional<Boolean> var5,
-      Optional<LightPredicate> var6,
-      Optional<BlockPredicate> var7,
-      Optional<FluidPredicate> var8
+      Optional<LocationPredicate.PositionPredicate> position,
+      Optional<HolderSet<Biome>> biomes,
+      Optional<HolderSet<Structure>> structures,
+      Optional<ResourceKey<Level>> dimension,
+      Optional<Boolean> smokey,
+      Optional<LightPredicate> light,
+      Optional<BlockPredicate> block,
+      Optional<FluidPredicate> fluid
    ) {
       super();
-      this.position = var1;
-      this.biomes = var2;
-      this.structures = var3;
-      this.dimension = var4;
-      this.smokey = var5;
-      this.light = var6;
-      this.block = var7;
-      this.fluid = var8;
+      this.position = position;
+      this.biomes = biomes;
+      this.structures = structures;
+      this.dimension = dimension;
+      this.smokey = smokey;
+      this.light = light;
+      this.block = block;
+      this.fluid = fluid;
    }
 
    public boolean matches(ServerLevel var1, double var2, double var4, double var6) {
-      if (this.position.isPresent() && !((LocationPredicate.PositionPredicate)this.position.get()).matches(var2, var4, var6)) {
+      if (this.position.isPresent() && !this.position.get().matches(var2, var4, var6)) {
          return false;
       } else if (this.dimension.isPresent() && this.dimension.get() != var1.dimension()) {
          return false;
@@ -81,12 +71,12 @@ public record LocationPredicate(
          if (!this.biomes.isPresent() || var9 && this.biomes.get().contains(var1.getBiome(var8))) {
             if (!this.structures.isPresent() || var9 && var1.structureManager().getStructureWithPieceAt(var8, this.structures.get()).isValid()) {
                if (!this.smokey.isPresent() || var9 && this.smokey.get() == CampfireBlock.isSmokeyPos(var1, var8)) {
-                  if (this.light.isPresent() && !((LightPredicate)this.light.get()).matches(var1, var8)) {
-                     return false;
-                  } else if (this.block.isPresent() && !((BlockPredicate)this.block.get()).matches(var1, var8)) {
+                  if (this.light.isPresent() && !this.light.get().matches(var1, var8)) {
                      return false;
                   } else {
-                     return !this.fluid.isPresent() || ((FluidPredicate)this.fluid.get()).matches(var1, var8);
+                     return this.block.isPresent() && !this.block.get().matches(var1, var8)
+                        ? false
+                        : !this.fluid.isPresent() || this.fluid.get().matches(var1, var8);
                   }
                } else {
                   return false;
@@ -192,24 +182,21 @@ public record LocationPredicate(
       }
    }
 
-   static record PositionPredicate(MinMaxBounds.Doubles b, MinMaxBounds.Doubles c, MinMaxBounds.Doubles d) {
-      private final MinMaxBounds.Doubles x;
-      private final MinMaxBounds.Doubles y;
-      private final MinMaxBounds.Doubles z;
+   static record PositionPredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, MinMaxBounds.Doubles z) {
       public static final Codec<LocationPredicate.PositionPredicate> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "x", MinMaxBounds.Doubles.ANY).forGetter(LocationPredicate.PositionPredicate::x),
-                  ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "y", MinMaxBounds.Doubles.ANY).forGetter(LocationPredicate.PositionPredicate::y),
-                  ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "z", MinMaxBounds.Doubles.ANY).forGetter(LocationPredicate.PositionPredicate::z)
+                  MinMaxBounds.Doubles.CODEC.optionalFieldOf("x", MinMaxBounds.Doubles.ANY).forGetter(LocationPredicate.PositionPredicate::x),
+                  MinMaxBounds.Doubles.CODEC.optionalFieldOf("y", MinMaxBounds.Doubles.ANY).forGetter(LocationPredicate.PositionPredicate::y),
+                  MinMaxBounds.Doubles.CODEC.optionalFieldOf("z", MinMaxBounds.Doubles.ANY).forGetter(LocationPredicate.PositionPredicate::z)
                )
                .apply(var0, LocationPredicate.PositionPredicate::new)
       );
 
-      private PositionPredicate(MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, MinMaxBounds.Doubles var3) {
+      private PositionPredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, MinMaxBounds.Doubles z) {
          super();
-         this.x = var1;
-         this.y = var2;
-         this.z = var3;
+         this.x = x;
+         this.y = y;
+         this.z = z;
       }
 
       static Optional<LocationPredicate.PositionPredicate> of(MinMaxBounds.Doubles var0, MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2) {

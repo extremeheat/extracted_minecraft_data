@@ -2,7 +2,6 @@ package net.minecraft.world.item.trading;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
@@ -18,16 +17,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
-public record ItemCost(Holder<Item> d, int e, DataComponentPredicate f, ItemStack g) {
-   private final Holder<Item> item;
-   private final int count;
-   private final DataComponentPredicate components;
-   private final ItemStack itemStack;
+public record ItemCost(Holder<Item> item, int count, DataComponentPredicate components, ItemStack itemStack) {
    public static final Codec<ItemCost> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("id").forGetter(ItemCost::item),
                ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemCost::count),
-               ExtraCodecs.strictOptionalField(DataComponentPredicate.CODEC, "components", DataComponentPredicate.EMPTY).forGetter(ItemCost::components)
+               DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemCost::components)
             )
             .apply(var0, ItemCost::new)
    );
@@ -54,12 +49,12 @@ public record ItemCost(Holder<Item> d, int e, DataComponentPredicate f, ItemStac
       this(var1, var2, var3, createStack(var1, var2, var3));
    }
 
-   public ItemCost(Holder<Item> var1, int var2, DataComponentPredicate var3, ItemStack var4) {
+   public ItemCost(Holder<Item> item, int count, DataComponentPredicate components, ItemStack itemStack) {
       super();
-      this.item = var1;
-      this.count = var2;
-      this.components = var3;
-      this.itemStack = var4;
+      this.item = item;
+      this.count = count;
+      this.components = components;
+      this.itemStack = itemStack;
    }
 
    public ItemCost withComponents(UnaryOperator<DataComponentPredicate.Builder> var1) {

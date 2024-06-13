@@ -38,11 +38,11 @@ public class GameEventDispatcher {
       };
       boolean var14 = false;
 
-      for(int var15 = var6; var15 <= var9; ++var15) {
-         for(int var16 = var8; var16 <= var11; ++var16) {
+      for (int var15 = var6; var15 <= var9; var15++) {
+         for (int var16 = var8; var16 <= var11; var16++) {
             LevelChunk var17 = this.level.getChunkSource().getChunkNow(var15, var16);
             if (var17 != null) {
-               for(int var18 = var7; var18 <= var10; ++var18) {
+               for (int var18 = var7; var18 <= var10; var18++) {
                   var14 |= var17.getListenerRegistry(var18).visitInRangeListeners(var1, var2, var3, var13);
                }
             }
@@ -61,7 +61,7 @@ public class GameEventDispatcher {
    private void handleGameEventMessagesInQueue(List<GameEvent.ListenerInfo> var1) {
       Collections.sort(var1);
 
-      for(GameEvent.ListenerInfo var3 : var1) {
+      for (GameEvent.ListenerInfo var3 : var1) {
          GameEventListener var4 = var3.recipient();
          var4.handleGameEvent(this.level, var3.gameEvent(), var3.context(), var3.source());
       }

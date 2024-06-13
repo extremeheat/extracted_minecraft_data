@@ -98,7 +98,7 @@ public class TextComponentTagVisitor implements TagVisitor {
       MutableComponent var3 = Component.literal("[").append(var2).append(";");
       byte[] var4 = var1.getAsByteArray();
 
-      for(int var5 = 0; var5 < var4.length; ++var5) {
+      for (int var5 = 0; var5 < var4.length; var5++) {
          MutableComponent var6 = Component.literal(String.valueOf(var4[var5])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
          var3.append(" ").append(var6).append(var2);
          if (var5 != var4.length - 1) {
@@ -116,7 +116,7 @@ public class TextComponentTagVisitor implements TagVisitor {
       MutableComponent var3 = Component.literal("[").append(var2).append(";");
       int[] var4 = var1.getAsIntArray();
 
-      for(int var5 = 0; var5 < var4.length; ++var5) {
+      for (int var5 = 0; var5 < var4.length; var5++) {
          var3.append(" ").append(Component.literal(String.valueOf(var4[var5])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER));
          if (var5 != var4.length - 1) {
             var3.append(ELEMENT_SEPARATOR);
@@ -133,7 +133,7 @@ public class TextComponentTagVisitor implements TagVisitor {
       MutableComponent var3 = Component.literal("[").append(var2).append(";");
       long[] var4 = var1.getAsLongArray();
 
-      for(int var5 = 0; var5 < var4.length; ++var5) {
+      for (int var5 = 0; var5 < var4.length; var5++) {
          MutableComponent var6 = Component.literal(String.valueOf(var4[var5])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
          var3.append(" ").append(var6).append(var2);
          if (var5 != var4.length - 1) {
@@ -153,7 +153,7 @@ public class TextComponentTagVisitor implements TagVisitor {
          String var5 = ELEMENT_SEPARATOR + " ";
          MutableComponent var6 = Component.literal("[");
 
-         for(int var7 = 0; var7 < var1.size(); ++var7) {
+         for (int var7 = 0; var7 < var1.size(); var7++) {
             if (var7 != 0) {
                var6.append(var5);
             }
@@ -169,7 +169,7 @@ public class TextComponentTagVisitor implements TagVisitor {
             var2.append("\n");
          }
 
-         for(int var3 = 0; var3 < var1.size(); ++var3) {
+         for (int var3 = 0; var3 < var1.size(); var3++) {
             MutableComponent var4 = Component.literal(Strings.repeat(this.indentation, this.depth + 1));
             var4.append(new TextComponentTagVisitor(this.indentation, this.depth + 1).visit(var1.get(var3)));
             if (var3 != var1.size() - 1) {
@@ -205,10 +205,11 @@ public class TextComponentTagVisitor implements TagVisitor {
             var2.append("\n");
          }
 
-         MutableComponent var6;
-         for(Iterator var7 = var3.iterator(); var7.hasNext(); var2.append(var6)) {
+         Iterator var7 = var3.iterator();
+
+         while (var7.hasNext()) {
             String var5 = (String)var7.next();
-            var6 = Component.literal(Strings.repeat(this.indentation, this.depth + 1))
+            MutableComponent var6 = Component.literal(Strings.repeat(this.indentation, this.depth + 1))
                .append(handleEscapePretty(var5))
                .append(NAME_VALUE_SEPARATOR)
                .append(" ")
@@ -216,6 +217,8 @@ public class TextComponentTagVisitor implements TagVisitor {
             if (var7.hasNext()) {
                var6.append(ELEMENT_SEPARATOR).append(this.indentation.isEmpty() ? " " : "\n");
             }
+
+            var2.append(var6);
          }
 
          if (!this.indentation.isEmpty()) {

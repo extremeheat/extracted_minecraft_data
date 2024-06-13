@@ -58,7 +58,7 @@ public class HashCache {
       HashMap var4 = new HashMap();
       int var5 = 0;
 
-      for(String var7 : var2) {
+      for (String var7 : var2) {
          Path var8 = this.getProviderCachePath(var7);
          this.cachePaths.add(var8);
          HashCache.ProviderCache var9 = readCache(var1, var8);
@@ -83,12 +83,12 @@ public class HashCache {
    }
 
    public boolean shouldRunInThisVersion(String var1) {
-      HashCache.ProviderCache var2 = (HashCache.ProviderCache)this.caches.get(var1);
+      HashCache.ProviderCache var2 = this.caches.get(var1);
       return var2 == null || !var2.version.equals(this.versionId);
    }
 
    public CompletableFuture<HashCache.UpdateResult> generateUpdate(String var1, HashCache.UpdateFunction var2) {
-      HashCache.ProviderCache var3 = (HashCache.ProviderCache)this.caches.get(var1);
+      HashCache.ProviderCache var3 = this.caches.get(var1);
       if (var3 == null) {
          throw new IllegalStateException("Provider not registered: " + var1);
       } else {
@@ -100,7 +100,7 @@ public class HashCache {
    public void applyUpdate(HashCache.UpdateResult var1) {
       this.caches.put(var1.providerId(), var1.cache());
       this.cachesToWrite.add(var1.providerId());
-      this.writes += var1.writes();
+      this.writes = this.writes + var1.writes();
    }
 
    public void purgeStaleAndWrite() throws IOException {
@@ -182,14 +182,12 @@ public class HashCache {
       }
    }
 
-   static record ProviderCache(String a, ImmutableMap<Path, HashCode> b) {
-      final String version;
-      private final ImmutableMap<Path, HashCode> data;
+   static record ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
 
-      ProviderCache(String var1, ImmutableMap<Path, HashCode> var2) {
+      ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
          super();
-         this.version = var1;
-         this.data = var2;
+         this.version = version;
+         this.data = data;
       }
 
       @Nullable
@@ -213,8 +211,8 @@ public class HashCache {
             String var5 = var4[0];
             Builder var6 = ImmutableMap.builder();
             var2.lines().forEach(var2x -> {
-               int var3xx = var2x.indexOf(32);
-               var6.put(var0.resolve(var2x.substring(var3xx + 1)), HashCode.fromString(var2x.substring(0, var3xx)));
+               int var3x = var2x.indexOf(32);
+               var6.put(var0.resolve(var2x.substring(var3x + 1)), HashCode.fromString(var2x.substring(0, var3x)));
             });
             var7 = new HashCache.ProviderCache(var5, var6.build());
          }
@@ -231,7 +229,7 @@ public class HashCache {
             var4.newLine();
             UnmodifiableIterator var5 = this.data.entrySet().iterator();
 
-            while(var5.hasNext()) {
+            while (var5.hasNext()) {
                Entry var6 = (Entry)var5.next();
                var4.write(((HashCode)var6.getValue()).toString());
                var4.write(32);
@@ -244,18 +242,15 @@ public class HashCache {
       }
    }
 
-   static record ProviderCacheBuilder(String a, ConcurrentMap<Path, HashCode> b) {
-      private final String version;
-      private final ConcurrentMap<Path, HashCode> data;
-
+   static record ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
       ProviderCacheBuilder(String var1) {
          this(var1, new ConcurrentHashMap<>());
       }
 
-      private ProviderCacheBuilder(String var1, ConcurrentMap<Path, HashCode> var2) {
+      private ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
          super();
-         this.version = var1;
-         this.data = var2;
+         this.version = version;
+         this.data = data;
       }
 
       public void put(Path var1, HashCode var2) {
@@ -272,16 +267,12 @@ public class HashCache {
       CompletableFuture<?> update(CachedOutput var1);
    }
 
-   public static record UpdateResult(String a, HashCache.ProviderCache b, int c) {
-      private final String providerId;
-      private final HashCache.ProviderCache cache;
-      private final int writes;
-
-      public UpdateResult(String var1, HashCache.ProviderCache var2, int var3) {
+   public static record UpdateResult(String providerId, HashCache.ProviderCache cache, int writes) {
+      public UpdateResult(String providerId, HashCache.ProviderCache cache, int writes) {
          super();
-         this.providerId = var1;
-         this.cache = var2;
-         this.writes = var3;
+         this.providerId = providerId;
+         this.cache = cache;
+         this.writes = writes;
       }
    }
 }

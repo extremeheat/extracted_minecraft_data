@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -11,9 +10,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record BannerPattern(ResourceLocation e, String f) {
-   private final ResourceLocation assetId;
-   private final String translationKey;
+public record BannerPattern(ResourceLocation assetId, String translationKey) {
    public static final Codec<BannerPattern> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ResourceLocation.CODEC.fieldOf("asset_id").forGetter(BannerPattern::assetId),
@@ -29,9 +26,9 @@ public record BannerPattern(ResourceLocation e, String f) {
       Registries.BANNER_PATTERN, DIRECT_STREAM_CODEC
    );
 
-   public BannerPattern(ResourceLocation var1, String var2) {
+   public BannerPattern(ResourceLocation assetId, String translationKey) {
       super();
-      this.assetId = var1;
-      this.translationKey = var2;
+      this.assetId = assetId;
+      this.translationKey = translationKey;
    }
 }

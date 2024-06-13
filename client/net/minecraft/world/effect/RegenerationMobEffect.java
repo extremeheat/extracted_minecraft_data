@@ -19,10 +19,6 @@ class RegenerationMobEffect extends MobEffect {
    @Override
    public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
       int var3 = 50 >> var2;
-      if (var3 > 0) {
-         return var1 % var3 == 0;
-      } else {
-         return true;
-      }
+      return var3 > 0 ? var1 % var3 == 0 : true;
    }
 }

@@ -19,7 +19,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.ChunkPos;
 
 public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickContainerAccess<T> {
-   private final Queue<ScheduledTick<T>> tickQueue = new PriorityQueue(ScheduledTick.DRAIN_ORDER);
+   private final Queue<ScheduledTick<T>> tickQueue = new PriorityQueue<>(ScheduledTick.DRAIN_ORDER);
    @Nullable
    private List<SavedTick<T>> pendingTicks;
    private final Set<ScheduledTick<?>> ticksPerPosition = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
@@ -34,8 +34,8 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       super();
       this.pendingTicks = var1;
 
-      for(SavedTick var3 : var1) {
-         this.ticksPerPosition.add(ScheduledTick.<Object>probe(var3.type(), var3.pos()));
+      for (SavedTick var3 : var1) {
+         this.ticksPerPosition.add(ScheduledTick.probe(var3.type(), var3.pos()));
       }
    }
 
@@ -45,12 +45,12 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
    @Nullable
    public ScheduledTick<T> peek() {
-      return (ScheduledTick<T>)this.tickQueue.peek();
+      return this.tickQueue.peek();
    }
 
    @Nullable
    public ScheduledTick<T> poll() {
-      ScheduledTick var1 = (ScheduledTick)this.tickQueue.poll();
+      ScheduledTick var1 = this.tickQueue.poll();
       if (var1 != null) {
          this.ticksPerPosition.remove(var1);
       }
@@ -74,15 +74,15 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
    @Override
    public boolean hasScheduledTick(BlockPos var1, T var2) {
-      return this.ticksPerPosition.contains(ScheduledTick.<Object>probe(var2, var1));
+      return this.ticksPerPosition.contains(ScheduledTick.probe(var2, var1));
    }
 
    public void removeIf(Predicate<ScheduledTick<T>> var1) {
       Iterator var2 = this.tickQueue.iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          ScheduledTick var3 = (ScheduledTick)var2.next();
-         if (var1.test((T)var3)) {
+         if (var1.test(var3)) {
             var2.remove();
             this.ticksPerPosition.remove(var3);
          }
@@ -101,12 +101,12 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    public ListTag save(long var1, Function<T, String> var3) {
       ListTag var4 = new ListTag();
       if (this.pendingTicks != null) {
-         for(SavedTick var6 : this.pendingTicks) {
+         for (SavedTick var6 : this.pendingTicks) {
             var4.add(var6.save(var3));
          }
       }
 
-      for(ScheduledTick var8 : this.tickQueue) {
+      for (ScheduledTick var8 : this.tickQueue) {
          var4.add(SavedTick.saveTick(var8, var3, var1));
       }
 
@@ -117,7 +117,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       if (this.pendingTicks != null) {
          int var3 = -this.pendingTicks.size();
 
-         for(SavedTick var5 : this.pendingTicks) {
+         for (SavedTick var5 : this.pendingTicks) {
             this.scheduleUnchecked(var5.unpack(var1, (long)(var3++)));
          }
       }

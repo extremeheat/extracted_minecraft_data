@@ -104,7 +104,7 @@ public class RealmsPopupScreen extends RealmsScreen {
    }
 
    public static void renderDiamond(GuiGraphics var0, Button var1) {
-      boolean var2 = true;
+      byte var2 = 8;
       var0.pose().pushPose();
       var0.pose().translate(0.0F, 0.0F, 110.0F);
       var0.blitSprite(TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);

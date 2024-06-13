@@ -25,7 +25,7 @@ public class MapIndex extends SavedData {
    public static MapIndex load(CompoundTag var0, HolderLookup.Provider var1) {
       MapIndex var2 = new MapIndex();
 
-      for(String var4 : var0.getAllKeys()) {
+      for (String var4 : var0.getAllKeys()) {
          if (var0.contains(var4, 99)) {
             var2.usedAuxIds.put(var4, var0.getInt(var4));
          }
@@ -38,7 +38,7 @@ public class MapIndex extends SavedData {
    public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       ObjectIterator var3 = this.usedAuxIds.object2IntEntrySet().iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          Entry var4 = (Entry)var3.next();
          var1.putInt((String)var4.getKey(), var4.getIntValue());
       }

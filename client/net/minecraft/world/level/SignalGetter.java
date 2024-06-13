@@ -77,17 +77,15 @@ public interface SignalGetter extends BlockGetter {
          return true;
       } else if (this.getSignal(var1.south(), Direction.SOUTH) > 0) {
          return true;
-      } else if (this.getSignal(var1.west(), Direction.WEST) > 0) {
-         return true;
       } else {
-         return this.getSignal(var1.east(), Direction.EAST) > 0;
+         return this.getSignal(var1.west(), Direction.WEST) > 0 ? true : this.getSignal(var1.east(), Direction.EAST) > 0;
       }
    }
 
    default int getBestNeighborSignal(BlockPos var1) {
       int var2 = 0;
 
-      for(Direction var6 : DIRECTIONS) {
+      for (Direction var6 : DIRECTIONS) {
          int var7 = this.getSignal(var1.relative(var6), var6);
          if (var7 >= 15) {
             return 15;

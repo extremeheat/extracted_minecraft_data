@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -73,6 +72,6 @@ public class FungusBlock extends BushBlock implements BonemealableBlock {
 
    @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      this.getFeature(var1).ifPresent(var3x -> ((ConfiguredFeature)var3x.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var3));
+      this.getFeature(var1).ifPresent(var3x -> var3x.value().place(var1, var1.getChunkSource().getGenerator(), var2, var3));
    }
 }

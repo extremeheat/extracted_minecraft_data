@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -64,7 +63,7 @@ public class AmethystClusterBlock extends AmethystBlock implements SimpleWaterlo
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       Direction var5 = var1.getValue(FACING);
-      switch(var5) {
+      switch (var5) {
          case NORTH:
             return this.northAabb;
          case SOUTH:

@@ -110,10 +110,10 @@ public class StackedContents {
          this.itemCount = this.items.length;
          this.data = new BitSet(this.ingredientCount + this.itemCount + this.ingredientCount + this.ingredientCount * this.itemCount);
 
-         for(int var3 = 0; var3 < this.ingredients.size(); ++var3) {
+         for (int var3 = 0; var3 < this.ingredients.size(); var3++) {
             IntList var4 = this.ingredients.get(var3).getStackingIds();
 
-            for(int var5 = 0; var5 < this.itemCount; ++var5) {
+            for (int var5 = 0; var5 < this.itemCount; var5++) {
                if (var4.contains(this.items[var5])) {
                   this.data.set(this.getIndex(true, var5, var3));
                }
@@ -126,12 +126,12 @@ public class StackedContents {
             return true;
          } else {
             int var3;
-            for(var3 = 0; this.dfs(var1); ++var3) {
+            for (var3 = 0; this.dfs(var1); var3++) {
                StackedContents.this.take(this.items[this.path.getInt(0)], var1);
                int var4 = this.path.size() - 1;
                this.setSatisfied(this.path.getInt(var4));
 
-               for(int var5 = 0; var5 < var4; ++var5) {
+               for (int var5 = 0; var5 < var4; var5++) {
                   this.toggleResidual((var5 & 1) == 0, this.path.get(var5), this.path.get(var5 + 1));
                }
 
@@ -148,11 +148,11 @@ public class StackedContents {
             this.data.clear(0, this.ingredientCount + this.itemCount + this.ingredientCount);
             int var6 = 0;
 
-            for(Ingredient var9 : this.recipe.getIngredients()) {
+            for (Ingredient var9 : this.recipe.getIngredients()) {
                if (var12 && var9.isEmpty()) {
                   var2.add(0);
                } else {
-                  for(int var10 = 0; var10 < this.itemCount; ++var10) {
+                  for (int var10 = 0; var10 < this.itemCount; var10++) {
                      if (this.hasResidual(false, var6, var10)) {
                         this.toggleResidual(true, var10, var6);
                         StackedContents.this.put(this.items[var10], var1);
@@ -162,7 +162,7 @@ public class StackedContents {
                      }
                   }
 
-                  ++var6;
+                  var6++;
                }
             }
 
@@ -173,13 +173,13 @@ public class StackedContents {
       private int[] getUniqueAvailableIngredientItems() {
          IntAVLTreeSet var1 = new IntAVLTreeSet();
 
-         for(Ingredient var3 : this.ingredients) {
+         for (Ingredient var3 : this.ingredients) {
             var1.addAll(var3.getStackingIds());
          }
 
          IntIterator var4 = var1.iterator();
 
-         while(var4.hasNext()) {
+         while (var4.hasNext()) {
             if (!StackedContents.this.has(var4.nextInt())) {
                var4.remove();
             }
@@ -191,11 +191,11 @@ public class StackedContents {
       private boolean dfs(int var1) {
          int var2 = this.itemCount;
 
-         for(int var3 = 0; var3 < var2; ++var3) {
+         for (int var3 = 0; var3 < var2; var3++) {
             if (StackedContents.this.contents.get(this.items[var3]) >= var1) {
                this.visit(false, var3);
 
-               while(!this.path.isEmpty()) {
+               while (!this.path.isEmpty()) {
                   int var4 = this.path.size();
                   boolean var5 = (var4 & 1) == 1;
                   int var6 = this.path.getInt(var4 - 1);
@@ -206,10 +206,10 @@ public class StackedContents {
                   int var7 = var5 ? this.ingredientCount : var2;
                   int var8 = 0;
 
-                  while(true) {
+                  while (true) {
                      if (var8 < var7) {
                         if (this.hasVisited(var5, var8) || !this.hasConnection(var5, var6, var8) || !this.hasResidual(var5, var6, var8)) {
-                           ++var8;
+                           var8++;
                            continue;
                         }
 
@@ -279,7 +279,7 @@ public class StackedContents {
          int var3 = 0;
          int var4 = Math.min(var1, this.getMinIngredientCount()) + 1;
 
-         while(true) {
+         while (true) {
             int var5 = (var3 + var4) / 2;
             if (this.tryPick(var5, null)) {
                if (var4 - var3 <= 1) {
@@ -300,12 +300,13 @@ public class StackedContents {
       private int getMinIngredientCount() {
          int var1 = 2147483647;
 
-         for(Ingredient var3 : this.ingredients) {
+         for (Ingredient var3 : this.ingredients) {
             int var4 = 0;
+            IntListIterator var5 = var3.getStackingIds().iterator();
 
-            int var6;
-            for(IntListIterator var5 = var3.getStackingIds().iterator(); var5.hasNext(); var4 = Math.max(var4, StackedContents.this.contents.get(var6))) {
-               var6 = var5.next();
+            while (var5.hasNext()) {
+               int var6 = (Integer)var5.next();
+               var4 = Math.max(var4, StackedContents.this.contents.get(var6));
             }
 
             if (var1 > 0) {

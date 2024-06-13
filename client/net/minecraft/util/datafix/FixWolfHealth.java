@@ -3,7 +3,6 @@ package net.minecraft.util.datafix;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 import net.minecraft.util.datafix.fixes.NamedEntityFix;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
@@ -22,7 +21,7 @@ public class FixWolfHealth extends NamedEntityFix {
       return var1.update(
          DSL.remainderFinder(),
          var0 -> {
-            MutableBoolean var1xx = new MutableBoolean(false);
+            MutableBoolean var1x = new MutableBoolean(false);
             var0 = var0.update(
                "Attributes",
                var1xx -> var1xx.createList(
@@ -41,10 +40,10 @@ public class FixWolfHealth extends NamedEntityFix {
                         )
                   )
             );
-            if (var1xx.isTrue()) {
+            if (var1x.isTrue()) {
                var0 = var0.update("Health", var0x -> var0x.createFloat(var0x.asFloat(0.0F) * 2.0F));
             }
-   
+
             return var0;
          }
       );

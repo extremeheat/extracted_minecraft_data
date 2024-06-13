@@ -75,16 +75,13 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       return new MultiLineTextWidget.CacheKey(this.getMessage(), this.maxWidth.orElse(2147483647), this.maxRows);
    }
 
-   static record CacheKey(Component a, int b, OptionalInt c) {
-      final Component message;
-      final int maxWidth;
-      final OptionalInt maxRows;
+   static record CacheKey(Component message, int maxWidth, OptionalInt maxRows) {
 
-      CacheKey(Component var1, int var2, OptionalInt var3) {
+      CacheKey(Component message, int maxWidth, OptionalInt maxRows) {
          super();
-         this.message = var1;
-         this.maxWidth = var2;
-         this.maxRows = var3;
+         this.message = message;
+         this.maxWidth = maxWidth;
+         this.maxRows = maxRows;
       }
    }
 }

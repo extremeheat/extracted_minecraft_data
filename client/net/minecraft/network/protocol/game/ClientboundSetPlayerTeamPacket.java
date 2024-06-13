@@ -96,7 +96,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
    @Nullable
    public ClientboundSetPlayerTeamPacket.Action getPlayerAction() {
-      return switch(this.method) {
+      return switch (this.method) {
          case 0, 3 -> ClientboundSetPlayerTeamPacket.Action.ADD;
          default -> null;
          case 4 -> ClientboundSetPlayerTeamPacket.Action.REMOVE;
@@ -105,7 +105,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
    @Nullable
    public ClientboundSetPlayerTeamPacket.Action getTeamAction() {
-      return switch(this.method) {
+      return switch (this.method) {
          case 0 -> ClientboundSetPlayerTeamPacket.Action.ADD;
          case 1 -> ClientboundSetPlayerTeamPacket.Action.REMOVE;
          default -> null;

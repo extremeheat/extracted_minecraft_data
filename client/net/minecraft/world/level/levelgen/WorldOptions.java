@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.OptionalLong;
 import net.minecraft.util.RandomSource;
@@ -15,7 +14,7 @@ public class WorldOptions {
                Codec.LONG.fieldOf("seed").stable().forGetter(WorldOptions::seed),
                Codec.BOOL.fieldOf("generate_features").orElse(true).stable().forGetter(WorldOptions::generateStructures),
                Codec.BOOL.fieldOf("bonus_chest").orElse(false).stable().forGetter(WorldOptions::generateBonusChest),
-               Codec.STRING.optionalFieldOf("legacy_custom_options").stable().forGetter(var0x -> var0x.legacyCustomOptions)
+               Codec.STRING.lenientOptionalFieldOf("legacy_custom_options").stable().forGetter(var0x -> var0x.legacyCustomOptions)
             )
             .apply(var0, var0.stable(WorldOptions::new))
    );

@@ -21,7 +21,7 @@ public class MessageSignatureCache {
    }
 
    public int pack(MessageSignature var1) {
-      for(int var2 = 0; var2 < this.entries.length; ++var2) {
+      for (int var2 = 0; var2 < this.entries.length; var2++) {
          if (var1.equals(this.entries[var2])) {
             return var2;
          }
@@ -48,13 +48,13 @@ public class MessageSignatureCache {
 
    @VisibleForTesting
    void push(List<MessageSignature> var1) {
-      this.push(new ArrayDeque(var1));
+      this.push(new ArrayDeque<>(var1));
    }
 
    private void push(ArrayDeque<MessageSignature> var1) {
       ObjectOpenHashSet var2 = new ObjectOpenHashSet(var1);
 
-      for(int var3 = 0; !var1.isEmpty() && var3 < this.entries.length; ++var3) {
+      for (int var3 = 0; !var1.isEmpty() && var3 < this.entries.length; var3++) {
          MessageSignature var4 = this.entries[var3];
          this.entries[var3] = (MessageSignature)var1.removeLast();
          if (var4 != null && !var2.contains(var4)) {

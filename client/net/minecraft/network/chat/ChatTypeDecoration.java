@@ -2,15 +2,11 @@ package net.minecraft.network.chat;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.util.StringRepresentable;
 
-public record ChatTypeDecoration(String b, List<ChatTypeDecoration.Parameter> c, Style d) {
-   private final String translationKey;
-   private final List<ChatTypeDecoration.Parameter> parameters;
-   private final Style style;
+public record ChatTypeDecoration(String translationKey, List<ChatTypeDecoration.Parameter> parameters, Style style) {
    public static final Codec<ChatTypeDecoration> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.STRING.fieldOf("translation_key").forGetter(ChatTypeDecoration::translationKey),
@@ -20,11 +16,11 @@ public record ChatTypeDecoration(String b, List<ChatTypeDecoration.Parameter> c,
             .apply(var0, ChatTypeDecoration::new)
    );
 
-   public ChatTypeDecoration(String var1, List<ChatTypeDecoration.Parameter> var2, Style var3) {
+   public ChatTypeDecoration(String translationKey, List<ChatTypeDecoration.Parameter> parameters, Style style) {
       super();
-      this.translationKey = var1;
-      this.parameters = var2;
-      this.style = var3;
+      this.translationKey = translationKey;
+      this.parameters = parameters;
+      this.style = style;
    }
 
    public static ChatTypeDecoration withSender(String var0) {
@@ -55,7 +51,7 @@ public record ChatTypeDecoration(String b, List<ChatTypeDecoration.Parameter> c,
    private Component[] resolveParameters(Component var1, ChatType.Bound var2) {
       Component[] var3 = new Component[this.parameters.size()];
 
-      for(int var4 = 0; var4 < var3.length; ++var4) {
+      for (int var4 = 0; var4 < var3.length; var4++) {
          ChatTypeDecoration.Parameter var5 = this.parameters.get(var4);
          var3[var4] = var5.select(var1, var2);
       }

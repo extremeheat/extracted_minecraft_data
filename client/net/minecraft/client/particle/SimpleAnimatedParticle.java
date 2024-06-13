@@ -43,9 +43,9 @@ public class SimpleAnimatedParticle extends TextureSheetParticle {
       if (this.age > this.lifetime / 2) {
          this.setAlpha(1.0F - ((float)this.age - (float)(this.lifetime / 2)) / (float)this.lifetime);
          if (this.hasFade) {
-            this.rCol += (this.fadeR - this.rCol) * 0.2F;
-            this.gCol += (this.fadeG - this.gCol) * 0.2F;
-            this.bCol += (this.fadeB - this.bCol) * 0.2F;
+            this.rCol = this.rCol + (this.fadeR - this.rCol) * 0.2F;
+            this.gCol = this.gCol + (this.fadeG - this.gCol) * 0.2F;
+            this.bCol = this.bCol + (this.fadeB - this.bCol) * 0.2F;
          }
       }
    }

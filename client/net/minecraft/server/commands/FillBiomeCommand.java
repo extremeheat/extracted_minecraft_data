@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -29,7 +28,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
-import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -125,8 +123,8 @@ public class FillBiomeCommand {
       } else {
          ArrayList var11 = new ArrayList();
 
-         for(int var12 = SectionPos.blockToSectionCoord(var8.minZ()); var12 <= SectionPos.blockToSectionCoord(var8.maxZ()); ++var12) {
-            for(int var13 = SectionPos.blockToSectionCoord(var8.minX()); var13 <= SectionPos.blockToSectionCoord(var8.maxX()); ++var13) {
+         for (int var12 = SectionPos.blockToSectionCoord(var8.minZ()); var12 <= SectionPos.blockToSectionCoord(var8.maxZ()); var12++) {
+            for (int var13 = SectionPos.blockToSectionCoord(var8.minX()); var13 <= SectionPos.blockToSectionCoord(var8.maxX()); var13++) {
                ChunkAccess var14 = var0.getChunk(var13, var12, ChunkStatus.FULL, false);
                if (var14 == null) {
                   return Either.right(ERROR_NOT_LOADED.create());
@@ -138,7 +136,7 @@ public class FillBiomeCommand {
 
          MutableInt var15 = new MutableInt(0);
 
-         for(ChunkAccess var17 : var11) {
+         for (ChunkAccess var17 : var11) {
             var17.fillBiomesFromNoise(makeResolver(var15, var17, var8, var3, var4), var0.getChunkSource().randomState().sampler());
             var17.setUnsaved(true);
          }
@@ -159,7 +157,7 @@ public class FillBiomeCommand {
       if (var6.isPresent()) {
          throw (CommandSyntaxException)var6.get();
       } else {
-         return var5.left().get();
+         return (Integer)var5.left().get();
       }
    }
 }

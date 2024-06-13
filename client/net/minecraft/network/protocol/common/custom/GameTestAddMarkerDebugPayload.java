@@ -4,11 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record GameTestAddMarkerDebugPayload(BlockPos c, int d, String e, int f) implements CustomPacketPayload {
-   private final BlockPos pos;
-   private final int color;
-   private final String text;
-   private final int durationMs;
+public record GameTestAddMarkerDebugPayload(BlockPos pos, int color, String text, int durationMs) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, GameTestAddMarkerDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
       GameTestAddMarkerDebugPayload::write, GameTestAddMarkerDebugPayload::new
    );
@@ -18,12 +14,12 @@ public record GameTestAddMarkerDebugPayload(BlockPos c, int d, String e, int f) 
       this(var1.readBlockPos(), var1.readInt(), var1.readUtf(), var1.readInt());
    }
 
-   public GameTestAddMarkerDebugPayload(BlockPos var1, int var2, String var3, int var4) {
+   public GameTestAddMarkerDebugPayload(BlockPos pos, int color, String text, int durationMs) {
       super();
-      this.pos = var1;
-      this.color = var2;
-      this.text = var3;
-      this.durationMs = var4;
+      this.pos = pos;
+      this.color = color;
+      this.text = text;
+      this.durationMs = durationMs;
    }
 
    private void write(FriendlyByteBuf var1) {

@@ -12,7 +12,6 @@ import com.mojang.datafixers.functions.PointFreeRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.BitSet;
 import net.minecraft.Util;
 
@@ -42,8 +41,8 @@ public abstract class NamedEntityWriteReadFix extends DataFix {
       return this.fixTypeEverywhere(this.name, var1, var2, var5x -> var6 -> {
             Typed var7 = new Typed(var1, var5x, var6);
             return var7.update(var3, var4, var4xxx -> {
-               Typed var5xxxx = new Typed(var5, var5x, var4xxx);
-               return Util.writeAndReadTypedOrThrow(var5xxxx, var4, this::fix).getValue();
+               Typed var5xxx = new Typed(var5, var5x, var4xxx);
+               return Util.writeAndReadTypedOrThrow(var5xxx, var4, this::fix).getValue();
             }).getValue();
          });
    }

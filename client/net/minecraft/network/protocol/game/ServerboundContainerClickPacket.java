@@ -45,7 +45,7 @@ public class ServerboundContainerClickPacket implements Packet<ServerGamePacketL
       this.slotNum = var1.readShort();
       this.buttonNum = var1.readByte();
       this.clickType = var1.readEnum(ClickType.class);
-      this.changedSlots = Int2ObjectMaps.unmodifiable((Int2ObjectMap)SLOTS_STREAM_CODEC.decode(var1));
+      this.changedSlots = Int2ObjectMaps.unmodifiable(SLOTS_STREAM_CODEC.decode(var1));
       this.carriedItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
    }
 

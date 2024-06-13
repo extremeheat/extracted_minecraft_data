@@ -104,7 +104,7 @@ public class Blaze extends Monster {
                );
          }
 
-         for(int var1 = 0; var1 < 2; ++var1) {
+         for (int var1 = 0; var1 < 2; var1++) {
             this.level().addParticle(ParticleTypes.LARGE_SMOKE, this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 0.0, 0.0, 0.0);
          }
       }
@@ -119,7 +119,7 @@ public class Blaze extends Monster {
 
    @Override
    protected void customServerAiStep() {
-      --this.nextHeightOffsetChangeTick;
+      this.nextHeightOffsetChangeTick--;
       if (this.nextHeightOffsetChangeTick <= 0) {
          this.nextHeightOffsetChangeTick = 100;
          this.allowedHeightOffset = (float)this.random.triangle(0.5, 6.891);
@@ -191,14 +191,14 @@ public class Blaze extends Monster {
 
       @Override
       public void tick() {
-         --this.attackTime;
+         this.attackTime--;
          LivingEntity var1 = this.blaze.getTarget();
          if (var1 != null) {
             boolean var2 = this.blaze.getSensing().hasLineOfSight(var1);
             if (var2) {
                this.lastSeen = 0;
             } else {
-               ++this.lastSeen;
+               this.lastSeen++;
             }
 
             double var3 = this.blaze.distanceToSqr(var1);
@@ -218,7 +218,7 @@ public class Blaze extends Monster {
                double var7 = var1.getY(0.5) - this.blaze.getY(0.5);
                double var9 = var1.getZ() - this.blaze.getZ();
                if (this.attackTime <= 0) {
-                  ++this.attackStep;
+                  this.attackStep++;
                   if (this.attackStep == 1) {
                      this.attackTime = 60;
                      this.blaze.setCharged(true);
@@ -236,7 +236,7 @@ public class Blaze extends Monster {
                         this.blaze.level().levelEvent(null, 1018, this.blaze.blockPosition(), 0);
                      }
 
-                     for(int var13 = 0; var13 < 1; ++var13) {
+                     for (int var13 = 0; var13 < 1; var13++) {
                         SmallFireball var14 = new SmallFireball(
                            this.blaze.level(),
                            this.blaze,

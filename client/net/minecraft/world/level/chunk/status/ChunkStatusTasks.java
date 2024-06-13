@@ -76,17 +76,17 @@ public class ChunkStatusTasks {
       return var0.generator()
          .fillFromNoise(var2, Blender.of(var7), var6.getChunkSource().randomState(), var6.structureManager().forWorldGenRegion(var7), var5)
          .thenApply(var0x -> {
-            if (var0x instanceof ProtoChunk var1xx) {
-               BelowZeroRetrogen var2xx = ((ProtoChunk)var1xx).getBelowZeroRetrogen();
-               if (var2xx != null) {
-                  BelowZeroRetrogen.replaceOldBedrock((ProtoChunk)var1xx);
-                  if (var2xx.hasBedrockHoles()) {
-                     var2xx.applyBedrockMask((ProtoChunk)var1xx);
+            if (var0x instanceof ProtoChunk var1x) {
+               BelowZeroRetrogen var2x = var1x.getBelowZeroRetrogen();
+               if (var2x != null) {
+                  BelowZeroRetrogen.replaceOldBedrock(var1x);
+                  if (var2x.hasBedrockHoles()) {
+                     var2x.applyBedrockMask(var1x);
                   }
                }
             }
-   
-            return var0x;
+
+            return (ChunkAccess)var0x;
          });
    }
 
@@ -105,7 +105,7 @@ public class ChunkStatusTasks {
       ServerLevel var6 = var0.level();
       WorldGenRegion var7 = new WorldGenRegion(var6, var4, var1, 0);
       if (var5 instanceof ProtoChunk var8) {
-         Blender.addAroundOldChunksCarvingMaskFilter(var7, (ProtoChunk)var8);
+         Blender.addAroundOldChunksCarvingMaskFilter(var7, var8);
       }
 
       var0.generator()

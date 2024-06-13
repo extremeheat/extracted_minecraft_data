@@ -12,19 +12,18 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 public record ClientboundLoginPacket(
-   int b, boolean c, Set<ResourceKey<Level>> d, int e, int f, int g, boolean h, boolean i, boolean j, CommonPlayerSpawnInfo k, boolean l
+   int playerId,
+   boolean hardcore,
+   Set<ResourceKey<Level>> levels,
+   int maxPlayers,
+   int chunkRadius,
+   int simulationDistance,
+   boolean reducedDebugInfo,
+   boolean showDeathScreen,
+   boolean doLimitedCrafting,
+   CommonPlayerSpawnInfo commonPlayerSpawnInfo,
+   boolean enforcesSecureChat
 ) implements Packet<ClientGamePacketListener> {
-   private final int playerId;
-   private final boolean hardcore;
-   private final Set<ResourceKey<Level>> levels;
-   private final int maxPlayers;
-   private final int chunkRadius;
-   private final int simulationDistance;
-   private final boolean reducedDebugInfo;
-   private final boolean showDeathScreen;
-   private final boolean doLimitedCrafting;
-   private final CommonPlayerSpawnInfo commonPlayerSpawnInfo;
-   private final boolean enforcesSecureChat;
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLoginPacket> STREAM_CODEC = Packet.codec(
       ClientboundLoginPacket::write, ClientboundLoginPacket::new
    );
@@ -46,30 +45,30 @@ public record ClientboundLoginPacket(
    }
 
    public ClientboundLoginPacket(
-      int var1,
-      boolean var2,
-      Set<ResourceKey<Level>> var3,
-      int var4,
-      int var5,
-      int var6,
-      boolean var7,
-      boolean var8,
-      boolean var9,
-      CommonPlayerSpawnInfo var10,
-      boolean var11
+      int playerId,
+      boolean hardcore,
+      Set<ResourceKey<Level>> levels,
+      int maxPlayers,
+      int chunkRadius,
+      int simulationDistance,
+      boolean reducedDebugInfo,
+      boolean showDeathScreen,
+      boolean doLimitedCrafting,
+      CommonPlayerSpawnInfo commonPlayerSpawnInfo,
+      boolean enforcesSecureChat
    ) {
       super();
-      this.playerId = var1;
-      this.hardcore = var2;
-      this.levels = var3;
-      this.maxPlayers = var4;
-      this.chunkRadius = var5;
-      this.simulationDistance = var6;
-      this.reducedDebugInfo = var7;
-      this.showDeathScreen = var8;
-      this.doLimitedCrafting = var9;
-      this.commonPlayerSpawnInfo = var10;
-      this.enforcesSecureChat = var11;
+      this.playerId = playerId;
+      this.hardcore = hardcore;
+      this.levels = levels;
+      this.maxPlayers = maxPlayers;
+      this.chunkRadius = chunkRadius;
+      this.simulationDistance = simulationDistance;
+      this.reducedDebugInfo = reducedDebugInfo;
+      this.showDeathScreen = showDeathScreen;
+      this.doLimitedCrafting = doLimitedCrafting;
+      this.commonPlayerSpawnInfo = commonPlayerSpawnInfo;
+      this.enforcesSecureChat = enforcesSecureChat;
    }
 
    private void write(RegistryFriendlyByteBuf var1) {

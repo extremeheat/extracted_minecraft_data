@@ -30,7 +30,7 @@ public enum BanReason {
 
    @Nullable
    public static BanReason byId(int var0) {
-      return switch(var0) {
+      return switch (var0) {
          case 2 -> FALSE_REPORTING;
          default -> null;
          case 5 -> HATE_SPEECH;

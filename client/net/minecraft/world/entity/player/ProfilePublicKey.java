@@ -2,7 +2,6 @@ package net.minecraft.world.entity.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.PublicKey;
@@ -17,16 +16,15 @@ import net.minecraft.util.Crypt;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureValidator;
 
-public record ProfilePublicKey(ProfilePublicKey.Data d) {
-   private final ProfilePublicKey.Data data;
+public record ProfilePublicKey(ProfilePublicKey.Data data) {
    public static final Component EXPIRED_PROFILE_PUBLIC_KEY = Component.translatable("multiplayer.disconnect.expired_public_key");
    private static final Component INVALID_SIGNATURE = Component.translatable("multiplayer.disconnect.invalid_public_key_signature.new");
    public static final Duration EXPIRY_GRACE_PERIOD = Duration.ofHours(8L);
    public static final Codec<ProfilePublicKey> TRUSTED_CODEC = ProfilePublicKey.Data.CODEC.xmap(ProfilePublicKey::new, ProfilePublicKey::data);
 
-   public ProfilePublicKey(ProfilePublicKey.Data var1) {
+   public ProfilePublicKey(ProfilePublicKey.Data data) {
       super();
-      this.data = var1;
+      this.data = data;
    }
 
    public static ProfilePublicKey createValidated(SignatureValidator var0, UUID var1, ProfilePublicKey.Data var2) throws ProfilePublicKey.ValidationException {
@@ -41,10 +39,7 @@ public record ProfilePublicKey(ProfilePublicKey.Data d) {
       return SignatureValidator.from(this.data.key, "SHA256withRSA");
    }
 
-   public static record Data(Instant b, PublicKey c, byte[] d) {
-      private final Instant expiresAt;
-      final PublicKey key;
-      private final byte[] keySignature;
+   public static record Data(Instant expiresAt, PublicKey key, byte[] keySignature) {
       private static final int MAX_KEY_SIGNATURE_SIZE = 4096;
       public static final Codec<ProfilePublicKey.Data> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
@@ -59,11 +54,11 @@ public record ProfilePublicKey(ProfilePublicKey.Data d) {
          this(var1.readInstant(), var1.readPublicKey(), var1.readByteArray(4096));
       }
 
-      public Data(Instant var1, PublicKey var2, byte[] var3) {
+      public Data(Instant expiresAt, PublicKey key, byte[] keySignature) {
          super();
-         this.expiresAt = var1;
-         this.key = var2;
-         this.keySignature = var3;
+         this.expiresAt = expiresAt;
+         this.key = key;
+         this.keySignature = keySignature;
       }
 
       public void write(FriendlyByteBuf var1) {
@@ -93,12 +88,9 @@ public record ProfilePublicKey(ProfilePublicKey.Data d) {
       }
 
       public boolean equals(Object var1) {
-         if (!(var1 instanceof ProfilePublicKey.Data)) {
-            return false;
-         } else {
-            ProfilePublicKey.Data var2 = (ProfilePublicKey.Data)var1;
-            return this.expiresAt.equals(var2.expiresAt) && this.key.equals(var2.key) && Arrays.equals(this.keySignature, var2.keySignature);
-         }
+         return !(var1 instanceof ProfilePublicKey.Data var2)
+            ? false
+            : this.expiresAt.equals(var2.expiresAt) && this.key.equals(var2.key) && Arrays.equals(this.keySignature, var2.keySignature);
       }
    }
 

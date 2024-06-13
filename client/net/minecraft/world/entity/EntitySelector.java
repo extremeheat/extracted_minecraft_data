@@ -30,31 +30,33 @@ public final class EntitySelector {
    public static Predicate<Entity> pushableBy(Entity var0) {
       PlayerTeam var1 = var0.getTeam();
       Team.CollisionRule var2 = var1 == null ? Team.CollisionRule.ALWAYS : var1.getCollisionRule();
-      return (Predicate<Entity>)(var2 == Team.CollisionRule.NEVER ? Predicates.alwaysFalse() : NO_SPECTATORS.and(var3 -> {
-         if (!var3.isPushable()) {
-            return false;
-         } else if (!var0.level().isClientSide || var3 instanceof Player && ((Player)var3).isLocalPlayer()) {
-            PlayerTeam var4 = var3.getTeam();
-            Team.CollisionRule var5 = var4 == null ? Team.CollisionRule.ALWAYS : var4.getCollisionRule();
-            if (var5 == Team.CollisionRule.NEVER) {
-               return false;
-            } else {
-               boolean var6 = var1 != null && var1.isAlliedTo(var4);
-               if ((var2 == Team.CollisionRule.PUSH_OWN_TEAM || var5 == Team.CollisionRule.PUSH_OWN_TEAM) && var6) {
+      return (Predicate<Entity>)(var2 == Team.CollisionRule.NEVER
+         ? Predicates.alwaysFalse()
+         : NO_SPECTATORS.and(
+            var3 -> {
+               if (!var3.isPushable()) {
                   return false;
+               } else if (!var0.level().isClientSide || var3 instanceof Player && ((Player)var3).isLocalPlayer()) {
+                  PlayerTeam var4 = var3.getTeam();
+                  Team.CollisionRule var5 = var4 == null ? Team.CollisionRule.ALWAYS : var4.getCollisionRule();
+                  if (var5 == Team.CollisionRule.NEVER) {
+                     return false;
+                  } else {
+                     boolean var6 = var1 != null && var1.isAlliedTo(var4);
+                     return (var2 == Team.CollisionRule.PUSH_OWN_TEAM || var5 == Team.CollisionRule.PUSH_OWN_TEAM) && var6
+                        ? false
+                        : var2 != Team.CollisionRule.PUSH_OTHER_TEAMS && var5 != Team.CollisionRule.PUSH_OTHER_TEAMS || var6;
+                  }
                } else {
-                  return var2 != Team.CollisionRule.PUSH_OTHER_TEAMS && var5 != Team.CollisionRule.PUSH_OTHER_TEAMS || var6;
+                  return false;
                }
             }
-         } else {
-            return false;
-         }
-      }));
+         ));
    }
 
    public static Predicate<Entity> notRiding(Entity var0) {
       return var1 -> {
-         while(var1.isPassenger()) {
+         while (var1.isPassenger()) {
             var1 = var1.getVehicle();
             if (var1 == var0) {
                return false;
@@ -76,11 +78,8 @@ public final class EntitySelector {
       public boolean test(@Nullable Entity var1) {
          if (!var1.isAlive()) {
             return false;
-         } else if (!(var1 instanceof LivingEntity)) {
-            return false;
          } else {
-            LivingEntity var2 = (LivingEntity)var1;
-            return var2.canTakeItem(this.itemStack);
+            return !(var1 instanceof LivingEntity var2) ? false : var2.canTakeItem(this.itemStack);
          }
       }
    }

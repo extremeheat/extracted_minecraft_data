@@ -52,7 +52,7 @@ public class ServerFunctionManager {
    private void executeTagFunctions(Collection<CommandFunction<CommandSourceStack>> var1, ResourceLocation var2) {
       this.server.getProfiler().push(var2::toString);
 
-      for(CommandFunction var4 : var1) {
+      for (CommandFunction var4 : var1) {
          this.execute(var4, this.getGameLoopSender());
       }
 

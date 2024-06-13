@@ -62,7 +62,7 @@ public class CommonComponents {
    public static MutableComponent joinForNarration(Component... var0) {
       MutableComponent var1 = Component.empty();
 
-      for(int var2 = 0; var2 < var0.length; ++var2) {
+      for (int var2 = 0; var2 < var0.length; var2++) {
          var1.append(var0[var2]);
          if (var2 != var0.length - 1) {
             var1.append(NARRATION_SEPARATOR);

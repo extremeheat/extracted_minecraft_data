@@ -51,11 +51,6 @@ public class Spider extends Monster {
    }
 
    @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Armadillo.class, 6.0F, 1.0, 1.2, var0 -> !((Armadillo)var0).isScared()));
@@ -144,8 +139,6 @@ public class Spider extends Monster {
       this.entityData.set(DATA_FLAGS_ID, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {

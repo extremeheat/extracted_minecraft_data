@@ -70,11 +70,11 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       int var33 = var1.level().getBrightness(LightLayer.SKY, var29);
       int var34 = var1.level().getBrightness(LightLayer.SKY, var30);
 
-      for(int var35 = 0; var35 <= 24; ++var35) {
+      for (int var35 = 0; var35 <= 24; var35++) {
          addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.025F, var27, var28, var35, false);
       }
 
-      for(int var36 = 24; var36 >= 0; --var36) {
+      for (int var36 = 24; var36 >= 0; var36--) {
          addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.0F, var27, var28, var36, true);
       }
 

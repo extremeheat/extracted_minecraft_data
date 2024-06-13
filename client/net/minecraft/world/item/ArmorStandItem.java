@@ -37,15 +37,15 @@ public class ArmorStandItem extends Item {
          AABB var8 = EntityType.ARMOR_STAND.getDimensions().makeBoundingBox(var7.x(), var7.y(), var7.z());
          if (var3.noCollision(null, var8) && var3.getEntities(null, var8).isEmpty()) {
             if (var3 instanceof ServerLevel var9) {
-               Consumer var10 = EntityType.createDefaultStackConfig((ServerLevel)var9, var6, var1.getPlayer());
-               ArmorStand var11 = EntityType.ARMOR_STAND.create((ServerLevel)var9, var10, var5, MobSpawnType.SPAWN_EGG, true, true);
+               Consumer var10 = EntityType.createDefaultStackConfig(var9, var6, var1.getPlayer());
+               ArmorStand var11 = EntityType.ARMOR_STAND.create(var9, var10, var5, MobSpawnType.SPAWN_EGG, true, true);
                if (var11 == null) {
                   return InteractionResult.FAIL;
                }
 
                float var12 = (float)Mth.floor((Mth.wrapDegrees(var1.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
                var11.moveTo(var11.getX(), var11.getY(), var11.getZ(), var12, 0.0F);
-               ((ServerLevel)var9).addFreshEntityWithPassengers(var11);
+               var9.addFreshEntityWithPassengers(var11);
                var3.playSound(null, var11.getX(), var11.getY(), var11.getZ(), SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
                var11.gameEvent(GameEvent.ENTITY_PLACE, var1.getPlayer());
             }

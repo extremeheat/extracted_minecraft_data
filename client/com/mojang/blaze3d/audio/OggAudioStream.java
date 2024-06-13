@@ -34,7 +34,7 @@ public class OggAudioStream implements AudioStream {
          IntBuffer var3 = var2.mallocInt(1);
          IntBuffer var4 = var2.mallocInt(1);
 
-         while(this.handle == 0L) {
+         while (this.handle == 0L) {
             if (!this.refillFromStream()) {
                throw new IOException("Failed to find Ogg header");
             }
@@ -123,7 +123,7 @@ public class OggAudioStream implements AudioStream {
                   IntBuffer var4 = var2.mallocInt(1);
                   IntBuffer var5 = var2.mallocInt(1);
 
-                  while(true) {
+                  while (true) {
                      var14 = STBVorbis.stb_vorbis_decode_frame_pushdata(this.handle, this.buffer, var4, var3, var5);
                      this.buffer.position(this.buffer.position() + var14);
                      int var7 = STBVorbis.stb_vorbis_get_error(this.handle);
@@ -193,13 +193,13 @@ public class OggAudioStream implements AudioStream {
    }
 
    private void convertMono(FloatBuffer var1, OggAudioStream.OutputConcat var2) {
-      while(var1.hasRemaining()) {
+      while (var1.hasRemaining()) {
          var2.put(var1.get());
       }
    }
 
    private void convertStereo(FloatBuffer var1, FloatBuffer var2, OggAudioStream.OutputConcat var3) {
-      while(var1.hasRemaining() && var2.hasRemaining()) {
+      while (var1.hasRemaining() && var2.hasRemaining()) {
          var3.put(var1.get());
          var3.put(var2.get());
       }
@@ -225,7 +225,7 @@ public class OggAudioStream implements AudioStream {
    public ByteBuffer read(int var1) throws IOException {
       OggAudioStream.OutputConcat var2 = new OggAudioStream.OutputConcat(var1 + 8192);
 
-      while(this.readFrame(var2) && var2.byteCount < var1) {
+      while (this.readFrame(var2) && var2.byteCount < var1) {
       }
 
       return var2.get();
@@ -234,7 +234,7 @@ public class OggAudioStream implements AudioStream {
    public ByteBuffer readAll() throws IOException {
       OggAudioStream.OutputConcat var1 = new OggAudioStream.OutputConcat(16384);
 
-      while(this.readFrame(var1)) {
+      while (this.readFrame(var1)) {
       }
 
       return var1.get();

@@ -111,7 +111,7 @@ public class BookEditScreen extends Screen {
    @Override
    public void tick() {
       super.tick();
-      ++this.frameTick;
+      this.frameTick++;
    }
 
    @Override
@@ -139,7 +139,7 @@ public class BookEditScreen extends Screen {
          this.updateButtonVisibility();
       }).bounds(this.width / 2 + 2, 196, 98, 20).build());
       int var1 = (this.width - 192) / 2;
-      boolean var2 = true;
+      byte var2 = 2;
       this.forwardButton = this.addRenderableWidget(new PageButton(var1 + 116, 159, true, var1x -> this.pageForward(), true));
       this.backButton = this.addRenderableWidget(new PageButton(var1 + 43, 159, false, var1x -> this.pageBack(), true));
       this.updateButtonVisibility();
@@ -147,7 +147,7 @@ public class BookEditScreen extends Screen {
 
    private void pageBack() {
       if (this.currentPage > 0) {
-         --this.currentPage;
+         this.currentPage--;
       }
 
       this.updateButtonVisibility();
@@ -156,11 +156,11 @@ public class BookEditScreen extends Screen {
 
    private void pageForward() {
       if (this.currentPage < this.getNumPages() - 1) {
-         ++this.currentPage;
+         this.currentPage++;
       } else {
          this.appendPageToBook();
          if (this.currentPage < this.getNumPages() - 1) {
-            ++this.currentPage;
+            this.currentPage++;
          }
       }
 
@@ -181,7 +181,7 @@ public class BookEditScreen extends Screen {
    private void eraseEmptyTrailingPages() {
       ListIterator var1 = this.pages.listIterator(this.pages.size());
 
-      while(var1.hasPrevious() && ((String)var1.previous()).isEmpty()) {
+      while (var1.hasPrevious() && ((String)var1.previous()).isEmpty()) {
          var1.remove();
       }
    }
@@ -260,7 +260,7 @@ public class BookEditScreen extends Screen {
          return true;
       } else {
          TextFieldHelper.CursorStep var4 = Screen.hasControlDown() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
-         switch(var1) {
+         switch (var1) {
             case 257:
             case 335:
                this.pageEdit.insertText("\n");
@@ -337,7 +337,7 @@ public class BookEditScreen extends Screen {
    }
 
    private boolean titleKeyPressed(int var1, int var2, int var3) {
-      switch(var1) {
+      switch (var1) {
          case 257:
          case 335:
             if (!this.title.isEmpty()) {
@@ -373,7 +373,7 @@ public class BookEditScreen extends Screen {
       super.render(var1, var2, var3, var4);
       this.setFocused(null);
       int var5 = (this.width - 192) / 2;
-      boolean var6 = true;
+      byte var6 = 2;
       if (this.isSigning) {
          boolean var7 = this.frameTick / 6 % 2 == 0;
          FormattedCharSequence var8 = FormattedCharSequence.composite(FormattedCharSequence.forward(this.title, Style.EMPTY), var7 ? BLACK_CURSOR : GRAY_CURSOR);
@@ -389,7 +389,7 @@ public class BookEditScreen extends Screen {
          var1.drawString(this.font, this.pageMsg, var5 - var13 + 192 - 44, 18, 0, false);
          BookEditScreen.DisplayCache var14 = this.getDisplayCache();
 
-         for(BookEditScreen.LineInfo var12 : var14.lines) {
+         for (BookEditScreen.LineInfo var12 : var14.lines) {
             var1.drawString(this.font, var12.asComponent, var12.x, var12.y, -16777216, false);
          }
 
@@ -416,7 +416,7 @@ public class BookEditScreen extends Screen {
    }
 
    private void renderHighlight(GuiGraphics var1, Rect2i[] var2) {
-      for(Rect2i var6 : var2) {
+      for (Rect2i var6 : var2) {
          int var7 = var6.getX();
          int var8 = var6.getY();
          int var9 = var7 + var6.getWidth();
@@ -514,14 +514,14 @@ public class BookEditScreen extends Screen {
          MutableBoolean var7 = new MutableBoolean();
          StringSplitter var8 = this.font.getSplitter();
          var8.splitLines(var1, 114, Style.EMPTY, true, (var6x, var7x, var8x) -> {
-            int var9xx = var6.getAndIncrement();
-            String var10xx = var1.substring(var7x, var8x);
-            var7.setValue(var10xx.endsWith("\n"));
-            String var11xx = StringUtils.stripEnd(var10xx, " \n");
-            int var12xx = var9xx * 9;
-            BookEditScreen.Pos2i var13xx = this.convertLocalToScreen(new BookEditScreen.Pos2i(0, var12xx));
+            int var9x = var6.getAndIncrement();
+            String var10x = var1.substring(var7x, var8x);
+            var7.setValue(var10x.endsWith("\n"));
+            String var11x = StringUtils.stripEnd(var10x, " \n");
+            int var12x = var9x * 9;
+            BookEditScreen.Pos2i var13x = this.convertLocalToScreen(new BookEditScreen.Pos2i(0, var12x));
             var4.add(var7x);
-            var5.add(new BookEditScreen.LineInfo(var6x, var11xx, var13xx.x, var13xx.y));
+            var5.add(new BookEditScreen.LineInfo(var6x, var11x, var13x.x, var13x.y));
          });
          int[] var9 = var4.toIntArray();
          boolean var10 = var2 == var1.length();
@@ -548,7 +548,7 @@ public class BookEditScreen extends Screen {
                int var24 = var15 + 1 > var9.length ? var1.length() : var9[var15 + 1];
                var22.add(this.createPartialLineSelection(var1, var8, var23, var24, var15 * 9, var9[var15]));
 
-               for(int var25 = var15 + 1; var25 < var16; ++var25) {
+               for (int var25 = var15 + 1; var25 < var16; var25++) {
                   int var19 = var25 * 9;
                   String var20 = var1.substring(var9[var25], var9[var25 + 1]);
                   int var21 = (int)var8.stringWidth(var20);

@@ -17,14 +17,11 @@ public interface DataSource {
 
    DataSource.Type<?> type();
 
-   public static record Type<T extends DataSource>(MapCodec<T> a, String b) implements StringRepresentable {
-      private final MapCodec<T> codec;
-      private final String id;
-
-      public Type(MapCodec<T> var1, String var2) {
+   public static record Type<T extends DataSource>(MapCodec<T> codec, String id) implements StringRepresentable {
+      public Type(MapCodec<T> codec, String id) {
          super();
-         this.codec = var1;
-         this.id = var2;
+         this.codec = codec;
+         this.id = id;
       }
 
       @Override

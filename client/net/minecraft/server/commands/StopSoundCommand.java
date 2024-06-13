@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
@@ -41,7 +40,7 @@ public class StopSoundCommand {
                )
          );
 
-      for(SoundSource var5 : SoundSource.values()) {
+      for (SoundSource var5 : SoundSource.values()) {
          var1.then(
             ((LiteralArgumentBuilder)Commands.literal(var5.getName())
                   .executes(var1x -> stopSound((CommandSourceStack)var1x.getSource(), EntityArgument.getPlayers(var1x, "targets"), var5, null)))
@@ -66,7 +65,7 @@ public class StopSoundCommand {
    private static int stopSound(CommandSourceStack var0, Collection<ServerPlayer> var1, @Nullable SoundSource var2, @Nullable ResourceLocation var3) {
       ClientboundStopSoundPacket var4 = new ClientboundStopSoundPacket(var3, var2);
 
-      for(ServerPlayer var6 : var1) {
+      for (ServerPlayer var6 : var1) {
          var6.connection.send(var4);
       }
 

@@ -5,9 +5,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.gameevent.PositionSource;
 
-public record GameEventListenerDebugPayload(PositionSource c, int d) implements CustomPacketPayload {
-   private final PositionSource listenerPos;
-   private final int listenerRange;
+public record GameEventListenerDebugPayload(PositionSource listenerPos, int listenerRange) implements CustomPacketPayload {
    public static final StreamCodec<RegistryFriendlyByteBuf, GameEventListenerDebugPayload> STREAM_CODEC = StreamCodec.composite(
       PositionSource.STREAM_CODEC,
       GameEventListenerDebugPayload::listenerPos,
@@ -17,10 +15,10 @@ public record GameEventListenerDebugPayload(PositionSource c, int d) implements 
    );
    public static final CustomPacketPayload.Type<GameEventListenerDebugPayload> TYPE = CustomPacketPayload.createType("debug/game_event_listeners");
 
-   public GameEventListenerDebugPayload(PositionSource var1, int var2) {
+   public GameEventListenerDebugPayload(PositionSource listenerPos, int listenerRange) {
       super();
-      this.listenerPos = var1;
-      this.listenerRange = var2;
+      this.listenerPos = listenerPos;
+      this.listenerRange = listenerRange;
    }
 
    @Override

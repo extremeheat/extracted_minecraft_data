@@ -12,6 +12,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -73,12 +74,12 @@ public class VaultBlockEntity extends BlockEntity {
    }
 
    private static <T> Tag encode(Codec<T> var0, T var1, HolderLookup.Provider var2) {
-      return Util.getOrThrow(var0.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), var1), IllegalStateException::new);
+      return (Tag)var0.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), var1).getOrThrow();
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("server_data")) {
          VaultServerData.CODEC.parse(var3, var1.get("server_data")).resultOrPartial(LOGGER::error).ifPresent(this.serverData::set);
@@ -132,38 +133,38 @@ public class VaultBlockEntity extends BlockEntity {
             emitConnectionParticlesForNearbyPlayers(var0, var1, var2, var4);
          }
 
-         emitIdleParticles(var0, var1, var4);
+         emitIdleParticles(var0, var1, var4, var2.getValue(VaultBlock.OMINOUS) ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME);
          playIdleSounds(var0, var1, var4);
       }
 
-      public static void emitActivationParticles(Level var0, BlockPos var1, BlockState var2, VaultSharedData var3) {
+      public static void emitActivationParticles(Level var0, BlockPos var1, BlockState var2, VaultSharedData var3, ParticleOptions var4) {
          emitConnectionParticlesForNearbyPlayers(var0, var1, var2, var3);
-         RandomSource var4 = var0.random;
+         RandomSource var5 = var0.random;
 
-         for(int var5 = 0; var5 < 20; ++var5) {
-            Vec3 var6 = randomPosInsideCage(var1, var4);
-            var0.addParticle(ParticleTypes.SMOKE, var6.x(), var6.y(), var6.z(), 0.0, 0.0, 0.0);
-            var0.addParticle(ParticleTypes.SMALL_FLAME, var6.x(), var6.y(), var6.z(), 0.0, 0.0, 0.0);
+         for (int var6 = 0; var6 < 20; var6++) {
+            Vec3 var7 = randomPosInsideCage(var1, var5);
+            var0.addParticle(ParticleTypes.SMOKE, var7.x(), var7.y(), var7.z(), 0.0, 0.0, 0.0);
+            var0.addParticle(var4, var7.x(), var7.y(), var7.z(), 0.0, 0.0, 0.0);
          }
       }
 
-      public static void emitDeactivationParticles(Level var0, BlockPos var1) {
-         RandomSource var2 = var0.random;
+      public static void emitDeactivationParticles(Level var0, BlockPos var1, ParticleOptions var2) {
+         RandomSource var3 = var0.random;
 
-         for(int var3 = 0; var3 < 20; ++var3) {
-            Vec3 var4 = randomPosCenterOfCage(var1, var2);
-            Vec3 var5 = new Vec3(var2.nextGaussian() * 0.02, var2.nextGaussian() * 0.02, var2.nextGaussian() * 0.02);
-            var0.addParticle(ParticleTypes.SMALL_FLAME, var4.x(), var4.y(), var4.z(), var5.x(), var5.y(), var5.z());
+         for (int var4 = 0; var4 < 20; var4++) {
+            Vec3 var5 = randomPosCenterOfCage(var1, var3);
+            Vec3 var6 = new Vec3(var3.nextGaussian() * 0.02, var3.nextGaussian() * 0.02, var3.nextGaussian() * 0.02);
+            var0.addParticle(var2, var5.x(), var5.y(), var5.z(), var6.x(), var6.y(), var6.z());
          }
       }
 
-      private static void emitIdleParticles(Level var0, BlockPos var1, VaultSharedData var2) {
-         RandomSource var3 = var0.getRandom();
-         if (var3.nextFloat() <= 0.5F) {
-            Vec3 var4 = randomPosInsideCage(var1, var3);
-            var0.addParticle(ParticleTypes.SMOKE, var4.x(), var4.y(), var4.z(), 0.0, 0.0, 0.0);
+      private static void emitIdleParticles(Level var0, BlockPos var1, VaultSharedData var2, ParticleOptions var3) {
+         RandomSource var4 = var0.getRandom();
+         if (var4.nextFloat() <= 0.5F) {
+            Vec3 var5 = randomPosInsideCage(var1, var4);
+            var0.addParticle(ParticleTypes.SMOKE, var5.x(), var5.y(), var5.z(), 0.0, 0.0, 0.0);
             if (shouldDisplayActiveEffects(var2)) {
-               var0.addParticle(ParticleTypes.SMALL_FLAME, var4.x(), var4.y(), var4.z(), 0.0, 0.0, 0.0);
+               var0.addParticle(var3, var5.x(), var5.y(), var5.z(), 0.0, 0.0, 0.0);
             }
          }
       }
@@ -173,7 +174,7 @@ public class VaultBlockEntity extends BlockEntity {
          Vec3 var4 = var1.vectorTo(var2.position().add(0.0, (double)(var2.getBbHeight() / 2.0F), 0.0));
          int var5 = Mth.nextInt(var3, 2, 5);
 
-         for(int var6 = 0; var6 < var5; ++var6) {
+         for (int var6 = 0; var6 < var5; var6++) {
             Vec3 var7 = var4.offsetRandom(var3, 1.0F);
             var0.addParticle(ParticleTypes.VAULT_CONNECTION, var1.x(), var1.y(), var1.z(), var7.x(), var7.y(), var7.z());
          }
@@ -184,7 +185,7 @@ public class VaultBlockEntity extends BlockEntity {
          if (!var4.isEmpty()) {
             Vec3 var5 = keyholePos(var1, var2.getValue(VaultBlock.FACING));
 
-            for(UUID var7 : var4) {
+            for (UUID var7 : var4) {
                Player var8 = var0.getPlayerByUUID(var7);
                if (var8 != null && isWithinConnectionRange(var1, var3, var8)) {
                   emitConnectionParticlesForPlayer(var0, var5, var8);
@@ -286,7 +287,7 @@ public class VaultBlockEntity extends BlockEntity {
          VaultState var6 = var2.getValue(VaultBlock.STATE);
          VaultState var7 = var3.getValue(VaultBlock.STATE);
          var0.setBlock(var1, var3, 3);
-         var6.onTransition(var0, var1, var7, var4, var5);
+         var6.onTransition(var0, var1, var7, var4, var5, var3.getValue(VaultBlock.OMINOUS));
       }
 
       static void cycleDisplayItemFromLootTable(ServerLevel var0, VaultState var1, VaultConfig var2, VaultSharedData var3, BlockPos var4) {

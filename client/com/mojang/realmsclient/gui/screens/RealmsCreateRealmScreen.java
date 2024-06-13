@@ -2,12 +2,11 @@ package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.util.WorldGenerationInfo;
 import com.mojang.realmsclient.util.task.CreateSnapshotRealmTask;
 import com.mojang.realmsclient.util.task.RealmCreationTask;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -55,6 +54,7 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
       var3.addChild(var2);
       var3.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }

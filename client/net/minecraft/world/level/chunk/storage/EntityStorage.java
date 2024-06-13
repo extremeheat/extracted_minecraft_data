@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.nbt.CompoundTag;
@@ -56,7 +55,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                } catch (Exception var6) {
                   LOGGER.warn("Failed to parse chunk {} position info", var1, var6);
                }
-   
+
                CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag(var2.get(), -1);
                ListTag var4 = var7.getList("Entities", 10);
                List var5 = EntityType.loadEntitiesRecursive(var4, this.level).collect(ImmutableList.toImmutableList());
@@ -88,9 +87,9 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
       } else {
          ListTag var3 = new ListTag();
          var1.getEntities().forEach(var1x -> {
-            CompoundTag var2xx = new CompoundTag();
-            if (var1x.save(var2xx)) {
-               var3.add(var2xx);
+            CompoundTag var2x = new CompoundTag();
+            if (var1x.save(var2x)) {
+               var3.add(var2x);
             }
          });
          CompoundTag var4 = NbtUtils.addCurrentDataVersion(new CompoundTag());

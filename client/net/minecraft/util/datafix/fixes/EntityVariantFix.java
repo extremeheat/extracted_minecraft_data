@@ -23,7 +23,7 @@ public class EntityVariantFix extends NamedEntityFix {
    private static <T> Dynamic<T> updateAndRename(Dynamic<T> var0, String var1, String var2, Function<Dynamic<T>, Dynamic<T>> var3) {
       return var0.map(var4 -> {
          DynamicOps var5 = var0.getOps();
-         Function var6 = var2xx -> ((Dynamic)var3.apply((T)(new Dynamic(var5, var2xx)))).getValue();
+         Function var6 = var2xx -> ((Dynamic)var3.apply(new Dynamic(var5, var2xx))).getValue();
          return var5.get(var4, var1).map(var4x -> var5.set(var4, var2, var6.apply(var4x))).result().orElse(var4);
       });
    }

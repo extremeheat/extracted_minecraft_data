@@ -15,6 +15,6 @@ public class StrayRenderer extends SkeletonRenderer<Stray> {
    }
 
    public ResourceLocation getTextureLocation(Stray var1) {
-      return var1.isPotato() ? SkeletonRenderer.SKELETON_LOCATION : STRAY_SKELETON_LOCATION;
+      return STRAY_SKELETON_LOCATION;
    }
 }

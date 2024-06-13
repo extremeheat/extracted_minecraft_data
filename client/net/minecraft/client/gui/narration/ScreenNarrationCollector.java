@@ -16,7 +16,7 @@ public class ScreenNarrationCollector {
    }
 
    public void update(Consumer<NarrationElementOutput> var1) {
-      ++this.generation;
+      this.generation++;
       var1.accept(new ScreenNarrationCollector.Output(0));
    }
 

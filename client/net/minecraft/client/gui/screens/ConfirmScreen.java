@@ -78,7 +78,7 @@ public class ConfirmScreen extends Screen {
    public void setDelay(int var1) {
       this.delayTicker = var1;
 
-      for(Button var3 : this.exitButtons) {
+      for (Button var3 : this.exitButtons) {
          var3.active = false;
       }
    }
@@ -87,7 +87,7 @@ public class ConfirmScreen extends Screen {
    public void tick() {
       super.tick();
       if (--this.delayTicker == 0) {
-         for(Button var2 : this.exitButtons) {
+         for (Button var2 : this.exitButtons) {
             var2.active = true;
          }
       }

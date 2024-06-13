@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -54,8 +53,8 @@ public class ChunkGeneratorStructureState {
 
    private static boolean hasBiomesForStructureSet(StructureSet var0, BiomeSource var1) {
       Stream var2 = var0.structures().stream().flatMap(var0x -> {
-         Structure var1xx = var0x.structure().value();
-         return var1xx.biomes().stream();
+         Structure var1x = var0x.structure().value();
+         return var1x.biomes().stream();
       });
       return var2.anyMatch(var1.possibleBiomes()::contains);
    }
@@ -76,22 +75,19 @@ public class ChunkGeneratorStructureState {
    private void generatePositions() {
       Set var1 = this.biomeSource.possibleBiomes();
       this.possibleStructureSets().forEach(var2 -> {
-         StructureSet var3 = (StructureSet)var2.value();
+         StructureSet var3 = var2.value();
          boolean var4 = false;
 
-         for(StructureSet.StructureSelectionEntry var6 : var3.structures()) {
+         for (StructureSet.StructureSelectionEntry var6 : var3.structures()) {
             Structure var7 = var6.structure().value();
             if (var7.biomes().stream().anyMatch(var1::contains)) {
-               this.placementsForStructure.computeIfAbsent(var7, var0 -> new ArrayList()).add(var3.placement());
+               this.placementsForStructure.computeIfAbsent(var7, var0 -> new ArrayList<>()).add(var3.placement());
                var4 = true;
             }
          }
 
-         if (var4) {
-            StructurePlacement var9 = var3.placement();
-            if (var9 instanceof ConcentricRingsStructurePlacement var8) {
-               this.ringPositions.put((ConcentricRingsStructurePlacement)var8, this.generateRingPositions(var2, (ConcentricRingsStructurePlacement)var8));
-            }
+         if (var4 && var3.placement() instanceof ConcentricRingsStructurePlacement var8) {
+            this.ringPositions.put(var8, this.generateRingPositions((Holder<StructureSet>)var2, var8));
          }
       });
    }
@@ -112,7 +108,7 @@ public class ChunkGeneratorStructureState {
          int var12 = 0;
          int var13 = 0;
 
-         for(int var14 = 0; var14 < var5; ++var14) {
+         for (int var14 = 0; var14 < var5; var14++) {
             double var15 = (double)(4 * var4 + var4 * var13 * 6) + (var9.nextDouble() - 0.5) * (double)var4 * 2.5;
             int var17 = (int)Math.round(Math.cos(var10) * var15);
             int var18 = (int)Math.round(Math.sin(var10) * var15);
@@ -120,7 +116,7 @@ public class ChunkGeneratorStructureState {
             var6.add(
                CompletableFuture.supplyAsync(
                   () -> {
-                     Pair var5xx = this.biomeSource
+                     Pair var5x = this.biomeSource
                         .findBiomeHorizontal(
                            SectionPos.sectionToBlockCoord(var17, 8),
                            0,
@@ -130,9 +126,9 @@ public class ChunkGeneratorStructureState {
                            var19,
                            this.randomState.sampler()
                         );
-                     if (var5xx != null) {
-                        BlockPos var6xx = (BlockPos)var5xx.getFirst();
-                        return new ChunkPos(SectionPos.blockToSectionCoord(var6xx.getX()), SectionPos.blockToSectionCoord(var6xx.getZ()));
+                     if (var5x != null) {
+                        BlockPos var6x = (BlockPos)var5x.getFirst();
+                        return new ChunkPos(SectionPos.blockToSectionCoord(var6x.getX()), SectionPos.blockToSectionCoord(var6x.getZ()));
                      } else {
                         return new ChunkPos(var17, var18);
                      }
@@ -142,7 +138,7 @@ public class ChunkGeneratorStructureState {
             );
             var10 += 6.283185307179586 / (double)var7;
             if (++var12 == var7) {
-               ++var13;
+               var13++;
                var12 = 0;
                var7 += 2 * var7 / (var13 + 1);
                var7 = Math.min(var7, var5 - var14);
@@ -150,11 +146,11 @@ public class ChunkGeneratorStructureState {
             }
          }
 
-         return Util.sequence(var6).thenApply((Function<? super List, ? extends List<ChunkPos>>)(var2x -> {
-            double var3xx = (double)var3.stop().elapsed(TimeUnit.MILLISECONDS) / 1000.0;
-            LOGGER.debug("Calculation for {} took {}s", var1, var3xx);
-            return var2x;
-         }));
+         return Util.sequence(var6).thenApply(var2x -> {
+            double var3x = (double)var3.stop().elapsed(TimeUnit.MILLISECONDS) / 1000.0;
+            LOGGER.debug("Calculation for {} took {}s", var1, var3x);
+            return (List<ChunkPos>)var2x;
+         });
       }
    }
 
@@ -184,8 +180,8 @@ public class ChunkGeneratorStructureState {
    public boolean hasStructureChunkInRange(Holder<StructureSet> var1, int var2, int var3, int var4) {
       StructurePlacement var5 = ((StructureSet)var1.value()).placement();
 
-      for(int var6 = var2 - var4; var6 <= var2 + var4; ++var6) {
-         for(int var7 = var3 - var4; var7 <= var3 + var4; ++var7) {
+      for (int var6 = var2 - var4; var6 <= var2 + var4; var6++) {
+         for (int var7 = var3 - var4; var7 <= var3 + var4; var7++) {
             if (var5.isStructureChunk(this, var6, var7)) {
                return true;
             }

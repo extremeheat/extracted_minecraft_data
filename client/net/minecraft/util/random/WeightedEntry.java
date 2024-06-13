@@ -2,7 +2,6 @@ package net.minecraft.util.random;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 
 public interface WeightedEntry {
    Weight getWeight();
@@ -30,18 +29,11 @@ public interface WeightedEntry {
       }
    }
 
-   public static class Wrapper<T> implements WeightedEntry {
-      private final T data;
-      private final Weight weight;
-
-      Wrapper(T var1, Weight var2) {
+   public static record Wrapper<T>(T data, Weight weight) implements WeightedEntry {
+      public Wrapper(T data, Weight weight) {
          super();
-         this.data = (T)var1;
-         this.weight = var2;
-      }
-
-      public T getData() {
-         return this.data;
+         this.data = (T)data;
+         this.weight = weight;
       }
 
       @Override
@@ -52,7 +44,7 @@ public interface WeightedEntry {
       public static <E> Codec<WeightedEntry.Wrapper<E>> codec(Codec<E> var0) {
          return RecordCodecBuilder.create(
             var1 -> var1.group(
-                     var0.fieldOf("data").forGetter(WeightedEntry.Wrapper::getData), Weight.CODEC.fieldOf("weight").forGetter(WeightedEntry.Wrapper::getWeight)
+                     var0.fieldOf("data").forGetter(WeightedEntry.Wrapper::data), Weight.CODEC.fieldOf("weight").forGetter(WeightedEntry.Wrapper::weight)
                   )
                   .apply(var1, WeightedEntry.Wrapper::new)
          );

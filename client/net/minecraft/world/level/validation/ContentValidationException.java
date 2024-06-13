@@ -23,6 +23,6 @@ public class ContentValidationException extends Exception {
       return "Failed to validate '"
          + var0
          + "'. Found forbidden symlinks: "
-         + (String)var1.stream().map(var0x -> var0x.link() + "->" + var0x.target()).collect(Collectors.joining(", "));
+         + var1.stream().map(var0x -> var0x.link() + "->" + var0x.target()).collect(Collectors.joining(", "));
    }
 }

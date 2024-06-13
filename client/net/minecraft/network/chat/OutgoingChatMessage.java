@@ -11,12 +11,10 @@ public interface OutgoingChatMessage {
       return (OutgoingChatMessage)(var0.isSystem() ? new OutgoingChatMessage.Disguised(var0.decoratedContent()) : new OutgoingChatMessage.Player(var0));
    }
 
-   public static record Disguised(Component a) implements OutgoingChatMessage {
-      private final Component content;
-
-      public Disguised(Component var1) {
+   public static record Disguised(Component content) implements OutgoingChatMessage {
+      public Disguised(Component content) {
          super();
-         this.content = var1;
+         this.content = content;
       }
 
       @Override
@@ -25,12 +23,10 @@ public interface OutgoingChatMessage {
       }
    }
 
-   public static record Player(PlayerChatMessage a) implements OutgoingChatMessage {
-      private final PlayerChatMessage message;
-
-      public Player(PlayerChatMessage var1) {
+   public static record Player(PlayerChatMessage message) implements OutgoingChatMessage {
+      public Player(PlayerChatMessage message) {
          super();
-         this.message = var1;
+         this.message = message;
       }
 
       @Override

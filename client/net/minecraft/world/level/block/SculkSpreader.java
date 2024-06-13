@@ -7,7 +7,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -24,7 +23,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -111,7 +109,7 @@ public class SculkSpreader {
             .orElseGet(ArrayList::new);
          int var3 = Math.min(var2.size(), 32);
 
-         for(int var4 = 0; var4 < var3; ++var4) {
+         for (int var4 = 0; var4 < var3; var4++) {
             this.addCursor((SculkSpreader.ChargeCursor)var2.get(var4));
          }
       }
@@ -126,7 +124,7 @@ public class SculkSpreader {
    }
 
    public void addCursors(BlockPos var1, int var2) {
-      while(var2 > 0) {
+      while (var2 > 0) {
          int var3 = Math.min(var2, 1000);
          this.addCursor(new SculkSpreader.ChargeCursor(var1, var3));
          var2 -= var3;
@@ -145,7 +143,7 @@ public class SculkSpreader {
          HashMap var6 = new HashMap();
          Object2IntOpenHashMap var7 = new Object2IntOpenHashMap();
 
-         for(SculkSpreader.ChargeCursor var9 : this.cursors) {
+         for (SculkSpreader.ChargeCursor var9 : this.cursors) {
             var9.update(var1, var2, var3, this, var4);
             if (var9.charge <= 0) {
                var1.levelEvent(3006, var9.getPos(), 0);
@@ -169,7 +167,7 @@ public class SculkSpreader {
 
          ObjectIterator var16 = var7.object2IntEntrySet().iterator();
 
-         while(var16.hasNext()) {
+         while (var16.hasNext()) {
             Entry var17 = (Entry)var16.next();
             BlockPos var18 = (BlockPos)var17.getKey();
             int var19 = var17.getIntValue();
@@ -210,7 +208,7 @@ public class SculkSpreader {
                   Codec.intRange(0, 1000).fieldOf("charge").orElse(0).forGetter(SculkSpreader.ChargeCursor::getCharge),
                   Codec.intRange(0, 1).fieldOf("decay_delay").orElse(1).forGetter(SculkSpreader.ChargeCursor::getDecayDelay),
                   Codec.intRange(0, 2147483647).fieldOf("update_delay").orElse(0).forGetter(var0x -> var0x.updateDelay),
-                  DIRECTION_SET.optionalFieldOf("facings").forGetter(var0x -> Optional.ofNullable(var0x.getFacingData()))
+                  DIRECTION_SET.lenientOptionalFieldOf("facings").forGetter(var0x -> Optional.ofNullable(var0x.getFacingData()))
                )
                .apply(var0, SculkSpreader.ChargeCursor::new)
       );
@@ -221,7 +219,7 @@ public class SculkSpreader {
          this.charge = var2;
          this.decayDelay = var3;
          this.updateDelay = var4;
-         this.facings = (Set)var5.orElse(null);
+         this.facings = (Set<Direction>)var5.orElse(null);
       }
 
       public ChargeCursor(BlockPos var1, int var2) {
@@ -258,7 +256,7 @@ public class SculkSpreader {
       public void update(LevelAccessor var1, BlockPos var2, RandomSource var3, SculkSpreader var4, boolean var5) {
          if (this.shouldUpdate(var1, var2, var4.isWorldGeneration)) {
             if (this.updateDelay > 0) {
-               --this.updateDelay;
+               this.updateDelay--;
             } else {
                BlockState var6 = var1.getBlockState(this.pos);
                SculkBehaviour var7 = getBlockBehaviour(var6);
@@ -299,14 +297,13 @@ public class SculkSpreader {
       }
 
       void mergeWith(SculkSpreader.ChargeCursor var1) {
-         this.charge += var1.charge;
+         this.charge = this.charge + var1.charge;
          var1.charge = 0;
          this.updateDelay = Math.min(this.updateDelay, var1.updateDelay);
       }
 
       private static SculkBehaviour getBlockBehaviour(BlockState var0) {
-         Block var2 = var0.getBlock();
-         return var2 instanceof SculkBehaviour var1 ? var1 : SculkBehaviour.DEFAULT;
+         return var0.getBlock() instanceof SculkBehaviour var1 ? var1 : SculkBehaviour.DEFAULT;
       }
 
       private static List<Vec3i> getRandomizedNonCornerNeighbourOffsets(RandomSource var0) {
@@ -318,7 +315,7 @@ public class SculkSpreader {
          BlockPos.MutableBlockPos var3 = var1.mutable();
          BlockPos.MutableBlockPos var4 = var1.mutable();
 
-         for(Vec3i var6 : getRandomizedNonCornerNeighbourOffsets(var2)) {
+         for (Vec3i var6 : getRandomizedNonCornerNeighbourOffsets(var2)) {
             var4.setWithOffset(var1, var6);
             BlockState var7 = var0.getBlockState(var4);
             if (var7.getBlock() instanceof SculkBehaviour && isMovementUnobstructed(var0, var1, var4)) {
@@ -348,10 +345,10 @@ public class SculkSpreader {
             );
             if (var3.getX() == 0) {
                return isUnobstructed(var0, var1, var5) || isUnobstructed(var0, var1, var6);
-            } else if (var3.getY() == 0) {
-               return isUnobstructed(var0, var1, var4) || isUnobstructed(var0, var1, var6);
             } else {
-               return isUnobstructed(var0, var1, var4) || isUnobstructed(var0, var1, var5);
+               return var3.getY() == 0
+                  ? isUnobstructed(var0, var1, var4) || isUnobstructed(var0, var1, var6)
+                  : isUnobstructed(var0, var1, var4) || isUnobstructed(var0, var1, var5);
             }
          }
       }

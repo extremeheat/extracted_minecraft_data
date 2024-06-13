@@ -39,7 +39,7 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
          this.drawHighlights(var1, var2, var3, var5, var7, var14, () -> 0.0, 1.0F, 0.0F, 0.0F);
       }
 
-      for(Entity var13 : this.surroundEntities) {
+      for (Entity var13 : this.surroundEntities) {
          if (var13 != var14) {
             this.drawHighlights(var1, var2, var3, var5, var7, var13, () -> this.getBias(var13), 0.0F, 1.0F, 0.0F);
          }

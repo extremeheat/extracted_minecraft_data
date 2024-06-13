@@ -25,7 +25,7 @@ public class ServerActivityList extends ValueObject {
          var1.periodInMillis = JsonUtils.getLongOr("periodInMillis", var4, -1L);
          JsonElement var5 = var4.get("playerActivityDto");
          if (var5 != null && var5.isJsonArray()) {
-            for(JsonElement var8 : var5.getAsJsonArray()) {
+            for (JsonElement var8 : var5.getAsJsonArray()) {
                ServerActivity var9 = ServerActivity.parse(var8.getAsJsonObject());
                var1.serverActivities.add(var9);
             }

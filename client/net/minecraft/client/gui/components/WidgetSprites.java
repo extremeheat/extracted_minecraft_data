@@ -2,12 +2,7 @@ package net.minecraft.client.gui.components;
 
 import net.minecraft.resources.ResourceLocation;
 
-public record WidgetSprites(ResourceLocation a, ResourceLocation b, ResourceLocation c, ResourceLocation d) {
-   private final ResourceLocation enabled;
-   private final ResourceLocation disabled;
-   private final ResourceLocation enabledFocused;
-   private final ResourceLocation disabledFocused;
-
+public record WidgetSprites(ResourceLocation enabled, ResourceLocation disabled, ResourceLocation enabledFocused, ResourceLocation disabledFocused) {
    public WidgetSprites(ResourceLocation var1, ResourceLocation var2) {
       this(var1, var1, var2, var2);
    }
@@ -16,12 +11,12 @@ public record WidgetSprites(ResourceLocation a, ResourceLocation b, ResourceLoca
       this(var1, var2, var3, var2);
    }
 
-   public WidgetSprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4) {
+   public WidgetSprites(ResourceLocation enabled, ResourceLocation disabled, ResourceLocation enabledFocused, ResourceLocation disabledFocused) {
       super();
-      this.enabled = var1;
-      this.disabled = var2;
-      this.enabledFocused = var3;
-      this.disabledFocused = var4;
+      this.enabled = enabled;
+      this.disabled = disabled;
+      this.enabledFocused = enabledFocused;
+      this.disabledFocused = disabledFocused;
    }
 
    public ResourceLocation get(boolean var1, boolean var2) {

@@ -12,14 +12,13 @@ import java.util.function.Function;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
-import net.minecraft.client.telemetry.TelemetryPropertyMap;
 import org.slf4j.Logger;
 
 public class GameLoadTimesEvent {
    public static final GameLoadTimesEvent INSTANCE = new GameLoadTimesEvent(Ticker.systemTicker());
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Ticker timeSource;
-   private final Map<TelemetryProperty<GameLoadTimesEvent.Measurement>, Stopwatch> measurements = new HashMap();
+   private final Map<TelemetryProperty<GameLoadTimesEvent.Measurement>, Stopwatch> measurements = new HashMap<>();
    private OptionalLong bootstrapTime = OptionalLong.empty();
 
    protected GameLoadTimesEvent(Ticker var1) {
@@ -42,7 +41,7 @@ public class GameLoadTimesEvent {
    }
 
    public synchronized void endStep(TelemetryProperty<GameLoadTimesEvent.Measurement> var1) {
-      Stopwatch var2 = (Stopwatch)this.measurements.get(var1);
+      Stopwatch var2 = this.measurements.get(var1);
       if (var2 == null) {
          LOGGER.warn("Attempted to end step for {} before starting it", var1.id());
       } else {
@@ -56,13 +55,13 @@ public class GameLoadTimesEvent {
       var1.send(
          TelemetryEventType.GAME_LOAD_TIMES,
          var1x -> {
-            synchronized(this) {
+            synchronized (this) {
                this.measurements
                   .forEach(
                      (var1xx, var2) -> {
                         if (!var2.isRunning()) {
                            long var3 = var2.elapsed(TimeUnit.MILLISECONDS);
-                           var1x.put(var1xx, new GameLoadTimesEvent.Measurement((int)var3));
+                           var1x.put((TelemetryProperty<GameLoadTimesEvent.Measurement>)var1xx, new GameLoadTimesEvent.Measurement((int)var3));
                         } else {
                            LOGGER.warn(
                               "Measurement {} was discarded since it was still ongoing when the event {} was sent.",
@@ -83,13 +82,12 @@ public class GameLoadTimesEvent {
       this.bootstrapTime = OptionalLong.of(var1);
    }
 
-   public static record Measurement(int b) {
-      private final int millis;
+   public static record Measurement(int millis) {
       public static final Codec<GameLoadTimesEvent.Measurement> CODEC = Codec.INT.xmap(GameLoadTimesEvent.Measurement::new, var0 -> var0.millis);
 
-      public Measurement(int var1) {
+      public Measurement(int millis) {
          super();
-         this.millis = var1;
+         this.millis = millis;
       }
    }
 }

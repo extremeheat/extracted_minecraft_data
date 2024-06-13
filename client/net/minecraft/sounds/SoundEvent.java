@@ -2,7 +2,6 @@ package net.minecraft.sounds;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import net.minecraft.core.Holder;
@@ -17,7 +16,7 @@ public class SoundEvent {
    public static final Codec<SoundEvent> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ResourceLocation.CODEC.fieldOf("sound_id").forGetter(SoundEvent::getLocation),
-               Codec.FLOAT.optionalFieldOf("range").forGetter(SoundEvent::fixedRange)
+               Codec.FLOAT.lenientOptionalFieldOf("range").forGetter(SoundEvent::fixedRange)
             )
             .apply(var0, SoundEvent::create)
    );

@@ -1,12 +1,10 @@
 package net.minecraft.world.level.storage.loot.providers.nbt;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
-public record LootNbtProviderType(Codec<? extends NbtProvider> a) {
-   private final Codec<? extends NbtProvider> codec;
-
-   public LootNbtProviderType(Codec<? extends NbtProvider> var1) {
+public record LootNbtProviderType(MapCodec<? extends NbtProvider> codec) {
+   public LootNbtProviderType(MapCodec<? extends NbtProvider> codec) {
       super();
-      this.codec = var1;
+      this.codec = codec;
    }
 }

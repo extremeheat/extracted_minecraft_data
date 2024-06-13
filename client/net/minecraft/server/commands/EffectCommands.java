@@ -6,7 +6,6 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
@@ -184,11 +183,11 @@ public class EffectCommands {
          var8 = 600;
       }
 
-      for(Entity var10 : var1) {
+      for (Entity var10 : var1) {
          if (var10 instanceof LivingEntity) {
             MobEffectInstance var11 = new MobEffectInstance(var2, var8, var4, false, var5);
             if (((LivingEntity)var10).addEffect(var11, var0.getEntity())) {
-               ++var7;
+               var7++;
             }
          }
       }
@@ -214,9 +213,9 @@ public class EffectCommands {
    private static int clearEffects(CommandSourceStack var0, Collection<? extends Entity> var1) throws CommandSyntaxException {
       int var2 = 0;
 
-      for(Entity var4 : var1) {
+      for (Entity var4 : var1) {
          if (var4 instanceof LivingEntity && ((LivingEntity)var4).removeAllEffects()) {
-            ++var2;
+            var2++;
          }
       }
 
@@ -239,9 +238,9 @@ public class EffectCommands {
       MobEffect var3 = (MobEffect)var2.value();
       int var4 = 0;
 
-      for(Entity var6 : var1) {
+      for (Entity var6 : var1) {
          if (var6 instanceof LivingEntity && ((LivingEntity)var6).removeEffect(var2)) {
-            ++var4;
+            var4++;
          }
       }
 

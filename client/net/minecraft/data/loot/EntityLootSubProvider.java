@@ -13,8 +13,6 @@ import net.minecraft.advancements.critereon.DamageSourcePredicate;
 import net.minecraft.advancements.critereon.EntityFlagsPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.EntitySubPredicates;
-import net.minecraft.advancements.critereon.PotatoPredicate;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -37,7 +35,6 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
    private static final Set<EntityType<?>> SPECIAL_LOOT_TABLE_TYPES = ImmutableSet.of(
       EntityType.PLAYER, EntityType.ARMOR_STAND, EntityType.IRON_GOLEM, EntityType.SNOW_GOLEM, EntityType.VILLAGER
    );
-   protected static final EntityPredicate.Builder ENTITY_IS_POTATO = EntityPredicate.Builder.entity().subPredicate(new PotatoPredicate(true));
    private final FeatureFlagSet allowed;
    private final FeatureFlagSet required;
    private final Map<EntityType<?>, Map<ResourceKey<LootTable>, LootTable.Builder>> map = Maps.newHashMap();
@@ -76,7 +73,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
                      if (var6 != BuiltInLootTables.EMPTY && var4.isEnabled(this.required) && (var5 == null || !var5.containsKey(var6))) {
                         throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var6, var3x.key().location()));
                      }
-      
+
                      if (var5 != null) {
                         var5.forEach((var3xx, var4x) -> {
                            if (!var3.add(var3xx)) {
@@ -131,6 +128,6 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
    }
 
    protected void add(EntityType<?> var1, ResourceKey<LootTable> var2, LootTable.Builder var3) {
-      this.map.computeIfAbsent(var1, var0 -> new HashMap()).put(var2, var3);
+      this.map.computeIfAbsent(var1, var0 -> new HashMap<>()).put(var2, var3);
    }
 }

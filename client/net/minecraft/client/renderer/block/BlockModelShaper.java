@@ -52,7 +52,7 @@ public class BlockModelShaper {
    public static String statePropertiesToString(Map<Property<?>, Comparable<?>> var0) {
       StringBuilder var1 = new StringBuilder();
 
-      for(Entry var3 : var0.entrySet()) {
+      for (Entry var3 : var0.entrySet()) {
          if (var1.length() != 0) {
             var1.append(',');
          }

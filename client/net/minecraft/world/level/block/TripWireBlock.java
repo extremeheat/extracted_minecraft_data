@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -113,8 +112,8 @@ public class TripWireBlock extends Block {
    }
 
    private void updateSource(Level var1, BlockPos var2, BlockState var3) {
-      for(Direction var7 : new Direction[]{Direction.SOUTH, Direction.WEST}) {
-         for(int var8 = 1; var8 < 42; ++var8) {
+      for (Direction var7 : new Direction[]{Direction.SOUTH, Direction.WEST}) {
+         for (int var8 = 1; var8 < 42; var8++) {
             BlockPos var9 = var2.relative(var7, var8);
             BlockState var10 = var1.getBlockState(var9);
             if (var10.is(this.hook)) {
@@ -153,7 +152,7 @@ public class TripWireBlock extends Block {
       boolean var5 = false;
       List var6 = var1.getEntities(null, var3.getShape(var1, var2).bounds().move(var2));
       if (!var6.isEmpty()) {
-         for(Entity var8 : var6) {
+         for (Entity var8 : var6) {
             if (!var8.isIgnoringBlockTriggers()) {
                var5 = true;
                break;
@@ -173,16 +172,12 @@ public class TripWireBlock extends Block {
    }
 
    public boolean shouldConnectTo(BlockState var1, Direction var2) {
-      if (var1.is(this.hook)) {
-         return var1.getValue(TripWireHookBlock.FACING) == var2.getOpposite();
-      } else {
-         return var1.is(this);
-      }
+      return var1.is(this.hook) ? var1.getValue(TripWireHookBlock.FACING) == var2.getOpposite() : var1.is(this);
    }
 
    @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+      switch (var2) {
          case CLOCKWISE_180:
             return var1.setValue(NORTH, var1.getValue(SOUTH))
                .setValue(EAST, var1.getValue(WEST))
@@ -205,7 +200,7 @@ public class TripWireBlock extends Block {
 
    @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
             return var1.setValue(NORTH, var1.getValue(SOUTH)).setValue(SOUTH, var1.getValue(NORTH));
          case FRONT_BACK:

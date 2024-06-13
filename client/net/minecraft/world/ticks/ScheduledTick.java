@@ -5,12 +5,7 @@ import java.util.Comparator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 
-public record ScheduledTick<T>(T d, BlockPos e, long f, TickPriority g, long h) {
-   private final T type;
-   private final BlockPos pos;
-   private final long triggerTick;
-   private final TickPriority priority;
-   private final long subTickOrder;
+public record ScheduledTick<T>(T type, BlockPos pos, long triggerTick, TickPriority priority, long subTickOrder) {
    public static final Comparator<ScheduledTick<?>> DRAIN_ORDER = (var0, var1) -> {
       int var2 = Long.compare(var0.triggerTick, var1.triggerTick);
       if (var2 != 0) {
@@ -32,10 +27,8 @@ public record ScheduledTick<T>(T d, BlockPos e, long f, TickPriority g, long h) 
       public boolean equals(@Nullable ScheduledTick<?> var1, @Nullable ScheduledTick<?> var2) {
          if (var1 == var2) {
             return true;
-         } else if (var1 != null && var2 != null) {
-            return var1.type() == var2.type() && var1.pos().equals(var2.pos());
          } else {
-            return false;
+            return var1 != null && var2 != null ? var1.type() == var2.type() && var1.pos().equals(var2.pos()) : false;
          }
       }
    };
@@ -44,14 +37,14 @@ public record ScheduledTick<T>(T d, BlockPos e, long f, TickPriority g, long h) 
       this((T)var1, var2, var3, TickPriority.NORMAL, var5);
    }
 
-   public ScheduledTick(T var1, BlockPos var2, long var3, TickPriority var5, long var6) {
+   public ScheduledTick(T type, BlockPos pos, long triggerTick, TickPriority priority, long subTickOrder) {
       super();
-      var2 = var2.immutable();
-      this.type = (T)var1;
-      this.pos = var2;
-      this.triggerTick = var3;
-      this.priority = var5;
-      this.subTickOrder = var6;
+      pos = pos.immutable();
+      this.type = (T)type;
+      this.pos = pos;
+      this.triggerTick = triggerTick;
+      this.priority = priority;
+      this.subTickOrder = subTickOrder;
    }
 
    public static <T> ScheduledTick<T> probe(T var0, BlockPos var1) {

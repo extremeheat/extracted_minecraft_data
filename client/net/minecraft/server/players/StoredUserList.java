@@ -86,13 +86,13 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    private void removeExpired() {
       ArrayList var1 = Lists.newArrayList();
 
-      for(StoredUserEntry var3 : this.map.values()) {
+      for (StoredUserEntry var3 : this.map.values()) {
          if (var3.hasExpired()) {
             var1.add(var3.getUser());
          }
       }
 
-      for(Object var5 : var1) {
+      for (Object var5 : var1) {
          this.map.remove(this.getKeyForUser((K)var5));
       }
    }
@@ -121,7 +121,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
                return;
             }
 
-            for(JsonElement var4 : var2) {
+            for (JsonElement var4 : var2) {
                JsonObject var5 = GsonHelper.convertToJsonObject(var4, "entry");
                StoredUserEntry var6 = this.createEntry(var5);
                if (var6.getUser() != null) {

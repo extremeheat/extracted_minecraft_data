@@ -75,9 +75,9 @@ public class PlacementUtils {
       if (Math.abs(var3 - (float)((int)var3)) > 1.0E-5F) {
          throw new IllegalStateException("Chance data cannot be represented as list weight");
       } else {
-         SimpleWeightedRandomList var4 = SimpleWeightedRandomList.<int>builder()
-            .add((int)ConstantInt.of(var0), (int)var3 - 1)
-            .add((int)ConstantInt.of(var0 + var2), 1)
+         SimpleWeightedRandomList var4 = SimpleWeightedRandomList.<ConstantInt>builder()
+            .add(ConstantInt.of(var0), (int)var3 - 1)
+            .add(ConstantInt.of(var0 + var2), 1)
             .build();
          return CountPlacement.of(new WeightedListInt(var4));
       }
@@ -96,7 +96,7 @@ public class PlacementUtils {
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> inlinePlaced(F var0, FC var1, PlacementModifier... var2) {
-      return inlinePlaced(Holder.direct(new ConfiguredFeature((F)var0, var1)), var2);
+      return inlinePlaced(Holder.direct(new ConfiguredFeature<>((F)var0, var1)), var2);
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> onlyWhenEmpty(F var0, FC var1) {

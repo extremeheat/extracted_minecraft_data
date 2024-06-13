@@ -10,27 +10,34 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.crafting.Ingredient;
 
-public record ArmorMaterial(Map<ArmorItem.Type, Integer> b, int c, Holder<SoundEvent> d, Supplier<Ingredient> e, List<ArmorMaterial.Layer> f, float g, float h) {
-   private final Map<ArmorItem.Type, Integer> defense;
-   private final int enchantmentValue;
-   private final Holder<SoundEvent> equipSound;
-   private final Supplier<Ingredient> repairIngredient;
-   private final List<ArmorMaterial.Layer> layers;
-   private final float toughness;
-   private final float knockbackResistance;
+public record ArmorMaterial(
+   Map<ArmorItem.Type, Integer> defense,
+   int enchantmentValue,
+   Holder<SoundEvent> equipSound,
+   Supplier<Ingredient> repairIngredient,
+   List<ArmorMaterial.Layer> layers,
+   float toughness,
+   float knockbackResistance
+) {
    public static final Codec<Holder<ArmorMaterial>> CODEC = BuiltInRegistries.ARMOR_MATERIAL.holderByNameCodec();
 
    public ArmorMaterial(
-      Map<ArmorItem.Type, Integer> var1, int var2, Holder<SoundEvent> var3, Supplier<Ingredient> var4, List<ArmorMaterial.Layer> var5, float var6, float var7
+      Map<ArmorItem.Type, Integer> defense,
+      int enchantmentValue,
+      Holder<SoundEvent> equipSound,
+      Supplier<Ingredient> repairIngredient,
+      List<ArmorMaterial.Layer> layers,
+      float toughness,
+      float knockbackResistance
    ) {
       super();
-      this.defense = var1;
-      this.enchantmentValue = var2;
-      this.equipSound = var3;
-      this.repairIngredient = var4;
-      this.layers = var5;
-      this.toughness = var6;
-      this.knockbackResistance = var7;
+      this.defense = defense;
+      this.enchantmentValue = enchantmentValue;
+      this.equipSound = equipSound;
+      this.repairIngredient = repairIngredient;
+      this.layers = layers;
+      this.toughness = toughness;
+      this.knockbackResistance = knockbackResistance;
    }
 
    public int getDefense(ArmorItem.Type var1) {

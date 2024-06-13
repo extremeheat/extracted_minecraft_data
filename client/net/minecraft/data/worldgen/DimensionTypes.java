@@ -93,25 +93,5 @@ public class DimensionTypes {
             new DimensionType.MonsterSettings(false, true, UniformInt.of(0, 7), 0)
          )
       );
-      var0.register(
-         BuiltinDimensionTypes.POTATO,
-         new DimensionType(
-            OptionalLong.empty(),
-            true,
-            false,
-            false,
-            true,
-            1.0,
-            true,
-            false,
-            0,
-            256,
-            256,
-            BlockTags.INFINIBURN_OVERWORLD,
-            BuiltinDimensionTypes.POTATO_EFFECTS,
-            0.04F,
-            new DimensionType.MonsterSettings(true, false, UniformInt.of(0, 7), 0)
-         )
-      );
    }
 }

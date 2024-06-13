@@ -8,7 +8,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -85,9 +84,7 @@ public class Climate {
       long distance(Climate.RTree.Node<T> var1, long[] var2);
    }
 
-   public static record Parameter(long b, long c) {
-      private final long min;
-      private final long max;
+   public static record Parameter(long min, long max) {
       public static final Codec<Climate.Parameter> CODEC = ExtraCodecs.intervalCodec(
          Codec.floatRange(-2.0F, 2.0F),
          "min",
@@ -99,10 +96,10 @@ public class Climate {
          var0 -> Climate.unquantizeCoord(var0.max())
       );
 
-      public Parameter(long var1, long var3) {
+      public Parameter(long min, long max) {
          super();
-         this.min = var1;
-         this.max = var3;
+         this.min = min;
+         this.max = max;
       }
 
       public static Climate.Parameter point(float var0) {
@@ -182,7 +179,7 @@ public class Climate {
          long var4 = ((Climate.ParameterPoint)var3.getFirst()).fitness(var1);
          Object var6 = var3.getSecond();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             Pair var7 = (Pair)var2.next();
             long var8 = ((Climate.ParameterPoint)var7.getFirst()).fitness(var1);
             if (var8 < var4) {
@@ -204,15 +201,14 @@ public class Climate {
    }
 
    public static record ParameterPoint(
-      Climate.Parameter b, Climate.Parameter c, Climate.Parameter d, Climate.Parameter e, Climate.Parameter f, Climate.Parameter g, long h
+      Climate.Parameter temperature,
+      Climate.Parameter humidity,
+      Climate.Parameter continentalness,
+      Climate.Parameter erosion,
+      Climate.Parameter depth,
+      Climate.Parameter weirdness,
+      long offset
    ) {
-      private final Climate.Parameter temperature;
-      private final Climate.Parameter humidity;
-      private final Climate.Parameter continentalness;
-      private final Climate.Parameter erosion;
-      private final Climate.Parameter depth;
-      private final Climate.Parameter weirdness;
-      private final long offset;
       public static final Codec<Climate.ParameterPoint> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Climate.Parameter.CODEC.fieldOf("temperature").forGetter(var0x -> var0x.temperature),
@@ -227,22 +223,22 @@ public class Climate {
       );
 
       public ParameterPoint(
-         Climate.Parameter var1,
-         Climate.Parameter var2,
-         Climate.Parameter var3,
-         Climate.Parameter var4,
-         Climate.Parameter var5,
-         Climate.Parameter var6,
-         long var7
+         Climate.Parameter temperature,
+         Climate.Parameter humidity,
+         Climate.Parameter continentalness,
+         Climate.Parameter erosion,
+         Climate.Parameter depth,
+         Climate.Parameter weirdness,
+         long offset
       ) {
          super();
-         this.temperature = var1;
-         this.humidity = var2;
-         this.continentalness = var3;
-         this.erosion = var4;
-         this.depth = var5;
-         this.weirdness = var6;
-         this.offset = var7;
+         this.temperature = temperature;
+         this.humidity = humidity;
+         this.continentalness = continentalness;
+         this.erosion = erosion;
+         this.depth = depth;
+         this.weirdness = weirdness;
+         this.offset = offset;
       }
 
       long fitness(Climate.TargetPoint var1) {
@@ -295,14 +291,14 @@ public class Climate {
             return (Climate.RTree.Node<T>)var1.get(0);
          } else if (var1.size() <= 6) {
             var1.sort(Comparator.comparingLong(var1x -> {
-               long var2xx = 0L;
+               long var2x = 0L;
 
-               for(int var4xx = 0; var4xx < var0; ++var4xx) {
-                  Climate.Parameter var5xx = var1x.parameterSpace[var4xx];
-                  var2xx += Math.abs((var5xx.min() + var5xx.max()) / 2L);
+               for (int var4x = 0; var4x < var0; var4x++) {
+                  Climate.Parameter var5x = var1x.parameterSpace[var4x];
+                  var2x += Math.abs((var5x.min() + var5x.max()) / 2L);
                }
 
-               return var2xx;
+               return var2x;
             }));
             return new Climate.RTree.SubTree<>(var1);
          } else {
@@ -310,12 +306,12 @@ public class Climate {
             int var4 = -1;
             List var5 = null;
 
-            for(int var6 = 0; var6 < var0; ++var6) {
+            for (int var6 = 0; var6 < var0; var6++) {
                sort(var1, var0, var6, false);
                List var7 = bucketize(var1);
                long var8 = 0L;
 
-               for(Climate.RTree.SubTree var11 : var7) {
+               for (Climate.RTree.SubTree var11 : var7) {
                   var8 += cost(var11.parameterSpace);
                }
 
@@ -334,7 +330,7 @@ public class Climate {
       private static <T> void sort(List<? extends Climate.RTree.Node<T>> var0, int var1, int var2, boolean var3) {
          Comparator var4 = comparator(var2, var3);
 
-         for(int var5 = 1; var5 < var1; ++var5) {
+         for (int var5 = 1; var5 < var1; var5++) {
             var4 = var4.thenComparing(comparator((var2 + var5) % var1, var3));
          }
 
@@ -354,7 +350,7 @@ public class Climate {
          ArrayList var2 = Lists.newArrayList();
          int var3 = (int)Math.pow(6.0, Math.floor(Math.log((double)var0.size() - 0.01) / Math.log(6.0)));
 
-         for(Climate.RTree.Node var5 : var0) {
+         for (Climate.RTree.Node var5 : var0) {
             var2.add(var5);
             if (var2.size() >= var3) {
                var1.add(new Climate.RTree.SubTree(var2));
@@ -372,7 +368,7 @@ public class Climate {
       private static long cost(Climate.Parameter[] var0) {
          long var1 = 0L;
 
-         for(Climate.Parameter var6 : var0) {
+         for (Climate.Parameter var6 : var0) {
             var1 += Math.abs(var6.max() - var6.min());
          }
 
@@ -383,15 +379,15 @@ public class Climate {
          if (var0.isEmpty()) {
             throw new IllegalArgumentException("SubTree needs at least one child");
          } else {
-            boolean var1 = true;
+            byte var1 = 7;
             ArrayList var2 = Lists.newArrayList();
 
-            for(int var3 = 0; var3 < 7; ++var3) {
+            for (int var3 = 0; var3 < 7; var3++) {
                var2.add(null);
             }
 
-            for(Climate.RTree.Node var4 : var0) {
-               for(int var5 = 0; var5 < 7; ++var5) {
+            for (Climate.RTree.Node var4 : var0) {
+               for (int var5 = 0; var5 < 7; var5++) {
                   var2.set(var5, var4.parameterSpace[var5].span((Climate.Parameter)var2.get(var5)));
                }
             }
@@ -434,7 +430,7 @@ public class Climate {
          protected long distance(long[] var1) {
             long var2 = 0L;
 
-            for(int var4 = 0; var4 < 7; ++var4) {
+            for (int var4 = 0; var4 < 7; var4++) {
                var2 += Mth.square(this.parameterSpace[var4].distance(var1[var4]));
             }
 
@@ -464,7 +460,7 @@ public class Climate {
             long var4 = var2 == null ? 9223372036854775807L : var3.distance(var2, var1);
             Climate.RTree.Leaf var6 = var2;
 
-            for(Climate.RTree.Node var10 : this.children) {
+            for (Climate.RTree.Node var10 : this.children) {
                long var11 = var3.distance(var10, var1);
                if (var4 > var11) {
                   Climate.RTree.Leaf var13 = var10.search(var1, var6, var3);
@@ -482,33 +478,31 @@ public class Climate {
    }
 
    public static record Sampler(
-      DensityFunction a, DensityFunction b, DensityFunction c, DensityFunction d, DensityFunction e, DensityFunction f, List<Climate.ParameterPoint> g
+      DensityFunction temperature,
+      DensityFunction humidity,
+      DensityFunction continentalness,
+      DensityFunction erosion,
+      DensityFunction depth,
+      DensityFunction weirdness,
+      List<Climate.ParameterPoint> spawnTarget
    ) {
-      private final DensityFunction temperature;
-      private final DensityFunction humidity;
-      private final DensityFunction continentalness;
-      private final DensityFunction erosion;
-      private final DensityFunction depth;
-      private final DensityFunction weirdness;
-      private final List<Climate.ParameterPoint> spawnTarget;
-
       public Sampler(
-         DensityFunction var1,
-         DensityFunction var2,
-         DensityFunction var3,
-         DensityFunction var4,
-         DensityFunction var5,
-         DensityFunction var6,
-         List<Climate.ParameterPoint> var7
+         DensityFunction temperature,
+         DensityFunction humidity,
+         DensityFunction continentalness,
+         DensityFunction erosion,
+         DensityFunction depth,
+         DensityFunction weirdness,
+         List<Climate.ParameterPoint> spawnTarget
       ) {
          super();
-         this.temperature = var1;
-         this.humidity = var2;
-         this.continentalness = var3;
-         this.erosion = var4;
-         this.depth = var5;
-         this.weirdness = var6;
-         this.spawnTarget = var7;
+         this.temperature = temperature;
+         this.humidity = humidity;
+         this.continentalness = continentalness;
+         this.erosion = erosion;
+         this.depth = depth;
+         this.weirdness = weirdness;
+         this.spawnTarget = spawnTarget;
       }
 
       public Climate.TargetPoint sample(int var1, int var2, int var3) {
@@ -546,7 +540,7 @@ public class Climate {
          float var6 = var4;
          BlockPos var7 = this.result.location();
 
-         while(var6 <= var3) {
+         while (var6 <= var3) {
             int var8 = var7.getX() + (int)(Math.sin((double)var5) * (double)var6);
             int var9 = var7.getZ() + (int)(Math.cos((double)var5) * (double)var6);
             Climate.SpawnFinder.Result var10 = getSpawnPositionAndFitness(var1, var2, var8, var9);
@@ -564,47 +558,38 @@ public class Climate {
 
       private static Climate.SpawnFinder.Result getSpawnPositionAndFitness(List<Climate.ParameterPoint> var0, Climate.Sampler var1, int var2, int var3) {
          double var4 = Mth.square(2500.0);
-         boolean var6 = true;
+         byte var6 = 2;
          long var7 = (long)((double)Mth.square(10000.0F) * Math.pow((double)(Mth.square((long)var2) + Mth.square((long)var3)) / var4, 2.0));
          Climate.TargetPoint var9 = var1.sample(QuartPos.fromBlock(var2), 0, QuartPos.fromBlock(var3));
          Climate.TargetPoint var10 = new Climate.TargetPoint(var9.temperature(), var9.humidity(), var9.continentalness(), var9.erosion(), 0L, var9.weirdness());
          long var11 = 9223372036854775807L;
 
-         for(Climate.ParameterPoint var14 : var0) {
+         for (Climate.ParameterPoint var14 : var0) {
             var11 = Math.min(var11, var14.fitness(var10));
          }
 
          return new Climate.SpawnFinder.Result(new BlockPos(var2, 0, var3), var7 + var11);
       }
 
-      static record Result(BlockPos a, long b) {
-         private final BlockPos location;
-         private final long fitness;
-
-         Result(BlockPos var1, long var2) {
+      static record Result(BlockPos location, long fitness) {
+         Result(BlockPos location, long fitness) {
             super();
-            this.location = var1;
-            this.fitness = var2;
+            this.location = location;
+            this.fitness = fitness;
          }
       }
    }
 
-   public static record TargetPoint(long a, long b, long c, long d, long e, long f) {
-      final long temperature;
-      final long humidity;
-      final long continentalness;
-      final long erosion;
-      final long depth;
-      final long weirdness;
+   public static record TargetPoint(long temperature, long humidity, long continentalness, long erosion, long depth, long weirdness) {
 
-      public TargetPoint(long var1, long var3, long var5, long var7, long var9, long var11) {
+      public TargetPoint(long temperature, long humidity, long continentalness, long erosion, long depth, long weirdness) {
          super();
-         this.temperature = var1;
-         this.humidity = var3;
-         this.continentalness = var5;
-         this.erosion = var7;
-         this.depth = var9;
-         this.weirdness = var11;
+         this.temperature = temperature;
+         this.humidity = humidity;
+         this.continentalness = continentalness;
+         this.erosion = erosion;
+         this.depth = depth;
+         this.weirdness = weirdness;
       }
 
       @VisibleForTesting

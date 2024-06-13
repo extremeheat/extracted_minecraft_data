@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
@@ -35,7 +34,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       Arrays.sort((Object[])var3);
       String var4 = null;
 
-      for(KeyMapping var8 : var3) {
+      for (KeyMapping var8 : var3) {
          String var9 = var8.getCategory();
          if (!var9.equals(var4)) {
             var4 = var9;
@@ -162,7 +161,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
          this.changeButton.render(var1, var7, var8, var10);
          var1.drawString(KeyBindsList.this.minecraft.font, this.name, var4, var3 + var6 / 2 - 9 / 2, -1);
          if (this.hasCollision) {
-            boolean var14 = true;
+            byte var14 = 3;
             int var15 = this.changeButton.getX() - 6;
             var1.fill(var15, var3 - 1, var15 + 3, var3 + var6, -65536);
          }
@@ -185,7 +184,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
          this.hasCollision = false;
          MutableComponent var1 = Component.empty();
          if (!this.key.isUnbound()) {
-            for(KeyMapping var5 : KeyBindsList.this.minecraft.options.keyMappings) {
+            for (KeyMapping var5 : KeyBindsList.this.minecraft.options.keyMappings) {
                if (var5 != this.key && this.key.same(var5)) {
                   if (this.hasCollision) {
                      var1.append(", ");

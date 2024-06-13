@@ -15,7 +15,7 @@ public class MapCloningRecipe extends CustomRecipe {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(Items.FILLED_MAP)) {
@@ -29,7 +29,7 @@ public class MapCloningRecipe extends CustomRecipe {
                   return false;
                }
 
-               ++var3;
+               var3++;
             }
          }
       }
@@ -41,7 +41,7 @@ public class MapCloningRecipe extends CustomRecipe {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(Items.FILLED_MAP)) {
@@ -55,7 +55,7 @@ public class MapCloningRecipe extends CustomRecipe {
                   return ItemStack.EMPTY;
                }
 
-               ++var3;
+               var3++;
             }
          }
       }

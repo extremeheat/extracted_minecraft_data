@@ -1,11 +1,9 @@
 package net.minecraft.util.parsing.packrat;
 
-public record Atom<T>(String a) {
-   private final String name;
-
-   public Atom(String var1) {
+public record Atom<T>(String name) {
+   public Atom(String name) {
       super();
-      this.name = var1;
+      this.name = name;
    }
 
    public String toString() {

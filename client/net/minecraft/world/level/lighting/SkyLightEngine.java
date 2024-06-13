@@ -85,12 +85,12 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
          int var6 = SectionPos.blockToSectionCoord(var2);
          int var7 = var3 - 1;
 
-         for(int var8 = SectionPos.blockToSectionCoord(var7); this.storage.hasLightDataAtOrBelow(var8); --var8) {
+         for (int var8 = SectionPos.blockToSectionCoord(var7); this.storage.hasLightDataAtOrBelow(var8); var8--) {
             if (this.storage.storingLightForSection(SectionPos.asLong(var5, var8, var6))) {
                int var9 = SectionPos.sectionToBlockCoord(var8);
                int var10 = var9 + 15;
 
-               for(int var11 = Math.min(var10, var7); var11 >= var9; --var11) {
+               for (int var11 = Math.min(var10, var7); var11 >= var9; var11--) {
                   long var12 = BlockPos.asLong(var1, var11, var2);
                   if (!isSourceLevel(this.storage.getStoredLevel(var12))) {
                      return;
@@ -113,7 +113,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
       );
       int var8 = Math.max(var3, var4);
 
-      for(long var9 = SectionPos.asLong(var5, SectionPos.blockToSectionCoord(var8), var6);
+      for (long var9 = SectionPos.asLong(var5, SectionPos.blockToSectionCoord(var8), var6);
          !this.storage.isAboveData(var9);
          var9 = SectionPos.offset(var9, Direction.UP)
       ) {
@@ -121,7 +121,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
             int var11 = SectionPos.sectionToBlockCoord(SectionPos.y(var9));
             int var12 = var11 + 15;
 
-            for(int var13 = Math.max(var11, var8); var13 <= var12; ++var13) {
+            for (int var13 = Math.max(var11, var8); var13 <= var12; var13++) {
                long var14 = BlockPos.asLong(var1, var13, var2);
                if (isSourceLevel(this.storage.getStoredLevel(var14))) {
                   return;
@@ -141,7 +141,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
       BlockState var6 = null;
       int var7 = this.countEmptySectionsBelowIfAtBorder(var1);
 
-      for(Direction var11 : PROPAGATION_DIRECTIONS) {
+      for (Direction var11 : PROPAGATION_DIRECTIONS) {
          if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var11)) {
             long var12 = BlockPos.offset(var1, var11);
             if (this.storage.storingLightForSection(SectionPos.blockToSection(var12))) {
@@ -176,7 +176,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
       int var5 = this.countEmptySectionsBelowIfAtBorder(var1);
       int var6 = LightEngine.QueueEntry.getFromLevel(var3);
 
-      for(Direction var10 : PROPAGATION_DIRECTIONS) {
+      for (Direction var10 : PROPAGATION_DIRECTIONS) {
          if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var10)) {
             long var11 = BlockPos.offset(var1, var10);
             if (this.storage.storingLightForSection(SectionPos.blockToSection(var11))) {
@@ -213,10 +213,10 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
             int var11 = SectionPos.blockToSectionCoord(var6);
             int var12 = 0;
 
-            while(
+            while (
                !this.storage.storingLightForSection(SectionPos.asLong(var9, var10 - var12 - 1, var11)) && this.storage.hasLightDataAtOrBelow(var10 - var12 - 1)
             ) {
-               ++var12;
+               var12++;
             }
 
             return var12;
@@ -235,13 +235,13 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
             int var12 = SectionPos.blockToSectionCoord(var9) - 1;
             int var13 = var12 - var6 + 1;
 
-            while(var12 >= var13) {
+            while (var12 >= var13) {
                if (!this.storage.storingLightForSection(SectionPos.asLong(var10, var12, var11))) {
-                  --var12;
+                  var12--;
                } else {
                   int var14 = SectionPos.sectionToBlockCoord(var12);
 
-                  for(int var15 = 15; var15 >= 0; --var15) {
+                  for (int var15 = 15; var15 >= 0; var15--) {
                      long var16 = BlockPos.asLong(var7, var14 + var15, var8);
                      if (var5) {
                         this.storage.setStoredLevel(var16, var4);
@@ -254,7 +254,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
                      }
                   }
 
-                  --var12;
+                  var12--;
                }
             }
          }
@@ -262,7 +262,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
    }
 
    private static boolean crossedSectionEdge(Direction var0, int var1, int var2) {
-      return switch(var0) {
+      return switch (var0) {
          case NORTH -> var2 == 15;
          case SOUTH -> var2 == 0;
          case WEST -> var1 == 15;
@@ -282,7 +282,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
          int var8 = this.storage.getTopSectionY(var6);
          int var9 = Math.max(this.storage.getBottomSectionY(), var5);
 
-         for(int var10 = var8 - 1; var10 >= var9; --var10) {
+         for (int var10 = var8 - 1; var10 >= var9; var10--) {
             DataLayer var11 = this.storage.getDataLayerToWrite(SectionPos.asLong(var1.x, var10, var1.z));
             if (var11 != null && var11.isEmpty()) {
                var11.fill(15);
@@ -305,7 +305,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
       int var11 = SectionPos.sectionToBlockCoord(var1.x);
       int var12 = SectionPos.sectionToBlockCoord(var1.z);
 
-      for(int var13 = var9 - 1; var13 >= var10; --var13) {
+      for (int var13 = var9 - 1; var13 >= var10; var13--) {
          long var14 = SectionPos.asLong(var1.x, var13, var1.z);
          DataLayer var16 = this.storage.getDataLayerToWrite(var14);
          if (var16 != null) {
@@ -313,8 +313,8 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
             int var18 = var17 + 15;
             boolean var19 = false;
 
-            for(int var20 = 0; var20 < 16; ++var20) {
-               for(int var21 = 0; var21 < 16; ++var21) {
+            for (int var20 = 0; var20 < 16; var20++) {
+               for (int var21 = 0; var21 < 16; var21++) {
                   int var22 = var4.getLowestSourceY(var21, var20);
                   if (var22 <= var18) {
                      int var23 = var20 == 0 ? var5.getLowestSourceY(var21, 15) : var4.getLowestSourceY(var21, var20 - 1);
@@ -323,7 +323,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
                      int var26 = var21 == 15 ? var8.getLowestSourceY(0, var20) : var4.getLowestSourceY(var21 + 1, var20);
                      int var27 = Math.max(Math.max(var23, var24), Math.max(var25, var26));
 
-                     for(int var28 = var18; var28 >= Math.max(var17, var22); --var28) {
+                     for (int var28 = var18; var28 >= Math.max(var17, var22); var28--) {
                         var16.set(var21, SectionPos.sectionRelative(var28), var20, 15);
                         if (var28 == var22 || var28 < var27) {
                            long var29 = BlockPos.asLong(var11 + var21, var28, var12 + var20);

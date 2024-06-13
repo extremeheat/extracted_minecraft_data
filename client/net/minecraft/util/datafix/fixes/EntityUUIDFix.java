@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
@@ -29,27 +28,27 @@ public class EntityUUIDFix extends AbstractUUIDFix {
       return this.fixTypeEverywhereTyped("EntityUUIDFixes", this.getInputSchema().getType(this.typeReference), var1 -> {
          var1 = var1.update(DSL.remainderFinder(), EntityUUIDFix::updateEntityUUID);
 
-         for(String var3 : ABSTRACT_HORSES) {
+         for (String var3 : ABSTRACT_HORSES) {
             var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimalOwner);
          }
 
-         for(String var18 : TAMEABLE_ANIMALS) {
+         for (String var18 : TAMEABLE_ANIMALS) {
             var1 = this.updateNamedChoice(var1, var18, EntityUUIDFix::updateAnimalOwner);
          }
 
-         for(String var19 : ANIMALS) {
+         for (String var19 : ANIMALS) {
             var1 = this.updateNamedChoice(var1, var19, EntityUUIDFix::updateAnimal);
          }
 
-         for(String var20 : MOBS) {
+         for (String var20 : MOBS) {
             var1 = this.updateNamedChoice(var1, var20, EntityUUIDFix::updateMob);
          }
 
-         for(String var21 : LIVING_ENTITIES) {
+         for (String var21 : LIVING_ENTITIES) {
             var1 = this.updateNamedChoice(var1, var21, EntityUUIDFix::updateLivingEntity);
          }
 
-         for(String var22 : PROJECTILES) {
+         for (String var22 : PROJECTILES) {
             var1 = this.updateNamedChoice(var1, var22, EntityUUIDFix::updateProjectile);
          }
 
@@ -69,7 +68,7 @@ public class EntityUUIDFix extends AbstractUUIDFix {
       return var0.update(
          "Brain",
          var0x -> var0x.update(
-               "memories", var0xx -> var0xx.update("minecraft:angry_at", var0xxx -> (Dynamic)replaceUUIDString(var0xxx, "value", "value").orElseGet(() -> {
+               "memories", var0xx -> var0xx.update("minecraft:angry_at", var0xxx -> replaceUUIDString(var0xxx, "value", "value").orElseGet(() -> {
                         LOGGER.warn("angry_at has no value.");
                         return var0xxx;
                      }))
@@ -78,53 +77,53 @@ public class EntityUUIDFix extends AbstractUUIDFix {
    }
 
    private static Dynamic<?> updateEvokerFangs(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDLeastMost(var0, "OwnerUUID", "Owner").orElse(var0);
+      return replaceUUIDLeastMost(var0, "OwnerUUID", "Owner").orElse(var0);
    }
 
    private static Dynamic<?> updateZombieVillager(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDLeastMost(var0, "ConversionPlayer", "ConversionPlayer").orElse(var0);
+      return replaceUUIDLeastMost(var0, "ConversionPlayer", "ConversionPlayer").orElse(var0);
    }
 
    private static Dynamic<?> updateAreaEffectCloud(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDLeastMost(var0, "OwnerUUID", "Owner").orElse(var0);
+      return replaceUUIDLeastMost(var0, "OwnerUUID", "Owner").orElse(var0);
    }
 
    private static Dynamic<?> updateShulkerBullet(Dynamic<?> var0) {
-      var0 = (Dynamic)replaceUUIDMLTag(var0, "Owner", "Owner").orElse(var0);
-      return (Dynamic<?>)replaceUUIDMLTag(var0, "Target", "Target").orElse(var0);
+      var0 = replaceUUIDMLTag(var0, "Owner", "Owner").orElse(var0);
+      return replaceUUIDMLTag(var0, "Target", "Target").orElse(var0);
    }
 
    private static Dynamic<?> updateItem(Dynamic<?> var0) {
-      var0 = (Dynamic)replaceUUIDMLTag(var0, "Owner", "Owner").orElse(var0);
-      return (Dynamic<?>)replaceUUIDMLTag(var0, "Thrower", "Thrower").orElse(var0);
+      var0 = replaceUUIDMLTag(var0, "Owner", "Owner").orElse(var0);
+      return replaceUUIDMLTag(var0, "Thrower", "Thrower").orElse(var0);
    }
 
    private static Dynamic<?> updateFox(Dynamic<?> var0) {
       Optional var1 = var0.get("TrustedUUIDs")
          .result()
-         .map(var1x -> var0.createList(var1x.asStream().map(var0xx -> (Dynamic)createUUIDFromML(var0xx).orElseGet(() -> {
+         .map(var1x -> var0.createList(var1x.asStream().map(var0xx -> (Dynamic)createUUIDFromML((Dynamic<?>)var0xx).orElseGet(() -> {
                   LOGGER.warn("Trusted contained invalid data.");
-                  return var0xx;
+                  return (Dynamic<?>)var0xx;
                }))));
       return (Dynamic<?>)DataFixUtils.orElse(var1.map(var1x -> var0.remove("TrustedUUIDs").set("Trusted", var1x)), var0);
    }
 
    private static Dynamic<?> updateHurtBy(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDString(var0, "HurtBy", "HurtBy").orElse(var0);
+      return replaceUUIDString(var0, "HurtBy", "HurtBy").orElse(var0);
    }
 
    private static Dynamic<?> updateAnimalOwner(Dynamic<?> var0) {
       Dynamic var1 = updateAnimal(var0);
-      return (Dynamic<?>)replaceUUIDString(var1, "OwnerUUID", "Owner").orElse(var1);
+      return replaceUUIDString(var1, "OwnerUUID", "Owner").orElse(var1);
    }
 
    private static Dynamic<?> updateAnimal(Dynamic<?> var0) {
       Dynamic var1 = updateMob(var0);
-      return (Dynamic<?>)replaceUUIDLeastMost(var1, "LoveCause", "LoveCause").orElse(var1);
+      return replaceUUIDLeastMost(var1, "LoveCause", "LoveCause").orElse(var1);
    }
 
    private static Dynamic<?> updateMob(Dynamic<?> var0) {
-      return updateLivingEntity(var0).update("Leash", var0x -> (Dynamic)replaceUUIDLeastMost(var0x, "UUID", "UUID").orElse(var0x));
+      return updateLivingEntity(var0).update("Leash", var0x -> replaceUUIDLeastMost(var0x, "UUID", "UUID").orElse(var0x));
    }
 
    public static Dynamic<?> updateLivingEntity(Dynamic<?> var0) {
@@ -136,7 +135,8 @@ public class EntityUUIDFix extends AbstractUUIDFix {
                      var0xx -> var0xx.update(
                            "Modifiers",
                            var1x -> var0xx.createList(
-                                 var1x.asStream().map(var0xxxx -> (Dynamic)replaceUUIDLeastMost(var0xxxx, "UUID", "UUID").orElse(var0xxxx))
+                                 var1x.asStream()
+                                    .map(var0xxxx -> (Dynamic)replaceUUIDLeastMost((Dynamic<?>)var0xxxx, "UUID", "UUID").orElse((Dynamic<?>)var0xxxx))
                               )
                         )
                   )
@@ -149,7 +149,7 @@ public class EntityUUIDFix extends AbstractUUIDFix {
    }
 
    public static Dynamic<?> updateEntityUUID(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDLeastMost(var0, "UUID", "UUID").orElse(var0);
+      return replaceUUIDLeastMost(var0, "UUID", "UUID").orElse(var0);
    }
 
    static {

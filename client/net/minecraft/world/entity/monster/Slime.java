@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -41,7 +40,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.Vec3;
 
@@ -49,6 +47,7 @@ public class Slime extends Mob implements Enemy {
    private static final EntityDataAccessor<Integer> ID_SIZE = SynchedEntityData.defineId(Slime.class, EntityDataSerializers.INT);
    public static final int MIN_SIZE = 1;
    public static final int MAX_SIZE = 127;
+   public static final int MAX_NATURAL_SIZE = 4;
    public float targetSquish;
    public float squish;
    public float oSquish;
@@ -131,14 +130,14 @@ public class Slime extends Mob implements Enemy {
 
    @Override
    public void tick() {
-      this.squish += (this.targetSquish - this.squish) * 0.5F;
+      this.squish = this.squish + (this.targetSquish - this.squish) * 0.5F;
       this.oSquish = this.squish;
       super.tick();
       if (this.onGround() && !this.wasOnGround) {
          float var1 = this.getDimensions(this.getPose()).width() * 2.0F;
          float var2 = var1 / 2.0F;
 
-         for(int var3 = 0; (float)var3 < var1 * 16.0F; ++var3) {
+         for (int var3 = 0; (float)var3 < var1 * 16.0F; var3++) {
             float var4 = this.random.nextFloat() * 6.2831855F;
             float var5 = this.random.nextFloat() * 0.5F + 0.5F;
             float var6 = Mth.sin(var4) * var2 * var5;
@@ -189,7 +188,7 @@ public class Slime extends Mob implements Enemy {
 
    @Override
    public EntityType<? extends Slime> getType() {
-      return super.getType();
+      return (EntityType<? extends Slime>)super.getType();
    }
 
    @Override
@@ -203,7 +202,7 @@ public class Slime extends Mob implements Enemy {
          int var7 = var2 / 2;
          int var8 = 2 + this.random.nextInt(3);
 
-         for(int var9 = 0; var9 < var8; ++var9) {
+         for (int var9 = 0; var9 < var8; var9++) {
             float var10 = ((float)(var9 % 2) - 0.5F) * var6;
             float var11 = ((float)(var9 / 2) - 0.5F) * var6;
             Slime var12 = this.getType().create(this.level());
@@ -288,12 +287,7 @@ public class Slime extends Mob implements Enemy {
                return checkMobSpawnRules(var0, var1, var2, var3, var4);
             }
 
-            Holder var5 = var1.getBiome(var3);
-            if (var5.is(Biomes.WASTELAND)) {
-               return checkMobSpawnRules(var0, var1, var2, var3, var4);
-            }
-
-            if (var5.is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS)
+            if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS)
                && var3.getY() > 50
                && var3.getY() < 70
                && var4.nextFloat() < 0.5F
@@ -306,9 +300,9 @@ public class Slime extends Mob implements Enemy {
                return false;
             }
 
-            ChunkPos var6 = new ChunkPos(var3);
-            boolean var7 = WorldgenRandom.seedSlimeChunk(var6.x, var6.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
-            if (var4.nextInt(10) == 0 && var7 && var3.getY() < 40) {
+            ChunkPos var5 = new ChunkPos(var3);
+            boolean var6 = WorldgenRandom.seedSlimeChunk(var5.x, var5.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
+            if (var4.nextInt(10) == 0 && var6 && var3.getY() < 40) {
                return checkMobSpawnRules(var0, var1, var2, var3, var4);
             }
          }
@@ -344,7 +338,7 @@ public class Slime extends Mob implements Enemy {
       RandomSource var5 = var1.getRandom();
       int var6 = var5.nextInt(3);
       if (var6 < 2 && var5.nextFloat() < 0.5F * var2.getSpecialMultiplier()) {
-         ++var6;
+         var6++;
       }
 
       int var7 = 1 << var6;
@@ -397,10 +391,8 @@ public class Slime extends Mob implements Enemy {
          LivingEntity var1 = this.slime.getTarget();
          if (var1 == null) {
             return false;
-         } else if (!this.slime.canAttack(var1)) {
-            return false;
          } else {
-            return --this.growTiredTimer > 0;
+            return !this.slime.canAttack(var1) ? false : --this.growTiredTimer > 0;
          }
       }
 
@@ -409,8 +401,6 @@ public class Slime extends Mob implements Enemy {
          return true;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void tick() {
          LivingEntity var1 = this.slime.getTarget();
@@ -418,8 +408,7 @@ public class Slime extends Mob implements Enemy {
             this.slime.lookAt(var1, 10.0F, 10.0F);
          }
 
-         MoveControl var3 = this.slime.getMoveControl();
-         if (var3 instanceof Slime.SlimeMoveControl var2) {
+         if (this.slime.getMoveControl() instanceof Slime.SlimeMoveControl var2) {
             var2.setDirection(this.slime.getYRot(), this.slime.isDealsDamage());
          }
       }
@@ -445,16 +434,13 @@ public class Slime extends Mob implements Enemy {
          return true;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void tick() {
          if (this.slime.getRandom().nextFloat() < 0.8F) {
             this.slime.getJumpControl().jump();
          }
 
-         MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof Slime.SlimeMoveControl var1) {
+         if (this.slime.getMoveControl() instanceof Slime.SlimeMoveControl var1) {
             var1.setWantedMovement(1.2);
          }
       }
@@ -474,12 +460,9 @@ public class Slime extends Mob implements Enemy {
          return !this.slime.isPassenger();
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void tick() {
-         MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof Slime.SlimeMoveControl var1) {
+         if (this.slime.getMoveControl() instanceof Slime.SlimeMoveControl var1) {
             var1.setWantedMovement(1.0);
          }
       }
@@ -558,8 +541,6 @@ public class Slime extends Mob implements Enemy {
             && this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void tick() {
          if (--this.nextRandomizeTime <= 0) {
@@ -567,8 +548,7 @@ public class Slime extends Mob implements Enemy {
             this.chosenDegrees = (float)this.slime.getRandom().nextInt(360);
          }
 
-         MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof Slime.SlimeMoveControl var1) {
+         if (this.slime.getMoveControl() instanceof Slime.SlimeMoveControl var1) {
             var1.setDirection(this.chosenDegrees, false);
          }
       }

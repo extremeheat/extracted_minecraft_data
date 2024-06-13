@@ -17,9 +17,8 @@ public abstract class DimensionSpecialEffects {
       var0.put(BuiltinDimensionTypes.OVERWORLD_EFFECTS, var1);
       var0.put(BuiltinDimensionTypes.NETHER_EFFECTS, new DimensionSpecialEffects.NetherEffects());
       var0.put(BuiltinDimensionTypes.END_EFFECTS, new DimensionSpecialEffects.EndEffects());
-      var0.put(BuiltinDimensionTypes.POTATO_EFFECTS, new DimensionSpecialEffects.PotatoEffects());
    });
-   protected final float[] sunriseCol = new float[4];
+   private final float[] sunriseCol = new float[4];
    private final float cloudLevel;
    private final boolean hasGround;
    private final DimensionSpecialEffects.SkyType skyType;
@@ -72,10 +71,6 @@ public abstract class DimensionSpecialEffects {
 
    public DimensionSpecialEffects.SkyType skyType() {
       return this.skyType;
-   }
-
-   public int getCloudColor() {
-      return 16777215;
    }
 
    public boolean forceBrightLightmap() {
@@ -139,47 +134,6 @@ public abstract class DimensionSpecialEffects {
       @Override
       public boolean isFoggyAt(int var1, int var2) {
          return false;
-      }
-   }
-
-   public static class PotatoEffects extends DimensionSpecialEffects {
-      public PotatoEffects() {
-         super(112.0F, false, DimensionSpecialEffects.SkyType.NORMAL, false, false);
-      }
-
-      @Override
-      public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
-         return var1.multiply((double)(var2 * 0.94F + 0.06F), (double)(var2 * 0.94F + 0.06F), (double)(var2 * 0.91F + 0.09F));
-      }
-
-      @Override
-      public boolean isFoggyAt(int var1, int var2) {
-         return false;
-      }
-
-      @Override
-      public int getCloudColor() {
-         return 14548906;
-      }
-
-      @Nullable
-      @Override
-      public float[] getSunriseColor(float var1, float var2) {
-         float var3 = 0.4F;
-         float var4 = Mth.cos(var1 * 6.2831855F) - 0.0F;
-         float var5 = -0.0F;
-         if (var4 >= -0.4F && var4 <= 0.4F) {
-            float var6 = (var4 - -0.0F) / 0.4F * 0.5F + 0.5F;
-            float var7 = 1.0F - (1.0F - Mth.sin(var6 * 3.1415927F)) * 0.99F;
-            var7 *= var7;
-            this.sunriseCol[0] = var6 * var6 * 0.3F + 0.35F;
-            this.sunriseCol[1] = var6 * 0.7F + 0.2F;
-            this.sunriseCol[2] = var6 * var6 * 0.0F + 0.2F;
-            this.sunriseCol[3] = var7;
-            return this.sunriseCol;
-         } else {
-            return null;
-         }
       }
    }
 

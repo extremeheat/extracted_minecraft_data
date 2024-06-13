@@ -30,7 +30,7 @@ public class OpenDoorGoal extends DoorInteractGoal {
 
    @Override
    public void tick() {
-      --this.forgetTime;
+      this.forgetTime--;
       super.tick();
    }
 }

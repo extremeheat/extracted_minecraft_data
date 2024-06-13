@@ -5,17 +5,12 @@ import net.minecraft.server.level.ThreadedLevelLightEngine;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
-public record WorldGenContext(ServerLevel a, ChunkGenerator b, StructureTemplateManager c, ThreadedLevelLightEngine d) {
-   private final ServerLevel level;
-   private final ChunkGenerator generator;
-   private final StructureTemplateManager structureManager;
-   private final ThreadedLevelLightEngine lightEngine;
-
-   public WorldGenContext(ServerLevel var1, ChunkGenerator var2, StructureTemplateManager var3, ThreadedLevelLightEngine var4) {
+public record WorldGenContext(ServerLevel level, ChunkGenerator generator, StructureTemplateManager structureManager, ThreadedLevelLightEngine lightEngine) {
+   public WorldGenContext(ServerLevel level, ChunkGenerator generator, StructureTemplateManager structureManager, ThreadedLevelLightEngine lightEngine) {
       super();
-      this.level = var1;
-      this.generator = var2;
-      this.structureManager = var3;
-      this.lightEngine = var4;
+      this.level = level;
+      this.generator = generator;
+      this.structureManager = structureManager;
+      this.lightEngine = lightEngine;
    }
 }

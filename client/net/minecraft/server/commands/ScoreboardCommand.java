@@ -16,7 +16,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -411,12 +410,12 @@ public class ScoreboardCommand {
    ) {
       return var1.then(Commands.literal("blank").executes(var1x -> var2.run(var1x, BlankFormat.INSTANCE)))
          .then(Commands.literal("fixed").then(Commands.argument("contents", ComponentArgument.textComponent(var0)).executes(var1x -> {
-            Component var2xx = ComponentArgument.getComponent(var1x, "contents");
-            return var2.run(var1x, new FixedFormat(var2xx));
+            Component var2x = ComponentArgument.getComponent(var1x, "contents");
+            return var2.run(var1x, new FixedFormat(var2x));
          })))
          .then(Commands.literal("styled").then(Commands.argument("style", StyleArgument.style(var0)).executes(var1x -> {
-            Style var2xx = StyleArgument.getStyle(var1x, "style");
-            return var2.run(var1x, new StyledFormat(var2xx));
+            Style var2x = StyleArgument.getStyle(var1x, "style");
+            return var2.run(var1x, new StyledFormat(var2x));
          })))
          .executes(var1x -> var2.run(var1x, null));
    }
@@ -424,7 +423,7 @@ public class ScoreboardCommand {
    private static LiteralArgumentBuilder<CommandSourceStack> createRenderTypeModify() {
       LiteralArgumentBuilder var0 = Commands.literal("rendertype");
 
-      for(ObjectiveCriteria.RenderType var4 : ObjectiveCriteria.RenderType.values()) {
+      for (ObjectiveCriteria.RenderType var4 : ObjectiveCriteria.RenderType.values()) {
          var0.then(
             Commands.literal(var4.getId())
                .executes(var1 -> setRenderType((CommandSourceStack)var1.getSource(), ObjectiveArgument.getObjective(var1, "objective"), var4))
@@ -438,11 +437,11 @@ public class ScoreboardCommand {
       ArrayList var3 = Lists.newArrayList();
       ServerScoreboard var4 = var0.getServer().getScoreboard();
 
-      for(Objective var6 : var4.getObjectives()) {
+      for (Objective var6 : var4.getObjectives()) {
          if (var6.getCriteria() == ObjectiveCriteria.TRIGGER) {
             boolean var7 = false;
 
-            for(ScoreHolder var9 : var1) {
+            for (ScoreHolder var9 : var1) {
                ReadOnlyScoreInfo var10 = var4.getPlayerScoreInfo(var9, var6);
                if (var10 == null || var10.isLocked()) {
                   var7 = true;
@@ -483,10 +482,10 @@ public class ScoreboardCommand {
       ServerScoreboard var6 = var0.getServer().getScoreboard();
       int var7 = 0;
 
-      for(ScoreHolder var9 : var1) {
+      for (ScoreHolder var9 : var1) {
          ScoreAccess var10 = var6.getOrCreatePlayerScore(var9, var2);
 
-         for(ScoreHolder var12 : var4) {
+         for (ScoreHolder var12 : var4) {
             ScoreAccess var13 = var6.getOrCreatePlayerScore(var12, var5);
             var3.apply(var10, var13);
          }
@@ -518,11 +517,11 @@ public class ScoreboardCommand {
          ServerScoreboard var3 = var0.getServer().getScoreboard();
          int var4 = 0;
 
-         for(ScoreHolder var6 : var1) {
+         for (ScoreHolder var6 : var1) {
             ScoreAccess var7 = var3.getOrCreatePlayerScore(var6, var2);
             if (var7.locked()) {
                var7.unlock();
-               ++var4;
+               var4++;
             }
          }
 
@@ -548,7 +547,7 @@ public class ScoreboardCommand {
    private static int resetScores(CommandSourceStack var0, Collection<ScoreHolder> var1) {
       ServerScoreboard var2 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var4 : var1) {
+      for (ScoreHolder var4 : var1) {
          var2.resetAllPlayerScores(var4);
       }
 
@@ -564,7 +563,7 @@ public class ScoreboardCommand {
    private static int resetScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2) {
       ServerScoreboard var3 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var5 : var1) {
+      for (ScoreHolder var5 : var1) {
          var3.resetSinglePlayerScore(var5, var2);
       }
 
@@ -584,7 +583,7 @@ public class ScoreboardCommand {
    private static int setScore(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, int var3) {
       ServerScoreboard var4 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var6 : var1) {
+      for (ScoreHolder var6 : var1) {
          var4.getOrCreatePlayerScore(var6, var2).set(var3);
       }
 
@@ -605,7 +604,7 @@ public class ScoreboardCommand {
    private static int setScoreDisplay(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, @Nullable Component var3) {
       ServerScoreboard var4 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var6 : var1) {
+      for (ScoreHolder var6 : var1) {
          var4.getOrCreatePlayerScore(var6, var2).display(var3);
       }
 
@@ -643,7 +642,7 @@ public class ScoreboardCommand {
    private static int setScoreNumberFormat(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, @Nullable NumberFormat var3) {
       ServerScoreboard var4 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var6 : var1) {
+      for (ScoreHolder var6 : var1) {
          var4.getOrCreatePlayerScore(var6, var2).numberFormatOverride(var3);
       }
 
@@ -684,7 +683,7 @@ public class ScoreboardCommand {
       ServerScoreboard var4 = var0.getServer().getScoreboard();
       int var5 = 0;
 
-      for(ScoreHolder var7 : var1) {
+      for (ScoreHolder var7 : var1) {
          ScoreAccess var8 = var4.getOrCreatePlayerScore(var7, var2);
          var8.set(var8.get() + var3);
          var5 += var8.get();
@@ -709,7 +708,7 @@ public class ScoreboardCommand {
       ServerScoreboard var4 = var0.getServer().getScoreboard();
       int var5 = 0;
 
-      for(ScoreHolder var7 : var1) {
+      for (ScoreHolder var7 : var1) {
          ScoreAccess var8 = var4.getOrCreatePlayerScore(var7, var2);
          var8.set(var8.get() - var3);
          var5 += var8.get();

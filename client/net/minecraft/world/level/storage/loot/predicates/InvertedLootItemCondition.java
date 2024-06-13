@@ -1,23 +1,21 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 
-public record InvertedLootItemCondition(LootItemCondition b) implements LootItemCondition {
-   private final LootItemCondition term;
-   public static final Codec<InvertedLootItemCondition> CODEC = RecordCodecBuilder.create(
+public record InvertedLootItemCondition(LootItemCondition term) implements LootItemCondition {
+   public static final MapCodec<InvertedLootItemCondition> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(LootItemConditions.DIRECT_CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term))
             .apply(var0, InvertedLootItemCondition::new)
    );
 
-   public InvertedLootItemCondition(LootItemCondition var1) {
+   public InvertedLootItemCondition(LootItemCondition term) {
       super();
-      this.term = var1;
+      this.term = term;
    }
 
    @Override

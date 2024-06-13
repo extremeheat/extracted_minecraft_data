@@ -4,9 +4,9 @@ import com.mojang.realmsclient.dto.Backup;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -34,6 +34,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).build());
       this.repositionElements();
       this.layout.visitWidgets(var1 -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1);
       });
    }
 
@@ -118,7 +119,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       }
 
       private Component translateKey(String var1) {
-         return switch(var1) {
+         return switch (var1) {
             case "template_name" -> TEMPLATE_NAME;
             case "game_difficulty" -> GAME_DIFFICULTY;
             case "name" -> NAME;

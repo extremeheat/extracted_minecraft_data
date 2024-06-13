@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.DataResult.PartialResult;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.Registry;
@@ -17,11 +16,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 import org.slf4j.Logger;
 
-public record LootDataType<T>(ResourceKey<Registry<T>> d, Codec<T> e, String f, LootDataType.Validator<T> g) {
-   private final ResourceKey<Registry<T>> registryKey;
-   private final Codec<T> codec;
-   private final String directory;
-   private final LootDataType.Validator<T> validator;
+public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> codec, String directory, LootDataType.Validator<T> validator) {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final LootDataType<LootItemCondition> PREDICATE = new LootDataType<>(
       Registries.PREDICATE, LootItemConditions.DIRECT_CODEC, "predicates", createSimpleValidator()
@@ -33,12 +28,12 @@ public record LootDataType<T>(ResourceKey<Registry<T>> d, Codec<T> e, String f, 
       Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, "loot_tables", createLootTableValidator()
    );
 
-   public LootDataType(ResourceKey<Registry<T>> var1, Codec<T> var2, String var3, LootDataType.Validator<T> var4) {
+   public LootDataType(ResourceKey<Registry<T>> registryKey, Codec<T> codec, String directory, LootDataType.Validator<T> validator) {
       super();
-      this.registryKey = var1;
-      this.codec = var2;
-      this.directory = var3;
-      this.validator = var4;
+      this.registryKey = registryKey;
+      this.codec = codec;
+      this.directory = directory;
+      this.validator = validator;
    }
 
    public void runValidation(ValidationContext var1, ResourceKey<T> var2, T var3) {
@@ -52,7 +47,7 @@ public record LootDataType<T>(ResourceKey<Registry<T>> d, Codec<T> e, String f, 
    }
 
    public static Stream<LootDataType<?>> values() {
-      return Stream.of((T[])(PREDICATE, MODIFIER, TABLE));
+      return Stream.of(PREDICATE, MODIFIER, TABLE);
    }
 
    private static <T extends LootContextUser> LootDataType.Validator<T> createSimpleValidator() {

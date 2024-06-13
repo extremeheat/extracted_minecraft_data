@@ -23,8 +23,8 @@ public class SnowAndFreezeFeature extends Feature<NoneFeatureConfiguration> {
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-      for(int var6 = 0; var6 < 16; ++var6) {
-         for(int var7 = 0; var7 < 16; ++var7) {
+      for (int var6 = 0; var6 < 16; var6++) {
+         for (int var7 = 0; var7 < 16; var7++) {
             int var8 = var3.getX() + var6;
             int var9 = var3.getZ() + var7;
             int var10 = var2.getHeight(Heightmap.Types.MOTION_BLOCKING, var8, var9);

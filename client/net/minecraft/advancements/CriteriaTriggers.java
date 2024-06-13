@@ -32,7 +32,6 @@ import net.minecraft.advancements.critereon.PickedUpItemTrigger;
 import net.minecraft.advancements.critereon.PlayerHurtEntityTrigger;
 import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.PlayerTrigger;
-import net.minecraft.advancements.critereon.PotatoRefinementTrigger;
 import net.minecraft.advancements.critereon.RecipeCraftedTrigger;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.advancements.critereon.ShotCrossbowTrigger;
@@ -41,7 +40,6 @@ import net.minecraft.advancements.critereon.StartRidingTrigger;
 import net.minecraft.advancements.critereon.SummonedEntityTrigger;
 import net.minecraft.advancements.critereon.TameAnimalTrigger;
 import net.minecraft.advancements.critereon.TargetBlockTrigger;
-import net.minecraft.advancements.critereon.ThrowLubricatedTrigger;
 import net.minecraft.advancements.critereon.TradeTrigger;
 import net.minecraft.advancements.critereon.UsedEnderEyeTrigger;
 import net.minecraft.advancements.critereon.UsedTotemTrigger;
@@ -85,7 +83,7 @@ public class CriteriaTriggers {
    public static final ShotCrossbowTrigger SHOT_CROSSBOW = register("shot_crossbow", new ShotCrossbowTrigger());
    public static final KilledByCrossbowTrigger KILLED_BY_CROSSBOW = register("killed_by_crossbow", new KilledByCrossbowTrigger());
    public static final PlayerTrigger RAID_WIN = register("hero_of_the_village", new PlayerTrigger());
-   public static final PlayerTrigger BAD_OMEN = register("voluntary_exile", new PlayerTrigger());
+   public static final PlayerTrigger RAID_OMEN = register("voluntary_exile", new PlayerTrigger());
    public static final SlideDownBlockTrigger HONEY_BLOCK_SLIDE = register("slide_down_block", new SlideDownBlockTrigger());
    public static final BeeNestDestroyedTrigger BEE_NEST_DESTROYED = register("bee_nest_destroyed", new BeeNestDestroyedTrigger());
    public static final TargetBlockTrigger TARGET_BLOCK_HIT = register("target_hit", new TargetBlockTrigger());
@@ -107,17 +105,6 @@ public class CriteriaTriggers {
    public static final RecipeCraftedTrigger RECIPE_CRAFTED = register("recipe_crafted", new RecipeCraftedTrigger());
    public static final RecipeCraftedTrigger CRAFTER_RECIPE_CRAFTED = register("crafter_recipe_crafted", new RecipeCraftedTrigger());
    public static final FallAfterExplosionTrigger FALL_AFTER_EXPLOSION = register("fall_after_explosion", new FallAfterExplosionTrigger());
-   public static final PlayerTrigger GET_PEELED = register("get_peeled", new PlayerTrigger());
-   public static final PlayerTrigger EAT_ARMOR = register("eat_armor", new PlayerTrigger());
-   public static final PlayerTrigger RUMBLE_PLANT = register("rumble_plant", new PlayerTrigger());
-   public static final PlayerTrigger COMPOST_STAFF = register("compost_staff", new PlayerTrigger());
-   public static final PotatoRefinementTrigger POTATO_REFINED = register("potato_refined", new PotatoRefinementTrigger());
-   public static final ThrowLubricatedTrigger THROW_LUBRICATED = register("throw_lubricated", new ThrowLubricatedTrigger());
-   public static final PlayerTrigger SAID_POTATO = register("said_potato", new PlayerTrigger());
-   public static final PlayerTrigger BRING_HOME_CORRUPTION = register("bring_home_corruption", new PlayerTrigger());
-   public static final PlayerTrigger PEEL_BLOCK = register("peel_block", new PlayerTrigger());
-   public static final PlayerTrigger PEEL_POTATO_SHEEP = register("peel_potato_sheep", new PlayerTrigger());
-   public static final PlayerTrigger PEEL_POTATO_ARMOR = register("peel_potato_armor", new PlayerTrigger());
 
    public CriteriaTriggers() {
       super();

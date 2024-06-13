@@ -82,8 +82,6 @@ public class BeehiveBlock extends BaseEntityBlock {
       return var1.getValue(HONEY_LEVEL);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
       super.playerDestroy(var1, var2, var3, var4, var5, var6);
@@ -107,7 +105,7 @@ public class BeehiveBlock extends BaseEntityBlock {
             return;
          }
 
-         for(Bee var7 : var4) {
+         for (Bee var7 : var4) {
             if (var7.getTarget() == null) {
                Player var8 = Util.getRandom(var5, var1.random);
                var7.setTarget(var8);
@@ -167,23 +165,13 @@ public class BeehiveBlock extends BaseEntityBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private boolean hiveContainsBees(Level var1, BlockPos var2) {
-      BlockEntity var3 = var1.getBlockEntity(var2);
-      if (var3 instanceof BeehiveBlockEntity var4) {
-         return !var4.isEmpty();
-      } else {
-         return false;
-      }
+      return var1.getBlockEntity(var2) instanceof BeehiveBlockEntity var4 ? !var4.isEmpty() : false;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void releaseBeesAndResetHoneyLevel(Level var1, BlockState var2, BlockPos var3, @Nullable Player var4, BeehiveBlockEntity.BeeReleaseStatus var5) {
       this.resetHoneyLevel(var1, var2, var3);
-      BlockEntity var6 = var1.getBlockEntity(var3);
-      if (var6 instanceof BeehiveBlockEntity var7) {
+      if (var1.getBlockEntity(var3) instanceof BeehiveBlockEntity var7) {
          var7.emptyAllLivingFromHive(var4, var2, var5);
       }
    }
@@ -195,7 +183,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(HONEY_LEVEL) >= 5) {
-         for(int var5 = 0; var5 < var4.nextInt(1) + 1; ++var5) {
+         for (int var5 = 0; var5 < var4.nextInt(1) + 1; var5++) {
             this.trySpawnDripParticles(var2, var3, var1);
          }
       }
@@ -266,31 +254,27 @@ public class BeehiveBlock extends BaseEntityBlock {
       return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.BEEHIVE, BeehiveBlockEntity::serverTick);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && var4.isCreative() && var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
-         BlockEntity var5 = var1.getBlockEntity(var2);
-         if (var5 instanceof BeehiveBlockEntity var6) {
-            int var7 = var3.getValue(HONEY_LEVEL);
-            boolean var8 = !var6.isEmpty();
-            if (var8 || var7 > 0) {
-               ItemStack var9 = new ItemStack(this);
-               var9.applyComponents(var6.collectComponents());
-               var9.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var7));
-               ItemEntity var10 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var9);
-               var10.setDefaultPickUpDelay();
-               var1.addFreshEntity(var10);
-            }
+      if (!var1.isClientSide
+         && var4.isCreative()
+         && var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)
+         && var1.getBlockEntity(var2) instanceof BeehiveBlockEntity var6) {
+         int var7 = var3.getValue(HONEY_LEVEL);
+         boolean var8 = !var6.isEmpty();
+         if (var8 || var7 > 0) {
+            ItemStack var9 = new ItemStack(this);
+            var9.applyComponents(var6.collectComponents());
+            var9.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var7));
+            ItemEntity var10 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var9);
+            var10.setDefaultPickUpDelay();
+            var1.addFreshEntity(var10);
          }
       }
 
       return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       Entity var3 = var2.getOptionalParameter(LootContextParams.THIS_ENTITY);
@@ -304,15 +288,10 @@ public class BeehiveBlock extends BaseEntityBlock {
       return super.getDrops(var1, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var4.getBlockState(var6).getBlock() instanceof FireBlock) {
-         BlockEntity var7 = var4.getBlockEntity(var5);
-         if (var7 instanceof BeehiveBlockEntity var8) {
-            var8.emptyAllLivingFromHive(null, var1, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
-         }
+      if (var4.getBlockState(var6).getBlock() instanceof FireBlock && var4.getBlockEntity(var5) instanceof BeehiveBlockEntity var8) {
+         var8.emptyAllLivingFromHive(null, var1, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
       }
 
       return super.updateShape(var1, var2, var3, var4, var5, var6);

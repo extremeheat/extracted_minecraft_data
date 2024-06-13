@@ -28,8 +28,8 @@ public class IdMapper<T> implements IdMap<T> {
    public void addMapping(T var1, int var2) {
       this.tToId.put(var1, var2);
 
-      while(this.idToT.size() <= var2) {
-         this.idToT.add((T)null);
+      while (this.idToT.size() <= var2) {
+         this.idToT.add(null);
       }
 
       this.idToT.set(var2, (T)var1);

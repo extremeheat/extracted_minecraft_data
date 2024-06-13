@@ -87,7 +87,7 @@ public class EndCityPieces {
          EndCityPieces.EndCityPiece var9 = var6.nextInt(3) == 0 ? var8 : null;
          int var10 = 1 + var6.nextInt(3);
 
-         for(int var11 = 0; var11 < var10; ++var11) {
+         for (int var11 = 0; var11 < var10; var11++) {
             var8 = EndCityPieces.addHelper(var5, EndCityPieces.addPiece(var1, var8, new BlockPos(0, 4, 0), "tower_piece", var7, true));
             if (var11 < var10 - 1 && var6.nextBoolean()) {
                var9 = var8;
@@ -95,7 +95,7 @@ public class EndCityPieces {
          }
 
          if (var9 != null) {
-            for(Tuple var12 : EndCityPieces.TOWER_BRIDGES) {
+            for (Tuple var12 : EndCityPieces.TOWER_BRIDGES) {
                if (var6.nextBoolean()) {
                   EndCityPieces.EndCityPiece var13 = EndCityPieces.addHelper(
                      var5, EndCityPieces.addPiece(var1, var9, (BlockPos)var12.getB(), "bridge_end", var7.getRotated((Rotation)var12.getA()), true)
@@ -134,7 +134,7 @@ public class EndCityPieces {
          var9.setGenDepth(-1);
          byte var10 = 0;
 
-         for(int var11 = 0; var11 < var8; ++var11) {
+         for (int var11 = 0; var11 < var8; var11++) {
             if (var6.nextBoolean()) {
                var9 = EndCityPieces.addHelper(var5, EndCityPieces.addPiece(var1, var9, new BlockPos(0, var10, -4), "bridge_piece", var7, true));
                var10 = 0;
@@ -188,10 +188,10 @@ public class EndCityPieces {
          );
          var7 = EndCityPieces.addHelper(var5, EndCityPieces.addPiece(var1, var7, new BlockPos(0, 4, 0), "fat_tower_middle", var8, true));
 
-         for(int var9 = 0; var9 < 2 && var6.nextInt(3) != 0; ++var9) {
+         for (int var9 = 0; var9 < 2 && var6.nextInt(3) != 0; var9++) {
             var7 = EndCityPieces.addHelper(var5, EndCityPieces.addPiece(var1, var7, new BlockPos(0, 8, 0), "fat_tower_middle", var8, true));
 
-            for(Tuple var11 : EndCityPieces.FAT_TOWER_BRIDGES) {
+            for (Tuple var11 : EndCityPieces.FAT_TOWER_BRIDGES) {
                if (var6.nextBoolean()) {
                   EndCityPieces.EndCityPiece var12 = EndCityPieces.addHelper(
                      var5, EndCityPieces.addPiece(var1, var7, (BlockPos)var11.getB(), "bridge_end", var8.getRotated((Rotation)var11.getA()), true)
@@ -253,7 +253,7 @@ public class EndCityPieces {
             boolean var8 = false;
             int var9 = var6.nextInt();
 
-            for(StructurePiece var11 : var7) {
+            for (StructurePiece var11 : var7) {
                var11.setGenDepth(var9);
                StructurePiece var12 = StructurePiece.findCollisionPiece(var5, var11.getBoundingBox());
                if (var12 != null && var12.getGenDepth() != var3.getGenDepth()) {

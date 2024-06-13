@@ -201,8 +201,8 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("Book", 10)) {
          this.book = this.resolveBook(ItemStack.parse(var2, var1.getCompound("Book")).orElse(ItemStack.EMPTY), null);
       } else {

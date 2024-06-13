@@ -90,11 +90,6 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new EnderMan.EndermanFreezeWhenLookedAt(this));
@@ -232,7 +227,7 @@ public class EnderMan extends Monster implements NeutralMob {
    @Override
    public void aiStep() {
       if (this.level().isClientSide) {
-         for(int var1 = 0; var1 < 2; ++var1) {
+         for (int var1 = 0; var1 < 2; var1++) {
             this.level()
                .addParticle(
                   ParticleTypes.PORTAL,
@@ -296,7 +291,7 @@ public class EnderMan extends Monster implements NeutralMob {
    private boolean teleport(double var1, double var3, double var5) {
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos(var1, var3, var5);
 
-      while(var7.getY() > this.level().getMinBuildHeight() && !this.level().getBlockState(var7).blocksMotion()) {
+      while (var7.getY() > this.level().getMinBuildHeight() && !this.level().getBlockState(var7).blocksMotion()) {
          var7.move(Direction.DOWN);
       }
 
@@ -347,7 +342,7 @@ public class EnderMan extends Monster implements NeutralMob {
             .withParameter(LootContextParams.TOOL, var5)
             .withOptionalParameter(LootContextParams.THIS_ENTITY, this);
 
-         for(ItemStack var9 : var4.getDrops(var6)) {
+         for (ItemStack var9 : var4.getDrops(var6)) {
             this.spawnAtLocation(var9);
          }
       }
@@ -378,7 +373,7 @@ public class EnderMan extends Monster implements NeutralMob {
          } else {
             boolean var4 = var3 && this.hurtWithCleanWater(var1, (ThrownPotion)var1.getDirectEntity(), var2);
 
-            for(int var5 = 0; var5 < 64; ++var5) {
+            for (int var5 = 0; var5 < 64; var5++) {
                if (this.teleport()) {
                   return true;
                }
@@ -457,10 +452,10 @@ public class EnderMan extends Monster implements NeutralMob {
       public boolean canUse() {
          if (this.enderman.getCarriedBlock() == null) {
             return false;
-         } else if (!this.enderman.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            return false;
          } else {
-            return this.enderman.getRandom().nextInt(reducedTickDelay(2000)) == 0;
+            return !this.enderman.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
+               ? false
+               : this.enderman.getRandom().nextInt(reducedTickDelay(2000)) == 0;
          }
       }
 
@@ -600,10 +595,10 @@ public class EnderMan extends Monster implements NeutralMob {
       public boolean canUse() {
          if (this.enderman.getCarriedBlock() != null) {
             return false;
-         } else if (!this.enderman.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            return false;
          } else {
-            return this.enderman.getRandom().nextInt(reducedTickDelay(20)) == 0;
+            return !this.enderman.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
+               ? false
+               : this.enderman.getRandom().nextInt(reducedTickDelay(20)) == 0;
          }
       }
 

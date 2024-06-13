@@ -47,7 +47,7 @@ public class ComponentUtils {
       } else {
          MutableComponent var4 = var1.getContents().resolve(var0, var2, var3 + 1);
 
-         for(Component var6 : var1.getSiblings()) {
+         for (Component var6 : var1.getSiblings()) {
             var4.append(updateForEntity(var0, var6, var2, var3 + 1));
          }
 
@@ -105,7 +105,7 @@ public class ComponentUtils {
          MutableComponent var3 = Component.empty();
          boolean var4 = true;
 
-         for(Object var6 : var0) {
+         for (Object var6 : var0) {
             if (!var4) {
                var3.append(var1);
             }
@@ -126,19 +126,14 @@ public class ComponentUtils {
       return (Component)(var0 instanceof Component ? (Component)var0 : Component.literal(var0.getString()));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static boolean isTranslationResolvable(@Nullable Component var0) {
-      if (var0 != null) {
-         ComponentContents var2 = var0.getContents();
-         if (var2 instanceof TranslatableContents var1) {
-            String var4 = var1.getKey();
-            String var3 = var1.getFallback();
-            return var3 != null || Language.getInstance().has(var4);
-         }
+      if (var0 != null && var0.getContents() instanceof TranslatableContents var1) {
+         String var4 = var1.getKey();
+         String var3 = var1.getFallback();
+         return var3 != null || Language.getInstance().has(var4);
+      } else {
+         return true;
       }
-
-      return true;
    }
 
    public static MutableComponent copyOnClickText(String var0) {

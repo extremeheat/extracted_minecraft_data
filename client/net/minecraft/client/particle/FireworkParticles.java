@@ -166,7 +166,7 @@ public class FireworkParticles {
             this.explosions = var15;
             this.lifetime = var15.size() * 2 - 1;
 
-            for(FireworkExplosion var17 : var15) {
+            for (FireworkExplosion var17 : var15) {
                if (var17.hasTwinkle()) {
                   this.twinkleDelay = true;
                   this.lifetime += 15;
@@ -184,7 +184,7 @@ public class FireworkParticles {
             if (this.explosions.size() >= 3) {
                var2 = true;
             } else {
-               for(FireworkExplosion var4 : this.explosions) {
+               for (FireworkExplosion var4 : this.explosions) {
                   if (var4.shape() == FireworkExplosion.Shape.LARGE_BALL) {
                      var2 = true;
                      break;
@@ -213,7 +213,7 @@ public class FireworkParticles {
                var5 = IntList.of(DyeColor.BLACK.getFireworkColor());
             }
 
-            switch(var11.shape()) {
+            switch (var11.shape()) {
                case SMALL_BALL:
                   this.createParticleBall(0.25, 2, var5, var6, var14, var15);
                   break;
@@ -235,7 +235,7 @@ public class FireworkParticles {
             var8.setColor((float)FastColor.ARGB32.red(var7) / 255.0F, (float)FastColor.ARGB32.green(var7) / 255.0F, (float)FastColor.ARGB32.blue(var7) / 255.0F);
          }
 
-         ++this.life;
+         this.life++;
          if (this.life > this.lifetime) {
             if (this.twinkleDelay) {
                boolean var10 = this.isFarAwayFromCamera();
@@ -271,9 +271,9 @@ public class FireworkParticles {
          double var10 = this.y;
          double var12 = this.z;
 
-         for(int var14 = -var3; var14 <= var3; ++var14) {
-            for(int var15 = -var3; var15 <= var3; ++var15) {
-               for(int var16 = -var3; var16 <= var3; ++var16) {
+         for (int var14 = -var3; var14 <= var3; var14++) {
+            for (int var15 = -var3; var15 <= var3; var15++) {
+               for (int var16 = -var3; var16 <= var3; var16++) {
                   double var17 = (double)var15 + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
                   double var19 = (double)var14 + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
                   double var21 = (double)var16 + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
@@ -294,22 +294,22 @@ public class FireworkParticles {
          float var13 = this.random.nextFloat() * 3.1415927F;
          double var14 = var8 ? 0.034 : 0.34;
 
-         for(int var16 = 0; var16 < 3; ++var16) {
+         for (int var16 = 0; var16 < 3; var16++) {
             double var17 = (double)var13 + (double)((float)var16 * 3.1415927F) * var14;
             double var19 = var9;
             double var21 = var11;
 
-            for(int var23 = 1; var23 < var3.length; ++var23) {
+            for (int var23 = 1; var23 < var3.length; var23++) {
                double var24 = var3[var23][0];
                double var26 = var3[var23][1];
 
-               for(double var28 = 0.25; var28 <= 1.0; var28 += 0.25) {
+               for (double var28 = 0.25; var28 <= 1.0; var28 += 0.25) {
                   double var30 = Mth.lerp(var28, var19, var24) * var1;
                   double var32 = Mth.lerp(var28, var21, var26) * var1;
                   double var34 = var30 * Math.sin(var17);
                   var30 *= Math.cos(var17);
 
-                  for(double var36 = -1.0; var36 <= 1.0; var36 += 2.0) {
+                  for (double var36 = -1.0; var36 <= 1.0; var36 += 2.0) {
                      this.createParticle(this.x, this.y, this.z, var30 * var36, var32, var34 * var36, var4, var5, var6, var7);
                   }
                }
@@ -324,7 +324,7 @@ public class FireworkParticles {
          double var5 = this.random.nextGaussian() * 0.05;
          double var7 = this.random.nextGaussian() * 0.05;
 
-         for(int var9 = 0; var9 < 70; ++var9) {
+         for (int var9 = 0; var9 < 70; var9++) {
             double var10 = this.xd * 0.5 + this.random.nextGaussian() * 0.15 + var5;
             double var12 = this.zd * 0.5 + this.random.nextGaussian() * 0.15 + var7;
             double var14 = this.yd * 0.5 + this.random.nextDouble() * 0.5;

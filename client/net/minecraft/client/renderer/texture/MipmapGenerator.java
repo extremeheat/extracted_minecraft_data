@@ -6,7 +6,7 @@ import net.minecraft.Util;
 public class MipmapGenerator {
    private static final int ALPHA_CUTOUT_CUTOFF = 96;
    private static final float[] POW22 = Util.make(new float[256], var0 -> {
-      for(int var1 = 0; var1 < var0.length; ++var1) {
+      for (int var1 = 0; var1 < var0.length; var1++) {
          var0[var1] = (float)Math.pow((double)((float)var1 / 255.0F), 2.2);
       }
    });
@@ -23,7 +23,7 @@ public class MipmapGenerator {
          var2[0] = var0[0];
          boolean var3 = hasTransparentPixel(var2[0]);
 
-         for(int var4 = 1; var4 <= var1; ++var4) {
+         for (int var4 = 1; var4 <= var1; var4++) {
             if (var4 < var0.length) {
                var2[var4] = var0[var4];
             } else {
@@ -32,8 +32,8 @@ public class MipmapGenerator {
                int var7 = var6.getWidth();
                int var8 = var6.getHeight();
 
-               for(int var9 = 0; var9 < var7; ++var9) {
-                  for(int var10 = 0; var10 < var8; ++var10) {
+               for (int var9 = 0; var9 < var7; var9++) {
+                  for (int var10 = 0; var10 < var8; var10++) {
                      var6.setPixelRGBA(
                         var9,
                         var10,
@@ -57,8 +57,8 @@ public class MipmapGenerator {
    }
 
    private static boolean hasTransparentPixel(NativeImage var0) {
-      for(int var1 = 0; var1 < var0.getWidth(); ++var1) {
-         for(int var2 = 0; var2 < var0.getHeight(); ++var2) {
+      for (int var1 = 0; var1 < var0.getWidth(); var1++) {
+         for (int var2 = 0; var2 < var0.getHeight(); var2++) {
             if (var0.getPixelRGBA(var1, var2) >> 24 == 0) {
                return true;
             }

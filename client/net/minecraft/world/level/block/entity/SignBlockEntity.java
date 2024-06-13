@@ -12,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -26,7 +25,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
@@ -55,11 +53,8 @@ public class SignBlockEntity extends BlockEntity {
       return new SignText();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public boolean isFacingFrontText(Player var1) {
-      Block var3 = this.getBlockState().getBlock();
-      if (var3 instanceof SignBlock var2) {
+      if (this.getBlockState().getBlock() instanceof SignBlock var2) {
          Vec3 var10 = var2.getSignHitboxCenterPosition(this.getBlockState());
          double var4 = var1.getX() - ((double)this.getBlockPos().getX() + var10.x);
          double var6 = var1.getZ() - ((double)this.getBlockPos().getZ() + var10.z);
@@ -101,8 +96,8 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("front_text")) {
          SignText.DIRECT_CODEC
@@ -122,7 +117,7 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    private SignText loadLines(SignText var1) {
-      for(int var2 = 0; var2 < 4; ++var2) {
+      for (int var2 = 0; var2 < 4; var2++) {
          Component var3 = this.loadLine(var1.getMessage(var2, false));
          Component var4 = this.loadLine(var1.getMessage(var2, true));
          var1 = var1.setMessage(var2, var3, var4);
@@ -132,10 +127,9 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    private Component loadLine(Component var1) {
-      Level var3 = this.level;
-      if (var3 instanceof ServerLevel var2) {
+      if (this.level instanceof ServerLevel var2) {
          try {
-            return ComponentUtils.updateForEntity(createCommandSourceStack(null, (Level)var2, this.worldPosition), var1, null, 0);
+            return ComponentUtils.updateForEntity(createCommandSourceStack(null, var2, this.worldPosition), var1, null, 0);
          } catch (CommandSyntaxException var4) {
          }
       }
@@ -159,7 +153,7 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    private SignText setMessages(Player var1, List<FilteredText> var2, SignText var3) {
-      for(int var4 = 0; var4 < var2.size(); ++var4) {
+      for (int var4 = 0; var4 < var2.size(); var4++) {
          FilteredText var5 = (FilteredText)var2.get(var4);
          Style var6 = var3.getMessage(var4, var1.isTextFilteringEnabled()).getStyle();
          if (var1.isTextFilteringEnabled()) {
@@ -203,7 +197,7 @@ public class SignBlockEntity extends BlockEntity {
    public boolean executeClickCommandsIfPresent(Player var1, Level var2, BlockPos var3, boolean var4) {
       boolean var5 = false;
 
-      for(Component var9 : this.getText(var4).getMessages(var1.isTextFilteringEnabled())) {
+      for (Component var9 : this.getText(var4).getMessages(var1.isTextFilteringEnabled())) {
          Style var10 = var9.getStyle();
          ClickEvent var11 = var10.getClickEvent();
          if (var11 != null && var11.getAction() == ClickEvent.Action.RUN_COMMAND) {
@@ -227,7 +221,7 @@ public class SignBlockEntity extends BlockEntity {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    @Override
@@ -265,7 +259,7 @@ public class SignBlockEntity extends BlockEntity {
 
    public boolean playerIsTooFarAwayToEdit(UUID var1) {
       Player var2 = this.level.getPlayerByUUID(var1);
-      return var2 == null || var2.distanceToSqr((double)this.getBlockPos().getX(), (double)this.getBlockPos().getY(), (double)this.getBlockPos().getZ()) > 64.0;
+      return var2 == null || !var2.canInteractWithBlock(this.getBlockPos(), 4.0);
    }
 
    public static void tick(Level var0, BlockPos var1, BlockState var2, SignBlockEntity var3) {

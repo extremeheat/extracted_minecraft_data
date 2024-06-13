@@ -2,14 +2,12 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 
 public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensionTrigger.TriggerInstance> {
@@ -26,25 +24,22 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensi
       this.trigger(var1, var2x -> var2x.matches(var2, var3));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ResourceKey<Level>> c, Optional<ResourceKey<Level>> d)
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ResourceKey<Level>> from, Optional<ResourceKey<Level>> to)
       implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<ResourceKey<Level>> from;
-      private final Optional<ResourceKey<Level>> to;
       public static final Codec<ChangeDimensionTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(ChangeDimensionTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(ResourceKey.codec(Registries.DIMENSION), "from").forGetter(ChangeDimensionTrigger.TriggerInstance::from),
-                  ExtraCodecs.strictOptionalField(ResourceKey.codec(Registries.DIMENSION), "to").forGetter(ChangeDimensionTrigger.TriggerInstance::to)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(ChangeDimensionTrigger.TriggerInstance::player),
+                  ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("from").forGetter(ChangeDimensionTrigger.TriggerInstance::from),
+                  ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("to").forGetter(ChangeDimensionTrigger.TriggerInstance::to)
                )
                .apply(var0, ChangeDimensionTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ResourceKey<Level>> var2, Optional<ResourceKey<Level>> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ResourceKey<Level>> from, Optional<ResourceKey<Level>> to) {
          super();
-         this.player = var1;
-         this.from = var2;
-         this.to = var3;
+         this.player = player;
+         this.from = from;
+         this.to = to;
       }
 
       public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimension() {
@@ -68,11 +63,7 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensi
       }
 
       public boolean matches(ResourceKey<Level> var1, ResourceKey<Level> var2) {
-         if (this.from.isPresent() && this.from.get() != var1) {
-            return false;
-         } else {
-            return !this.to.isPresent() || this.to.get() == var2;
-         }
+         return this.from.isPresent() && this.from.get() != var1 ? false : !this.to.isPresent() || this.to.get() == var2;
       }
    }
 }

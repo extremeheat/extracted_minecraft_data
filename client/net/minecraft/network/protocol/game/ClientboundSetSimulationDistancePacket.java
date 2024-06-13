@@ -5,8 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundSetSimulationDistancePacket(int b) implements Packet<ClientGamePacketListener> {
-   private final int simulationDistance;
+public record ClientboundSetSimulationDistancePacket(int simulationDistance) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetSimulationDistancePacket> STREAM_CODEC = Packet.codec(
       ClientboundSetSimulationDistancePacket::write, ClientboundSetSimulationDistancePacket::new
    );
@@ -15,9 +14,9 @@ public record ClientboundSetSimulationDistancePacket(int b) implements Packet<Cl
       this(var1.readVarInt());
    }
 
-   public ClientboundSetSimulationDistancePacket(int var1) {
+   public ClientboundSetSimulationDistancePacket(int simulationDistance) {
       super();
-      this.simulationDistance = var1;
+      this.simulationDistance = simulationDistance;
    }
 
    private void write(FriendlyByteBuf var1) {

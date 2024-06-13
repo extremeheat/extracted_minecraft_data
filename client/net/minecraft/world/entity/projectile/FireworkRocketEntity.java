@@ -104,9 +104,9 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       if (this.isAttachedToEntity()) {
          if (this.attachedToEntity == null) {
             this.entityData.get(DATA_ATTACHED_TO_TARGET).ifPresent(var1x -> {
-               Entity var2xx = this.level().getEntity(var1x);
-               if (var2xx instanceof LivingEntity) {
-                  this.attachedToEntity = (LivingEntity)var2xx;
+               Entity var2x = this.level().getEntity(var1x);
+               if (var2x instanceof LivingEntity) {
+                  this.attachedToEntity = (LivingEntity)var2x;
                }
             });
          }
@@ -147,7 +147,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
       HitResult var10 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       if (!this.noPhysics) {
-         this.onHit(var10);
+         this.hitOrDeflect(var10);
          this.hasImpulse = true;
       }
 
@@ -156,7 +156,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
          this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
       }
 
-      ++this.life;
+      this.life++;
       if (this.level().isClientSide && this.life % 2 < 2) {
          this.level()
             .addParticle(
@@ -220,11 +220,11 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
          double var3 = 5.0;
          Vec3 var5 = this.position();
 
-         for(LivingEntity var8 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0))) {
+         for (LivingEntity var8 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0))) {
             if (var8 != this.attachedToEntity && !(this.distanceToSqr(var8) > 25.0)) {
                boolean var9 = false;
 
-               for(int var10 = 0; var10 < 2; ++var10) {
+               for (int var10 = 0; var10 < 2; var10++) {
                   Vec3 var11 = new Vec3(var8.getX(), var8.getY(0.5 * (double)var10), var8.getZ());
                   BlockHitResult var12 = this.level().clip(new ClipContext(var5, var11, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
                   if (var12.getType() == HitResult.Type.MISS) {

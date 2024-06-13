@@ -104,7 +104,7 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
       int var6 = Math.min(var4.getValue(AGE) + 1, 25);
       int var7 = this.getBlocksToGrowWhenBonemealed(var2);
 
-      for(int var8 = 0; var8 < var7 && this.canGrowInto(var1.getBlockState(var5)); ++var8) {
+      for (int var8 = 0; var8 < var7 && this.canGrowInto(var1.getBlockState(var5)); var8++) {
          var1.setBlockAndUpdate(var5, var4.setValue(AGE, Integer.valueOf(var6)));
          var5 = var5.relative(this.growthDirection);
          var6 = Math.min(var6 + 1, 25);

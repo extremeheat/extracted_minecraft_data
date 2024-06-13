@@ -56,11 +56,6 @@ public class Creeper extends Monster implements PowerableMob {
    }
 
    @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(2, new SwellGoal(this));
@@ -176,8 +171,6 @@ public class Creeper extends Monster implements PowerableMob {
       return SoundEvents.CREEPER_DEATH;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
@@ -257,7 +250,7 @@ public class Creeper extends Monster implements PowerableMob {
          var2.setDuration(var2.getDuration() / 2);
          var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
 
-         for(MobEffectInstance var4 : var1) {
+         for (MobEffectInstance var4 : var1) {
             var2.addEffect(new MobEffectInstance(var4));
          }
 
@@ -278,6 +271,6 @@ public class Creeper extends Monster implements PowerableMob {
    }
 
    public void increaseDroppedSkulls() {
-      ++this.droppedSkulls;
+      this.droppedSkulls++;
    }
 }

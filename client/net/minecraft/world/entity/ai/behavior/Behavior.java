@@ -90,7 +90,7 @@ public abstract class Behavior<E extends LivingEntity> implements BehaviorContro
    }
 
    protected boolean hasRequiredMemories(E var1) {
-      for(Entry var3 : this.entryCondition.entrySet()) {
+      for (Entry var3 : this.entryCondition.entrySet()) {
          MemoryModuleType var4 = (MemoryModuleType)var3.getKey();
          MemoryStatus var5 = (MemoryStatus)var3.getValue();
          if (!var1.getBrain().checkMemory(var4, var5)) {

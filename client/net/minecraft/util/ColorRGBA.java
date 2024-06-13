@@ -4,8 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.util.Locale;
 
-public record ColorRGBA(int b) {
-   private final int rgba;
+public record ColorRGBA(int rgba) {
    private static final String CUSTOM_COLOR_PREFIX = "#";
    public static final Codec<ColorRGBA> CODEC = Codec.STRING.comapFlatMap(var0 -> {
       if (!var0.startsWith("#")) {
@@ -20,9 +19,9 @@ public record ColorRGBA(int b) {
       }
    }, ColorRGBA::formatValue);
 
-   public ColorRGBA(int var1) {
+   public ColorRGBA(int rgba) {
       super();
-      this.rgba = var1;
+      this.rgba = rgba;
    }
 
    private String formatValue() {

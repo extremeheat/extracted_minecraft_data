@@ -35,7 +35,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
@@ -84,10 +83,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    protected final Map<BlockPos, BlockEntity> blockEntities = new Object2ObjectOpenHashMap();
    protected final LevelHeightAccessor levelHeightAccessor;
    protected final LevelChunkSection[] sections;
-   private final boolean certainPotato;
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public ChunkAccess(
       ChunkPos var1,
       UpgradeData var2,
@@ -101,12 +97,6 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       this.chunkPos = var1;
       this.upgradeData = var2;
       this.levelHeightAccessor = var3;
-      if (var3 instanceof Level var9) {
-         this.certainPotato = var9.isPotato();
-      } else {
-         this.certainPotato = false;
-      }
-
       this.sections = new LevelChunkSection[var3.getSectionsCount()];
       this.inhabitedTime = var5;
       this.postProcessing = new ShortList[var3.getSectionsCount()];
@@ -123,13 +113,8 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       replaceMissingSections(var4, this.sections);
    }
 
-   @Override
-   public boolean isPotato() {
-      return this.certainPotato;
-   }
-
    private static void replaceMissingSections(Registry<Biome> var0, LevelChunkSection[] var1) {
-      for(int var2 = 0; var2 < var1.length; ++var2) {
+      for (int var2 = 0; var2 < var1.length; var2++) {
          if (var1[var2] == null) {
             var1[var2] = new LevelChunkSection(var0);
          }
@@ -150,7 +135,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    public int getHighestFilledSectionIndex() {
       LevelChunkSection[] var1 = this.getSections();
 
-      for(int var2 = var1.length - 1; var2 >= 0; --var2) {
+      for (int var2 = var1.length - 1; var2 >= 0; var2--) {
          LevelChunkSection var3 = var1[var2];
          if (!var3.hasOnlyAir()) {
             return var2;
@@ -240,12 +225,12 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
 
    @Override
    public LongSet getReferencesForStructure(Structure var1) {
-      return (LongSet)this.structuresRefences.getOrDefault(var1, EMPTY_REFERENCE_SET);
+      return this.structuresRefences.getOrDefault(var1, EMPTY_REFERENCE_SET);
    }
 
    @Override
    public void addReferenceForStructure(Structure var1, long var2) {
-      ((LongSet)this.structuresRefences.computeIfAbsent(var1, var0 -> new LongOpenHashSet())).add(var2);
+      this.structuresRefences.computeIfAbsent(var1, var0 -> new LongOpenHashSet()).add(var2);
       this.unsaved = true;
    }
 
@@ -270,7 +255,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
          var2 = this.getMaxBuildHeight() - 1;
       }
 
-      for(int var3 = var1; var3 <= var2; var3 += 16) {
+      for (int var3 = var1; var3 <= var2; var3 += 16) {
          if (!this.getSection(this.getSectionIndex(var3)).hasOnlyAir()) {
             return false;
          }
@@ -334,14 +319,14 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    public void findBlocks(Predicate<BlockState> var1, BiConsumer<BlockPos, BlockState> var2) {
       BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
 
-      for(int var4 = this.getMinSection(); var4 < this.getMaxSection(); ++var4) {
+      for (int var4 = this.getMinSection(); var4 < this.getMaxSection(); var4++) {
          LevelChunkSection var5 = this.getSection(this.getSectionIndexFromSectionY(var4));
          if (var5.maybeHas(var1)) {
             BlockPos var6 = SectionPos.of(this.chunkPos, var4).origin();
 
-            for(int var7 = 0; var7 < 16; ++var7) {
-               for(int var8 = 0; var8 < 16; ++var8) {
-                  for(int var9 = 0; var9 < 16; ++var9) {
+            for (int var7 = 0; var7 < 16; var7++) {
+               for (int var8 = 0; var8 < 16; var8++) {
+                  for (int var9 = 0; var9 < 16; var9++) {
                      BlockState var10 = var5.getBlockState(var9, var7, var8);
                      if (var1.test(var10)) {
                         var2.accept(var3.setWithOffset(var6, var9, var7, var8), var10);
@@ -454,7 +439,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       int var5 = QuartPos.fromBlock(var3.getMinBlockZ());
       LevelHeightAccessor var6 = this.getHeightAccessorForGeneration();
 
-      for(int var7 = var6.getMinSection(); var7 < var6.getMaxSection(); ++var7) {
+      for (int var7 = var6.getMinSection(); var7 < var6.getMaxSection(); var7++) {
          LevelChunkSection var8 = this.getSection(this.getSectionIndexFromSectionY(var7));
          int var9 = QuartPos.fromSection(var7);
          var8.fillBiomesFromNoise(var1, var2, var4, var9, var5);
@@ -487,14 +472,11 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return this.skyLightSources;
    }
 
-   public static record TicksToSave(SerializableTickContainer<Block> a, SerializableTickContainer<Fluid> b) {
-      private final SerializableTickContainer<Block> blocks;
-      private final SerializableTickContainer<Fluid> fluids;
-
-      public TicksToSave(SerializableTickContainer<Block> var1, SerializableTickContainer<Fluid> var2) {
+   public static record TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
+      public TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
          super();
-         this.blocks = var1;
-         this.fluids = var2;
+         this.blocks = blocks;
+         this.fluids = fluids;
       }
    }
 }

@@ -32,10 +32,10 @@ public class VanillaPackResourcesBuilder {
    public static Consumer<VanillaPackResourcesBuilder> developmentConfig = var0 -> {
    };
    private static final Map<PackType, Path> ROOT_DIR_BY_TYPE = Util.make(() -> {
-      synchronized(VanillaPackResources.class) {
+      synchronized (VanillaPackResources.class) {
          Builder var1 = ImmutableMap.builder();
 
-         for(PackType var5 : PackType.values()) {
+         for (PackType var5 : PackType.values()) {
             String var6 = "/" + var5.getDirectory() + "/.mcassetsroot";
             URL var7 = VanillaPackResources.class.getResource(var6);
             if (var7 == null) {
@@ -102,7 +102,7 @@ public class VanillaPackResourcesBuilder {
 
    private void pushPathForType(PackType var1, Path var2) {
       if (this.validateDirPath(var2)) {
-         this.pathsForType.computeIfAbsent(var1, var0 -> new LinkedHashSet()).add(var2);
+         this.pathsForType.computeIfAbsent(var1, var0 -> new LinkedHashSet<>()).add(var2);
       }
    }
 
@@ -122,7 +122,7 @@ public class VanillaPackResourcesBuilder {
       } catch (IOException var8) {
       }
 
-      while(var3 != null && var3.hasMoreElements()) {
+      while (var3 != null && var3.hasMoreElements()) {
          URL var4 = (URL)var3.nextElement();
 
          try {
@@ -148,7 +148,7 @@ public class VanillaPackResourcesBuilder {
    public VanillaPackResourcesBuilder pushUniversalPath(Path var1) {
       this.pushRootPath(var1);
 
-      for(PackType var5 : PackType.values()) {
+      for (PackType var5 : PackType.values()) {
          this.pushPathForType(var5, var1.resolve(var5.getDirectory()));
       }
 
@@ -174,7 +174,7 @@ public class VanillaPackResourcesBuilder {
    public VanillaPackResources build(PackLocationInfo var1) {
       EnumMap var2 = new EnumMap<>(PackType.class);
 
-      for(PackType var6 : PackType.values()) {
+      for (PackType var6 : PackType.values()) {
          List var7 = copyAndReverse(this.pathsForType.getOrDefault(var6, Set.of()));
          var2.put(var6, var7);
       }

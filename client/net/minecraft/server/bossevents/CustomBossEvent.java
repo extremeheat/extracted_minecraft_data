@@ -13,7 +13,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
@@ -89,10 +88,10 @@ public class CustomBossEvent extends ServerBossEvent {
       HashSet var2 = Sets.newHashSet();
       HashSet var3 = Sets.newHashSet();
 
-      for(UUID var5 : this.players) {
+      for (UUID var5 : this.players) {
          boolean var6 = false;
 
-         for(ServerPlayer var8 : var1) {
+         for (ServerPlayer var8 : var1) {
             if (var8.getUUID().equals(var5)) {
                var6 = true;
                break;
@@ -104,10 +103,10 @@ public class CustomBossEvent extends ServerBossEvent {
          }
       }
 
-      for(ServerPlayer var12 : var1) {
+      for (ServerPlayer var12 : var1) {
          boolean var15 = false;
 
-         for(UUID var19 : this.players) {
+         for (UUID var19 : this.players) {
             if (var12.getUUID().equals(var19)) {
                var15 = true;
                break;
@@ -119,8 +118,8 @@ public class CustomBossEvent extends ServerBossEvent {
          }
       }
 
-      for(UUID var13 : var2) {
-         for(ServerPlayer var18 : this.getPlayers()) {
+      for (UUID var13 : var2) {
+         for (ServerPlayer var18 : this.getPlayers()) {
             if (var18.getUUID().equals(var13)) {
                this.removePlayer(var18);
                break;
@@ -130,7 +129,7 @@ public class CustomBossEvent extends ServerBossEvent {
          this.players.remove(var13);
       }
 
-      for(ServerPlayer var14 : var3) {
+      for (ServerPlayer var14 : var3) {
          this.addPlayer(var14);
       }
 
@@ -150,7 +149,7 @@ public class CustomBossEvent extends ServerBossEvent {
       var2.putBoolean("CreateWorldFog", this.shouldCreateWorldFog());
       ListTag var3 = new ListTag();
 
-      for(UUID var5 : this.players) {
+      for (UUID var5 : this.players) {
          var3.add(NbtUtils.createUUID(var5));
       }
 
@@ -169,7 +168,7 @@ public class CustomBossEvent extends ServerBossEvent {
       var3.setPlayBossMusic(var0.getBoolean("PlayBossMusic"));
       var3.setCreateWorldFog(var0.getBoolean("CreateWorldFog"));
 
-      for(Tag var6 : var0.getList("Players", 11)) {
+      for (Tag var6 : var0.getList("Players", 11)) {
          var3.addOfflinePlayer(NbtUtils.loadUUID(var6));
       }
 

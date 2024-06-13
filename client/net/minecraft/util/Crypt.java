@@ -89,7 +89,7 @@ public class Crypt {
    private static byte[] digestData(byte[]... var0) throws Exception {
       MessageDigest var1 = MessageDigest.getInstance("SHA-1");
 
-      for(byte[] var5 : var0) {
+      for (byte[] var5 : var0) {
          var1.update(var5);
       }
 
@@ -201,19 +201,17 @@ public class Crypt {
       T apply(byte[] var1) throws CryptException;
    }
 
-   public static record SaltSignaturePair(long b, byte[] c) {
-      private final long salt;
-      private final byte[] signature;
+   public static record SaltSignaturePair(long salt, byte[] signature) {
       public static final Crypt.SaltSignaturePair EMPTY = new Crypt.SaltSignaturePair(0L, ByteArrays.EMPTY_ARRAY);
 
       public SaltSignaturePair(FriendlyByteBuf var1) {
          this(var1.readLong(), var1.readByteArray());
       }
 
-      public SaltSignaturePair(long var1, byte[] var3) {
+      public SaltSignaturePair(long salt, byte[] signature) {
          super();
-         this.salt = var1;
-         this.signature = var3;
+         this.salt = salt;
+         this.signature = signature;
       }
 
       public boolean isValid() {

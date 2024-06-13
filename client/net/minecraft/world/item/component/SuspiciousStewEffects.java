@@ -2,7 +2,6 @@ package net.minecraft.world.item.component;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
@@ -14,32 +13,29 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 
-public record SuspiciousStewEffects(List<SuspiciousStewEffects.Entry> d) {
-   private final List<SuspiciousStewEffects.Entry> effects;
+public record SuspiciousStewEffects(List<SuspiciousStewEffects.Entry> effects) {
    public static final SuspiciousStewEffects EMPTY = new SuspiciousStewEffects(List.of());
    public static final Codec<SuspiciousStewEffects> CODEC = SuspiciousStewEffects.Entry.CODEC
       .listOf()
       .xmap(SuspiciousStewEffects::new, SuspiciousStewEffects::effects);
    public static final StreamCodec<RegistryFriendlyByteBuf, SuspiciousStewEffects> STREAM_CODEC = SuspiciousStewEffects.Entry.STREAM_CODEC
-      .<List<SuspiciousStewEffects.Entry>>apply(ByteBufCodecs.list())
+      .apply(ByteBufCodecs.list())
       .map(SuspiciousStewEffects::new, SuspiciousStewEffects::effects);
 
-   public SuspiciousStewEffects(List<SuspiciousStewEffects.Entry> var1) {
+   public SuspiciousStewEffects(List<SuspiciousStewEffects.Entry> effects) {
       super();
-      this.effects = var1;
+      this.effects = (List<SuspiciousStewEffects.Entry>)effects;
    }
 
    public SuspiciousStewEffects withEffectAdded(SuspiciousStewEffects.Entry var1) {
       return new SuspiciousStewEffects(Util.copyAndAdd(this.effects, var1));
    }
 
-   public static record Entry(Holder<MobEffect> c, int d) {
-      private final Holder<MobEffect> effect;
-      private final int duration;
+   public static record Entry(Holder<MobEffect> effect, int duration) {
       public static final Codec<SuspiciousStewEffects.Entry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("id").forGetter(SuspiciousStewEffects.Entry::effect),
-                  Codec.INT.optionalFieldOf("duration", 160).forGetter(SuspiciousStewEffects.Entry::duration)
+                  Codec.INT.lenientOptionalFieldOf("duration", 160).forGetter(SuspiciousStewEffects.Entry::duration)
                )
                .apply(var0, SuspiciousStewEffects.Entry::new)
       );
@@ -51,10 +47,10 @@ public record SuspiciousStewEffects(List<SuspiciousStewEffects.Entry> d) {
          SuspiciousStewEffects.Entry::new
       );
 
-      public Entry(Holder<MobEffect> var1, int var2) {
+      public Entry(Holder<MobEffect> effect, int duration) {
          super();
-         this.effect = var1;
-         this.duration = var2;
+         this.effect = effect;
+         this.duration = duration;
       }
 
       public MobEffectInstance createEffectInstance() {

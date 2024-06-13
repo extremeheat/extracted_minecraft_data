@@ -5,8 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundChatAckPacket(int b) implements Packet<ServerGamePacketListener> {
-   private final int offset;
+public record ServerboundChatAckPacket(int offset) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatAckPacket> STREAM_CODEC = Packet.codec(
       ServerboundChatAckPacket::write, ServerboundChatAckPacket::new
    );
@@ -15,9 +14,9 @@ public record ServerboundChatAckPacket(int b) implements Packet<ServerGamePacket
       this(var1.readVarInt());
    }
 
-   public ServerboundChatAckPacket(int var1) {
+   public ServerboundChatAckPacket(int offset) {
       super();
-      this.offset = var1;
+      this.offset = offset;
    }
 
    private void write(FriendlyByteBuf var1) {

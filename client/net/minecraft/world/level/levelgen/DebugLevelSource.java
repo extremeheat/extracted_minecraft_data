@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -24,7 +23,6 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.FixedBiomeSource;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -32,7 +30,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blending.Blender;
 
 public class DebugLevelSource extends ChunkGenerator {
-   public static final Codec<DebugLevelSource> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<DebugLevelSource> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(RegistryOps.retrieveElement(Biomes.PLAINS)).apply(var0, var0.stable(DebugLevelSource::new))
    );
    private static final int BLOCK_MARGIN = 2;
@@ -51,7 +49,7 @@ public class DebugLevelSource extends ChunkGenerator {
    }
 
    @Override
-   protected Codec<? extends ChunkGenerator> codec() {
+   protected MapCodec<? extends ChunkGenerator> codec() {
       return CODEC;
    }
 
@@ -66,8 +64,8 @@ public class DebugLevelSource extends ChunkGenerator {
       int var6 = var5.x;
       int var7 = var5.z;
 
-      for(int var8 = 0; var8 < 16; ++var8) {
-         for(int var9 = 0; var9 < 16; ++var9) {
+      for (int var8 = 0; var8 < 16; var8++) {
+         for (int var9 = 0; var9 < 16; var9++) {
             int var10 = SectionPos.sectionToBlockCoord(var6, var8);
             int var11 = SectionPos.sectionToBlockCoord(var7, var9);
             var1.setBlock(var4.set(var10, 60, var11), BARRIER, 2);

@@ -19,7 +19,7 @@ public class Timer {
    public int advanceTime(long var1) {
       this.tickDelta = (float)(var1 - this.lastMs) / this.targetMsptProvider.apply(this.msPerTick);
       this.lastMs = var1;
-      this.partialTick += this.tickDelta;
+      this.partialTick = this.partialTick + this.tickDelta;
       int var3 = (int)this.partialTick;
       this.partialTick -= (float)var3;
       return var3;

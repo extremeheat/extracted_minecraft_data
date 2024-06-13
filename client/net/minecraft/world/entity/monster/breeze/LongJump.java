@@ -24,6 +24,7 @@ import net.minecraft.world.entity.ai.behavior.Swim;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -59,36 +60,45 @@ public class LongJump extends Behavior<Breeze> {
       );
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Breeze var2) {
-      if (!var2.onGround() && !var2.isInWater()) {
+   public static boolean canRun(ServerLevel var0, Breeze var1) {
+      if (!var1.onGround() && !var1.isInWater()) {
          return false;
-      } else if (Swim.shouldSwim(var2)) {
+      } else if (Swim.shouldSwim(var1)) {
          return false;
-      } else if (var2.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_PRESENT)) {
+      } else if (var1.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_PRESENT)) {
          return true;
       } else {
-         LivingEntity var3 = var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-         if (var3 == null) {
+         LivingEntity var2 = var1.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
+         if (var2 == null) {
             return false;
-         } else if (outOfAggroRange(var2, var3)) {
-            var2.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+         } else if (outOfAggroRange(var1, var2)) {
+            var1.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
             return false;
-         } else if (tooCloseForJump(var2, var3)) {
+         } else if (tooCloseForJump(var1, var2)) {
             return false;
-         } else if (!canJumpFromCurrentPosition(var1, var2)) {
+         } else if (!canJumpFromCurrentPosition(var0, var1)) {
             return false;
          } else {
-            BlockPos var4 = snapToSurface(var2, BreezeUtil.randomPointBehindTarget(var3, var2.getRandom()));
-            if (var4 == null) {
-               return false;
-            } else if (!BreezeUtil.hasLineOfSight(var2, var4.getCenter()) && !BreezeUtil.hasLineOfSight(var2, var4.above(4).getCenter())) {
+            BlockPos var3 = snapToSurface(var1, BreezeUtil.randomPointBehindTarget(var2, var1.getRandom()));
+            if (var3 == null) {
                return false;
             } else {
-               var2.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, var4);
-               return true;
+               BlockState var4 = var0.getBlockState(var3.below());
+               if (var1.getType().isBlockDangerous(var4)) {
+                  return false;
+               } else if (!BreezeUtil.hasLineOfSight(var1, var3.getCenter()) && !BreezeUtil.hasLineOfSight(var1, var3.above(4).getCenter())) {
+                  return false;
+               } else {
+                  var1.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, var3);
+                  return true;
+               }
             }
          }
       }
+   }
+
+   protected boolean checkExtraStartConditions(ServerLevel var1, Breeze var2) {
+      return canRun(var1, var2);
    }
 
    protected boolean canStillUse(ServerLevel var1, Breeze var2, long var3) {
@@ -170,7 +180,7 @@ public class LongJump extends Behavior<Breeze> {
       } else {
          ClipContext var4 = new ClipContext(var1, var1.relative(Direction.UP, 10.0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0);
          BlockHitResult var5 = var0.level().clip(var4);
-         return var5.getType() == HitResult.Type.BLOCK ? BlockPos.containing(var3.getLocation()).above() : null;
+         return var5.getType() == HitResult.Type.BLOCK ? BlockPos.containing(var5.getLocation()).above() : null;
       }
    }
 
@@ -185,7 +195,7 @@ public class LongJump extends Behavior<Breeze> {
    private static boolean canJumpFromCurrentPosition(ServerLevel var0, Breeze var1) {
       BlockPos var2 = var1.blockPosition();
 
-      for(int var3 = 1; var3 <= 4; ++var3) {
+      for (int var3 = 1; var3 <= 4; var3++) {
          BlockPos var4 = var2.relative(Direction.UP, var3);
          if (!var0.getBlockState(var4).isAir() && !var0.getFluidState(var4).is(FluidTags.WATER)) {
             return false;
@@ -196,7 +206,7 @@ public class LongJump extends Behavior<Breeze> {
    }
 
    private static Optional<Vec3> calculateOptimalJumpVector(Breeze var0, RandomSource var1, Vec3 var2) {
-      for(int var5 : Util.shuffledCopy(ALLOWED_ANGLES, var1)) {
+      for (int var5 : Util.shuffledCopy(ALLOWED_ANGLES, var1)) {
          Optional var6 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, 1.4F, var5, false);
          if (var6.isPresent()) {
             return var6;

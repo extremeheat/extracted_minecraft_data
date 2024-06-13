@@ -8,7 +8,6 @@ import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
@@ -43,54 +42,56 @@ public class BlockListReport implements DataProvider {
                   .listElements()
                   .forEach(
                      var2xx -> {
-                        JsonObject var3xx = new JsonObject();
-                        StateDefinition var4xx = ((Block)var2xx.value()).getStateDefinition();
-                        if (!var4xx.getProperties().isEmpty()) {
+                        JsonObject var3x = new JsonObject();
+                        StateDefinition var4x = var2xx.value().getStateDefinition();
+                        if (!var4x.getProperties().isEmpty()) {
                            JsonObject var5 = new JsonObject();
-            
-                           for(Property var7 : var4xx.getProperties()) {
+
+                           for (Property var7 : var4x.getProperties()) {
                               JsonArray var8 = new JsonArray();
-            
-                              for(Comparable var10 : var7.getPossibleValues()) {
+
+                              for (Comparable var10 : var7.getPossibleValues()) {
                                  var8.add(Util.getPropertyName(var7, var10));
                               }
-            
+
                               var5.add(var7.getName(), var8);
                            }
-            
-                           var3xx.add("properties", var5);
+
+                           var3x.add("properties", var5);
                         }
-            
+
                         JsonArray var12 = new JsonArray();
-            
-                        JsonObject var17;
-                        for(UnmodifiableIterator var13 = var4xx.getPossibleStates().iterator(); var13.hasNext(); var12.add(var17)) {
+                        UnmodifiableIterator var13 = var4x.getPossibleStates().iterator();
+
+                        while (var13.hasNext()) {
                            BlockState var15 = (BlockState)var13.next();
-                           var17 = new JsonObject();
+                           JsonObject var17 = new JsonObject();
                            JsonObject var18 = new JsonObject();
-            
-                           for(Property var11 : var4xx.getProperties()) {
+
+                           for (Property var11 : var4x.getProperties()) {
                               var18.addProperty(var11.getName(), Util.getPropertyName(var11, var15.getValue(var11)));
                            }
-            
+
                            if (var18.size() > 0) {
                               var17.add("properties", var18);
                            }
-            
+
                            var17.addProperty("id", Block.getId(var15));
-                           if (var15 == ((Block)var2xx.value()).defaultBlockState()) {
+                           if (var15 == var2xx.value().defaultBlockState()) {
                               var17.addProperty("default", true);
                            }
+
+                           var12.add(var17);
                         }
-            
-                        var3xx.add("states", var12);
+
+                        var3x.add("states", var12);
                         String var14 = var2xx.getRegisteredName();
-                        JsonElement var16 = Util.getOrThrow(
-                           BlockTypes.CODEC.codec().encodeStart(var4, (Block)var2xx.value()),
-                           var1xxx -> new AssertionError("Failed to serialize block " + var14 + " (is type registered in BlockTypes?): " + var1xxx)
-                        );
-                        var3xx.add("definition", var16);
-                        var3.add(var14, var3xx);
+                        JsonElement var16 = (JsonElement)BlockTypes.CODEC
+                           .codec()
+                           .encodeStart(var4, var2xx.value())
+                           .getOrThrow(var1xxx -> new AssertionError("Failed to serialize block " + var14 + " (is type registered in BlockTypes?): " + var1xxx));
+                        var3x.add("definition", var16);
+                        var3.add(var14, var3x);
                      }
                   );
                return DataProvider.saveStable(var1, var3, var2);

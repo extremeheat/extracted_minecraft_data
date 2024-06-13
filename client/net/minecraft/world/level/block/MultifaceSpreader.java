@@ -75,7 +75,7 @@ public class MultifaceSpreader {
       if (var5.getAxis() == var4.getAxis()) {
          return Optional.empty();
       } else if (this.config.isOtherBlockValidAsSource(var1) || this.config.hasFace(var1, var4) && !this.config.hasFace(var1, var5)) {
-         for(MultifaceSpreader.SpreadType var10 : this.config.getSpreadTypes()) {
+         for (MultifaceSpreader.SpreadType var10 : this.config.getSpreadTypes()) {
             MultifaceSpreader.SpreadPos var11 = var10.getSpreadPos(var3, var5, var4);
             if (var6.test(var2, var3, var11)) {
                return Optional.of(var11);
@@ -154,14 +154,11 @@ public class MultifaceSpreader {
       }
    }
 
-   public static record SpreadPos(BlockPos a, Direction b) {
-      private final BlockPos pos;
-      private final Direction face;
-
-      public SpreadPos(BlockPos var1, Direction var2) {
+   public static record SpreadPos(BlockPos pos, Direction face) {
+      public SpreadPos(BlockPos pos, Direction face) {
          super();
-         this.pos = var1;
-         this.face = var2;
+         this.pos = pos;
+         this.face = face;
       }
    }
 

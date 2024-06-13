@@ -190,7 +190,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
       this.clearEntries();
       var1 = var1.toLowerCase(Locale.ROOT);
 
-      for(LevelSummary var4 : var2) {
+      for (LevelSummary var4 : var2) {
          if (this.filterAccepts(var1, var4)) {
             this.addEntry(new WorldSelectionList.WorldListEntry(this, var4));
          }
@@ -470,7 +470,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                         this.minecraft.setScreen(new ProgressScreen(true));
                         this.doDeleteWorld();
                      }
-         
+
                      this.minecraft.setScreen(this.screen);
                   },
                   Component.translatable("selectWorld.deleteQuestion"),

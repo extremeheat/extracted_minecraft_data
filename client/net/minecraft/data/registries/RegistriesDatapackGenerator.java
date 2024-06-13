@@ -8,7 +8,6 @@ import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -38,8 +37,8 @@ public class RegistriesDatapackGenerator implements DataProvider {
                return CompletableFuture.allOf(
                   RegistryDataLoader.WORLDGEN_REGISTRIES
                      .stream()
-                     .flatMap(var4 -> this.dumpRegistryCap(var1, var2, var3, var4).stream())
-                     .toArray(var0 -> new CompletableFuture[var0])
+                     .flatMap(var4 -> this.dumpRegistryCap(var1, var2, var3, (RegistryDataLoader.RegistryData<?>)var4).stream())
+                     .toArray(CompletableFuture[]::new)
                );
             }
          );
@@ -56,7 +55,7 @@ public class RegistriesDatapackGenerator implements DataProvider {
                return CompletableFuture.allOf(
                   var5x.listElements()
                      .map(var4xx -> dumpValue(var6.json(var4xx.key().location()), var1, var3, var4.elementCodec(), var4xx.value()))
-                     .toArray(var0 -> new CompletableFuture[var0])
+                     .toArray(CompletableFuture[]::new)
                );
             }
          );

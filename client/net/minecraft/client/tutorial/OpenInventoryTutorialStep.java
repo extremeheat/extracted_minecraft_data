@@ -18,7 +18,7 @@ public class OpenInventoryTutorialStep implements TutorialStepInstance {
 
    @Override
    public void tick() {
-      ++this.timeWaiting;
+      this.timeWaiting++;
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {

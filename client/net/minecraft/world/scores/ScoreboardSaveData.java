@@ -7,7 +7,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
@@ -41,7 +40,7 @@ public class ScoreboardSaveData extends SavedData {
    }
 
    private void loadTeams(ListTag var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
+      for (int var3 = 0; var3 < var1.size(); var3++) {
          CompoundTag var4 = var1.getCompound(var3);
          String var5 = var4.getString("Name");
          PlayerTeam var6 = this.scoreboard.addPlayerTeam(var5);
@@ -102,13 +101,13 @@ public class ScoreboardSaveData extends SavedData {
    }
 
    private void loadTeamPlayers(PlayerTeam var1, ListTag var2) {
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
+      for (int var3 = 0; var3 < var2.size(); var3++) {
          this.scoreboard.addPlayerToTeam(var2.getString(var3), var1);
       }
    }
 
    private void loadDisplaySlots(CompoundTag var1) {
-      for(String var3 : var1.getAllKeys()) {
+      for (String var3 : var1.getAllKeys()) {
          DisplaySlot var4 = DisplaySlot.CODEC.byName(var3);
          if (var4 != null) {
             String var5 = var1.getString(var3);
@@ -119,7 +118,7 @@ public class ScoreboardSaveData extends SavedData {
    }
 
    private void loadObjectives(ListTag var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
+      for (int var3 = 0; var3 < var1.size(); var3++) {
          CompoundTag var4 = var1.getCompound(var3);
          String var5 = var4.getString("CriteriaName");
          ObjectiveCriteria var6 = ObjectiveCriteria.byName(var5).orElseGet(() -> {
@@ -150,7 +149,7 @@ public class ScoreboardSaveData extends SavedData {
    private ListTag saveTeams(HolderLookup.Provider var1) {
       ListTag var2 = new ListTag();
 
-      for(PlayerTeam var5 : this.scoreboard.getPlayerTeams()) {
+      for (PlayerTeam var5 : this.scoreboard.getPlayerTeams()) {
          CompoundTag var6 = new CompoundTag();
          var6.putString("Name", var5.getName());
          var6.putString("DisplayName", Component.Serializer.toJson(var5.getDisplayName(), var1));
@@ -167,7 +166,7 @@ public class ScoreboardSaveData extends SavedData {
          var6.putString("CollisionRule", var5.getCollisionRule().name);
          ListTag var7 = new ListTag();
 
-         for(String var9 : var5.getPlayers()) {
+         for (String var9 : var5.getPlayers()) {
             var7.add(StringTag.valueOf(var9));
          }
 
@@ -181,7 +180,7 @@ public class ScoreboardSaveData extends SavedData {
    private void saveDisplaySlots(CompoundTag var1) {
       CompoundTag var2 = new CompoundTag();
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
+      for (DisplaySlot var6 : DisplaySlot.values()) {
          Objective var7 = this.scoreboard.getDisplayObjective(var6);
          if (var7 != null) {
             var2.putString(var6.getSerializedName(), var7.getName());
@@ -196,7 +195,7 @@ public class ScoreboardSaveData extends SavedData {
    private ListTag saveObjectives(HolderLookup.Provider var1) {
       ListTag var2 = new ListTag();
 
-      for(Objective var5 : this.scoreboard.getObjectives()) {
+      for (Objective var5 : this.scoreboard.getObjectives()) {
          CompoundTag var6 = new CompoundTag();
          var6.putString("Name", var5.getName());
          var6.putString("CriteriaName", var5.getCriteria().getName());
@@ -205,7 +204,7 @@ public class ScoreboardSaveData extends SavedData {
          var6.putBoolean("display_auto_update", var5.displayAutoUpdate());
          NumberFormat var7 = var5.numberFormat();
          if (var7 != null) {
-            NumberFormatTypes.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), var7).result().ifPresent(var1x -> var6.put("format", var1x));
+            NumberFormatTypes.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), var7).ifSuccess(var1x -> var6.put("format", var1x));
          }
 
          var2.add(var6);

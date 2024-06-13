@@ -201,14 +201,14 @@ public class LocalPlayer extends AbstractClientPlayer {
             this.sendPosition();
          }
 
-         for(AmbientSoundHandler var2 : this.ambientSoundHandlers) {
+         for (AmbientSoundHandler var2 : this.ambientSoundHandlers) {
             var2.tick();
          }
       }
    }
 
    public float getCurrentMood() {
-      for(AmbientSoundHandler var2 : this.ambientSoundHandlers) {
+      for (AmbientSoundHandler var2 : this.ambientSoundHandlers) {
          if (var2 instanceof BiomeAmbientSoundsHandler) {
             return ((BiomeAmbientSoundsHandler)var2).getMoodiness();
          }
@@ -234,7 +234,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          double var6 = this.getZ() - this.zLast;
          double var8 = (double)(this.getYRot() - this.yRotLast);
          double var10 = (double)(this.getXRot() - this.xRotLast);
-         ++this.positionReminder;
+         this.positionReminder++;
          boolean var12 = Mth.lengthSquared(var15, var4, var6) > Mth.square(2.0E-4) || this.positionReminder >= 20;
          boolean var13 = var8 != 0.0 || var10 != 0.0;
          if (this.isPassenger()) {
@@ -410,7 +410,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          double var11 = 1.7976931348623157E308;
          Direction[] var13 = new Direction[]{Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH};
 
-         for(Direction var17 : var13) {
+         for (Direction var17 : var13) {
             double var18 = var17.getAxis().choose(var6, 0.0, var8);
             double var20 = var17.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1.0 - var18 : var18;
             if (var20 < var11 && !this.suffocatesAt(var5.relative(var17))) {
@@ -534,9 +534,8 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Nullable
    public PlayerRideableJumping jumpableVehicle() {
-      Entity var2 = this.getControlledVehicle();
-      if (var2 instanceof PlayerRideableJumping var1 && ((PlayerRideableJumping)var1).canJump()) {
-         return (PlayerRideableJumping)var1;
+      if (this.getControlledVehicle() instanceof PlayerRideableJumping var1 && var1.canJump()) {
+         return var1;
       }
 
       return null;
@@ -554,7 +553,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public void openTextEdit(SignBlockEntity var1, boolean var2) {
       if (var1 instanceof HangingSignBlockEntity var3) {
-         this.minecraft.setScreen(new HangingSignEditScreen((SignBlockEntity)var3, var2, this.minecraft.isTextFilteringEnabled()));
+         this.minecraft.setScreen(new HangingSignEditScreen(var3, var2, this.minecraft.isTextFilteringEnabled()));
       } else {
          this.minecraft.setScreen(new SignEditScreen(var1, var2, this.minecraft.isTextFilteringEnabled()));
       }
@@ -620,8 +619,8 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.jumping = this.input.jumping;
          this.yBobO = this.yBob;
          this.xBobO = this.xBob;
-         this.xBob += (this.getXRot() - this.xBob) * 0.5F;
-         this.yBob += (this.getYRot() - this.yBob) * 0.5F;
+         this.xBob = this.xBob + (this.getXRot() - this.xBob) * 0.5F;
+         this.yBob = this.yBob + (this.getYRot() - this.yBob) * 0.5F;
       }
    }
 
@@ -632,7 +631,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    public void resetPos() {
       this.setPose(Pose.STANDING);
       if (this.level() != null) {
-         for(double var1 = this.getY(); var1 > (double)this.level().getMinBuildHeight() && var1 < (double)this.level().getMaxBuildHeight(); ++var1) {
+         for (double var1 = this.getY(); var1 > (double)this.level().getMinBuildHeight() && var1 < (double)this.level().getMaxBuildHeight(); var1++) {
             this.setPos(this.getX(), var1, this.getZ());
             if (this.level().noCollision(this)) {
                break;
@@ -650,7 +649,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public void aiStep() {
       if (this.sprintTriggerTime > 0) {
-         --this.sprintTriggerTime;
+         this.sprintTriggerTime--;
       }
 
       if (!(this.minecraft.screen instanceof ReceivingLevelScreen)) {
@@ -676,7 +675,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
       boolean var5 = false;
       if (this.autoJumpTime > 0) {
-         --this.autoJumpTime;
+         this.autoJumpTime--;
          var5 = true;
          this.input.jumping = true;
       }
@@ -741,7 +740,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
       if (this.input.jumping && !var11 && !var1 && !this.getAbilities().flying && !this.isPassenger() && !this.onClimbable()) {
          ItemStack var12 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if ((var12.is(Items.ELYTRA) || var12.is(Items.POISONOUS_POLYTRA)) && ElytraItem.isFlyEnabled(var12) && this.tryToStartFallFlying()) {
+         if (var12.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var12) && this.tryToStartFallFlying()) {
             this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
          }
       }
@@ -762,11 +761,11 @@ public class LocalPlayer extends AbstractClientPlayer {
       if (this.getAbilities().flying && this.isControlledCamera()) {
          int var14 = 0;
          if (this.input.shiftKeyDown) {
-            --var14;
+            var14--;
          }
 
          if (this.input.jumping) {
-            ++var14;
+            var14++;
          }
 
          if (var14 != 0) {
@@ -777,7 +776,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       PlayerRideableJumping var15 = this.jumpableVehicle();
       if (var15 != null && var15.getJumpCooldown() == 0) {
          if (this.jumpRidingTicks < 0) {
-            ++this.jumpRidingTicks;
+            this.jumpRidingTicks++;
             if (this.jumpRidingTicks == 0) {
                this.jumpRidingScale = 0.0F;
             }
@@ -791,7 +790,7 @@ public class LocalPlayer extends AbstractClientPlayer {
             this.jumpRidingTicks = 0;
             this.jumpRidingScale = 0.0F;
          } else if (var1) {
-            ++this.jumpRidingTicks;
+            this.jumpRidingTicks++;
             if (this.jumpRidingTicks < 10) {
                this.jumpRidingScale = (float)this.jumpRidingTicks * 0.1F;
             } else {
@@ -811,7 +810,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Override
    protected void tickDeath() {
-      ++this.deathTime;
+      this.deathTime++;
       if (this.deathTime == 20) {
          this.remove(Entity.RemovalReason.KILLED);
       }
@@ -847,16 +846,13 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.processPortalCooldown();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void rideTick() {
       super.rideTick();
       this.handsBusy = false;
-      Entity var2 = this.getControlledVehicle();
-      if (var2 instanceof Boat var1) {
+      if (this.getControlledVehicle() instanceof Boat var1) {
          var1.setInput(this.input.left, this.input.right, this.input.up, this.input.down);
-         this.handsBusy |= this.input.left || this.input.right || this.input.up || this.input.down;
+         this.handsBusy = this.handsBusy | (this.input.left || this.input.right || this.input.up || this.input.down);
       }
    }
 
@@ -942,14 +938,14 @@ public class LocalPlayer extends AbstractClientPlayer {
                   Iterator var31 = StreamSupport.<VoxelShape>stream(var30.spliterator(), false).flatMap(var0 -> var0.toAabbs().stream()).iterator();
                   float var33 = 1.0E-45F;
 
-                  while(var31.hasNext()) {
+                  while (var31.hasNext()) {
                      AABB var35 = (AABB)var31.next();
                      if (var35.intersects(var26, var27) || var35.intersects(var28, var29)) {
                         var33 = (float)var35.maxY;
                         Vec3 var32 = var35.getCenter();
                         BlockPos var36 = BlockPos.containing(var32);
 
-                        for(int var37 = 1; (float)var37 < var17; ++var37) {
+                        for (int var37 = 1; (float)var37 < var17; var37++) {
                            BlockPos var38 = var36.above(var37);
                            BlockState var39 = this.level().getBlockState(var38);
                            VoxelShape var34;
@@ -1108,9 +1104,5 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public float getVisualRotationYInDegrees() {
       return this.getYRot();
-   }
-
-   public String getQuestKey() {
-      return this.entityData.get(DATA_POTATO_QUEST);
    }
 }

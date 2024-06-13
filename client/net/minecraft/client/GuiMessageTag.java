@@ -8,14 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
-public record GuiMessageTag(int a, @Nullable GuiMessageTag.Icon b, @Nullable Component c, @Nullable String d) {
-   private final int indicatorColor;
-   @Nullable
-   private final GuiMessageTag.Icon icon;
-   @Nullable
-   private final Component text;
-   @Nullable
-   private final String logTag;
+public record GuiMessageTag(int indicatorColor, @Nullable GuiMessageTag.Icon icon, @Nullable Component text, @Nullable String logTag) {
    private static final Component SYSTEM_TEXT = Component.translatable("chat.tag.system");
    private static final Component SYSTEM_TEXT_SINGLE_PLAYER = Component.translatable("chat.tag.system_single_player");
    private static final Component CHAT_NOT_SECURE_TEXT = Component.translatable("chat.tag.not_secure");
@@ -28,12 +21,12 @@ public record GuiMessageTag(int a, @Nullable GuiMessageTag.Icon b, @Nullable Com
    private static final GuiMessageTag CHAT_NOT_SECURE = new GuiMessageTag(13684944, null, CHAT_NOT_SECURE_TEXT, "Not Secure");
    private static final GuiMessageTag CHAT_ERROR = new GuiMessageTag(16733525, null, CHAT_ERROR_TEXT, "Chat Error");
 
-   public GuiMessageTag(int var1, @Nullable GuiMessageTag.Icon var2, @Nullable Component var3, @Nullable String var4) {
+   public GuiMessageTag(int indicatorColor, @Nullable GuiMessageTag.Icon icon, @Nullable Component text, @Nullable String logTag) {
       super();
-      this.indicatorColor = var1;
-      this.icon = var2;
-      this.text = var3;
-      this.logTag = var4;
+      this.indicatorColor = indicatorColor;
+      this.icon = icon;
+      this.text = text;
+      this.logTag = logTag;
    }
 
    public static GuiMessageTag system() {

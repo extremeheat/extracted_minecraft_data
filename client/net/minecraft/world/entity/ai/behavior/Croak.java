@@ -36,6 +36,6 @@ public class Croak extends Behavior<Frog> {
    }
 
    protected void tick(ServerLevel var1, Frog var2, long var3) {
-      ++this.croakCounter;
+      this.croakCounter++;
    }
 }

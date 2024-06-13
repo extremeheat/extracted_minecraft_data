@@ -81,7 +81,7 @@ public class RandomSequences extends SavedData {
       );
       CompoundTag var4 = var2.getCompound("sequences");
 
-      for(String var7 : var4.getAllKeys()) {
+      for (String var7 : var4.getAllKeys()) {
          try {
             RandomSequence var8 = (RandomSequence)((Pair)RandomSequence.CODEC.decode(NbtOps.INSTANCE, var4.get(var7)).result().get()).getFirst();
             var3.sequences.put(new ResourceLocation(var7), var8);

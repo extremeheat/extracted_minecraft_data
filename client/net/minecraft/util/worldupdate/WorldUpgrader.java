@@ -182,11 +182,11 @@ public class WorldUpgrader {
             float var2 = (float)WorldUpgrader.this.totalFiles;
             WorldUpgrader.this.status = this.upgradingStatus;
 
-            while(WorldUpgrader.this.running) {
+            while (WorldUpgrader.this.running) {
                boolean var3 = false;
                float var4 = 0.0F;
 
-               for(WorldUpgrader.DimensionToUpgrade var6 : var1) {
+               for (WorldUpgrader.DimensionToUpgrade var6 : var1) {
                   ResourceKey var7 = var6.dimensionKey;
                   ListIterator var8 = var6.files;
                   AutoCloseable var9 = var6.storage;
@@ -194,7 +194,7 @@ public class WorldUpgrader {
                      WorldUpgrader.FileToUpgrade var10 = (WorldUpgrader.FileToUpgrade)var8.next();
                      boolean var11 = true;
 
-                     for(ChunkPos var13 : var10.chunksToUpgrade) {
+                     for (ChunkPos var13 : var10.chunksToUpgrade) {
                         var11 = var11 && this.processOnePosition(var7, (T)var9, var13);
                         var3 = true;
                      }
@@ -221,7 +221,7 @@ public class WorldUpgrader {
 
             WorldUpgrader.this.status = this.finishedStatus;
 
-            for(WorldUpgrader.DimensionToUpgrade var16 : var1) {
+            for (WorldUpgrader.DimensionToUpgrade var16 : var1) {
                try {
                   var16.storage.close();
                } catch (Exception var14) {
@@ -234,12 +234,12 @@ public class WorldUpgrader {
       private List<WorldUpgrader.DimensionToUpgrade<T>> getDimensionsToUpgrade() {
          ArrayList var1 = Lists.newArrayList();
 
-         for(ResourceKey var3 : WorldUpgrader.this.levels) {
+         for (ResourceKey var3 : WorldUpgrader.this.levels) {
             RegionStorageInfo var4 = new RegionStorageInfo(WorldUpgrader.this.levelStorage.getLevelId(), var3, this.type);
             Path var5 = WorldUpgrader.this.levelStorage.getDimensionPath(var3).resolve(this.folderName);
             AutoCloseable var6 = this.createStorage(var4, var5);
             ListIterator var7 = this.getFilesToProcess(var4, var5);
-            var1.add(new WorldUpgrader.DimensionToUpgrade<AutoCloseable>(var3, var6, var7));
+            var1.add(new WorldUpgrader.DimensionToUpgrade<>(var3, var6, var7));
          }
 
          return var1;
@@ -249,8 +249,8 @@ public class WorldUpgrader {
 
       private ListIterator<WorldUpgrader.FileToUpgrade> getFilesToProcess(RegionStorageInfo var1, Path var2) {
          List var3 = getAllChunkPositions(var1, var2);
-         WorldUpgrader.this.totalFiles += var3.size();
-         WorldUpgrader.this.totalChunks += var3.stream().mapToInt(var0 -> var0.chunksToUpgrade.size()).sum();
+         WorldUpgrader.this.totalFiles = WorldUpgrader.this.totalFiles + var3.size();
+         WorldUpgrader.this.totalChunks = WorldUpgrader.this.totalChunks + var3.stream().mapToInt(var0 -> var0.chunksToUpgrade.size()).sum();
          return var3.listIterator();
       }
 
@@ -261,7 +261,7 @@ public class WorldUpgrader {
          } else {
             ArrayList var3 = Lists.newArrayList();
 
-            for(File var7 : var2) {
+            for (File var7 : var2) {
                Matcher var8 = WorldUpgrader.REGEX.matcher(var7.getName());
                if (var8.matches()) {
                   int var9 = Integer.parseInt(var8.group(1)) << 5;
@@ -269,8 +269,8 @@ public class WorldUpgrader {
                   ArrayList var11 = Lists.newArrayList();
 
                   try (RegionFile var12 = new RegionFile(var0, var7.toPath(), var1, true)) {
-                     for(int var13 = 0; var13 < 32; ++var13) {
-                        for(int var14 = 0; var14 < 32; ++var14) {
+                     for (int var13 = 0; var13 < 32; var13++) {
+                        for (int var14 = 0; var14 < 32; var14++) {
                            ChunkPos var15 = new ChunkPos(var13 + var9, var14 + var10);
                            if (var12.doesChunkExist(var15)) {
                               var11.add(var15);
@@ -306,9 +306,9 @@ public class WorldUpgrader {
          }
 
          if (var4) {
-            ++WorldUpgrader.this.converted;
+            WorldUpgrader.this.converted++;
          } else {
-            ++WorldUpgrader.this.skipped;
+            WorldUpgrader.this.skipped++;
          }
 
          return var4;
@@ -349,7 +349,7 @@ public class WorldUpgrader {
          CompoundTag var4 = var1.read(var2).join().orElse(null);
          if (var4 != null) {
             int var5 = ChunkStorage.getVersion(var4);
-            ChunkGenerator var6 = ((LevelStem)WorldUpgrader.this.dimensions.getOrThrow(Registries.levelToLevelStem(var3))).generator();
+            ChunkGenerator var6 = WorldUpgrader.this.dimensions.getOrThrow(Registries.levelToLevelStem(var3)).generator();
             CompoundTag var7 = var1.upgradeChunkTag(var3, () -> WorldUpgrader.this.overworldDataStorage, var4, var6.getTypeNameForDataFixer());
             ChunkPos var8 = new ChunkPos(var7.getInt("xPos"), var7.getInt("zPos"));
             if (!var8.equals(var2)) {
@@ -364,7 +364,7 @@ public class WorldUpgrader {
                var7.remove("isLightOn");
                ListTag var10 = var7.getList("sections", 10);
 
-               for(int var11 = 0; var11 < var10.size(); ++var11) {
+               for (int var11 = 0; var11 < var10.size(); var11++) {
                   CompoundTag var12 = var10.getCompound(var11);
                   var9 = var9 || var12.contains("BlockLight");
                   var12.remove("BlockLight");
@@ -400,16 +400,13 @@ public class WorldUpgrader {
       }
    }
 
-   static record DimensionToUpgrade<T>(ResourceKey<Level> a, T b, ListIterator<WorldUpgrader.FileToUpgrade> c) {
-      final ResourceKey<Level> dimensionKey;
-      final T storage;
-      final ListIterator<WorldUpgrader.FileToUpgrade> files;
+   static record DimensionToUpgrade<T>(ResourceKey<Level> dimensionKey, T storage, ListIterator<WorldUpgrader.FileToUpgrade> files) {
 
-      DimensionToUpgrade(ResourceKey<Level> var1, T var2, ListIterator<WorldUpgrader.FileToUpgrade> var3) {
+      DimensionToUpgrade(ResourceKey<Level> dimensionKey, T storage, ListIterator<WorldUpgrader.FileToUpgrade> files) {
          super();
-         this.dimensionKey = var1;
-         this.storage = (T)var2;
-         this.files = var3;
+         this.dimensionKey = dimensionKey;
+         this.storage = (T)storage;
+         this.files = files;
       }
    }
 
@@ -424,14 +421,12 @@ public class WorldUpgrader {
       }
    }
 
-   static record FileToUpgrade(RegionFile a, List<ChunkPos> b) {
-      final RegionFile file;
-      final List<ChunkPos> chunksToUpgrade;
+   static record FileToUpgrade(RegionFile file, List<ChunkPos> chunksToUpgrade) {
 
-      FileToUpgrade(RegionFile var1, List<ChunkPos> var2) {
+      FileToUpgrade(RegionFile file, List<ChunkPos> chunksToUpgrade) {
          super();
-         this.file = var1;
-         this.chunksToUpgrade = var2;
+         this.file = file;
+         this.chunksToUpgrade = chunksToUpgrade;
       }
    }
 

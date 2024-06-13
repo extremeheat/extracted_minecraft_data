@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -56,7 +55,7 @@ public class BanListCommands {
       } else {
          var0.sendSuccess(() -> Component.translatable("commands.banlist.list", var1.size()), false);
 
-         for(BanListEntry var3 : var1) {
+         for (BanListEntry var3 : var1) {
             var0.sendSuccess(() -> Component.translatable("commands.banlist.entry", var3.getDisplayName(), var3.getSource(), var3.getReason()), false);
          }
       }

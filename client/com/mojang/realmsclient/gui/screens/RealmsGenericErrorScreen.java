@@ -70,14 +70,12 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
       this.line2Split.renderCentered(var1, this.width / 2, 100, 9, -2142128);
    }
 
-   static record ErrorMessage(Component a, Component b) {
-      final Component title;
-      final Component detail;
+   static record ErrorMessage(Component title, Component detail) {
 
-      ErrorMessage(Component var1, Component var2) {
+      ErrorMessage(Component title, Component detail) {
          super();
-         this.title = var1;
-         this.detail = var2;
+         this.title = title;
+         this.detail = detail;
       }
    }
 }

@@ -163,8 +163,7 @@ public class Goat extends Animal {
       Goat var3 = EntityType.GOAT.create(var1);
       if (var3 != null) {
          GoatAi.initMemories(var3, var1.getRandom());
-         Object var4 = var1.getRandom().nextBoolean() ? this : var2;
-         boolean var5 = var4 instanceof Goat var6 && var6.isScreamingGoat() || var1.getRandom().nextDouble() < 0.02;
+         boolean var5 = (var1.getRandom().nextBoolean() ? this : var2) instanceof Goat var6 && var6.isScreamingGoat() || var1.getRandom().nextDouble() < 0.02;
          var3.setScreamingGoat(var5);
       }
 
@@ -173,7 +172,7 @@ public class Goat extends Animal {
 
    @Override
    public Brain<Goat> getBrain() {
-      return super.getBrain();
+      return (Brain<Goat>)super.getBrain();
    }
 
    @Override
@@ -283,7 +282,7 @@ public class Goat extends Animal {
    @Override
    public void aiStep() {
       if (this.isLoweringHead) {
-         ++this.lowerHeadTick;
+         this.lowerHeadTick++;
       } else {
          this.lowerHeadTick -= 2;
       }

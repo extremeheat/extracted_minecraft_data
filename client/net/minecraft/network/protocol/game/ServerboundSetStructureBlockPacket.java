@@ -73,9 +73,9 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       this.updateType = var1.readEnum(StructureBlockEntity.UpdateType.class);
       this.mode = var1.readEnum(StructureMode.class);
       this.name = var1.readUtf();
-      boolean var2 = true;
+      byte var2 = 48;
       this.offset = new BlockPos(Mth.clamp(var1.readByte(), -48, 48), Mth.clamp(var1.readByte(), -48, 48), Mth.clamp(var1.readByte(), -48, 48));
-      boolean var3 = true;
+      byte var3 = 48;
       this.size = new Vec3i(Mth.clamp(var1.readByte(), 0, 48), Mth.clamp(var1.readByte(), 0, 48), Mth.clamp(var1.readByte(), 0, 48));
       this.mirror = var1.readEnum(Mirror.class);
       this.rotation = var1.readEnum(Rotation.class);
@@ -104,7 +104,7 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       var1.writeUtf(this.data);
       var1.writeFloat(this.integrity);
       var1.writeVarLong(this.seed);
-      int var2 = 0;
+      byte var2 = 0;
       if (this.ignoreEntities) {
          var2 |= 1;
       }

@@ -205,11 +205,7 @@ public class Dolphin extends WaterAnimal {
    @Override
    public boolean canTakeItem(ItemStack var1) {
       EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
-      if (!this.getItemBySlot(var2).isEmpty()) {
-         return false;
-      } else {
-         return var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
-      }
+      return !this.getItemBySlot(var2).isEmpty() ? false : var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
    }
 
    @Override
@@ -257,7 +253,7 @@ public class Dolphin extends WaterAnimal {
             float var3 = Mth.sin(this.getYRot() * 0.017453292F) * 0.3F;
             float var4 = 1.2F - this.random.nextFloat() * 0.7F;
 
-            for(int var5 = 0; var5 < 2; ++var5) {
+            for (int var5 = 0; var5 < 2; var5++) {
                this.level()
                   .addParticle(
                      ParticleTypes.DOLPHIN,
@@ -293,7 +289,7 @@ public class Dolphin extends WaterAnimal {
    }
 
    private void addParticlesAroundSelf(ParticleOptions var1) {
-      for(int var2 = 0; var2 < 7; ++var2) {
+      for (int var2 = 0; var2 < 7; var2++) {
          double var3 = this.random.nextGaussian() * 0.01;
          double var5 = this.random.nextGaussian() * 0.01;
          double var7 = this.random.nextGaussian() * 0.01;
@@ -468,11 +464,7 @@ public class Dolphin extends WaterAnimal {
       @Override
       public boolean canUse() {
          this.player = this.dolphin.level().getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
-         if (this.player == null) {
-            return false;
-         } else {
-            return this.player.isSwimming() && this.dolphin.getTarget() != this.player;
-         }
+         return this.player == null ? false : this.player.isSwimming() && this.dolphin.getTarget() != this.player;
       }
 
       @Override

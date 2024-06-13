@@ -24,7 +24,7 @@ public class SpawnUtil {
    ) {
       BlockPos.MutableBlockPos var8 = var3.mutable();
 
-      for(int var9 = 0; var9 < var4; ++var9) {
+      for (int var9 = 0; var9 < var4; var9++) {
          int var10 = Mth.randomBetweenInclusive(var2.random, -var5, var5);
          int var11 = Mth.randomBetweenInclusive(var2.random, -var5, var5);
          var8.setWithOffset(var3, var10, var6, var11);
@@ -48,7 +48,7 @@ public class SpawnUtil {
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos().set(var2);
       BlockState var5 = var0.getBlockState(var4);
 
-      for(int var6 = var1; var6 >= -var1; --var6) {
+      for (int var6 = var1; var6 >= -var1; var6--) {
          var2.move(Direction.DOWN);
          var4.setWithOffset(var2, Direction.UP);
          BlockState var7 = var0.getBlockState(var2);
@@ -65,27 +65,23 @@ public class SpawnUtil {
 
    public interface Strategy {
       @Deprecated
-      SpawnUtil.Strategy LEGACY_IRON_GOLEM = (var0, var1, var2, var3, var4) -> {
-         if (!var2.is(Blocks.COBWEB)
-            && !var2.is(Blocks.CACTUS)
-            && !var2.is(Blocks.GLASS_PANE)
-            && !(var2.getBlock() instanceof StainedGlassPaneBlock)
-            && !(var2.getBlock() instanceof StainedGlassBlock)
-            && !(var2.getBlock() instanceof LeavesBlock)
-            && !var2.is(Blocks.CONDUIT)
-            && !var2.is(Blocks.ICE)
-            && !var2.is(Blocks.TNT)
-            && !var2.is(Blocks.GLOWSTONE)
-            && !var2.is(Blocks.BEACON)
-            && !var2.is(Blocks.SEA_LANTERN)
-            && !var2.is(Blocks.FROSTED_ICE)
-            && !var2.is(Blocks.TINTED_GLASS)
-            && !var2.is(Blocks.GLASS)) {
-            return (var4.isAir() || var4.liquid()) && (var2.isSolid() || var2.is(Blocks.POWDER_SNOW));
-         } else {
-            return false;
-         }
-      };
+      SpawnUtil.Strategy LEGACY_IRON_GOLEM = (var0, var1, var2, var3, var4) -> !var2.is(Blocks.COBWEB)
+               && !var2.is(Blocks.CACTUS)
+               && !var2.is(Blocks.GLASS_PANE)
+               && !(var2.getBlock() instanceof StainedGlassPaneBlock)
+               && !(var2.getBlock() instanceof StainedGlassBlock)
+               && !(var2.getBlock() instanceof LeavesBlock)
+               && !var2.is(Blocks.CONDUIT)
+               && !var2.is(Blocks.ICE)
+               && !var2.is(Blocks.TNT)
+               && !var2.is(Blocks.GLOWSTONE)
+               && !var2.is(Blocks.BEACON)
+               && !var2.is(Blocks.SEA_LANTERN)
+               && !var2.is(Blocks.FROSTED_ICE)
+               && !var2.is(Blocks.TINTED_GLASS)
+               && !var2.is(Blocks.GLASS)
+            ? (var4.isAir() || var4.liquid()) && (var2.isSolid() || var2.is(Blocks.POWDER_SNOW))
+            : false;
       SpawnUtil.Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty()
             && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
 

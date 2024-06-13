@@ -45,7 +45,7 @@ public class NetherPortalBlock extends Block {
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((Direction.Axis)var1.getValue(AXIS)) {
+      switch ((Direction.Axis)var1.getValue(AXIS)) {
          case Z:
             return Z_AXIS_AABB;
          case X:
@@ -57,7 +57,7 @@ public class NetherPortalBlock extends Block {
    @Override
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.dimensionType().natural() && var2.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && var4.nextInt(2000) < var2.getDifficulty().getId()) {
-         while(var2.getBlockState(var3).is(this)) {
+         while (var2.getBlockState(var3).is(this)) {
             var3 = var3.below();
          }
 
@@ -102,7 +102,7 @@ public class NetherPortalBlock extends Block {
          );
       }
 
-      for(int var5 = 0; var5 < 4; ++var5) {
+      for (int var5 = 0; var5 < 4; var5++) {
          double var6 = (double)var3.getX() + var4.nextDouble();
          double var8 = (double)var3.getY() + var4.nextDouble();
          double var10 = (double)var3.getZ() + var4.nextDouble();
@@ -129,10 +129,10 @@ public class NetherPortalBlock extends Block {
 
    @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+      switch (var2) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
-            switch((Direction.Axis)var1.getValue(AXIS)) {
+            switch ((Direction.Axis)var1.getValue(AXIS)) {
                case Z:
                   return var1.setValue(AXIS, Direction.Axis.X);
                case X:

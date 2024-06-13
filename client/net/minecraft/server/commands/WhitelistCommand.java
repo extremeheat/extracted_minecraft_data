@@ -3,17 +3,14 @@ package net.minecraft.server.commands;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.players.UserWhiteListEntry;
@@ -91,12 +88,12 @@ public class WhitelistCommand {
       UserWhiteList var2 = var0.getServer().getPlayerList().getWhiteList();
       int var3 = 0;
 
-      for(GameProfile var5 : var1) {
+      for (GameProfile var5 : var1) {
          if (!var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.add(var6);
             var0.sendSuccess(() -> Component.translatable("commands.whitelist.add.success", Component.literal(var5.getName())), true);
-            ++var3;
+            var3++;
          }
       }
 
@@ -111,12 +108,12 @@ public class WhitelistCommand {
       UserWhiteList var2 = var0.getServer().getPlayerList().getWhiteList();
       int var3 = 0;
 
-      for(GameProfile var5 : var1) {
+      for (GameProfile var5 : var1) {
          if (var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.remove(var6);
             var0.sendSuccess(() -> Component.translatable("commands.whitelist.remove.success", Component.literal(var5.getName())), true);
-            ++var3;
+            var3++;
          }
       }
 

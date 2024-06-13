@@ -68,7 +68,7 @@ public abstract class BaseFireBlock extends Block {
       BlockState var6 = var2.getBlockState(var5);
       if (!this.canBurn(var6) && !var6.isFaceSturdy(var2, var5, Direction.UP)) {
          if (this.canBurn(var2.getBlockState(var3.west()))) {
-            for(int var14 = 0; var14 < 2; ++var14) {
+            for (int var14 = 0; var14 < 2; var14++) {
                double var19 = (double)var3.getX() + var4.nextDouble() * 0.10000000149011612;
                double var24 = (double)var3.getY() + var4.nextDouble();
                double var29 = (double)var3.getZ() + var4.nextDouble();
@@ -77,7 +77,7 @@ public abstract class BaseFireBlock extends Block {
          }
 
          if (this.canBurn(var2.getBlockState(var3.east()))) {
-            for(int var15 = 0; var15 < 2; ++var15) {
+            for (int var15 = 0; var15 < 2; var15++) {
                double var20 = (double)(var3.getX() + 1) - var4.nextDouble() * 0.10000000149011612;
                double var25 = (double)var3.getY() + var4.nextDouble();
                double var30 = (double)var3.getZ() + var4.nextDouble();
@@ -86,7 +86,7 @@ public abstract class BaseFireBlock extends Block {
          }
 
          if (this.canBurn(var2.getBlockState(var3.north()))) {
-            for(int var16 = 0; var16 < 2; ++var16) {
+            for (int var16 = 0; var16 < 2; var16++) {
                double var21 = (double)var3.getX() + var4.nextDouble();
                double var26 = (double)var3.getY() + var4.nextDouble();
                double var31 = (double)var3.getZ() + var4.nextDouble() * 0.10000000149011612;
@@ -95,7 +95,7 @@ public abstract class BaseFireBlock extends Block {
          }
 
          if (this.canBurn(var2.getBlockState(var3.south()))) {
-            for(int var17 = 0; var17 < 2; ++var17) {
+            for (int var17 = 0; var17 < 2; var17++) {
                double var22 = (double)var3.getX() + var4.nextDouble();
                double var27 = (double)var3.getY() + var4.nextDouble();
                double var32 = (double)(var3.getZ() + 1) - var4.nextDouble() * 0.10000000149011612;
@@ -104,7 +104,7 @@ public abstract class BaseFireBlock extends Block {
          }
 
          if (this.canBurn(var2.getBlockState(var3.above()))) {
-            for(int var18 = 0; var18 < 2; ++var18) {
+            for (int var18 = 0; var18 < 2; var18++) {
                double var23 = (double)var3.getX() + var4.nextDouble();
                double var28 = (double)(var3.getY() + 1) - var4.nextDouble() * 0.10000000149011612;
                double var33 = (double)var3.getZ() + var4.nextDouble();
@@ -112,7 +112,7 @@ public abstract class BaseFireBlock extends Block {
             }
          }
       } else {
-         for(int var7 = 0; var7 < 3; ++var7) {
+         for (int var7 = 0; var7 < 3; var7++) {
             double var8 = (double)var3.getX() + var4.nextDouble();
             double var10 = (double)var3.getY() + var4.nextDouble() * 0.5 + 0.5;
             double var12 = (double)var3.getZ() + var4.nextDouble();
@@ -172,11 +172,7 @@ public abstract class BaseFireBlock extends Block {
 
    public static boolean canBePlacedAt(Level var0, BlockPos var1, Direction var2) {
       BlockState var3 = var0.getBlockState(var1);
-      if (!var3.isAir()) {
-         return false;
-      } else {
-         return getState(var0, var1).canSurvive(var0, var1) || isPortal(var0, var1, var2);
-      }
+      return !var3.isAir() ? false : getState(var0, var1).canSurvive(var0, var1) || isPortal(var0, var1, var2);
    }
 
    private static boolean isPortal(Level var0, BlockPos var1, Direction var2) {
@@ -186,7 +182,7 @@ public abstract class BaseFireBlock extends Block {
          BlockPos.MutableBlockPos var3 = var1.mutable();
          boolean var4 = false;
 
-         for(Direction var8 : Direction.values()) {
+         for (Direction var8 : Direction.values()) {
             if (var0.getBlockState(var3.set(var1).move(var8)).is(Blocks.OBSIDIAN)) {
                var4 = true;
                break;

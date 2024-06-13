@@ -1,9 +1,7 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
 public class AirItem extends Item {
@@ -20,8 +18,8 @@ public class AirItem extends Item {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
-      this.block.appendHoverText(var1, var2, var3, var4, var2 != null ? var2.registryAccess() : null);
+      this.block.appendHoverText(var1, var2, var3, var4);
    }
 }

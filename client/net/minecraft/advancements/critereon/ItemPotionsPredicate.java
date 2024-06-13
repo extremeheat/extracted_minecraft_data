@@ -12,14 +12,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 
-public record ItemPotionsPredicate(HolderSet<Potion> c) implements SingleComponentItemPredicate<PotionContents> {
-   private final HolderSet<Potion> potions;
+public record ItemPotionsPredicate(HolderSet<Potion> potions) implements SingleComponentItemPredicate<PotionContents> {
    public static final Codec<ItemPotionsPredicate> CODEC = RegistryCodecs.homogeneousList(Registries.POTION)
       .xmap(ItemPotionsPredicate::new, ItemPotionsPredicate::potions);
 
-   public ItemPotionsPredicate(HolderSet<Potion> var1) {
+   public ItemPotionsPredicate(HolderSet<Potion> potions) {
       super();
-      this.potions = var1;
+      this.potions = potions;
    }
 
    @Override

@@ -48,7 +48,7 @@ public class PlayerSkinWidget extends AbstractWidget {
       var1.pose().mulPose(Axis.YP.rotationDegrees(this.rotationY));
       var1.flush();
       Lighting.setupForEntityInInventory(Axis.XP.rotationDegrees(this.rotationX));
-      this.model.render(var1, (PlayerSkin)this.skin.get());
+      this.model.render(var1, this.skin.get());
       var1.flush();
       Lighting.setupFor3DItems();
       var1.pose().popPose();
@@ -79,14 +79,11 @@ public class PlayerSkinWidget extends AbstractWidget {
       return null;
    }
 
-   static record Model(PlayerModel<?> a, PlayerModel<?> b) {
-      private final PlayerModel<?> wideModel;
-      private final PlayerModel<?> slimModel;
-
-      private Model(PlayerModel<?> var1, PlayerModel<?> var2) {
+   static record Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
+      private Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
          super();
-         this.wideModel = var1;
-         this.slimModel = var2;
+         this.wideModel = wideModel;
+         this.slimModel = slimModel;
       }
 
       public static PlayerSkinWidget.Model bake(EntityModelSet var0) {

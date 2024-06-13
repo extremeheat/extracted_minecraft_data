@@ -66,7 +66,7 @@ public class RegistryDataCollector {
       }
 
       public void append(ResourceKey<? extends Registry<?>> var1, List<RegistrySynchronization.PackedRegistryEntry> var2) {
-         this.elements.computeIfAbsent(var1, var0 -> new ArrayList()).addAll(var2);
+         this.elements.computeIfAbsent(var1, var0 -> new ArrayList<>()).addAll(var2);
       }
 
       public RegistryAccess loadRegistries(ResourceProvider var1, RegistryAccess var2) {

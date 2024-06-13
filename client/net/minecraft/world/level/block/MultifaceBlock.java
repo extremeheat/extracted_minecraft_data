@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
@@ -71,7 +70,7 @@ public abstract class MultifaceBlock extends Block {
       } else {
          EnumSet var1 = EnumSet.noneOf(Direction.class);
 
-         for(Direction var5 : Direction.values()) {
+         for (Direction var5 : Direction.values()) {
             if (hasFace(var0, var5)) {
                var1.add(var5);
             }
@@ -84,7 +83,7 @@ public abstract class MultifaceBlock extends Block {
    public static Set<Direction> unpack(byte var0) {
       EnumSet var1 = EnumSet.noneOf(Direction.class);
 
-      for(Direction var5 : Direction.values()) {
+      for (Direction var5 : Direction.values()) {
          if ((var0 & (byte)(1 << var5.ordinal())) > 0) {
             var1.add(var5);
          }
@@ -96,7 +95,7 @@ public abstract class MultifaceBlock extends Block {
    public static byte pack(Collection<Direction> var0) {
       byte var1 = 0;
 
-      for(Direction var3 : var0) {
+      for (Direction var3 : var0) {
          var1 = (byte)(var1 | 1 << var3.ordinal());
       }
 
@@ -109,7 +108,7 @@ public abstract class MultifaceBlock extends Block {
 
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      for(Direction var5 : DIRECTIONS) {
+      for (Direction var5 : DIRECTIONS) {
          if (this.isFaceSupported(var5)) {
             var1.add(getFaceProperty(var5));
          }
@@ -134,7 +133,7 @@ public abstract class MultifaceBlock extends Block {
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       boolean var4 = false;
 
-      for(Direction var8 : DIRECTIONS) {
+      for (Direction var8 : DIRECTIONS) {
          if (hasFace(var1, var8)) {
             BlockPos var9 = var3.relative(var8);
             if (!canAttachTo(var2, var8, var9, var2.getBlockState(var9))) {
@@ -210,7 +209,7 @@ public abstract class MultifaceBlock extends Block {
    private BlockState mapDirections(BlockState var1, Function<Direction, Direction> var2) {
       BlockState var3 = var1;
 
-      for(Direction var7 : DIRECTIONS) {
+      for (Direction var7 : DIRECTIONS) {
          if (this.isFaceSupported(var7)) {
             var3 = var3.setValue(getFaceProperty((Direction)var2.apply(var7)), var1.getValue(getFaceProperty(var7)));
          }
@@ -245,7 +244,7 @@ public abstract class MultifaceBlock extends Block {
    private static BlockState getDefaultMultifaceState(StateDefinition<Block, BlockState> var0) {
       BlockState var1 = (BlockState)var0.any();
 
-      for(BooleanProperty var3 : PROPERTY_BY_DIRECTION.values()) {
+      for (BooleanProperty var3 : PROPERTY_BY_DIRECTION.values()) {
          if (var1.hasProperty(var3)) {
             var1 = var1.setValue(var3, Boolean.valueOf(false));
          }
@@ -257,7 +256,7 @@ public abstract class MultifaceBlock extends Block {
    private static VoxelShape calculateMultifaceShape(BlockState var0) {
       VoxelShape var1 = Shapes.empty();
 
-      for(Direction var5 : DIRECTIONS) {
+      for (Direction var5 : DIRECTIONS) {
          if (hasFace(var0, var5)) {
             var1 = Shapes.or(var1, SHAPE_BY_DIRECTION.get(var5));
          }

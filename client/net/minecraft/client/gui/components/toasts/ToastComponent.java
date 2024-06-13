@@ -37,11 +37,11 @@ public class ToastComponent {
          });
          if (!this.queued.isEmpty() && this.freeSlots() > 0) {
             this.queued.removeIf(var1x -> {
-               int var2xx = var1x.slotCount();
-               int var3 = this.findFreeIndex(var2xx);
+               int var2x = var1x.slotCount();
+               int var3 = this.findFreeIndex(var2x);
                if (var3 != -1) {
-                  this.visible.add(new ToastComponent.ToastInstance<>(var1x, var3, var2xx));
-                  this.occupiedSlots.set(var3, var3 + var2xx);
+                  this.visible.add(new ToastComponent.ToastInstance<>(var1x, var3, var2x));
+                  this.occupiedSlots.set(var3, var3 + var2x);
                   return true;
                } else {
                   return false;
@@ -55,7 +55,7 @@ public class ToastComponent {
       if (this.freeSlots() >= var1) {
          int var2 = 0;
 
-         for(int var3 = 0; var3 < 5; ++var3) {
+         for (int var3 = 0; var3 < 5; var3++) {
             if (this.occupiedSlots.get(var3)) {
                var2 = 0;
             } else if (++var2 == var1) {
@@ -73,13 +73,13 @@ public class ToastComponent {
 
    @Nullable
    public <T extends Toast> T getToast(Class<? extends T> var1, Object var2) {
-      for(ToastComponent.ToastInstance var4 : this.visible) {
+      for (ToastComponent.ToastInstance var4 : this.visible) {
          if (var4 != null && var1.isAssignableFrom(var4.getToast().getClass()) && var4.getToast().getToken().equals(var2)) {
             return (T)var4.getToast();
          }
       }
 
-      for(Toast var6 : this.queued) {
+      for (Toast var6 : this.queued) {
          if (var1.isAssignableFrom(var6.getClass()) && var6.getToken().equals(var2)) {
             return (T)var6;
          }
@@ -117,7 +117,7 @@ public class ToastComponent {
 
       ToastInstance(T var2, int var3, int var4) {
          super();
-         this.toast = var2;
+         this.toast = (T)var2;
          this.index = var3;
          this.slotCount = var4;
       }

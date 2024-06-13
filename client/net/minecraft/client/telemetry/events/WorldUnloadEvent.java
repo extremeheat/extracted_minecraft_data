@@ -6,7 +6,6 @@ import java.util.Optional;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
-import net.minecraft.client.telemetry.TelemetryPropertyMap;
 
 public class WorldUnloadEvent {
    private static final int NOT_TRACKING_TIME = -1;
@@ -27,7 +26,7 @@ public class WorldUnloadEvent {
 
    public void setTime(long var1) {
       if (this.lastGameTime != -1L) {
-         this.totalTicks += Math.max(0L, var1 - this.lastGameTime);
+         this.totalTicks = this.totalTicks + Math.max(0L, var1 - this.lastGameTime);
       }
 
       this.lastGameTime = var1;

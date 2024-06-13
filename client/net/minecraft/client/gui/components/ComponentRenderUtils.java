@@ -32,8 +32,8 @@ public class ComponentRenderUtils {
       }, Style.EMPTY);
       ArrayList var4 = Lists.newArrayList();
       var2.getSplitter().splitLines(var3.getResultOrEmpty(), var1, Style.EMPTY, (var1x, var2x) -> {
-         FormattedCharSequence var3xx = Language.getInstance().getVisualOrder(var1x);
-         var4.add(var2x ? FormattedCharSequence.composite(INDENT, var3xx) : var3xx);
+         FormattedCharSequence var3x = Language.getInstance().getVisualOrder(var1x);
+         var4.add(var2x ? FormattedCharSequence.composite(INDENT, var3x) : var3x);
       });
       return var4.isEmpty() ? Lists.newArrayList(new FormattedCharSequence[]{FormattedCharSequence.EMPTY}) : var4;
    }

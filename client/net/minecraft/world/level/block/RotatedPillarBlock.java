@@ -29,10 +29,10 @@ public class RotatedPillarBlock extends Block {
    }
 
    public static BlockState rotatePillar(BlockState var0, Rotation var1) {
-      switch(var1) {
+      switch (var1) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
-            switch((Direction.Axis)var0.getValue(AXIS)) {
+            switch ((Direction.Axis)var0.getValue(AXIS)) {
                case X:
                   return var0.setValue(AXIS, Direction.Axis.Z);
                case Z:

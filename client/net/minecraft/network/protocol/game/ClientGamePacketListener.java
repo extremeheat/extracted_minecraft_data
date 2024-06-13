@@ -24,8 +24,6 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
 
    void handleAddOrRemoveRecipes(ClientboundRecipePacket var1);
 
-   void handleAddSubGrid(ClientboundAddSubGridPacket var1);
-
    void handleBlockDestruction(ClientboundBlockDestructionPacket var1);
 
    void handleOpenSignEditor(ClientboundOpenSignEditorPacket var1);
@@ -123,8 +121,6 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleSetTime(ClientboundSetTimePacket var1);
 
    void handleSoundEvent(ClientboundSoundPacket var1);
-
-   void handleSoundSequenceEvent(ClientboundSoundSequencePacket var1);
 
    void handleSoundEntityEvent(ClientboundSoundEntityPacket var1);
 
@@ -229,4 +225,6 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleChunkBatchFinished(ClientboundChunkBatchFinishedPacket var1);
 
    void handleDebugSample(ClientboundDebugSamplePacket var1);
+
+   void handleProjectilePowerPacket(ClientboundProjectilePowerPacket var1);
 }

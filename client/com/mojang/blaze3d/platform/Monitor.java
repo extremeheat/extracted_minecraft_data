@@ -28,7 +28,7 @@ public final class Monitor {
       this.videoModes.clear();
       Buffer var1 = GLFW.glfwGetVideoModes(this.monitor);
 
-      for(int var2 = var1.limit() - 1; var2 >= 0; --var2) {
+      for (int var2 = var1.limit() - 1; var2 >= 0; var2--) {
          var1.position(var2);
          VideoMode var3 = new VideoMode(var1);
          if (var3.getRedBits() >= 8 && var3.getGreenBits() >= 8 && var3.getBlueBits() >= 8) {
@@ -50,7 +50,7 @@ public final class Monitor {
       if (var1.isPresent()) {
          VideoMode var2 = (VideoMode)var1.get();
 
-         for(VideoMode var4 : this.videoModes) {
+         for (VideoMode var4 : this.videoModes) {
             if (var4.equals(var2)) {
                return var4;
             }

@@ -41,7 +41,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    protected final ContainerData dataAccess = new ContainerData() {
       @Override
       public int get(int var1) {
-         return switch(var1) {
+         return switch (var1) {
             case 0 -> BrewingStandBlockEntity.this.brewTime;
             case 1 -> BrewingStandBlockEntity.this.fuel;
             default -> 0;
@@ -50,7 +50,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
 
       @Override
       public void set(int var1, int var2) {
-         switch(var1) {
+         switch (var1) {
             case 0:
                BrewingStandBlockEntity.this.brewTime = var2;
                break;
@@ -101,7 +101,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       boolean var6 = var3.brewTime > 0;
       ItemStack var7 = var3.items.get(3);
       if (var6) {
-         --var3.brewTime;
+         var3.brewTime--;
          boolean var8 = var3.brewTime == 0;
          if (var8 && var5) {
             doBrew(var0, var1, var3.items);
@@ -111,7 +111,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
             setChanged(var0, var1, var2);
          }
       } else if (var5 && var3.fuel > 0) {
-         --var3.fuel;
+         var3.fuel--;
          var3.brewTime = 400;
          var3.ingredient = var7.getItem();
          setChanged(var0, var1, var2);
@@ -125,7 +125,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
             return;
          }
 
-         for(int var10 = 0; var10 < BrewingStandBlock.HAS_BOTTLE.length; ++var10) {
+         for (int var10 = 0; var10 < BrewingStandBlock.HAS_BOTTLE.length; var10++) {
             var9 = var9.setValue(BrewingStandBlock.HAS_BOTTLE[var10], Boolean.valueOf(var11[var10]));
          }
 
@@ -136,7 +136,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    private boolean[] getPotionBits() {
       boolean[] var1 = new boolean[3];
 
-      for(int var2 = 0; var2 < 3; ++var2) {
+      for (int var2 = 0; var2 < 3; var2++) {
          if (!this.items.get(var2).isEmpty()) {
             var1[var2] = true;
          }
@@ -152,7 +152,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       } else if (!PotionBrewing.isIngredient(var1)) {
          return false;
       } else {
-         for(int var2 = 0; var2 < 3; ++var2) {
+         for (int var2 = 0; var2 < 3; var2++) {
             ItemStack var3 = (ItemStack)var0.get(var2);
             if (!var3.isEmpty() && PotionBrewing.hasMix(var3, var1)) {
                return true;
@@ -166,7 +166,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    private static void doBrew(Level var0, BlockPos var1, NonNullList<ItemStack> var2) {
       ItemStack var3 = (ItemStack)var2.get(3);
 
-      for(int var4 = 0; var4 < 3; ++var4) {
+      for (int var4 = 0; var4 < 3; var4++) {
          var2.set(var4, PotionBrewing.mix(var3, (ItemStack)var2.get(var4)));
       }
 
@@ -185,8 +185,8 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       ContainerHelper.loadAllItems(var1, this.items, var2);
       this.brewTime = var1.getShort("BrewTime");
@@ -205,11 +205,11 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    public boolean canPlaceItem(int var1, ItemStack var2) {
       if (var1 == 3) {
          return PotionBrewing.isIngredient(var2);
-      } else if (var1 == 4) {
-         return var2.is(Items.BLAZE_POWDER);
       } else {
-         return (var2.is(Items.POTION) || var2.is(Items.SPLASH_POTION) || var2.is(Items.LINGERING_POTION) || var2.is(Items.GLASS_BOTTLE))
-            && this.getItem(var1).isEmpty();
+         return var1 == 4
+            ? var2.is(Items.BLAZE_POWDER)
+            : (var2.is(Items.POTION) || var2.is(Items.SPLASH_POTION) || var2.is(Items.LINGERING_POTION) || var2.is(Items.GLASS_BOTTLE))
+               && this.getItem(var1).isEmpty();
       }
    }
 

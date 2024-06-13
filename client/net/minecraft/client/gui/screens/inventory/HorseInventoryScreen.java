@@ -23,15 +23,12 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
       this.horse = var3;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(HORSE_INVENTORY_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      AbstractHorse var8 = this.horse;
-      if (var8 instanceof AbstractChestedHorse var7 && var7.hasChest()) {
+      if (this.horse instanceof AbstractChestedHorse var7 && var7.hasChest()) {
          var1.blitSprite(CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, var7.getInventoryColumns() * 18, 54);
       }
 

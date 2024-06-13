@@ -3,7 +3,6 @@ package net.minecraft.network.chat;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -12,7 +11,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 
 public class Style {
    public static final Style EMPTY = new Style(null, null, null, null, null, null, null, null, null, null);
@@ -275,7 +273,7 @@ public class Style {
       Boolean var5 = this.strikethrough;
       Boolean var6 = this.underlined;
       Boolean var7 = this.obfuscated;
-      switch(var1) {
+      switch (var1) {
          case OBFUSCATED:
             var7 = true;
             break;
@@ -307,7 +305,7 @@ public class Style {
       Boolean var5 = this.strikethrough;
       Boolean var6 = this.underlined;
       Boolean var7 = this.obfuscated;
-      switch(var1) {
+      switch (var1) {
          case OBFUSCATED:
             var7 = true;
             break;
@@ -345,8 +343,8 @@ public class Style {
       Boolean var6 = this.underlined;
       Boolean var7 = this.obfuscated;
 
-      for(ChatFormatting var11 : var1) {
-         switch(var11) {
+      for (ChatFormatting var11 : var1) {
+         switch (var11) {
             case OBFUSCATED:
                var7 = true;
                break;
@@ -400,7 +398,7 @@ public class Style {
       class 1Collector {
          private boolean isNotFirst;
 
-         _Collector/* $VF was: 1Collector*/() {
+         _Collector/* $VF was: 1Collector*/(Style var1x) {
             super();
          }
 
@@ -433,7 +431,7 @@ public class Style {
          }
       }
 
-      1Collector var2 = new 1Collector();
+      1Collector var2 = new 1Collector(this);
       var2.addValueString("color", this.color);
       var2.addFlagString("bold", this.bold);
       var2.addFlagString("italic", this.italic);
@@ -452,20 +450,19 @@ public class Style {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof Style)) {
-         return false;
       } else {
-         Style var2 = (Style)var1;
-         return this.bold == var2.bold
-            && Objects.equals(this.getColor(), var2.getColor())
-            && this.italic == var2.italic
-            && this.obfuscated == var2.obfuscated
-            && this.strikethrough == var2.strikethrough
-            && this.underlined == var2.underlined
-            && Objects.equals(this.clickEvent, var2.clickEvent)
-            && Objects.equals(this.hoverEvent, var2.hoverEvent)
-            && Objects.equals(this.insertion, var2.insertion)
-            && Objects.equals(this.font, var2.font);
+         return !(var1 instanceof Style var2)
+            ? false
+            : this.bold == var2.bold
+               && Objects.equals(this.getColor(), var2.getColor())
+               && this.italic == var2.italic
+               && this.obfuscated == var2.obfuscated
+               && this.strikethrough == var2.strikethrough
+               && this.underlined == var2.underlined
+               && Objects.equals(this.clickEvent, var2.clickEvent)
+               && Objects.equals(this.hoverEvent, var2.hoverEvent)
+               && Objects.equals(this.insertion, var2.insertion)
+               && Objects.equals(this.font, var2.font);
       }
    }
 
@@ -479,16 +476,16 @@ public class Style {
    public static class Serializer {
       public static final MapCodec<Style> MAP_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(TextColor.CODEC, "color").forGetter(var0x -> Optional.ofNullable(var0x.color)),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "bold").forGetter(var0x -> Optional.ofNullable(var0x.bold)),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "italic").forGetter(var0x -> Optional.ofNullable(var0x.italic)),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "underlined").forGetter(var0x -> Optional.ofNullable(var0x.underlined)),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "strikethrough").forGetter(var0x -> Optional.ofNullable(var0x.strikethrough)),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "obfuscated").forGetter(var0x -> Optional.ofNullable(var0x.obfuscated)),
-                  ExtraCodecs.strictOptionalField(ClickEvent.CODEC, "clickEvent").forGetter(var0x -> Optional.ofNullable(var0x.clickEvent)),
-                  ExtraCodecs.strictOptionalField(HoverEvent.CODEC, "hoverEvent").forGetter(var0x -> Optional.ofNullable(var0x.hoverEvent)),
-                  ExtraCodecs.strictOptionalField(Codec.STRING, "insertion").forGetter(var0x -> Optional.ofNullable(var0x.insertion)),
-                  ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "font").forGetter(var0x -> Optional.ofNullable(var0x.font))
+                  TextColor.CODEC.optionalFieldOf("color").forGetter(var0x -> Optional.ofNullable(var0x.color)),
+                  Codec.BOOL.optionalFieldOf("bold").forGetter(var0x -> Optional.ofNullable(var0x.bold)),
+                  Codec.BOOL.optionalFieldOf("italic").forGetter(var0x -> Optional.ofNullable(var0x.italic)),
+                  Codec.BOOL.optionalFieldOf("underlined").forGetter(var0x -> Optional.ofNullable(var0x.underlined)),
+                  Codec.BOOL.optionalFieldOf("strikethrough").forGetter(var0x -> Optional.ofNullable(var0x.strikethrough)),
+                  Codec.BOOL.optionalFieldOf("obfuscated").forGetter(var0x -> Optional.ofNullable(var0x.obfuscated)),
+                  ClickEvent.CODEC.optionalFieldOf("clickEvent").forGetter(var0x -> Optional.ofNullable(var0x.clickEvent)),
+                  HoverEvent.CODEC.optionalFieldOf("hoverEvent").forGetter(var0x -> Optional.ofNullable(var0x.hoverEvent)),
+                  Codec.STRING.optionalFieldOf("insertion").forGetter(var0x -> Optional.ofNullable(var0x.insertion)),
+                  ResourceLocation.CODEC.optionalFieldOf("font").forGetter(var0x -> Optional.ofNullable(var0x.font))
                )
                .apply(var0, Style::create)
       );

@@ -59,7 +59,7 @@ public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookCompo
 
       Iterator var6 = var4.iterator();
 
-      for(int var7 = 0; var7 < 2; ++var7) {
+      for (int var7 = 0; var7 < 2; var7++) {
          if (!var6.hasNext()) {
             return;
          }

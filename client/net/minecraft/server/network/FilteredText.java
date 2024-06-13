@@ -4,15 +4,13 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.FilterMask;
 
-public record FilteredText(String b, FilterMask c) {
-   private final String raw;
-   private final FilterMask mask;
+public record FilteredText(String raw, FilterMask mask) {
    public static final FilteredText EMPTY = passThrough("");
 
-   public FilteredText(String var1, FilterMask var2) {
+   public FilteredText(String raw, FilterMask mask) {
       super();
-      this.raw = var1;
-      this.mask = var2;
+      this.raw = raw;
+      this.mask = mask;
    }
 
    public static FilteredText passThrough(String var0) {

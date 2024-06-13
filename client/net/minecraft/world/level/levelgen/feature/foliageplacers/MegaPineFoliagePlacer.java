@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -11,7 +10,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class MegaPineFoliagePlacer extends FoliagePlacer {
-   public static final Codec<MegaPineFoliagePlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<MegaPineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> foliagePlacerParts(var0)
             .and(IntProvider.codec(0, 24).fieldOf("crown_height").forGetter(var0x -> var0x.crownHeight))
             .apply(var0, MegaPineFoliagePlacer::new)
@@ -43,7 +42,7 @@ public class MegaPineFoliagePlacer extends FoliagePlacer {
       BlockPos var10 = var6.pos();
       int var11 = 0;
 
-      for(int var12 = var10.getY() - var7 + var9; var12 <= var10.getY() + var9; ++var12) {
+      for (int var12 = var10.getY() - var7 + var9; var12 <= var10.getY() + var9; var12++) {
          int var13 = var10.getY() - var12;
          int var14 = var8 + var6.radiusOffset() + Mth.floor((float)var13 / (float)var7 * 3.5F);
          int var15;
@@ -65,10 +64,6 @@ public class MegaPineFoliagePlacer extends FoliagePlacer {
 
    @Override
    protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      if (var2 + var4 >= 7) {
-         return true;
-      } else {
-         return var2 * var2 + var4 * var4 > var5 * var5;
-      }
+      return var2 + var4 >= 7 ? true : var2 * var2 + var4 * var4 > var5 * var5;
    }
 }

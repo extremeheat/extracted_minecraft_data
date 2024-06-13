@@ -9,8 +9,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.stats.Stat;
 
-public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> b) implements Packet<ClientGamePacketListener> {
-   private final Object2IntMap<Stat<?>> stats;
+public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> stats) implements Packet<ClientGamePacketListener> {
    private static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<Stat<?>>> STAT_VALUES_STREAM_CODEC = ByteBufCodecs.map(
       Object2IntOpenHashMap::new, Stat.STREAM_CODEC, ByteBufCodecs.VAR_INT
    );
@@ -18,9 +17,9 @@ public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> b) implements P
       ClientboundAwardStatsPacket::new, ClientboundAwardStatsPacket::stats
    );
 
-   public ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> var1) {
+   public ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> stats) {
       super();
-      this.stats = var1;
+      this.stats = (Object2IntMap<Stat<?>>)stats;
    }
 
    @Override

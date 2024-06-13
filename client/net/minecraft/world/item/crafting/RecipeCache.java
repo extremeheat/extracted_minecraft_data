@@ -25,7 +25,7 @@ public class RecipeCache {
       } else {
          this.validateRecipeManager(var1);
 
-         for(int var3 = 0; var3 < this.entries.length; ++var3) {
+         for (int var3 = 0; var3 < this.entries.length; var3++) {
             RecipeCache.Entry var4 = this.entries[var3];
             if (var4 != null && var4.matches(var2.getItems())) {
                this.moveEntryToFront(var3);
@@ -62,7 +62,7 @@ public class RecipeCache {
    private void insert(List<ItemStack> var1, @Nullable RecipeHolder<CraftingRecipe> var2) {
       NonNullList var3 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
 
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
+      for (int var4 = 0; var4 < var1.size(); var4++) {
          var3.set(var4, ((ItemStack)var1.get(var4)).copyWithCount(1));
       }
 
@@ -70,22 +70,18 @@ public class RecipeCache {
       this.entries[0] = new RecipeCache.Entry(var3, var2);
    }
 
-   static record Entry(NonNullList<ItemStack> a, @Nullable RecipeHolder<CraftingRecipe> b) {
-      private final NonNullList<ItemStack> key;
-      @Nullable
-      private final RecipeHolder<CraftingRecipe> value;
-
-      Entry(NonNullList<ItemStack> var1, @Nullable RecipeHolder<CraftingRecipe> var2) {
+   static record Entry(NonNullList<ItemStack> key, @Nullable RecipeHolder<CraftingRecipe> value) {
+      Entry(NonNullList<ItemStack> key, @Nullable RecipeHolder<CraftingRecipe> value) {
          super();
-         this.key = var1;
-         this.value = var2;
+         this.key = key;
+         this.value = value;
       }
 
       public boolean matches(List<ItemStack> var1) {
          if (this.key.size() != var1.size()) {
             return false;
          } else {
-            for(int var2 = 0; var2 < this.key.size(); ++var2) {
+            for (int var2 = 0; var2 < this.key.size(); var2++) {
                if (!ItemStack.isSameItemSameComponents(this.key.get(var2), (ItemStack)var1.get(var2))) {
                   return false;
                }

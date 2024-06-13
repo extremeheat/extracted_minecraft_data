@@ -24,7 +24,7 @@ public class EntityLookup<T extends EntityAccess> {
    public <U extends T> void getEntities(EntityTypeTest<T, U> var1, AbortableIterationConsumer<U> var2) {
       ObjectIterator var3 = this.byId.values().iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          EntityAccess var4 = (EntityAccess)var3.next();
          EntityAccess var5 = (EntityAccess)var1.tryCast(var4);
          if (var5 != null && var2.accept(var5).shouldAbort()) {

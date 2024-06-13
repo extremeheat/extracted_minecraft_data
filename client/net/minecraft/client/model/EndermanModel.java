@@ -46,7 +46,7 @@ public class EndermanModel<T extends LivingEntity> extends HumanoidModel<T> {
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       super.setupAnim((T)var1, var2, var3, var4, var5, var6);
       this.head.visible = true;
-      boolean var7 = true;
+      byte var7 = -14;
       this.body.xRot = 0.0F;
       this.body.y = -14.0F;
       this.body.z = -0.0F;
@@ -113,7 +113,7 @@ public class EndermanModel<T extends LivingEntity> extends HumanoidModel<T> {
          this.head.y -= 5.0F;
       }
 
-      boolean var10 = true;
+      byte var10 = -14;
       this.rightArm.setPos(-5.0F, -12.0F, 0.0F);
       this.leftArm.setPos(5.0F, -12.0F, 0.0F);
    }

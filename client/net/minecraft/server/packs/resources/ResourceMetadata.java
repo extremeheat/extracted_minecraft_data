@@ -42,7 +42,7 @@ public interface ResourceMetadata {
    default ResourceMetadata copySections(Collection<MetadataSectionSerializer<?>> var1) {
       ResourceMetadata.Builder var2 = new ResourceMetadata.Builder();
 
-      for(MetadataSectionSerializer var4 : var1) {
+      for (MetadataSectionSerializer var4 : var1) {
          this.copySection(var2, var4);
       }
 
@@ -50,7 +50,7 @@ public interface ResourceMetadata {
    }
 
    private <T> void copySection(ResourceMetadata.Builder var1, MetadataSectionSerializer<T> var2) {
-      this.<Object>getSection(var2).ifPresent(var2x -> var1.put(var2, (T)var2x));
+      this.<Object>getSection(var2).ifPresent(var2x -> var1.put(var2, var2x));
    }
 
    public static class Builder {

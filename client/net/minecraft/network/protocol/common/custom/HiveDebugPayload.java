@@ -4,8 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record HiveDebugPayload(HiveDebugPayload.HiveInfo c) implements CustomPacketPayload {
-   private final HiveDebugPayload.HiveInfo hiveInfo;
+public record HiveDebugPayload(HiveDebugPayload.HiveInfo hiveInfo) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, HiveDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(HiveDebugPayload::write, HiveDebugPayload::new);
    public static final CustomPacketPayload.Type<HiveDebugPayload> TYPE = CustomPacketPayload.createType("debug/hive");
 
@@ -13,9 +12,9 @@ public record HiveDebugPayload(HiveDebugPayload.HiveInfo c) implements CustomPac
       this(new HiveDebugPayload.HiveInfo(var1));
    }
 
-   public HiveDebugPayload(HiveDebugPayload.HiveInfo var1) {
+   public HiveDebugPayload(HiveDebugPayload.HiveInfo hiveInfo) {
       super();
-      this.hiveInfo = var1;
+      this.hiveInfo = hiveInfo;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -27,24 +26,18 @@ public record HiveDebugPayload(HiveDebugPayload.HiveInfo c) implements CustomPac
       return TYPE;
    }
 
-   public static record HiveInfo(BlockPos a, String b, int c, int d, boolean e) {
-      private final BlockPos pos;
-      private final String hiveType;
-      private final int occupantCount;
-      private final int honeyLevel;
-      private final boolean sedated;
-
+   public static record HiveInfo(BlockPos pos, String hiveType, int occupantCount, int honeyLevel, boolean sedated) {
       public HiveInfo(FriendlyByteBuf var1) {
          this(var1.readBlockPos(), var1.readUtf(), var1.readInt(), var1.readInt(), var1.readBoolean());
       }
 
-      public HiveInfo(BlockPos var1, String var2, int var3, int var4, boolean var5) {
+      public HiveInfo(BlockPos pos, String hiveType, int occupantCount, int honeyLevel, boolean sedated) {
          super();
-         this.pos = var1;
-         this.hiveType = var2;
-         this.occupantCount = var3;
-         this.honeyLevel = var4;
-         this.sedated = var5;
+         this.pos = pos;
+         this.hiveType = hiveType;
+         this.occupantCount = occupantCount;
+         this.honeyLevel = honeyLevel;
+         this.sedated = sedated;
       }
 
       public void write(FriendlyByteBuf var1) {

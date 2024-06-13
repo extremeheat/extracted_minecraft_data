@@ -87,7 +87,7 @@ public abstract class StructurePlacement {
    }
 
    public boolean applyInteractionsWithOtherStructures(ChunkGeneratorStructureState var1, int var2, int var3) {
-      return !this.exclusionZone.isPresent() || !((StructurePlacement.ExclusionZone)this.exclusionZone.get()).isPlacementForbidden(var1, var2, var3);
+      return !this.exclusionZone.isPresent() || !this.exclusionZone.get().isPlacementForbidden(var1, var2, var3);
    }
 
    protected abstract boolean isPlacementChunk(ChunkGeneratorStructureState var1, int var2, int var3);
@@ -126,9 +126,7 @@ public abstract class StructurePlacement {
    }
 
    @Deprecated
-   public static record ExclusionZone(Holder<StructureSet> b, int c) {
-      private final Holder<StructureSet> otherSet;
-      private final int chunkCount;
+   public static record ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
       public static final Codec<StructurePlacement.ExclusionZone> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false)
@@ -139,10 +137,10 @@ public abstract class StructurePlacement {
                .apply(var0, StructurePlacement.ExclusionZone::new)
       );
 
-      public ExclusionZone(Holder<StructureSet> var1, int var2) {
+      public ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
          super();
-         this.otherSet = var1;
-         this.chunkCount = var2;
+         this.otherSet = otherSet;
+         this.chunkCount = chunkCount;
       }
 
       boolean isPlacementForbidden(ChunkGeneratorStructureState var1, int var2, int var3) {

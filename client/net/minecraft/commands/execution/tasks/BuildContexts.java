@@ -1,7 +1,6 @@
 package net.minecraft.commands.execution.tasks;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.RedirectModifier;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ContextChain;
@@ -39,8 +38,6 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
       this.command = var2;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void execute(T var1, List<T> var2, ExecutionContext<T> var3, Frame var4, ChainModifiers var5) {
       ContextChain var6 = this.command;
       ChainModifiers var7 = var5;
@@ -49,24 +46,24 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
          var3.profiler().push(() -> "prepare " + this.commandInput);
 
          try {
-            for(int var9 = var3.forkLimit(); var6.getStage() != Stage.EXECUTE; var6 = var6.nextStage()) {
+            for (int var9 = var3.forkLimit(); var6.getStage() != Stage.EXECUTE; var6 = var6.nextStage()) {
                CommandContext var10 = var6.getTopContext();
                if (var10.isForked()) {
                   var7 = var7.setForked();
                }
 
                RedirectModifier var11 = var10.getRedirectModifier();
-               if (var11 instanceof CustomModifierExecutor var12) {
-                  var12.apply(var1, (List<ExecutionCommandSource>)var8, var6, var7, ExecutionControl.create(var3, var4));
+               if (var11 instanceof CustomModifierExecutor var28) {
+                  var28.apply(var1, (List<ExecutionCommandSource>)var8, var6, var7, ExecutionControl.create(var3, var4));
                   return;
                }
 
                if (var11 != null) {
                   var3.incrementCost();
-                  var12 = var7.isForked();
+                  boolean var12 = var7.isForked();
                   ObjectArrayList var13 = new ObjectArrayList();
 
-                  for(ExecutionCommandSource var15 : var8) {
+                  for (ExecutionCommandSource var15 : var8) {
                      try {
                         Collection var16 = ContextChain.runModifier(var10, var15, (var0, var1x, var2x) -> {
                         }, var12);
@@ -98,12 +95,11 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
          }
       } else {
          CommandContext var22 = var6.getTopContext();
-         Command var23 = var22.getCommand();
-         if (var23 instanceof CustomCommandExecutor var24) {
-            ExecutionControl var28 = ExecutionControl.create(var3, var4);
+         if (var22.getCommand() instanceof CustomCommandExecutor var24) {
+            ExecutionControl var29 = ExecutionControl.create(var3, var4);
 
-            for(ExecutionCommandSource var30 : var8) {
-               var24.run(var30, var6, var7, var28);
+            for (ExecutionCommandSource var31 : var8) {
+               var24.run(var31, var6, var7, var29);
             }
          } else {
             if (var7.isReturn()) {
@@ -137,7 +133,7 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
 
       public Continuation(String var1, ContextChain<T> var2, ChainModifiers var3, T var4, List<T> var5) {
          super(var1, var2);
-         this.originalSource = var4;
+         this.originalSource = (T)var4;
          this.sources = var5;
          this.modifiers = var3;
       }
@@ -153,7 +149,7 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
 
       public TopLevel(String var1, ContextChain<T> var2, T var3) {
          super(var1, var2);
-         this.source = var3;
+         this.source = (T)var3;
       }
 
       @Override

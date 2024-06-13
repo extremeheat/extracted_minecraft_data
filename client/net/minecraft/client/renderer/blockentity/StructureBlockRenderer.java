@@ -31,7 +31,7 @@ public class StructureBlockRenderer implements BlockEntityRenderer<StructureBloc
                double var25 = var19 + (double)var8.getY();
                double var13;
                double var15;
-               switch(var1.getMirror()) {
+               switch (var1.getMirror()) {
                   case LEFT_RIGHT:
                      var13 = (double)var8.getX();
                      var15 = (double)(-var8.getZ());
@@ -49,7 +49,7 @@ public class StructureBlockRenderer implements BlockEntityRenderer<StructureBloc
                double var21;
                double var23;
                double var27;
-               switch(var1.getRotation()) {
+               switch (var1.getRotation()) {
                   case CLOCKWISE_90:
                      var17 = var15 < 0.0 ? var9 : var9 + 1.0;
                      var21 = var13 < 0.0 ? var11 + 1.0 : var11;
@@ -96,7 +96,7 @@ public class StructureBlockRenderer implements BlockEntityRenderer<StructureBloc
       BlockPos var6 = var1.getBlockPos();
       BlockPos var7 = var6.offset(var3);
 
-      for(BlockPos var9 : BlockPos.betweenClosed(var7, var7.offset(var1.getStructureSize()).offset(-1, -1, -1))) {
+      for (BlockPos var9 : BlockPos.betweenClosed(var7, var7.offset(var1.getStructureSize()).offset(-1, -1, -1))) {
          BlockState var10 = var5.getBlockState(var9);
          boolean var11 = var10.isAir();
          boolean var12 = var10.is(Blocks.STRUCTURE_VOID);

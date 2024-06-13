@@ -3,9 +3,7 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 
 public class PlayerUUIDFix extends AbstractUUIDFix {
    public PlayerUUIDFix(Schema var1) {
@@ -19,9 +17,7 @@ public class PlayerUUIDFix extends AbstractUUIDFix {
          var0 -> {
             OpticFinder var1 = var0.getType().findField("RootVehicle");
             return var0.updateTyped(
-                  var1,
-                  var1.type(),
-                  var0x -> var0x.update(DSL.remainderFinder(), var0xx -> (Dynamic)replaceUUIDLeastMost(var0xx, "Attach", "Attach").orElse(var0xx))
+                  var1, var1.type(), var0x -> var0x.update(DSL.remainderFinder(), var0xx -> replaceUUIDLeastMost(var0xx, "Attach", "Attach").orElse(var0xx))
                )
                .update(DSL.remainderFinder(), var0x -> EntityUUIDFix.updateEntityUUID(EntityUUIDFix.updateLivingEntity(var0x)));
          }

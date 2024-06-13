@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.contents.DataSource;
 import net.minecraft.network.chat.contents.KeybindContents;
@@ -61,12 +60,9 @@ public interface Component extends Message, FormattedText {
 
    List<Component> getSiblings();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    default String tryCollapseToString() {
-      ComponentContents var2 = this.getContents();
-      if (var2 instanceof PlainTextContents var1 && this.getSiblings().isEmpty() && this.getStyle().isEmpty()) {
+      if (this.getContents() instanceof PlainTextContents var1 && this.getSiblings().isEmpty() && this.getStyle().isEmpty()) {
          return var1.text();
       }
 
@@ -90,7 +86,7 @@ public interface Component extends Message, FormattedText {
       if (var4.isPresent()) {
          return var4;
       } else {
-         for(Component var6 : this.getSiblings()) {
+         for (Component var6 : this.getSiblings()) {
             Optional var7 = var6.visit(var1, var3);
             if (var7.isPresent()) {
                return var7;
@@ -107,7 +103,7 @@ public interface Component extends Message, FormattedText {
       if (var2.isPresent()) {
          return var2;
       } else {
-         for(Component var4 : this.getSiblings()) {
+         for (Component var4 : this.getSiblings()) {
             Optional var5 = var4.visit(var1);
             if (var5.isPresent()) {
                return var5;
@@ -161,7 +157,7 @@ public interface Component extends Message, FormattedText {
    }
 
    static MutableComponent translatableEscape(String var0, Object... var1) {
-      for(int var2 = 0; var2 < var1.length; ++var2) {
+      for (int var2 = 0; var2 < var1.length; var2++) {
          Object var3 = var1[var2];
          if (!TranslatableContents.isAllowedPrimitiveArgument(var3) && !(var3 instanceof Component)) {
             var1[var2] = String.valueOf(var3);
@@ -227,11 +223,15 @@ public interface Component extends Message, FormattedText {
       }
 
       static MutableComponent deserialize(JsonElement var0, HolderLookup.Provider var1) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.parse(var1.createSerializationContext(JsonOps.INSTANCE), var0), JsonParseException::new);
+         return (MutableComponent)ComponentSerialization.CODEC
+            .parse(var1.createSerializationContext(JsonOps.INSTANCE), var0)
+            .getOrThrow(JsonParseException::new);
       }
 
       static JsonElement serialize(Component var0, HolderLookup.Provider var1) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0), JsonParseException::new);
+         return (JsonElement)ComponentSerialization.CODEC
+            .encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0)
+            .getOrThrow(JsonParseException::new);
       }
 
       public static String toJson(Component var0, HolderLookup.Provider var1) {

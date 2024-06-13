@@ -12,7 +12,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
@@ -114,7 +113,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
 
    @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      for(int var5 = 0; var5 < 3; ++var5) {
+      for (int var5 = 0; var5 < 3; var5++) {
          int var6 = var4.nextInt(2) * 2 - 1;
          int var7 = var4.nextInt(2) * 2 - 1;
          double var8 = (double)var3.getX() + 0.5 + 0.25 * (double)var6;

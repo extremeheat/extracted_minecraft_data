@@ -33,10 +33,8 @@ public class CauldronBlock extends AbstractCauldronBlock {
    protected static boolean shouldHandlePrecipitation(Level var0, Biome.Precipitation var1) {
       if (var1 == Biome.Precipitation.RAIN) {
          return var0.getRandom().nextFloat() < 0.05F;
-      } else if (var1 == Biome.Precipitation.SNOW) {
-         return var0.getRandom().nextFloat() < 0.1F;
       } else {
-         return false;
+         return var1 == Biome.Precipitation.SNOW ? var0.getRandom().nextFloat() < 0.1F : false;
       }
    }
 

@@ -39,7 +39,7 @@ public class PolarBearModel<T extends PolarBear> extends QuadrupedModel<T> {
             .addBox(-4.0F, -25.0F, -7.0F, 12.0F, 12.0F, 10.0F),
          PartPose.offsetAndRotation(-2.0F, 9.0F, 12.0F, 1.5707964F, 0.0F, 0.0F)
       );
-      boolean var2 = true;
+      byte var2 = 10;
       CubeListBuilder var3 = CubeListBuilder.create().texOffs(50, 22).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 10.0F, 8.0F);
       var1.addOrReplaceChild("right_hind_leg", var3, PartPose.offset(-4.5F, 14.0F, 6.0F));
       var1.addOrReplaceChild("left_hind_leg", var3, PartPose.offset(4.5F, 14.0F, 6.0F));

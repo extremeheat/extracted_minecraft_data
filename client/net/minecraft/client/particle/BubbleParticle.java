@@ -9,7 +9,7 @@ public class BubbleParticle extends TextureSheetParticle {
    BubbleParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
       super(var1, var2, var4, var6);
       this.setSize(0.02F, 0.02F);
-      this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
+      this.quadSize = this.quadSize * (this.random.nextFloat() * 0.6F + 0.2F);
       this.xd = var8 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
       this.yd = var10 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;
       this.zd = var12 * 0.20000000298023224 + (Math.random() * 2.0 - 1.0) * 0.019999999552965164;

@@ -33,7 +33,7 @@ public class GateBehavior<E extends LivingEntity> implements BehaviorControl<E> 
       this.exitErasedMemories = var2;
       this.orderPolicy = var3;
       this.runningPolicy = var4;
-      var5.forEach(var1x -> this.behaviors.add((BehaviorControl<? super E>)var1x.getFirst(), var1x.getSecond()));
+      var5.forEach(var1x -> this.behaviors.add((BehaviorControl<? super E>)var1x.getFirst(), (Integer)var1x.getSecond()));
    }
 
    @Override
@@ -42,7 +42,7 @@ public class GateBehavior<E extends LivingEntity> implements BehaviorControl<E> 
    }
 
    private boolean hasRequiredMemories(E var1) {
-      for(Entry var3 : this.entryCondition.entrySet()) {
+      for (Entry var3 : this.entryCondition.entrySet()) {
          MemoryModuleType var4 = (MemoryModuleType)var3.getKey();
          MemoryStatus var5 = (MemoryStatus)var3.getValue();
          if (!var1.getBrain().checkMemory(var4, var5)) {

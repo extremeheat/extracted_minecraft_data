@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -84,7 +83,7 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       Direction var5 = var1.getValue(FACING);
       boolean var6 = var1.getValue(POWERED);
-      switch((AttachFace)var1.getValue(FACE)) {
+      switch ((AttachFace)var1.getValue(FACE)) {
          case FLOOR:
             if (var5.getAxis() == Direction.Axis.X) {
                return var6 ? PRESSED_FLOOR_AABB_X : FLOOR_AABB_X;
@@ -92,7 +91,7 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
 
             return var6 ? PRESSED_FLOOR_AABB_Z : FLOOR_AABB_Z;
          case WALL:
-            return switch(var5) {
+            return switch (var5) {
                case EAST -> var6 ? PRESSED_EAST_AABB : EAST_AABB;
                case WEST -> var6 ? PRESSED_WEST_AABB : WEST_AABB;
                case SOUTH -> var6 ? PRESSED_SOUTH_AABB : SOUTH_AABB;

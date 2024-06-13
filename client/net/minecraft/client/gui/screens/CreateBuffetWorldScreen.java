@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
@@ -83,7 +82,7 @@ public class CreateBuffetWorldScreen extends Screen {
          Collator var2 = Collator.getInstance(Locale.getDefault());
          CreateBuffetWorldScreen.this.biomes
             .holders()
-            .map(var1x -> new CreateBuffetWorldScreen.BiomeList.Entry(var1x))
+            .map(var1x -> new CreateBuffetWorldScreen.BiomeList.Entry((Holder.Reference<Biome>)var1x))
             .sorted(Comparator.comparing(var0 -> var0.name.getString(), var2))
             .forEach(var1x -> this.addEntry(var1x));
       }

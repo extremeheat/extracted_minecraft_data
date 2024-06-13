@@ -3,13 +3,12 @@ package net.minecraft.advancements.critereon;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.item.ItemStack;
 
-public record ItemCustomDataPredicate(NbtPredicate c) implements ItemSubPredicate {
-   private final NbtPredicate value;
+public record ItemCustomDataPredicate(NbtPredicate value) implements ItemSubPredicate {
    public static final Codec<ItemCustomDataPredicate> CODEC = NbtPredicate.CODEC.xmap(ItemCustomDataPredicate::new, ItemCustomDataPredicate::value);
 
-   public ItemCustomDataPredicate(NbtPredicate var1) {
+   public ItemCustomDataPredicate(NbtPredicate value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
    @Override

@@ -1,9 +1,9 @@
 package com.mojang.realmsclient.gui.screens;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -29,6 +29,7 @@ public class RealmsClientOutdatedScreen extends RealmsScreen {
       this.layout.addToContents(new MultiLineTextWidget(this.getErrorMessage(), this.font).setCentered(true));
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).width(200).build());
       this.layout.visitWidgets(var1 -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1);
       });
       this.repositionElements();
    }

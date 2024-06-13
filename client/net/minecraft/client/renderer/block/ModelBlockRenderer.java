@@ -86,7 +86,7 @@ public class ModelBlockRenderer {
       ModelBlockRenderer.AmbientOcclusionFace var14 = new ModelBlockRenderer.AmbientOcclusionFace();
       BlockPos.MutableBlockPos var15 = var4.mutable();
 
-      for(Direction var19 : DIRECTIONS) {
+      for (Direction var19 : DIRECTIONS) {
          var8.setSeed(var9);
          List var20 = var2.getQuads(var3, var19, var8);
          if (!var20.isEmpty()) {
@@ -119,7 +119,7 @@ public class ModelBlockRenderer {
       BitSet var12 = new BitSet(3);
       BlockPos.MutableBlockPos var13 = var4.mutable();
 
-      for(Direction var17 : DIRECTIONS) {
+      for (Direction var17 : DIRECTIONS) {
          var8.setSeed(var9);
          List var18 = var2.getQuads(var3, var17, var8);
          if (!var18.isEmpty()) {
@@ -150,7 +150,7 @@ public class ModelBlockRenderer {
       ModelBlockRenderer.AmbientOcclusionFace var9,
       int var10
    ) {
-      for(BakedQuad var12 : var6) {
+      for (BakedQuad var12 : var6) {
          this.calculateShape(var1, var2, var3, var12.getVertices(), var12.getDirection(), var7, var8);
          var9.calculate(var1, var2, var3, var12.getDirection(), var7, var8, var12.isShade());
          this.putQuadData(
@@ -215,7 +215,7 @@ public class ModelBlockRenderer {
       float var12 = -32.0F;
       float var13 = -32.0F;
 
-      for(int var14 = 0; var14 < 4; ++var14) {
+      for (int var14 = 0; var14 < 4; var14++) {
          float var15 = Float.intBitsToFloat(var4[var14 * 8]);
          float var16 = Float.intBitsToFloat(var4[var14 * 8 + 1]);
          float var17 = Float.intBitsToFloat(var4[var14 * 8 + 2]);
@@ -245,7 +245,7 @@ public class ModelBlockRenderer {
 
       float var19 = 1.0E-4F;
       float var20 = 0.9999F;
-      switch(var5) {
+      switch (var5) {
          case DOWN:
             var7.set(1, var8 >= 1.0E-4F || var10 >= 1.0E-4F || var11 <= 0.9999F || var13 <= 0.9999F);
             var7.set(0, var9 == var12 && (var9 < 1.0E-4F || var2.isCollisionShapeFullBlock(var1, var3)));
@@ -284,7 +284,7 @@ public class ModelBlockRenderer {
       List<BakedQuad> var9,
       BitSet var10
    ) {
-      for(BakedQuad var12 : var9) {
+      for (BakedQuad var12 : var9) {
          if (var6) {
             this.calculateShape(var1, var2, var3, var12.getVertices(), var12.getDirection(), null, var10);
             BlockPos var13 = var10.get(0) ? var3.relative(var12.getDirection()) : var3;
@@ -302,7 +302,7 @@ public class ModelBlockRenderer {
       RandomSource var10 = RandomSource.create();
       long var11 = 42L;
 
-      for(Direction var16 : DIRECTIONS) {
+      for (Direction var16 : DIRECTIONS) {
          var10.setSeed(42L);
          renderQuadList(var1, var2, var5, var6, var7, var4.getQuads(var3, var16, var10), var8, var9);
       }
@@ -312,7 +312,7 @@ public class ModelBlockRenderer {
    }
 
    private static void renderQuadList(PoseStack.Pose var0, VertexConsumer var1, float var2, float var3, float var4, List<BakedQuad> var5, int var6, int var7) {
-      for(BakedQuad var9 : var5) {
+      for (BakedQuad var9 : var5) {
          float var10;
          float var11;
          float var12;
@@ -793,8 +793,8 @@ public class ModelBlockRenderer {
 
          float var73 = var1.getShade(var4, var7);
 
-         for(int var75 = 0; var75 < this.brightness.length; ++var75) {
-            this.brightness[var75] *= var73;
+         for (int var75 = 0; var75 < this.brightness.length; var75++) {
+            this.brightness[var75] = this.brightness[var75] * var73;
          }
       }
 

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
@@ -126,7 +125,7 @@ public class ChunkStructuresTemplateRenameFix extends DataFix {
    }
 
    private Dynamic<?> fixChildren(Dynamic<?> var1) {
-      return var1.update("Children", var2 -> var1.createList(var2.asStream().map(var2x -> this.fixTag(var1, var2x))));
+      return var1.update("Children", var2 -> var1.createList(var2.asStream().map(var2x -> this.fixTag(var1, (Dynamic<?>)var2x))));
    }
 
    private Dynamic<?> fixTag(Dynamic<?> var1, Dynamic<?> var2) {

@@ -47,7 +47,7 @@ public class ItemModelShaper {
       this.shapesCache.clear();
       ObjectIterator var1 = this.shapes.entrySet().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          Entry var2 = (Entry)var1.next();
          this.shapesCache.put((Integer)var2.getKey(), this.modelManager.getModel((ModelResourceLocation)var2.getValue()));
       }

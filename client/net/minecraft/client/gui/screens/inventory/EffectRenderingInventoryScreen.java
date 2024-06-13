@@ -57,7 +57,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
             int var10 = this.topPos;
             MobEffectInstance var11 = null;
 
-            for(MobEffectInstance var13 : var9) {
+            for (MobEffectInstance var13 : var9) {
                if (var3 >= var10 && var3 <= var10 + var8) {
                   var11 = var13;
                }
@@ -76,7 +76,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
    private void renderBackgrounds(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
       int var6 = this.topPos;
 
-      for(MobEffectInstance var8 : var4) {
+      for (MobEffectInstance var8 : var4) {
          if (var5) {
             var1.blitSprite(EFFECT_BACKGROUND_LARGE_SPRITE, var2, var6, 120, 32);
          } else {
@@ -91,7 +91,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
       MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
       int var7 = this.topPos;
 
-      for(MobEffectInstance var9 : var4) {
+      for (MobEffectInstance var9 : var4) {
          Holder var10 = var9.getEffect();
          TextureAtlasSprite var11 = var6.get(var10);
          var1.blit(var2 + (var5 ? 6 : 7), var7 + 7, 0, 18, 18, var11);
@@ -102,7 +102,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
    private void renderLabels(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4) {
       int var5 = this.topPos;
 
-      for(MobEffectInstance var7 : var4) {
+      for (MobEffectInstance var7 : var4) {
          Component var8 = this.getEffectName(var7);
          var1.drawString(this.font, var8, var2 + 10 + 18, var5 + 6, 16777215);
          Component var9 = MobEffectUtil.formatDuration(var7, 1.0F, this.minecraft.level.tickRateManager().tickrate());

@@ -13,7 +13,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.item.AnimalArmorItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
 
@@ -25,12 +24,9 @@ public class HorseArmorLayer extends RenderLayer<Horse, HorseModel<Horse>> {
       this.model = new HorseModel<>(var2.bakeLayer(ModelLayers.HORSE_ARMOR));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(PoseStack var1, MultiBufferSource var2, int var3, Horse var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       ItemStack var11 = var4.getBodyArmorItem();
-      Item var13 = var11.getItem();
-      if (var13 instanceof AnimalArmorItem var12 && var12.getBodyType() == AnimalArmorItem.BodyType.EQUESTRIAN) {
+      if (var11.getItem() instanceof AnimalArmorItem var12 && var12.getBodyType() == AnimalArmorItem.BodyType.EQUESTRIAN) {
          this.getParentModel().copyPropertiesTo(this.model);
          this.model.prepareMobModel(var4, var5, var6, var7);
          this.model.setupAnim(var4, var5, var6, var8, var9, var10);

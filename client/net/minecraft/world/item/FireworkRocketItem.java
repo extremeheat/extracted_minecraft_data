@@ -1,22 +1,25 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class FireworkRocketItem extends Item {
+public class FireworkRocketItem extends Item implements ProjectileItem {
    public static final byte[] CRAFTABLE_DURATIONS = new byte[]{1, 2, 3};
    public static final double ROCKET_PLACEMENT_OFFSET = 0.15;
 
@@ -64,10 +67,35 @@ public class FireworkRocketItem extends Item {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       Fireworks var5 = var1.get(DataComponents.FIREWORKS);
       if (var5 != null) {
          var5.addToTooltip(var3::add, var4);
       }
+   }
+
+   @Override
+   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
+      return new FireworkRocketEntity(var1, var3.copyWithCount(1), var2.x(), var2.y(), var2.z(), true);
+   }
+
+   @Override
+   public ProjectileItem.DispenseConfig createDispenseConfig() {
+      return ProjectileItem.DispenseConfig.builder()
+         .positionFunction(FireworkRocketItem::getEntityPokingOutOfBlockPos)
+         .uncertainty(0.5F)
+         .power(1.0F)
+         .overrideDispenseEvent(1004)
+         .build();
+   }
+
+   private static Vec3 getEntityPokingOutOfBlockPos(BlockSource var0, Direction var1) {
+      return var0.center()
+         .add(
+            (double)var1.getStepX() * (0.5000099999997474 - (double)EntityType.FIREWORK_ROCKET.getWidth() / 2.0),
+            (double)var1.getStepY() * (0.5000099999997474 - (double)EntityType.FIREWORK_ROCKET.getHeight() / 2.0)
+               - (double)EntityType.FIREWORK_ROCKET.getHeight() / 2.0,
+            (double)var1.getStepZ() * (0.5000099999997474 - (double)EntityType.FIREWORK_ROCKET.getWidth() / 2.0)
+         );
    }
 }

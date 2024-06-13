@@ -6,15 +6,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-public record LockCode(String d) {
-   private final String key;
+public record LockCode(String key) {
    public static final LockCode NO_LOCK = new LockCode("");
    public static final Codec<LockCode> CODEC = Codec.STRING.xmap(LockCode::new, LockCode::key);
    public static final String TAG_LOCK = "Lock";
 
-   public LockCode(String var1) {
+   public LockCode(String key) {
       super();
-      this.key = var1;
+      this.key = key;
    }
 
    public boolean unlocksWith(ItemStack var1) {

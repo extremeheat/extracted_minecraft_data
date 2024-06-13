@@ -3,11 +3,9 @@ package net.minecraft.server.level;
 import com.google.common.net.InetAddresses;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +20,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
-import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
@@ -30,13 +27,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -45,7 +40,6 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.RemoteChatSession;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -84,7 +78,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
-import net.minecraft.server.network.Filterable;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.players.PlayerList;
@@ -96,8 +89,6 @@ import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.StructureTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
@@ -142,8 +133,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ServerItemCooldowns;
 import net.minecraft.world.item.WrittenBookItem;
-import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.ChunkPos;
@@ -231,12 +220,14 @@ public class ServerPlayer extends Player {
    private boolean allowsListing;
    private boolean spawnExtraParticlesOnFall;
    private WardenSpawnTracker wardenSpawnTracker = new WardenSpawnTracker(0, 0, 0);
+   @Nullable
+   private BlockPos raidOmenPosition;
    private final ContainerSynchronizer containerSynchronizer = new ContainerSynchronizer() {
       @Override
       public void sendInitialData(AbstractContainerMenu var1, NonNullList<ItemStack> var2, ItemStack var3, int[] var4) {
          ServerPlayer.this.connection.send(new ClientboundContainerSetContentPacket(var1.containerId, var1.incrementStateId(), var2, var3));
 
-         for(int var5 = 0; var5 < var4.length; ++var5) {
+         for (int var5 = 0; var5 < var4.length; var5++) {
             this.broadcastDataValue(var1, var5, var4[var5]);
          }
       }
@@ -281,7 +272,6 @@ public class ServerPlayer extends Player {
    public final Object object;
    private int containerCounter;
    public boolean wonGame;
-   public boolean seenPotatoPoem;
 
    public ServerPlayer(MinecraftServer var1, ServerLevel var2, GameProfile var3, ClientInformation var4) {
       super(var2, var2.getSharedSpawnPos(), var2.getSharedSpawnAngle(), var3);
@@ -314,7 +304,7 @@ public class ServerPlayer extends Player {
          int var10 = this.getCoprime(var9);
          int var11 = RandomSource.create().nextInt(var9);
 
-         for(int var12 = 0; var12 < var9; ++var12) {
+         for (int var12 = 0; var12 < var9; var12++) {
             int var13 = (var11 + var10 * var12) % var9;
             int var14 = var13 % (var3 * 2 + 1);
             int var15 = var13 / (var3 * 2 + 1);
@@ -329,7 +319,7 @@ public class ServerPlayer extends Player {
       } else {
          this.moveTo(var2, 0.0F, 0.0F);
 
-         while(!var1.noCollision(this) && this.getY() < (double)(var1.getMaxBuildHeight() - 1)) {
+         while (!var1.noCollision(this) && this.getY() < (double)(var1.getMaxBuildHeight() - 1)) {
             this.setPos(this.getX(), this.getY() + 1.0, this.getZ());
          }
       }
@@ -376,6 +366,7 @@ public class ServerPlayer extends Player {
       }
 
       this.spawnExtraParticlesOnFall = var1.getBoolean("spawn_extra_particles_on_fall");
+      BlockPos.CODEC.parse(NbtOps.INSTANCE, var1.get("raid_omen_position")).resultOrPartial(LOGGER::error).ifPresent(var1x -> this.raidOmenPosition = var1x);
    }
 
    @Override
@@ -421,6 +412,12 @@ public class ServerPlayer extends Player {
       }
 
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
+      if (this.raidOmenPosition != null) {
+         BlockPos.CODEC
+            .encodeStart(NbtOps.INSTANCE, this.raidOmenPosition)
+            .resultOrPartial(LOGGER::error)
+            .ifPresent(var1x -> var1.put("raid_omen_position", var1x));
+      }
    }
 
    public void setExperiencePoints(int var1) {
@@ -480,12 +477,11 @@ public class ServerPlayer extends Player {
 
    @Override
    public void tick() {
-      this.tickPotatoQuest();
       this.gameMode.tick();
       this.wardenSpawnTracker.tick();
-      --this.spawnInvulnerableTime;
+      this.spawnInvulnerableTime--;
       if (this.invulnerableTime > 0) {
-         --this.invulnerableTime;
+         this.invulnerableTime--;
       }
 
       this.containerMenu.broadcastChanges();
@@ -518,132 +514,6 @@ public class ServerPlayer extends Player {
       this.advancements.flushDirty(this);
    }
 
-   private void tickPotatoQuest() {
-      Level var1 = this.level();
-      if (var1 instanceof ServerLevel var2) {
-         Inventory var3 = this.getInventory();
-         if (this.isPotatoPlant()) {
-            CriteriaTriggers.RUMBLE_PLANT.trigger(this);
-         }
-
-         if ((this.isChapterAndProgressPast("intro", 22) || this.isChapterAndProgressPast("leaving_village", 1)) && var2.isVillage(this.getOnPos())) {
-            this.setPotatoQuestChapter("in_village");
-         }
-
-         if (this.isChapterAndProgressPast("in_village", 0)) {
-            if (!var2.isVillage(this.getOnPos())) {
-               this.setPotatoQuestChapter("leaving_village");
-            }
-
-            if (var3.hasAnyMatching(var0 -> var0.is(ItemTags.BEDS))) {
-               this.setPotatoQuestChapter("took_bed");
-            }
-
-            if (this.isSleeping()) {
-               this.setPotatoQuestChapter("slept_in_bed");
-            }
-         }
-
-         if (this.isChapterAndProgressPast("slept_in_bed", 3) || this.isChapterAndProgressPast("took_bed", 1)) {
-            this.setPotatoQuestChapter("meta_one");
-         }
-
-         if (this.isChapterAndProgressAt("meta_one", 13)) {
-            ItemStack var4 = new ItemStack(Items.PAPER);
-            var4.set(DataComponents.LORE, new ItemLore(List.of(Component.translatable("paper.thoughts"))));
-            var3.add(var4);
-            this.setPotatoQuestChapter("got_paper");
-         }
-
-         if (this.isChapterAndProgressAt("got_paper", 2)) {
-            Direction var9 = Direction.fromYRot((double)this.getYRot());
-            BlockPos var5 = this.getOnPos().above(2).offset(var9.getNormal().multiply(4));
-            boolean var6 = false;
-
-            for(BlockPos var8 : BlockPos.spiralAround(var5, 4, var9, var9.getCounterClockWise())) {
-               if (var1.isEmptyBlock(var8)) {
-                  var1.setBlockAndUpdate(var8, Blocks.ANVIL.defaultBlockState());
-                  var6 = true;
-                  break;
-               }
-            }
-
-            if (!var6) {
-               var1.setBlockAndUpdate(this.getOnPos().above(2), Blocks.ANVIL.defaultBlockState());
-            }
-
-            this.setPotatoQuestChapter("anvil_dropped");
-         }
-
-         if (this.isChapterAndProgressAt("thrown_eye", 13)) {
-            ItemStack var10 = new ItemStack(Items.WRITTEN_BOOK);
-            var10.set(
-               DataComponents.WRITTEN_BOOK_CONTENT,
-               new WrittenBookContent(
-                  Filterable.passThrough(Component.translatable("potato.quest.book.title").getString()),
-                  Component.translatable("potato.quest.book.author").getString(),
-                  0,
-                  List.of(
-                     Filterable.<MutableComponent>passThrough(Component.translatable("potato.quest.book.page.0")),
-                     Filterable.<MutableComponent>passThrough(Component.translatable("potato.quest.book.page.1")),
-                     Filterable.<MutableComponent>passThrough(Component.translatable("potato.quest.book.page.2"))
-                  ),
-                  false
-               )
-            );
-            var3.add(var10);
-            this.setPotatoQuestChapter("got_book");
-         }
-
-         if (this.isChapterAndProgressPast("thrown_eye", 0) || this.isChapterAndProgressPast("got_book", 0)) {
-            Optional var11 = this.entityData.get(DATA_FOUND_POTATO_PORTAL);
-            if (var11.isPresent() && ((BlockPos)var11.get()).distManhattan(this.getOnPos().atY(0)) < 16) {
-               this.setPotatoQuestChapter("found_portal");
-            }
-         }
-
-         if (this.isChapterAndProgressPast("dimension", 10) && var2.isPotato() && var2.isVillage(this.getOnPos())) {
-            this.setPotatoQuestChapter("potato_village");
-         }
-
-         if (this.isChapterAndProgressPast("thrown_eye_part_two", 3)) {
-            Optional var12 = this.entityData.get(DATA_FOUND_COLOSSEUM);
-            if (var12.isPresent() && ((BlockPos)var12.get()).distManhattan(this.getOnPos().atY(0)) < 16) {
-               this.setPotatoQuestChapter("found_colosseum");
-            }
-         }
-
-         if (this.isChapterAndProgressPast("found_colosseum", 2)
-            && var2.structureManager().getStructureWithPieceAt(this.getOnPos(), StructureTags.COLOSSEUM).isValid()) {
-            this.setPotatoQuestChapter("inside_colosseum");
-         }
-
-         if (this.isChapterAndProgressAt("inside_colosseum", 3)) {
-            var3.add(new ItemStack(Items.WOODEN_SWORD));
-            this.setPotatoQuestChapter("got_sword");
-         }
-
-         if (this.isChapterAndProgressAt("got_sword", 13)) {
-            this.setPotatoQuestChapterAndProgress("got_sword", 1);
-         }
-
-         if (var3.hasAnyOf(Set.of(Items.POTATO_STAFF))) {
-            Pair var13 = this.getPotatoQuestChapterAndProgress();
-            if (!((String)var13.getFirst()).equals("composted_staff") && !((String)var13.getFirst()).equals("got_staff")) {
-               this.setPotatoQuestChapter("got_staff");
-            }
-         }
-
-         if (this.isPotatoPlant() && !this.entityData.get(DATA_POTATO_QUEST_COMPLETED)) {
-            this.awardStat(Stats.POTATO_QUEST_TIME);
-         }
-
-         if (this.isChapterAndProgressAt("composted_staff", 5)) {
-            this.entityData.set(DATA_POTATO_QUEST_COMPLETED, true);
-         }
-      }
-   }
-
    private void updatePlayerAttributes() {
       AttributeInstance var1 = this.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
       if (var1 != null) {
@@ -670,7 +540,7 @@ public class ServerPlayer extends Player {
             super.tick();
          }
 
-         for(int var1 = 0; var1 < this.getInventory().getContainerSize(); ++var1) {
+         for (int var1 = 0; var1 < this.getInventory().getContainerSize(); var1++) {
             ItemStack var5 = this.getInventory().getItem(var1);
             if (var5.getItem().isComplex()) {
                Packet var6 = ((ComplexItem)var5.getItem()).getUpdatePacket(var5, this.level(), this);
@@ -768,19 +638,6 @@ public class ServerPlayer extends Player {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   public boolean potatoQuestCompleted() {
-      Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
-         PlayerAdvancements var4 = var1.getServer().getPlayerList().getPlayerAdvancements(this);
-         AdvancementNode var3 = var4.getTree().get(new ResourceLocation("good_plant"));
-         return var3 != null;
-      } else {
-         return false;
-      }
-   }
-
    private void updateScoreForCriteria(ObjectiveCriteria var1, int var2) {
       this.getScoreboard().forAllObjectives(var1, this, var1x -> var1x.set(var2));
    }
@@ -796,14 +653,12 @@ public class ServerPlayer extends Player {
                new ClientboundPlayerCombatKillPacket(this.getId(), var3),
                PacketSendListener.exceptionallySend(
                   () -> {
-                     boolean var2xx = true;
-                     String var3xx = var3.getString(256);
-                     MutableComponent var4xx = Component.translatable(
-                        "death.attack.message_too_long", Component.literal(var3xx).withStyle(ChatFormatting.YELLOW)
-                     );
-                     MutableComponent var5xx = Component.translatable("death.attack.even_more_magic", this.getDisplayName())
+                     short var2x = 256;
+                     String var3x = var3.getString(256);
+                     MutableComponent var4x = Component.translatable("death.attack.message_too_long", Component.literal(var3x).withStyle(ChatFormatting.YELLOW));
+                     MutableComponent var5x = Component.translatable("death.attack.even_more_magic", this.getDisplayName())
                         .withStyle(var1xx -> var1xx.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var4x)));
-                     return new ClientboundPlayerCombatKillPacket(this.getId(), var5xx);
+                     return new ClientboundPlayerCombatKillPacket(this.getId(), var5x);
                   }
                )
             );
@@ -845,10 +700,6 @@ public class ServerPlayer extends Player {
       this.setSharedFlagOnFire(false);
       this.getCombatTracker().recheckStatus();
       this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
-      this.entityData.set(DATA_POTATO_QUEST, "potato.quest.intro.jump.0");
-      if (!this.entityData.get(DATA_POTATO_QUEST_COMPLETED)) {
-         this.resetStat(Stats.CUSTOM.get(Stats.POTATO_QUEST_TIME));
-      }
    }
 
    private void tellNeutralMobsThatIDied() {
@@ -889,8 +740,6 @@ public class ServerPlayer extends Player {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
@@ -901,15 +750,12 @@ public class ServerPlayer extends Player {
             return false;
          } else {
             Entity var4 = var1.getEntity();
-            if (var4 instanceof Player var5 && !this.canHarmPlayer((Player)var5)) {
+            if (var4 instanceof Player var5 && !this.canHarmPlayer(var5)) {
                return false;
             }
 
-            if (var4 instanceof AbstractArrow var8) {
-               Entity var6 = var8.getOwner();
-               if (var6 instanceof Player var7 && !this.canHarmPlayer((Player)var7)) {
-                  return false;
-               }
+            if (var4 instanceof AbstractArrow var8 && var8.getOwner() instanceof Player var7 && !this.canHarmPlayer(var7)) {
+               return false;
             }
 
             return super.hurt(var1, var2);
@@ -928,31 +774,23 @@ public class ServerPlayer extends Player {
 
    @Nullable
    @Override
-   protected PortalInfo findDimensionEntryPoint(ServerLevel var1, boolean var2) {
-      PortalInfo var3 = super.findDimensionEntryPoint(var1, var2);
-      if (var3 != null && this.level().dimension() == Level.OVERWORLD && var1.dimension() == Level.END) {
-         Vec3 var4 = var3.pos.add(0.0, -1.0, 0.0);
-         return new PortalInfo(var4, Vec3.ZERO, 90.0F, 0.0F);
+   protected PortalInfo findDimensionEntryPoint(ServerLevel var1) {
+      PortalInfo var2 = super.findDimensionEntryPoint(var1);
+      if (var2 != null && this.level().dimension() == Level.OVERWORLD && var1.dimension() == Level.END) {
+         Vec3 var3 = var2.pos.add(0.0, -1.0, 0.0);
+         return new PortalInfo(var3, Vec3.ZERO, 90.0F, 0.0F);
       } else {
-         return var3;
+         return var2;
       }
-   }
-
-   public void removeAndSendPoem() {
-      this.isChangingDimension = true;
-      this.unRide();
-      this.serverLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
-      this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.POTATO_POEM, 0.0F));
    }
 
    @Nullable
    @Override
-   public Entity changeDimension(ServerLevel var1, boolean var2) {
+   public Entity changeDimension(ServerLevel var1) {
       this.isChangingDimension = true;
-      ServerLevel var3 = this.serverLevel();
-      ResourceKey var4 = var3.dimension();
-      boolean var5 = var1.isPotato() || var3.isPotato();
-      if (var4 == Level.END && var1.dimension() == Level.OVERWORLD) {
+      ServerLevel var2 = this.serverLevel();
+      ResourceKey var3 = var2.dimension();
+      if (var3 == Level.END && var1.dimension() == Level.OVERWORLD) {
          this.unRide();
          this.serverLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
          if (!this.wonGame) {
@@ -963,39 +801,39 @@ public class ServerPlayer extends Player {
 
          return this;
       } else {
-         LevelData var6 = var1.getLevelData();
+         LevelData var4 = var1.getLevelData();
          this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(var1), (byte)3));
-         this.connection.send(new ClientboundChangeDifficultyPacket(var6.getDifficulty(), var6.isDifficultyLocked()));
-         PlayerList var7 = this.server.getPlayerList();
-         var7.sendPlayerPermissionLevel(this);
-         var3.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+         this.connection.send(new ClientboundChangeDifficultyPacket(var4.getDifficulty(), var4.isDifficultyLocked()));
+         PlayerList var5 = this.server.getPlayerList();
+         var5.sendPlayerPermissionLevel(this);
+         var2.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
          this.unsetRemoved();
-         PortalInfo var8 = this.findDimensionEntryPoint(var1, var2);
-         if (var8 != null) {
-            var3.getProfiler().push("moving");
-            if (var4 == Level.OVERWORLD && var1.dimension() == Level.NETHER) {
+         PortalInfo var6 = this.findDimensionEntryPoint(var1);
+         if (var6 != null) {
+            var2.getProfiler().push("moving");
+            if (var3 == Level.OVERWORLD && var1.dimension() == Level.NETHER) {
                this.enteredNetherPosition = this.position();
             } else if (var1.dimension() == Level.END) {
-               this.createEndPlatform(var1, BlockPos.containing(var8.pos));
+               this.createEndPlatform(var1, BlockPos.containing(var6.pos));
             }
 
-            var3.getProfiler().pop();
-            var3.getProfiler().push("placing");
+            var2.getProfiler().pop();
+            var2.getProfiler().push("placing");
             this.setServerLevel(var1);
-            this.connection.teleport(var8.pos.x, var8.pos.y, var8.pos.z, var8.yRot, var8.xRot);
+            this.connection.teleport(var6.pos.x, var6.pos.y, var6.pos.z, var6.yRot, var6.xRot);
             this.connection.resetPosition();
             var1.addDuringPortalTeleport(this);
-            var3.getProfiler().pop();
-            this.triggerDimensionChangeTriggers(var3);
+            var2.getProfiler().pop();
+            this.triggerDimensionChangeTriggers(var2);
             this.connection.send(new ClientboundPlayerAbilitiesPacket(this.getAbilities()));
-            var7.sendLevelInfo(this, var1);
-            var7.sendAllPlayerInfo(this);
+            var5.sendLevelInfo(this, var1);
+            var5.sendAllPlayerInfo(this);
 
-            for(MobEffectInstance var10 : this.getActiveEffects()) {
-               this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var10, false));
+            for (MobEffectInstance var8 : this.getActiveEffects()) {
+               this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var8, false));
             }
 
-            this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, var5 ? 1 : 0, false));
+            this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, 0, false));
             this.lastSentExp = -1;
             this.lastSentHealth = -1.0F;
             this.lastSentFood = -1;
@@ -1008,9 +846,9 @@ public class ServerPlayer extends Player {
    private void createEndPlatform(ServerLevel var1, BlockPos var2) {
       BlockPos.MutableBlockPos var3 = var2.mutable();
 
-      for(int var4 = -2; var4 <= 2; ++var4) {
-         for(int var5 = -2; var5 <= 2; ++var5) {
-            for(int var6 = -1; var6 < 3; ++var6) {
+      for (int var4 = -2; var4 <= 2; var4++) {
+         for (int var5 = -2; var5 <= 2; var5++) {
+            for (int var6 = -1; var6 < 3; var6++) {
                BlockState var7 = var6 == -1 ? Blocks.OBSIDIAN.defaultBlockState() : Blocks.AIR.defaultBlockState();
                var1.setBlockAndUpdate(var3.set(var2).move(var5, var6, var4), var7);
             }
@@ -1165,7 +1003,7 @@ public class ServerPlayer extends Player {
       if (!this.touchingUnloadedChunk()) {
          this.checkSupportingBlock(var7, new Vec3(var1, var3, var5));
          BlockPos var8 = this.getOnPosLegacy();
-         BlockState var9 = this.getEffectState();
+         BlockState var9 = this.level().getBlockState(var8);
          if (this.spawnExtraParticlesOnFall && var7 && this.fallDistance > 0.0F) {
             Vec3 var10 = var8.getCenter().add(0.0, 0.5, 0.0);
             int var11 = (int)(50.0F * this.fallDistance);
@@ -1269,7 +1107,7 @@ public class ServerPlayer extends Player {
 
    @Override
    public void openCommandBlock(CommandBlockEntity var1) {
-      this.connection.send(ClientboundBlockEntityDataPacket.create(var1, BlockEntity::saveWithoutMetadata));
+      this.connection.send(ClientboundBlockEntityDataPacket.create(var1, BlockEntity::saveCustomOnly));
    }
 
    @Override
@@ -1631,7 +1469,7 @@ public class ServerPlayer extends Player {
       if (this.acceptsSystemMessages(var2)) {
          this.connection.send(new ClientboundSystemChatPacket(var1, var2), PacketSendListener.exceptionallySend(() -> {
             if (this.acceptsSystemMessages(false)) {
-               boolean var2xx = true;
+               short var2x = 256;
                String var3 = var1.getString(256);
                MutableComponent var4 = Component.literal(var3).withStyle(ChatFormatting.YELLOW);
                return new ClientboundSystemChatPacket(Component.translatable("multiplayer.message_not_delivered", var4).withStyle(ChatFormatting.RED), false);
@@ -1649,8 +1487,7 @@ public class ServerPlayer extends Player {
    }
 
    public String getIpAddress() {
-      SocketAddress var1 = this.connection.getRemoteAddress();
-      return var1 instanceof InetSocketAddress var2 ? InetAddresses.toAddrString(var2.getAddress()) : "<unknown>";
+      return this.connection.getRemoteAddress() instanceof InetSocketAddress var2 ? InetAddresses.toAddrString(var2.getAddress()) : "<unknown>";
    }
 
    public void updateOptions(ClientInformation var1) {
@@ -1731,9 +1568,8 @@ public class ServerPlayer extends Player {
       Entity var2 = this.getCamera();
       this.camera = (Entity)(var1 == null ? this : var1);
       if (var2 != this.camera) {
-         Level var4 = this.camera.level();
-         if (var4 instanceof ServerLevel var3) {
-            this.teleportTo((ServerLevel)var3, this.camera.getX(), this.camera.getY(), this.camera.getZ(), Set.of(), this.getYRot(), this.getXRot());
+         if (this.camera.level() instanceof ServerLevel var3) {
+            this.teleportTo(var3, this.camera.getX(), this.camera.getY(), this.camera.getZ(), Set.of(), this.getYRot(), this.getXRot());
          }
 
          if (var1 != null) {
@@ -1884,7 +1720,6 @@ public class ServerPlayer extends Player {
          if (var3) {
             if (!var5.isEmpty()) {
                this.awardStat(Stats.ITEM_DROPPED.get(var5.getItem()), var1.getCount());
-               CriteriaTriggers.THROW_LUBRICATED.trigger(this, var1);
             }
 
             this.awardStat(Stats.DROP);
@@ -1936,11 +1771,7 @@ public class ServerPlayer extends Player {
    }
 
    public boolean shouldFilterMessageTo(ServerPlayer var1) {
-      if (var1 == this) {
-         return false;
-      } else {
-         return this.textFilteringEnabled || var1.textFilteringEnabled;
-      }
+      return var1 == this ? false : this.textFilteringEnabled || var1.textFilteringEnabled;
    }
 
    @Override
@@ -2006,7 +1837,7 @@ public class ServerPlayer extends Player {
          var1.positionRider(this);
          this.connection.teleport(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
          if (var1 instanceof LivingEntity var3) {
-            for(MobEffectInstance var5 : var3.getActiveEffects()) {
+            for (MobEffectInstance var5 : var3.getActiveEffects()) {
                this.connection.send(new ClientboundUpdateMobEffectPacket(var1.getId(), var5, false));
             }
          }
@@ -2020,7 +1851,7 @@ public class ServerPlayer extends Player {
       Entity var1 = this.getVehicle();
       super.stopRiding();
       if (var1 instanceof LivingEntity var2) {
-         for(MobEffectInstance var4 : var2.getActiveEffects()) {
+         for (MobEffectInstance var4 : var2.getActiveEffects()) {
             this.connection.send(new ClientboundRemoveMobEffectPacket(var1.getId(), var4.getEffect()));
          }
       }
@@ -2036,16 +1867,20 @@ public class ServerPlayer extends Player {
          var1.isDebug(),
          var1.isFlat(),
          this.getLastDeathLocation(),
-         this.getPortalCooldown(),
-         this.attachedGrid != null ? this.attachedGrid.id() : this.reloadAttachedGrid
+         this.getPortalCooldown()
       );
    }
 
-   public void setRuinedPortatol(BlockPos var1) {
-      this.entityData.set(Player.DATA_FOUND_POTATO_PORTAL, Optional.of(var1));
+   public void setRaidOmenPosition(BlockPos var1) {
+      this.raidOmenPosition = var1;
    }
 
-   public void setColosseum(BlockPos var1) {
-      this.entityData.set(Player.DATA_FOUND_COLOSSEUM, Optional.of(var1));
+   public void clearRaidOmenPosition() {
+      this.raidOmenPosition = null;
+   }
+
+   @Nullable
+   public BlockPos getRaidOmenPosition() {
+      return this.raidOmenPosition;
    }
 }

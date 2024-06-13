@@ -18,11 +18,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
-public record TelemetryProperty<T>(String F, String G, Codec<T> H, TelemetryProperty.Exporter<T> I) {
-   private final String id;
-   private final String exportKey;
-   private final Codec<T> codec;
-   private final TelemetryProperty.Exporter<T> exporter;
+public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, TelemetryProperty.Exporter<T> exporter) {
    private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
    public static final TelemetryProperty<String> USER_ID = string("user_id", "userId");
    public static final TelemetryProperty<String> CLIENT_ID = string("client_id", "clientId");
@@ -70,12 +66,12 @@ public record TelemetryProperty<T>(String F, String G, Codec<T> H, TelemetryProp
    public static final TelemetryProperty<String> ADVANCEMENT_ID = string("advancement_id", "advancementId");
    public static final TelemetryProperty<Long> ADVANCEMENT_GAME_TIME = makeLong("advancement_game_time", "advancementGameTime");
 
-   public TelemetryProperty(String var1, String var2, Codec<T> var3, TelemetryProperty.Exporter<T> var4) {
+   public TelemetryProperty(String id, String exportKey, Codec<T> codec, TelemetryProperty.Exporter<T> exporter) {
       super();
-      this.id = var1;
-      this.exportKey = var2;
-      this.codec = var3;
-      this.exporter = var4;
+      this.id = id;
+      this.exportKey = exportKey;
+      this.codec = codec;
+      this.exporter = exporter;
    }
 
    public static <T> TelemetryProperty<T> create(String var0, String var1, Codec<T> var2, TelemetryProperty.Exporter<T> var3) {
@@ -116,7 +112,7 @@ public record TelemetryProperty<T>(String F, String G, Codec<T> H, TelemetryProp
    }
 
    public void export(TelemetryPropertyMap var1, TelemetryPropertyContainer var2) {
-      Object var3 = var1.<T>get(this);
+      Object var3 = var1.get(this);
       if (var3 != null) {
          this.exporter.apply(var2, this.exportKey, (T)var3);
       } else {

@@ -141,7 +141,7 @@ public class NbtIo {
             var1.visitEnd();
          }
       } else {
-         switch(var1.visitRootEntry(var3)) {
+         switch (var1.visitRootEntry(var3)) {
             case HALT:
             default:
                break;

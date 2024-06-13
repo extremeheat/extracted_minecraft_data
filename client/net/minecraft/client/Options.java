@@ -21,7 +21,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.DataResult.PartialResult;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,7 +65,6 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -92,10 +90,6 @@ public class Options {
    private static final Component ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND = Component.translatable("options.darkMojangStudiosBackgroundColor.tooltip");
    private final OptionInstance<Boolean> darkMojangStudiosBackground = OptionInstance.createBoolean(
       "options.darkMojangStudiosBackgroundColor", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND), false
-   );
-   private static final Component POTATO_FONT_TOOLTIP = Component.translatable("options.potatoFont.tooltip");
-   private final OptionInstance<Boolean> potatoFont = OptionInstance.createBoolean(
-      "options.potatoFont", OptionInstance.cachedConstantTooltip(POTATO_FONT_TOOLTIP), false, var0 -> updateFontOptions()
    );
    private static final Component ACCESSIBILITY_TOOLTIP_HIDE_LIGHTNING_FLASHES = Component.translatable("options.hideLightningFlashes.tooltip");
    private final OptionInstance<Boolean> hideLightningFlash = OptionInstance.createBoolean(
@@ -143,14 +137,14 @@ public class Options {
       OptionInstance.noTooltip(),
       OptionInstance.forOptionEnum(),
       new OptionInstance.Enum<>(
-         Arrays.asList(CloudStatus.values()), ExtraCodecs.withAlternative(CloudStatus.CODEC, Codec.BOOL, var0 -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)
+         Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, var0 -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)
       ),
       CloudStatus.FANCY,
       var0 -> {
          if (Minecraft.useShaderTransparency()) {
-            RenderTarget var1xx = Minecraft.getInstance().levelRenderer.getCloudsTarget();
-            if (var1xx != null) {
-               var1xx.clear(Minecraft.ON_OSX);
+            RenderTarget var1x = Minecraft.getInstance().levelRenderer.getCloudsTarget();
+            if (var1x != null) {
+               var1x.clear(Minecraft.ON_OSX);
             }
          }
       }
@@ -163,28 +157,28 @@ public class Options {
    private final OptionInstance<GraphicsStatus> graphicsMode = new OptionInstance<>(
       "options.graphics",
       var0 -> {
-         return switch(var0) {
+         return switch (var0) {
             case FANCY -> Tooltip.create(GRAPHICS_TOOLTIP_FANCY);
             case FAST -> Tooltip.create(GRAPHICS_TOOLTIP_FAST);
             case FABULOUS -> Tooltip.create(GRAPHICS_TOOLTIP_FABULOUS);
          };
       },
       (var0, var1x) -> {
-         MutableComponent var2xx = Component.translatable(var1x.getKey());
-         return var1x == GraphicsStatus.FABULOUS ? var2xx.withStyle(ChatFormatting.ITALIC) : var2xx;
+         MutableComponent var2x = Component.translatable(var1x.getKey());
+         return var1x == GraphicsStatus.FABULOUS ? var2x.withStyle(ChatFormatting.ITALIC) : var2x;
       },
       new OptionInstance.AltEnum<>(
          Arrays.asList(GraphicsStatus.values()),
          Stream.of(GraphicsStatus.values()).filter(var0 -> var0 != GraphicsStatus.FABULOUS).collect(Collectors.toList()),
          () -> Minecraft.getInstance().isRunning() && Minecraft.getInstance().getGpuWarnlistManager().isSkippingFabulous(),
          (var0, var1x) -> {
-            Minecraft var2xx = Minecraft.getInstance();
-            GpuWarnlistManager var3xx = var2xx.getGpuWarnlistManager();
-            if (var1x == GraphicsStatus.FABULOUS && var3xx.willShowWarning()) {
-               var3xx.showWarning();
+            Minecraft var2x = Minecraft.getInstance();
+            GpuWarnlistManager var3x = var2x.getGpuWarnlistManager();
+            if (var1x == GraphicsStatus.FABULOUS && var3x.willShowWarning()) {
+               var3x.showWarning();
             } else {
                var0.set(var1x);
-               var2xx.levelRenderer.allChanged();
+               var2x.levelRenderer.allChanged();
             }
          },
          Codec.INT.xmap(GraphicsStatus::byId, GraphicsStatus::getId)
@@ -202,7 +196,7 @@ public class Options {
    private final OptionInstance<PrioritizeChunkUpdates> prioritizeChunkUpdates = new OptionInstance<>(
       "options.prioritizeChunkUpdates",
       var0 -> {
-         return switch(var0) {
+         return switch (var0) {
             case NONE -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_NONE);
             case PLAYER_AFFECTED -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED);
             case NEARBY -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_NEARBY);
@@ -263,14 +257,14 @@ public class Options {
    private static final Component ACCESSIBILITY_TOOLTIP_CONTRAST_MODE = Component.translatable("options.accessibility.high_contrast.tooltip");
    private final OptionInstance<Boolean> highContrast = OptionInstance.createBoolean(
       "options.accessibility.high_contrast", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_CONTRAST_MODE), false, var1x -> {
-         PackRepository var2xx = Minecraft.getInstance().getResourcePackRepository();
-         boolean var3xx = var2xx.getSelectedIds().contains("high_contrast");
-         if (!var3xx && var1x) {
-            if (var2xx.addPack("high_contrast")) {
-               this.updateResourcePacks(var2xx);
+         PackRepository var2x = Minecraft.getInstance().getResourcePackRepository();
+         boolean var3x = var2x.getSelectedIds().contains("high_contrast");
+         if (!var3x && var1x) {
+            if (var2x.addPack("high_contrast")) {
+               this.updateResourcePacks(var2x);
             }
-         } else if (var3xx && !var1x && var2xx.removePack("high_contrast")) {
-            this.updateResourcePacks(var2xx);
+         } else if (var3x && !var1x && var2x.removePack("high_contrast")) {
+            this.updateResourcePacks(var2x);
          }
       }
    );
@@ -376,8 +370,8 @@ public class Options {
    public boolean joinedFirstServer = false;
    public boolean hideBundleTutorial = false;
    private final OptionInstance<Integer> biomeBlendRadius = new OptionInstance<>("options.biomeBlendRadius", OptionInstance.noTooltip(), (var0, var1x) -> {
-      int var2xx = var1x * 2 + 1;
-      return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2xx));
+      int var2x = var1x * 2 + 1;
+      return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2x));
    }, new OptionInstance.IntRange(0, 7), 2, var0 -> Minecraft.getInstance().levelRenderer.allChanged());
    private final OptionInstance<Double> mouseWheelSensitivity = new OptionInstance<>(
       "options.mouseWheelSensitivity",
@@ -390,9 +384,9 @@ public class Options {
       }
    );
    private final OptionInstance<Boolean> rawMouseInput = OptionInstance.createBoolean("options.rawMouseInput", true, var0 -> {
-      Window var1xx = Minecraft.getInstance().getWindow();
-      if (var1xx != null) {
-         var1xx.updateRawMouseInput(var0);
+      Window var1x = Minecraft.getInstance().getWindow();
+      if (var1x != null) {
+         var1x.updateRawMouseInput(var0);
       }
    });
    public int glDebugVerbosity = 1;
@@ -424,7 +418,7 @@ public class Options {
    );
    private final OptionInstance<Boolean> reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", false);
    private final Map<SoundSource, OptionInstance<Double>> soundSourceVolumes = Util.make(new EnumMap<>(SoundSource.class), var1x -> {
-      for(SoundSource var5 : SoundSource.values()) {
+      for (SoundSource var5 : SoundSource.values()) {
          var1x.put(var5, this.createSoundSliderOptionInstance("soundCategory." + var5.getName(), var5));
       }
    });
@@ -433,9 +427,9 @@ public class Options {
    private static final Component DIRECTIONAL_AUDIO_TOOLTIP_OFF = Component.translatable("options.directionalAudio.off.tooltip");
    private final OptionInstance<Boolean> directionalAudio = OptionInstance.createBoolean(
       "options.directionalAudio", var0 -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, var0 -> {
-         SoundManager var1xx = Minecraft.getInstance().getSoundManager();
-         var1xx.reload();
-         var1xx.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         SoundManager var1x = Minecraft.getInstance().getSoundManager();
+         var1x.reload();
+         var1x.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
       }
    );
    private final OptionInstance<Boolean> backgroundForChatOnly = new OptionInstance<>(
@@ -451,10 +445,10 @@ public class Options {
    );
    private final OptionInstance<Boolean> touchscreen = OptionInstance.createBoolean("options.touchscreen", false);
    private final OptionInstance<Boolean> fullscreen = OptionInstance.createBoolean("options.fullscreen", false, var1x -> {
-      Minecraft var2xx = Minecraft.getInstance();
-      if (var2xx.getWindow() != null && var2xx.getWindow().isFullscreen() != var1x) {
-         var2xx.getWindow().toggleFullScreen();
-         this.fullscreen().set(var2xx.getWindow().isFullscreen());
+      Minecraft var2x = Minecraft.getInstance();
+      if (var2x.getWindow() != null && var2x.getWindow().isFullscreen() != var1x) {
+         var2x.getWindow().toggleFullScreen();
+         this.fullscreen().set(var2x.getWindow().isFullscreen());
       }
    });
    private final OptionInstance<Boolean> bobView = OptionInstance.createBoolean("options.viewBobbing", true);
@@ -469,7 +463,6 @@ public class Options {
       }
    );
    public boolean skipMultiplayerWarning;
-   public boolean skipRealms32bitWarning;
    private static final Component CHAT_TOOLTIP_HIDE_MATCHED_NAMES = Component.translatable("options.hideMatchedNames.tooltip");
    private final OptionInstance<Boolean> hideMatchedNames = OptionInstance.createBoolean(
       "options.hideMatchedNames", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_HIDE_MATCHED_NAMES), true
@@ -496,7 +489,6 @@ public class Options {
    public final KeyMapping keyPlayerList = new KeyMapping("key.playerlist", 258, "key.categories.multiplayer");
    public final KeyMapping keyCommand = new KeyMapping("key.command", 47, "key.categories.multiplayer");
    public final KeyMapping keySocialInteractions = new KeyMapping("key.socialInteractions", 80, "key.categories.multiplayer");
-   public final KeyMapping keyPotato = new KeyMapping("key.potato", 39, "key.categories.multiplayer");
    public final KeyMapping keyScreenshot = new KeyMapping("key.screenshot", 291, "key.categories.misc");
    public final KeyMapping keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, "key.categories.misc");
    public final KeyMapping keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), "key.categories.misc");
@@ -534,7 +526,6 @@ public class Options {
          this.keyPickItem,
          this.keyCommand,
          this.keySocialInteractions,
-         this.keyPotato,
          this.keyScreenshot,
          this.keyTogglePerspective,
          this.keySmoothCamera,
@@ -557,7 +548,7 @@ public class Options {
       "options.fov",
       OptionInstance.noTooltip(),
       (var0, var1x) -> {
-         return switch(var1x) {
+         return switch (var1x) {
             case 70 -> genericValueLabel(var0, Component.translatable("options.fov.min"));
             case 110 -> genericValueLabel(var0, Component.translatable("options.fov.max"));
             default -> genericValueLabel(var0, var1x);
@@ -575,11 +566,11 @@ public class Options {
       "options.telemetry.button",
       OptionInstance.cachedConstantTooltip(TELEMETRY_TOOLTIP),
       (var0, var1x) -> {
-         Minecraft var2xx = Minecraft.getInstance();
-         if (!var2xx.allowsTelemetry()) {
+         Minecraft var2x = Minecraft.getInstance();
+         if (!var2x.allowsTelemetry()) {
             return Component.translatable("options.telemetry.state.none");
          } else {
-            return var1x && var2xx.extraTelemetryAvailable()
+            return var1x && var2x.extraTelemetryAvailable()
                ? Component.translatable("options.telemetry.state.all")
                : Component.translatable("options.telemetry.state.minimal");
          }
@@ -649,13 +640,13 @@ public class Options {
       }
    );
    private final OptionInstance<Double> gamma = new OptionInstance<>("options.gamma", OptionInstance.noTooltip(), (var0, var1x) -> {
-      int var2xx = (int)(var1x * 100.0);
-      if (var2xx == 0) {
+      int var2x = (int)(var1x * 100.0);
+      if (var2x == 0) {
          return genericValueLabel(var0, Component.translatable("options.gamma.min"));
-      } else if (var2xx == 50) {
+      } else if (var2x == 50) {
          return genericValueLabel(var0, Component.translatable("options.gamma.default"));
       } else {
-         return var2xx == 100 ? genericValueLabel(var0, Component.translatable("options.gamma.max")) : genericValueLabel(var0, var2xx);
+         return var2x == 100 ? genericValueLabel(var0, Component.translatable("options.gamma.max")) : genericValueLabel(var0, var2x);
       }
    }, OptionInstance.UnitDouble.INSTANCE, 0.5, var0 -> {
    });
@@ -670,8 +661,7 @@ public class Options {
          return !var0.isRunning() ? 2147483646 : var0.getWindow().calculateScale(0, var0.isEnforceUnicode());
       }, 2147483646),
       0,
-      var0 -> {
-      }
+      var1x -> this.minecraft.resizeDisplay()
    );
    private final OptionInstance<ParticleStatus> particles = new OptionInstance<>(
       "options.particles",
@@ -710,9 +700,9 @@ public class Options {
       ),
       "",
       var0 -> {
-         SoundManager var1xx = Minecraft.getInstance().getSoundManager();
-         var1xx.reload();
-         var1xx.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         SoundManager var1x = Minecraft.getInstance().getSoundManager();
+         var1x.reload();
+         var1x.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
       }
    );
    public boolean onboardAccessibility = true;
@@ -720,10 +710,6 @@ public class Options {
 
    public OptionInstance<Boolean> darkMojangStudiosBackground() {
       return this.darkMojangStudiosBackground;
-   }
-
-   public OptionInstance<Boolean> potatoFont() {
-      return this.potatoFont;
    }
 
    public OptionInstance<Boolean> hideLightningFlash() {
@@ -775,7 +761,7 @@ public class Options {
       this.resourcePacks.clear();
       this.incompatibleResourcePacks.clear();
 
-      for(Pack var4 : var1.getSelectedPacks()) {
+      for (Pack var4 : var1.getSelectedPacks()) {
          if (!var4.isFixedPosition()) {
             this.resourcePacks.add(var4.getId());
             if (!var4.getCompatibility().isCompatible()) {
@@ -1074,22 +1060,21 @@ public class Options {
       super();
       this.minecraft = var1;
       this.optionsFile = new File(var2, "options.txt");
-      boolean var3 = var1.is64Bit();
-      boolean var4 = var3 && Runtime.getRuntime().maxMemory() >= 1000000000L;
+      boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
       this.renderDistance = new OptionInstance<>(
          "options.renderDistance",
          OptionInstance.noTooltip(),
          (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)),
-         new OptionInstance.IntRange(2, var4 ? 32 : 16),
-         var3 ? 12 : 8,
+         new OptionInstance.IntRange(2, var3 ? 32 : 16),
+         12,
          var0 -> Minecraft.getInstance().levelRenderer.needsUpdate()
       );
       this.simulationDistance = new OptionInstance<>(
          "options.simulationDistance",
          OptionInstance.noTooltip(),
          (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)),
-         new OptionInstance.IntRange(5, var4 ? 32 : 16),
-         var3 ? 12 : 8,
+         new OptionInstance.IntRange(5, var3 ? 32 : 16),
+         12,
          var0 -> {
          }
       );
@@ -1162,7 +1147,6 @@ public class Options {
       var1.process("toggleCrouch", this.toggleCrouch);
       var1.process("toggleSprint", this.toggleSprint);
       var1.process("darkMojangStudiosBackground", this.darkMojangStudiosBackground);
-      var1.process("potatoFont", this.potatoFont);
       var1.process("hideLightningFlashes", this.hideLightningFlash);
       var1.process("hideSplashTexts", this.hideSplashTexts);
       var1.process("mouseSensitivity", this.sensitivity);
@@ -1197,7 +1181,6 @@ public class Options {
       var1.process("rawMouseInput", this.rawMouseInput);
       this.glDebugVerbosity = var1.process("glDebugVerbosity", this.glDebugVerbosity);
       this.skipMultiplayerWarning = var1.process("skipMultiplayerWarning", this.skipMultiplayerWarning);
-      this.skipRealms32bitWarning = var1.process("skipRealms32bitWarning", this.skipRealms32bitWarning);
       var1.process("hideMatchedNames", this.hideMatchedNames);
       this.joinedFirstServer = var1.process("joinedFirstServer", this.joinedFirstServer);
       this.hideBundleTutorial = var1.process("hideBundleTutorial", this.hideBundleTutorial);
@@ -1210,7 +1193,7 @@ public class Options {
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
       var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
 
-      for(KeyMapping var5 : this.keyMappings) {
+      for (KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
          String var7 = var1.process("key_" + var5.getName(), var6);
          if (!var6.equals(var7)) {
@@ -1218,11 +1201,11 @@ public class Options {
          }
       }
 
-      for(SoundSource var14 : SoundSource.values()) {
+      for (SoundSource var14 : SoundSource.values()) {
          var1.process("soundCategory_" + var14.getName(), this.soundSourceVolumes.get(var14));
       }
 
-      for(PlayerModelPart var15 : PlayerModelPart.values()) {
+      for (PlayerModelPart var15 : PlayerModelPart.values()) {
          boolean var16 = this.modelParts.contains(var15);
          boolean var17 = var1.process("modelPart_" + var15.getId(), var16);
          if (var17 != var16) {
@@ -1242,8 +1225,8 @@ public class Options {
          try (BufferedReader var2 = Files.newReader(this.optionsFile, Charsets.UTF_8)) {
             var2.lines().forEach(var1x -> {
                try {
-                  Iterator var2xx = OPTION_SPLITTER.split(var1x).iterator();
-                  var1.putString((String)var2xx.next(), (String)var2xx.next());
+                  Iterator var2x = OPTION_SPLITTER.split(var1x).iterator();
+                  var1.putString((String)var2x.next(), (String)var2x.next());
                } catch (Exception var3) {
                   LOGGER.warn("Skipping bad option: {}", var1x);
                }
@@ -1273,7 +1256,7 @@ public class Options {
                   JsonElement var5 = JsonParser.parseReader(var4);
                   DataResult var6 = var2.codec().parse(JsonOps.INSTANCE, var5);
                   var6.error().ifPresent(var2x -> Options.LOGGER.error("Error parsing option value " + var3 + " for option " + var2 + ": " + var2x.message()));
-                  var6.result().ifPresent(var2::set);
+                  var6.ifSuccess(var2::set);
                }
             }
 
@@ -1363,57 +1346,60 @@ public class Options {
    public void save() {
       try (final PrintWriter var1 = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.optionsFile), StandardCharsets.UTF_8))) {
          var1.println("version:" + SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-         this.processOptions(new Options.FieldAccess() {
-            public void writePrefix(String var1x) {
-               var1.print(var1x);
-               var1.print(':');
-            }
+         this.processOptions(
+            new Options.FieldAccess() {
+               public void writePrefix(String var1x) {
+                  var1.print(var1x);
+                  var1.print(':');
+               }
 
-            @Override
-            public <T> void process(String var1x, OptionInstance<T> var2) {
-               DataResult var3 = var2.codec().encodeStart(JsonOps.INSTANCE, var2.get());
-               var3.error().ifPresent(var1xxx -> Options.LOGGER.error("Error saving option " + var2 + ": " + var1xxx));
-               var3.result().ifPresent(var3x -> {
+               @Override
+               public <T> void process(String var1x, OptionInstance<T> var2) {
+                  var2.codec()
+                     .encodeStart(JsonOps.INSTANCE, var2.get())
+                     .ifError(var1xxx -> Options.LOGGER.error("Error saving option " + var2 + ": " + var1xxx))
+                     .ifSuccess(var3 -> {
+                        this.writePrefix(var1x);
+                        var1.println(Options.GSON.toJson(var3));
+                     });
+               }
+
+               @Override
+               public int process(String var1x, int var2) {
                   this.writePrefix(var1x);
-                  var1.println(Options.GSON.toJson(var3x));
-               });
-            }
+                  var1.println(var2);
+                  return var2;
+               }
 
-            @Override
-            public int process(String var1x, int var2) {
-               this.writePrefix(var1x);
-               var1.println(var2);
-               return var2;
-            }
+               @Override
+               public boolean process(String var1x, boolean var2) {
+                  this.writePrefix(var1x);
+                  var1.println(var2);
+                  return var2;
+               }
 
-            @Override
-            public boolean process(String var1x, boolean var2) {
-               this.writePrefix(var1x);
-               var1.println(var2);
-               return var2;
-            }
+               @Override
+               public String process(String var1x, String var2) {
+                  this.writePrefix(var1x);
+                  var1.println(var2);
+                  return var2;
+               }
 
-            @Override
-            public String process(String var1x, String var2) {
-               this.writePrefix(var1x);
-               var1.println(var2);
-               return var2;
-            }
+               @Override
+               public float process(String var1x, float var2) {
+                  this.writePrefix(var1x);
+                  var1.println(var2);
+                  return var2;
+               }
 
-            @Override
-            public float process(String var1x, float var2) {
-               this.writePrefix(var1x);
-               var1.println(var2);
-               return var2;
+               @Override
+               public <T> T process(String var1x, T var2, Function<String, T> var3, Function<T, String> var4) {
+                  this.writePrefix(var1x);
+                  var1.println((String)var4.apply(var2));
+                  return (T)var2;
+               }
             }
-
-            @Override
-            public <T> T process(String var1x, T var2, Function<String, T> var3, Function<T, String> var4) {
-               this.writePrefix(var1x);
-               var1.println((String)var4.apply(var2));
-               return (T)var2;
-            }
-         });
+         );
          if (this.minecraft.getWindow().getPreferredFullscreenVideoMode().isPresent()) {
             var1.println("fullscreenResolution:" + this.minecraft.getWindow().getPreferredFullscreenVideoMode().get().write());
          }
@@ -1427,7 +1413,7 @@ public class Options {
    public ClientInformation buildPlayerInformation() {
       int var1 = 0;
 
-      for(PlayerModelPart var3 : this.modelParts) {
+      for (PlayerModelPart var3 : this.modelParts) {
          var1 |= var3.getMask();
       }
 
@@ -1478,7 +1464,7 @@ public class Options {
       LinkedHashSet var2 = Sets.newLinkedHashSet();
       Iterator var3 = this.resourcePacks.iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          String var4 = (String)var3.next();
          Pack var5 = var1.getPack(var4);
          if (var5 == null && !var4.startsWith("file/")) {

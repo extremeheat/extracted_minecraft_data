@@ -28,7 +28,7 @@ public class GridLayout extends AbstractLayout {
       int var1 = 0;
       int var2 = 0;
 
-      for(GridLayout.CellInhabitant var4 : this.cellInhabitants) {
+      for (GridLayout.CellInhabitant var4 : this.cellInhabitants) {
          var1 = Math.max(var4.getLastOccupiedRow(), var1);
          var2 = Math.max(var4.getLastOccupiedColumn(), var2);
       }
@@ -36,18 +36,18 @@ public class GridLayout extends AbstractLayout {
       int[] var12 = new int[var2 + 1];
       int[] var13 = new int[var1 + 1];
 
-      for(GridLayout.CellInhabitant var6 : this.cellInhabitants) {
+      for (GridLayout.CellInhabitant var6 : this.cellInhabitants) {
          int var7 = var6.getHeight() - (var6.occupiedRows - 1) * this.rowSpacing;
          Divisor var8 = new Divisor(var7, var6.occupiedRows);
 
-         for(int var9 = var6.row; var9 <= var6.getLastOccupiedRow(); ++var9) {
+         for (int var9 = var6.row; var9 <= var6.getLastOccupiedRow(); var9++) {
             var13[var9] = Math.max(var13[var9], var8.nextInt());
          }
 
          int var20 = var6.getWidth() - (var6.occupiedColumns - 1) * this.columnSpacing;
          Divisor var10 = new Divisor(var20, var6.occupiedColumns);
 
-         for(int var11 = var6.column; var11 <= var6.getLastOccupiedColumn(); ++var11) {
+         for (int var11 = var6.column; var11 <= var6.getLastOccupiedColumn(); var11++) {
             var12[var11] = Math.max(var12[var11], var10.nextInt());
          }
       }
@@ -56,20 +56,20 @@ public class GridLayout extends AbstractLayout {
       int[] var15 = new int[var1 + 1];
       var14[0] = 0;
 
-      for(int var16 = 1; var16 <= var2; ++var16) {
+      for (int var16 = 1; var16 <= var2; var16++) {
          var14[var16] = var14[var16 - 1] + var12[var16 - 1] + this.columnSpacing;
       }
 
       var15[0] = 0;
 
-      for(int var17 = 1; var17 <= var1; ++var17) {
+      for (int var17 = 1; var17 <= var1; var17++) {
          var15[var17] = var15[var17 - 1] + var13[var17 - 1] + this.rowSpacing;
       }
 
-      for(GridLayout.CellInhabitant var19 : this.cellInhabitants) {
+      for (GridLayout.CellInhabitant var19 : this.cellInhabitants) {
          int var21 = 0;
 
-         for(int var23 = var19.column; var23 <= var19.getLastOccupiedColumn(); ++var23) {
+         for (int var23 = var19.column; var23 <= var19.getLastOccupiedColumn(); var23++) {
             var21 += var12[var23];
          }
 
@@ -77,7 +77,7 @@ public class GridLayout extends AbstractLayout {
          var19.setX(this.getX() + var14[var19.column], var21);
          int var24 = 0;
 
-         for(int var26 = var19.row; var26 <= var19.getLastOccupiedRow(); ++var26) {
+         for (int var26 = var19.row; var26 <= var19.getLastOccupiedRow(); var26++) {
             var24 += var13[var26];
          }
 
@@ -200,7 +200,7 @@ public class GridLayout extends AbstractLayout {
          int var4 = this.index / this.columns;
          int var5 = this.index % this.columns;
          if (var5 + var2 > this.columns) {
-            ++var4;
+            var4++;
             var5 = 0;
             this.index = Mth.roundToward(this.index, this.columns);
          }

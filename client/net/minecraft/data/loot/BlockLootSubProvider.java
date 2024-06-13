@@ -83,7 +83,6 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected static final LootItemCondition.Builder HAS_NO_SILK_TOUCH = HAS_SILK_TOUCH.invert();
    protected static final LootItemCondition.Builder HAS_SHEARS = MatchTool.toolMatches(ItemPredicate.Builder.item().of(Items.SHEARS));
    private static final LootItemCondition.Builder HAS_SHEARS_OR_SILK_TOUCH = HAS_SHEARS.or(HAS_SILK_TOUCH);
-   protected static final LootItemCondition.Builder HAS_POTATO_PEELER = MatchTool.toolMatches(ItemPredicate.Builder.item().of(Items.POTATO_PEELER));
    private static final LootItemCondition.Builder HAS_NO_SHEARS_OR_SILK_TOUCH = HAS_SHEARS_OR_SILK_TOUCH.invert();
    protected final Set<Item> explosionResistant;
    protected final FeatureFlagSet enabledFeatures;
@@ -117,11 +116,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
 
    private static LootTable.Builder createSelfDropDispatchTable(Block var0, LootItemCondition.Builder var1, LootPoolEntryContainer.Builder<?> var2) {
       return LootTable.lootTable()
-         .withPool(
-            LootPool.lootPool()
-               .setRolls(ConstantValue.exactly(1.0F))
-               .add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var0).when(var1)).otherwise(var2))
-         );
+         .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var0).when(var1).otherwise(var2)));
    }
 
    protected static LootTable.Builder createSilkTouchDispatchTable(Block var0, LootPoolEntryContainer.Builder<?> var1) {
@@ -137,7 +132,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected LootTable.Builder createSingleItemTableWithSilkTouch(Block var1, ItemLike var2) {
-      return createSilkTouchDispatchTable(var1, this.applyExplosionCondition(var1, LootItem.lootTableItem(var2)));
+      return createSilkTouchDispatchTable(var1, (LootPoolEntryContainer.Builder<?>)this.applyExplosionCondition(var1, LootItem.lootTableItem(var2)));
    }
 
    protected LootTable.Builder createSingleItemTable(ItemLike var1, NumberProvider var2) {
@@ -145,12 +140,14 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
          .withPool(
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
-               .add(this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(SetItemCountFunction.setCount(var2))))
+               .add((LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(SetItemCountFunction.setCount(var2))))
          );
    }
 
    protected LootTable.Builder createSingleItemTableWithSilkTouch(Block var1, ItemLike var2, NumberProvider var3) {
-      return createSilkTouchDispatchTable(var1, this.applyExplosionDecay(var1, LootItem.lootTableItem(var2).apply(SetItemCountFunction.setCount(var3))));
+      return createSilkTouchDispatchTable(
+         var1, (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(var1, LootItem.lootTableItem(var2).apply(SetItemCountFunction.setCount(var3)))
+      );
    }
 
    private static LootTable.Builder createSilkTouchOnlyTable(ItemLike var0) {
@@ -173,7 +170,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
-                  this.applyExplosionDecay(
+                  (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
                      var1,
                      LootItem.lootTableItem(var1)
                         .apply(
@@ -215,22 +212,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                   .setRolls(ConstantValue.exactly(1.0F))
                   .add(
                      LootItem.lootTableItem(var1)
-                        .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.CUSTOM_NAME))
-                  )
-            )
-         );
-   }
-
-   protected LootTable.Builder createFletchingTableTableTable(Block var1) {
-      return LootTable.lootTable()
-         .withPool(
-            this.applyExplosionCondition(
-               var1,
-               LootPool.lootPool()
-                  .setRolls(ConstantValue.exactly(1.0F))
-                  .add(
-                     LootItem.lootTableItem(var1)
-                        .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.FLETCHING))
+                        .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME))
                   )
             )
          );
@@ -247,10 +229,10 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                      LootItem.lootTableItem(var1)
                         .apply(
                            CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
-                              .copy(DataComponents.CUSTOM_NAME)
-                              .copy(DataComponents.CONTAINER)
-                              .copy(DataComponents.LOCK)
-                              .copy(DataComponents.CONTAINER_LOOT)
+                              .include(DataComponents.CUSTOM_NAME)
+                              .include(DataComponents.CONTAINER)
+                              .include(DataComponents.LOCK)
+                              .include(DataComponents.CONTAINER_LOOT)
                         )
                   )
             )
@@ -260,7 +242,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected LootTable.Builder createCopperOreDrops(Block var1) {
       return createSilkTouchDispatchTable(
          var1,
-         this.applyExplosionDecay(
+         (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
             var1,
             LootItem.lootTableItem(Items.RAW_COPPER)
                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 5.0F)))
@@ -272,7 +254,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected LootTable.Builder createLapisOreDrops(Block var1) {
       return createSilkTouchDispatchTable(
          var1,
-         this.applyExplosionDecay(
+         (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
             var1,
             LootItem.lootTableItem(Items.LAPIS_LAZULI)
                .apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 9.0F)))
@@ -284,7 +266,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected LootTable.Builder createRedstoneOreDrops(Block var1) {
       return createSilkTouchDispatchTable(
          var1,
-         this.applyExplosionDecay(
+         (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
             var1,
             LootItem.lootTableItem(Items.REDSTONE)
                .apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 5.0F)))
@@ -304,8 +286,10 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                      LootItem.lootTableItem(var1)
                         .apply(
                            CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
-                              .copy(DataComponents.CUSTOM_NAME)
-                              .copy(DataComponents.BANNER_PATTERNS)
+                              .include(DataComponents.CUSTOM_NAME)
+                              .include(DataComponents.ITEM_NAME)
+                              .include(DataComponents.HIDE_ADDITIONAL_TOOLTIP)
+                              .include(DataComponents.BANNER_PATTERNS)
                         )
                   )
             )
@@ -320,7 +304,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
                   LootItem.lootTableItem(var0)
-                     .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.BEES))
+                     .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.BEES))
                      .apply(CopyBlockState.copyState(var0).copy(BeehiveBlock.HONEY_LEVEL))
                )
          );
@@ -332,8 +316,9 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
-                  ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var0).when(HAS_SILK_TOUCH))
-                     .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.BEES))
+                  LootItem.lootTableItem(var0)
+                     .when(HAS_SILK_TOUCH)
+                     .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.BEES))
                      .apply(CopyBlockState.copyState(var0).copy(BeehiveBlock.HONEY_LEVEL))
                      .otherwise(LootItem.lootTableItem(var0))
                )
@@ -354,14 +339,17 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
 
    protected LootTable.Builder createOreDrop(Block var1, Item var2) {
       return createSilkTouchDispatchTable(
-         var1, this.applyExplosionDecay(var1, LootItem.lootTableItem(var2).apply(ApplyBonusCount.addOreBonusCount(Enchantments.FORTUNE)))
+         var1,
+         (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
+            var1, LootItem.lootTableItem(var2).apply(ApplyBonusCount.addOreBonusCount(Enchantments.FORTUNE))
+         )
       );
    }
 
    protected LootTable.Builder createMushroomBlockDrop(Block var1, ItemLike var2) {
       return createSilkTouchDispatchTable(
          var1,
-         this.applyExplosionDecay(
+         (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
             var1,
             LootItem.lootTableItem(var2)
                .apply(SetItemCountFunction.setCount(UniformGenerator.between(-6.0F, 2.0F)))
@@ -373,9 +361,10 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected LootTable.Builder createGrassDrops(Block var1) {
       return createShearsDispatchTable(
          var1,
-         this.applyExplosionDecay(
+         (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
             var1,
-            ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.WHEAT_SEEDS).when(LootItemRandomChanceCondition.randomChance(0.125F)))
+            LootItem.lootTableItem(Items.WHEAT_SEEDS)
+               .when(LootItemRandomChanceCondition.randomChance(0.125F))
                .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.FORTUNE, 2))
          )
       );
@@ -389,7 +378,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                LootPool.lootPool()
                   .setRolls(ConstantValue.exactly(1.0F))
                   .add(
-                     (LootPoolEntryContainer.Builder<?>)LootItem.lootTableItem(var2)
+                     LootItem.lootTableItem(var2)
                         .apply(
                            StemBlock.AGE.getPossibleValues(),
                            var1x -> SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, (float)(var1x + 1) / 15.0F))
@@ -424,17 +413,18 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
          .withPool(
             LootPool.lootPool()
                .add(
-                  this.applyExplosionDecay(
+                  (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
                      var1,
-                     ((LootPoolSingletonContainer.Builder)((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).when(var2))
-                           .apply(
-                              Direction.values(),
-                              var1x -> SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true)
-                                    .when(
-                                       LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1)
-                                          .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true))
-                                    )
-                           ))
+                     LootItem.lootTableItem(var1)
+                        .when(var2)
+                        .apply(
+                           Direction.values(),
+                           var1x -> SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true)
+                                 .when(
+                                    LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1)
+                                       .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true))
+                                 )
+                        )
                         .apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true))
                   )
                )
@@ -444,14 +434,17 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected LootTable.Builder createLeavesDrops(Block var1, Block var2, float... var3) {
       return createSilkTouchOrShearsDispatchTable(
             var1,
-            this.applyExplosionCondition(var1, LootItem.lootTableItem(var2)).when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.FORTUNE, var3))
+            ((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(var1, LootItem.lootTableItem(var2)))
+               .when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.FORTUNE, var3))
          )
          .withPool(
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .when(HAS_NO_SHEARS_OR_SILK_TOUCH)
                .add(
-                  this.applyExplosionDecay(var1, LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))
+                  ((LootPoolSingletonContainer.Builder)this.applyExplosionDecay(
+                        var1, LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F)))
+                     ))
                      .when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.FORTUNE, NORMAL_LEAVES_STICK_CHANCES))
                )
          );
@@ -464,7 +457,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                .setRolls(ConstantValue.exactly(1.0F))
                .when(HAS_NO_SHEARS_OR_SILK_TOUCH)
                .add(
-                  this.applyExplosionCondition(var1, LootItem.lootTableItem(Items.APPLE))
+                  ((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(var1, LootItem.lootTableItem(Items.APPLE)))
                      .when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.FORTUNE, 0.005F, 0.0055555557F, 0.00625F, 0.008333334F, 0.025F))
                )
          );
@@ -473,9 +466,9 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected LootTable.Builder createMangroveLeavesDrops(Block var1) {
       return createSilkTouchOrShearsDispatchTable(
          var1,
-         this.applyExplosionDecay(
+         ((LootPoolSingletonContainer.Builder)this.applyExplosionDecay(
                Blocks.MANGROVE_LEAVES, LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F)))
-            )
+            ))
             .when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.FORTUNE, NORMAL_LEAVES_STICK_CHANCES))
       );
    }
@@ -484,9 +477,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       return this.applyExplosionDecay(
          var1,
          LootTable.lootTable()
-            .withPool(
-               LootPool.lootPool().add(((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var2).when(var4)).otherwise(LootItem.lootTableItem(var3)))
-            )
+            .withPool(LootPool.lootPool().add(LootItem.lootTableItem(var2).when(var4).otherwise(LootItem.lootTableItem(var3))))
             .withPool(
                LootPool.lootPool()
                   .when(var4)
@@ -501,10 +492,13 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected LootTable.Builder createDoublePlantWithSeedDrops(Block var1, Block var2) {
-      AlternativesEntry.Builder var3 = ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var2)
-            .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))
-            .when(HAS_SHEARS))
-         .otherwise(this.applyExplosionCondition(var1, LootItem.lootTableItem(Items.WHEAT_SEEDS)).when(LootItemRandomChanceCondition.randomChance(0.125F)));
+      AlternativesEntry.Builder var3 = LootItem.lootTableItem(var2)
+         .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))
+         .when(HAS_SHEARS)
+         .otherwise(
+            ((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(var1, LootItem.lootTableItem(Items.WHEAT_SEEDS)))
+               .when(LootItemRandomChanceCondition.randomChance(0.125F))
+         );
       return LootTable.lootTable()
          .withPool(
             LootPool.lootPool()
@@ -552,7 +546,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
-                  this.applyExplosionDecay(
+                  (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
                      var1,
                      LootItem.lootTableItem(var1)
                         .apply(
@@ -574,7 +568,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
-                  this.applyExplosionDecay(
+                  (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
                      var1,
                      LootItem.lootTableItem(var1)
                         .apply(
@@ -605,7 +599,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       this.generate();
       HashSet var3 = new HashSet();
 
-      for(Block var5 : BuiltInRegistries.BLOCK) {
+      for (Block var5 : BuiltInRegistries.BLOCK) {
          if (var5.isEnabled(this.enabledFeatures)) {
             ResourceKey var6 = var5.getLootTable();
             if (var6 != BuiltInLootTables.EMPTY && var3.add(var6)) {

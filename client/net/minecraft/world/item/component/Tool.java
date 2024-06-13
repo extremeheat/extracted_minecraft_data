@@ -2,7 +2,6 @@ package net.minecraft.world.item.component;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,15 +17,12 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public record Tool(List<Tool.Rule> c, float d, int e) {
-   private final List<Tool.Rule> rules;
-   private final float defaultMiningSpeed;
-   private final int damagePerBlock;
+public record Tool(List<Tool.Rule> rules, float defaultMiningSpeed, int damagePerBlock) {
    public static final Codec<Tool> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Tool.Rule.CODEC.listOf().fieldOf("rules").forGetter(Tool::rules),
-               ExtraCodecs.strictOptionalField(Codec.FLOAT, "default_mining_speed", 1.0F).forGetter(Tool::defaultMiningSpeed),
-               ExtraCodecs.strictOptionalField(ExtraCodecs.NON_NEGATIVE_INT, "damage_per_block", 1).forGetter(Tool::damagePerBlock)
+               Codec.FLOAT.optionalFieldOf("default_mining_speed", 1.0F).forGetter(Tool::defaultMiningSpeed),
+               ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("damage_per_block", 1).forGetter(Tool::damagePerBlock)
             )
             .apply(var0, Tool::new)
    );
@@ -40,15 +36,15 @@ public record Tool(List<Tool.Rule> c, float d, int e) {
       Tool::new
    );
 
-   public Tool(List<Tool.Rule> var1, float var2, int var3) {
+   public Tool(List<Tool.Rule> rules, float defaultMiningSpeed, int damagePerBlock) {
       super();
-      this.rules = var1;
-      this.defaultMiningSpeed = var2;
-      this.damagePerBlock = var3;
+      this.rules = rules;
+      this.defaultMiningSpeed = defaultMiningSpeed;
+      this.damagePerBlock = damagePerBlock;
    }
 
    public float getMiningSpeed(BlockState var1) {
-      for(Tool.Rule var3 : this.rules) {
+      for (Tool.Rule var3 : this.rules) {
          if (var3.speed.isPresent() && var1.is(var3.blocks)) {
             return var3.speed.get();
          }
@@ -58,7 +54,7 @@ public record Tool(List<Tool.Rule> c, float d, int e) {
    }
 
    public boolean isCorrectForDrops(BlockState var1) {
-      for(Tool.Rule var3 : this.rules) {
+      for (Tool.Rule var3 : this.rules) {
          if (var3.correctForDrops.isPresent() && var1.is(var3.blocks)) {
             return var3.correctForDrops.get();
          }
@@ -67,15 +63,12 @@ public record Tool(List<Tool.Rule> c, float d, int e) {
       return false;
    }
 
-   public static record Rule(HolderSet<Block> c, Optional<Float> d, Optional<Boolean> e) {
-      final HolderSet<Block> blocks;
-      final Optional<Float> speed;
-      final Optional<Boolean> correctForDrops;
+   public static record Rule(HolderSet<Block> blocks, Optional<Float> speed, Optional<Boolean> correctForDrops) {
       public static final Codec<Tool.Rule> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("blocks").forGetter(Tool.Rule::blocks),
-                  ExtraCodecs.strictOptionalField(ExtraCodecs.POSITIVE_FLOAT, "speed").forGetter(Tool.Rule::speed),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "correct_for_drops").forGetter(Tool.Rule::correctForDrops)
+                  ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("speed").forGetter(Tool.Rule::speed),
+                  Codec.BOOL.optionalFieldOf("correct_for_drops").forGetter(Tool.Rule::correctForDrops)
                )
                .apply(var0, Tool.Rule::new)
       );
@@ -89,11 +82,11 @@ public record Tool(List<Tool.Rule> c, float d, int e) {
          Tool.Rule::new
       );
 
-      public Rule(HolderSet<Block> var1, Optional<Float> var2, Optional<Boolean> var3) {
+      public Rule(HolderSet<Block> blocks, Optional<Float> speed, Optional<Boolean> correctForDrops) {
          super();
-         this.blocks = var1;
-         this.speed = var2;
-         this.correctForDrops = var3;
+         this.blocks = blocks;
+         this.speed = speed;
+         this.correctForDrops = correctForDrops;
       }
 
       public static Tool.Rule minesAndDrops(List<Block> var0, float var1) {

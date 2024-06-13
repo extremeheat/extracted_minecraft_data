@@ -95,7 +95,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
          if (!this.canSeeSky(var2)) {
             return false;
          } else {
-            for(BlockPos var4 = var2.below(); var4.getY() > var1.getY(); var4 = var4.below()) {
+            for (BlockPos var4 = var2.below(); var4.getY() > var1.getY(); var4 = var4.below()) {
                BlockState var3 = this.getBlockState(var4);
                if (var3.getLightBlock(this, var4) > 0 && !var3.liquid()) {
                   return false;
@@ -149,9 +149,9 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       int var7 = Mth.ceil(var1.maxZ);
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
 
-      for(int var9 = var2; var9 < var3; ++var9) {
-         for(int var10 = var4; var10 < var5; ++var10) {
-            for(int var11 = var6; var11 < var7; ++var11) {
+      for (int var9 = var2; var9 < var3; var9++) {
+         for (int var10 = var4; var10 < var5; var10++) {
+            for (int var11 = var6; var11 < var7; var11++) {
                BlockState var12 = this.getBlockState(var8.set(var9, var10, var11));
                if (!var12.getFluidState().isEmpty()) {
                   return true;
@@ -198,8 +198,8 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       int var7 = SectionPos.blockToSectionCoord(var2);
       int var8 = SectionPos.blockToSectionCoord(var4);
 
-      for(int var9 = var5; var9 <= var6; ++var9) {
-         for(int var10 = var7; var10 <= var8; ++var10) {
+      for (int var9 = var5; var9 <= var6; var9++) {
+         for (int var10 = var7; var10 <= var8; var10++) {
             if (!this.hasChunk(var9, var10)) {
                return false;
             }

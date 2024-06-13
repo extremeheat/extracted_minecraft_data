@@ -2,8 +2,8 @@ package net.minecraft.world.level.gameevent;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class EntityPositionSource implements PositionSource {
-   public static final Codec<EntityPositionSource> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<EntityPositionSource> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                UUIDUtil.CODEC.fieldOf("source_entity").forGetter(EntityPositionSource::getUuid),
                Codec.FLOAT.fieldOf("y_offset").orElse(0.0F).forGetter(var0x -> var0x.yOffset)
@@ -69,7 +69,7 @@ public class EntityPositionSource implements PositionSource {
    }
 
    private int getId() {
-      return this.entityOrUuidOrId.map(Entity::getId, var0 -> (Integer)var0.map(var0x -> {
+      return (Integer)this.entityOrUuidOrId.map(Entity::getId, var0 -> (Integer)var0.map(var0x -> {
             throw new IllegalStateException("Unable to get entityId from uuid");
          }, Function.identity()));
    }
@@ -85,7 +85,7 @@ public class EntityPositionSource implements PositionSource {
       }
 
       @Override
-      public Codec<EntityPositionSource> codec() {
+      public MapCodec<EntityPositionSource> codec() {
          return EntityPositionSource.CODEC;
       }
 

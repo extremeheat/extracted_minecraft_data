@@ -20,11 +20,9 @@ import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.StreamTagVisitor;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.util.Unit;
-import net.minecraft.util.thread.ProcessorHandle;
 import net.minecraft.util.thread.ProcessorMailbox;
 import net.minecraft.util.thread.StrictQueue;
 import net.minecraft.world.level.ChunkPos;
@@ -49,8 +47,8 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       ChunkPos var3 = new ChunkPos(var1.x - var2, var1.z - var2);
       ChunkPos var4 = new ChunkPos(var1.x + var2, var1.z + var2);
 
-      for(int var5 = var3.getRegionX(); var5 <= var4.getRegionX(); ++var5) {
-         for(int var6 = var3.getRegionZ(); var6 <= var4.getRegionZ(); ++var6) {
+      for (int var5 = var3.getRegionX(); var5 <= var4.getRegionX(); var5++) {
+         for (int var6 = var3.getRegionZ(); var6 <= var4.getRegionZ(); var6++) {
             BitSet var7 = this.getOrCreateOldDataForRegion(var5, var6).join();
             if (!var7.isEmpty()) {
                ChunkPos var8 = ChunkPos.minFromRegion(var5, var6);
@@ -59,8 +57,8 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
                int var11 = Math.min(var4.x - var8.x, 31);
                int var12 = Math.min(var4.z - var8.z, 31);
 
-               for(int var13 = var9; var13 <= var11; ++var13) {
-                  for(int var14 = var10; var14 <= var12; ++var14) {
+               for (int var13 = var9; var13 <= var11; var13++) {
+                  for (int var14 = var10; var14 <= var12; var14++) {
                      int var15 = var14 * 32 + var13;
                      if (var7.get(var15)) {
                         return true;
@@ -76,7 +74,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
 
    private CompletableFuture<BitSet> getOrCreateOldDataForRegion(int var1, int var2) {
       long var3 = ChunkPos.asLong(var1, var2);
-      synchronized(this.regionCacheForBlender) {
+      synchronized (this.regionCacheForBlender) {
          CompletableFuture var6 = (CompletableFuture)this.regionCacheForBlender.getAndMoveToFirst(var3);
          if (var6 == null) {
             var6 = this.createOldDataForRegion(var1, var2);
@@ -96,17 +94,16 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
          ChunkPos var4 = ChunkPos.maxFromRegion(var1, var2);
          BitSet var5 = new BitSet();
          ChunkPos.rangeClosed(var3, var4).forEach(var2xx -> {
-            CollectFields var3xx = new CollectFields(new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector(CompoundTag.TYPE, "blending_data"));
+            CollectFields var3x = new CollectFields(new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector(CompoundTag.TYPE, "blending_data"));
 
             try {
-               this.scanChunk(var2xx, var3xx).join();
+               this.scanChunk(var2xx, var3x).join();
             } catch (Exception var7) {
                LOGGER.warn("Failed to scan chunk {}", var2xx, var7);
                return;
             }
 
-            Tag var4xx = var3xx.getResult();
-            if (var4xx instanceof CompoundTag var5xx && this.isOldChunk((CompoundTag)var5xx)) {
+            if (var3x.getResult() instanceof CompoundTag var5x && this.isOldChunk(var5x)) {
                int var6 = var2xx.getRegionLocalZ() * 32 + var2xx.getRegionLocalX();
                var5.set(var6);
             }
@@ -146,18 +143,16 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
 
    public CompletableFuture<Void> synchronize(boolean var1) {
       CompletableFuture var2 = this.submitTask(
-            () -> Either.left(
-                  CompletableFuture.allOf(this.pendingWrites.values().stream().map(var0 -> var0.result).toArray(var0 -> new CompletableFuture[var0]))
-               )
+            () -> Either.left(CompletableFuture.allOf(this.pendingWrites.values().stream().map(var0 -> var0.result).toArray(CompletableFuture[]::new)))
          )
          .thenCompose(Function.identity());
       return var1 ? var2.thenCompose(var1x -> this.submitTask(() -> {
             try {
                this.storage.flush();
                return Either.left(null);
-            } catch (Exception var2xx) {
-               LOGGER.warn("Failed to synchronize chunks", var2xx);
-               return Either.right(var2xx);
+            } catch (Exception var2x) {
+               LOGGER.warn("Failed to synchronize chunks", var2x);
+               return Either.right(var2x);
             }
          })) : var2.thenCompose(var1x -> this.submitTask(() -> Either.left(null)));
    }

@@ -42,7 +42,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((Direction)var1.getValue(FACING)) {
+      switch ((Direction)var1.getValue(FACING)) {
          case NORTH:
             return NORTH_AABB;
          case SOUTH:
@@ -94,7 +94,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
       BlockPos var4 = var1.getClickedPos();
       FluidState var5 = var1.getLevel().getFluidState(var1.getClickedPos());
 
-      for(Direction var9 : var1.getNearestLookingDirections()) {
+      for (Direction var9 : var1.getNearestLookingDirections()) {
          if (var9.getAxis().isHorizontal()) {
             var10 = var10.setValue(FACING, var9.getOpposite());
             if (var10.canSurvive(var3, var4)) {

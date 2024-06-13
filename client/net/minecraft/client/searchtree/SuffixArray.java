@@ -37,7 +37,7 @@ public class SuffixArray<T> {
       this.list.add((T)var1);
       this.wordStarts.add(this.chars.size());
 
-      for(int var4 = 0; var4 < var2.length(); ++var4) {
+      for (int var4 = 0; var4 < var2.length(); var4++) {
          this.suffixToT.add(var3);
          this.offsets.add(var4);
          this.chars.add(var2.charAt(var4));
@@ -57,33 +57,33 @@ public class SuffixArray<T> {
       IntComparator var6 = (var2x, var3x) -> var3[var2x] == var3[var3x] ? Integer.compare(var4[var2x], var4[var3x]) : Integer.compare(var3[var2x], var3[var3x]);
       Swapper var7 = (var3x, var4x) -> {
          if (var3x != var4x) {
-            int var5xx = var3[var3x];
+            int var5x = var3[var3x];
             var3[var3x] = var3[var4x];
-            var3[var4x] = var5xx;
-            var5xx = var4[var3x];
+            var3[var4x] = var5x;
+            var5x = var4[var3x];
             var4[var3x] = var4[var4x];
-            var4[var4x] = var5xx;
-            var5xx = var5[var3x];
+            var4[var4x] = var5x;
+            var5x = var5[var3x];
             var5[var3x] = var5[var4x];
-            var5[var4x] = var5xx;
+            var5[var4x] = var5x;
          }
       };
 
-      for(int var8 = 0; var8 < var1; ++var8) {
+      for (int var8 = 0; var8 < var1; var8++) {
          var2[var8] = this.chars.getInt(var8);
       }
 
-      int var14 = 1;
+      byte var14 = 1;
 
-      for(int var9 = Math.min(var1, this.maxStringLength); var14 * 2 < var9; var14 *= 2) {
-         for(int var10 = 0; var10 < var1; var5[var10] = var10++) {
+      for (int var9 = Math.min(var1, this.maxStringLength); var14 * 2 < var9; var14 *= 2) {
+         for (int var10 = 0; var10 < var1; var5[var10] = var10++) {
             var3[var10] = var2[var10];
             var4[var10] = var10 + var14 < var1 ? var2[var10 + var14] : -2;
          }
 
          Arrays.quickSort(0, var1, var6, var7);
 
-         for(int var15 = 0; var15 < var1; ++var15) {
+         for (int var15 = 0; var15 < var1; var15++) {
             if (var15 > 0 && var3[var15] == var3[var15 - 1] && var4[var15] == var4[var15 - 1]) {
                var2[var5[var15]] = var2[var5[var15 - 1]];
             } else {
@@ -97,7 +97,7 @@ public class SuffixArray<T> {
       this.suffixToT = new IntArrayList(var16.size());
       this.offsets = new IntArrayList(var11.size());
 
-      for(int var12 = 0; var12 < var1; ++var12) {
+      for (int var12 = 0; var12 < var1; var12++) {
          int var13 = var5[var12];
          this.suffixToT.add(var16.getInt(var13));
          this.offsets.add(var11.getInt(var13));
@@ -109,7 +109,7 @@ public class SuffixArray<T> {
    }
 
    private void print() {
-      for(int var1 = 0; var1 < this.suffixToT.size(); ++var1) {
+      for (int var1 = 0; var1 < this.suffixToT.size(); var1++) {
          LOGGER.debug("{} {}", var1, this.getString(var1));
       }
 
@@ -121,7 +121,7 @@ public class SuffixArray<T> {
       int var3 = this.wordStarts.getInt(this.suffixToT.getInt(var1));
       StringBuilder var4 = new StringBuilder();
 
-      for(int var5 = 0; var3 + var5 < this.chars.size(); ++var5) {
+      for (int var5 = 0; var3 + var5 < this.chars.size(); var5++) {
          if (var5 == var2) {
             var4.append('^');
          }
@@ -141,7 +141,7 @@ public class SuffixArray<T> {
       int var3 = this.wordStarts.getInt(this.suffixToT.getInt(var2));
       int var4 = this.offsets.getInt(var2);
 
-      for(int var5 = 0; var5 < var1.length(); ++var5) {
+      for (int var5 = 0; var5 < var1.length(); var5++) {
          int var6 = this.chars.getInt(var3 + var4 + var5);
          if (var6 == -1) {
             return 1;
@@ -166,7 +166,7 @@ public class SuffixArray<T> {
       int var3 = 0;
       int var4 = var2;
 
-      while(var3 < var4) {
+      while (var3 < var4) {
          int var5 = var3 + (var4 - var3) / 2;
          int var6 = this.compare(var1, var5);
          if (DEBUG_COMPARISONS) {
@@ -184,7 +184,7 @@ public class SuffixArray<T> {
          int var15 = var3;
          var4 = var2;
 
-         while(var3 < var4) {
+         while (var3 < var4) {
             int var16 = var3 + (var4 - var3) / 2;
             int var7 = this.compare(var1, var16);
             if (DEBUG_COMPARISONS) {
@@ -201,7 +201,7 @@ public class SuffixArray<T> {
          int var17 = var3;
          IntOpenHashSet var18 = new IntOpenHashSet();
 
-         for(int var8 = var15; var8 < var17; ++var8) {
+         for (int var8 = var15; var8 < var17; var8++) {
             var18.add(this.suffixToT.getInt(var8));
          }
 
@@ -209,7 +209,7 @@ public class SuffixArray<T> {
          java.util.Arrays.sort(var19);
          LinkedHashSet var9 = Sets.newLinkedHashSet();
 
-         for(int var13 : var19) {
+         for (int var13 : var19) {
             var9.add(this.list.get(var13));
          }
 

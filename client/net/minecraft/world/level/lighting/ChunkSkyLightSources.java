@@ -36,8 +36,8 @@ public class ChunkSkyLightSources {
       if (var2 == -1) {
          this.fill(this.minY);
       } else {
-         for(int var3 = 0; var3 < 16; ++var3) {
-            for(int var4 = 0; var4 < 16; ++var4) {
+         for (int var3 = 0; var3 < 16; var3++) {
+            for (int var4 = 0; var4 < 16; var4++) {
                int var5 = Math.max(this.findLowestSourceY(var1, var2, var4, var3), this.minY);
                this.set(index(var4, var3), var5);
             }
@@ -51,7 +51,7 @@ public class ChunkSkyLightSources {
       BlockPos.MutableBlockPos var7 = this.mutablePos2.setWithOffset(var6, Direction.DOWN);
       BlockState var8 = Blocks.AIR.defaultBlockState();
 
-      for(int var9 = var2; var9 >= 0; --var9) {
+      for (int var9 = var2; var9 >= 0; var9--) {
          LevelChunkSection var10 = var1.getSection(var9);
          if (var10.hasOnlyAir()) {
             var8 = Blocks.AIR.defaultBlockState();
@@ -59,7 +59,7 @@ public class ChunkSkyLightSources {
             var6.setY(SectionPos.sectionToBlockCoord(var13));
             var7.setY(var6.getY() - 1);
          } else {
-            for(int var11 = 15; var11 >= 0; --var11) {
+            for (int var11 = 15; var11 >= 0; var11--) {
                BlockState var12 = var10.getBlockState(var3, var11, var4);
                if (isEdgeOccluded(var1, var6, var8, var7, var12)) {
                   return var6.getY();
@@ -116,7 +116,7 @@ public class ChunkSkyLightSources {
       BlockPos.MutableBlockPos var5 = this.mutablePos2.setWithOffset(var2, Direction.DOWN);
       BlockState var6 = var3;
 
-      while(var5.getY() >= this.minY) {
+      while (var5.getY() >= this.minY) {
          BlockState var7 = var1.getBlockState(var5);
          if (isEdgeOccluded(var1, var4, var6, var5, var7)) {
             return var4.getY();
@@ -148,7 +148,7 @@ public class ChunkSkyLightSources {
    public int getHighestLowestSourceY() {
       int var1 = -2147483648;
 
-      for(int var2 = 0; var2 < this.heightmap.getSize(); ++var2) {
+      for (int var2 = 0; var2 < this.heightmap.getSize(); var2++) {
          int var3 = this.heightmap.get(var2);
          if (var3 > var1) {
             var1 = var3;
@@ -161,7 +161,7 @@ public class ChunkSkyLightSources {
    private void fill(int var1) {
       int var2 = var1 - this.minY;
 
-      for(int var3 = 0; var3 < this.heightmap.getSize(); ++var3) {
+      for (int var3 = 0; var3 < this.heightmap.getSize(); var3++) {
          this.heightmap.set(var3, var2);
       }
    }

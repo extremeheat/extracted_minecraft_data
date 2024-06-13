@@ -41,7 +41,7 @@ public final class FeatureFlagSet {
    }
 
    private static long computeMask(FeatureFlagUniverse var0, long var1, Iterable<FeatureFlag> var3) {
-      for(FeatureFlag var5 : var3) {
+      for (FeatureFlag var5 : var3) {
          if (var0 != var5.universe) {
             throw new IllegalStateException("Mismatched feature universe, expected '" + var0 + "', but got '" + var5.universe + "'");
          }
@@ -53,11 +53,7 @@ public final class FeatureFlagSet {
    }
 
    public boolean contains(FeatureFlag var1) {
-      if (this.universe != var1.universe) {
-         return false;
-      } else {
-         return (this.mask & var1.mask) != 0L;
-      }
+      return this.universe != var1.universe ? false : (this.mask & var1.mask) != 0L;
    }
 
    public boolean isEmpty() {
@@ -67,10 +63,8 @@ public final class FeatureFlagSet {
    public boolean isSubsetOf(FeatureFlagSet var1) {
       if (this.universe == null) {
          return true;
-      } else if (this.universe != var1.universe) {
-         return false;
       } else {
-         return (this.mask & ~var1.mask) == 0L;
+         return this.universe != var1.universe ? false : (this.mask & ~var1.mask) == 0L;
       }
    }
 

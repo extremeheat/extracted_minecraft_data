@@ -41,16 +41,16 @@ public interface WeatheringCopper extends ChangeOverTimeBlock<WeatheringCopper.W
             .put(Blocks.WEATHERED_COPPER_BULB, Blocks.OXIDIZED_COPPER_BULB)
             .build()
    );
-   Supplier<BiMap<Block, Block>> PREVIOUS_BY_BLOCK = Suppliers.memoize(() -> ((BiMap)NEXT_BY_BLOCK.get()).inverse());
+   Supplier<BiMap<Block, Block>> PREVIOUS_BY_BLOCK = Suppliers.memoize(() -> NEXT_BY_BLOCK.get().inverse());
 
    static Optional<Block> getPrevious(Block var0) {
-      return Optional.ofNullable((Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(var0));
+      return Optional.ofNullable((Block)PREVIOUS_BY_BLOCK.get().get(var0));
    }
 
    static Block getFirst(Block var0) {
       Block var1 = var0;
 
-      for(Block var2 = (Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(var0); var2 != null; var2 = (Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(var2)) {
+      for (Block var2 = (Block)PREVIOUS_BY_BLOCK.get().get(var0); var2 != null; var2 = (Block)PREVIOUS_BY_BLOCK.get().get(var2)) {
          var1 = var2;
       }
 
@@ -62,7 +62,7 @@ public interface WeatheringCopper extends ChangeOverTimeBlock<WeatheringCopper.W
    }
 
    static Optional<Block> getNext(Block var0) {
-      return Optional.ofNullable((Block)((BiMap)NEXT_BY_BLOCK.get()).get(var0));
+      return Optional.ofNullable((Block)NEXT_BY_BLOCK.get().get(var0));
    }
 
    static BlockState getFirst(BlockState var0) {

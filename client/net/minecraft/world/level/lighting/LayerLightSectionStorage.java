@@ -35,8 +35,8 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
       super();
       this.layer = var1;
       this.chunkSource = var2;
-      this.updatingSectionData = var3;
-      this.visibleSectionData = var3.copy();
+      this.updatingSectionData = (M)var3;
+      this.visibleSectionData = (M)var3.copy();
       this.visibleSectionData.disableCache();
       this.sectionStates.defaultReturnValue((byte)0);
    }
@@ -47,7 +47,7 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
 
    @Nullable
    protected DataLayer getDataLayer(long var1, boolean var3) {
-      return this.getDataLayer((M)(var3 ? this.updatingSectionData : this.visibleSectionData), var1);
+      return this.getDataLayer(var3 ? this.updatingSectionData : this.visibleSectionData, var1);
    }
 
    @Nullable
@@ -110,9 +110,9 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
       int var4 = SectionPos.y(var1);
       int var5 = SectionPos.z(var1);
 
-      for(int var6 = -1; var6 <= 1; ++var6) {
-         for(int var7 = -1; var7 <= 1; ++var7) {
-            for(int var8 = -1; var8 <= 1; ++var8) {
+      for (int var6 = -1; var6 <= 1; var6++) {
+         for (int var7 = -1; var7 <= 1; var7++) {
+            for (int var8 = -1; var8 <= 1; var8++) {
                this.sectionsAffectedByLightUpdates.add(SectionPos.asLong(var3 + var7, var4 + var8, var5 + var6));
             }
          }
@@ -133,8 +133,8 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          this.hasInconsistencies = false;
          LongIterator var2 = this.toRemove.iterator();
 
-         while(var2.hasNext()) {
-            long var3 = var2.next();
+         while (var2.hasNext()) {
+            long var3 = (Long)var2.next();
             DataLayer var5 = (DataLayer)this.queuedSections.remove(var3);
             DataLayer var6 = this.updatingSectionData.removeLayer(var3);
             if (this.columnsToRetainQueuedDataFor.contains(SectionPos.getZeroNode(var3))) {
@@ -149,8 +149,8 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          this.updatingSectionData.clearCache();
          var2 = this.toRemove.iterator();
 
-         while(var2.hasNext()) {
-            long var9 = var2.next();
+         while (var2.hasNext()) {
+            long var9 = (Long)var2.next();
             this.onNodeRemoved(var9);
             this.changedSections.add(var9);
          }
@@ -158,7 +158,7 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          this.toRemove.clear();
          ObjectIterator var8 = Long2ObjectMaps.fastIterator(this.queuedSections);
 
-         while(var8.hasNext()) {
+         while (var8.hasNext()) {
             Entry var10 = (Entry)var8.next();
             long var4 = var10.getLongKey();
             if (this.storingLightForSection(var4)) {
@@ -219,9 +219,9 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          this.putSectionState(var1, var5);
          int var6 = var3 ? -1 : 1;
 
-         for(int var7 = -1; var7 <= 1; ++var7) {
-            for(int var8 = -1; var8 <= 1; ++var8) {
-               for(int var9 = -1; var9 <= 1; ++var9) {
+         for (int var7 = -1; var7 <= 1; var7++) {
+            for (int var8 = -1; var8 <= 1; var8++) {
+               for (int var9 = -1; var9 <= 1; var9++) {
                   if (var7 != 0 || var8 != 0 || var9 != 0) {
                      long var10 = SectionPos.offset(var1, var7, var8, var9);
                      byte var12 = this.sectionStates.get(var10);
@@ -264,14 +264,14 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
       if (!this.changedSections.isEmpty()) {
          DataLayerStorageMap var1 = this.updatingSectionData.copy();
          var1.disableCache();
-         this.visibleSectionData = var1;
+         this.visibleSectionData = (M)var1;
          this.changedSections.clear();
       }
 
       if (!this.sectionsAffectedByLightUpdates.isEmpty()) {
          LongIterator var4 = this.sectionsAffectedByLightUpdates.iterator();
 
-         while(var4.hasNext()) {
+         while (var4.hasNext()) {
             long var2 = var4.nextLong();
             this.chunkSource.onLightUpdate(this.layer, SectionPos.of(var2));
          }

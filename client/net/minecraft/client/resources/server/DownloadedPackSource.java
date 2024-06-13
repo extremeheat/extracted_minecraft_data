@@ -122,7 +122,7 @@ public class DownloadedPackSource implements AutoCloseable {
 
          @Override
          public void requestStart() {
-            ++this.count;
+            this.count++;
             this.title = Component.translatable("download.pack.title", this.count, var1);
             this.updateToast();
             DownloadedPackSource.LOGGER.debug("Starting pack {}/{} download", this.count, var1);
@@ -145,7 +145,7 @@ public class DownloadedPackSource implements AutoCloseable {
          public void requestFinished(boolean var1x) {
             if (!var1x) {
                DownloadedPackSource.LOGGER.info("Pack {} failed to download", this.count);
-               ++this.failCount;
+               this.failCount++;
             } else {
                DownloadedPackSource.LOGGER.debug("Download ended for pack {}", this.count);
             }
@@ -214,7 +214,7 @@ public class DownloadedPackSource implements AutoCloseable {
          }
 
          private void runAllUpdates() {
-            while(this.hasUpdates) {
+            while (this.hasUpdates) {
                this.hasUpdates = false;
                DownloadedPackSource.this.manager.tick();
             }
@@ -232,7 +232,7 @@ public class DownloadedPackSource implements AutoCloseable {
    private List<Pack> loadRequestedPacks(List<PackReloadConfig.IdAndPath> var1) {
       ArrayList var2 = new ArrayList(var1.size());
 
-      for(PackReloadConfig.IdAndPath var4 : Lists.reverse(var1)) {
+      for (PackReloadConfig.IdAndPath var4 : Lists.reverse(var1)) {
          String var5 = String.format(Locale.ROOT, "server/%08X/%s", this.packIdSerialNumber++, var4.id());
          Path var6 = var4.path();
          PackLocationInfo var7 = new PackLocationInfo(var5, SERVER_NAME, this.packType, Optional.empty());
@@ -332,7 +332,7 @@ public class DownloadedPackSource implements AutoCloseable {
          public void reportUpdate(UUID var1, PackLoadFeedback.Update var2) {
             DownloadedPackSource.LOGGER.debug("Pack {} changed status to {}", var1, var2);
 
-            ServerboundResourcePackPacket.Action var3 = switch(var2) {
+            ServerboundResourcePackPacket.Action var3 = switch (var2) {
                case ACCEPTED -> ServerboundResourcePackPacket.Action.ACCEPTED;
                case DOWNLOADED -> ServerboundResourcePackPacket.Action.DOWNLOADED;
             };
@@ -343,7 +343,7 @@ public class DownloadedPackSource implements AutoCloseable {
          public void reportFinalResult(UUID var1, PackLoadFeedback.FinalResult var2) {
             DownloadedPackSource.LOGGER.debug("Pack {} changed status to {}", var1, var2);
 
-            ServerboundResourcePackPacket.Action var3 = switch(var2) {
+            ServerboundResourcePackPacket.Action var3 = switch (var2) {
                case APPLIED -> ServerboundResourcePackPacket.Action.SUCCESSFULLY_LOADED;
                case DOWNLOAD_FAILED -> ServerboundResourcePackPacket.Action.FAILED_DOWNLOAD;
                case DECLINED -> ServerboundResourcePackPacket.Action.DECLINED;
@@ -358,7 +358,7 @@ public class DownloadedPackSource implements AutoCloseable {
    public void configureForServerControl(Connection var1, ServerPackManager.PackPromptStatus var2) {
       this.packType = PackSource.SERVER;
       this.packFeedback = createPackResponseSender(var1);
-      switch(var2) {
+      switch (var2) {
          case ALLOWED:
             this.manager.allowServerPacks();
             break;

@@ -7,14 +7,13 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundDisconnectPacket(Component b) implements Packet<ClientCommonPacketListener> {
-   private final Component reason;
+public record ClientboundDisconnectPacket(Component reason) implements Packet<ClientCommonPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundDisconnectPacket> STREAM_CODEC = ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC
       .map(ClientboundDisconnectPacket::new, ClientboundDisconnectPacket::reason);
 
-   public ClientboundDisconnectPacket(Component var1) {
+   public ClientboundDisconnectPacket(Component reason) {
       super();
-      this.reason = var1;
+      this.reason = reason;
    }
 
    @Override

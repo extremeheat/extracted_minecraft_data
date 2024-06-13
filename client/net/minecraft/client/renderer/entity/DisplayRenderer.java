@@ -59,7 +59,7 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
    private Quaternionf calculateOrientation(Display.RenderState var1, T var2, float var3, Quaternionf var4) {
       Camera var5 = this.entityRenderDispatcher.camera;
 
-      return switch(var1.billboardConstraints()) {
+      return switch (var1.billboardConstraints()) {
          case FIXED -> var4.rotationYXZ(-0.017453292F * entityYRot(var2, var3), 0.017453292F * entityXRot(var2, var3), 0.0F);
          case HORIZONTAL -> var4.rotationYXZ(-0.017453292F * entityYRot(var2, var3), 0.017453292F * cameraXRot(var5), 0.0F);
          case VERTICAL -> var4.rotationYXZ(-0.017453292F * cameraYrot(var5), 0.017453292F * entityXRot(var2, var3), 0.0F);
@@ -140,7 +140,7 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
          ArrayList var4 = new ArrayList(var3.size());
          int var5 = 0;
 
-         for(FormattedCharSequence var7 : var3) {
+         for (FormattedCharSequence var7 : var3) {
             int var8 = this.font.width(var7);
             var5 = Math.max(var5, var8);
             var4.add(new Display.TextDisplay.CachedLine(var7, var8));
@@ -186,8 +186,8 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
             var20.vertex(var15, (float)var18, -1.0F, 0.0F).color(var13).uv2(var5).endVertex();
          }
 
-         for(Display.TextDisplay.CachedLine var21 : var16.lines()) {
-            float var22 = switch(var11) {
+         for (Display.TextDisplay.CachedLine var21 : var16.lines()) {
+            float var22 = switch (var11) {
                case LEFT -> 0.0F;
                case RIGHT -> (float)(var18 - var21.width());
                case CENTER -> (float)var18 / 2.0F - (float)var21.width() / 2.0F;

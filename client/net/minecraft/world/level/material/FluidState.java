@@ -59,8 +59,8 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
    }
 
    public boolean shouldRenderBackwardUpFace(BlockGetter var1, BlockPos var2) {
-      for(int var3 = -1; var3 <= 1; ++var3) {
-         for(int var4 = -1; var4 <= 1; ++var4) {
+      for (int var3 = -1; var3 <= 1; var3++) {
+         for (int var4 = -1; var4 <= 1; var4++) {
             BlockPos var5 = var2.offset(var3, 0, var4);
             FluidState var6 = var1.getFluidState(var5);
             if (!var6.getType().isSame(this.getType()) && !var1.getBlockState(var5).isSolidRender(var1, var5)) {

@@ -20,7 +20,7 @@ public enum FrontAndTop implements StringRepresentable {
    SOUTH_UP("south_up", Direction.SOUTH, Direction.UP);
 
    private static final Int2ObjectMap<FrontAndTop> LOOKUP_TOP_FRONT = Util.make(new Int2ObjectOpenHashMap(values().length), var0 -> {
-      for(FrontAndTop var4 : values()) {
+      for (FrontAndTop var4 : values()) {
          var0.put(lookupKey(var4.front, var4.top), var4);
       }
    });

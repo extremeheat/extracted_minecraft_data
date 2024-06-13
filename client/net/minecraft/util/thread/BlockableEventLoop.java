@@ -104,7 +104,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
    }
 
    protected void runAllTasks() {
-      while(this.pollTask()) {
+      while (this.pollTask()) {
       }
    }
 
@@ -121,16 +121,16 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
    }
 
    public void managedBlock(BooleanSupplier var1) {
-      ++this.blockingCount;
+      this.blockingCount++;
 
       try {
-         while(!var1.getAsBoolean()) {
+         while (!var1.getAsBoolean()) {
             if (!this.pollTask()) {
                this.waitForTasks();
             }
          }
       } finally {
-         --this.blockingCount;
+         this.blockingCount--;
       }
    }
 
@@ -144,6 +144,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
          var1.run();
       } catch (Exception var3) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var3);
+         throw var3;
       }
    }
 

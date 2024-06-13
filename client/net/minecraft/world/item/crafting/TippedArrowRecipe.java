@@ -5,7 +5,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 
 public class TippedArrowRecipe extends CustomRecipe {
@@ -15,8 +14,8 @@ public class TippedArrowRecipe extends CustomRecipe {
 
    public boolean matches(CraftingContainer var1, Level var2) {
       if (var1.getWidth() == 3 && var1.getHeight() == 3) {
-         for(int var3 = 0; var3 < var1.getWidth(); ++var3) {
-            for(int var4 = 0; var4 < var1.getHeight(); ++var4) {
+         for (int var3 = 0; var3 < var1.getWidth(); var3++) {
+            for (int var4 = 0; var4 < var1.getHeight(); var4++) {
                ItemStack var5 = var1.getItem(var3 + var4 * var1.getWidth());
                if (var5.isEmpty()) {
                   return false;
@@ -44,7 +43,7 @@ public class TippedArrowRecipe extends CustomRecipe {
          return ItemStack.EMPTY;
       } else {
          ItemStack var4 = new ItemStack(Items.TIPPED_ARROW, 8);
-         var4.set(DataComponents.POTION_CONTENTS, (PotionContents)var3.get(DataComponents.POTION_CONTENTS));
+         var4.set(DataComponents.POTION_CONTENTS, var3.get(DataComponents.POTION_CONTENTS));
          return var4;
       }
    }

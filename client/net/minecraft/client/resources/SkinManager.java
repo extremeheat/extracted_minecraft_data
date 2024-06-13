@@ -46,17 +46,17 @@ public class SkinManager {
          .expireAfterAccess(Duration.ofSeconds(15L))
          .build(new CacheLoader<SkinManager.CacheKey, CompletableFuture<PlayerSkin>>() {
             public CompletableFuture<PlayerSkin> load(SkinManager.CacheKey var1) {
-               return CompletableFuture.supplyAsync(() -> {
+               return CompletableFuture.<MinecraftProfileTextures>supplyAsync(() -> {
                   Property var2 = var1.packedTextures();
                   if (var2 == null) {
                      return MinecraftProfileTextures.EMPTY;
                   } else {
-                     MinecraftProfileTextures var3xx = var3.unpackTextures(var2);
-                     if (var3xx.signatureState() == SignatureState.INVALID) {
+                     MinecraftProfileTextures var3x = var3.unpackTextures(var2);
+                     if (var3x.signatureState() == SignatureState.INVALID) {
                         SkinManager.LOGGER.warn("Profile contained invalid signature for textures property (profile id: {})", var1.profileId());
                      }
-   
-                     return var3xx;
+
+                     return var3x;
                   }
                }, Util.backgroundExecutor()).thenComposeAsync(var2 -> SkinManager.this.registerTextures(var1.profileId(), var2), var4);
             }
@@ -66,11 +66,11 @@ public class SkinManager {
    public Supplier<PlayerSkin> lookupInsecure(GameProfile var1) {
       CompletableFuture var2 = this.getOrLoad(var1);
       PlayerSkin var3 = DefaultPlayerSkin.get(var1);
-      return () -> (PlayerSkin)var2.getNow(var3);
+      return () -> var2.getNow(var3);
    }
 
    public PlayerSkin getInsecureSkin(GameProfile var1) {
-      PlayerSkin var2 = (PlayerSkin)this.getOrLoad(var1).getNow(null);
+      PlayerSkin var2 = this.getOrLoad(var1).getNow(null);
       return var2 != null ? var2 : DefaultPlayerSkin.get(var1);
    }
 
@@ -110,15 +110,11 @@ public class SkinManager {
          );
    }
 
-   static record CacheKey(UUID a, @Nullable Property b) {
-      private final UUID profileId;
-      @Nullable
-      private final Property packedTextures;
-
-      CacheKey(UUID var1, @Nullable Property var2) {
+   static record CacheKey(UUID profileId, @Nullable Property packedTextures) {
+      CacheKey(UUID profileId, @Nullable Property packedTextures) {
          super();
-         this.profileId = var1;
-         this.packedTextures = var2;
+         this.profileId = profileId;
+         this.packedTextures = packedTextures;
       }
    }
 
@@ -159,11 +155,11 @@ public class SkinManager {
       }
 
       private ResourceLocation getTextureLocation(String var1) {
-         String var2 = switch(this.type) {
+         String var2 = switch (this.type) {
             case SKIN -> "skins";
             case CAPE -> "capes";
             case ELYTRA -> "elytra";
-            default -> throw new IncompatibleClassChangeError();
+            default -> throw new MatchException(null, null);
          };
          return new ResourceLocation(var2 + "/" + var1);
       }

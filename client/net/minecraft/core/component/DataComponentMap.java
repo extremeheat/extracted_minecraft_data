@@ -2,12 +2,15 @@ package net.minecraft.core.component;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterators;
@@ -34,6 +37,22 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
          return Collections.emptyIterator();
       }
    };
+   Codec<DataComponentMap> CODEC = DataComponentType.VALUE_MAP_CODEC.flatComapMap(DataComponentMap.Builder::buildFromMapTrusted, var0 -> {
+      int var1 = var0.size();
+      if (var1 == 0) {
+         return DataResult.success(Reference2ObjectMaps.emptyMap());
+      } else {
+         Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(var1);
+
+         for (TypedDataComponent var4 : var0) {
+            if (!var4.type().isTransient()) {
+               var2.put(var4.type(), var4.value());
+            }
+         }
+
+         return DataResult.success(var2);
+      }
+   });
 
    static DataComponentMap.Builder builder() {
       return new DataComponentMap.Builder();
@@ -99,17 +118,20 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       }
 
       public <T> DataComponentMap.Builder set(DataComponentType<T> var1, @Nullable T var2) {
+         this.setUnchecked(var1, var2);
+         return this;
+      }
+
+      <T> void setUnchecked(DataComponentType<T> var1, @Nullable Object var2) {
          if (var2 != null) {
             this.map.put(var1, var2);
          } else {
             this.map.remove(var1);
          }
-
-         return this;
       }
 
       public DataComponentMap.Builder addAll(DataComponentMap var1) {
-         for(TypedDataComponent var3 : var1) {
+         for (TypedDataComponent var3 : var1) {
             this.map.put(var3.type(), var3.value());
          }
 
@@ -117,21 +139,23 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       }
 
       public DataComponentMap build() {
-         if (this.map.isEmpty()) {
+         return buildFromMapTrusted(this.map);
+      }
+
+      private static DataComponentMap buildFromMapTrusted(Map<DataComponentType<?>, Object> var0) {
+         if (var0.isEmpty()) {
             return DataComponentMap.EMPTY;
          } else {
-            return this.map.size() < 8
-               ? new DataComponentMap.Builder.SimpleMap(new Reference2ObjectArrayMap(this.map))
-               : new DataComponentMap.Builder.SimpleMap(new Reference2ObjectOpenHashMap(this.map));
+            return var0.size() < 8
+               ? new DataComponentMap.Builder.SimpleMap(new Reference2ObjectArrayMap(var0))
+               : new DataComponentMap.Builder.SimpleMap(new Reference2ObjectOpenHashMap(var0));
          }
       }
 
-      static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> b) implements DataComponentMap {
-         private final Reference2ObjectMap<DataComponentType<?>, Object> map;
-
-         SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> var1) {
+      static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) implements DataComponentMap {
+         SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) {
             super();
-            this.map = var1;
+            this.map = map;
          }
 
          @Nullable

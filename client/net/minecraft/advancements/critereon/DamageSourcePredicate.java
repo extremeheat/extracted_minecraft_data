@@ -3,35 +3,30 @@ package net.minecraft.advancements.critereon;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.phys.Vec3;
 
-public record DamageSourcePredicate(List<TagPredicate<DamageType>> b, Optional<EntityPredicate> c, Optional<EntityPredicate> d) {
-   private final List<TagPredicate<DamageType>> tags;
-   private final Optional<EntityPredicate> directEntity;
-   private final Optional<EntityPredicate> sourceEntity;
+public record DamageSourcePredicate(List<TagPredicate<DamageType>> tags, Optional<EntityPredicate> directEntity, Optional<EntityPredicate> sourceEntity) {
    public static final Codec<DamageSourcePredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(TagPredicate.codec(Registries.DAMAGE_TYPE).listOf(), "tags", List.of()).forGetter(DamageSourcePredicate::tags),
-               ExtraCodecs.strictOptionalField(EntityPredicate.CODEC, "direct_entity").forGetter(DamageSourcePredicate::directEntity),
-               ExtraCodecs.strictOptionalField(EntityPredicate.CODEC, "source_entity").forGetter(DamageSourcePredicate::sourceEntity)
+               TagPredicate.codec(Registries.DAMAGE_TYPE).listOf().optionalFieldOf("tags", List.of()).forGetter(DamageSourcePredicate::tags),
+               EntityPredicate.CODEC.optionalFieldOf("direct_entity").forGetter(DamageSourcePredicate::directEntity),
+               EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamageSourcePredicate::sourceEntity)
             )
             .apply(var0, DamageSourcePredicate::new)
    );
 
-   public DamageSourcePredicate(List<TagPredicate<DamageType>> var1, Optional<EntityPredicate> var2, Optional<EntityPredicate> var3) {
+   public DamageSourcePredicate(List<TagPredicate<DamageType>> tags, Optional<EntityPredicate> directEntity, Optional<EntityPredicate> sourceEntity) {
       super();
-      this.tags = var1;
-      this.directEntity = var2;
-      this.sourceEntity = var3;
+      this.tags = tags;
+      this.directEntity = directEntity;
+      this.sourceEntity = sourceEntity;
    }
 
    public boolean matches(ServerPlayer var1, DamageSource var2) {
@@ -39,17 +34,15 @@ public record DamageSourcePredicate(List<TagPredicate<DamageType>> b, Optional<E
    }
 
    public boolean matches(ServerLevel var1, Vec3 var2, DamageSource var3) {
-      for(TagPredicate var5 : this.tags) {
+      for (TagPredicate var5 : this.tags) {
          if (!var5.matches(var3.typeHolder())) {
             return false;
          }
       }
 
-      if (this.directEntity.isPresent() && !((EntityPredicate)this.directEntity.get()).matches(var1, var2, var3.getDirectEntity())) {
-         return false;
-      } else {
-         return !this.sourceEntity.isPresent() || ((EntityPredicate)this.sourceEntity.get()).matches(var1, var2, var3.getEntity());
-      }
+      return this.directEntity.isPresent() && !this.directEntity.get().matches(var1, var2, var3.getDirectEntity())
+         ? false
+         : !this.sourceEntity.isPresent() || this.sourceEntity.get().matches(var1, var2, var3.getEntity());
    }
 
    public static class Builder {

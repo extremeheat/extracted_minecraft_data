@@ -4,6 +4,7 @@ import com.mojang.authlib.minecraft.TelemetryEvent;
 import com.mojang.authlib.minecraft.TelemetrySession;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,7 @@ public class TelemetryEventType {
    private final String exportKey;
    private final List<TelemetryProperty<?>> properties;
    private final boolean isOptIn;
-   private final Codec<TelemetryEventInstance> codec;
+   private final MapCodec<TelemetryEventInstance> codec;
 
    TelemetryEventType(String var1, String var2, List<TelemetryProperty<?>> var3, boolean var4) {
       super();
@@ -101,7 +102,7 @@ public class TelemetryEventType {
       return this.properties;
    }
 
-   public Codec<TelemetryEventInstance> codec() {
+   public MapCodec<TelemetryEventInstance> codec() {
       return this.codec;
    }
 
@@ -112,7 +113,7 @@ public class TelemetryEventType {
    public TelemetryEvent export(TelemetrySession var1, TelemetryPropertyMap var2) {
       TelemetryEvent var3 = var1.createNewEvent(this.exportKey);
 
-      for(TelemetryProperty var5 : this.properties) {
+      for (TelemetryProperty var5 : this.properties) {
          var5.export(var2, var3);
       }
 
@@ -147,7 +148,7 @@ public class TelemetryEventType {
    public static class Builder {
       private final String id;
       private final String exportKey;
-      private final List<TelemetryProperty<?>> properties = new ArrayList();
+      private final List<TelemetryProperty<?>> properties = new ArrayList<>();
       private boolean isOptIn;
 
       Builder(String var1, String var2) {

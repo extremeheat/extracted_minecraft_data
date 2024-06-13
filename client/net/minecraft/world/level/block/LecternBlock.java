@@ -124,7 +124,7 @@ public class LecternBlock extends BaseEntityBlock {
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((Direction)var1.getValue(FACING)) {
+      switch ((Direction)var1.getValue(FACING)) {
          case NORTH:
             return SHAPE_NORTH;
          case SOUTH:
@@ -170,11 +170,8 @@ public class LecternBlock extends BaseEntityBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void placeBook(@Nullable Entity var0, Level var1, BlockPos var2, BlockState var3, ItemStack var4) {
-      BlockEntity var5 = var1.getBlockEntity(var2);
-      if (var5 instanceof LecternBlockEntity var6) {
+      if (var1.getBlockEntity(var2) instanceof LecternBlockEntity var6) {
          var6.setBook(var4.split(1));
          resetBookState(var0, var1, var2, var3, true);
          var1.playSound(null, var2, SoundEvents.BOOK_PUT, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -223,11 +220,8 @@ public class LecternBlock extends BaseEntityBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void popBook(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var4 = var2.getBlockEntity(var3);
-      if (var4 instanceof LecternBlockEntity var5) {
+      if (var2.getBlockEntity(var3) instanceof LecternBlockEntity var5) {
          Direction var6 = var1.getValue(FACING);
          ItemStack var7 = var5.getBook().copy();
          float var8 = 0.25F * (float)var6.getStepX();

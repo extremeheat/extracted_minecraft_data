@@ -2,7 +2,6 @@ package net.minecraft.world.item.armortrim;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
@@ -25,7 +23,7 @@ public class ArmorTrim implements TooltipProvider {
       var0 -> var0.group(
                TrimMaterial.CODEC.fieldOf("material").forGetter(ArmorTrim::material),
                TrimPattern.CODEC.fieldOf("pattern").forGetter(ArmorTrim::pattern),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
+               Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
             )
             .apply(var0, ArmorTrim::new)
    );
@@ -66,14 +64,14 @@ public class ArmorTrim implements TooltipProvider {
       this.material = var1;
       this.pattern = var2;
       this.innerTexture = Util.memoize(var2x -> {
-         ResourceLocation var3xx = ((TrimPattern)var2.value()).assetId();
+         ResourceLocation var3x = ((TrimPattern)var2.value()).assetId();
          String var4 = getColorPaletteSuffix(var1, var2x);
-         return var3xx.withPath(var1xx -> "trims/models/armor/" + var1xx + "_leggings_" + var4);
+         return var3x.withPath(var1xx -> "trims/models/armor/" + var1xx + "_leggings_" + var4);
       });
       this.outerTexture = Util.memoize(var2x -> {
-         ResourceLocation var3xx = ((TrimPattern)var2.value()).assetId();
+         ResourceLocation var3x = ((TrimPattern)var2.value()).assetId();
          String var4 = getColorPaletteSuffix(var1, var2x);
-         return var3xx.withPath(var1xx -> "trims/models/armor/" + var1xx + "_" + var4);
+         return var3x.withPath(var1xx -> "trims/models/armor/" + var1xx + "_" + var4);
       });
       this.showInTooltip = var3;
    }
@@ -110,12 +108,9 @@ public class ArmorTrim implements TooltipProvider {
 
    @Override
    public boolean equals(Object var1) {
-      if (!(var1 instanceof ArmorTrim)) {
-         return false;
-      } else {
-         ArmorTrim var2 = (ArmorTrim)var1;
-         return this.showInTooltip == var2.showInTooltip && this.pattern.equals(var2.pattern) && this.material.equals(var2.material);
-      }
+      return !(var1 instanceof ArmorTrim var2)
+         ? false
+         : this.showInTooltip == var2.showInTooltip && this.pattern.equals(var2.pattern) && this.material.equals(var2.material);
    }
 
    @Override
@@ -129,8 +124,8 @@ public class ArmorTrim implements TooltipProvider {
    public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
       if (this.showInTooltip) {
          var1.accept(UPGRADE_TITLE);
-         var1.accept(CommonComponents.space().append(((TrimPattern)this.pattern.value()).copyWithStyle(this.material)));
-         var1.accept(CommonComponents.space().append(((TrimMaterial)this.material.value()).description()));
+         var1.accept(CommonComponents.space().append(this.pattern.value().copyWithStyle(this.material)));
+         var1.accept(CommonComponents.space().append(this.material.value().description()));
       }
    }
 

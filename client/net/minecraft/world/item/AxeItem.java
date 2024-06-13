@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
 import java.util.Optional;
@@ -88,7 +87,7 @@ public class AxeItem extends DiggerItem {
             var1.levelEvent(var3, 3005, var2, 0);
             return var6;
          } else {
-            Optional var7 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var4.getBlock()))
+            Optional var7 = Optional.ofNullable((Block)HoneycombItem.WAX_OFF_BY_BLOCK.get().get(var4.getBlock()))
                .map(var1x -> ((Block)var1x).withPropertiesOf(var4));
             if (var7.isPresent()) {
                var1.playSound(var3, var2, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);

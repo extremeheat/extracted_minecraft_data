@@ -86,8 +86,6 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       this.entityModels = var7;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T extends Entity> EntityRenderer<? super T> getRenderer(T var1) {
       if (var1 instanceof AbstractClientPlayer var2) {
          PlayerSkin.Model var3 = var2.getSkin().model();
@@ -181,7 +179,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          double var7 = -Mth.lerp((double)var3, var2.yOld, var2.getY());
          double var9 = -Mth.lerp((double)var3, var2.zOld, var2.getZ());
 
-         for(EnderDragonPart var14 : ((EnderDragon)var2).getSubEntities()) {
+         for (EnderDragonPart var14 : ((EnderDragon)var2).getSubEntities()) {
             var0.pushPose();
             double var15 = var5 + Mth.lerp((double)var3, var14.xOld, var14.getX());
             double var17 = var7 + Mth.lerp((double)var3, var14.yOld, var14.getY());
@@ -256,7 +254,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       int var13 = 0;
       VertexConsumer var14 = var2.getBuffer(Sheets.cutoutBlockSheet());
 
-      for(PoseStack.Pose var15 = var1.last(); var10 > 0.0F; ++var13) {
+      for (PoseStack.Pose var15 = var1.last(); var10 > 0.0F; var13++) {
          TextureAtlasSprite var16 = var13 % 2 == 0 ? var5 : var6;
          float var17 = var16.getU0();
          float var18 = var16.getV0();
@@ -300,12 +298,12 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       VertexConsumer var21 = var1.getBuffer(SHADOW_RENDER_TYPE);
       BlockPos.MutableBlockPos var22 = new BlockPos.MutableBlockPos();
 
-      for(int var23 = var18; var23 <= var19; ++var23) {
-         for(int var24 = var14; var24 <= var15; ++var24) {
+      for (int var23 = var18; var23 <= var19; var23++) {
+         for (int var24 = var14; var24 <= var15; var24++) {
             var22.set(var24, 0, var23);
             ChunkAccess var25 = var5.getChunk(var22);
 
-            for(int var26 = var16; var26 <= var17; ++var26) {
+            for (int var26 = var16; var26 <= var17; var26++) {
                var22.setY(var26);
                float var27 = var3 - (float)(var9 - (double)var22.getY()) * 0.5F;
                renderBlockShadow(var20, var21, var25, var5, var22, var7, var9, var11, var6, var27);

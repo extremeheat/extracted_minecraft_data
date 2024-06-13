@@ -3,8 +3,8 @@ package net.minecraft.core.particles;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Locale;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -12,9 +12,8 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-public record SculkChargeParticleOptions(float d) implements ParticleOptions {
-   private final float roll;
-   public static final Codec<SculkChargeParticleOptions> CODEC = RecordCodecBuilder.create(
+public record SculkChargeParticleOptions(float roll) implements ParticleOptions {
+   public static final MapCodec<SculkChargeParticleOptions> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(Codec.FLOAT.fieldOf("roll").forGetter(var0x -> var0x.roll)).apply(var0, SculkChargeParticleOptions::new)
    );
    public static final StreamCodec<RegistryFriendlyByteBuf, SculkChargeParticleOptions> STREAM_CODEC = StreamCodec.composite(
@@ -28,9 +27,9 @@ public record SculkChargeParticleOptions(float d) implements ParticleOptions {
       }
    };
 
-   public SculkChargeParticleOptions(float var1) {
+   public SculkChargeParticleOptions(float roll) {
       super();
-      this.roll = var1;
+      this.roll = roll;
    }
 
    @Override

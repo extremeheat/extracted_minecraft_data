@@ -1,9 +1,8 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
@@ -16,12 +15,11 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntry;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetContainerContents extends LootItemConditionalFunction {
-   public static final Codec<SetContainerContents> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SetContainerContents> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(
                var0.group(
@@ -61,7 +59,7 @@ public class SetContainerContents extends LootItemConditionalFunction {
    public void validate(ValidationContext var1) {
       super.validate(var1);
 
-      for(int var2 = 0; var2 < this.entries.size(); ++var2) {
+      for (int var2 = 0; var2 < this.entries.size(); var2++) {
          this.entries.get(var2).validate(var1.forChild(".entry[" + var2 + "]"));
       }
    }

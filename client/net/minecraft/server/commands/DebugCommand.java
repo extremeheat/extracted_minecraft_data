@@ -125,7 +125,7 @@ public class DebugCommand {
                DebugCommand.Tracer var13 = new DebugCommand.Tracer(var12);
                var4.tracer(var13);
 
-               for(final CommandFunction var15 : var6) {
+               for (final CommandFunction var15 : var6) {
                   try {
                      CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(2);
                      InstantiatedFunction var17 = var15.instantiate(null, var9);
@@ -181,7 +181,7 @@ public class DebugCommand {
       }
 
       private void printIndent(int var1) {
-         for(int var2 = 0; var2 < var1 + 1; ++var2) {
+         for (int var2 = 0; var2 < var1 + 1; var2++) {
             this.output.write("    ");
          }
       }

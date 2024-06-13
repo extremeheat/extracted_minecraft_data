@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
@@ -59,7 +58,7 @@ public class RaidCommand {
                   Commands.literal("setomen")
                      .then(
                         Commands.argument("level", IntegerArgumentType.integer(0))
-                           .executes(var0x -> setBadOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))
+                           .executes(var0x -> setRaidOmenLevel((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "level")))
                      )
                ))
             .then(Commands.literal("glow").executes(var0x -> glow((CommandSourceStack)var0x.getSource())))
@@ -69,7 +68,7 @@ public class RaidCommand {
    private static int glow(CommandSourceStack var0) throws CommandSyntaxException {
       Raid var1 = getRaid(var0.getPlayerOrException());
       if (var1 != null) {
-         for(Raider var4 : var1.getAllRaiders()) {
+         for (Raider var4 : var1.getAllRaiders()) {
             var4.addEffect(new MobEffectInstance(MobEffects.GLOWING, 1000, 1));
          }
       }
@@ -77,16 +76,16 @@ public class RaidCommand {
       return 1;
    }
 
-   private static int setBadOmenLevel(CommandSourceStack var0, int var1) throws CommandSyntaxException {
+   private static int setRaidOmenLevel(CommandSourceStack var0, int var1) throws CommandSyntaxException {
       Raid var2 = getRaid(var0.getPlayerOrException());
       if (var2 != null) {
-         int var3 = var2.getMaxBadOmenLevel();
+         int var3 = var2.getMaxRaidOmenLevel();
          if (var1 > var3) {
-            var0.sendFailure(Component.literal("Sorry, the max bad omen level you can set is " + var3));
+            var0.sendFailure(Component.literal("Sorry, the max raid omen level you can set is " + var3));
          } else {
-            int var4 = var2.getBadOmenLevel();
-            var2.setBadOmenLevel(var1);
-            var0.sendSuccess(() -> Component.literal("Changed village's bad omen level from " + var4 + " to " + var1), false);
+            int var4 = var2.getRaidOmenLevel();
+            var2.setRaidOmenLevel(var1);
+            var0.sendSuccess(() -> Component.literal("Changed village's raid omen level from " + var4 + " to " + var1), false);
          }
       } else {
          var0.sendFailure(Component.literal("No raid found here"));
@@ -129,9 +128,9 @@ public class RaidCommand {
          return -1;
       } else {
          Raids var4 = var2.serverLevel().getRaids();
-         Raid var5 = var4.createOrExtendRaid(var2);
+         Raid var5 = var4.createOrExtendRaid(var2, var2.blockPosition());
          if (var5 != null) {
-            var5.setBadOmenLevel(var1);
+            var5.setRaidOmenLevel(var1);
             var4.setDirty();
             var0.sendSuccess(() -> Component.literal("Created a raid in your local village"), false);
          } else {
@@ -165,8 +164,8 @@ public class RaidCommand {
          StringBuilder var3 = new StringBuilder();
          var3.append("Num groups spawned: ");
          var3.append(var1.getGroupsSpawned());
-         var3.append(" Bad omen level: ");
-         var3.append(var1.getBadOmenLevel());
+         var3.append(" Raid omen level: ");
+         var3.append(var1.getRaidOmenLevel());
          var3.append(" Num mobs: ");
          var3.append(var1.getTotalRaidersAlive());
          var3.append(" Raid health: ");

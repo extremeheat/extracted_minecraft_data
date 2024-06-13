@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Locale;
 import java.util.stream.IntStream;
 import net.minecraft.util.KeyDispatchDataCodec;
@@ -91,7 +90,7 @@ public class BlendedNoise implements DensityFunction.SimpleFunction {
       boolean var24 = true;
       double var25 = 1.0;
 
-      for(int var27 = 0; var27 < 8; ++var27) {
+      for (int var27 = 0; var27 < 8; var27++) {
          ImprovedNoise var28 = this.mainNoise.getOctaveNoise(var27);
          if (var28 != null) {
             var22 += var28.noise(PerlinNoise.wrap(var8 * var25), PerlinNoise.wrap(var10 * var25), PerlinNoise.wrap(var12 * var25), var16 * var25, var10 * var25)
@@ -106,7 +105,7 @@ public class BlendedNoise implements DensityFunction.SimpleFunction {
       boolean var30 = var42 <= 0.0;
       var25 = 1.0;
 
-      for(int var31 = 0; var31 < 16; ++var31) {
+      for (int var31 = 0; var31 < 16; var31++) {
          double var32 = PerlinNoise.wrap(var2 * var25);
          double var34 = PerlinNoise.wrap(var4 * var25);
          double var36 = PerlinNoise.wrap(var6 * var25);

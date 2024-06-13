@@ -98,7 +98,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
 
          BlockState var1 = Blocks.SNOW.defaultBlockState();
 
-         for(int var2 = 0; var2 < 4; ++var2) {
+         for (int var2 = 0; var2 < 4; var2++) {
             int var3 = Mth.floor(this.getX() + (double)((float)(var2 % 2 * 2 - 1) * 0.25F));
             int var4 = Mth.floor(this.getY());
             int var5 = Mth.floor(this.getZ() + (double)((float)(var2 / 2 % 2 * 2 - 1) * 0.25F));

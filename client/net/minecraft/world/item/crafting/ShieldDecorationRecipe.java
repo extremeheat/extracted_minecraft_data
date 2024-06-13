@@ -18,7 +18,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       ItemStack var3 = ItemStack.EMPTY;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.getItem() instanceof BannerItem) {
@@ -53,7 +53,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       ItemStack var3 = ItemStack.EMPTY;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.getItem() instanceof BannerItem) {
@@ -67,7 +67,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       if (var4.isEmpty()) {
          return var4;
       } else {
-         var4.set(DataComponents.BANNER_PATTERNS, (BannerPatternLayers)var3.get(DataComponents.BANNER_PATTERNS));
+         var4.set(DataComponents.BANNER_PATTERNS, var3.get(DataComponents.BANNER_PATTERNS));
          var4.set(DataComponents.BASE_COLOR, ((BannerItem)var3.getItem()).getColor());
          return var4;
       }

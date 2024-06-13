@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -79,8 +78,7 @@ public class CeilingHangingSignBlock extends SignBlock {
 
    @Override
    protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      BlockEntity var9 = var3.getBlockEntity(var4);
-      if (var9 instanceof SignBlockEntity var8 && this.shouldTryToChainAnotherHangingSign(var5, var7, (SignBlockEntity)var8, var1)) {
+      if (var3.getBlockEntity(var4) instanceof SignBlockEntity var8 && this.shouldTryToChainAnotherHangingSign(var5, var7, var8, var1)) {
          return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
       }
 

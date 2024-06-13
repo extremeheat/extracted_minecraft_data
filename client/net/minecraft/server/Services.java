@@ -10,19 +10,19 @@ import javax.annotation.Nullable;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.util.SignatureValidator;
 
-public record Services(MinecraftSessionService a, ServicesKeySet b, GameProfileRepository c, GameProfileCache d) {
-   private final MinecraftSessionService sessionService;
-   private final ServicesKeySet servicesKeySet;
-   private final GameProfileRepository profileRepository;
-   private final GameProfileCache profileCache;
+public record Services(
+   MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache
+) {
    private static final String USERID_CACHE_FILE = "usercache.json";
 
-   public Services(MinecraftSessionService var1, ServicesKeySet var2, GameProfileRepository var3, GameProfileCache var4) {
+   public Services(
+      MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache
+   ) {
       super();
-      this.sessionService = var1;
-      this.servicesKeySet = var2;
-      this.profileRepository = var3;
-      this.profileCache = var4;
+      this.sessionService = sessionService;
+      this.servicesKeySet = servicesKeySet;
+      this.profileRepository = profileRepository;
+      this.profileCache = profileCache;
    }
 
    public static Services create(YggdrasilAuthenticationService var0, File var1) {

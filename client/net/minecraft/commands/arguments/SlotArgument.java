@@ -35,7 +35,7 @@ public class SlotArgument implements ArgumentType<Integer> {
    }
 
    public static int getSlot(CommandContext<CommandSourceStack> var0, String var1) {
-      return var0.getArgument(var1, Integer.class);
+      return (Integer)var0.getArgument(var1, Integer.class);
    }
 
    public Integer parse(StringReader var1) throws CommandSyntaxException {

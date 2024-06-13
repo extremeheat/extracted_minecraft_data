@@ -34,7 +34,7 @@ public class Backup extends ValueObject {
          if (var1.has("metadata")) {
             JsonObject var3 = var1.getAsJsonObject("metadata");
 
-            for(Entry var6 : var3.entrySet()) {
+            for (Entry var6 : var3.entrySet()) {
                if (!((JsonElement)var6.getValue()).isJsonNull()) {
                   var2.metadata.put((String)var6.getKey(), ((JsonElement)var6.getValue()).getAsString());
                }

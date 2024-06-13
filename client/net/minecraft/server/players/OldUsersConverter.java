@@ -42,7 +42,7 @@ public class OldUsersConverter {
    static List<String> readOldListFormat(File var0, Map<String, String[]> var1) throws IOException {
       List var2 = Files.readLines(var0, StandardCharsets.UTF_8);
 
-      for(String var4 : var2) {
+      for (String var4 : var2) {
          var4 = var4.trim();
          if (!var4.startsWith("#") && var4.length() >= 1) {
             String[] var5 = var4.split("\\|");
@@ -54,11 +54,11 @@ public class OldUsersConverter {
    }
 
    private static void lookupPlayers(MinecraftServer var0, Collection<String> var1, ProfileLookupCallback var2) {
-      String[] var3 = var1.stream().filter(var0x -> !StringUtil.isNullOrEmpty(var0x)).toArray(var0x -> new String[var0x]);
+      String[] var3 = var1.stream().filter(var0x -> !StringUtil.isNullOrEmpty(var0x)).toArray(String[]::new);
       if (var0.usesAuthentication()) {
          var0.getProfileRepository().findProfilesByNames(var3, var2);
       } else {
-         for(String var7 : var3) {
+         for (String var7 : var3) {
             var2.onProfileLookupSucceeded(UUIDUtil.createOfflineProfile(var7));
          }
       }
@@ -132,7 +132,7 @@ public class OldUsersConverter {
             HashMap var2 = Maps.newHashMap();
             readOldListFormat(OLD_IPBANLIST, var2);
 
-            for(String var4 : var2.keySet()) {
+            for (String var4 : var2.keySet()) {
                String[] var5 = (String[])var2.get(var4);
                Date var6 = var5.length > 1 ? parseDate(var5[1], null) : null;
                String var7 = var5.length > 2 ? var5[2] : null;
@@ -277,7 +277,7 @@ public class OldUsersConverter {
          File[] var4 = var1.listFiles();
          ArrayList var5 = Lists.newArrayList();
 
-         for(File var9 : var4) {
+         for (File var9 : var4) {
             String var10 = var9.getName();
             if (var10.toLowerCase(Locale.ROOT).endsWith(".dat")) {
                String var11 = var10.substring(0, var10.length() - ".dat".length());
@@ -318,7 +318,7 @@ public class OldUsersConverter {
                private String getFileNameForProfile(String var1x) {
                   String var2x = null;
 
-                  for(String var6 : var13) {
+                  for (String var6 : var13) {
                      if (var6 != null && var6.equalsIgnoreCase(var1x)) {
                         var2x = var6;
                         break;

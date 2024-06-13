@@ -14,7 +14,7 @@ public class GlobalPalette<T> implements Palette<T> {
    }
 
    public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new GlobalPalette<>(var1);
+      return new GlobalPalette(var1);
    }
 
    @Override

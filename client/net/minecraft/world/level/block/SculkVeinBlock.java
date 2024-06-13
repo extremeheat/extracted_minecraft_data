@@ -53,7 +53,7 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
       boolean var4 = false;
       BlockState var5 = Blocks.SCULK_VEIN.defaultBlockState();
 
-      for(Direction var7 : var3) {
+      for (Direction var7 : var3) {
          BlockPos var8 = var1.relative(var7);
          if (canAttachTo(var0, var7, var8, var0.getBlockState(var8))) {
             var5 = var5.setValue(getFaceProperty(var7), Boolean.valueOf(true));
@@ -76,7 +76,7 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
    @Override
    public void onDischarged(LevelAccessor var1, BlockState var2, BlockPos var3, RandomSource var4) {
       if (var2.is(this)) {
-         for(Direction var8 : DIRECTIONS) {
+         for (Direction var8 : DIRECTIONS) {
             BooleanProperty var9 = getFaceProperty(var8);
             if (var2.getValue(var9) && var1.getBlockState(var3.relative(var8)).is(Blocks.SCULK)) {
                var2 = var2.setValue(var9, Boolean.valueOf(false));
@@ -106,7 +106,7 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
       BlockState var5 = var2.getBlockState(var3);
       TagKey var6 = var1.replaceableBlocks();
 
-      for(Direction var8 : Direction.allShuffled(var4)) {
+      for (Direction var8 : Direction.allShuffled(var4)) {
          if (hasFace(var5, var8)) {
             BlockPos var9 = var3.relative(var8);
             BlockState var10 = var2.getBlockState(var9);
@@ -118,7 +118,7 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
                this.veinSpreader.spreadAll(var11, var2, var9, var1.isWorldGeneration());
                Direction var12 = var8.getOpposite();
 
-               for(Direction var16 : DIRECTIONS) {
+               for (Direction var16 : DIRECTIONS) {
                   if (var16 != var12) {
                      BlockPos var17 = var9.relative(var16);
                      BlockState var18 = var2.getBlockState(var17);
@@ -140,7 +140,7 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
       if (!var1.is(Blocks.SCULK_VEIN)) {
          return false;
       } else {
-         for(Direction var6 : DIRECTIONS) {
+         for (Direction var6 : DIRECTIONS) {
             if (hasFace(var1, var6) && var0.getBlockState(var2.relative(var6)).is(BlockTags.SCULK_REPLACEABLE)) {
                return true;
             }
@@ -197,10 +197,8 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
             FluidState var8 = var5.getFluidState();
             if (!var8.isEmpty() && !var8.is(Fluids.WATER)) {
                return false;
-            } else if (var5.is(BlockTags.FIRE)) {
-               return false;
             } else {
-               return var5.canBeReplaced() || super.stateCanBeReplaced(var1, var2, var3, var4, var5);
+               return var5.is(BlockTags.FIRE) ? false : var5.canBeReplaced() || super.stateCanBeReplaced(var1, var2, var3, var4, var5);
             }
          } else {
             return false;

@@ -12,7 +12,7 @@ public class RunningTrimmedMean {
 
    public long registerValueAndGetMean(long var1) {
       if (this.count < this.values.length) {
-         ++this.count;
+         this.count++;
       }
 
       this.values[this.cursor] = var1;
@@ -21,7 +21,7 @@ public class RunningTrimmedMean {
       long var5 = -9223372036854775808L;
       long var7 = 0L;
 
-      for(int var9 = 0; var9 < this.count; ++var9) {
+      for (int var9 = 0; var9 < this.count; var9++) {
          long var10 = this.values[var9];
          var7 += var10;
          var3 = Math.min(var3, var10);

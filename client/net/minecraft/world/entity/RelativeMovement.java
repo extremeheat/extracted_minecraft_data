@@ -29,7 +29,7 @@ public enum RelativeMovement {
    public static Set<RelativeMovement> unpack(int var0) {
       EnumSet var1 = EnumSet.noneOf(RelativeMovement.class);
 
-      for(RelativeMovement var5 : values()) {
+      for (RelativeMovement var5 : values()) {
          if (var5.isSet(var0)) {
             var1.add(var5);
          }
@@ -41,7 +41,7 @@ public enum RelativeMovement {
    public static int pack(Set<RelativeMovement> var0) {
       int var1 = 0;
 
-      for(RelativeMovement var3 : var0) {
+      for (RelativeMovement var3 : var0) {
          var1 |= var3.getMask();
       }
 

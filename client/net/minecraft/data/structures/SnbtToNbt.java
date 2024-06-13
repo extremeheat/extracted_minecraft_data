@@ -44,7 +44,7 @@ public class SnbtToNbt implements DataProvider {
    private CompoundTag applyFilters(String var1, CompoundTag var2) {
       CompoundTag var3 = var2;
 
-      for(SnbtToNbt.Filter var5 : this.filters) {
+      for (SnbtToNbt.Filter var5 : this.filters) {
          var3 = var5.apply(var1, var3);
       }
 
@@ -56,15 +56,15 @@ public class SnbtToNbt implements DataProvider {
       Path var2 = this.output.getOutputFolder();
       ArrayList var3 = Lists.newArrayList();
 
-      for(Path var5 : this.inputFolders) {
+      for (Path var5 : this.inputFolders) {
          var3.add(CompletableFuture.<CompletableFuture>supplyAsync(() -> {
             try {
                CompletableFuture var5x;
                try (Stream var4 = Files.walk(var5)) {
                   var5x = CompletableFuture.allOf(var4.filter(var0 -> var0.toString().endsWith(".snbt")).map(var4x -> CompletableFuture.runAsync(() -> {
-                        SnbtToNbt.TaskResult var5xxx = this.readStructure(var4x, this.getName(var5, var4x));
-                        this.storeStructureIfChanged(var1, var5xxx, var2);
-                     }, Util.backgroundExecutor())).toArray(var0 -> new CompletableFuture[var0]));
+                        SnbtToNbt.TaskResult var5xx = this.readStructure(var4x, this.getName(var5, var4x));
+                        this.storeStructureIfChanged(var1, var5xx, var2);
+                     }, Util.backgroundExecutor())).toArray(CompletableFuture[]::new));
                }
 
                return var5x;
@@ -128,16 +128,13 @@ public class SnbtToNbt implements DataProvider {
       }
    }
 
-   static record TaskResult(String a, byte[] b, HashCode c) {
-      final String name;
-      final byte[] payload;
-      final HashCode hash;
+   static record TaskResult(String name, byte[] payload, HashCode hash) {
 
-      TaskResult(String var1, byte[] var2, HashCode var3) {
+      TaskResult(String name, byte[] payload, HashCode hash) {
          super();
-         this.name = var1;
-         this.payload = var2;
-         this.hash = var3;
+         this.name = name;
+         this.payload = payload;
+         this.hash = hash;
       }
    }
 }

@@ -8,14 +8,12 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +42,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -282,7 +279,7 @@ public class Commands {
             LOGGER.error("Command exception: /{}", var2, var12);
             StackTraceElement[] var7 = var12.getStackTrace();
 
-            for(int var8 = 0; var8 < Math.min(var7.length, 3); ++var8) {
+            for (int var8 = 0; var8 < Math.min(var7.length, 3); var8++) {
                var6.append("\n\n")
                   .append(var7[var8].getMethodName())
                   .append("\n ")
@@ -361,15 +358,13 @@ public class Commands {
       var1.connection.send(new ClientboundCommandsPacket(var3));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void fillUsableCommands(
       CommandNode<CommandSourceStack> var1,
       CommandNode<SharedSuggestionProvider> var2,
       CommandSourceStack var3,
       Map<CommandNode<CommandSourceStack>, CommandNode<SharedSuggestionProvider>> var4
    ) {
-      for(CommandNode var6 : var1.getChildren()) {
+      for (CommandNode var6 : var1.getChildren()) {
          if (var6.canUse(var3)) {
             ArgumentBuilder var7 = var6.createBuilder();
             var7.requires(var0 -> true);
@@ -377,8 +372,11 @@ public class Commands {
                var7.executes(var0 -> 0);
             }
 
-            if (var7 instanceof RequiredArgumentBuilder var8 && var8.getSuggestionsProvider() != null) {
-               var8.suggests(SuggestionProviders.safelySwap(var8.getSuggestionsProvider()));
+            if (var7 instanceof RequiredArgumentBuilder) {
+               RequiredArgumentBuilder var8 = (RequiredArgumentBuilder)var7;
+               if (var8.getSuggestionsProvider() != null) {
+                  var8.suggests(SuggestionProviders.safelySwap(var8.getSuggestionsProvider()));
+               }
             }
 
             if (var7.getRedirect() != null) {

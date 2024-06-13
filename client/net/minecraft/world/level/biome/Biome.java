@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -65,12 +64,12 @@ public final class Biome {
    private final MobSpawnSettings mobSettings;
    private final BiomeSpecialEffects specialEffects;
    private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> Util.make(() -> {
-         Long2FloatLinkedOpenHashMap var1xx = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
+         Long2FloatLinkedOpenHashMap var1x = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
             protected void rehash(int var1) {
             }
          };
-         var1xx.defaultReturnValue(0.0F / 0.0F);
-         return var1xx;
+         var1x.defaultReturnValue(0.0F / 0.0F);
+         return var1x;
       }));
 
    Biome(Biome.ClimateSettings var1, BiomeSpecialEffects var2, BiomeGenerationSettings var3, MobSpawnSettings var4) {
@@ -114,7 +113,7 @@ public final class Biome {
    @Deprecated
    private float getTemperature(BlockPos var1) {
       long var2 = var1.asLong();
-      Long2FloatLinkedOpenHashMap var4 = (Long2FloatLinkedOpenHashMap)this.temperatureCache.get();
+      Long2FloatLinkedOpenHashMap var4 = this.temperatureCache.get();
       float var5 = var4.get(var2);
       if (!Float.isNaN(var5)) {
          return var5;
@@ -210,12 +209,6 @@ public final class Biome {
       double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
       double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return FoliageColor.get(var1, var3);
-   }
-
-   public int getNoisedColorFromTexture(float var1, float var2) {
-      double var3 = (double)Mth.clamp(this.climateSettings.temperature + var1, 0.0F, 1.0F);
-      double var5 = (double)Mth.clamp(this.climateSettings.downfall + var2, 0.0F, 1.0F);
-      return FoliageColor.get(var3, var5);
    }
 
    public float getBaseTemperature() {
@@ -344,11 +337,7 @@ public final class Biome {
       }
    }
 
-   static record ClimateSettings(boolean b, float c, Biome.TemperatureModifier d, float e) {
-      private final boolean hasPrecipitation;
-      final float temperature;
-      final Biome.TemperatureModifier temperatureModifier;
-      final float downfall;
+   static record ClimateSettings(boolean hasPrecipitation, float temperature, Biome.TemperatureModifier temperatureModifier, float downfall) {
       public static final MapCodec<Biome.ClimateSettings> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   Codec.BOOL.fieldOf("has_precipitation").forGetter(var0x -> var0x.hasPrecipitation),
@@ -361,12 +350,12 @@ public final class Biome {
                .apply(var0, Biome.ClimateSettings::new)
       );
 
-      ClimateSettings(boolean var1, float var2, Biome.TemperatureModifier var3, float var4) {
+      ClimateSettings(boolean hasPrecipitation, float temperature, Biome.TemperatureModifier temperatureModifier, float downfall) {
          super();
-         this.hasPrecipitation = var1;
-         this.temperature = var2;
-         this.temperatureModifier = var3;
-         this.downfall = var4;
+         this.hasPrecipitation = hasPrecipitation;
+         this.temperature = temperature;
+         this.temperatureModifier = temperatureModifier;
+         this.downfall = downfall;
       }
    }
 

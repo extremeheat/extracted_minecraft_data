@@ -82,13 +82,14 @@ public class TitleScreen extends Screen {
       if (this.realmsNotificationsEnabled()) {
          this.realmsNotificationsScreen.tick();
       }
-
-      this.minecraft.getRealms32BitWarningStatus().showRealms32BitWarningIfNeeded(this);
    }
 
    public static CompletableFuture<Void> preloadResources(TextureManager var0, Executor var1) {
       return CompletableFuture.allOf(
-         var0.preload(LogoRenderer.POISONOUS_POTATO_LOGO, var1), var0.preload(PanoramaRenderer.PANORAMA_OVERLAY, var1), CUBE_MAP.preload(var0, var1)
+         var0.preload(LogoRenderer.MINECRAFT_LOGO, var1),
+         var0.preload(LogoRenderer.MINECRAFT_EDITION, var1),
+         var0.preload(PanoramaRenderer.PANORAMA_OVERLAY, var1),
+         CUBE_MAP.preload(var0, var1)
       );
    }
 
@@ -110,7 +111,7 @@ public class TitleScreen extends Screen {
 
       int var1 = this.font.width(COPYRIGHT_TEXT);
       int var2 = this.width - var1 - 2;
-      boolean var3 = true;
+      byte var3 = 24;
       int var4 = this.height / 4 + 48;
       if (this.minecraft.isDemo()) {
          this.createDemoMenuOptions(var4, 24);
@@ -148,12 +149,6 @@ public class TitleScreen extends Screen {
       if (this.realmsNotificationsEnabled()) {
          this.realmsNotificationsScreen.init(this.minecraft, this.width, this.height);
       }
-
-      if (!this.minecraft.is64Bit()) {
-         this.warningLabel = new TitleScreen.WarningLabel(
-            this.font, MultiLineLabel.create(this.font, Component.translatable("title.32bit.deprecation"), 350, 2), this.width / 2, var4 - 24
-         );
-      }
    }
 
    private void createNormalMenuOptions(int var1, int var2) {
@@ -166,8 +161,8 @@ public class TitleScreen extends Screen {
       boolean var4 = var3 == null;
       Tooltip var5 = var3 != null ? Tooltip.create(var3) : null;
       this.addRenderableWidget(Button.builder(Component.translatable("menu.multiplayer"), var1x -> {
-         Object var2xx = this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this);
-         this.minecraft.setScreen((Screen)var2xx);
+         Object var2x = this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this);
+         this.minecraft.setScreen((Screen)var2x);
       }).bounds(this.width / 2 - 100, var1 + var2 * 1, 200, 20).tooltip(var5).build()).active = var4;
       this.addRenderableWidget(
             Button.builder(Component.translatable("menu.online"), var1x -> this.minecraft.setScreen(new RealmsMainScreen(this)))
@@ -220,10 +215,10 @@ public class TitleScreen extends Screen {
          Button.builder(
                Component.translatable("menu.resetdemo"),
                var1x -> {
-                  LevelStorageSource var2xx = this.minecraft.getLevelSource();
-         
-                  try (LevelStorageSource.LevelStorageAccess var3xx = var2xx.createAccess("Demo_World")) {
-                     if (var3xx.hasWorldData()) {
+                  LevelStorageSource var2x = this.minecraft.getLevelSource();
+
+                  try (LevelStorageSource.LevelStorageAccess var3x = var2x.createAccess("Demo_World")) {
+                     if (var3x.hasWorldData()) {
                         this.minecraft
                            .setScreen(
                               new ConfirmScreen(
@@ -262,8 +257,6 @@ public class TitleScreen extends Screen {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.fadeInStart == 0L && this.fading) {
@@ -281,7 +274,7 @@ public class TitleScreen extends Screen {
             var5 = Mth.clampedMap(var6, 0.5F, 1.0F, 0.0F, 1.0F);
             this.panoramaFade = Mth.clampedMap(var6, 0.0F, 0.5F, 0.0F, 1.0F);
 
-            for(GuiEventListener var8 : this.children()) {
+            for (GuiEventListener var8 : this.children()) {
                if (var8 instanceof AbstractWidget var9) {
                   var9.setAlpha(var5);
                }
@@ -332,11 +325,7 @@ public class TitleScreen extends Screen {
 
    @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
-      if (super.mouseClicked(var1, var3, var5)) {
-         return true;
-      } else {
-         return this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var3, var5);
-      }
+      return super.mouseClicked(var1, var3, var5) ? true : this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var3, var5);
    }
 
    @Override
@@ -367,18 +356,13 @@ public class TitleScreen extends Screen {
       this.minecraft.setScreen(this);
    }
 
-   static record WarningLabel(Font a, MultiLineLabel b, int c, int d) {
-      private final Font font;
-      private final MultiLineLabel label;
-      private final int x;
-      private final int y;
-
-      WarningLabel(Font var1, MultiLineLabel var2, int var3, int var4) {
+   static record WarningLabel(Font font, MultiLineLabel label, int x, int y) {
+      private WarningLabel(Font font, MultiLineLabel label, int x, int y) {
          super();
-         this.font = var1;
-         this.label = var2;
-         this.x = var3;
-         this.y = var4;
+         this.font = font;
+         this.label = label;
+         this.x = x;
+         this.y = y;
       }
 
       public void render(GuiGraphics var1, int var2) {

@@ -24,7 +24,7 @@ public class RegistryOps<T> extends DelegatingOps<T> {
 
          @Override
          public <T> Optional<RegistryOps.RegistryInfo<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-            return this.lookups.computeIfAbsent(var1, var0::lookup);
+            return (Optional<RegistryOps.RegistryInfo<T>>)this.lookups.computeIfAbsent(var1, var0::lookup);
          }
       };
    }
@@ -52,7 +52,7 @@ public class RegistryOps<T> extends DelegatingOps<T> {
    }
 
    public <U> RegistryOps<U> withParent(DynamicOps<U> var1) {
-      return var1 == this.delegate ? this : new RegistryOps<>(var1, this.lookupProvider);
+      return (RegistryOps<U>)(var1 == this.delegate ? this : new RegistryOps(var1, this.lookupProvider));
    }
 
    public <E> Optional<HolderOwner<E>> owner(ResourceKey<? extends Registry<? extends E>> var1) {
@@ -66,10 +66,10 @@ public class RegistryOps<T> extends DelegatingOps<T> {
    public static <E, O> RecordCodecBuilder<O, HolderGetter<E>> retrieveGetter(ResourceKey<? extends Registry<? extends E>> var0) {
       return ExtraCodecs.retrieveContext(
             var1 -> var1 instanceof RegistryOps var2
-                  ? (DataResult)var2.lookupProvider
+                  ? var2.lookupProvider
                      .lookup(var0)
                      .map(var0xx -> DataResult.success(var0xx.getter(), var0xx.elementsLifecycle()))
-                     .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry: " + var0))
+                     .orElseGet(() -> DataResult.error(() -> "Unknown registry: " + var0))
                   : DataResult.error(() -> "Not a registry ops")
          )
          .forGetter(var0x -> null);
@@ -79,26 +79,22 @@ public class RegistryOps<T> extends DelegatingOps<T> {
       ResourceKey var1 = ResourceKey.createRegistryKey(var0.registry());
       return ExtraCodecs.retrieveContext(
             var2 -> var2 instanceof RegistryOps var3
-                  ? (DataResult)var3.lookupProvider
+                  ? var3.lookupProvider
                      .lookup(var1)
                      .flatMap(var1xx -> var1xx.getter().get(var0))
-                     .map(DataResult::success)
-                     .orElseGet(() -> (T)DataResult.error(() -> "Can't find value: " + var0))
+                     .<DataResult<E>>map(DataResult::success)
+                     .orElseGet(() -> DataResult.error(() -> "Can't find value: " + var0))
                   : DataResult.error(() -> "Not a registry ops")
          )
          .forGetter(var0x -> null);
    }
 
-   public static record RegistryInfo<T>(HolderOwner<T> a, HolderGetter<T> b, Lifecycle c) {
-      private final HolderOwner<T> owner;
-      private final HolderGetter<T> getter;
-      private final Lifecycle elementsLifecycle;
-
-      public RegistryInfo(HolderOwner<T> var1, HolderGetter<T> var2, Lifecycle var3) {
+   public static record RegistryInfo<T>(HolderOwner<T> owner, HolderGetter<T> getter, Lifecycle elementsLifecycle) {
+      public RegistryInfo(HolderOwner<T> owner, HolderGetter<T> getter, Lifecycle elementsLifecycle) {
          super();
-         this.owner = var1;
-         this.getter = var2;
-         this.elementsLifecycle = var3;
+         this.owner = owner;
+         this.getter = getter;
+         this.elementsLifecycle = elementsLifecycle;
       }
 
       public static <T> RegistryOps.RegistryInfo<T> fromRegistryLookup(HolderLookup.RegistryLookup<T> var0) {

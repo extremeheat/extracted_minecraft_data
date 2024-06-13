@@ -12,7 +12,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Bucketable;
@@ -48,11 +47,8 @@ public class MobBucketItem extends BucketItem {
       var2.playSound(var1, var3, this.emptySound, SoundSource.NEUTRAL, 1.0F, 1.0F);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void spawn(ServerLevel var1, ItemStack var2, BlockPos var3) {
-      Entity var4 = this.type.spawn(var1, var2, null, var3, MobSpawnType.BUCKET, true, false);
-      if (var4 instanceof Bucketable var5) {
+      if (this.type.spawn(var1, var2, null, var3, MobSpawnType.BUCKET, true, false) instanceof Bucketable var5) {
          CustomData var6 = var2.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
          var5.loadFromBucketTag(var6.copyTag());
          var5.setFromBucket(true);
@@ -60,7 +56,7 @@ public class MobBucketItem extends BucketItem {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       if (this.type == EntityType.TROPICAL_FISH) {
          CustomData var5 = var1.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
          if (var5.isEmpty()) {

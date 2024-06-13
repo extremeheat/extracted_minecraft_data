@@ -52,7 +52,7 @@ public class SectionStorage<R> implements AutoCloseable {
    }
 
    protected void tick(BooleanSupplier var1) {
-      while(this.hasWork() && var1.getAsBoolean()) {
+      while (this.hasWork() && var1.getAsBoolean()) {
          ChunkPos var2 = SectionPos.of(this.dirty.firstLong()).chunk();
          this.writeColumn(var2);
       }
@@ -125,7 +125,7 @@ public class SectionStorage<R> implements AutoCloseable {
 
    private void readColumn(ChunkPos var1, RegistryOps<Tag> var2, @Nullable CompoundTag var3) {
       if (var3 == null) {
-         for(int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); ++var4) {
+         for (int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); var4++) {
             this.storage.put(getKey(var1, var4), Optional.empty());
          }
       } else {
@@ -136,11 +136,11 @@ public class SectionStorage<R> implements AutoCloseable {
          Dynamic var8 = this.simpleRegionStorage.upgradeChunkTag(var14, var5);
          OptionalDynamic var9 = var8.get("Sections");
 
-         for(int var10 = this.levelHeightAccessor.getMinSection(); var10 < this.levelHeightAccessor.getMaxSection(); ++var10) {
+         for (int var10 = this.levelHeightAccessor.getMinSection(); var10 < this.levelHeightAccessor.getMaxSection(); var10++) {
             long var11 = getKey(var1, var10);
             Optional var13 = var9.get(Integer.toString(var10))
                .result()
-               .flatMap(var3x -> ((Codec)this.codec.apply(() -> this.setDirty(var11))).parse(var3x).resultOrPartial(LOGGER::error));
+               .flatMap(var3x -> this.codec.apply(() -> this.setDirty(var11)).parse(var3x).resultOrPartial(LOGGER::error));
             this.storage.put(var11, var13);
             var13.ifPresent(var4x -> {
                this.onSectionLoad(var11);
@@ -166,12 +166,12 @@ public class SectionStorage<R> implements AutoCloseable {
    private <T> Dynamic<T> writeColumn(ChunkPos var1, DynamicOps<T> var2) {
       HashMap var3 = Maps.newHashMap();
 
-      for(int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); ++var4) {
+      for (int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); var4++) {
          long var5 = getKey(var1, var4);
          this.dirty.remove(var5);
          Optional var7 = (Optional)this.storage.get(var5);
          if (var7 != null && !var7.isEmpty()) {
-            DataResult var8 = ((Codec)this.codec.apply(() -> this.setDirty(var5))).encodeStart(var2, var7.get());
+            DataResult var8 = this.codec.apply(() -> this.setDirty(var5)).encodeStart(var2, var7.get());
             String var9 = Integer.toString(var4);
             var8.resultOrPartial(LOGGER::error).ifPresent(var3x -> var3.put(var2.createString(var9), var3x));
          }
@@ -212,7 +212,7 @@ public class SectionStorage<R> implements AutoCloseable {
 
    public void flush(ChunkPos var1) {
       if (this.hasWork()) {
-         for(int var2 = this.levelHeightAccessor.getMinSection(); var2 < this.levelHeightAccessor.getMaxSection(); ++var2) {
+         for (int var2 = this.levelHeightAccessor.getMinSection(); var2 < this.levelHeightAccessor.getMaxSection(); var2++) {
             long var3 = getKey(var1, var2);
             if (this.dirty.contains(var3)) {
                this.writeColumn(var1);

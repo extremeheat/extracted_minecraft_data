@@ -126,7 +126,7 @@ public abstract class AgeableMob extends PathfinderMob {
                this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
             }
 
-            --this.forcedAgeTimer;
+            this.forcedAgeTimer--;
          }
       } else if (this.isAlive()) {
          int var1 = this.getAge();
@@ -139,11 +139,8 @@ public abstract class AgeableMob extends PathfinderMob {
    }
 
    protected void ageBoundaryReached() {
-      if (!this.isBaby() && this.isPassenger()) {
-         Entity var2 = this.getVehicle();
-         if (var2 instanceof Boat var1 && !var1.hasEnoughSpaceFor(this)) {
-            this.stopRiding();
-         }
+      if (!this.isBaby() && this.isPassenger() && this.getVehicle() instanceof Boat var1 && !var1.hasEnoughSpaceFor(this)) {
+         this.stopRiding();
       }
    }
 
@@ -185,7 +182,7 @@ public abstract class AgeableMob extends PathfinderMob {
       }
 
       public void increaseGroupSizeByOne() {
-         ++this.groupSize;
+         this.groupSize++;
       }
 
       public boolean isShouldSpawnBaby() {

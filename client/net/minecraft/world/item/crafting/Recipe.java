@@ -30,7 +30,7 @@ public interface Recipe<C extends Container> {
    default NonNullList<ItemStack> getRemainingItems(C var1) {
       NonNullList var2 = NonNullList.withSize(var1.getContainerSize(), ItemStack.EMPTY);
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
+      for (int var3 = 0; var3 < var2.size(); var3++) {
          Item var4 = var1.getItem(var3).getItem();
          if (var4.hasCraftingRemainingItem()) {
             var2.set(var3, new ItemStack(var4.getCraftingRemainingItem()));

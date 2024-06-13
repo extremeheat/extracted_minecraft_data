@@ -27,7 +27,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.LivingEntity;
@@ -72,30 +71,32 @@ public class Brain<E extends LivingEntity> {
          (new MapCodec<Brain<E>>() {
                public <T> Stream<T> keys(DynamicOps<T> var1x) {
                   return var0.stream()
-                     .flatMap(var0xx -> var0xx.getCodec().map(var1xxxx -> BuiltInRegistries.MEMORY_MODULE_TYPE.getKey(var0xx)).stream())
+                     .flatMap(var0xx -> var0xx.getCodec().map(var1xxxx -> BuiltInRegistries.MEMORY_MODULE_TYPE.getKey((MemoryModuleType<?>)var0xx)).stream())
                      .map(var1xxx -> (T)var1x.createString(var1xxx.toString()));
                }
-      
+
                public <T> DataResult<Brain<E>> decode(DynamicOps<T> var1x, MapLike<T> var2x) {
                   MutableObject var3 = new MutableObject(DataResult.success(ImmutableList.builder()));
                   var2x.entries().forEach(var3x -> {
-                     DataResult var4xx = BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().parse(var1x, var3x.getFirst());
-                     DataResult var5 = var4xx.flatMap(var3xx -> this.captureRead(var3xx, var1x, (T)var3x.getSecond()));
+                     DataResult var4x = BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().parse(var1x, var3x.getFirst());
+                     DataResult var5 = var4x.flatMap(var3xx -> this.captureRead(var3xx, var1x, (T)var3x.getSecond()));
                      var3.setValue(((DataResult)var3.getValue()).apply2(Builder::add, var5));
                   });
-                  ImmutableList var4 = (ImmutableList)((DataResult)var3.getValue())
+                  ImmutableList var4 = ((DataResult)var3.getValue())
                      .resultOrPartial(Brain.LOGGER::error)
-                     .map(Builder::build)
+                     .<ImmutableList>map(Builder::build)
                      .orElseGet(ImmutableList::of);
                   return DataResult.success(new Brain(var0, var1, var4, var2::getValue));
                }
-      
+
                private <T, U> DataResult<Brain.MemoryValue<U>> captureRead(MemoryModuleType<U> var1x, DynamicOps<T> var2x, T var3) {
-                  return ((DataResult)var1x.getCodec().map(DataResult::success).orElseGet(() -> (T)DataResult.error(() -> "No codec for memory: " + var1x)))
+                  return var1x.getCodec()
+                     .<DataResult>map(DataResult::success)
+                     .orElseGet(() -> DataResult.error(() -> "No codec for memory: " + var1x))
                      .flatMap(var2xxx -> var2xxx.parse(var2x, var3))
                      .map(var1xxx -> new Brain.MemoryValue(var1x, Optional.of(var1xxx)));
                }
-      
+
                public <T> RecordBuilder<T> encode(Brain<E> var1x, DynamicOps<T> var2x, RecordBuilder<T> var3) {
                   var1x.memories().forEach(var2xxx -> var2xxx.serialize(var2x, var3));
                   return var3;
@@ -116,37 +117,34 @@ public class Brain<E extends LivingEntity> {
       super();
       this.codec = var4;
 
-      for(MemoryModuleType var6 : var1) {
+      for (MemoryModuleType var6 : var1) {
          this.memories.put(var6, Optional.empty());
       }
 
-      for(SensorType var12 : var2) {
+      for (SensorType var12 : var2) {
          this.sensors.put(var12, var12.create());
       }
 
-      for(Sensor var13 : this.sensors.values()) {
-         for(MemoryModuleType var8 : var13.requires()) {
+      for (Sensor var13 : this.sensors.values()) {
+         for (MemoryModuleType var8 : var13.requires()) {
             this.memories.put(var8, Optional.empty());
          }
       }
 
       UnmodifiableIterator var11 = var3.iterator();
 
-      while(var11.hasNext()) {
+      while (var11.hasNext()) {
          Brain.MemoryValue var14 = (Brain.MemoryValue)var11.next();
          var14.setMemoryInternal(this);
       }
    }
 
    public <T> DataResult<T> serializeStart(DynamicOps<T> var1) {
-      return ((Codec)this.codec.get()).encodeStart(var1, this);
+      return this.codec.get().encodeStart(var1, this);
    }
 
    Stream<Brain.MemoryValue<?>> memories() {
-      return this.memories
-         .entrySet()
-         .stream()
-         .map(var0 -> Brain.MemoryValue.createUnchecked((MemoryModuleType<? extends ExpirableValue<?>>)var0.getKey(), var0.getValue()));
+      return this.memories.entrySet().stream().map(var0 -> Brain.MemoryValue.createUnchecked(var0.getKey(), var0.getValue()));
    }
 
    public boolean hasMemoryValue(MemoryModuleType<?> var1) {
@@ -154,7 +152,7 @@ public class Brain<E extends LivingEntity> {
    }
 
    public void clearMemories() {
-      this.memories.keySet().forEach(var1 -> this.memories.put(var1, Optional.empty()));
+      this.memories.keySet().forEach(var1 -> this.memories.put((MemoryModuleType<?>)var1, Optional.empty()));
    }
 
    public <U> void eraseMemory(MemoryModuleType<U> var1) {
@@ -215,13 +213,9 @@ public class Brain<E extends LivingEntity> {
 
    public boolean checkMemory(MemoryModuleType<?> var1, MemoryStatus var2) {
       Optional var3 = this.memories.get(var1);
-      if (var3 == null) {
-         return false;
-      } else {
-         return var2 == MemoryStatus.REGISTERED
-            || var2 == MemoryStatus.VALUE_PRESENT && var3.isPresent()
-            || var2 == MemoryStatus.VALUE_ABSENT && var3.isEmpty();
-      }
+      return var3 == null
+         ? false
+         : var2 == MemoryStatus.REGISTERED || var2 == MemoryStatus.VALUE_PRESENT && var3.isPresent() || var2 == MemoryStatus.VALUE_ABSENT && var3.isEmpty();
    }
 
    public Schedule getSchedule() {
@@ -247,9 +241,9 @@ public class Brain<E extends LivingEntity> {
    public List<BehaviorControl<? super E>> getRunningBehaviors() {
       ObjectArrayList var1 = new ObjectArrayList();
 
-      for(Map var3 : this.availableBehaviorsByPriority.values()) {
-         for(Set var5 : var3.values()) {
-            for(BehaviorControl var7 : var5) {
+      for (Map var3 : this.availableBehaviorsByPriority.values()) {
+         for (Set var5 : var3.values()) {
+            for (BehaviorControl var7 : var5) {
                if (var7.getStatus() == Behavior.Status.RUNNING) {
                   var1.add(var7);
                }
@@ -265,7 +259,7 @@ public class Brain<E extends LivingEntity> {
    }
 
    public Optional<Activity> getActiveNonCoreActivity() {
-      for(Activity var2 : this.activeActivities) {
+      for (Activity var2 : this.activeActivities) {
          if (!this.coreActivities.contains(var2)) {
             return Optional.of(var2);
          }
@@ -292,11 +286,11 @@ public class Brain<E extends LivingEntity> {
    }
 
    private void eraseMemoriesForOtherActivitesThan(Activity var1) {
-      for(Activity var3 : this.activeActivities) {
+      for (Activity var3 : this.activeActivities) {
          if (var3 != var1) {
             Set var4 = this.activityMemoriesToEraseWhenStopped.get(var3);
             if (var4 != null) {
-               for(MemoryModuleType var6 : var4) {
+               for (MemoryModuleType var6 : var4) {
                   this.eraseMemory(var6);
                }
             }
@@ -315,7 +309,7 @@ public class Brain<E extends LivingEntity> {
    }
 
    public void setActiveActivityToFirstValid(List<Activity> var1) {
-      for(Activity var3 : var1) {
+      for (Activity var3 : var1) {
          if (this.activityRequirementsAreMet(var3)) {
             this.setActiveActivity(var3);
             break;
@@ -362,7 +356,7 @@ public class Brain<E extends LivingEntity> {
 
       UnmodifiableIterator var5 = var2.iterator();
 
-      while(var5.hasNext()) {
+      while (var5.hasNext()) {
          Pair var6 = (Pair)var5.next();
          this.availableBehaviorsByPriority
             .computeIfAbsent((Integer)var6.getFirst(), var0 -> Maps.newHashMap())
@@ -383,7 +377,7 @@ public class Brain<E extends LivingEntity> {
    public Brain<E> copyWithoutBehaviors() {
       Brain var1 = new Brain<>(this.memories.keySet(), this.sensors.keySet(), ImmutableList.of(), this.codec);
 
-      for(Entry var3 : this.memories.entrySet()) {
+      for (Entry var3 : this.memories.entrySet()) {
          MemoryModuleType var4 = (MemoryModuleType)var3.getKey();
          if (((Optional)var3.getValue()).isPresent()) {
             var1.memories.put(var4, (Optional<? extends ExpirableValue<?>>)var3.getValue());
@@ -401,13 +395,13 @@ public class Brain<E extends LivingEntity> {
    }
 
    private void tickSensors(ServerLevel var1, E var2) {
-      for(Sensor var4 : this.sensors.values()) {
+      for (Sensor var4 : this.sensors.values()) {
          var4.tick(var1, var2);
       }
    }
 
    private void forgetOutdatedMemories() {
-      for(Entry var2 : this.memories.entrySet()) {
+      for (Entry var2 : this.memories.entrySet()) {
          if (((Optional)var2.getValue()).isPresent()) {
             ExpirableValue var3 = (ExpirableValue)((Optional)var2.getValue()).get();
             if (var3.hasExpired()) {
@@ -422,7 +416,7 @@ public class Brain<E extends LivingEntity> {
    public void stopAll(ServerLevel var1, E var2) {
       long var3 = var2.level().getGameTime();
 
-      for(BehaviorControl var6 : this.getRunningBehaviors()) {
+      for (BehaviorControl var6 : this.getRunningBehaviors()) {
          var6.doStop(var1, var2, var3);
       }
    }
@@ -430,11 +424,11 @@ public class Brain<E extends LivingEntity> {
    private void startEachNonRunningBehavior(ServerLevel var1, E var2) {
       long var3 = var1.getGameTime();
 
-      for(Map var6 : this.availableBehaviorsByPriority.values()) {
-         for(Entry var8 : var6.entrySet()) {
+      for (Map var6 : this.availableBehaviorsByPriority.values()) {
+         for (Entry var8 : var6.entrySet()) {
             Activity var9 = (Activity)var8.getKey();
             if (this.activeActivities.contains(var9)) {
-               for(BehaviorControl var12 : (Set)var8.getValue()) {
+               for (BehaviorControl var12 : (Set)var8.getValue()) {
                   if (var12.getStatus() == Behavior.Status.STOPPED) {
                      var12.tryStart(var1, var2, var3);
                   }
@@ -447,7 +441,7 @@ public class Brain<E extends LivingEntity> {
    private void tickEachRunningBehavior(ServerLevel var1, E var2) {
       long var3 = var1.getGameTime();
 
-      for(BehaviorControl var6 : this.getRunningBehaviors()) {
+      for (BehaviorControl var6 : this.getRunningBehaviors()) {
          var6.tickOrStop(var1, var2, var3);
       }
    }
@@ -456,7 +450,7 @@ public class Brain<E extends LivingEntity> {
       if (!this.activityRequirements.containsKey(var1)) {
          return false;
       } else {
-         for(Pair var3 : this.activityRequirements.get(var1)) {
+         for (Pair var3 : this.activityRequirements.get(var1)) {
             MemoryModuleType var4 = (MemoryModuleType)var3.getFirst();
             MemoryStatus var5 = (MemoryStatus)var3.getSecond();
             if (!this.checkMemory(var4, var5)) {
@@ -479,7 +473,7 @@ public class Brain<E extends LivingEntity> {
       Builder var4 = ImmutableList.builder();
       UnmodifiableIterator var5 = var2.iterator();
 
-      while(var5.hasNext()) {
+      while (var5.hasNext()) {
          BehaviorControl var6 = (BehaviorControl)var5.next();
          var4.add(Pair.of(var3++, var6));
       }

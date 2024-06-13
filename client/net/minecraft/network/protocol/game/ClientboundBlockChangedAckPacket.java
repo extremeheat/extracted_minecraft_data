@@ -5,8 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundBlockChangedAckPacket(int b) implements Packet<ClientGamePacketListener> {
-   private final int sequence;
+public record ClientboundBlockChangedAckPacket(int sequence) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundBlockChangedAckPacket> STREAM_CODEC = Packet.codec(
       ClientboundBlockChangedAckPacket::write, ClientboundBlockChangedAckPacket::new
    );
@@ -15,9 +14,9 @@ public record ClientboundBlockChangedAckPacket(int b) implements Packet<ClientGa
       this(var1.readVarInt());
    }
 
-   public ClientboundBlockChangedAckPacket(int var1) {
+   public ClientboundBlockChangedAckPacket(int sequence) {
       super();
-      this.sequence = var1;
+      this.sequence = sequence;
    }
 
    private void write(FriendlyByteBuf var1) {

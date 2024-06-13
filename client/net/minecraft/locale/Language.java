@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.FormattedCharSink;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringDecomposer;
 import org.slf4j.Logger;
@@ -79,7 +78,7 @@ public abstract class Language {
    public static void loadFromJson(InputStream var0, BiConsumer<String, String> var1) {
       JsonObject var2 = (JsonObject)GSON.fromJson(new InputStreamReader(var0, StandardCharsets.UTF_8), JsonObject.class);
 
-      for(Entry var4 : var2.entrySet()) {
+      for (Entry var4 : var2.entrySet()) {
          String var5 = UNSUPPORTED_FORMAT_PATTERN.matcher(GsonHelper.convertToString((JsonElement)var4.getValue(), (String)var4.getKey())).replaceAll("%$1s");
          var1.accept((String)var4.getKey(), var5);
       }

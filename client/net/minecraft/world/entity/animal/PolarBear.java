@@ -101,11 +101,9 @@ public class PolarBear extends Animal implements NeutralMob {
 
    public static boolean checkPolarBearSpawnRules(EntityType<PolarBear> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       Holder var5 = var1.getBiome(var3);
-      if (!var5.is(BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS)) {
-         return checkAnimalSpawnRules(var0, var1, var2, var3, var4);
-      } else {
-         return isBrightEnoughToSpawn(var1, var3) && var1.getBlockState(var3.below()).is(BlockTags.POLAR_BEARS_SPAWNABLE_ON_ALTERNATE);
-      }
+      return !var5.is(BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS)
+         ? checkAnimalSpawnRules(var0, var1, var2, var3, var4)
+         : isBrightEnoughToSpawn(var1, var3) && var1.getBlockState(var3.below()).is(BlockTags.POLAR_BEARS_SPAWNABLE_ON_ALTERNATE);
    }
 
    @Override
@@ -196,7 +194,7 @@ public class PolarBear extends Animal implements NeutralMob {
       }
 
       if (this.warningSoundTicks > 0) {
-         --this.warningSoundTicks;
+         this.warningSoundTicks--;
       }
 
       if (!this.level().isClientSide) {
@@ -262,7 +260,7 @@ public class PolarBear extends Animal implements NeutralMob {
             return false;
          } else {
             if (super.canUse()) {
-               for(PolarBear var3 : PolarBear.this.level().getEntitiesOfClass(PolarBear.class, PolarBear.this.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
+               for (PolarBear var3 : PolarBear.this.level().getEntitiesOfClass(PolarBear.class, PolarBear.this.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
                   if (var3.isBaby()) {
                      return true;
                   }

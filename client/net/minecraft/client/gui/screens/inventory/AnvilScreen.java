@@ -102,7 +102,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
 
          if (var6 != null) {
             int var7 = this.imageWidth - 8 - this.font.width((FormattedText)var6) - 2;
-            boolean var8 = true;
+            byte var8 = 69;
             var1.fill(var7 - 2, 67, this.imageWidth - 8, 79, 1325400064);
             var1.drawString(this.font, (Component)var6, var7, 69, var5);
          }

@@ -167,12 +167,12 @@ public class InputConstants {
       if (InputConstants.Key.NAME_MAP.containsKey(var0)) {
          return InputConstants.Key.NAME_MAP.get(var0);
       } else {
-         for(InputConstants.Type var4 : InputConstants.Type.values()) {
+         for (InputConstants.Type var4 : InputConstants.Type.values()) {
             if (var0.startsWith(var4.defaultPrefix)) {
                String var5 = var0.substring(var4.defaultPrefix.length() + 1);
                int var6 = Integer.parseInt(var5);
                if (var4 == InputConstants.Type.MOUSE) {
-                  --var6;
+                  var6--;
                }
 
                return var4.getOrCreate(var6);
@@ -222,13 +222,13 @@ public class InputConstants {
 
    static {
       Lookup var0 = MethodHandles.lookup();
-      MethodType var1 = MethodType.methodType(Boolean.TYPE);
+      MethodType var1 = MethodType.methodType(boolean.class);
       MethodHandle var2 = null;
       int var3 = 0;
 
       try {
          var2 = var0.findStatic(GLFW.class, "glfwRawMouseMotionSupported", var1);
-         MethodHandle var4 = var0.findStaticGetter(GLFW.class, "GLFW_RAW_MOUSE_MOTION", Integer.TYPE);
+         MethodHandle var4 = var0.findStaticGetter(GLFW.class, "GLFW_RAW_MOUSE_MOTION", int.class);
          var3 = (int)var4.invokeExact();
       } catch (NoSuchFieldException | NoSuchMethodException var5) {
       } catch (Throwable var6) {

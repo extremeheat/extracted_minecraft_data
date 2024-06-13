@@ -29,7 +29,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
    protected void init() {
       this.keyBindsList = this.addRenderableWidget(new KeyBindsList(this, this.minecraft));
       this.resetButton = Button.builder(Component.translatable("controls.resetAll"), var1 -> {
-         for(KeyMapping var5 : this.options.keyMappings) {
+         for (KeyMapping var5 : this.options.keyMappings) {
             var5.setKey(var5.getDefaultKey());
          }
 
@@ -86,7 +86,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
       super.render(var1, var2, var3, var4);
       boolean var5 = false;
 
-      for(KeyMapping var9 : this.options.keyMappings) {
+      for (KeyMapping var9 : this.options.keyMappings) {
          if (!var9.isDefault()) {
             var5 = true;
             break;

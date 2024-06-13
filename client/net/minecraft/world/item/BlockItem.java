@@ -44,7 +44,7 @@ public class BlockItem extends Item {
    public InteractionResult useOn(UseOnContext var1) {
       InteractionResult var2 = this.place(new BlockPlaceContext(var1));
       if (!var2.consumesAction() && var1.getItemInHand().has(DataComponents.FOOD)) {
-         InteractionResult var3 = this.use(var1.getLevel(), var1.getPlayer(), var1.getHand()).getResult();
+         InteractionResult var3 = super.use(var1.getLevel(), var1.getPlayer(), var1.getHand()).getResult();
          return var3 == InteractionResult.CONSUME ? InteractionResult.CONSUME_PARTIAL : var3;
       } else {
          return var2;
@@ -104,7 +104,8 @@ public class BlockItem extends Item {
    private static void updateBlockEntityComponents(Level var0, BlockPos var1, ItemStack var2) {
       BlockEntity var3 = var0.getBlockEntity(var1);
       if (var3 != null) {
-         var3.applyComponents(var2.getComponents());
+         var3.applyComponentsFromItemStack(var2);
+         var3.setChanged();
       }
    }
 
@@ -174,9 +175,9 @@ public class BlockItem extends Item {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
-      this.getBlock().appendHoverText(var1, var2, var3, var4, var2 != null ? var2.registryAccess() : null);
+      this.getBlock().appendHoverText(var1, var2, var3, var4);
    }
 
    public Block getBlock() {

@@ -45,7 +45,7 @@ public abstract class DiscreteVoxelShape {
    public abstract void fill(int var1, int var2, int var3);
 
    public boolean isEmpty() {
-      for(Direction.Axis var4 : AXIS_VALUES) {
+      for (Direction.Axis var4 : AXIS_VALUES) {
          if (this.firstFull(var4) >= this.lastFull(var4)) {
             return true;
          }
@@ -66,7 +66,7 @@ public abstract class DiscreteVoxelShape {
          if (var2 < this.getSize(var5) && var3 < this.getSize(var6)) {
             AxisCycle var7 = AxisCycle.between(Direction.Axis.X, var1);
 
-            for(int var8 = 0; var8 < var4; ++var8) {
+            for (int var8 = 0; var8 < var4; var8++) {
                if (this.isFull(var7, var8, var2, var3)) {
                   return var8;
                }
@@ -89,7 +89,7 @@ public abstract class DiscreteVoxelShape {
             int var6 = this.getSize(var1);
             AxisCycle var7 = AxisCycle.between(Direction.Axis.X, var1);
 
-            for(int var8 = var6 - 1; var8 >= 0; --var8) {
+            for (int var8 = var6 - 1; var8 >= 0; var8--) {
                if (this.isFull(var7, var8, var2, var3)) {
                   return var8 + 1;
                }
@@ -132,18 +132,18 @@ public abstract class DiscreteVoxelShape {
       int var7 = this.getSize(var5.cycle(Direction.Axis.Y));
       int var8 = this.getSize(var5.cycle(Direction.Axis.Z));
 
-      for(int var9 = 0; var9 <= var6; ++var9) {
-         for(int var10 = 0; var10 <= var7; ++var10) {
+      for (int var9 = 0; var9 <= var6; var9++) {
+         for (int var10 = 0; var10 <= var7; var10++) {
             int var4 = -1;
 
-            for(int var11 = 0; var11 <= var8; ++var11) {
+            for (int var11 = 0; var11 <= var8; var11++) {
                int var12 = 0;
                int var13 = 0;
 
-               for(int var14 = 0; var14 <= 1; ++var14) {
-                  for(int var15 = 0; var15 <= 1; ++var15) {
+               for (int var14 = 0; var14 <= 1; var14++) {
+                  for (int var15 = 0; var15 <= 1; var15++) {
                      if (this.isFullWide(var5, var9 + var14 - 1, var10 + var15 - 1, var11)) {
-                        ++var12;
+                        var12++;
                         var13 ^= var14 ^ var15;
                      }
                   }
@@ -199,11 +199,11 @@ public abstract class DiscreteVoxelShape {
       Direction var8 = Direction.fromAxisAndDirection(var4, Direction.AxisDirection.NEGATIVE);
       Direction var9 = Direction.fromAxisAndDirection(var4, Direction.AxisDirection.POSITIVE);
 
-      for(int var10 = 0; var10 < var5; ++var10) {
-         for(int var11 = 0; var11 < var6; ++var11) {
+      for (int var10 = 0; var10 < var5; var10++) {
+         for (int var11 = 0; var11 < var6; var11++) {
             boolean var12 = false;
 
-            for(int var13 = 0; var13 <= var7; ++var13) {
+            for (int var13 = 0; var13 <= var7; var13++) {
                boolean var14 = var13 != var7 && this.isFull(var3, var10, var11, var13);
                if (!var12 && var14) {
                   var1.consume(

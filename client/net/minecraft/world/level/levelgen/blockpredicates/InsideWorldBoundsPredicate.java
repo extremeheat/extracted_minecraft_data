@@ -1,14 +1,13 @@
 package net.minecraft.world.level.levelgen.blockpredicates;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.WorldGenLevel;
 
 public class InsideWorldBoundsPredicate implements BlockPredicate {
-   public static final Codec<InsideWorldBoundsPredicate> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<InsideWorldBoundsPredicate> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", BlockPos.ZERO).forGetter(var0x -> var0x.offset))
             .apply(var0, InsideWorldBoundsPredicate::new)
    );

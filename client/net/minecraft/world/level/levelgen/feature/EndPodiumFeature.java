@@ -29,7 +29,7 @@ public class EndPodiumFeature extends Feature<NoneFeatureConfiguration> {
       BlockPos var2 = var1.origin();
       WorldGenLevel var3 = var1.level();
 
-      for(BlockPos var5 : BlockPos.betweenClosed(
+      for (BlockPos var5 : BlockPos.betweenClosed(
          new BlockPos(var2.getX() - 4, var2.getY() - 1, var2.getZ() - 4), new BlockPos(var2.getX() + 4, var2.getY() + 32, var2.getZ() + 4)
       )) {
          boolean var6 = var5.closerThan(var2, 2.5);
@@ -52,13 +52,13 @@ public class EndPodiumFeature extends Feature<NoneFeatureConfiguration> {
          }
       }
 
-      for(int var7 = 0; var7 < 4; ++var7) {
+      for (int var7 = 0; var7 < 4; var7++) {
          this.setBlock(var3, var2.above(var7), Blocks.BEDROCK.defaultBlockState());
       }
 
       BlockPos var8 = var2.above(2);
 
-      for(Direction var10 : Direction.Plane.HORIZONTAL) {
+      for (Direction var10 : Direction.Plane.HORIZONTAL) {
          this.setBlock(var3, var8.relative(var10), Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, var10));
       }
 

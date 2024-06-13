@@ -32,9 +32,9 @@ public class ViewArea {
          int var2 = this.sectionGridSizeX * this.sectionGridSizeY * this.sectionGridSizeZ;
          this.sections = new SectionRenderDispatcher.RenderSection[var2];
 
-         for(int var3 = 0; var3 < this.sectionGridSizeX; ++var3) {
-            for(int var4 = 0; var4 < this.sectionGridSizeY; ++var4) {
-               for(int var5 = 0; var5 < this.sectionGridSizeZ; ++var5) {
+         for (int var3 = 0; var3 < this.sectionGridSizeX; var3++) {
+            for (int var4 = 0; var4 < this.sectionGridSizeY; var4++) {
+               for (int var5 = 0; var5 < this.sectionGridSizeZ; var5++) {
                   int var6 = this.getSectionIndex(var3, var4, var5);
                   this.sections[var6] = var1.new RenderSection(var6, var3 * 16, this.level.getMinBuildHeight() + var4 * 16, var5 * 16);
                }
@@ -44,7 +44,7 @@ public class ViewArea {
    }
 
    public void releaseAllBuffers() {
-      for(SectionRenderDispatcher.RenderSection var4 : this.sections) {
+      for (SectionRenderDispatcher.RenderSection var4 : this.sections) {
          var4.releaseBuffers();
       }
    }
@@ -73,17 +73,17 @@ public class ViewArea {
       int var5 = Mth.ceil(var1);
       int var6 = Mth.ceil(var3);
 
-      for(int var7 = 0; var7 < this.sectionGridSizeX; ++var7) {
+      for (int var7 = 0; var7 < this.sectionGridSizeX; var7++) {
          int var8 = this.sectionGridSizeX * 16;
          int var9 = var5 - 8 - var8 / 2;
          int var10 = var9 + Math.floorMod(var7 * 16 - var9, var8);
 
-         for(int var11 = 0; var11 < this.sectionGridSizeZ; ++var11) {
+         for (int var11 = 0; var11 < this.sectionGridSizeZ; var11++) {
             int var12 = this.sectionGridSizeZ * 16;
             int var13 = var6 - 8 - var12 / 2;
             int var14 = var13 + Math.floorMod(var11 * 16 - var13, var12);
 
-            for(int var15 = 0; var15 < this.sectionGridSizeY; ++var15) {
+            for (int var15 = 0; var15 < this.sectionGridSizeY; var15++) {
                int var16 = this.level.getMinBuildHeight() + var15 * 16;
                SectionRenderDispatcher.RenderSection var17 = this.sections[this.getSectionIndex(var7, var15, var11)];
                BlockPos var18 = var17.getOrigin();

@@ -77,7 +77,7 @@ public class BoundingBox {
    }
 
    public static BoundingBox orientBox(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, Direction var9) {
-      switch(var9) {
+      switch (var9) {
          case SOUTH:
          default:
             return new BoundingBox(var0 + var3, var1 + var4, var2 + var5, var0 + var6 - 1 + var3, var1 + var7 - 1 + var4, var2 + var8 - 1 + var5);
@@ -180,10 +180,6 @@ public class BoundingBox {
       return new BoundingBox(this.minX() - var1, this.minY() - var1, this.minZ() - var1, this.maxX() + var1, this.maxY() + var1, this.maxZ() + var1);
    }
 
-   public BoundingBox inflatedBy(int var1, int var2, int var3) {
-      return new BoundingBox(this.minX() - var1, this.minY() - var2, this.minZ() - var3, this.maxX() + var1, this.maxY() + var2, this.maxZ() + var3);
-   }
-
    public boolean isInside(Vec3i var1) {
       return this.isInside(var1.getX(), var1.getY(), var1.getZ());
    }
@@ -240,16 +236,15 @@ public class BoundingBox {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof BoundingBox)) {
-         return false;
       } else {
-         BoundingBox var2 = (BoundingBox)var1;
-         return this.minX == var2.minX
-            && this.minY == var2.minY
-            && this.minZ == var2.minZ
-            && this.maxX == var2.maxX
-            && this.maxY == var2.maxY
-            && this.maxZ == var2.maxZ;
+         return !(var1 instanceof BoundingBox var2)
+            ? false
+            : this.minX == var2.minX
+               && this.minY == var2.minY
+               && this.minZ == var2.minZ
+               && this.maxX == var2.maxX
+               && this.maxY == var2.maxY
+               && this.maxZ == var2.maxZ;
       }
    }
 

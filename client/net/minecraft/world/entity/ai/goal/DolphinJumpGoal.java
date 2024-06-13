@@ -31,7 +31,7 @@ public class DolphinJumpGoal extends JumpGoal {
          int var3 = var1.getStepZ();
          BlockPos var4 = this.dolphin.blockPosition();
 
-         for(int var8 : STEPS_TO_CHECK) {
+         for (int var8 : STEPS_TO_CHECK) {
             if (!this.waterIsClear(var4, var2, var3, var8) || !this.surfaceIsClear(var4, var2, var3, var8)) {
                return false;
             }

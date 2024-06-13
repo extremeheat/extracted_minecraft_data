@@ -38,7 +38,7 @@ public class HurtByTargetGoal extends TargetGoal {
          if (var2.getType() == EntityType.PLAYER && this.mob.level().getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
             return false;
          } else {
-            for(Class var6 : this.toIgnoreDamage) {
+            for (Class var6 : this.toIgnoreDamage) {
                if (var6.isAssignableFrom(var2.getClass())) {
                   return false;
                }
@@ -76,9 +76,9 @@ public class HurtByTargetGoal extends TargetGoal {
       List var4 = this.mob.level().getEntitiesOfClass(this.mob.getClass(), var3, EntitySelector.NO_SPECTATORS);
       Iterator var5 = var4.iterator();
 
-      while(true) {
+      while (true) {
          Mob var6;
-         while(true) {
+         while (true) {
             if (!var5.hasNext()) {
                return;
             }
@@ -94,7 +94,7 @@ public class HurtByTargetGoal extends TargetGoal {
 
                boolean var7 = false;
 
-               for(Class var11 : this.toIgnoreAlert) {
+               for (Class var11 : this.toIgnoreAlert) {
                   if (var6.getClass() == var11) {
                      var7 = true;
                      break;

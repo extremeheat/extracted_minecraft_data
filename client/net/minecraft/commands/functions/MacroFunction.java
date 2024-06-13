@@ -56,7 +56,7 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
       } else {
          ArrayList var3 = new ArrayList(this.parameters.size());
 
-         for(String var5 : this.parameters) {
+         for (String var5 : this.parameters) {
             Tag var6 = var1.get(var5);
             if (var6 == null) {
                throw new FunctionInstantiationException(
@@ -82,8 +82,6 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static String stringify(Tag var0) {
       if (var0 instanceof FloatTag var1) {
          return DECIMAL_FORMAT.format((double)var1.getAsFloat());
@@ -107,7 +105,7 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
       ArrayList var4 = new ArrayList(this.entries.size());
       ArrayList var5 = new ArrayList(var2.size());
 
-      for(MacroFunction.Entry var7 : this.entries) {
+      for (MacroFunction.Entry var7 : this.entries) {
          lookupValues(var2, var7.parameters(), var5);
          var4.add(var7.instantiate(var5, var3, this.id));
       }
@@ -130,7 +128,7 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
          super();
          this.template = var1;
          this.parameters = var2;
-         this.compilationContext = var3;
+         this.compilationContext = (T)var3;
       }
 
       @Override

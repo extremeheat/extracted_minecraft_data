@@ -137,7 +137,7 @@ public class Ravager extends Raider {
             boolean var7 = false;
             AABB var2 = this.getBoundingBox().inflate(0.2);
 
-            for(BlockPos var4 : BlockPos.betweenClosed(
+            for (BlockPos var4 : BlockPos.betweenClosed(
                Mth.floor(var2.minX), Mth.floor(var2.minY), Mth.floor(var2.minZ), Mth.floor(var2.maxX), Mth.floor(var2.maxY), Mth.floor(var2.maxZ)
             )) {
                BlockState var5 = this.level().getBlockState(var4);
@@ -153,18 +153,18 @@ public class Ravager extends Raider {
          }
 
          if (this.roarTick > 0) {
-            --this.roarTick;
+            this.roarTick--;
             if (this.roarTick == 10) {
                this.roar();
             }
          }
 
          if (this.attackTick > 0) {
-            --this.attackTick;
+            this.attackTick--;
          }
 
          if (this.stunnedTick > 0) {
-            --this.stunnedTick;
+            this.stunnedTick--;
             this.stunEffect();
             if (this.stunnedTick == 0) {
                this.playSound(SoundEvents.RAVAGER_ROAR, 1.0F, 1.0F);
@@ -212,7 +212,7 @@ public class Ravager extends Raider {
 
    private void roar() {
       if (this.isAlive()) {
-         for(LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), NO_RAVAGER_AND_ALIVE)) {
+         for (LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), NO_RAVAGER_AND_ALIVE)) {
             if (!(var3 instanceof AbstractIllager)) {
                var3.hurt(this.damageSources().mobAttack(this), 6.0F);
             }
@@ -222,7 +222,7 @@ public class Ravager extends Raider {
 
          Vec3 var10 = this.getBoundingBox().getCenter();
 
-         for(int var11 = 0; var11 < 40; ++var11) {
+         for (int var11 = 0; var11 < 40; var11++) {
             double var4 = this.random.nextGaussian() * 0.2;
             double var6 = this.random.nextGaussian() * 0.2;
             double var8 = this.random.nextGaussian() * 0.2;

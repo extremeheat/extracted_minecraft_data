@@ -92,7 +92,7 @@ public class Selector {
       }
 
       private static Condition getKeyValueCondition(Entry<String, JsonElement> var0) {
-         return new KeyValueCondition(var0.getKey(), ((JsonElement)var0.getValue()).getAsString());
+         return new KeyValueCondition(var0.getKey(), var0.getValue().getAsString());
       }
    }
 }

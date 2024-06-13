@@ -44,7 +44,7 @@ public class Snowball extends ThrowableItemProjectile {
       if (var1 == 3) {
          ParticleOptions var2 = this.getParticle();
 
-         for(int var3 = 0; var3 < 8; ++var3) {
+         for (int var3 = 0; var3 < 8; var3++) {
             this.level().addParticle(var2, this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
          }
       }

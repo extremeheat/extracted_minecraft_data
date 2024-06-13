@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Collection;
 import net.minecraft.commands.CommandBuildContext;
@@ -63,10 +62,10 @@ public class GiveCommand {
          var0.sendFailure(Component.translatable("commands.give.failed.toomanyitems", var6, var4.getDisplayName()));
          return 0;
       } else {
-         for(ServerPlayer var8 : var2) {
+         for (ServerPlayer var8 : var2) {
             int var9 = var3;
 
-            while(var9 > 0) {
+            while (var9 > 0) {
                int var10 = Math.min(var5, var9);
                var9 -= var10;
                ItemStack var11 = var1.createItemStack(var10, false);

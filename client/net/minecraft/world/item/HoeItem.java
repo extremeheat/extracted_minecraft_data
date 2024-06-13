@@ -25,14 +25,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 public class HoeItem extends DiggerItem {
    protected static final Map<Block, Pair<Predicate<UseOnContext>, Consumer<UseOnContext>>> TILLABLES = Maps.newHashMap(
       ImmutableMap.of(
-         Blocks.CORRUPTED_PEELGRASS_BLOCK,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.POISON_FARMLAND.defaultBlockState())),
-         Blocks.PEELGRASS_BLOCK,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.POISON_FARMLAND.defaultBlockState())),
-         Blocks.TERREDEPOMME,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.POISON_FARMLAND.defaultBlockState())),
-         Blocks.POISON_PATH,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.POISON_FARMLAND.defaultBlockState())),
          Blocks.GRASS_BLOCK,
          Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())),
          Blocks.DIRT_PATH,
@@ -54,7 +46,7 @@ public class HoeItem extends DiggerItem {
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
-      Pair var4 = (Pair)TILLABLES.get(var2.getBlockState(var3).getBlock());
+      Pair var4 = TILLABLES.get(var2.getBlockState(var3).getBlock());
       if (var4 == null) {
          return InteractionResult.PASS;
       } else {

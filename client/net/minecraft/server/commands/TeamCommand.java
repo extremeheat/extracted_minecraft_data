@@ -6,7 +6,6 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.ArrayList;
@@ -363,7 +362,7 @@ public class TeamCommand {
    private static int leaveTeam(CommandSourceStack var0, Collection<ScoreHolder> var1) {
       ServerScoreboard var2 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var4 : var1) {
+      for (ScoreHolder var4 : var1) {
          var2.removePlayerFromTeam(var4.getScoreboardName());
       }
 
@@ -379,7 +378,7 @@ public class TeamCommand {
    private static int joinTeam(CommandSourceStack var0, PlayerTeam var1, Collection<ScoreHolder> var2) {
       ServerScoreboard var3 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var5 : var2) {
+      for (ScoreHolder var5 : var2) {
          var3.addPlayerToTeam(var5.getScoreboardName(), var1);
       }
 
@@ -486,7 +485,7 @@ public class TeamCommand {
       if (var3.isEmpty()) {
          throw ERROR_TEAM_ALREADY_EMPTY.create();
       } else {
-         for(String var5 : var3) {
+         for (String var5 : var3) {
             var2.removePlayerFromTeam(var5, var1);
          }
 

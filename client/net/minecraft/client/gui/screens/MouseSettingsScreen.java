@@ -26,8 +26,7 @@ public class MouseSettingsScreen extends OptionsSubScreen {
    protected void init() {
       this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
       if (InputConstants.isRawMouseInputSupported()) {
-         this.list
-            .addSmall(Stream.concat(Arrays.stream(options(this.options)), Stream.of(this.options.rawMouseInput())).toArray(var0 -> new OptionInstance[var0]));
+         this.list.addSmall(Stream.concat(Arrays.stream(options(this.options)), Stream.of(this.options.rawMouseInput())).toArray(OptionInstance[]::new));
       } else {
          this.list.addSmall(options(this.options));
       }

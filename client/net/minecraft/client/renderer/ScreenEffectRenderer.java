@@ -53,7 +53,7 @@ public class ScreenEffectRenderer {
    private static BlockState getViewBlockingState(Player var0) {
       BlockPos.MutableBlockPos var1 = new BlockPos.MutableBlockPos();
 
-      for(int var2 = 0; var2 < 8; ++var2) {
+      for (int var2 = 0; var2 < 8; var2++) {
          double var3 = var0.getX() + (double)(((float)((var2 >> 0) % 2) - 0.5F) * var0.getBbWidth() * 0.8F);
          double var5 = var0.getEyeY() + (double)(((float)((var2 >> 1) % 2) - 0.5F) * 0.1F * var0.getScale());
          double var7 = var0.getZ() + (double)(((float)((var2 >> 2) % 2) - 0.5F) * var0.getBbWidth() * 0.8F);
@@ -138,7 +138,7 @@ public class ScreenEffectRenderer {
       float var14 = Mth.lerp(var10, var8, var9);
       float var15 = 1.0F;
 
-      for(int var16 = 0; var16 < 2; ++var16) {
+      for (int var16 = 0; var16 < 2; var16++) {
          var1.pushPose();
          float var17 = -0.5F;
          float var18 = 0.5F;

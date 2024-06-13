@@ -23,7 +23,7 @@ public class ClientboundContainerSetContentPacket implements Packet<ClientGamePa
       this.stateId = var2;
       this.items = NonNullList.withSize(var3.size(), ItemStack.EMPTY);
 
-      for(int var5 = 0; var5 < var3.size(); ++var5) {
+      for (int var5 = 0; var5 < var3.size(); var5++) {
          this.items.set(var5, ((ItemStack)var3.get(var5)).copy());
       }
 

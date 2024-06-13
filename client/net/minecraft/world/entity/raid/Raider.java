@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -38,6 +37,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.AbstractIllager;
 import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -113,8 +113,6 @@ public abstract class Raider extends PatrollingMonster {
       this.noActionTime += 2;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void die(DamageSource var1) {
       if (this.level() instanceof ServerLevel) {
@@ -132,7 +130,10 @@ public abstract class Raider extends PatrollingMonster {
             var3.removeFromRaid(this, false);
          }
 
-         if (this.isPatrolLeader() && var3 == null && ((ServerLevel)this.level()).getRaidAt(this.blockPosition()) == null) {
+         if (!this.level().enabledFeatures().contains(FeatureFlags.UPDATE_1_21)
+            && this.isPatrolLeader()
+            && var3 == null
+            && ((ServerLevel)this.level()).getRaidAt(this.blockPosition()) == null) {
             ItemStack var4 = this.getItemBySlot(EquipmentSlot.HEAD);
             Player var5 = null;
             if (var2 instanceof Player) {
@@ -153,7 +154,7 @@ public abstract class Raider extends PatrollingMonster {
                   var11 += var10.getAmplifier();
                   var5.removeEffectNoUpdate(MobEffects.BAD_OMEN);
                } else {
-                  --var11;
+                  var11--;
                }
 
                var11 = Mth.clamp(var11, 0, 4);
@@ -180,6 +181,17 @@ public abstract class Raider extends PatrollingMonster {
    @Nullable
    public Raid getCurrentRaid() {
       return this.raid;
+   }
+
+   public boolean isCaptain() {
+      ItemStack var1 = this.getItemBySlot(EquipmentSlot.HEAD);
+      boolean var2 = !var1.isEmpty() && ItemStack.matches(var1, Raid.getLeaderBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
+      boolean var3 = this.isPatrolLeader();
+      return var2 && var3;
+   }
+
+   public boolean hasRaid() {
+      return !(this.level() instanceof ServerLevel var1) ? false : this.getCurrentRaid() != null || var1.getRaidAt(this.blockPosition()) != null;
    }
 
    public boolean hasActiveRaid() {
@@ -319,7 +331,7 @@ public abstract class Raider extends PatrollingMonster {
          super.start();
          this.mob.getNavigation().stop();
 
-         for(Raider var3 : this.mob.level().getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
+         for (Raider var3 : this.mob.level().getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
             var3.setTarget(this.mob.getTarget());
          }
       }
@@ -329,7 +341,9 @@ public abstract class Raider extends PatrollingMonster {
          super.stop();
          LivingEntity var1 = this.mob.getTarget();
          if (var1 != null) {
-            for(Raider var4 : this.mob.level().getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
+            for (Raider var4 : this.mob
+               .level()
+               .getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
                var4.setTarget(var1);
                var4.setAggressive(true);
             }
@@ -366,7 +380,7 @@ public abstract class Raider extends PatrollingMonster {
 
       public ObtainRaidLeaderBannerGoal(T var2) {
          super();
-         this.mob = var2;
+         this.mob = (T)var2;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
@@ -486,13 +500,11 @@ public abstract class Raider extends PatrollingMonster {
 
       @Override
       public boolean canContinueToUse() {
-         if (this.raider.getNavigation().isDone()) {
-            return false;
-         } else {
-            return this.raider.getTarget() == null
+         return this.raider.getNavigation().isDone()
+            ? false
+            : this.raider.getTarget() == null
                && !this.poiPos.closerToCenterThan(this.raider.position(), (double)(this.raider.getBbWidth() + (float)this.distanceToPoi))
                && !this.stuck;
-         }
       }
 
       @Override
@@ -529,7 +541,7 @@ public abstract class Raider extends PatrollingMonster {
       }
 
       private boolean hasNotVisited(BlockPos var1) {
-         for(BlockPos var3 : this.visited) {
+         for (BlockPos var3 : this.visited) {
             if (Objects.equals(var1, var3)) {
                return false;
             }

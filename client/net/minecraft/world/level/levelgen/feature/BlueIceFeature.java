@@ -26,7 +26,7 @@ public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
       } else {
          boolean var5 = false;
 
-         for(Direction var9 : Direction.values()) {
+         for (Direction var9 : Direction.values()) {
             if (var9 != Direction.DOWN && var3.getBlockState(var2.relative(var9)).is(Blocks.PACKED_ICE)) {
                var5 = true;
                break;
@@ -38,7 +38,7 @@ public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
          } else {
             var3.setBlock(var2, Blocks.BLUE_ICE.defaultBlockState(), 2);
 
-            for(int var16 = 0; var16 < 200; ++var16) {
+            for (int var16 = 0; var16 < 200; var16++) {
                int var17 = var4.nextInt(5) - var4.nextInt(6);
                int var18 = 3;
                if (var17 < 2) {
@@ -49,7 +49,7 @@ public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
                   BlockPos var19 = var2.offset(var4.nextInt(var18) - var4.nextInt(var18), var17, var4.nextInt(var18) - var4.nextInt(var18));
                   BlockState var10 = var3.getBlockState(var19);
                   if (var10.isAir() || var10.is(Blocks.WATER) || var10.is(Blocks.PACKED_ICE) || var10.is(Blocks.ICE)) {
-                     for(Direction var14 : Direction.values()) {
+                     for (Direction var14 : Direction.values()) {
                         BlockState var15 = var3.getBlockState(var19.relative(var14));
                         if (var15.is(Blocks.BLUE_ICE)) {
                            var3.setBlock(var19, Blocks.BLUE_ICE.defaultBlockState(), 2);

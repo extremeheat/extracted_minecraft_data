@@ -89,7 +89,7 @@ public class CombatTracker {
       if (this.entries.isEmpty()) {
          return Component.translatable("death.attack.generic", this.mob.getDisplayName());
       } else {
-         CombatEntry var1 = (CombatEntry)this.entries.get(this.entries.size() - 1);
+         CombatEntry var1 = this.entries.get(this.entries.size() - 1);
          DamageSource var2 = var1.source();
          CombatEntry var3 = this.getMostSignificantFall();
          DeathMessageType var4 = var2.type().deathMessageType();
@@ -112,9 +112,9 @@ public class CombatTracker {
       float var3 = 0.0F;
       float var4 = 0.0F;
 
-      for(int var5 = 0; var5 < this.entries.size(); ++var5) {
-         CombatEntry var6 = (CombatEntry)this.entries.get(var5);
-         CombatEntry var7 = var5 > 0 ? (CombatEntry)this.entries.get(var5 - 1) : null;
+      for (int var5 = 0; var5 < this.entries.size(); var5++) {
+         CombatEntry var6 = this.entries.get(var5);
+         CombatEntry var7 = var5 > 0 ? this.entries.get(var5 - 1) : null;
          DamageSource var8 = var6.source();
          boolean var9 = var8.is(DamageTypeTags.ALWAYS_MOST_SIGNIFICANT_FALL);
          float var10 = var9 ? 3.4028235E38F : var6.fallDistance();

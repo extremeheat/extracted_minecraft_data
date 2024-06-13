@@ -68,7 +68,7 @@ public final class ProjectileUtil {
       Entity var10 = null;
       Vec3 var11 = null;
 
-      for(Entity var13 : var7.getEntities(var0, var3, var4)) {
+      for (Entity var13 : var7.getEntities(var0, var3, var4)) {
          AABB var14 = var13.getBoundingBox().inflate((double)var13.getPickRadius());
          Optional var15 = var14.clip(var1, var2);
          if (var14.contains(var1)) {
@@ -108,7 +108,7 @@ public final class ProjectileUtil {
       double var7 = 1.7976931348623157E308;
       Entity var9 = null;
 
-      for(Entity var11 : var0.getEntities(var1, var4, var5)) {
+      for (Entity var11 : var0.getEntities(var1, var4, var5)) {
          AABB var12 = var11.getBoundingBox().inflate((double)var6);
          Optional var13 = var12.clip(var2, var3);
          if (var13.isPresent()) {
@@ -130,19 +130,19 @@ public final class ProjectileUtil {
          var0.setYRot((float)(Mth.atan2(var2.z, var2.x) * 57.2957763671875) + 90.0F);
          var0.setXRot((float)(Mth.atan2(var3, var2.y) * 57.2957763671875) - 90.0F);
 
-         while(var0.getXRot() - var0.xRotO < -180.0F) {
+         while (var0.getXRot() - var0.xRotO < -180.0F) {
             var0.xRotO -= 360.0F;
          }
 
-         while(var0.getXRot() - var0.xRotO >= 180.0F) {
+         while (var0.getXRot() - var0.xRotO >= 180.0F) {
             var0.xRotO += 360.0F;
          }
 
-         while(var0.getYRot() - var0.yRotO < -180.0F) {
+         while (var0.getYRot() - var0.yRotO < -180.0F) {
             var0.yRotO -= 360.0F;
          }
 
-         while(var0.getYRot() - var0.yRotO >= 180.0F) {
+         while (var0.getYRot() - var0.yRotO >= 180.0F) {
             var0.yRotO += 360.0F;
          }
 

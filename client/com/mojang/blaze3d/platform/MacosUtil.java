@@ -39,7 +39,7 @@ public class MacosUtil {
    }
 
    private static long getStyleMask(NSObject var0) {
-      return var0.sendRaw("styleMask", new Object[0]);
+      return (Long)var0.sendRaw("styleMask", new Object[0]);
    }
 
    private static void toggleNativeFullscreen(NSObject var0) {

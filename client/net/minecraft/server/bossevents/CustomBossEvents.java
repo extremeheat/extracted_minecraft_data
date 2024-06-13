@@ -43,7 +43,7 @@ public class CustomBossEvents {
    public CompoundTag save(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
 
-      for(CustomBossEvent var4 : this.events.values()) {
+      for (CustomBossEvent var4 : this.events.values()) {
          var2.put(var4.getTextId().toString(), var4.save(var1));
       }
 
@@ -51,20 +51,20 @@ public class CustomBossEvents {
    }
 
    public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      for(String var4 : var1.getAllKeys()) {
+      for (String var4 : var1.getAllKeys()) {
          ResourceLocation var5 = new ResourceLocation(var4);
          this.events.put(var5, CustomBossEvent.load(var1.getCompound(var4), var5, var2));
       }
    }
 
    public void onPlayerConnect(ServerPlayer var1) {
-      for(CustomBossEvent var3 : this.events.values()) {
+      for (CustomBossEvent var3 : this.events.values()) {
          var3.onPlayerConnect(var1);
       }
    }
 
    public void onPlayerDisconnect(ServerPlayer var1) {
-      for(CustomBossEvent var3 : this.events.values()) {
+      for (CustomBossEvent var3 : this.events.values()) {
          var3.onPlayerDisconnect(var1);
       }
    }

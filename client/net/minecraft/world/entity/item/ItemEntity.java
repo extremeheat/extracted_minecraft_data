@@ -18,7 +18,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
@@ -29,7 +28,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.LubricationComponent;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
@@ -81,28 +79,19 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return this.getItem().is(ItemTags.DAMPENS_VIBRATIONS);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public Entity getOwner() {
       if (this.cachedThrower != null && !this.cachedThrower.isRemoved()) {
          return this.cachedThrower;
+      } else if (this.thrower != null && this.level() instanceof ServerLevel var1) {
+         this.cachedThrower = var1.getEntity(this.thrower);
+         return this.cachedThrower;
       } else {
-         if (this.thrower != null) {
-            Level var2 = this.level();
-            if (var2 instanceof ServerLevel var1) {
-               this.cachedThrower = var1.getEntity(this.thrower);
-               return this.cachedThrower;
-            }
-         }
-
          return null;
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
@@ -133,7 +122,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
       } else {
          super.tick();
          if (this.pickupDelay > 0 && this.pickupDelay != 32767) {
-            --this.pickupDelay;
+            this.pickupDelay--;
          }
 
          this.xo = this.getX();
@@ -162,17 +151,13 @@ public class ItemEntity extends Entity implements TraceableEntity {
             float var2 = 0.98F;
             if (this.onGround()) {
                var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
-               LubricationComponent var3 = this.getItem().get(DataComponents.LUBRICATION);
-               if (var3 != null) {
-                  var2 = var3.applyToFriction(var2);
-               }
             }
 
             this.setDeltaMovement(this.getDeltaMovement().multiply((double)var2, 0.98, (double)var2));
             if (this.onGround()) {
-               Vec3 var7 = this.getDeltaMovement();
-               if (var7.y < 0.0) {
-                  this.setDeltaMovement(var7.multiply(1.0, -0.5, 1.0));
+               Vec3 var3 = this.getDeltaMovement();
+               if (var3.y < 0.0) {
+                  this.setDeltaMovement(var3.multiply(1.0, -0.5, 1.0));
                }
             }
          }
@@ -180,16 +165,16 @@ public class ItemEntity extends Entity implements TraceableEntity {
          boolean var6 = Mth.floor(this.xo) != Mth.floor(this.getX())
             || Mth.floor(this.yo) != Mth.floor(this.getY())
             || Mth.floor(this.zo) != Mth.floor(this.getZ());
-         int var8 = var6 ? 2 : 40;
-         if (this.tickCount % var8 == 0 && !this.level().isClientSide && this.isMergable()) {
+         int var7 = var6 ? 2 : 40;
+         if (this.tickCount % var7 == 0 && !this.level().isClientSide && this.isMergable()) {
             this.mergeWithNeighbours();
          }
 
          if (this.age != -32768) {
-            ++this.age;
+            this.age++;
          }
 
-         this.hasImpulse |= this.updateInWaterStateAndDoFluidPushing();
+         this.hasImpulse = this.hasImpulse | this.updateInWaterStateAndDoFluidPushing();
          if (!this.level().isClientSide) {
             double var4 = this.getDeltaMovement().subtract(var1).lengthSqr();
             if (var4 > 0.01) {
@@ -216,18 +201,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
    private void setUnderLavaMovement() {
       Vec3 var1 = this.getDeltaMovement();
       this.setDeltaMovement(var1.x * 0.949999988079071, var1.y + (double)(var1.y < 0.05999999865889549 ? 5.0E-4F : 0.0F), var1.z * 0.949999988079071);
-      if (this.getItem().is(Items.HOT_POTATO)) {
-         this.setDeltaMovement(
-            var1.x + ((double)this.random.nextFloat() - 0.5) * 0.21,
-            var1.y + (double)this.random.nextFloat() * 0.1337,
-            var1.z + ((double)this.random.nextFloat() - 0.5) * 0.21
-         );
-      }
    }
 
    private void mergeWithNeighbours() {
       if (this.isMergable()) {
-         for(ItemEntity var3 : this.level()
+         for (ItemEntity var3 : this.level()
             .getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.5, 0.0, 0.5), var1 -> var1 != this && var1.isMergable())) {
             if (var3.isMergable()) {
                this.tryToMerge(var3);
@@ -290,35 +268,22 @@ public class ItemEntity extends Entity implements TraceableEntity {
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
+      } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.is(DamageTypeTags.IS_EXPLOSION)) {
+         return false;
+      } else if (!this.getItem().canBeHurtBy(var1)) {
+         return false;
+      } else if (this.level().isClientSide) {
+         return true;
       } else {
-         ItemStack var3 = this.getItem();
-         if (!var3.isEmpty() && var3.is(Items.NETHER_STAR) && var1.is(DamageTypeTags.IS_EXPLOSION)) {
-            return false;
-         } else if (!var3.canBeHurtBy(var1)) {
-            return false;
-         } else if (this.level().isClientSide) {
-            return true;
-         } else if (var3.is(ItemTags.HEATABLE_POTATOS) && var1.is(DamageTypes.LAVA)) {
-            this.setItem(var3.transmuteCopy(Items.HOT_POTATO, 1));
-
-            for(int var4 = 0; var4 < var3.getCount() - 1; ++var4) {
-               ItemEntity var5 = new ItemEntity(this);
-               var5.getItem().setCount(1);
-               this.level().addFreshEntity(var5);
-            }
-
-            return true;
-         } else {
-            this.markHurt();
-            this.health = (int)((float)this.health - var2);
-            this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-            if (this.health <= 0) {
-               var3.onDestroyed(this);
-               this.discard();
-            }
-
-            return true;
+         this.markHurt();
+         this.health = (int)((float)this.health - var2);
+         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
+         if (this.health <= 0) {
+            this.getItem().onDestroyed(this);
+            this.discard();
          }
+
+         return true;
       }
    }
 
@@ -401,13 +366,13 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Nullable
    @Override
-   public Entity changeDimension(ServerLevel var1, boolean var2) {
-      Entity var3 = super.changeDimension(var1, var2);
-      if (!this.level().isClientSide && var3 instanceof ItemEntity) {
-         ((ItemEntity)var3).mergeWithNeighbours();
+   public Entity changeDimension(ServerLevel var1) {
+      Entity var2 = super.changeDimension(var1);
+      if (!this.level().isClientSide && var2 instanceof ItemEntity) {
+         ((ItemEntity)var2).mergeWithNeighbours();
       }
 
-      return var3;
+      return var2;
    }
 
    public ItemStack getItem() {

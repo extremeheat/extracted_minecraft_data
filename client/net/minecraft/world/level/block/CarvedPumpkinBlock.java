@@ -81,7 +81,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
       var2.moveTo((double)var3.getX() + 0.5, (double)var3.getY() + 0.05, (double)var3.getZ() + 0.5, 0.0F, 0.0F);
       var0.addFreshEntity(var2);
 
-      for(ServerPlayer var5 : var0.getEntitiesOfClass(ServerPlayer.class, var2.getBoundingBox().inflate(5.0))) {
+      for (ServerPlayer var5 : var0.getEntitiesOfClass(ServerPlayer.class, var2.getBoundingBox().inflate(5.0))) {
          CriteriaTriggers.SUMMONED_ENTITY.trigger(var5, var2);
       }
 
@@ -89,8 +89,8 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    }
 
    public static void clearPatternBlocks(Level var0, BlockPattern.BlockPatternMatch var1) {
-      for(int var2 = 0; var2 < var1.getWidth(); ++var2) {
-         for(int var3 = 0; var3 < var1.getHeight(); ++var3) {
+      for (int var2 = 0; var2 < var1.getWidth(); var2++) {
+         for (int var3 = 0; var3 < var1.getHeight(); var3++) {
             BlockInWorld var4 = var1.getBlock(var2, var3, 0);
             var0.setBlock(var4.getPos(), Blocks.AIR.defaultBlockState(), 2);
             var0.levelEvent(2001, var4.getPos(), Block.getId(var4.getState()));
@@ -99,8 +99,8 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    }
 
    public static void updatePatternBlocks(Level var0, BlockPattern.BlockPatternMatch var1) {
-      for(int var2 = 0; var2 < var1.getWidth(); ++var2) {
-         for(int var3 = 0; var3 < var1.getHeight(); ++var3) {
+      for (int var2 = 0; var2 < var1.getWidth(); var2++) {
+         for (int var3 = 0; var3 < var1.getHeight(); var3++) {
             BlockInWorld var4 = var1.getBlock(var2, var3, 0);
             var0.blockUpdated(var4.getPos(), Blocks.AIR);
          }

@@ -10,9 +10,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.effect.MobEffect;
 
-public record ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> b, Optional<Holder<MobEffect>> c) implements Packet<ServerGamePacketListener> {
-   private final Optional<Holder<MobEffect>> primary;
-   private final Optional<Holder<MobEffect>> secondary;
+public record ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> primary, Optional<Holder<MobEffect>> secondary) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundSetBeaconPacket> STREAM_CODEC = StreamCodec.composite(
       ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).apply(ByteBufCodecs::optional),
       ServerboundSetBeaconPacket::primary,
@@ -21,10 +19,10 @@ public record ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> b, Optional
       ServerboundSetBeaconPacket::new
    );
 
-   public ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> var1, Optional<Holder<MobEffect>> var2) {
+   public ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> primary, Optional<Holder<MobEffect>> secondary) {
       super();
-      this.primary = var1;
-      this.secondary = var2;
+      this.primary = primary;
+      this.secondary = secondary;
    }
 
    @Override

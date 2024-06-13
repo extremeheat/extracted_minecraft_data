@@ -95,11 +95,11 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
       VoxelShape var19 = Block.box((double)var9, (double)var4, (double)var9, 16.0, (double)var6, (double)var10);
       Builder var20 = ImmutableMap.builder();
 
-      for(Boolean var22 : UP.getPossibleValues()) {
-         for(WallSide var24 : EAST_WALL.getPossibleValues()) {
-            for(WallSide var26 : NORTH_WALL.getPossibleValues()) {
-               for(WallSide var28 : WEST_WALL.getPossibleValues()) {
-                  for(WallSide var30 : SOUTH_WALL.getPossibleValues()) {
+      for (Boolean var22 : UP.getPossibleValues()) {
+         for (WallSide var24 : EAST_WALL.getPossibleValues()) {
+            for (WallSide var26 : NORTH_WALL.getPossibleValues()) {
+               for (WallSide var28 : WEST_WALL.getPossibleValues()) {
+                  for (WallSide var30 : SOUTH_WALL.getPossibleValues()) {
                      VoxelShape var31 = Shapes.empty();
                      var31 = applyWallShape(var31, var24, var15, var19);
                      var31 = applyWallShape(var31, var28, var14, var18);
@@ -234,11 +234,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
             return true;
          } else {
             boolean var14 = var5 == WallSide.TALL && var6 == WallSide.TALL || var7 == WallSide.TALL && var8 == WallSide.TALL;
-            if (var14) {
-               return false;
-            } else {
-               return var2.is(BlockTags.WALL_POST_OVERRIDE) || isCovered(var3, POST_TEST);
-            }
+            return var14 ? false : var2.is(BlockTags.WALL_POST_OVERRIDE) || isCovered(var3, POST_TEST);
          }
       }
    }
@@ -275,7 +271,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
 
    @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+      switch (var2) {
          case CLOCKWISE_180:
             return var1.setValue(NORTH_WALL, var1.getValue(SOUTH_WALL))
                .setValue(EAST_WALL, var1.getValue(WEST_WALL))
@@ -298,7 +294,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
 
    @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
             return var1.setValue(NORTH_WALL, var1.getValue(SOUTH_WALL)).setValue(SOUTH_WALL, var1.getValue(NORTH_WALL));
          case FRONT_BACK:

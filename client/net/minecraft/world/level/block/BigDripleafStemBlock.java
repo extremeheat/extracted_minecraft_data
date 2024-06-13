@@ -44,7 +44,7 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((Direction)var1.getValue(FACING)) {
+      switch ((Direction)var1.getValue(FACING)) {
          case SOUTH:
             return SOUTH_SHAPE;
          case NORTH:

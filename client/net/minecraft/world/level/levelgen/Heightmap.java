@@ -42,17 +42,17 @@ public class Heightmap {
       int var5 = var0.getHighestSectionPosition() + 16;
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-      for(int var7 = 0; var7 < 16; ++var7) {
-         for(int var8 = 0; var8 < 16; ++var8) {
-            for(Heightmap.Types var10 : var1) {
+      for (int var7 = 0; var7 < 16; var7++) {
+         for (int var8 = 0; var8 < 16; var8++) {
+            for (Heightmap.Types var10 : var1) {
                var3.add(var0.getOrCreateHeightmapUnprimed(var10));
             }
 
-            for(int var12 = var5 - 1; var12 >= var0.getMinBuildHeight(); --var12) {
+            for (int var12 = var5 - 1; var12 >= var0.getMinBuildHeight(); var12--) {
                var6.set(var7, var12, var8);
                BlockState var13 = var0.getBlockState(var6);
                if (!var13.is(Blocks.AIR)) {
-                  while(var4.hasNext()) {
+                  while (var4.hasNext()) {
                      Heightmap var11 = (Heightmap)var4.next();
                      if (var11.isOpaque.test(var13)) {
                         var11.setHeight(var7, var8, var12 + 1);
@@ -84,7 +84,7 @@ public class Heightmap {
          } else if (var5 - 1 == var2) {
             BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-            for(int var7 = var2 - 1; var7 >= this.chunk.getMinBuildHeight(); --var7) {
+            for (int var7 = var2 - 1; var7 >= this.chunk.getMinBuildHeight(); var7--) {
                var6.set(var1, var7, var3);
                if (this.isOpaque.test(this.chunk.getBlockState(var6))) {
                   this.setHeight(var1, var3, var7 + 1);

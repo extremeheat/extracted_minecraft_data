@@ -37,11 +37,7 @@ public class LevelLightEngine implements LightEventListener {
 
    @Override
    public boolean hasLightWork() {
-      if (this.skyEngine != null && this.skyEngine.hasLightWork()) {
-         return true;
-      } else {
-         return this.blockEngine != null && this.blockEngine.hasLightWork();
-      }
+      return this.skyEngine != null && this.skyEngine.hasLightWork() ? true : this.blockEngine != null && this.blockEngine.hasLightWork();
    }
 
    @Override
@@ -93,9 +89,9 @@ public class LevelLightEngine implements LightEventListener {
 
    public LayerLightEventListener getLayerListener(LightLayer var1) {
       if (var1 == LightLayer.BLOCK) {
-         return (LayerLightEventListener)(this.blockEngine == null ? LayerLightEventListener.ConstantLayer.ZERO : this.blockEngine);
+         return (LayerLightEventListener)(this.blockEngine == null ? LayerLightEventListener.DummyLightLayerEventListener.INSTANCE : this.blockEngine);
       } else {
-         return (LayerLightEventListener)(this.skyEngine == null ? LayerLightEventListener.ConstantLayer.ZERO : this.skyEngine);
+         return (LayerLightEventListener)(this.skyEngine == null ? LayerLightEventListener.DummyLightLayerEventListener.INSTANCE : this.skyEngine);
       }
    }
 

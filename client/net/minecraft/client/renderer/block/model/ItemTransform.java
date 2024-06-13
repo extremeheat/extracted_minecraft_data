@@ -94,7 +94,7 @@ public class ItemTransform {
             } else {
                float[] var5 = new float[3];
 
-               for(int var6 = 0; var6 < var5.length; ++var6) {
+               for (int var6 = 0; var6 < var5.length; var6++) {
                   var5[var6] = GsonHelper.convertToFloat(var4.get(var6), var2 + "[" + var6 + "]");
                }
 

@@ -59,8 +59,8 @@ public class TorchflowerCropBlock extends CropBlock {
    }
 
    @Override
-   public BlockState getStateForAge(int var1, BlockState var2) {
-      return var1 == 2 ? Blocks.TORCHFLOWER.defaultBlockState() : super.getStateForAge(var1, var2);
+   public BlockState getStateForAge(int var1) {
+      return var1 == 2 ? Blocks.TORCHFLOWER.defaultBlockState() : super.getStateForAge(var1);
    }
 
    @Override

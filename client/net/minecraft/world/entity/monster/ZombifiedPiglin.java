@@ -68,7 +68,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
 
    @Override
    protected void addBehaviourGoals() {
-      this.goalSelector.addGoal(2, new ZombieAttackGoal<>(this, 1.0, false));
+      this.goalSelector.addGoal(2, new ZombieAttackGoal(this, 1.0, false));
       this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
@@ -119,7 +119,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
 
    private void maybePlayFirstAngerSound() {
       if (this.playFirstAngerSoundIn > 0) {
-         --this.playFirstAngerSoundIn;
+         this.playFirstAngerSoundIn--;
          if (this.playFirstAngerSoundIn == 0) {
             this.playAngerSound();
          }
@@ -128,7 +128,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
 
    private void maybeAlertOthers() {
       if (this.ticksUntilNextAlert > 0) {
-         --this.ticksUntilNextAlert;
+         this.ticksUntilNextAlert--;
       } else {
          if (this.getSensing().hasLineOfSight(this.getTarget())) {
             this.alertOthers();

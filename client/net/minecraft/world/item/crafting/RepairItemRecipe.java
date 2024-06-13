@@ -23,7 +23,7 @@ public class RepairItemRecipe extends CustomRecipe {
       ItemStack var2 = null;
       ItemStack var3 = null;
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
+      for (int var4 = 0; var4 < var1.getContainerSize(); var4++) {
          ItemStack var5 = var1.getItem(var4);
          if (!var5.isEmpty()) {
             if (var2 == null) {
@@ -73,9 +73,9 @@ public class RepairItemRecipe extends CustomRecipe {
          ItemEnchantments var12 = EnchantmentHelper.getEnchantmentsForCrafting(var5);
          EnchantmentHelper.updateEnchantments(
             var10, var3x -> var2.lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Holder::value).filter(Enchantment::isCurse).forEach(var3xx -> {
-                  int var4xx = Math.max(var11.getLevel(var3xx), var12.getLevel(var3xx));
-                  if (var4xx > 0) {
-                     var3x.upgrade(var3xx, var4xx);
+                  int var4x = Math.max(var11.getLevel(var3xx), var12.getLevel(var3xx));
+                  if (var4x > 0) {
+                     var3x.upgrade(var3xx, var4x);
                   }
                })
          );

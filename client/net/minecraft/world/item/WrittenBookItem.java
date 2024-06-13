@@ -33,7 +33,7 @@ public class WrittenBookItem extends Item {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       WrittenBookContent var5 = var1.get(DataComponents.WRITTEN_BOOK_CONTENT);
       if (var5 != null) {
          if (!StringUtil.isBlank(var5.author())) {

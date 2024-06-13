@@ -26,7 +26,7 @@ public class DemoMode extends ServerPlayerGameMode {
    @Override
    public void tick() {
       super.tick();
-      ++this.gameModeTicks;
+      this.gameModeTicks++;
       long var1 = this.level.getGameTime();
       long var3 = var1 / 24000L + 1L;
       if (!this.displayedIntro && this.gameModeTicks > 20) {
@@ -36,7 +36,7 @@ public class DemoMode extends ServerPlayerGameMode {
 
       this.demoHasEnded = var1 > 120500L;
       if (this.demoHasEnded) {
-         ++this.demoEndedReminder;
+         this.demoEndedReminder++;
       }
 
       if (var1 % 24000L == 500L) {

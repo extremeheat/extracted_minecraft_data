@@ -450,7 +450,7 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
 
    private void uploadAsInteger() {
       this.intValues.rewind();
-      switch(this.type) {
+      switch (this.type) {
          case 0:
             RenderSystem.glUniform1(this.location, this.intValues);
             break;
@@ -470,7 +470,7 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
 
    private void uploadAsFloat() {
       this.floatValues.rewind();
-      switch(this.type) {
+      switch (this.type) {
          case 4:
             RenderSystem.glUniform1(this.location, this.floatValues);
             break;
@@ -490,7 +490,7 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
 
    private void uploadAsMatrix() {
       this.floatValues.clear();
-      switch(this.type) {
+      switch (this.type) {
          case 8:
             RenderSystem.glUniformMatrix2(this.location, false, this.floatValues);
             break;

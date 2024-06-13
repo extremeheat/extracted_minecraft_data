@@ -7,7 +7,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMaps;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
@@ -44,111 +43,104 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public record PlayerPredicate(
-   MinMaxBounds.Ints d,
-   Optional<GameType> e,
-   List<PlayerPredicate.StatMatcher<?>> f,
-   Object2BooleanMap<ResourceLocation> g,
-   Map<ResourceLocation, PlayerPredicate.AdvancementPredicate> h,
-   Optional<EntityPredicate> i
+   MinMaxBounds.Ints level,
+   Optional<GameType> gameType,
+   List<PlayerPredicate.StatMatcher<?>> stats,
+   Object2BooleanMap<ResourceLocation> recipes,
+   Map<ResourceLocation, PlayerPredicate.AdvancementPredicate> advancements,
+   Optional<EntityPredicate> lookingAt
 ) implements EntitySubPredicate {
-   private final MinMaxBounds.Ints level;
-   private final Optional<GameType> gameType;
-   private final List<PlayerPredicate.StatMatcher<?>> stats;
-   private final Object2BooleanMap<ResourceLocation> recipes;
-   private final Map<ResourceLocation, PlayerPredicate.AdvancementPredicate> advancements;
-   private final Optional<EntityPredicate> lookingAt;
    public static final int LOOKING_AT_RANGE = 100;
    public static final MapCodec<PlayerPredicate> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "level", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate::level),
+               MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate::level),
                GameType.CODEC.optionalFieldOf("gamemode").forGetter(PlayerPredicate::gameType),
-               ExtraCodecs.strictOptionalField(PlayerPredicate.StatMatcher.CODEC.listOf(), "stats", List.of()).forGetter(PlayerPredicate::stats),
-               ExtraCodecs.strictOptionalField(ExtraCodecs.object2BooleanMap(ResourceLocation.CODEC), "recipes", Object2BooleanMaps.emptyMap())
+               PlayerPredicate.StatMatcher.CODEC.listOf().optionalFieldOf("stats", List.of()).forGetter(PlayerPredicate::stats),
+               ExtraCodecs.object2BooleanMap(ResourceLocation.CODEC)
+                  .optionalFieldOf("recipes", Object2BooleanMaps.emptyMap())
                   .forGetter(PlayerPredicate::recipes),
-               ExtraCodecs.strictOptionalField(Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC), "advancements", Map.of())
+               Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC)
+                  .optionalFieldOf("advancements", Map.of())
                   .forGetter(PlayerPredicate::advancements),
-               ExtraCodecs.strictOptionalField(EntityPredicate.CODEC, "looking_at").forGetter(PlayerPredicate::lookingAt)
+               EntityPredicate.CODEC.optionalFieldOf("looking_at").forGetter(PlayerPredicate::lookingAt)
             )
             .apply(var0, PlayerPredicate::new)
    );
 
    public PlayerPredicate(
-      MinMaxBounds.Ints var1,
-      Optional<GameType> var2,
-      List<PlayerPredicate.StatMatcher<?>> var3,
-      Object2BooleanMap<ResourceLocation> var4,
-      Map<ResourceLocation, PlayerPredicate.AdvancementPredicate> var5,
-      Optional<EntityPredicate> var6
+      MinMaxBounds.Ints level,
+      Optional<GameType> gameType,
+      List<PlayerPredicate.StatMatcher<?>> stats,
+      Object2BooleanMap<ResourceLocation> recipes,
+      Map<ResourceLocation, PlayerPredicate.AdvancementPredicate> advancements,
+      Optional<EntityPredicate> lookingAt
    ) {
       super();
-      this.level = var1;
-      this.gameType = var2;
-      this.stats = var3;
-      this.recipes = var4;
-      this.advancements = var5;
-      this.lookingAt = var6;
+      this.level = level;
+      this.gameType = gameType;
+      this.stats = stats;
+      this.recipes = recipes;
+      this.advancements = advancements;
+      this.lookingAt = lookingAt;
    }
 
    @Override
    public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
-      if (!(var1 instanceof ServerPlayer)) {
+      if (!(var1 instanceof ServerPlayer var4)) {
+         return false;
+      } else if (!this.level.matches(var4.experienceLevel)) {
+         return false;
+      } else if (this.gameType.isPresent() && this.gameType.get() != var4.gameMode.getGameModeForPlayer()) {
          return false;
       } else {
-         ServerPlayer var4 = (ServerPlayer)var1;
-         if (!this.level.matches(var4.experienceLevel)) {
-            return false;
-         } else if (this.gameType.isPresent() && this.gameType.get() != var4.gameMode.getGameModeForPlayer()) {
-            return false;
-         } else {
-            ServerStatsCounter var5 = var4.getStats();
+         ServerStatsCounter var5 = var4.getStats();
 
-            for(PlayerPredicate.StatMatcher var7 : this.stats) {
-               if (!var7.matches(var5)) {
-                  return false;
-               }
+         for (PlayerPredicate.StatMatcher var7 : this.stats) {
+            if (!var7.matches(var5)) {
+               return false;
             }
-
-            ServerRecipeBook var12 = var4.getRecipeBook();
-            ObjectIterator var13 = this.recipes.object2BooleanEntrySet().iterator();
-
-            while(var13.hasNext()) {
-               Entry var8 = (Entry)var13.next();
-               if (var12.contains((ResourceLocation)var8.getKey()) != var8.getBooleanValue()) {
-                  return false;
-               }
-            }
-
-            if (!this.advancements.isEmpty()) {
-               PlayerAdvancements var14 = var4.getAdvancements();
-               ServerAdvancementManager var16 = var4.getServer().getAdvancements();
-
-               for(java.util.Map.Entry var10 : this.advancements.entrySet()) {
-                  AdvancementHolder var11 = var16.get((ResourceLocation)var10.getKey());
-                  if (var11 == null || !((PlayerPredicate.AdvancementPredicate)var10.getValue()).test(var14.getOrStartProgress(var11))) {
-                     return false;
-                  }
-               }
-            }
-
-            if (this.lookingAt.isPresent()) {
-               Vec3 var15 = var4.getEyePosition();
-               Vec3 var17 = var4.getViewVector(1.0F);
-               Vec3 var18 = var15.add(var17.x * 100.0, var17.y * 100.0, var17.z * 100.0);
-               EntityHitResult var19 = ProjectileUtil.getEntityHitResult(
-                  var4.level(), var4, var15, var18, new AABB(var15, var18).inflate(1.0), var0 -> !var0.isSpectator(), 0.0F
-               );
-               if (var19 == null || var19.getType() != HitResult.Type.ENTITY) {
-                  return false;
-               }
-
-               Entity var20 = var19.getEntity();
-               if (!((EntityPredicate)this.lookingAt.get()).matches(var4, var20) || !var4.hasLineOfSight(var20)) {
-                  return false;
-               }
-            }
-
-            return true;
          }
+
+         ServerRecipeBook var12 = var4.getRecipeBook();
+         ObjectIterator var13 = this.recipes.object2BooleanEntrySet().iterator();
+
+         while (var13.hasNext()) {
+            Entry var8 = (Entry)var13.next();
+            if (var12.contains((ResourceLocation)var8.getKey()) != var8.getBooleanValue()) {
+               return false;
+            }
+         }
+
+         if (!this.advancements.isEmpty()) {
+            PlayerAdvancements var14 = var4.getAdvancements();
+            ServerAdvancementManager var16 = var4.getServer().getAdvancements();
+
+            for (java.util.Map.Entry var10 : this.advancements.entrySet()) {
+               AdvancementHolder var11 = var16.get((ResourceLocation)var10.getKey());
+               if (var11 == null || !((PlayerPredicate.AdvancementPredicate)var10.getValue()).test(var14.getOrStartProgress(var11))) {
+                  return false;
+               }
+            }
+         }
+
+         if (this.lookingAt.isPresent()) {
+            Vec3 var15 = var4.getEyePosition();
+            Vec3 var17 = var4.getViewVector(1.0F);
+            Vec3 var18 = var15.add(var17.x * 100.0, var17.y * 100.0, var17.z * 100.0);
+            EntityHitResult var19 = ProjectileUtil.getEntityHitResult(
+               var4.level(), var4, var15, var18, new AABB(var15, var18).inflate(1.0), var0 -> !var0.isSpectator(), 0.0F
+            );
+            if (var19 == null || var19.getType() != HitResult.Type.ENTITY) {
+               return false;
+            }
+
+            Entity var20 = var19.getEntity();
+            if (!this.lookingAt.get().matches(var4, var20) || !var4.hasLineOfSight(var20)) {
+               return false;
+            }
+         }
+
+         return true;
       }
    }
 
@@ -157,20 +149,19 @@ public record PlayerPredicate(
       return EntitySubPredicates.PLAYER;
    }
 
-   static record AdvancementCriterionsPredicate(Object2BooleanMap<String> c) implements PlayerPredicate.AdvancementPredicate {
-      private final Object2BooleanMap<String> criterions;
+   static record AdvancementCriterionsPredicate(Object2BooleanMap<String> criterions) implements PlayerPredicate.AdvancementPredicate {
       public static final Codec<PlayerPredicate.AdvancementCriterionsPredicate> CODEC = ExtraCodecs.object2BooleanMap(Codec.STRING)
          .xmap(PlayerPredicate.AdvancementCriterionsPredicate::new, PlayerPredicate.AdvancementCriterionsPredicate::criterions);
 
-      AdvancementCriterionsPredicate(Object2BooleanMap<String> var1) {
+      AdvancementCriterionsPredicate(Object2BooleanMap<String> criterions) {
          super();
-         this.criterions = var1;
+         this.criterions = criterions;
       }
 
       public boolean test(AdvancementProgress var1) {
          ObjectIterator var2 = this.criterions.object2BooleanEntrySet().iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             Entry var3 = (Entry)var2.next();
             CriterionProgress var4 = var1.getCriterion((String)var3.getKey());
             if (var4 == null || var4.isDone() != var3.getBooleanValue()) {
@@ -182,14 +173,13 @@ public record PlayerPredicate(
       }
    }
 
-   static record AdvancementDonePredicate(boolean c) implements PlayerPredicate.AdvancementPredicate {
-      private final boolean state;
+   static record AdvancementDonePredicate(boolean state) implements PlayerPredicate.AdvancementPredicate {
       public static final Codec<PlayerPredicate.AdvancementDonePredicate> CODEC = Codec.BOOL
          .xmap(PlayerPredicate.AdvancementDonePredicate::new, PlayerPredicate.AdvancementDonePredicate::state);
 
-      AdvancementDonePredicate(boolean var1) {
+      AdvancementDonePredicate(boolean state) {
          super();
-         this.state = var1;
+         this.state = state;
       }
 
       public boolean test(AdvancementProgress var1) {
@@ -201,7 +191,7 @@ public record PlayerPredicate(
       Codec<PlayerPredicate.AdvancementPredicate> CODEC = Codec.either(
             PlayerPredicate.AdvancementDonePredicate.CODEC, PlayerPredicate.AdvancementCriterionsPredicate.CODEC
          )
-         .xmap(var0 -> (PlayerPredicate.AdvancementPredicate)var0.map(var0x -> var0x, var0x -> var0x), var0 -> {
+         .xmap(Either::unwrap, var0 -> {
             if (var0 instanceof PlayerPredicate.AdvancementDonePredicate var1) {
                return Either.left(var1);
             } else if (var0 instanceof PlayerPredicate.AdvancementCriterionsPredicate var2) {
@@ -234,7 +224,7 @@ public record PlayerPredicate(
       }
 
       public <T> PlayerPredicate.Builder addStat(StatType<T> var1, Holder.Reference<T> var2, MinMaxBounds.Ints var3) {
-         this.stats.add(new PlayerPredicate.StatMatcher<T>(var1, var2, var3));
+         this.stats.add(new PlayerPredicate.StatMatcher<>(var1, var2, var3));
          return this;
       }
 
@@ -268,11 +258,7 @@ public record PlayerPredicate(
       }
    }
 
-   static record StatMatcher<T>(StatType<T> b, Holder<T> c, MinMaxBounds.Ints d, Supplier<Stat<T>> e) {
-      private final StatType<T> type;
-      private final Holder<T> value;
-      private final MinMaxBounds.Ints range;
-      private final Supplier<Stat<T>> stat;
+   static record StatMatcher<T>(StatType<T> type, Holder<T> value, MinMaxBounds.Ints range, Supplier<Stat<T>> stat) {
       public static final Codec<PlayerPredicate.StatMatcher<?>> CODEC = BuiltInRegistries.STAT_TYPE
          .byNameCodec()
          .dispatch(PlayerPredicate.StatMatcher::type, PlayerPredicate.StatMatcher::createTypedCodec);
@@ -281,19 +267,19 @@ public record PlayerPredicate(
          this(var1, var2, var3, Suppliers.memoize(() -> var1.get(var2.value())));
       }
 
-      private StatMatcher(StatType<T> var1, Holder<T> var2, MinMaxBounds.Ints var3, Supplier<Stat<T>> var4) {
+      private StatMatcher(StatType<T> type, Holder<T> value, MinMaxBounds.Ints range, Supplier<Stat<T>> stat) {
          super();
-         this.type = var1;
-         this.value = var2;
-         this.range = var3;
-         this.stat = var4;
+         this.type = type;
+         this.value = value;
+         this.range = range;
+         this.stat = stat;
       }
 
-      private static <T> Codec<PlayerPredicate.StatMatcher<T>> createTypedCodec(StatType<T> var0) {
-         return RecordCodecBuilder.create(
+      private static <T> MapCodec<PlayerPredicate.StatMatcher<T>> createTypedCodec(StatType<T> var0) {
+         return RecordCodecBuilder.mapCodec(
             var1 -> var1.group(
                      var0.getRegistry().holderByNameCodec().fieldOf("stat").forGetter(PlayerPredicate.StatMatcher::value),
-                     ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "value", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate.StatMatcher::range)
+                     MinMaxBounds.Ints.CODEC.optionalFieldOf("value", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate.StatMatcher::range)
                   )
                   .apply(var1, (var1x, var2) -> new PlayerPredicate.StatMatcher(var0, var1x, var2))
          );

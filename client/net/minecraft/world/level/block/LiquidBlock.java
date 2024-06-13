@@ -7,7 +7,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +29,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FlowingFluid;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -64,7 +62,7 @@ public class LiquidBlock extends Block implements BucketPickup {
       this.stateCache = Lists.newArrayList();
       this.stateCache.add(var1.getSource(false));
 
-      for(int var3 = 1; var3 < 8; ++var3) {
+      for (int var3 = 1; var3 < 8; var3++) {
          this.stateCache.add(var1.getFlowing(8 - var3, false));
       }
 
@@ -155,7 +153,7 @@ public class LiquidBlock extends Block implements BucketPickup {
          boolean var4 = var1.getBlockState(var2.below()).is(Blocks.SOUL_SOIL);
          UnmodifiableIterator var5 = POSSIBLE_FLOW_DIRECTIONS.iterator();
 
-         while(var5.hasNext()) {
+         while (var5.hasNext()) {
             Direction var6 = (Direction)var5.next();
             BlockPos var7 = var2.relative(var6.getOpposite());
             if (var1.getFluidState(var7).is(FluidTags.WATER)) {

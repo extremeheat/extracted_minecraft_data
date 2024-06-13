@@ -15,12 +15,12 @@ public class HugeRedMushroomFeature extends AbstractHugeMushroomFeature {
 
    @Override
    protected void makeCap(LevelAccessor var1, RandomSource var2, BlockPos var3, int var4, BlockPos.MutableBlockPos var5, HugeMushroomFeatureConfiguration var6) {
-      for(int var7 = var4 - 3; var7 <= var4; ++var7) {
+      for (int var7 = var4 - 3; var7 <= var4; var7++) {
          int var8 = var7 < var4 ? var6.foliageRadius : var6.foliageRadius - 1;
          int var9 = var6.foliageRadius - 2;
 
-         for(int var10 = -var8; var10 <= var8; ++var10) {
-            for(int var11 = -var8; var11 <= var8; ++var11) {
+         for (int var10 = -var8; var10 <= var8; var10++) {
+            for (int var11 = -var8; var11 <= var8; var11++) {
                boolean var12 = var10 == -var8;
                boolean var13 = var10 == var8;
                boolean var14 = var11 == -var8;

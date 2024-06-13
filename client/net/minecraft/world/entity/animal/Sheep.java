@@ -2,12 +2,10 @@ package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.Maps;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -15,7 +13,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -52,9 +49,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PotatoPeelerItem;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -87,10 +81,7 @@ public class Sheep extends Animal implements Shearable {
       var0.put(DyeColor.BLACK, Blocks.BLACK_WOOL);
    });
    private static final Map<DyeColor, float[]> COLORARRAY_BY_COLOR = Maps.newEnumMap(
-      Arrays.stream(DyeColor.values()).collect(Collectors.toMap(var0 -> var0, Sheep::createSheepColor))
-   );
-   private static final Map<DyeColor, float[]> COLORARRAY_BY_POTATO = Maps.newEnumMap(
-      Arrays.stream(DyeColor.values()).collect(Collectors.toMap(var0 -> var0, Sheep::createSheepColorPotato))
+      Arrays.stream(DyeColor.values()).collect(Collectors.toMap(var0 -> (DyeColor)var0, Sheep::createSheepColor))
    );
    private int eatAnimationTick;
    private EatBlockGoal eatBlockGoal;
@@ -105,21 +96,12 @@ public class Sheep extends Animal implements Shearable {
       }
    }
 
-   private static float[] createSheepColorPotato(DyeColor var0) {
-      return var0 == DyeColor.WHITE ? new float[]{1.0F, 1.0F, 1.0F} : var0.getTextureDiffuseColors();
-   }
-
-   public float[] getColorArray(DyeColor var1) {
-      return this.isPotato() ? COLORARRAY_BY_POTATO.get(var1) : COLORARRAY_BY_COLOR.get(var1);
+   public static float[] getColorArray(DyeColor var0) {
+      return COLORARRAY_BY_COLOR.get(var0);
    }
 
    public Sheep(EntityType<? extends Sheep> var1, Level var2) {
       super(var1, var2);
-   }
-
-   @Override
-   public boolean hasPotatoVariant() {
-      return true;
    }
 
    @Override
@@ -170,27 +152,8 @@ public class Sheep extends Animal implements Shearable {
    public ResourceKey<LootTable> getDefaultLootTable() {
       if (this.isSheared()) {
          return this.getType().getDefaultLootTable();
-      } else if (this.isPotato()) {
-         return switch(this.getColor()) {
-            case WHITE -> BuiltInLootTables.SHEEP_WHITE_POTATO;
-            case ORANGE -> BuiltInLootTables.SHEEP_ORANGE_POTATO;
-            case MAGENTA -> BuiltInLootTables.SHEEP_MAGENTA_POTATO;
-            case LIGHT_BLUE -> BuiltInLootTables.SHEEP_LIGHT_BLUE_POTATO;
-            case YELLOW -> BuiltInLootTables.SHEEP_YELLOW_POTATO;
-            case LIME -> BuiltInLootTables.SHEEP_LIME_POTATO;
-            case PINK -> BuiltInLootTables.SHEEP_PINK_POTATO;
-            case GRAY -> BuiltInLootTables.SHEEP_GRAY_POTATO;
-            case LIGHT_GRAY -> BuiltInLootTables.SHEEP_LIGHT_GRAY_POTATO;
-            case CYAN -> BuiltInLootTables.SHEEP_CYAN_POTATO;
-            case PURPLE -> BuiltInLootTables.SHEEP_PURPLE_POTATO;
-            case BLUE -> BuiltInLootTables.SHEEP_BLUE_POTATO;
-            case BROWN -> BuiltInLootTables.SHEEP_BROWN_POTATO;
-            case GREEN -> BuiltInLootTables.SHEEP_GREEN_POTATO;
-            case RED -> BuiltInLootTables.SHEEP_RED_POTATO;
-            case BLACK -> BuiltInLootTables.SHEEP_BLACK_POTATO;
-         };
       } else {
-         return switch(this.getColor()) {
+         return switch (this.getColor()) {
             case WHITE -> BuiltInLootTables.SHEEP_WHITE;
             case ORANGE -> BuiltInLootTables.SHEEP_ORANGE;
             case MAGENTA -> BuiltInLootTables.SHEEP_MAGENTA;
@@ -242,14 +205,10 @@ public class Sheep extends Animal implements Shearable {
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (this.isCorrectShears(var3)) {
+      if (var3.is(Items.SHEARS)) {
          if (!this.level().isClientSide && this.readyForShearing()) {
             this.shear(SoundSource.PLAYERS);
             this.gameEvent(GameEvent.SHEAR, var1);
-            if (this.isPotato() && var1 instanceof ServerPlayer var4) {
-               CriteriaTriggers.PEEL_POTATO_SHEEP.trigger((ServerPlayer)var4);
-            }
-
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
             return InteractionResult.SUCCESS;
          } else {
@@ -260,23 +219,14 @@ public class Sheep extends Animal implements Shearable {
       }
    }
 
-   private boolean isCorrectShears(ItemStack var1) {
-      return this.isPotato() ? var1.is(Items.POTATO_PEELER) : var1.is(Items.SHEARS);
-   }
-
    @Override
    public void shear(SoundSource var1) {
-      if (this.isPotato()) {
-         PotatoPeelerItem.playPeelSound(this.level(), this, var1);
-      } else {
-         this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, var1, 1.0F, 1.0F);
-      }
-
+      this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, var1, 1.0F, 1.0F);
       this.setSheared(true);
       int var2 = 1 + this.random.nextInt(3);
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         ItemEntity var4 = this.spawnAtLocation(this.getShearDrop(), 1);
+      for (int var3 = 0; var3 < var2; var3++) {
+         ItemEntity var4 = this.spawnAtLocation(ITEM_BY_DYE.get(this.getColor()), 1);
          if (var4 != null) {
             var4.setDeltaMovement(
                var4.getDeltaMovement()
@@ -288,10 +238,6 @@ public class Sheep extends Animal implements Shearable {
             );
          }
       }
-   }
-
-   private ItemLike getShearDrop() {
-      return this.isPotato() ? (ItemLike)Items.POTATO_PEELS_MAP.get(this.getColor()) : ITEM_BY_DYE.get(this.getColor());
    }
 
    @Override
@@ -403,7 +349,7 @@ public class Sheep extends Animal implements Shearable {
       return this.level()
          .getRecipeManager()
          .getRecipeFor(RecipeType.CRAFTING, var5, this.level())
-         .map(var2x -> ((CraftingRecipe)var2x.value()).assemble(var5, this.level().registryAccess()))
+         .map(var2x -> var2x.value().assemble(var5, this.level().registryAccess()))
          .map(ItemStack::getItem)
          .filter(DyeItem.class::isInstance)
          .map(DyeItem.class::cast)

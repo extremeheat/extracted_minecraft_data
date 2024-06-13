@@ -42,7 +42,7 @@ public class LecternMenu extends AbstractContainerMenu {
          this.setData(0, var6);
          return true;
       } else {
-         switch(var2) {
+         switch (var2) {
             case 1:
                int var5 = this.lecternData.get(0);
                this.setData(0, var5 - 1);

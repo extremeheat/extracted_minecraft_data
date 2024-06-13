@@ -13,8 +13,7 @@ import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
-public record BeeDebugPayload(BeeDebugPayload.BeeInfo c) implements CustomPacketPayload {
-   private final BeeDebugPayload.BeeInfo beeInfo;
+public record BeeDebugPayload(BeeDebugPayload.BeeInfo beeInfo) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, BeeDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(BeeDebugPayload::write, BeeDebugPayload::new);
    public static final CustomPacketPayload.Type<BeeDebugPayload> TYPE = CustomPacketPayload.createType("debug/bee");
 
@@ -22,9 +21,9 @@ public record BeeDebugPayload(BeeDebugPayload.BeeInfo c) implements CustomPacket
       this(new BeeDebugPayload.BeeInfo(var1));
    }
 
-   public BeeDebugPayload(BeeDebugPayload.BeeInfo var1) {
+   public BeeDebugPayload(BeeDebugPayload.BeeInfo beeInfo) {
       super();
-      this.beeInfo = var1;
+      this.beeInfo = beeInfo;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -36,20 +35,17 @@ public record BeeDebugPayload(BeeDebugPayload.BeeInfo c) implements CustomPacket
       return TYPE;
    }
 
-   public static record BeeInfo(UUID a, int b, Vec3 c, @Nullable Path d, @Nullable BlockPos e, @Nullable BlockPos f, int g, Set<String> h, List<BlockPos> i) {
-      private final UUID uuid;
-      private final int id;
-      private final Vec3 pos;
-      @Nullable
-      private final Path path;
-      @Nullable
-      private final BlockPos hivePos;
-      @Nullable
-      private final BlockPos flowerPos;
-      private final int travelTicks;
-      private final Set<String> goals;
-      private final List<BlockPos> blacklistedHives;
-
+   public static record BeeInfo(
+      UUID uuid,
+      int id,
+      Vec3 pos,
+      @Nullable Path path,
+      @Nullable BlockPos hivePos,
+      @Nullable BlockPos flowerPos,
+      int travelTicks,
+      Set<String> goals,
+      List<BlockPos> blacklistedHives
+   ) {
       public BeeInfo(FriendlyByteBuf var1) {
          this(
             var1.readUUID(),
@@ -65,18 +61,26 @@ public record BeeDebugPayload(BeeDebugPayload.BeeInfo c) implements CustomPacket
       }
 
       public BeeInfo(
-         UUID var1, int var2, Vec3 var3, @Nullable Path var4, @Nullable BlockPos var5, @Nullable BlockPos var6, int var7, Set<String> var8, List<BlockPos> var9
+         UUID uuid,
+         int id,
+         Vec3 pos,
+         @Nullable Path path,
+         @Nullable BlockPos hivePos,
+         @Nullable BlockPos flowerPos,
+         int travelTicks,
+         Set<String> goals,
+         List<BlockPos> blacklistedHives
       ) {
          super();
-         this.uuid = var1;
-         this.id = var2;
-         this.pos = var3;
-         this.path = var4;
-         this.hivePos = var5;
-         this.flowerPos = var6;
-         this.travelTicks = var7;
-         this.goals = var8;
-         this.blacklistedHives = var9;
+         this.uuid = uuid;
+         this.id = id;
+         this.pos = pos;
+         this.path = path;
+         this.hivePos = hivePos;
+         this.flowerPos = flowerPos;
+         this.travelTicks = travelTicks;
+         this.goals = goals;
+         this.blacklistedHives = blacklistedHives;
       }
 
       public void write(FriendlyByteBuf var1) {

@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -23,12 +22,6 @@ public class ItemCustomNameToComponentFix extends DataFix {
          Optional var4 = var3.get("Name").asString().result();
          if (var4.isPresent()) {
             var3 = var3.set("Name", ComponentDataFixUtils.createPlainTextComponent(var3.getOps(), (String)var4.get()));
-         } else {
-            Optional var5 = var3.get("LocName").asString().result();
-            if (var5.isPresent()) {
-               var3 = var3.set("Name", ComponentDataFixUtils.createTranslatableComponent(var3.getOps(), (String)var5.get()));
-               var3 = var3.remove("LocName");
-            }
          }
 
          return var1.set("display", var3);

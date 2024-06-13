@@ -66,7 +66,7 @@ public class MultiVariant implements UnbakedModel {
       } else {
          WeightedBakedModel.Builder var5 = new WeightedBakedModel.Builder();
 
-         for(Variant var7 : this.getVariants()) {
+         for (Variant var7 : this.getVariants()) {
             BakedModel var8 = var1.bake(var7.getModelLocation(), var7);
             var5.add(var8, var7.getWeight());
          }
@@ -88,7 +88,7 @@ public class MultiVariant implements UnbakedModel {
                throw new JsonParseException("Empty variant array");
             }
 
-            for(JsonElement var7 : var5) {
+            for (JsonElement var7 : var5) {
                var4.add((Variant)var3.deserialize(var7, Variant.class));
             }
          } else {

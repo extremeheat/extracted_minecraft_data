@@ -15,8 +15,8 @@ public class OverlayTexture implements AutoCloseable {
       super();
       NativeImage var1 = this.texture.getPixels();
 
-      for(int var2 = 0; var2 < 16; ++var2) {
-         for(int var3 = 0; var3 < 16; ++var3) {
+      for (int var2 = 0; var2 < 16; var2++) {
+         for (int var3 = 0; var3 < 16; var3++) {
             if (var2 < 8) {
                var1.setPixelRGBA(var3, var2, -1308622593);
             } else {

@@ -26,7 +26,7 @@ public class IndirectMerger implements IndexMerger {
       int var13 = 0;
       int var14 = 0;
 
-      while(true) {
+      while (true) {
          boolean var15 = var13 >= var7;
          boolean var16 = var14 >= var8;
          if (var15 && var16) {
@@ -36,12 +36,12 @@ public class IndirectMerger implements IndexMerger {
 
          boolean var17 = !var15 && (var16 || var1.getDouble(var13) < var2.getDouble(var14) + 1.0E-7);
          if (var17) {
-            ++var13;
+            var13++;
             if (var10 && (var14 == 0 || var16)) {
                continue;
             }
          } else {
-            ++var14;
+            var14++;
             if (var11 && (var13 == 0 || var15)) {
                continue;
             }
@@ -54,7 +54,7 @@ public class IndirectMerger implements IndexMerger {
             this.firstIndices[var12] = var18;
             this.secondIndices[var12] = var19;
             this.result[var12] = var20;
-            ++var12;
+            var12++;
             var5 = var20;
          } else {
             this.firstIndices[var12 - 1] = var18;
@@ -67,7 +67,7 @@ public class IndirectMerger implements IndexMerger {
    public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
       int var2 = this.resultLength - 1;
 
-      for(int var3 = 0; var3 < var2; ++var3) {
+      for (int var3 = 0; var3 < var2; var3++) {
          if (!var1.merge(this.firstIndices[var3], this.secondIndices[var3], var3)) {
             return false;
          }

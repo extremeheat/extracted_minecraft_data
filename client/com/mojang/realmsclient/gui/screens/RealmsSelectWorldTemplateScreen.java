@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -93,6 +93,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       this.publisherButton = var1.addChild(Button.builder(PUBLISHER_BUTTON_NAME, var1x -> this.onPublish()).width(100).build());
       this.updateButtonStates();
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
@@ -148,10 +149,10 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             @Override
             public void run() {
                WorldTemplatePaginatedList var1x = var1;
-   
-               Either var3;
-               for(RealmsClient var2 = RealmsClient.create();
-                  var1x != null;
+               RealmsClient var2 = RealmsClient.create();
+
+               while (var1x != null) {
+                  Either var3 = RealmsSelectWorldTemplateScreen.this.fetchTemplates(var1x, var2);
                   var1x = RealmsSelectWorldTemplateScreen.this.minecraft
                      .submit(
                         () -> {
@@ -160,16 +161,16 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
                               if (RealmsSelectWorldTemplateScreen.this.worldTemplateList.isEmpty()) {
                                  RealmsSelectWorldTemplateScreen.this.noTemplatesMessage = TextRenderingUtils.decompose(I18n.get("mco.template.select.failure"));
                               }
-            
+
                               return null;
                            } else {
-                              WorldTemplatePaginatedList var2xx = (WorldTemplatePaginatedList)var3.left().get();
-            
-                              for(WorldTemplate var4 : var2xx.templates) {
+                              WorldTemplatePaginatedList var2x = (WorldTemplatePaginatedList)var3.left().get();
+
+                              for (WorldTemplate var4 : var2x.templates) {
                                  RealmsSelectWorldTemplateScreen.this.worldTemplateList.addEntry(var4);
                               }
-            
-                              if (var2xx.templates.isEmpty()) {
+
+                              if (var2x.templates.isEmpty()) {
                                  if (RealmsSelectWorldTemplateScreen.this.worldTemplateList.isEmpty()) {
                                     String var5 = I18n.get("mco.template.select.none", "%link");
                                     TextRenderingUtils.LineSegment var6 = TextRenderingUtils.LineSegment.link(
@@ -177,17 +178,15 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
                                     );
                                     RealmsSelectWorldTemplateScreen.this.noTemplatesMessage = TextRenderingUtils.decompose(var5, var6);
                                  }
-            
+
                                  return null;
                               } else {
-                                 return var2xx;
+                                 return var2x;
                               }
                            }
                         }
                      )
-                     .join()
-               ) {
-                  var3 = RealmsSelectWorldTemplateScreen.this.fetchTemplates(var1x, var2);
+                     .join();
                }
             }
          })
@@ -211,7 +210,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       }
 
       if (this.warning != null) {
-         for(int var5 = 0; var5 < this.warning.length; ++var5) {
+         for (int var5 = 0; var5 < this.warning.length; var5++) {
             Component var6 = this.warning[var5];
             var1.drawCenteredString(this.font, var6, this.width / 2, row(-1 + var5), -6250336);
          }
@@ -219,13 +218,13 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    }
 
    private void renderMultilineMessage(GuiGraphics var1, int var2, int var3, List<TextRenderingUtils.Line> var4) {
-      for(int var5 = 0; var5 < var4.size(); ++var5) {
+      for (int var5 = 0; var5 < var4.size(); var5++) {
          TextRenderingUtils.Line var6 = (TextRenderingUtils.Line)var4.get(var5);
          int var7 = row(4 + var5);
          int var8 = var6.segments.stream().mapToInt(var1x -> this.font.width(var1x.renderedText())).sum();
          int var9 = this.width / 2 - var8 / 2;
 
-         for(TextRenderingUtils.LineSegment var11 : var6.segments) {
+         for (TextRenderingUtils.LineSegment var11 : var6.segments) {
             int var12 = var11.isLink() ? 3368635 : -1;
             int var13 = var1.drawString(this.font, var11.renderedText(), var9, var7, var12);
             if (var11.isLink() && var2 > var9 && var2 < var13 && var3 > var7 - 3 && var3 < var7 + 8) {
@@ -300,7 +299,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          var1.blit(RealmsTextureManager.worldTemplate(this.template.id, this.template.image), var4 + 1, var3 + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
          var1.blitSprite(RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, var4, var3 + 1, 40, 40);
-         boolean var11 = true;
+         byte var11 = 5;
          int var12 = RealmsSelectWorldTemplateScreen.this.font.width(this.template.version);
          if (this.websiteButton != null) {
             this.websiteButton.setPosition(var4 + var5 - var12 - this.websiteButton.getWidth() - 10, var3);

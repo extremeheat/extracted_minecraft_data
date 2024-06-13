@@ -29,7 +29,7 @@ public class MarsagliaPolarGaussian {
             var1 = 2.0 * this.randomSource.nextDouble() - 1.0;
             var3 = 2.0 * this.randomSource.nextDouble() - 1.0;
             var5 = Mth.square(var1) + Mth.square(var3);
-         } while(var5 >= 1.0 || var5 == 0.0);
+         } while (var5 >= 1.0 || var5 == 0.0);
 
          double var7 = Math.sqrt(-2.0 * Math.log(var5) / var5);
          this.nextNextGaussian = var3 * var7;

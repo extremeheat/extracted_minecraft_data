@@ -2,13 +2,11 @@ package net.minecraft.client.quickplay;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,7 +59,7 @@ public class QuickPlayLog {
                   } catch (IOException var3) {
                      LOGGER.error("Failed to delete quickplay log file {}", this.path, var3);
                   }
-      
+
                   QuickPlayLog.QuickPlayEntry var2 = new QuickPlayLog.QuickPlayEntry(this.worldData, Instant.now(), var1.gameMode.getPlayerMode());
                   Codec.list(QuickPlayLog.QuickPlayEntry.CODEC)
                      .encodeStart(JsonOps.INSTANCE, List.of(var2))
@@ -70,8 +68,8 @@ public class QuickPlayLog {
                         try {
                            Files.createDirectories(this.path.getParent());
                            Files.writeString(this.path, GSON.toJson(var1xx));
-                        } catch (IOException var3xx) {
-                           LOGGER.error("Failed to write to quickplay log file {}", this.path, var3xx);
+                        } catch (IOException var3x) {
+                           LOGGER.error("Failed to write to quickplay log file {}", this.path, var3x);
                         }
                      });
                }
@@ -81,10 +79,7 @@ public class QuickPlayLog {
       }
    }
 
-   static record QuickPlayEntry(QuickPlayLog.QuickPlayWorld b, Instant c, GameType d) {
-      private final QuickPlayLog.QuickPlayWorld quickPlayWorld;
-      private final Instant lastPlayedTime;
-      private final GameType gamemode;
+   static record QuickPlayEntry(QuickPlayLog.QuickPlayWorld quickPlayWorld, Instant lastPlayedTime, GameType gamemode) {
       public static final Codec<QuickPlayLog.QuickPlayEntry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   QuickPlayLog.QuickPlayWorld.MAP_CODEC.forGetter(QuickPlayLog.QuickPlayEntry::quickPlayWorld),
@@ -94,18 +89,15 @@ public class QuickPlayLog {
                .apply(var0, QuickPlayLog.QuickPlayEntry::new)
       );
 
-      QuickPlayEntry(QuickPlayLog.QuickPlayWorld var1, Instant var2, GameType var3) {
+      QuickPlayEntry(QuickPlayLog.QuickPlayWorld quickPlayWorld, Instant lastPlayedTime, GameType gamemode) {
          super();
-         this.quickPlayWorld = var1;
-         this.lastPlayedTime = var2;
-         this.gamemode = var3;
+         this.quickPlayWorld = quickPlayWorld;
+         this.lastPlayedTime = lastPlayedTime;
+         this.gamemode = gamemode;
       }
    }
 
-   static record QuickPlayWorld(QuickPlayLog.Type b, String c, String d) {
-      private final QuickPlayLog.Type type;
-      private final String id;
-      private final String name;
+   static record QuickPlayWorld(QuickPlayLog.Type type, String id, String name) {
       public static final MapCodec<QuickPlayLog.QuickPlayWorld> MAP_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   QuickPlayLog.Type.CODEC.fieldOf("type").forGetter(QuickPlayLog.QuickPlayWorld::type),
@@ -115,11 +107,11 @@ public class QuickPlayLog {
                .apply(var0, QuickPlayLog.QuickPlayWorld::new)
       );
 
-      QuickPlayWorld(QuickPlayLog.Type var1, String var2, String var3) {
+      QuickPlayWorld(QuickPlayLog.Type type, String id, String name) {
          super();
-         this.type = var1;
-         this.id = var2;
-         this.name = var3;
+         this.type = type;
+         this.id = id;
+         this.name = name;
       }
    }
 

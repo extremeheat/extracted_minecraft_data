@@ -81,17 +81,17 @@ public class ServerStatusPinger {
                      var1.status = ServerStatusPinger.formatPlayerCount(var1xxx.online(), var1xxx.max());
                      var1.players = var1xxx;
                      if (!var1xxx.sample().isEmpty()) {
-                        ArrayList var2xxxx = new ArrayList(var1xxx.sample().size());
+                        ArrayList var2xxx = new ArrayList(var1xxx.sample().size());
 
-                        for(GameProfile var4xx : var1xxx.sample()) {
-                           var2xxxx.add(Component.literal(var4xx.getName()));
+                        for (GameProfile var4x : var1xxx.sample()) {
+                           var2xxx.add(Component.literal(var4x.getName()));
                         }
 
                         if (var1xxx.sample().size() < var1xxx.online()) {
-                           var2xxxx.add(Component.translatable("multiplayer.status.and_more", var1xxx.online() - var1xxx.sample().size()));
+                           var2xxx.add(Component.translatable("multiplayer.status.and_more", var1xxx.online() - var1xxx.sample().size()));
                         }
 
-                        var1.playerList = var2xxxx;
+                        var1.playerList = var2xxx;
                      } else {
                         var1.playerList = List.of();
                      }
@@ -154,7 +154,7 @@ public class ServerStatusPinger {
                         var1.config().setOption(ChannelOption.TCP_NODELAY, true);
                      } catch (ChannelException var3x) {
                      }
-         
+
                      var1.pipeline().addLast(new ChannelHandler[]{new LegacyServerPinger(var2, (var1x, var2xx, var3xxx, var4, var5) -> {
                         var3.setState(ServerData.State.INCOMPATIBLE);
                         var3.version = Component.literal(var2xx);
@@ -175,10 +175,10 @@ public class ServerStatusPinger {
    }
 
    public void tick() {
-      synchronized(this.connections) {
+      synchronized (this.connections) {
          Iterator var2 = this.connections.iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             Connection var3 = (Connection)var2.next();
             if (var3.isConnected()) {
                var3.tick();
@@ -191,10 +191,10 @@ public class ServerStatusPinger {
    }
 
    public void removeAll() {
-      synchronized(this.connections) {
+      synchronized (this.connections) {
          Iterator var2 = this.connections.iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             Connection var3 = (Connection)var2.next();
             if (var3.isConnected()) {
                var2.remove();

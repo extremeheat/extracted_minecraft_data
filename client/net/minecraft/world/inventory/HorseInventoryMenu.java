@@ -20,9 +20,9 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       this.horseContainer = var3;
       this.armorContainer = var4.getBodyArmorAccess();
       this.horse = var4;
-      boolean var5 = true;
+      byte var5 = 3;
       var3.startOpen(var2.player);
-      boolean var6 = true;
+      byte var6 = -18;
       this.addSlot(new Slot(var3, 0, 8, 18) {
          @Override
          public boolean mayPlace(ItemStack var1) {
@@ -51,20 +51,20 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
          }
       });
       if (this.hasChest(var4)) {
-         for(int var7 = 0; var7 < 3; ++var7) {
-            for(int var8 = 0; var8 < ((AbstractChestedHorse)var4).getInventoryColumns(); ++var8) {
+         for (int var7 = 0; var7 < 3; var7++) {
+            for (int var8 = 0; var8 < ((AbstractChestedHorse)var4).getInventoryColumns(); var8++) {
                this.addSlot(new Slot(var3, 1 + var8 + var7 * ((AbstractChestedHorse)var4).getInventoryColumns(), 80 + var8 * 18, 18 + var7 * 18));
             }
          }
       }
 
-      for(int var9 = 0; var9 < 3; ++var9) {
-         for(int var11 = 0; var11 < 9; ++var11) {
+      for (int var9 = 0; var9 < 3; var9++) {
+         for (int var11 = 0; var11 < 9; var11++) {
             this.addSlot(new Slot(var2, var11 + var9 * 9 + 9, 8 + var11 * 18, 102 + var9 * 18 + -18));
          }
       }
 
-      for(int var10 = 0; var10 < 9; ++var10) {
+      for (int var10 = 0; var10 < 9; var10++) {
          this.addSlot(new Slot(var2, var10, 8 + var10 * 18, 142));
       }
    }

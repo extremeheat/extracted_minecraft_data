@@ -57,8 +57,8 @@ public class AnimationUtils {
    }
 
    public static void bobModelPart(ModelPart var0, float var1, float var2) {
-      var0.zRot += var2 * (Mth.cos(var1 * 0.09F) * 0.05F + 0.05F);
-      var0.xRot += var2 * Mth.sin(var1 * 0.067F) * 0.05F;
+      var0.zRot = var0.zRot + var2 * (Mth.cos(var1 * 0.09F) * 0.05F + 0.05F);
+      var0.xRot = var0.xRot + var2 * Mth.sin(var1 * 0.067F) * 0.05F;
    }
 
    public static void bobArms(ModelPart var0, ModelPart var1, float var2) {

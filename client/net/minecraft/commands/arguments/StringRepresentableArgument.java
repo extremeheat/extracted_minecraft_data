@@ -56,6 +56,6 @@ public class StringRepresentableArgument<T extends Enum<T> & StringRepresentable
    }
 
    protected String convertId(String var1) {
-      return var1;
+      return (String)var1;
    }
 }

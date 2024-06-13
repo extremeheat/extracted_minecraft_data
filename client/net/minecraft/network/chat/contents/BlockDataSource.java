@@ -5,7 +5,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
@@ -16,10 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public record BlockDataSource(String d, @Nullable Coordinates e) implements DataSource {
-   private final String posPattern;
-   @Nullable
-   private final Coordinates compiledPos;
+public record BlockDataSource(String posPattern, @Nullable Coordinates compiledPos) implements DataSource {
    public static final MapCodec<BlockDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new)
    );
@@ -29,10 +25,10 @@ public record BlockDataSource(String d, @Nullable Coordinates e) implements Data
       this(var1, compilePos(var1));
    }
 
-   public BlockDataSource(String var1, @Nullable Coordinates var2) {
+   public BlockDataSource(String posPattern, @Nullable Coordinates compiledPos) {
       super();
-      this.posPattern = var1;
-      this.compiledPos = var2;
+      this.posPattern = posPattern;
+      this.compiledPos = compiledPos;
    }
 
    @Nullable

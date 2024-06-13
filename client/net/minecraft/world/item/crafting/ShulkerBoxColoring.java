@@ -19,17 +19,17 @@ public class ShulkerBoxColoring extends CustomRecipe {
       int var3 = 0;
       int var4 = 0;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (Block.byItem(var6.getItem()) instanceof ShulkerBoxBlock) {
-               ++var3;
+               var3++;
             } else {
                if (!(var6.getItem() instanceof DyeItem)) {
                   return false;
                }
 
-               ++var4;
+               var4++;
             }
 
             if (var4 > 1 || var3 > 1) {
@@ -45,7 +45,7 @@ public class ShulkerBoxColoring extends CustomRecipe {
       ItemStack var3 = ItemStack.EMPTY;
       DyeItem var4 = (DyeItem)Items.WHITE_DYE;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             Item var7 = var6.getItem();

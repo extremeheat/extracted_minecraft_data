@@ -2,7 +2,6 @@ package net.minecraft.world.inventory;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -69,10 +68,10 @@ public class StonecutterMenu extends AbstractContainerMenu {
             }
 
             var3.execute((var1x, var2x) -> {
-               long var3xxxx = var1x.getGameTime();
-               if (StonecutterMenu.this.lastSoundTime != var3xxxx) {
+               long var3xxx = var1x.getGameTime();
+               if (StonecutterMenu.this.lastSoundTime != var3xxx) {
                   var1x.playSound(null, var2x, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  StonecutterMenu.this.lastSoundTime = var3xxxx;
+                  StonecutterMenu.this.lastSoundTime = var3xxx;
                }
             });
             super.onTake(var1, var2);
@@ -83,13 +82,13 @@ public class StonecutterMenu extends AbstractContainerMenu {
          }
       });
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 9; ++var5) {
+      for (int var4 = 0; var4 < 3; var4++) {
+         for (int var5 = 0; var5 < 9; var5++) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
+      for (int var6 = 0; var6 < 9; var6++) {
          this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
       }
 
@@ -151,7 +150,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
 
    void setupResultSlot() {
       if (!this.recipes.isEmpty() && this.isValidRecipeIndex(this.selectedRecipeIndex.get())) {
-         RecipeHolder var1 = (RecipeHolder)this.recipes.get(this.selectedRecipeIndex.get());
+         RecipeHolder var1 = this.recipes.get(this.selectedRecipeIndex.get());
          ItemStack var2 = ((StonecutterRecipe)var1.value()).assemble(this.container, this.level.registryAccess());
          if (var2.isItemEnabled(this.level.enabledFeatures())) {
             this.resultContainer.setRecipeUsed(var1);

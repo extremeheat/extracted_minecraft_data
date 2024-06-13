@@ -33,8 +33,8 @@ public class LightTexture implements AutoCloseable {
       this.lightTextureLocation = this.minecraft.getTextureManager().register("light_map", this.lightTexture);
       this.lightPixels = this.lightTexture.getPixels();
 
-      for(int var3 = 0; var3 < 16; ++var3) {
-         for(int var4 = 0; var4 < 16; ++var4) {
+      for (int var3 = 0; var3 < 16; var3++) {
+         for (int var4 = 0; var4 < 16; var4++) {
             this.lightPixels.setPixelRGBA(var4, var3, -1);
          }
       }
@@ -48,7 +48,7 @@ public class LightTexture implements AutoCloseable {
    }
 
    public void tick() {
-      this.blockLightRedFlicker += (float)((Math.random() - Math.random()) * Math.random() * Math.random() * 0.1);
+      this.blockLightRedFlicker = this.blockLightRedFlicker + (float)((Math.random() - Math.random()) * Math.random() * Math.random() * 0.1);
       this.blockLightRedFlicker *= 0.9F;
       this.updateLightTexture = true;
    }
@@ -105,8 +105,8 @@ public class LightTexture implements AutoCloseable {
             float var11 = this.blockLightRedFlicker + 1.5F;
             Vector3f var12 = new Vector3f();
 
-            for(int var13 = 0; var13 < 16; ++var13) {
-               for(int var14 = 0; var14 < 16; ++var14) {
+            for (int var13 = 0; var13 < 16; var13++) {
+               for (int var14 = 0; var14 < 16; var14++) {
                   float var15 = getBrightness(var2.dimensionType(), var13) * var4;
                   float var16 = getBrightness(var2.dimensionType(), var14) * var11;
                   float var18 = var16 * ((var16 * 0.6F + 0.4F) * 0.6F + 0.4F);
@@ -150,7 +150,7 @@ public class LightTexture implements AutoCloseable {
                   var12.lerp(new Vector3f(0.75F, 0.75F, 0.75F), 0.04F);
                   clampColor(var12);
                   var12.mul(255.0F);
-                  boolean var32 = true;
+                  short var32 = 255;
                   int var24 = (int)var12.x();
                   int var25 = (int)var12.y();
                   int var26 = (int)var12.z();

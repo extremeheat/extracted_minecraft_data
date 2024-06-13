@@ -69,7 +69,7 @@ public class FolderRepositorySource implements RepositorySource {
       FolderRepositorySource.FolderPackDetector var3 = new FolderRepositorySource.FolderPackDetector(var1);
 
       try (DirectoryStream var4 = Files.newDirectoryStream(var0)) {
-         for(Path var6 : var4) {
+         for (Path var6 : var4) {
             try {
                ArrayList var7 = new ArrayList();
                Pack.ResourcesSupplier var8 = var3.detectPackResources(var6, var7);

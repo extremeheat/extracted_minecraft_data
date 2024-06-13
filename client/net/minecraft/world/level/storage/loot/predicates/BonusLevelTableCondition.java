@@ -2,8 +2,8 @@ package net.minecraft.world.level.storage.loot.predicates;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -16,10 +16,8 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record BonusLevelTableCondition(Holder<Enchantment> b, List<Float> c) implements LootItemCondition {
-   private final Holder<Enchantment> enchantment;
-   private final List<Float> values;
-   public static final Codec<BonusLevelTableCondition> CODEC = RecordCodecBuilder.create(
+public record BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Float> values) implements LootItemCondition {
+   public static final MapCodec<BonusLevelTableCondition> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                BuiltInRegistries.ENCHANTMENT.holderByNameCodec().fieldOf("enchantment").forGetter(BonusLevelTableCondition::enchantment),
                Codec.FLOAT.listOf().fieldOf("chances").forGetter(BonusLevelTableCondition::values)
@@ -27,10 +25,10 @@ public record BonusLevelTableCondition(Holder<Enchantment> b, List<Float> c) imp
             .apply(var0, BonusLevelTableCondition::new)
    );
 
-   public BonusLevelTableCondition(Holder<Enchantment> var1, List<Float> var2) {
+   public BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Float> values) {
       super();
-      this.enchantment = var1;
-      this.values = var2;
+      this.enchantment = enchantment;
+      this.values = values;
    }
 
    @Override
@@ -53,7 +51,7 @@ public record BonusLevelTableCondition(Holder<Enchantment> b, List<Float> c) imp
    public static LootItemCondition.Builder bonusLevelFlatChance(Enchantment var0, float... var1) {
       ArrayList var2 = new ArrayList(var1.length);
 
-      for(float var6 : var1) {
+      for (float var6 : var1) {
          var2.add(var6);
       }
 

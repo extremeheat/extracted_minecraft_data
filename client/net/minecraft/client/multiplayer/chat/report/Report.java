@@ -39,7 +39,7 @@ public abstract class Report {
 
       protected Builder(R var1, AbuseReportLimits var2) {
          super();
-         this.report = var1;
+         this.report = (R)var1;
          this.limits = var2;
       }
 
@@ -76,8 +76,7 @@ public abstract class Report {
       public abstract Either<Report.Result, Report.CannotBuildReason> build(ReportingContext var1);
    }
 
-   public static record CannotBuildReason(Component e) {
-      private final Component message;
+   public static record CannotBuildReason(Component message) {
       public static final Report.CannotBuildReason NO_REASON = new Report.CannotBuildReason(Component.translatable("gui.abuseReport.send.no_reason"));
       public static final Report.CannotBuildReason NO_REPORTED_MESSAGES = new Report.CannotBuildReason(
          Component.translatable("gui.chatReport.send.no_reported_messages")
@@ -89,9 +88,9 @@ public abstract class Report {
          Component.translatable("gui.abuseReport.send.comment_too_long")
       );
 
-      public CannotBuildReason(Component var1) {
+      public CannotBuildReason(Component message) {
          super();
-         this.message = var1;
+         this.message = message;
       }
 
       public Tooltip tooltip() {
@@ -99,16 +98,12 @@ public abstract class Report {
       }
    }
 
-   public static record Result(UUID a, ReportType b, AbuseReport c) {
-      private final UUID id;
-      private final ReportType reportType;
-      private final AbuseReport report;
-
-      public Result(UUID var1, ReportType var2, AbuseReport var3) {
+   public static record Result(UUID id, ReportType reportType, AbuseReport report) {
+      public Result(UUID id, ReportType reportType, AbuseReport report) {
          super();
-         this.id = var1;
-         this.reportType = var2;
-         this.report = var3;
+         this.id = id;
+         this.reportType = reportType;
+         this.report = report;
       }
    }
 }

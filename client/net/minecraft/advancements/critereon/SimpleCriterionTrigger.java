@@ -49,7 +49,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
          LootContext var5 = EntityPredicate.createContext(var1, var1);
          ArrayList var6 = null;
 
-         for(CriterionTrigger.Listener var8 : var4) {
+         for (CriterionTrigger.Listener var8 : var4) {
             SimpleCriterionTrigger.SimpleInstance var9 = (SimpleCriterionTrigger.SimpleInstance)var8.trigger();
             if (var2.test(var9)) {
                Optional var10 = var9.player();
@@ -64,7 +64,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
          }
 
          if (var6 != null) {
-            for(CriterionTrigger.Listener var12 : var6) {
+            for (CriterionTrigger.Listener var12 : var6) {
                var12.run(var3);
             }
          }

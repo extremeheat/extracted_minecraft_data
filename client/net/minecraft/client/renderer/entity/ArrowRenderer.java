@@ -48,7 +48,7 @@ public abstract class ArrowRenderer<T extends AbstractArrow> extends EntityRende
       this.vertex(var19, var21, -7, -2, 2, 0.15625F, 0.3125F, 1, 0, 0, var6);
       this.vertex(var19, var21, -7, -2, -2, 0.0F, 0.3125F, 1, 0, 0, var6);
 
-      for(int var20 = 0; var20 < 4; ++var20) {
+      for (int var20 = 0; var20 < 4; var20++) {
          var4.mulPose(Axis.XP.rotationDegrees(90.0F));
          this.vertex(var19, var21, -8, -2, 0, 0.0F, 0.0F, 0, 1, 0, var6);
          this.vertex(var19, var21, 8, -2, 0, 0.5F, 0.0F, 0, 1, 0, var6);

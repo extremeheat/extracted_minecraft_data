@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.function.Function;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
@@ -8,7 +9,7 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.piston.PistonHeadBlock;
 
 public class BlockTypes {
-   public static final MapCodec<Block> CODEC = BuiltInRegistries.BLOCK_TYPE.byNameCodec().dispatchMap(Block::codec, MapCodec::codec);
+   public static final MapCodec<Block> CODEC = BuiltInRegistries.BLOCK_TYPE.byNameCodec().dispatchMap(Block::codec, Function.identity());
 
    public BlockTypes() {
       super();
@@ -22,7 +23,6 @@ public class BlockTypes {
       Registry.register(var0, "anvil", AnvilBlock.CODEC);
       Registry.register(var0, "attached_stem", AttachedStemBlock.CODEC);
       Registry.register(var0, "azalea", AzaleaBlock.CODEC);
-      Registry.register(var0, "vicious_potato", ViciousPotatoBlock.CODEC);
       Registry.register(var0, "bamboo_sapling", BambooSaplingBlock.CODEC);
       Registry.register(var0, "bamboo_stalk", BambooStalkBlock.CODEC);
       Registry.register(var0, "banner", BannerBlock.CODEC);
@@ -36,7 +36,6 @@ public class BlockTypes {
       Registry.register(var0, "beehive", BeehiveBlock.CODEC);
       Registry.register(var0, "beetroot", BeetrootBlock.CODEC);
       Registry.register(var0, "bell", BellBlock.CODEC);
-      Registry.register(var0, "big_brain", BigBrainBlock.CODEC);
       Registry.register(var0, "big_dripleaf", BigDripleafBlock.CODEC);
       Registry.register(var0, "big_dripleaf_stem", BigDripleafStemBlock.CODEC);
       Registry.register(var0, "blast_furnace", BlastFurnaceBlock.CODEC);
@@ -55,8 +54,6 @@ public class BlockTypes {
       Registry.register(var0, "carrot", CarrotBlock.CODEC);
       Registry.register(var0, "cartography_table", CartographyTableBlock.CODEC);
       Registry.register(var0, "carved_pumpkin", EquipableCarvedPumpkinBlock.CODEC);
-      Registry.register(var0, "poisonous_potato_zombie_head_block", PotatoZombieHeadBlock.CODEC);
-      Registry.register(var0, "poisonous_potato_zombie_head_hat", EquipablePotatoZombieHeadBlock.CODEC);
       Registry.register(var0, "cauldron", CauldronBlock.CODEC);
       Registry.register(var0, "cave_vines", CaveVinesBlock.CODEC);
       Registry.register(var0, "cave_vines_plant", CaveVinesPlantBlock.CODEC);
@@ -67,14 +64,6 @@ public class BlockTypes {
       Registry.register(var0, "chiseled_book_shelf", ChiseledBookShelfBlock.CODEC);
       Registry.register(var0, "chorus_flower", ChorusFlowerBlock.CODEC);
       Registry.register(var0, "chorus_plant", ChorusPlantBlock.CODEC);
-      Registry.register(var0, "strong_roots", StrongRootsBlock.CODEC);
-      Registry.register(var0, "weak_roots", WeakRootsBlock.CODEC);
-      Registry.register(var0, "powerful_potato", PowerfulPotatoBlock.CODEC);
-      Registry.register(var0, "potato_peels", PotatoPeelsBlock.CODEC);
-      Registry.register(var0, "corrupted_potato_peels", CorruptedPotatoPeelsBlock.CODEC);
-      Registry.register(var0, "potato_refinery", PotatoRefineryBlock.CODEC);
-      Registry.register(var0, "poisonous_mashed_potato", MashedPotatoBlock.CODEC);
-      Registry.register(var0, "floatater", FloataterBlock.CODEC);
       Registry.register(var0, "cocoa", CocoaBlock.CODEC);
       Registry.register(var0, "colored_falling", ColoredFallingBlock.CODEC);
       Registry.register(var0, "command", CommandBlock.CODEC);
@@ -101,7 +90,6 @@ public class BlockTypes {
       Registry.register(var0, "double_plant", DoublePlantBlock.CODEC);
       Registry.register(var0, "dragon_egg", DragonEggBlock.CODEC);
       Registry.register(var0, "drop_experience", DropExperienceBlock.CODEC);
-      Registry.register(var0, "drop_experience_transparent", DropExperienceTransparentBlock.CODEC);
       Registry.register(var0, "dropper", DropperBlock.CODEC);
       Registry.register(var0, "enchantment_table", EnchantmentTableBlock.CODEC);
       Registry.register(var0, "ender_chest", EnderChestBlock.CODEC);
@@ -161,10 +149,8 @@ public class BlockTypes {
       Registry.register(var0, "mushroom", MushroomBlock.CODEC);
       Registry.register(var0, "mycelium", MyceliumBlock.CODEC);
       Registry.register(var0, "nether_portal", NetherPortalBlock.CODEC);
-      Registry.register(var0, "potato_portal", PotatoPortalBlock.CODEC);
       Registry.register(var0, "netherrack", NetherrackBlock.CODEC);
       Registry.register(var0, "nether_sprouts", NetherSproutsBlock.CODEC);
-      Registry.register(var0, "potato_sprouts", PotatoSproutsBlock.CODEC);
       Registry.register(var0, "nether_wart", NetherWartBlock.CODEC);
       Registry.register(var0, "note", NoteBlock.CODEC);
       Registry.register(var0, "nylium", NyliumBlock.CODEC);
@@ -178,8 +164,6 @@ public class BlockTypes {
       Registry.register(var0, "player_wall_head", PlayerWallHeadBlock.CODEC);
       Registry.register(var0, "pointed_dripstone", PointedDripstoneBlock.CODEC);
       Registry.register(var0, "potato", PotatoBlock.CODEC);
-      Registry.register(var0, "potato_battery", PotatoBatteryBlock.CODEC);
-      Registry.register(var0, "pedestal", PedestalBlock.CODEC);
       Registry.register(var0, "powder_snow", PowderSnowBlock.CODEC);
       Registry.register(var0, "powered", PoweredBlock.CODEC);
       Registry.register(var0, "powered_rail", PoweredRailBlock.CODEC);
@@ -226,7 +210,6 @@ public class BlockTypes {
       Registry.register(var0, "standing_sign", StandingSignBlock.CODEC);
       Registry.register(var0, "stem", StemBlock.CODEC);
       Registry.register(var0, "stonecutter", StonecutterBlock.CODEC);
-      Registry.register(var0, "poisonous_potato_cutter", PoisonousPotatoCutterBlock.CODEC);
       Registry.register(var0, "structure", StructureBlock.CODEC);
       Registry.register(var0, "structure_void", StructureVoidBlock.CODEC);
       Registry.register(var0, "sugar_cane", SugarCaneBlock.CODEC);

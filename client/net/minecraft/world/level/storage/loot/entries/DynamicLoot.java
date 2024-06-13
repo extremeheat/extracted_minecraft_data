@@ -1,8 +1,7 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +11,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class DynamicLoot extends LootPoolSingletonContainer {
-   public static final Codec<DynamicLoot> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<DynamicLoot> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(ResourceLocation.CODEC.fieldOf("name").forGetter(var0x -> var0x.name)).and(singletonFields(var0)).apply(var0, DynamicLoot::new)
    );
    private final ResourceLocation name;

@@ -7,11 +7,10 @@ import java.time.Duration;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -39,7 +38,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
       } else {
          this.title = this.queuedTasks.get(0).getTitle();
          Runnable var3 = () -> {
-            for(LongRunningTask var5 : var2) {
+            for (LongRunningTask var5 : var2) {
                this.setTitle(var5.getTitle());
                if (var5.aborted()) {
                   break;
@@ -82,6 +81,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
       this.layout.addChild(this.loadingDotsWidget, var0 -> var0.paddingBottom(30));
       this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.cancel()).build());
       this.layout.visitWidgets(var1 -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1);
       });
       this.repositionElements();
    }
@@ -93,7 +93,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
    }
 
    protected void cancel() {
-      for(LongRunningTask var2 : this.queuedTasks) {
+      for (LongRunningTask var2 : this.queuedTasks) {
          var2.abortTask();
       }
 

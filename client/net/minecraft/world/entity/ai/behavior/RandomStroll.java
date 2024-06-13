@@ -5,11 +5,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
@@ -62,7 +60,7 @@ public class RandomStroll {
       Vec3 var1 = null;
       Vec3 var2 = null;
 
-      for(int[] var6 : SWIM_XY_DISTANCE_TIERS) {
+      for (int[] var6 : SWIM_XY_DISTANCE_TIERS) {
          if (var1 == null) {
             var2 = BehaviorUtils.getRandomSwimmablePos(var0, var6[0], var6[1]);
          } else {

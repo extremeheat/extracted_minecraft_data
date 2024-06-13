@@ -2,6 +2,7 @@ package net.minecraft.world.effect;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
@@ -14,16 +15,22 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.flag.FeatureElement;
+import net.minecraft.world.flag.FeatureFlag;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 
-public class MobEffect {
+public class MobEffect implements FeatureElement {
    private static final int AMBIENT_ALPHA = Mth.floor(38.25F);
    private final Map<Holder<Attribute>, MobEffect.AttributeTemplate> attributeModifiers = new Object2ObjectOpenHashMap();
    private final MobEffectCategory category;
@@ -32,14 +39,16 @@ public class MobEffect {
    @Nullable
    private String descriptionId;
    private int blendDurationTicks;
+   private Optional<SoundEvent> soundOnAdded = Optional.empty();
+   private FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
 
    protected MobEffect(MobEffectCategory var1, int var2) {
       super();
       this.category = var1;
       this.color = var2;
       this.particleFactory = var1x -> {
-         int var2xx = var1x.isAmbient() ? AMBIENT_ALPHA : 255;
-         return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(var2xx, var2));
+         int var2x = var1x.isAmbient() ? AMBIENT_ALPHA : 255;
+         return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(var2x, var2));
       };
    }
 
@@ -67,6 +76,16 @@ public class MobEffect {
    }
 
    public void onEffectStarted(LivingEntity var1, int var2) {
+   }
+
+   public void onEffectAdded(LivingEntity var1, int var2) {
+      this.soundOnAdded.ifPresent(var1x -> var1.level().playSound(null, var1.getX(), var1.getY(), var1.getZ(), var1x, var1.getSoundSource(), 1.0F, 1.0F));
+   }
+
+   public void onMobRemoved(LivingEntity var1, int var2, Entity.RemovalReason var3) {
+   }
+
+   public void onMobHurt(LivingEntity var1, int var2, DamageSource var3, float var4) {
    }
 
    public boolean isInstantenous() {
@@ -112,7 +131,7 @@ public class MobEffect {
    }
 
    public void removeAttributeModifiers(AttributeMap var1) {
-      for(Entry var3 : this.attributeModifiers.entrySet()) {
+      for (Entry var3 : this.attributeModifiers.entrySet()) {
          AttributeInstance var4 = var1.getInstance((Holder<Attribute>)var3.getKey());
          if (var4 != null) {
             var4.removeModifier(((MobEffect.AttributeTemplate)var3.getValue()).id());
@@ -121,7 +140,7 @@ public class MobEffect {
    }
 
    public void addAttributeModifiers(AttributeMap var1, int var2) {
-      for(Entry var4 : this.attributeModifiers.entrySet()) {
+      for (Entry var4 : this.attributeModifiers.entrySet()) {
          AttributeInstance var5 = var1.getInstance((Holder<Attribute>)var4.getKey());
          if (var5 != null) {
             var5.removeModifier(((MobEffect.AttributeTemplate)var4.getValue()).id());
@@ -138,16 +157,27 @@ public class MobEffect {
       return this.particleFactory.apply(var1);
    }
 
-   static record AttributeTemplate(UUID a, double b, AttributeModifier.Operation c) {
-      private final UUID id;
-      private final double amount;
-      private final AttributeModifier.Operation operation;
+   public MobEffect withSoundOnAdded(SoundEvent var1) {
+      this.soundOnAdded = Optional.of(var1);
+      return this;
+   }
 
-      AttributeTemplate(UUID var1, double var2, AttributeModifier.Operation var4) {
+   public MobEffect requiredFeatures(FeatureFlag... var1) {
+      this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
+      return this;
+   }
+
+   @Override
+   public FeatureFlagSet requiredFeatures() {
+      return this.requiredFeatures;
+   }
+
+   static record AttributeTemplate(UUID id, double amount, AttributeModifier.Operation operation) {
+      AttributeTemplate(UUID id, double amount, AttributeModifier.Operation operation) {
          super();
-         this.id = var1;
-         this.amount = var2;
-         this.operation = var4;
+         this.id = id;
+         this.amount = amount;
+         this.operation = operation;
       }
 
       public AttributeModifier create(String var1, int var2) {

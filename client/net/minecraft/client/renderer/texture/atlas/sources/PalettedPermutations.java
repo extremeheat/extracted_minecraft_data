@@ -5,8 +5,8 @@ import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 
 public class PalettedPermutations implements SpriteSource {
    static final Logger LOGGER = LogUtils.getLogger();
-   public static final Codec<PalettedPermutations> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<PalettedPermutations> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Codec.list(ResourceLocation.CODEC).fieldOf("textures").forGetter(var0x -> var0x.textures),
                ResourceLocation.CODEC.fieldOf("palette_key").forGetter(var0x -> var0x.paletteKey),
@@ -58,7 +58,7 @@ public class PalettedPermutations implements SpriteSource {
       this.permutations
          .forEach((var3x, var4x) -> var4.put(var3x, Suppliers.memoize(() -> createPaletteMapping((int[])var3.get(), loadPaletteEntryFromImage(var1, var4x)))));
 
-      for(ResourceLocation var6 : this.textures) {
+      for (ResourceLocation var6 : this.textures) {
          ResourceLocation var7 = TEXTURE_ID_CONVERTER.idToFile(var6);
          Optional var8 = var1.getResource(var7);
          if (var8.isEmpty()) {
@@ -66,7 +66,7 @@ public class PalettedPermutations implements SpriteSource {
          } else {
             LazyLoadedImage var9 = new LazyLoadedImage(var7, (Resource)var8.get(), var4.size());
 
-            for(Entry var11 : var4.entrySet()) {
+            for (Entry var11 : var4.entrySet()) {
                ResourceLocation var12 = var6.withSuffix("_" + (String)var11.getKey());
                var2.add(var12, new PalettedPermutations.PalettedSpriteSupplier(var9, (java.util.function.Supplier<IntUnaryOperator>)var11.getValue(), var12));
             }
@@ -81,7 +81,7 @@ public class PalettedPermutations implements SpriteSource {
       } else {
          Int2IntOpenHashMap var2 = new Int2IntOpenHashMap(var1.length);
 
-         for(int var3 = 0; var3 < var0.length; ++var3) {
+         for (int var3 = 0; var3 < var0.length; var3++) {
             int var4 = var0[var3];
             if (FastColor.ABGR32.alpha(var4) != 0) {
                var2.put(FastColor.ABGR32.transparent(var4), var1[var3]);
@@ -89,14 +89,14 @@ public class PalettedPermutations implements SpriteSource {
          }
 
          return var1x -> {
-            int var2xx = FastColor.ABGR32.alpha(var1x);
-            if (var2xx == 0) {
+            int var2x = FastColor.ABGR32.alpha(var1x);
+            if (var2x == 0) {
                return var1x;
             } else {
-               int var3xx = FastColor.ABGR32.transparent(var1x);
-               int var4xx = var2.getOrDefault(var3xx, FastColor.ABGR32.opaque(var3xx));
-               int var5 = FastColor.ABGR32.alpha(var4xx);
-               return FastColor.ABGR32.color(var2xx * var5 / 255, var4xx);
+               int var3x = FastColor.ABGR32.transparent(var1x);
+               int var4x = var2.getOrDefault(var3x, FastColor.ABGR32.opaque(var3x));
+               int var5 = FastColor.ABGR32.alpha(var4x);
+               return FastColor.ABGR32.color(var2x * var5 / 255, var4x);
             }
          };
       }
@@ -130,17 +130,13 @@ public class PalettedPermutations implements SpriteSource {
       return SpriteSources.PALETTED_PERMUTATIONS;
    }
 
-   static record PalettedSpriteSupplier(LazyLoadedImage a, java.util.function.Supplier<IntUnaryOperator> b, ResourceLocation c)
+   static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation)
       implements SpriteSource.SpriteSupplier {
-      private final LazyLoadedImage baseImage;
-      private final java.util.function.Supplier<IntUnaryOperator> palette;
-      private final ResourceLocation permutationLocation;
-
-      PalettedSpriteSupplier(LazyLoadedImage var1, java.util.function.Supplier<IntUnaryOperator> var2, ResourceLocation var3) {
+      PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) {
          super();
-         this.baseImage = var1;
-         this.palette = var2;
-         this.permutationLocation = var3;
+         this.baseImage = baseImage;
+         this.palette = palette;
+         this.permutationLocation = permutationLocation;
       }
 
       @Nullable

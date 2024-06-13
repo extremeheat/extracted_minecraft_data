@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.BitSet;
 import java.util.Optional;
 import java.util.Set;
@@ -20,7 +19,6 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunk;
@@ -35,7 +33,7 @@ public final class BelowZeroRetrogen {
    public static final Codec<BelowZeroRetrogen> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                NON_EMPTY_CHUNK_STATUS.fieldOf("target_status").forGetter(BelowZeroRetrogen::targetStatus),
-               BITSET_CODEC.optionalFieldOf("missing_bedrock")
+               BITSET_CODEC.lenientOptionalFieldOf("missing_bedrock")
                   .forGetter(var0x -> var0x.missingBedrock.isEmpty() ? Optional.empty() : Optional.of(var0x.missingBedrock))
             )
             .apply(var0, BelowZeroRetrogen::new)
@@ -68,7 +66,7 @@ public final class BelowZeroRetrogen {
    }
 
    public static void replaceOldBedrock(ProtoChunk var0) {
-      boolean var1 = true;
+      byte var1 = 4;
       BlockPos.betweenClosed(0, 0, 0, 15, 4, 15).forEach(var1x -> {
          if (var0.getBlockState(var1x).is(Blocks.BEDROCK)) {
             var0.setBlockState(var1x, Blocks.DEEPSLATE.defaultBlockState(), false);
@@ -81,8 +79,8 @@ public final class BelowZeroRetrogen {
       int var3 = var2.getMinBuildHeight();
       int var4 = var2.getMaxBuildHeight() - 1;
 
-      for(int var5 = 0; var5 < 16; ++var5) {
-         for(int var6 = 0; var6 < 16; ++var6) {
+      for (int var5 = 0; var5 < 16; var5++) {
+         for (int var6 = 0; var6 < 16; var6++) {
             if (this.hasBedrockHole(var5, var6)) {
                BlockPos.betweenClosed(var5, var3, var6, var5, var4, var6).forEach(var1x -> var1.setBlockState(var1x, Blocks.AIR.defaultBlockState(), false));
             }

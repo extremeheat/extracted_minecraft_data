@@ -25,7 +25,7 @@ public class AdvancementTree {
    }
 
    private void remove(AdvancementNode var1) {
-      for(AdvancementNode var3 : var1.children()) {
+      for (AdvancementNode var3 : var1.children()) {
          this.remove(var3);
       }
 
@@ -45,7 +45,7 @@ public class AdvancementTree {
    }
 
    public void remove(Set<ResourceLocation> var1) {
-      for(ResourceLocation var3 : var1) {
+      for (ResourceLocation var3 : var1) {
          AdvancementNode var4 = this.nodes.get(var3);
          if (var4 == null) {
             LOGGER.warn("Told to remove advancement {} but I don't know what that is", var3);
@@ -58,7 +58,7 @@ public class AdvancementTree {
    public void addAll(Collection<AdvancementHolder> var1) {
       ArrayList var2 = new ArrayList(var1);
 
-      while(!var2.isEmpty()) {
+      while (!var2.isEmpty()) {
          if (!var2.removeIf(this::tryInsert)) {
             LOGGER.error("Couldn't load advancements: {}", var2);
             break;
@@ -126,11 +126,11 @@ public class AdvancementTree {
    public void setListener(@Nullable AdvancementTree.Listener var1) {
       this.listener = var1;
       if (var1 != null) {
-         for(AdvancementNode var3 : this.roots) {
+         for (AdvancementNode var3 : this.roots) {
             var1.onAddAdvancementRoot(var3);
          }
 
-         for(AdvancementNode var5 : this.tasks) {
+         for (AdvancementNode var5 : this.tasks) {
             var1.onAddAdvancementTask(var5);
          }
       }

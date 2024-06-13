@@ -44,7 +44,6 @@ import net.minecraft.advancements.critereon.TradeTrigger;
 import net.minecraft.advancements.critereon.UsedTotemTrigger;
 import net.minecraft.advancements.critereon.UsingItemTrigger;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -101,7 +100,6 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       EntityType.PIGLIN,
       EntityType.PIGLIN_BRUTE,
       EntityType.PILLAGER,
-      EntityType.PLAGUEWHALE,
       EntityType.RAVAGER,
       EntityType.SHULKER,
       EntityType.SILVERFISH,
@@ -109,7 +107,6 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       EntityType.SLIME,
       EntityType.SPIDER,
       EntityType.STRAY,
-      EntityType.TOXIFIN,
       EntityType.VEX,
       EntityType.VINDICATOR,
       EntityType.WITCH,
@@ -118,8 +115,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       EntityType.ZOGLIN,
       EntityType.ZOMBIE_VILLAGER,
       EntityType.ZOMBIE,
-      EntityType.ZOMBIFIED_PIGLIN,
-      EntityType.POISONOUS_POTATO_ZOMBIE
+      EntityType.ZOMBIFIED_PIGLIN
    );
 
    public VanillaAdventureAdvancements() {
@@ -722,10 +718,10 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
 
    private static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> placedBlockReadByComparator(Block var0) {
       LootItemCondition.Builder[] var1 = ComparatorBlock.FACING.getPossibleValues().stream().map(var0x -> {
-         StatePropertiesPredicate.Builder var1xx = StatePropertiesPredicate.Builder.properties().hasProperty(ComparatorBlock.FACING, var0x);
-         BlockPredicate.Builder var2 = BlockPredicate.Builder.block().of(Blocks.COMPARATOR).setProperties(var1xx);
+         StatePropertiesPredicate.Builder var1x = StatePropertiesPredicate.Builder.properties().hasProperty(ComparatorBlock.FACING, var0x);
+         BlockPredicate.Builder var2 = BlockPredicate.Builder.block().of(Blocks.COMPARATOR).setProperties(var1x);
          return LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(var2), new BlockPos(var0x.getOpposite().getNormal()));
-      }).toArray(var0x -> new LootItemCondition.Builder[var0x]);
+      }).toArray(LootItemCondition.Builder[]::new);
       return ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(
          LootItemBlockStatePropertyCondition.hasBlockStateProperties(var0), AnyOfCondition.anyOf(var1)
       );
@@ -745,7 +741,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
                return AllOfCondition.allOf(var3, var4);
             }
          )
-         .toArray(var0x -> new LootItemCondition.Builder[var0x]);
+         .toArray(LootItemCondition.Builder[]::new);
       return ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(AnyOfCondition.anyOf(var1));
    }
 
@@ -820,13 +816,13 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       return var0;
    }
 
-   protected static <T extends Advancement.Builder> T addBiomes(T var0, HolderLookup.Provider var1, List<ResourceKey<Biome>> var2) {
+   protected static Advancement.Builder addBiomes(Advancement.Builder var0, HolderLookup.Provider var1, List<ResourceKey<Biome>> var2) {
       HolderLookup.RegistryLookup var3 = var1.lookupOrThrow(Registries.BIOME);
 
-      for(ResourceKey var5 : var2) {
+      for (ResourceKey var5 : var2) {
          var0.addCriterion(var5.location().toString(), PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inBiome(var3.getOrThrow(var5))));
       }
 
-      return (T)var0;
+      return var0;
    }
 }

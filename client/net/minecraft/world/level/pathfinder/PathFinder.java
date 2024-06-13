@@ -65,7 +65,7 @@ public class PathFinder {
       HashSet var10 = Sets.newHashSetWithExpectedSize(var7.size());
       int var11 = (int)((float)this.maxVisitedNodes * var6);
 
-      while(!this.openSet.isEmpty()) {
+      while (!this.openSet.isEmpty()) {
          if (++var9 >= var11) {
             break;
          }
@@ -73,7 +73,7 @@ public class PathFinder {
          Node var12 = this.openSet.pop();
          var12.closed = true;
 
-         for(Target var14 : var7) {
+         for (Target var14 : var7) {
             if (var12.distanceManhattan(var14) <= (float)var5) {
                var14.setReached();
                var10.add(var14);
@@ -87,7 +87,7 @@ public class PathFinder {
          if (!(var12.distanceTo(var2) >= var4)) {
             int var19 = this.nodeEvaluator.getNeighbors(this.neighbors, var12);
 
-            for(int var20 = 0; var20 < var19; ++var20) {
+            for (int var20 = 0; var20 < var19; var20++) {
                Node var15 = this.neighbors[var20];
                float var16 = this.distance(var12, var15);
                var15.walkedDistance = var12.walkedDistance + var16;
@@ -125,7 +125,7 @@ public class PathFinder {
    private float getBestH(Node var1, Set<Target> var2) {
       float var3 = 3.4028235E38F;
 
-      for(Target var5 : var2) {
+      for (Target var5 : var2) {
          float var6 = var1.distanceTo(var5);
          var5.updateBest(var6, var1);
          var3 = Math.min(var6, var3);
@@ -139,7 +139,7 @@ public class PathFinder {
       Node var5 = var1;
       var4.add(0, var1);
 
-      while(var5.cameFrom != null) {
+      while (var5.cameFrom != null) {
          var5 = var5.cameFrom;
          var4.add(0, var5);
       }

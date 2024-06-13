@@ -2,16 +2,12 @@ package net.minecraft.commands.execution;
 
 import net.minecraft.commands.CommandResultCallback;
 
-public record Frame(int a, CommandResultCallback b, Frame.FrameControl c) {
-   private final int depth;
-   private final CommandResultCallback returnValueConsumer;
-   private final Frame.FrameControl frameControl;
-
-   public Frame(int var1, CommandResultCallback var2, Frame.FrameControl var3) {
+public record Frame(int depth, CommandResultCallback returnValueConsumer, Frame.FrameControl frameControl) {
+   public Frame(int depth, CommandResultCallback returnValueConsumer, Frame.FrameControl frameControl) {
       super();
-      this.depth = var1;
-      this.returnValueConsumer = var2;
-      this.frameControl = var3;
+      this.depth = depth;
+      this.returnValueConsumer = returnValueConsumer;
+      this.frameControl = frameControl;
    }
 
    public void returnSuccess(int var1) {

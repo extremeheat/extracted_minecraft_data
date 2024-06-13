@@ -10,7 +10,6 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 
 public class AttributesRename extends DataFix {
    private final String name;

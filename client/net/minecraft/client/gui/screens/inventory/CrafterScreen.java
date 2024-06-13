@@ -34,7 +34,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
    @Override
    protected void slotClicked(Slot var1, int var2, int var3, ClickType var4) {
       if (var1 instanceof CrafterSlot && !var1.hasItem() && !this.player.isSpectator()) {
-         switch(var4) {
+         switch (var4) {
             case PICKUP:
                if (this.menu.isSlotDisabled(var2)) {
                   this.enableSlot(var2);
@@ -71,7 +71,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
    @Override
    public void renderSlot(GuiGraphics var1, Slot var2) {
       if (var2 instanceof CrafterSlot var3 && this.menu.isSlotDisabled(var2.index)) {
-         this.renderDisabledSlot(var1, (CrafterSlot)var3);
+         this.renderDisabledSlot(var1, var3);
          return;
       }
 

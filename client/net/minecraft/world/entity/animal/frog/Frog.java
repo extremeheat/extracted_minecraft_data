@@ -125,7 +125,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    @Override
    public Brain<Frog> getBrain() {
-      return super.getBrain();
+      return (Brain<Frog>)super.getBrain();
    }
 
    @Override

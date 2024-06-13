@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -11,7 +10,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
 import javax.annotation.Nullable;
@@ -26,9 +24,7 @@ import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.commands.execution.ChainModifiers;
 import net.minecraft.commands.execution.CustomCommandExecutor;
-import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.execution.ExecutionControl;
-import net.minecraft.commands.execution.Frame;
 import net.minecraft.commands.execution.tasks.CallFunction;
 import net.minecraft.commands.execution.tasks.FallthroughTask;
 import net.minecraft.commands.functions.CommandFunction;
@@ -71,7 +67,7 @@ public class FunctionCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralArgumentBuilder var1 = Commands.literal("with");
 
-      for(DataCommands.DataProvider var3 : DataCommands.SOURCE_PROVIDERS) {
+      for (DataCommands.DataProvider var3 : DataCommands.SOURCE_PROVIDERS) {
          var3.wrap(var1, var1x -> var1x.executes(new FunctionCommand.FunctionCustomExecutor() {
                @Override
                protected CompoundTag arguments(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
@@ -171,7 +167,7 @@ public class FunctionCommand {
       ExecutionCommandSource var7 = var3.clearCallbacks();
       CommandResultCallback var8 = CommandResultCallback.chain(var2.callback(), var4.currentFrame().returnValueConsumer());
 
-      for(CommandFunction var10 : var0) {
+      for (CommandFunction var10 : var0) {
          ResourceLocation var11 = var10.id();
          CommandResultCallback var12 = decorateOutputIfNeeded((T)var2, var5, var11, var8);
          instantiateAndQueueFunctions(var1, var4, var6, (T)var7, var10, var11, var12, true);
@@ -193,7 +189,7 @@ public class FunctionCommand {
             CommandResultCallback var11 = decorateOutputIfNeeded((T)var2, var5, var10, var8);
             instantiateAndQueueFunctions(var1, var4, var6, (T)var7, var9, var10, var11, false);
          } else if (var8 == CommandResultCallback.EMPTY) {
-            for(CommandFunction var17 : var0) {
+            for (CommandFunction var17 : var0) {
                ResourceLocation var19 = var17.id();
                CommandResultCallback var12 = decorateOutputIfNeeded((T)var2, var5, var19, var8);
                instantiateAndQueueFunctions(var1, var4, var6, (T)var7, var17, var19, var12, false);
@@ -216,7 +212,7 @@ public class FunctionCommand {
             1Accumulator var16 = new 1Accumulator();
             CommandResultCallback var18 = (var1x, var2x) -> var16.add(var2x);
 
-            for(CommandFunction var21 : var0) {
+            for (CommandFunction var21 : var0) {
                ResourceLocation var13 = var21.id();
                CommandResultCallback var14 = decorateOutputIfNeeded((T)var2, var5, var13, var18);
                instantiateAndQueueFunctions(var1, var4, var6, (T)var7, var21, var13, var14, false);

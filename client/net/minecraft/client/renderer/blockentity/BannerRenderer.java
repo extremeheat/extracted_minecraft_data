@@ -114,8 +114,8 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       var4.render(var0, var5.buffer(var1, RenderType::entitySolid, var9), var2, var3);
       renderPatternLayer(var0, var1, var2, var3, var4, var6 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var7);
 
-      for(int var10 = 0; var10 < 16 && var10 < var8.layers().size(); ++var10) {
-         BannerPatternLayers.Layer var11 = (BannerPatternLayers.Layer)var8.layers().get(var10);
+      for (int var10 = 0; var10 < 16 && var10 < var8.layers().size(); var10++) {
+         BannerPatternLayers.Layer var11 = var8.layers().get(var10);
          Material var12 = var6 ? Sheets.getBannerMaterial(var11.pattern()) : Sheets.getShieldMaterial(var11.pattern());
          renderPatternLayer(var0, var1, var2, var3, var4, var12, var11.color());
       }

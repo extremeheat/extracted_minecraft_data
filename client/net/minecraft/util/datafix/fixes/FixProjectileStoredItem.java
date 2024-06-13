@@ -37,8 +37,8 @@ public class FixProjectileStoredItem extends DataFix {
    @SafeVarargs
    private <T> Function<Typed<?>, Typed<?>> chainAllFilters(Function<Typed<?>, Typed<?>>... var1) {
       return var1x -> {
-         for(Function var5 : var1) {
-            var1x = (Typed)var5.apply((T)var1x);
+         for (Function var5 : var1) {
+            var1x = (Typed<?>)var5.apply(var1x);
          }
 
          return var1x;

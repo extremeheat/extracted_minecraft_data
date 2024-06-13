@@ -113,7 +113,7 @@ public class BellBlock extends BaseEntityBlock {
       if (var2.getAxis() != Direction.Axis.Y && !(var3 > 0.8123999834060669)) {
          Direction var5 = var1.getValue(FACING);
          BellAttachType var6 = var1.getValue(ATTACHMENT);
-         switch(var6) {
+         switch (var6) {
             case FLOOR:
                return var5.getAxis() == var2.getAxis();
             case SINGLE_WALL:
@@ -259,7 +259,7 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    private static Direction getConnectedDirection(BlockState var0) {
-      switch((BellAttachType)var0.getValue(ATTACHMENT)) {
+      switch ((BellAttachType)var0.getValue(ATTACHMENT)) {
          case FLOOR:
             return Direction.UP;
          case CEILING:

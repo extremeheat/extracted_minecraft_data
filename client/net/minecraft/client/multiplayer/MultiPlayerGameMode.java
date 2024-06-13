@@ -190,7 +190,7 @@ public class MultiPlayerGameMode {
    public boolean continueDestroyBlock(BlockPos var1, Direction var2) {
       this.ensureHasSentCarriedItem();
       if (this.destroyDelay > 0) {
-         --this.destroyDelay;
+         this.destroyDelay--;
          return true;
       } else if (this.localPlayerMode.isCreative() && this.minecraft.level.getWorldBorder().isWithinBounds(var1)) {
          this.destroyDelay = 5;
@@ -207,7 +207,7 @@ public class MultiPlayerGameMode {
             this.isDestroying = false;
             return false;
          } else {
-            this.destroyProgress += var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1);
+            this.destroyProgress = this.destroyProgress + var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1);
             if (this.destroyTicks % 4.0F == 0.0F) {
                SoundType var4 = var3.getSoundType();
                this.minecraft
@@ -224,7 +224,7 @@ public class MultiPlayerGameMode {
                   );
             }
 
-            ++this.destroyTicks;
+            this.destroyTicks++;
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, Mth.clamp(this.destroyProgress, 0.0F, 1.0F));
             if (this.destroyProgress >= 1.0F) {
                this.isDestroying = false;
@@ -401,14 +401,14 @@ public class MultiPlayerGameMode {
          int var8 = var7.size();
          ArrayList var9 = Lists.newArrayListWithCapacity(var8);
 
-         for(Slot var11 : var7) {
+         for (Slot var11 : var7) {
             var9.add(var11.getItem().copy());
          }
 
          var6.clicked(var2, var3, var4, var5);
          Int2ObjectOpenHashMap var14 = new Int2ObjectOpenHashMap();
 
-         for(int var15 = 0; var15 < var8; ++var15) {
+         for (int var15 = 0; var15 < var8; var15++) {
             ItemStack var12 = (ItemStack)var9.get(var15);
             ItemStack var13 = ((Slot)var7.get(var15)).getItem();
             if (!ItemStack.matches(var12, var13)) {

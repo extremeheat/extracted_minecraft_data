@@ -41,7 +41,7 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
    private IntList convertToIndices(List<String> var1) {
       IntArrayList var2 = new IntArrayList(var1.size());
 
-      for(String var4 : var1) {
+      for (String var4 : var1) {
          var2.add(this.getArgumentIndex(var4));
       }
 
@@ -53,7 +53,7 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
       if (this.plainEntries != null) {
          this.macroEntries = new ArrayList<>(this.plainEntries.size() + 1);
 
-         for(UnboundEntryAction var6 : this.plainEntries) {
+         for (UnboundEntryAction var6 : this.plainEntries) {
             this.macroEntries.add(new MacroFunction.PlainTextEntry<>(var6));
          }
 

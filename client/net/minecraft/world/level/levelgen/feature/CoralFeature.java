@@ -47,17 +47,17 @@ public abstract class CoralFeature extends Feature<NoneFeatureConfiguration> {
             var1.setBlock(var5, Blocks.SEA_PICKLE.defaultBlockState().setValue(SeaPickleBlock.PICKLES, Integer.valueOf(var2.nextInt(4) + 1)), 2);
          }
 
-         for(Direction var8 : Direction.Plane.HORIZONTAL) {
+         for (Direction var8 : Direction.Plane.HORIZONTAL) {
             if (var2.nextFloat() < 0.2F) {
                BlockPos var9 = var3.relative(var8);
                if (var1.getBlockState(var9).is(Blocks.WATER)) {
                   BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.WALL_CORALS, var2).map(Holder::value).ifPresent(var3x -> {
-                     BlockState var4xx = var3x.defaultBlockState();
-                     if (var4xx.hasProperty(BaseCoralWallFanBlock.FACING)) {
-                        var4xx = var4xx.setValue(BaseCoralWallFanBlock.FACING, var8);
+                     BlockState var4x = var3x.defaultBlockState();
+                     if (var4x.hasProperty(BaseCoralWallFanBlock.FACING)) {
+                        var4x = var4x.setValue(BaseCoralWallFanBlock.FACING, var8);
                      }
 
-                     var1.setBlock(var9, var4xx, 2);
+                     var1.setBlock(var9, var4x, 2);
                   });
                }
             }

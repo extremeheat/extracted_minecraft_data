@@ -150,9 +150,9 @@ public class WanderingTrader extends AbstractVillager {
    private void experimentalUpdateTrades() {
       MerchantOffers var1 = this.getOffers();
 
-      for(Pair var3 : VillagerTrades.EXPERIMENTAL_WANDERING_TRADER_TRADES) {
+      for (Pair var3 : VillagerTrades.EXPERIMENTAL_WANDERING_TRADER_TRADES) {
          VillagerTrades.ItemListing[] var4 = (VillagerTrades.ItemListing[])var3.getLeft();
-         this.addOffersFromItemListings(var1, var4, var3.getRight());
+         this.addOffersFromItemListings(var1, var4, (Integer)var3.getRight());
       }
    }
 

@@ -27,7 +27,7 @@ public class RaidDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       BlockPos var9 = this.getCamera().getBlockPosition();
 
-      for(BlockPos var11 : this.raidCenters) {
+      for (BlockPos var11 : this.raidCenters) {
          if (var9.closerThan(var11, 160.0)) {
             highlightRaidCenter(var1, var2, var11);
          }

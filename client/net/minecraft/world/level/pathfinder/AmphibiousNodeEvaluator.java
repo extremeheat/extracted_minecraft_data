@@ -71,10 +71,10 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
          var1[var3++] = var10;
       }
 
-      for(int var11 = 0; var11 < var3; ++var11) {
+      for (int var11 = 0; var11 < var3; var11++) {
          Node var12 = var1[var11];
          if (var12.type == PathType.WATER && this.prefersShallowSwimming && var12.y < this.mob.level().getSeaLevel() - 10) {
-            ++var12.costMalus;
+            var12.costMalus++;
          }
       }
 
@@ -96,7 +96,7 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
       if (var5 == PathType.WATER) {
          BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-         for(Direction var10 : Direction.values()) {
+         for (Direction var10 : Direction.values()) {
             var6.set(var2, var3, var4).move(var10);
             PathType var11 = var1.getPathTypeFromState(var6.getX(), var6.getY(), var6.getZ());
             if (var11 == PathType.BLOCKED) {

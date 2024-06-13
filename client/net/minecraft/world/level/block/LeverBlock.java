@@ -55,9 +55,9 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((AttachFace)var1.getValue(FACE)) {
+      switch ((AttachFace)var1.getValue(FACE)) {
          case FLOOR:
-            switch(var1.getValue(FACING).getAxis()) {
+            switch (var1.getValue(FACING).getAxis()) {
                case X:
                   return UP_AABB_X;
                case Z:
@@ -65,7 +65,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
                   return UP_AABB_Z;
             }
          case WALL:
-            switch((Direction)var1.getValue(FACING)) {
+            switch ((Direction)var1.getValue(FACING)) {
                case EAST:
                   return EAST_AABB;
                case WEST:
@@ -78,7 +78,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
             }
          case CEILING:
          default:
-            switch(var1.getValue(FACING).getAxis()) {
+            switch (var1.getValue(FACING).getAxis()) {
                case X:
                   return DOWN_AABB_X;
                case Z:

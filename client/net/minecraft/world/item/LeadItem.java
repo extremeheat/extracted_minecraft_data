@@ -44,7 +44,7 @@ public class LeadItem extends Item {
       AABB var9 = new AABB((double)var6 - 7.0, (double)var7 - 7.0, (double)var8 - 7.0, (double)var6 + 7.0, (double)var7 + 7.0, (double)var8 + 7.0);
       List var10 = var1.getEntitiesOfClass(Mob.class, var9, var1x -> var1x.getLeashHolder() == var0);
 
-      for(Mob var12 : var10) {
+      for (Mob var12 : var10) {
          if (var3 == null) {
             var3 = LeashFenceKnotEntity.getOrCreateKnot(var1, var2);
             var3.playPlacementSound();

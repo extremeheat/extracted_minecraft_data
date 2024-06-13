@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
@@ -17,7 +16,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class ForkingTrunkPlacer extends TrunkPlacer {
-   public static final Codec<ForkingTrunkPlacer> CODEC = RecordCodecBuilder.create(var0 -> trunkPlacerParts(var0).apply(var0, ForkingTrunkPlacer::new));
+   public static final MapCodec<ForkingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec(var0 -> trunkPlacerParts(var0).apply(var0, ForkingTrunkPlacer::new));
 
    public ForkingTrunkPlacer(int var1, int var2, int var3) {
       super(var1, var2, var3);
@@ -42,12 +41,12 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
       int var13 = var5.getZ();
       OptionalInt var14 = OptionalInt.empty();
 
-      for(int var15 = 0; var15 < var4; ++var15) {
+      for (int var15 = 0; var15 < var4; var15++) {
          int var16 = var5.getY() + var15;
          if (var15 >= var9 && var10 > 0) {
             var12 += var8.getStepX();
             var13 += var8.getStepZ();
-            --var10;
+            var10--;
          }
 
          if (this.placeLog(var1, var2, var3, var11.set(var12, var16, var13), var6)) {
@@ -67,7 +66,7 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
          int var17 = 1 + var3.nextInt(3);
          var14 = OptionalInt.empty();
 
-         for(int var18 = var24; var18 < var4 && var17 > 0; --var17) {
+         for (int var18 = var24; var18 < var4 && var17 > 0; var17--) {
             if (var18 >= 1) {
                int var19 = var5.getY() + var18;
                var12 += var23.getStepX();
@@ -77,7 +76,7 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
                }
             }
 
-            ++var18;
+            var18++;
          }
 
          if (var14.isPresent()) {

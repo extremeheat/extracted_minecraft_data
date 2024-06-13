@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
@@ -69,7 +68,7 @@ public class TransferCommand {
       if (var3.isEmpty()) {
          throw ERROR_NO_PLAYERS.create();
       } else {
-         for(ServerPlayer var5 : var3) {
+         for (ServerPlayer var5 : var3) {
             var5.connection.send(new ClientboundTransferPacket(var1, var2));
          }
 

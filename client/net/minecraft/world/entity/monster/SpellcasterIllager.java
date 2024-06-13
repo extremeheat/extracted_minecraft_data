@@ -54,11 +54,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    }
 
    public boolean isCastingSpell() {
-      if (this.level().isClientSide) {
-         return this.entityData.get(DATA_SPELL_CASTING_ID) > 0;
-      } else {
-         return this.spellCastingTickCount > 0;
-      }
+      return this.level().isClientSide ? this.entityData.get(DATA_SPELL_CASTING_ID) > 0 : this.spellCastingTickCount > 0;
    }
 
    public void setIsCastingSpell(SpellcasterIllager.IllagerSpell var1) {
@@ -74,7 +70,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    protected void customServerAiStep() {
       super.customServerAiStep();
       if (this.spellCastingTickCount > 0) {
-         --this.spellCastingTickCount;
+         this.spellCastingTickCount--;
       }
    }
 
@@ -187,10 +183,8 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          LivingEntity var1 = SpellcasterIllager.this.getTarget();
          if (var1 == null || !var1.isAlive()) {
             return false;
-         } else if (SpellcasterIllager.this.isCastingSpell()) {
-            return false;
          } else {
-            return SpellcasterIllager.this.tickCount >= this.nextAttackTickCount;
+            return SpellcasterIllager.this.isCastingSpell() ? false : SpellcasterIllager.this.tickCount >= this.nextAttackTickCount;
          }
       }
 
@@ -215,7 +209,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
 
       @Override
       public void tick() {
-         --this.attackWarmupDelay;
+         this.attackWarmupDelay--;
          if (this.attackWarmupDelay == 0) {
             this.performSpellCasting();
             SpellcasterIllager.this.playSound(SpellcasterIllager.this.getCastingSoundEvent(), 1.0F, 1.0F);

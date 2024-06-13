@@ -173,7 +173,7 @@ public class HttpUtil {
          long var9 = 0L;
 
          int var8;
-         while((var8 = var3.read(var7)) >= 0) {
+         while ((var8 = var3.read(var7)) >= 0) {
             var9 += (long)var8;
             var2.downloadedBytes(var9);
             if (var9 > (long)var1) {

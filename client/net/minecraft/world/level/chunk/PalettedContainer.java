@@ -3,10 +3,8 @@ package net.minecraft.world.level.chunk;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.Int2IntMap.Entry;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +55,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return RecordCodecBuilder.create(
             var2x -> var2x.group(
                      var1.mapResult(ExtraCodecs.orElsePartial(var3)).listOf().fieldOf("palette").forGetter(PalettedContainerRO.PackedData::paletteEntries),
-                     Codec.LONG_STREAM.optionalFieldOf("data").forGetter(PalettedContainerRO.PackedData::storage)
+                     Codec.LONG_STREAM.lenientOptionalFieldOf("data").forGetter(PalettedContainerRO.PackedData::storage)
                   )
                   .apply(var2x, PalettedContainerRO.PackedData::new)
          )
@@ -248,7 +246,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       int var2 = -1;
       int var3 = -1;
 
-      for(int var4 = 0; var4 < var0.length; ++var4) {
+      for (int var4 = 0; var4 < var0.length; var4++) {
          int var5 = var0[var4];
          if (var5 != var2) {
             var2 = var5;
@@ -281,22 +279,19 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
    @Override
    public void count(PalettedContainer.CountConsumer<T> var1) {
       if (this.data.palette.getSize() == 1) {
-         var1.accept((int)this.data.palette.valueFor(0), this.data.storage.getSize());
+         var1.accept(this.data.palette.valueFor(0), this.data.storage.getSize());
       } else {
          Int2IntOpenHashMap var2 = new Int2IntOpenHashMap();
          this.data.storage.getAll(var1x -> var2.addTo(var1x, 1));
-         var2.int2IntEntrySet().forEach(var2x -> var1.accept((int)this.data.palette.valueFor(var2x.getIntKey()), var2x.getIntValue()));
+         var2.int2IntEntrySet().forEach(var2x -> var1.accept(this.data.palette.valueFor(var2x.getIntKey()), var2x.getIntValue()));
       }
    }
 
-   static record Configuration<T>(Palette.Factory a, int b) {
-      private final Palette.Factory factory;
-      private final int bits;
-
-      Configuration(Palette.Factory var1, int var2) {
+   static record Configuration<T>(Palette.Factory factory, int bits) {
+      Configuration(Palette.Factory factory, int bits) {
          super();
-         this.factory = var1;
-         this.bits = var2;
+         this.factory = factory;
+         this.bits = bits;
       }
 
       public PalettedContainer.Data<T> createData(IdMap<T> var1, PaletteResize<T> var2, int var3) {
@@ -311,20 +306,17 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       void accept(T var1, int var2);
    }
 
-   static record Data<T>(PalettedContainer.Configuration<T> a, BitStorage b, Palette<T> c) {
-      private final PalettedContainer.Configuration<T> configuration;
-      final BitStorage storage;
-      final Palette<T> palette;
+   static record Data<T>(PalettedContainer.Configuration<T> configuration, BitStorage storage, Palette<T> palette) {
 
-      Data(PalettedContainer.Configuration<T> var1, BitStorage var2, Palette<T> var3) {
+      Data(PalettedContainer.Configuration<T> configuration, BitStorage storage, Palette<T> palette) {
          super();
-         this.configuration = var1;
-         this.storage = var2;
-         this.palette = var3;
+         this.configuration = configuration;
+         this.storage = storage;
+         this.palette = palette;
       }
 
       public void copyFrom(Palette<T> var1, BitStorage var2) {
-         for(int var3 = 0; var3 < var2.getSize(); ++var3) {
+         for (int var3 = 0; var3 < var2.getSize(); var3++) {
             Object var4 = var1.valueFor(var2.get(var3));
             this.storage.set(var3, this.palette.idFor((T)var4));
          }
@@ -353,7 +345,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       public static final PalettedContainer.Strategy SECTION_STATES = new PalettedContainer.Strategy(4) {
          @Override
          public <A> PalettedContainer.Configuration<A> getConfiguration(IdMap<A> var1, int var2) {
-            return switch(var2) {
+            return switch (var2) {
                case 0 -> new PalettedContainer.Configuration(SINGLE_VALUE_PALETTE_FACTORY, var2);
                case 1, 2, 3, 4 -> new PalettedContainer.Configuration(LINEAR_PALETTE_FACTORY, 4);
                case 5, 6, 7, 8 -> new PalettedContainer.Configuration(HASHMAP_PALETTE_FACTORY, var2);
@@ -364,7 +356,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       public static final PalettedContainer.Strategy SECTION_BIOMES = new PalettedContainer.Strategy(2) {
          @Override
          public <A> PalettedContainer.Configuration<A> getConfiguration(IdMap<A> var1, int var2) {
-            return switch(var2) {
+            return switch (var2) {
                case 0 -> new PalettedContainer.Configuration(SINGLE_VALUE_PALETTE_FACTORY, var2);
                case 1, 2, 3 -> new PalettedContainer.Configuration(LINEAR_PALETTE_FACTORY, var2);
                default -> new PalettedContainer.Configuration(PalettedContainer.Strategy.GLOBAL_PALETTE_FACTORY, Mth.ceillog2(var1.size()));

@@ -35,7 +35,7 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
       BlockPos var11 = BlockPos.containing(var9.getPosition().x, 0.0, var9.getPosition().z);
       VertexConsumer var12 = var2.getBuffer(RenderType.lines());
       if (this.postMainBoxes.containsKey(var10)) {
-         for(BoundingBox var14 : this.postMainBoxes.get(var10).values()) {
+         for (BoundingBox var14 : this.postMainBoxes.get(var10).values()) {
             if (var11.closerThan(var14.getCenter(), 500.0)) {
                LevelRenderer.renderLineBox(
                   var1,
@@ -60,7 +60,7 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       Map var17 = this.postPieces.get(var10);
       if (var17 != null) {
-         for(StructuresDebugPayload.PieceInfo var15 : var17.values()) {
+         for (StructuresDebugPayload.PieceInfo var15 : var17.values()) {
             BoundingBox var16 = var15.boundingBox();
             if (var11.closerThan(var16.getCenter(), 500.0)) {
                if (var15.isStart()) {
@@ -106,10 +106,10 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public void addBoundingBox(BoundingBox var1, List<StructuresDebugPayload.PieceInfo> var2, ResourceKey<Level> var3) {
-      this.postMainBoxes.computeIfAbsent(var3, var0 -> new HashMap()).put(var1.toString(), var1);
+      this.postMainBoxes.computeIfAbsent(var3, var0 -> new HashMap<>()).put(var1.toString(), var1);
       Map var4 = this.postPieces.computeIfAbsent(var3, var0 -> new HashMap<>());
 
-      for(StructuresDebugPayload.PieceInfo var6 : var2) {
+      for (StructuresDebugPayload.PieceInfo var6 : var2) {
          var4.put(var6.boundingBox().toString(), var6);
       }
    }

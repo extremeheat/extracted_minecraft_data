@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -45,7 +46,7 @@ public class GameTestRunner {
       this.existingStructureSpawner = var5;
       this.newStructureSpawner = var6;
       this.batches = ImmutableList.copyOf(var2);
-      this.allTestInfos = this.batches.stream().flatMap(var0 -> var0.gameTestInfos().stream()).collect(Collectors.toList());
+      this.allTestInfos = this.batches.stream().flatMap(var0 -> var0.gameTestInfos().stream()).collect(Util.toMutableList());
       var4.setRunner(this);
       this.allTestInfos.forEach(var0 -> var0.addListener(new ReportGameListener()));
    }

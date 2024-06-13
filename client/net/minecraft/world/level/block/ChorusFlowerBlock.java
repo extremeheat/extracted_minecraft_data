@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -74,7 +73,7 @@ public class ChorusFlowerBlock extends Block {
             } else if (var9.is(this.plant)) {
                int var10 = 1;
 
-               for(int var11 = 0; var11 < 4; ++var11) {
+               for (int var11 = 0; var11 < 4; var11++) {
                   BlockState var12 = var2.getBlockState(var3.below(var10 + 1));
                   if (!var12.is(this.plant)) {
                      if (var12.is(Blocks.END_STONE)) {
@@ -83,7 +82,7 @@ public class ChorusFlowerBlock extends Block {
                      break;
                   }
 
-                  ++var10;
+                  var10++;
                }
 
                if (var10 < 2 || var10 <= var4.nextInt(var8 ? 5 : 4)) {
@@ -99,12 +98,12 @@ public class ChorusFlowerBlock extends Block {
             } else if (var6 < 4) {
                int var15 = var4.nextInt(4);
                if (var8) {
-                  ++var15;
+                  var15++;
                }
 
                boolean var16 = false;
 
-               for(int var17 = 0; var17 < var15; ++var17) {
+               for (int var17 = 0; var17 < var15; var17++) {
                   Direction var13 = Direction.Plane.HORIZONTAL.getRandomDirection(var4);
                   BlockPos var14 = var3.relative(var13);
                   if (var2.isEmptyBlock(var14) && var2.isEmptyBlock(var14.below()) && allNeighborsEmpty(var2, var14, var13.getOpposite())) {
@@ -136,7 +135,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    private static boolean allNeighborsEmpty(LevelReader var0, BlockPos var1, @Nullable Direction var2) {
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
+      for (Direction var4 : Direction.Plane.HORIZONTAL) {
          if (var4 != var2 && !var0.isEmptyBlock(var1.relative(var4))) {
             return false;
          }
@@ -163,7 +162,7 @@ public class ChorusFlowerBlock extends Block {
          } else {
             boolean var5 = false;
 
-            for(Direction var7 : Direction.Plane.HORIZONTAL) {
+            for (Direction var7 : Direction.Plane.HORIZONTAL) {
                BlockState var8 = var2.getBlockState(var3.relative(var7));
                if (var8.is(this.plant)) {
                   if (var5) {
@@ -197,10 +196,10 @@ public class ChorusFlowerBlock extends Block {
       Block var6 = Blocks.CHORUS_PLANT;
       int var7 = var2.nextInt(4) + 1;
       if (var5 == 0) {
-         ++var7;
+         var7++;
       }
 
-      for(int var8 = 0; var8 < var7; ++var8) {
+      for (int var8 = 0; var8 < var7; var8++) {
          BlockPos var9 = var1.above(var8 + 1);
          if (!allNeighborsEmpty(var0, var9, null)) {
             return;
@@ -214,10 +213,10 @@ public class ChorusFlowerBlock extends Block {
       if (var5 < 4) {
          int var14 = var2.nextInt(4);
          if (var5 == 0) {
-            ++var14;
+            var14++;
          }
 
-         for(int var10 = 0; var10 < var14; ++var10) {
+         for (int var10 = 0; var10 < var14; var10++) {
             Direction var11 = Direction.Plane.HORIZONTAL.getRandomDirection(var2);
             BlockPos var12 = var1.above(var7).relative(var11);
             if (Math.abs(var12.getX() - var3.getX()) < var4

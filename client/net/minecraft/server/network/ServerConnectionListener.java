@@ -66,7 +66,7 @@ public class ServerConnectionListener {
    }
 
    public void startTcpServerListener(@Nullable InetAddress var1, int var2) throws IOException {
-      synchronized(this.channels) {
+      synchronized (this.channels) {
          Class<EpollServerSocketChannel> var4;
          EventLoopGroup var5;
          if (Epoll.isAvailable() && this.server.isEpollEnabled()) {
@@ -89,16 +89,16 @@ public class ServerConnectionListener {
                                  var1.config().setOption(ChannelOption.TCP_NODELAY, true);
                               } catch (ChannelException var5) {
                               }
-               
+
                               ChannelPipeline var2 = var1.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
                               if (ServerConnectionListener.this.server.repliesToStatus()) {
                                  var2.addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this.getServer()));
                               }
-               
+
                               Connection.configureSerialization(var2, PacketFlow.SERVERBOUND, null);
                               int var3 = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
                               Object var4 = var3 > 0 ? new RateKickingConnection(var3) : new Connection(PacketFlow.SERVERBOUND);
-                              ServerConnectionListener.this.connections.add(var4);
+                              ServerConnectionListener.this.connections.add((Connection)var4);
                               ((Connection)var4).configurePacketHandler(var2);
                               ((Connection)var4).setListenerForServerboundHandshake(
                                  new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, (Connection)var4)
@@ -116,7 +116,7 @@ public class ServerConnectionListener {
 
    public SocketAddress startMemoryChannel() {
       ChannelFuture var1;
-      synchronized(this.channels) {
+      synchronized (this.channels) {
          var1 = ((ServerBootstrap)((ServerBootstrap)new ServerBootstrap().channel(LocalServerChannel.class)).childHandler(new ChannelInitializer<Channel>() {
             protected void initChannel(Channel var1) {
                Connection var2 = new Connection(PacketFlow.SERVERBOUND);
@@ -136,7 +136,7 @@ public class ServerConnectionListener {
    public void stop() {
       this.running = false;
 
-      for(ChannelFuture var2 : this.channels) {
+      for (ChannelFuture var2 : this.channels) {
          try {
             var2.channel().close().sync();
          } catch (InterruptedException var4) {
@@ -146,10 +146,10 @@ public class ServerConnectionListener {
    }
 
    public void tick() {
-      synchronized(this.connections) {
+      synchronized (this.connections) {
          Iterator var2 = this.connections.iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             Connection var3 = (Connection)var2.next();
             if (!var3.isConnecting()) {
                if (var3.isConnected()) {

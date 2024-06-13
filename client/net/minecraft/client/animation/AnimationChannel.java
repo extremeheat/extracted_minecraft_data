@@ -4,14 +4,11 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
-public record AnimationChannel(AnimationChannel.Target a, Keyframe... b) {
-   private final AnimationChannel.Target target;
-   private final Keyframe[] keyframes;
-
-   public AnimationChannel(AnimationChannel.Target var1, Keyframe... var2) {
+public record AnimationChannel(AnimationChannel.Target target, Keyframe... keyframes) {
+   public AnimationChannel(AnimationChannel.Target target, Keyframe... keyframes) {
       super();
-      this.target = var1;
-      this.keyframes = var2;
+      this.target = target;
+      this.keyframes = keyframes;
    }
 
    public interface Interpolation {

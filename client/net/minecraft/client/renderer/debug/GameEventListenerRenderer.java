@@ -48,28 +48,18 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
          this.trackedListeners.removeIf(var2x -> var2x.isExpired(var9, var10));
          VertexConsumer var11 = var2.getBuffer(RenderType.lines());
 
-         for(GameEventListenerRenderer.TrackedListener var13 : this.trackedListeners) {
+         for (GameEventListenerRenderer.TrackedListener var13 : this.trackedListeners) {
             var13.getPosition(var9)
                .ifPresent(
                   var9x -> {
-                     double var10xx = var9x.x() - (double)var13.getListenerRadius();
+                     double var10x = var9x.x() - (double)var13.getListenerRadius();
                      double var12 = var9x.y() - (double)var13.getListenerRadius();
-                     double var14xx = var9x.z() - (double)var13.getListenerRadius();
-                     double var16xx = var9x.x() + (double)var13.getListenerRadius();
-                     double var18xx = var9x.y() + (double)var13.getListenerRadius();
-                     double var20xx = var9x.z() + (double)var13.getListenerRadius();
+                     double var14x = var9x.z() - (double)var13.getListenerRadius();
+                     double var16x = var9x.x() + (double)var13.getListenerRadius();
+                     double var18x = var9x.y() + (double)var13.getListenerRadius();
+                     double var20x = var9x.z() + (double)var13.getListenerRadius();
                      LevelRenderer.renderVoxelShape(
-                        var1,
-                        var11,
-                        Shapes.create(new AABB(var10xx, var12, var14xx, var16xx, var18xx, var20xx)),
-                        -var3,
-                        -var5,
-                        -var7,
-                        1.0F,
-                        1.0F,
-                        0.0F,
-                        0.35F,
-                        true
+                        var1, var11, Shapes.create(new AABB(var10x, var12, var14x, var16x, var18x, var20x)), -var3, -var5, -var7, 1.0F, 1.0F, 0.0F, 0.35F, true
                      );
                   }
                );
@@ -77,7 +67,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
 
          VertexConsumer var30 = var2.getBuffer(RenderType.debugFilledBox());
 
-         for(GameEventListenerRenderer.TrackedListener var14 : this.trackedListeners) {
+         for (GameEventListenerRenderer.TrackedListener var14 : this.trackedListeners) {
             var14.getPosition(var9)
                .ifPresent(
                   var8 -> LevelRenderer.addChainedFilledBoxVertices(
@@ -97,14 +87,14 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
                );
          }
 
-         for(GameEventListenerRenderer.TrackedListener var34 : this.trackedListeners) {
+         for (GameEventListenerRenderer.TrackedListener var34 : this.trackedListeners) {
             var34.getPosition(var9).ifPresent(var2x -> {
                DebugRenderer.renderFloatingText(var1, var2, "Listener Origin", var2x.x(), var2x.y() + 1.7999999523162842, var2x.z(), -1, 0.025F);
                DebugRenderer.renderFloatingText(var1, var2, BlockPos.containing(var2x).toString(), var2x.x(), var2x.y() + 1.5, var2x.z(), -6959665, 0.025F);
             });
          }
 
-         for(GameEventListenerRenderer.TrackedGameEvent var35 : this.trackedGameEvents) {
+         for (GameEventListenerRenderer.TrackedGameEvent var35 : this.trackedGameEvents) {
             Vec3 var15 = var35.position;
             double var16 = 0.20000000298023224;
             double var18 = var15.x - 0.20000000298023224;
@@ -137,16 +127,13 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       this.trackedListeners.add(new GameEventListenerRenderer.TrackedListener(var1, var2));
    }
 
-   static record TrackedGameEvent(long a, ResourceKey<GameEvent> b, Vec3 c) {
-      private final long timeStamp;
-      final ResourceKey<GameEvent> gameEvent;
-      final Vec3 position;
+   static record TrackedGameEvent(long timeStamp, ResourceKey<GameEvent> gameEvent, Vec3 position) {
 
-      TrackedGameEvent(long var1, ResourceKey<GameEvent> var3, Vec3 var4) {
+      TrackedGameEvent(long timeStamp, ResourceKey<GameEvent> gameEvent, Vec3 position) {
          super();
-         this.timeStamp = var1;
-         this.gameEvent = var3;
-         this.position = var4;
+         this.timeStamp = timeStamp;
+         this.gameEvent = gameEvent;
+         this.position = position;
       }
 
       public boolean isExpired() {

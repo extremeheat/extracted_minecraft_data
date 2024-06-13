@@ -9,9 +9,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
-import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawJunction;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
@@ -20,9 +18,9 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
    public static final int BEARD_KERNEL_RADIUS = 12;
    private static final int BEARD_KERNEL_SIZE = 24;
    private static final float[] BEARD_KERNEL = Util.make(new float[13824], var0 -> {
-      for(int var1 = 0; var1 < 24; ++var1) {
-         for(int var2 = 0; var2 < 24; ++var2) {
-            for(int var3 = 0; var3 < 24; ++var3) {
+      for (int var1 = 0; var1 < 24; var1++) {
+         for (int var2 = 0; var2 < 24; var2++) {
+            for (int var3 = 0; var3 < 24; var3++) {
                var0[var1 * 24 * 24 + var2 * 24 + var3] = (float)computeBeardContribution(var2 - 12, var3 - 12, var1 - 12);
             }
          }
@@ -39,15 +37,16 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       var0.startsForStructure(var1, var0x -> var0x.terrainAdaptation() != TerrainAdjustment.NONE).forEach(var5x -> {
          TerrainAdjustment var6 = var5x.getStructure().terrainAdaptation();
 
-         for(StructurePiece var8 : var5x.getPieces()) {
+         for (StructurePiece var8 : var5x.getPieces()) {
             if (var8.isCloseToChunk(var1, 12)) {
-               if (var8 instanceof PoolElementStructurePiece var9) {
+               if (var8 instanceof PoolElementStructurePiece) {
+                  PoolElementStructurePiece var9 = (PoolElementStructurePiece)var8;
                   StructureTemplatePool.Projection var10 = var9.getElement().getProjection();
                   if (var10 == StructureTemplatePool.Projection.RIGID) {
                      var4.add(new Beardifier.Rigid(var9.getBoundingBox(), var6, var9.getGroundLevelDelta()));
                   }
 
-                  for(JigsawJunction var12 : var9.getJunctions()) {
+                  for (JigsawJunction var12 : var9.getJunctions()) {
                      int var13 = var12.getSourceX();
                      int var14 = var12.getSourceZ();
                      if (var13 > var2 - 12 && var14 > var3 - 12 && var13 < var2 + 15 + 12 && var14 < var3 + 15 + 12) {
@@ -75,10 +74,9 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       int var2 = var1.blockX();
       int var3 = var1.blockY();
       int var4 = var1.blockZ();
+      double var5 = 0.0;
 
-      double var5;
-      double var10001;
-      for(var5 = 0.0; this.pieceIterator.hasNext(); var5 += var10001) {
+      while (this.pieceIterator.hasNext()) {
          Beardifier.Rigid var7 = (Beardifier.Rigid)this.pieceIterator.next();
          BoundingBox var8 = var7.box();
          int var9 = var7.groundLevelDelta();
@@ -87,34 +85,22 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
          int var12 = var8.minY() + var9;
          int var13 = var3 - var12;
 
-         int var14 = switch(var7.terrainAdjustment()) {
+         int var14 = switch (var7.terrainAdjustment()) {
             case NONE -> 0;
             case BURY, BEARD_THIN -> var13;
-            case BURY_PROPER -> Math.max(0, Math.max(var8.minY() - var3, var3 - var8.maxY()));
             case BEARD_BOX -> Math.max(0, Math.max(var12 - var3, var3 - var8.maxY()));
          };
-         switch(var7.terrainAdjustment()) {
-            case NONE:
-               var10001 = 0.0;
-               break;
-            case BURY:
-               var10001 = getBuryContribution(var10, var14, var11);
-               break;
-            case BEARD_THIN:
-            case BEARD_BOX:
-               var10001 = getBeardContribution(var10, var14, var11, var13) * 0.8;
-               break;
-            case BURY_PROPER:
-               var10001 = getBuryXContribution(var10, var14, var11);
-               break;
-            default:
-               throw new IncompatibleClassChangeError();
-         }
+
+         var5 += switch (var7.terrainAdjustment()) {
+            case NONE -> 0.0;
+            case BURY -> getBuryContribution(var10, var14, var11);
+            case BEARD_THIN, BEARD_BOX -> getBeardContribution(var10, var14, var11, var13) * 0.8;
+         };
       }
 
       this.pieceIterator.back(2147483647);
 
-      while(this.junctionIterator.hasNext()) {
+      while (this.junctionIterator.hasNext()) {
          JigsawJunction var15 = (JigsawJunction)this.junctionIterator.next();
          int var16 = var2 - var15.getSourceX();
          int var17 = var3 - var15.getSourceGroundY();
@@ -138,11 +124,6 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
 
    private static double getBuryContribution(int var0, int var1, int var2) {
       double var3 = Mth.length((double)var0, (double)var1 / 2.0, (double)var2);
-      return Mth.clampedMap(var3, 0.0, 6.0, 1.0, 0.0);
-   }
-
-   private static double getBuryXContribution(int var0, int var1, int var2) {
-      double var3 = Mth.length((double)var0, (double)var1, (double)var2);
       return Mth.clampedMap(var3, 0.0, 6.0, 1.0, 0.0);
    }
 
@@ -174,16 +155,12 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
    }
 
    @VisibleForTesting
-   public static record Rigid(BoundingBox a, TerrainAdjustment b, int c) {
-      private final BoundingBox box;
-      private final TerrainAdjustment terrainAdjustment;
-      private final int groundLevelDelta;
-
-      public Rigid(BoundingBox var1, TerrainAdjustment var2, int var3) {
+   public static record Rigid(BoundingBox box, TerrainAdjustment terrainAdjustment, int groundLevelDelta) {
+      public Rigid(BoundingBox box, TerrainAdjustment terrainAdjustment, int groundLevelDelta) {
          super();
-         this.box = var1;
-         this.terrainAdjustment = var2;
-         this.groundLevelDelta = var3;
+         this.box = box;
+         this.terrainAdjustment = terrainAdjustment;
+         this.groundLevelDelta = groundLevelDelta;
       }
    }
 }

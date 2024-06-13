@@ -28,7 +28,6 @@ public class Pools {
       Holder.Reference var2 = var1.getOrThrow(EMPTY);
       var0.register(EMPTY, new StructureTemplatePool(var2, ImmutableList.of(), StructureTemplatePool.Projection.RIGID));
       BastionPieces.bootstrap(var0);
-      ColosseumPieces.bootstrap(var0);
       PillagerOutpostPools.bootstrap(var0);
       VillagePools.bootstrap(var0);
       AncientCityStructurePieces.bootstrap(var0);

@@ -72,9 +72,9 @@ public class ServerMetricsSamplersProvider implements MetricsSamplerProvider {
             var0x.stop();
          }
 
-         long var1xx = var0x.elapsed(TimeUnit.NANOSECONDS);
+         long var1x = var0x.elapsed(TimeUnit.NANOSECONDS);
          var0x.reset();
-         return (double)var1xx;
+         return (double)var1x;
       };
       MetricSampler.ValueIncreasedByPercentage var3 = new MetricSampler.ValueIncreasedByPercentage(2.0F);
       return MetricSampler.builder("ticktime", MetricCategory.TICK_LOOP, var2, var1).withBeforeTick(Stopwatch::start).withThresholdAlert(var3).build();

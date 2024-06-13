@@ -21,7 +21,7 @@ public interface VertexSorting {
          float[] var2 = new float[var1.length];
          int[] var3 = new int[var1.length];
 
-         for(int var4 = 0; var4 < var1.length; var3[var4] = var4++) {
+         for (int var4 = 0; var4 < var1.length; var3[var4] = var4++) {
             var2[var4] = var0.apply(var1[var4]);
          }
 

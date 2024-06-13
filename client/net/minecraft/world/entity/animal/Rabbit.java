@@ -174,11 +174,11 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    @Override
    public void customServerAiStep() {
       if (this.jumpDelayTicks > 0) {
-         --this.jumpDelayTicks;
+         this.jumpDelayTicks--;
       }
 
       if (this.moreCarrotTicks > 0) {
-         this.moreCarrotTicks -= this.random.nextInt(3);
+         this.moreCarrotTicks = this.moreCarrotTicks - this.random.nextInt(3);
          if (this.moreCarrotTicks < 0) {
             this.moreCarrotTicks = 0;
          }
@@ -254,7 +254,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    public void aiStep() {
       super.aiStep();
       if (this.jumpTicks != this.jumpDuration) {
-         ++this.jumpTicks;
+         this.jumpTicks++;
       } else if (this.jumpDuration != 0) {
          this.jumpTicks = 0;
          this.jumpDuration = 0;
@@ -314,8 +314,6 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       return this.getVariant() == Rabbit.Variant.EVIL ? SoundSource.HOSTILE : SoundSource.NEUTRAL;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Rabbit var3 = EntityType.RABBIT.create(var1);

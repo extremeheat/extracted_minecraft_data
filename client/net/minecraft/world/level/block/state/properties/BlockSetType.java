@@ -6,41 +6,26 @@ import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.SoundType;
 
 public record BlockSetType(
-   String s,
-   boolean t,
-   boolean u,
-   boolean v,
-   BlockSetType.PressurePlateSensitivity w,
-   SoundType x,
-   SoundEvent y,
-   SoundEvent z,
-   SoundEvent A,
-   SoundEvent B,
-   SoundEvent C,
-   SoundEvent D,
-   SoundEvent E,
-   SoundEvent F
+   String name,
+   boolean canOpenByHand,
+   boolean canOpenByWindCharge,
+   boolean canButtonBeActivatedByArrows,
+   BlockSetType.PressurePlateSensitivity pressurePlateSensitivity,
+   SoundType soundType,
+   SoundEvent doorClose,
+   SoundEvent doorOpen,
+   SoundEvent trapdoorClose,
+   SoundEvent trapdoorOpen,
+   SoundEvent pressurePlateClickOff,
+   SoundEvent pressurePlateClickOn,
+   SoundEvent buttonClickOff,
+   SoundEvent buttonClickOn
 ) {
-   private final String name;
-   private final boolean canOpenByHand;
-   private final boolean canOpenByWindCharge;
-   private final boolean canButtonBeActivatedByArrows;
-   private final BlockSetType.PressurePlateSensitivity pressurePlateSensitivity;
-   private final SoundType soundType;
-   private final SoundEvent doorClose;
-   private final SoundEvent doorOpen;
-   private final SoundEvent trapdoorClose;
-   private final SoundEvent trapdoorOpen;
-   private final SoundEvent pressurePlateClickOff;
-   private final SoundEvent pressurePlateClickOn;
-   private final SoundEvent buttonClickOff;
-   private final SoundEvent buttonClickOn;
    private static final Map<String, BlockSetType> TYPES = new Object2ObjectArrayMap();
-   public static final Codec<BlockSetType> CODEC = ExtraCodecs.stringResolverCodec(BlockSetType::name, TYPES::get);
+   public static final Codec<BlockSetType> CODEC = Codec.stringResolver(BlockSetType::name, TYPES::get);
    public static final BlockSetType IRON = register(
       new BlockSetType(
          "iron",
@@ -191,24 +176,6 @@ public record BlockSetType(
          SoundEvents.NETHER_WOOD_BUTTON_CLICK_ON
       )
    );
-   public static final BlockSetType POTATO = register(
-      new BlockSetType(
-         "potato",
-         true,
-         true,
-         true,
-         BlockSetType.PressurePlateSensitivity.EVERYTHING,
-         SoundType.NETHER_WOOD,
-         SoundEvents.NETHER_WOOD_DOOR_CLOSE,
-         SoundEvents.NETHER_WOOD_DOOR_OPEN,
-         SoundEvents.NETHER_WOOD_TRAPDOOR_CLOSE,
-         SoundEvents.NETHER_WOOD_TRAPDOOR_OPEN,
-         SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_OFF,
-         SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_ON,
-         SoundEvents.NETHER_WOOD_BUTTON_CLICK_OFF,
-         SoundEvents.NETHER_WOOD_BUTTON_CLICK_ON
-      )
-   );
    public static final BlockSetType MANGROVE = register(new BlockSetType("mangrove"));
    public static final BlockSetType BAMBOO = register(
       new BlockSetType(
@@ -249,36 +216,36 @@ public record BlockSetType(
    }
 
    public BlockSetType(
-      String var1,
-      boolean var2,
-      boolean var3,
-      boolean var4,
-      BlockSetType.PressurePlateSensitivity var5,
-      SoundType var6,
-      SoundEvent var7,
-      SoundEvent var8,
-      SoundEvent var9,
-      SoundEvent var10,
-      SoundEvent var11,
-      SoundEvent var12,
-      SoundEvent var13,
-      SoundEvent var14
+      String name,
+      boolean canOpenByHand,
+      boolean canOpenByWindCharge,
+      boolean canButtonBeActivatedByArrows,
+      BlockSetType.PressurePlateSensitivity pressurePlateSensitivity,
+      SoundType soundType,
+      SoundEvent doorClose,
+      SoundEvent doorOpen,
+      SoundEvent trapdoorClose,
+      SoundEvent trapdoorOpen,
+      SoundEvent pressurePlateClickOff,
+      SoundEvent pressurePlateClickOn,
+      SoundEvent buttonClickOff,
+      SoundEvent buttonClickOn
    ) {
       super();
-      this.name = var1;
-      this.canOpenByHand = var2;
-      this.canOpenByWindCharge = var3;
-      this.canButtonBeActivatedByArrows = var4;
-      this.pressurePlateSensitivity = var5;
-      this.soundType = var6;
-      this.doorClose = var7;
-      this.doorOpen = var8;
-      this.trapdoorClose = var9;
-      this.trapdoorOpen = var10;
-      this.pressurePlateClickOff = var11;
-      this.pressurePlateClickOn = var12;
-      this.buttonClickOff = var13;
-      this.buttonClickOn = var14;
+      this.name = name;
+      this.canOpenByHand = canOpenByHand;
+      this.canOpenByWindCharge = canOpenByWindCharge;
+      this.canButtonBeActivatedByArrows = canButtonBeActivatedByArrows;
+      this.pressurePlateSensitivity = pressurePlateSensitivity;
+      this.soundType = soundType;
+      this.doorClose = doorClose;
+      this.doorOpen = doorOpen;
+      this.trapdoorClose = trapdoorClose;
+      this.trapdoorOpen = trapdoorOpen;
+      this.pressurePlateClickOff = pressurePlateClickOff;
+      this.pressurePlateClickOn = pressurePlateClickOn;
+      this.buttonClickOff = buttonClickOff;
+      this.buttonClickOn = buttonClickOn;
    }
 
    private static BlockSetType register(BlockSetType var0) {

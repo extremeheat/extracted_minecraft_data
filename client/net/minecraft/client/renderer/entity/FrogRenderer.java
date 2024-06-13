@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.FrogModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.entity.animal.frog.Frog;
 
 public class FrogRenderer extends MobRenderer<Frog, FrogModel<Frog>> {
@@ -12,6 +11,6 @@ public class FrogRenderer extends MobRenderer<Frog, FrogModel<Frog>> {
    }
 
    public ResourceLocation getTextureLocation(Frog var1) {
-      return ((FrogVariant)var1.getVariant().value()).texture();
+      return var1.getVariant().value().texture();
    }
 }

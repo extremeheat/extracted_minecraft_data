@@ -26,13 +26,13 @@ public class LocalMobCapCalculator {
    }
 
    public void addMob(ChunkPos var1, MobCategory var2) {
-      for(ServerPlayer var4 : this.getPlayersNear(var1)) {
+      for (ServerPlayer var4 : this.getPlayersNear(var1)) {
          this.playerMobCounts.computeIfAbsent(var4, var0 -> new LocalMobCapCalculator.MobCounts()).add(var2);
       }
    }
 
    public boolean canSpawn(MobCategory var1, ChunkPos var2) {
-      for(ServerPlayer var4 : this.getPlayersNear(var2)) {
+      for (ServerPlayer var4 : this.getPlayersNear(var2)) {
          LocalMobCapCalculator.MobCounts var5 = this.playerMobCounts.get(var4);
          if (var5 == null || var5.canSpawn(var1)) {
             return true;

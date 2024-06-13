@@ -22,11 +22,11 @@ public class StringArgumentSerializer implements ArgumentTypeInfo<StringArgument
    }
 
    public void serializeToJson(StringArgumentSerializer.Template var1, JsonObject var2) {
-      var2.addProperty("type", switch(var1.type) {
+      var2.addProperty("type", switch (var1.type) {
          case SINGLE_WORD -> "word";
          case QUOTABLE_PHRASE -> "phrase";
          case GREEDY_PHRASE -> "greedy";
-         default -> throw new IncompatibleClassChangeError();
+         default -> throw new MatchException(null, null);
       });
    }
 
@@ -43,11 +43,11 @@ public class StringArgumentSerializer implements ArgumentTypeInfo<StringArgument
       }
 
       public StringArgumentType instantiate(CommandBuildContext var1) {
-         return switch(this.type) {
+         return switch (this.type) {
             case SINGLE_WORD -> StringArgumentType.word();
             case QUOTABLE_PHRASE -> StringArgumentType.string();
             case GREEDY_PHRASE -> StringArgumentType.greedyString();
-            default -> throw new IncompatibleClassChangeError();
+            default -> throw new MatchException(null, null);
          };
       }
 

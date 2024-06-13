@@ -6,8 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.server.level.ClientInformation;
 
-public record ServerboundClientInformationPacket(ClientInformation b) implements Packet<ServerCommonPacketListener> {
-   private final ClientInformation information;
+public record ServerboundClientInformationPacket(ClientInformation information) implements Packet<ServerCommonPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundClientInformationPacket> STREAM_CODEC = Packet.codec(
       ServerboundClientInformationPacket::write, ServerboundClientInformationPacket::new
    );
@@ -16,9 +15,9 @@ public record ServerboundClientInformationPacket(ClientInformation b) implements
       this(new ClientInformation(var1));
    }
 
-   public ServerboundClientInformationPacket(ClientInformation var1) {
+   public ServerboundClientInformationPacket(ClientInformation information) {
       super();
-      this.information = var1;
+      this.information = information;
    }
 
    private void write(FriendlyByteBuf var1) {

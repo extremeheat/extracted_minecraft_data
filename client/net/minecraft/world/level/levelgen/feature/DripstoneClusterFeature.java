@@ -38,8 +38,8 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
          int var9 = var4.radius.sample(var5);
          int var10 = var4.radius.sample(var5);
 
-         for(int var11 = -var9; var11 <= var9; ++var11) {
-            for(int var12 = -var10; var12 <= var10; ++var12) {
+         for (int var11 = -var9; var11 <= var9; var11++) {
+            for (int var12 = -var10; var12 <= var10; var12++) {
                double var13 = this.getChanceOfStalagmiteOrStalactite(var9, var10, var11, var12, var4);
                BlockPos var15 = var3.offset(var11, 0, var12);
                this.placeColumn(var2, var5, var15, var11, var12, var7, var13, var6, var8, var4);
@@ -159,7 +159,7 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
          if (var1.getBlockState(var2.above()).getFluidState().is(FluidTags.WATER)) {
             return false;
          } else {
-            for(Direction var5 : Direction.Plane.HORIZONTAL) {
+            for (Direction var5 : Direction.Plane.HORIZONTAL) {
                if (!this.canBeAdjacentToWater(var1, var2.relative(var5))) {
                   return false;
                }
@@ -180,7 +180,7 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
    private void replaceBlocksWithDripstoneBlocks(WorldGenLevel var1, BlockPos var2, int var3, Direction var4) {
       BlockPos.MutableBlockPos var5 = var2.mutable();
 
-      for(int var6 = 0; var6 < var3; ++var6) {
+      for (int var6 = 0; var6 < var3; var6++) {
          if (!DripstoneUtils.placeDripstoneBlockIfPossible(var1, var5)) {
             return;
          }

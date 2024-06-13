@@ -56,7 +56,7 @@ public class WorldLoadEvent {
    }
 
    public void setGameMode(GameType var1, boolean var2) {
-      this.gameMode = switch(var1) {
+      this.gameMode = switch (var1) {
          case SURVIVAL -> var2 ? TelemetryProperty.GameMode.HARDCORE : TelemetryProperty.GameMode.SURVIVAL;
          case CREATIVE -> TelemetryProperty.GameMode.CREATIVE;
          case ADVENTURE -> TelemetryProperty.GameMode.ADVENTURE;

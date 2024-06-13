@@ -39,7 +39,7 @@ public enum ChatFormatting implements StringRepresentable {
    public static final Codec<ChatFormatting> CODEC = StringRepresentable.fromEnum(ChatFormatting::values);
    public static final char PREFIX_CODE = '\u00a7';
    private static final Map<String, ChatFormatting> FORMATTING_BY_NAME = Arrays.stream(values())
-      .collect(Collectors.toMap(var0 -> cleanName(var0.name), var0 -> var0));
+      .collect(Collectors.toMap(var0 -> cleanName(var0.name), var0 -> (ChatFormatting)var0));
    private static final Pattern STRIP_FORMATTING_PATTERN = Pattern.compile("(?i)\u00a7[0-9A-FK-OR]");
    private final String name;
    private final char code;
@@ -115,7 +115,7 @@ public enum ChatFormatting implements StringRepresentable {
       if (var0 < 0) {
          return RESET;
       } else {
-         for(ChatFormatting var4 : values()) {
+         for (ChatFormatting var4 : values()) {
             if (var4.getId() == var0) {
                return var4;
             }
@@ -129,7 +129,7 @@ public enum ChatFormatting implements StringRepresentable {
    public static ChatFormatting getByCode(char var0) {
       char var1 = Character.toLowerCase(var0);
 
-      for(ChatFormatting var5 : values()) {
+      for (ChatFormatting var5 : values()) {
          if (var5.code == var1) {
             return var5;
          }
@@ -141,7 +141,7 @@ public enum ChatFormatting implements StringRepresentable {
    public static Collection<String> getNames(boolean var0, boolean var1) {
       ArrayList var2 = Lists.newArrayList();
 
-      for(ChatFormatting var6 : values()) {
+      for (ChatFormatting var6 : values()) {
          if ((!var6.isColor() || var0) && (!var6.isFormat() || var1)) {
             var2.add(var6.getName());
          }

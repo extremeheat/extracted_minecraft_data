@@ -30,16 +30,10 @@ public class ProtectionEnchantment extends Enchantment {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean checkCompatibility(Enchantment var1) {
       if (var1 instanceof ProtectionEnchantment var2) {
-         if (this.type == var2.type) {
-            return false;
-         } else {
-            return this.type == ProtectionEnchantment.Type.FALL || var2.type == ProtectionEnchantment.Type.FALL;
-         }
+         return this.type == var2.type ? false : this.type == ProtectionEnchantment.Type.FALL || var2.type == ProtectionEnchantment.Type.FALL;
       } else {
          return super.checkCompatibility(var1);
       }

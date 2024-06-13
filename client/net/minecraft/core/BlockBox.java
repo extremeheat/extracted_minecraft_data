@@ -6,9 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.AABB;
 
-public record BlockBox(BlockPos b, BlockPos c) implements Iterable<BlockPos> {
-   private final BlockPos min;
-   private final BlockPos max;
+public record BlockBox(BlockPos min, BlockPos max) implements Iterable<BlockPos> {
    public static final StreamCodec<ByteBuf, BlockBox> STREAM_CODEC = new StreamCodec<ByteBuf, BlockBox>() {
       public BlockBox decode(ByteBuf var1) {
          return new BlockBox(FriendlyByteBuf.readBlockPos(var1), FriendlyByteBuf.readBlockPos(var1));
@@ -20,10 +18,10 @@ public record BlockBox(BlockPos b, BlockPos c) implements Iterable<BlockPos> {
       }
    };
 
-   public BlockBox(BlockPos var1, BlockPos var2) {
+   public BlockBox(BlockPos min, BlockPos max) {
       super();
-      this.min = BlockPos.min(var1, var2);
-      this.max = BlockPos.max(var1, var2);
+      this.min = BlockPos.min(min, max);
+      this.max = BlockPos.max(min, max);
    }
 
    public static BlockBox of(BlockPos var0) {

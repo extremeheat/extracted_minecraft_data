@@ -14,7 +14,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.Util;
 import net.minecraft.server.Bootstrap;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.world.level.GameRules;
 import org.slf4j.Logger;
@@ -34,7 +33,7 @@ public class ServerWatchdog implements Runnable {
 
    @Override
    public void run() {
-      while(this.server.isRunning()) {
+      while (this.server.isRunning()) {
          long var1 = this.server.getNextTickTime();
          long var3 = Util.getNanos();
          long var5 = var3 - var1;
@@ -51,7 +50,7 @@ public class ServerWatchdog implements Runnable {
             StringBuilder var9 = new StringBuilder();
             Error var10 = new Error("Watchdog");
 
-            for(ThreadInfo var14 : var8) {
+            for (ThreadInfo var14 : var8) {
                if (var14.getThreadId() == this.server.getRunningThread().getId()) {
                   var10.setStackTrace(var14.getStackTrace());
                }

@@ -8,8 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundResourcePackPopPacket(Optional<UUID> b) implements Packet<ClientCommonPacketListener> {
-   private final Optional<UUID> id;
+public record ClientboundResourcePackPopPacket(Optional<UUID> id) implements Packet<ClientCommonPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundResourcePackPopPacket> STREAM_CODEC = Packet.codec(
       ClientboundResourcePackPopPacket::write, ClientboundResourcePackPopPacket::new
    );
@@ -18,9 +17,9 @@ public record ClientboundResourcePackPopPacket(Optional<UUID> b) implements Pack
       this(var1.readOptional(UUIDUtil.STREAM_CODEC));
    }
 
-   public ClientboundResourcePackPopPacket(Optional<UUID> var1) {
+   public ClientboundResourcePackPopPacket(Optional<UUID> id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    private void write(FriendlyByteBuf var1) {

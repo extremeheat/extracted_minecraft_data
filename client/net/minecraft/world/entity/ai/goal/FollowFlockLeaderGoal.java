@@ -28,7 +28,7 @@ public class FollowFlockLeaderGoal extends Goal {
       } else if (this.mob.isFollower()) {
          return true;
       } else if (this.nextStartTick > 0) {
-         --this.nextStartTick;
+         this.nextStartTick--;
          return false;
       } else {
          this.nextStartTick = this.nextStartTick(this.mob);

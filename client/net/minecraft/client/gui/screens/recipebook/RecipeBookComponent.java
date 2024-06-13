@@ -12,7 +12,6 @@ import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.RecipeBookCategories;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.StateSwitchingButton;
@@ -117,7 +116,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
       this.initFilterButtonTextures();
       this.tabButtons.clear();
 
-      for(RecipeBookCategories var5 : RecipeBookCategories.getCategories(this.menu.getRecipeBookType())) {
+      for (RecipeBookCategories var5 : RecipeBookCategories.getCategories(this.menu.getRecipeBookType())) {
          this.tabButtons.add(new RecipeBookTabButton(var5));
       }
 
@@ -212,10 +211,10 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
    private void updateTabs() {
       int var1 = (this.width - 147) / 2 - this.xOffset - 30;
       int var2 = (this.height - 166) / 2 + 3;
-      boolean var3 = true;
+      byte var3 = 27;
       int var4 = 0;
 
-      for(RecipeBookTabButton var6 : this.tabButtons) {
+      for (RecipeBookTabButton var6 : this.tabButtons) {
          RecipeBookCategories var7 = var6.getCategory();
          if (var7 == RecipeBookCategories.CRAFTING_SEARCH || var7 == RecipeBookCategories.FURNACE_SEARCH) {
             var6.visible = true;
@@ -258,7 +257,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
          var1.blit(RECIPE_BOOK_LOCATION, var5, var6, 1, 1, 147, 166);
          this.searchBox.render(var1, var2, var3, var4);
 
-         for(RecipeBookTabButton var8 : this.tabButtons) {
+         for (RecipeBookTabButton var8 : this.tabButtons) {
             var8.render(var1, var2, var3, var4);
          }
 
@@ -282,7 +281,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
    private void renderGhostRecipeTooltip(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       ItemStack var6 = null;
 
-      for(int var7 = 0; var7 < this.ghostRecipe.size(); ++var7) {
+      for (int var7 = 0; var7 < this.ghostRecipe.size(); var7++) {
          GhostRecipe.GhostIngredient var8 = this.ghostRecipe.get(var7);
          int var9 = var8.getX() + var2;
          int var10 = var8.getY() + var3;
@@ -332,7 +331,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
                this.updateCollections(false);
                return true;
             } else {
-               for(RecipeBookTabButton var7 : this.tabButtons) {
+               for (RecipeBookTabButton var7 : this.tabButtons) {
                   if (var7.mouseClicked(var1, var3, var5)) {
                      if (this.selectedTab != var7) {
                         if (this.selectedTab != null) {
@@ -467,7 +466,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
 
    @Override
    public void recipesShown(List<RecipeHolder<?>> var1) {
-      for(RecipeHolder var3 : var1) {
+      for (RecipeHolder var3 : var1) {
          this.minecraft.player.removeRecipeHighlight(var3);
       }
    }

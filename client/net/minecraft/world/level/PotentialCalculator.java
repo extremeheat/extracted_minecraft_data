@@ -23,7 +23,7 @@ public class PotentialCalculator {
       } else {
          double var4 = 0.0;
 
-         for(PotentialCalculator.PointCharge var7 : this.charges) {
+         for (PotentialCalculator.PointCharge var7 : this.charges) {
             var4 += var7.getPotentialChange(var1);
          }
 

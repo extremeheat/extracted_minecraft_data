@@ -2,7 +2,6 @@ package net.minecraft.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;

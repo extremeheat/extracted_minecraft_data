@@ -8,7 +8,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.RecordItem;
 import net.minecraft.world.item.component.CustomData;
@@ -48,28 +47,20 @@ public class JukeboxBlock extends BaseEntityBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var1.getValue(HAS_RECORD)) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof JukeboxBlockEntity var6) {
-            var6.popOutRecord();
-            return InteractionResult.sidedSuccess(var2.isClientSide);
-         }
+      if (var1.getValue(HAS_RECORD) && var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var6) {
+         var6.popOutRecord();
+         return InteractionResult.sidedSuccess(var2.isClientSide);
+      } else {
+         return InteractionResult.PASS;
       }
-
-      return InteractionResult.PASS;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof JukeboxBlockEntity var6) {
+         if (var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var6) {
             var6.popOutRecord();
          }
 
@@ -89,8 +80,7 @@ public class JukeboxBlock extends BaseEntityBlock {
 
    @Override
    public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof JukeboxBlockEntity var5 && var5.isRecordPlaying()) {
+      if (var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var5 && var5.isRecordPlaying()) {
          return 15;
       }
 
@@ -102,16 +92,10 @@ public class JukeboxBlock extends BaseEntityBlock {
       return true;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof JukeboxBlockEntity var4) {
-         Item var7 = var4.getTheItem().getItem();
-         if (var7 instanceof RecordItem var5) {
-            return var5.getAnalogOutput();
-         }
+      if (var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var4 && var4.getTheItem().getItem() instanceof RecordItem var5) {
+         return var5.getAnalogOutput();
       }
 
       return 0;

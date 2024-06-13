@@ -43,7 +43,7 @@ public class CommandHistory {
 
    private void save() {
       try (BufferedWriter var1 = Files.newBufferedWriter(this.commandsPath, Charsets.UTF_8)) {
-         for(String var3 : this.lastCommands) {
+         for (String var3 : this.lastCommands) {
             var1.write(var3);
             var1.newLine();
          }

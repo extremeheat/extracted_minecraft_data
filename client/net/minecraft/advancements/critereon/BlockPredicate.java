@@ -2,7 +2,6 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Collection;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -17,22 +16,18 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 
-public record BlockPredicate(Optional<HolderSet<Block>> c, Optional<StatePropertiesPredicate> d, Optional<NbtPredicate> e) {
-   private final Optional<HolderSet<Block>> blocks;
-   private final Optional<StatePropertiesPredicate> properties;
-   private final Optional<NbtPredicate> nbt;
+public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt) {
    public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.BLOCK), "blocks").forGetter(BlockPredicate::blocks),
-               ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "state").forGetter(BlockPredicate::properties),
-               ExtraCodecs.strictOptionalField(NbtPredicate.CODEC, "nbt").forGetter(BlockPredicate::nbt)
+               RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks),
+               StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties),
+               NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt)
             )
             .apply(var0, BlockPredicate::new)
    );
@@ -46,37 +41,29 @@ public record BlockPredicate(Optional<HolderSet<Block>> c, Optional<StatePropert
       BlockPredicate::new
    );
 
-   public BlockPredicate(Optional<HolderSet<Block>> var1, Optional<StatePropertiesPredicate> var2, Optional<NbtPredicate> var3) {
+   public BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt) {
       super();
-      this.blocks = var1;
-      this.properties = var2;
-      this.nbt = var3;
+      this.blocks = blocks;
+      this.properties = properties;
+      this.nbt = nbt;
    }
 
    public boolean matches(ServerLevel var1, BlockPos var2) {
       if (!var1.isLoaded(var2)) {
          return false;
-      } else if (!this.matchesState(var1.getBlockState(var2))) {
-         return false;
       } else {
-         return !this.nbt.isPresent() || matchesBlockEntity(var1, var1.getBlockEntity(var2), (NbtPredicate)this.nbt.get());
+         return !this.matchesState(var1.getBlockState(var2))
+            ? false
+            : !this.nbt.isPresent() || matchesBlockEntity(var1, var1.getBlockEntity(var2), this.nbt.get());
       }
    }
 
    public boolean matches(BlockInWorld var1) {
-      if (!this.matchesState(var1.getState())) {
-         return false;
-      } else {
-         return !this.nbt.isPresent() || matchesBlockEntity(var1.getLevel(), var1.getEntity(), (NbtPredicate)this.nbt.get());
-      }
+      return !this.matchesState(var1.getState()) ? false : !this.nbt.isPresent() || matchesBlockEntity(var1.getLevel(), var1.getEntity(), this.nbt.get());
    }
 
    private boolean matchesState(BlockState var1) {
-      if (this.blocks.isPresent() && !var1.is(this.blocks.get())) {
-         return false;
-      } else {
-         return !this.properties.isPresent() || ((StatePropertiesPredicate)this.properties.get()).matches(var1);
-      }
+      return this.blocks.isPresent() && !var1.is(this.blocks.get()) ? false : !this.properties.isPresent() || this.properties.get().matches(var1);
    }
 
    private static boolean matchesBlockEntity(LevelReader var0, @Nullable BlockEntity var1, NbtPredicate var2) {

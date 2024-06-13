@@ -29,8 +29,6 @@ public class ElytraLayer<T extends LivingEntity, M extends EntityModel<T>> exten
       this.elytraModel = new ElytraModel<>(var2.bakeLayer(ModelLayers.ELYTRA));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       ItemStack var11 = var4.getItemBySlot(EquipmentSlot.CHEST);
       if (var11.is(Items.ELYTRA)) {

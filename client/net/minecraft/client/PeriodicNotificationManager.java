@@ -7,7 +7,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import java.io.BufferedReader;
 import java.util.Collection;
@@ -75,7 +74,7 @@ public class PeriodicNotificationManager
    protected void apply(Map<String, List<PeriodicNotificationManager.Notification>> var1, ResourceManager var2, ProfilerFiller var3) {
       List var4 = var1.entrySet()
          .stream()
-         .filter(var1x -> this.selector.apply((String)var1x.getKey()))
+         .filter(var1x -> (Boolean)this.selector.apply((String)var1x.getKey()))
          .map(Entry::getValue)
          .flatMap(Collection::stream)
          .collect(Collectors.toList());
@@ -123,18 +122,14 @@ public class PeriodicNotificationManager
       return var1.stream().mapToLong(var0 -> var0.delay).min().orElse(0L);
    }
 
-   public static record Notification(long a, long b, String c, String d) {
-      final long delay;
-      final long period;
-      final String title;
-      final String message;
+   public static record Notification(long delay, long period, String title, String message) {
 
-      public Notification(long var1, long var3, String var5, String var6) {
+      public Notification(long delay, long period, String title, String message) {
          super();
-         this.delay = var1 != 0L ? var1 : var3;
-         this.period = var3;
-         this.title = var5;
-         this.message = var6;
+         this.delay = delay != 0L ? delay : period;
+         this.period = period;
+         this.title = title;
+         this.message = message;
       }
    }
 
@@ -161,7 +156,7 @@ public class PeriodicNotificationManager
          long var1 = this.elapsed.getAndAdd(this.period);
          long var3 = this.elapsed.get();
 
-         for(PeriodicNotificationManager.Notification var6 : this.notifications) {
+         for (PeriodicNotificationManager.Notification var6 : this.notifications) {
             if (var1 >= var6.delay) {
                long var7 = var1 / var6.period;
                long var9 = var3 / var6.period;

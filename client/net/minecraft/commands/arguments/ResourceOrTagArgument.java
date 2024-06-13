@@ -54,11 +54,11 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       ResourceOrTagArgument.Result var3 = (ResourceOrTagArgument.Result)var0.getArgument(var1, ResourceOrTagArgument.Result.class);
       Optional var4 = var3.cast(var2);
       return (ResourceOrTagArgument.Result<T>)var4.orElseThrow(() -> (CommandSyntaxException)var3.unwrap().map(var1xx -> {
-            ResourceKey var2xx = var1xx.key();
-            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2xx.location(), var2xx.registry(), var2.location());
+            ResourceKey var2x = var1xx.key();
+            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2x.location(), var2x.registry(), var2.location());
          }, var1xx -> {
-            TagKey var2xx = var1xx.key();
-            return ERROR_INVALID_TAG_TYPE.create(var2xx.location(), var2xx.registry(), var2.location());
+            TagKey var2x = var1xx.key();
+            return ERROR_INVALID_TAG_TYPE.create(var2x.location(), var2x.registry(), var2.location());
          }));
    }
 
@@ -137,12 +137,10 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       }
    }
 
-   static record ResourceResult<T>(Holder.Reference<T> a) implements ResourceOrTagArgument.Result<T> {
-      private final Holder.Reference<T> value;
-
-      ResourceResult(Holder.Reference<T> var1) {
+   static record ResourceResult<T>(Holder.Reference<T> value) implements ResourceOrTagArgument.Result<T> {
+      ResourceResult(Holder.Reference<T> value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       @Override
@@ -152,7 +150,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
 
       @Override
       public <E> Optional<ResourceOrTagArgument.Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.value.key().isFor(var1) ? Optional.of(this) : Optional.empty();
+         return this.value.key().isFor(var1) ? Optional.of((ResourceOrTagArgument.Result<E>)this) : Optional.empty();
       }
 
       public boolean test(Holder<T> var1) {
@@ -173,12 +171,10 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       String asPrintable();
    }
 
-   static record TagResult<T>(HolderSet.Named<T> a) implements ResourceOrTagArgument.Result<T> {
-      private final HolderSet.Named<T> tag;
-
-      TagResult(HolderSet.Named<T> var1) {
+   static record TagResult<T>(HolderSet.Named<T> tag) implements ResourceOrTagArgument.Result<T> {
+      TagResult(HolderSet.Named<T> tag) {
          super();
-         this.tag = var1;
+         this.tag = tag;
       }
 
       @Override
@@ -188,7 +184,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
 
       @Override
       public <E> Optional<ResourceOrTagArgument.Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.tag.key().isFor(var1) ? Optional.of(this) : Optional.empty();
+         return this.tag.key().isFor(var1) ? Optional.of((ResourceOrTagArgument.Result<E>)this) : Optional.empty();
       }
 
       public boolean test(Holder<T> var1) {

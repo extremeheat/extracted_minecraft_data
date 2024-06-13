@@ -6,14 +6,12 @@ import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -36,7 +34,7 @@ public class PoiSection {
       return RecordCodecBuilder.create(
             var1 -> var1.group(
                      RecordCodecBuilder.point(var0),
-                     Codec.BOOL.optionalFieldOf("Valid", false).forGetter(var0xx -> var0xx.isValid),
+                     Codec.BOOL.lenientOptionalFieldOf("Valid", false).forGetter(var0xx -> var0xx.isValid),
                      PoiRecord.codec(var0).listOf().fieldOf("Records").forGetter(var0xx -> ImmutableList.copyOf(var0xx.records.values()))
                   )
                   .apply(var1, PoiSection::new)

@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
@@ -34,7 +33,7 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       this.entityId = var1;
       this.attributes = Lists.newArrayList();
 
-      for(AttributeInstance var4 : var2) {
+      for (AttributeInstance var4 : var2) {
          this.attributes.add(new ClientboundUpdateAttributesPacket.AttributeSnapshot(var4.getAttribute(), var4.getBaseValue(), var4.getModifiers()));
       }
    }
@@ -62,10 +61,7 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       return this.attributes;
    }
 
-   public static record AttributeSnapshot(Holder<Attribute> c, double d, Collection<AttributeModifier> e) {
-      private final Holder<Attribute> attribute;
-      private final double base;
-      private final Collection<AttributeModifier> modifiers;
+   public static record AttributeSnapshot(Holder<Attribute> attribute, double base, Collection<AttributeModifier> modifiers) {
       public static final StreamCodec<ByteBuf, AttributeModifier> MODIFIER_STREAM_CODEC = StreamCodec.composite(
          UUIDUtil.STREAM_CODEC,
          AttributeModifier::id,
@@ -85,11 +81,11 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
          ClientboundUpdateAttributesPacket.AttributeSnapshot::new
       );
 
-      public AttributeSnapshot(Holder<Attribute> var1, double var2, Collection<AttributeModifier> var4) {
+      public AttributeSnapshot(Holder<Attribute> attribute, double base, Collection<AttributeModifier> modifiers) {
          super();
-         this.attribute = var1;
-         this.base = var2;
-         this.modifiers = var4;
+         this.attribute = attribute;
+         this.base = base;
+         this.modifiers = modifiers;
       }
    }
 }

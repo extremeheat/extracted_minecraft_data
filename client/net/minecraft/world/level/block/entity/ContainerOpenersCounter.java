@@ -59,7 +59,7 @@ public abstract class ContainerOpenersCounter {
       List var4 = this.getPlayersWithContainerOpen(var1, var2);
       this.maxInteractionRange = 0.0;
 
-      for(Player var6 : var4) {
+      for (Player var6 : var4) {
          this.maxInteractionRange = Math.max(var6.blockInteractionRange(), this.maxInteractionRange);
       }
 

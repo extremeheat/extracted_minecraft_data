@@ -4,7 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
 import net.minecraft.network.protocol.ping.ServerPingPacketListener;
 
-public interface ServerGamePacketListener extends ServerCommonPacketListener, ServerPingPacketListener {
+public interface ServerGamePacketListener extends ServerPingPacketListener, ServerCommonPacketListener {
    @Override
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
@@ -15,6 +15,8 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
    void handleChat(ServerboundChatPacket var1);
 
    void handleChatCommand(ServerboundChatCommandPacket var1);
+
+   void handleSignedChatCommand(ServerboundChatCommandSignedPacket var1);
 
    void handleChatAck(ServerboundChatAckPacket var1);
 

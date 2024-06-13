@@ -79,17 +79,17 @@ public class MapItem extends ComplexItem {
          }
 
          MapItemSavedData.HoldingPlayer var10 = var3.getHoldingPlayer((Player)var2);
-         ++var10.step;
+         var10.step++;
          BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
          BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
          boolean var13 = false;
 
-         for(int var14 = var7 - var9 + 1; var14 < var7 + var9; ++var14) {
+         for (int var14 = var7 - var9 + 1; var14 < var7 + var9; var14++) {
             if ((var14 & 15) == (var10.step & 15) || var13) {
                var13 = false;
                double var15 = 0.0;
 
-               for(int var17 = var8 - var9 - 1; var17 < var8 + var9; ++var17) {
+               for (int var17 = var8 - var9 - 1; var17 < var8 + var9; var17++) {
                   if (var14 >= 0 && var17 >= -1 && var14 < 128 && var17 < 128) {
                      int var18 = Mth.square(var14 - var7) + Mth.square(var17 - var8);
                      boolean var19 = var18 > (var9 - 2) * (var9 - 2);
@@ -111,22 +111,18 @@ public class MapItem extends ComplexItem {
 
                            var25 = 100.0;
                         } else {
-                           for(int var35 = 0; var35 < var4; ++var35) {
-                              for(int var28 = 0; var28 < var4; ++var28) {
+                           for (int var35 = 0; var35 < var4; var35++) {
+                              for (int var28 = 0; var28 < var4; var28++) {
                                  var11.set(var20 + var35, 0, var21 + var28);
                                  int var29 = var23.getHeight(Heightmap.Types.WORLD_SURFACE, var11.getX(), var11.getZ()) + 1;
                                  BlockState var30;
                                  if (var29 <= var1.getMinBuildHeight() + 1) {
-                                    if (var1.isPotato()) {
-                                       var30 = Blocks.WARPED_WART_BLOCK.defaultBlockState();
-                                    } else {
-                                       var30 = Blocks.BEDROCK.defaultBlockState();
-                                    }
+                                    var30 = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {
                                        var11.setY(--var29);
                                        var30 = var23.getBlockState(var11);
-                                    } while(var30.getMapColor(var1, var11) == MapColor.NONE && var29 > var1.getMinBuildHeight());
+                                    } while (var30.getMapColor(var1, var11) == MapColor.NONE && var29 > var1.getMinBuildHeight());
 
                                     if (var29 > var1.getMinBuildHeight() && !var30.getFluidState().isEmpty()) {
                                        int var31 = var29 - 1;
@@ -136,8 +132,8 @@ public class MapItem extends ComplexItem {
                                        do {
                                           var12.setY(var31--);
                                           var32 = var23.getBlockState(var12);
-                                          ++var24;
-                                       } while(var31 > var1.getMinBuildHeight() && !var32.getFluidState().isEmpty());
+                                          var24++;
+                                       } while (var31 > var1.getMinBuildHeight() && !var32.getFluidState().isEmpty());
 
                                        var30 = this.getCorrectStateForFluidBlock(var1, var30, var11);
                                     }
@@ -206,21 +202,21 @@ public class MapItem extends ComplexItem {
             int var8 = var5 / var3 - 64;
             BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
 
-            for(int var10 = 0; var10 < 128; ++var10) {
-               for(int var11 = 0; var11 < 128; ++var11) {
+            for (int var10 = 0; var10 < 128; var10++) {
+               for (int var11 = 0; var11 < 128; var11++) {
                   Holder var12 = var0.getBiome(var9.set((var7 + var11) * var3, 0, (var8 + var10) * var3));
                   var6[var10 * 128 + var11] = var12.is(BiomeTags.WATER_ON_MAP_OUTLINES);
                }
             }
 
-            for(int var15 = 1; var15 < 127; ++var15) {
-               for(int var16 = 1; var16 < 127; ++var16) {
+            for (int var15 = 1; var15 < 127; var15++) {
+               for (int var16 = 1; var16 < 127; var16++) {
                   int var17 = 0;
 
-                  for(int var13 = -1; var13 < 2; ++var13) {
-                     for(int var14 = -1; var14 < 2; ++var14) {
+                  for (int var13 = -1; var13 < 2; var13++) {
+                     for (int var14 = -1; var14 < 2; var14++) {
                         if ((var13 != 0 || var14 != 0) && isBiomeWatery(var6, var15 + var13, var16 + var14)) {
-                           ++var17;
+                           var17++;
                         }
                      }
                   }
@@ -230,7 +226,7 @@ public class MapItem extends ComplexItem {
                   if (isBiomeWatery(var6, var15, var16)) {
                      var19 = MapColor.COLOR_ORANGE;
                      if (var17 > 7 && var16 % 2 == 0) {
-                        switch((var15 + (int)(Mth.sin((float)var16 + 0.0F) * 7.0F)) / 8 % 5) {
+                        switch ((var15 + (int)(Mth.sin((float)var16 + 0.0F) * 7.0F)) / 8 % 5) {
                            case 0:
                            case 4:
                               var18 = MapColor.Brightness.LOW;
@@ -275,7 +271,7 @@ public class MapItem extends ComplexItem {
          MapItemSavedData var6 = getSavedData(var1, var2);
          if (var6 != null) {
             if (var3 instanceof Player var7) {
-               var6.tickCarriedBy((Player)var7, var1);
+               var6.tickCarriedBy(var7, var1);
             }
 
             if (!var6.locked && (var5 || var3 instanceof Player && ((Player)var3).getOffhandItem() == var1)) {
@@ -297,7 +293,7 @@ public class MapItem extends ComplexItem {
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
       MapPostProcessing var3 = var1.remove(DataComponents.MAP_POST_PROCESSING);
       if (var3 != null) {
-         switch(var3) {
+         switch (var3) {
             case LOCK:
                lockMap(var2, var1);
                break;
@@ -327,9 +323,9 @@ public class MapItem extends ComplexItem {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       MapId var5 = var1.get(DataComponents.MAP_ID);
-      MapItemSavedData var6 = var2 == null ? null : getSavedData(var5, var2);
+      MapItemSavedData var6 = var5 != null ? var2.mapData(var5) : null;
       MapPostProcessing var7 = var1.get(DataComponents.MAP_POST_PROCESSING);
       if (var6 != null && (var6.locked || var7 == MapPostProcessing.LOCK)) {
          var3.add(Component.translatable("filled_map.locked", var5.id()).withStyle(ChatFormatting.GRAY));

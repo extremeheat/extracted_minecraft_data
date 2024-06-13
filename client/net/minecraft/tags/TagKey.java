@@ -9,16 +9,14 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
-public record TagKey<T>(ResourceKey<? extends Registry<T>> a, ResourceLocation b) {
-   private final ResourceKey<? extends Registry<T>> registry;
-   private final ResourceLocation location;
+public record TagKey<T>(ResourceKey<? extends Registry<T>> registry, ResourceLocation location) {
    private static final Interner<TagKey<?>> VALUES = Interners.newWeakInterner();
 
    @Deprecated
-   public TagKey(ResourceKey<? extends Registry<T>> var1, ResourceLocation var2) {
+   public TagKey(ResourceKey<? extends Registry<T>> registry, ResourceLocation location) {
       super();
-      this.registry = var1;
-      this.location = var2;
+      this.registry = registry;
+      this.location = location;
    }
 
    public static <T> Codec<TagKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {
@@ -42,7 +40,7 @@ public record TagKey<T>(ResourceKey<? extends Registry<T>> a, ResourceLocation b
    }
 
    public <E> Optional<TagKey<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-      return this.isFor(var1) ? Optional.of((T)this) : Optional.empty();
+      return this.isFor(var1) ? Optional.of((TagKey<E>)this) : Optional.empty();
    }
 
    public String toString() {

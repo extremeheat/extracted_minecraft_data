@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -66,14 +65,13 @@ public final class WolfVariant {
    public boolean equals(Object var1) {
       if (var1 == this) {
          return true;
-      } else if (!(var1 instanceof WolfVariant)) {
-         return false;
       } else {
-         WolfVariant var2 = (WolfVariant)var1;
-         return Objects.equals(this.wildTexture, var2.wildTexture)
-            && Objects.equals(this.tameTexture, var2.tameTexture)
-            && Objects.equals(this.angryTexture, var2.angryTexture)
-            && Objects.equals(this.biomes, var2.biomes);
+         return !(var1 instanceof WolfVariant var2)
+            ? false
+            : Objects.equals(this.wildTexture, var2.wildTexture)
+               && Objects.equals(this.tameTexture, var2.tameTexture)
+               && Objects.equals(this.angryTexture, var2.angryTexture)
+               && Objects.equals(this.biomes, var2.biomes);
       }
    }
 

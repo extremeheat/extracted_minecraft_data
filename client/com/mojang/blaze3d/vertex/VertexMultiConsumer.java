@@ -125,8 +125,8 @@ public class VertexMultiConsumer {
       public Multiple(VertexConsumer[] var1) {
          super();
 
-         for(int var2 = 0; var2 < var1.length; ++var2) {
-            for(int var3 = var2 + 1; var3 < var1.length; ++var3) {
+         for (int var2 = 0; var2 < var1.length; var2++) {
+            for (int var3 = var2 + 1; var3 < var1.length; var3++) {
                if (var1[var2] == var1[var3]) {
                   throw new IllegalArgumentException("Duplicate delegates");
                }
@@ -137,7 +137,7 @@ public class VertexMultiConsumer {
       }
 
       private void forEach(Consumer<VertexConsumer> var1) {
-         for(VertexConsumer var5 : this.delegates) {
+         for (VertexConsumer var5 : this.delegates) {
             var1.accept(var5);
          }
       }

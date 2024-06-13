@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -75,7 +74,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
 
    @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND) || var1.is(Blocks.POISON_FARMLAND);
+      return var1.is(Blocks.FARMLAND);
    }
 
    @Override
@@ -91,7 +90,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
                Direction var7 = Direction.Plane.HORIZONTAL.getRandomDirection(var4);
                BlockPos var8 = var3.relative(var7);
                BlockState var9 = var2.getBlockState(var8.below());
-               if (var2.getBlockState(var8).isAir() && (var9.is(Blocks.FARMLAND) || var9.is(BlockTags.DIRT) || var9.is(Blocks.POISON_FARMLAND))) {
+               if (var2.getBlockState(var8).isAir() && (var9.is(Blocks.FARMLAND) || var9.is(BlockTags.DIRT))) {
                   Registry var10 = var2.registryAccess().registryOrThrow(Registries.BLOCK);
                   Optional var11 = var10.getOptional(this.fruit);
                   Optional var12 = var10.getOptional(this.attachedStem);

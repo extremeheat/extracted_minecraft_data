@@ -155,7 +155,7 @@ public class ShulkerBullet extends Projectile {
 
          var11 = Direction.getRandom(this.random);
          if (var13.isEmpty()) {
-            for(int var14 = 5; !this.level().isEmptyBlock(var12.relative(var11)) && var14 > 0; --var14) {
+            for (int var14 = 5; !this.level().isEmptyBlock(var12.relative(var11)) && var14 > 0; var14--) {
                var11 = Direction.getRandom(this.random);
             }
          } else {
@@ -221,7 +221,7 @@ public class ShulkerBullet extends Projectile {
 
          HitResult var5 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
          if (var5.getType() != HitResult.Type.MISS) {
-            this.onHit(var5);
+            this.hitOrDeflect(var5);
          }
       }
 
@@ -233,7 +233,7 @@ public class ShulkerBullet extends Projectile {
          this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var6.x, this.getY() - var6.y + 0.15, this.getZ() - var6.z, 0.0, 0.0, 0.0);
       } else if (this.finalTarget != null && !this.finalTarget.isRemoved()) {
          if (this.flightSteps > 0) {
-            --this.flightSteps;
+            this.flightSteps--;
             if (this.flightSteps == 0) {
                this.selectNextMoveDirection(this.currentMoveDirection == null ? null : this.currentMoveDirection.getAxis());
             }
@@ -276,8 +276,6 @@ public class ShulkerBullet extends Projectile {
       return 1.0F;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);

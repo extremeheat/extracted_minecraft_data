@@ -2,32 +2,26 @@ package net.minecraft.world.item.component;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 
-public record MapDecorations(Map<String, MapDecorations.Entry> c) {
-   private final Map<String, MapDecorations.Entry> decorations;
+public record MapDecorations(Map<String, MapDecorations.Entry> decorations) {
    public static final MapDecorations EMPTY = new MapDecorations(Map.of());
    public static final Codec<MapDecorations> CODEC = Codec.unboundedMap(Codec.STRING, MapDecorations.Entry.CODEC)
       .xmap(MapDecorations::new, MapDecorations::decorations);
 
-   public MapDecorations(Map<String, MapDecorations.Entry> var1) {
+   public MapDecorations(Map<String, MapDecorations.Entry> decorations) {
       super();
-      this.decorations = var1;
+      this.decorations = decorations;
    }
 
    public MapDecorations withDecoration(String var1, MapDecorations.Entry var2) {
       return new MapDecorations(Util.copyAndPut(this.decorations, var1, var2));
    }
 
-   public static record Entry(Holder<MapDecorationType> b, double c, double d, float e) {
-      private final Holder<MapDecorationType> type;
-      private final double x;
-      private final double z;
-      private final float rotation;
+   public static record Entry(Holder<MapDecorationType> type, double x, double z, float rotation) {
       public static final Codec<MapDecorations.Entry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   MapDecorationType.CODEC.fieldOf("type").forGetter(MapDecorations.Entry::type),
@@ -38,12 +32,12 @@ public record MapDecorations(Map<String, MapDecorations.Entry> c) {
                .apply(var0, MapDecorations.Entry::new)
       );
 
-      public Entry(Holder<MapDecorationType> var1, double var2, double var4, float var6) {
+      public Entry(Holder<MapDecorationType> type, double x, double z, float rotation) {
          super();
-         this.type = var1;
-         this.x = var2;
-         this.z = var4;
-         this.rotation = var6;
+         this.type = type;
+         this.x = x;
+         this.z = z;
+         this.rotation = rotation;
       }
    }
 }

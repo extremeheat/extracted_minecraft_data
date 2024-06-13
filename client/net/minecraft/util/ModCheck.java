@@ -3,14 +3,11 @@ package net.minecraft.util;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.ObjectUtils;
 
-public record ModCheck(ModCheck.Confidence a, String b) {
-   private final ModCheck.Confidence confidence;
-   private final String description;
-
-   public ModCheck(ModCheck.Confidence var1, String var2) {
+public record ModCheck(ModCheck.Confidence confidence, String description) {
+   public ModCheck(ModCheck.Confidence confidence, String description) {
       super();
-      this.confidence = var1;
-      this.description = var2;
+      this.confidence = confidence;
+      this.description = description;
    }
 
    public static ModCheck identify(String var0, Supplier<String> var1, String var2, Class<?> var3) {

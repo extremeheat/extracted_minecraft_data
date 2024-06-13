@@ -34,14 +34,14 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
 
    @Override
    public void tick() {
-      ++this.timeWaiting;
+      this.timeWaiting++;
       if (this.moved) {
-         ++this.timeMoved;
+         this.timeMoved++;
          this.moved = false;
       }
 
       if (this.turned) {
-         ++this.timeLooked;
+         this.timeLooked++;
          this.turned = false;
       }
 

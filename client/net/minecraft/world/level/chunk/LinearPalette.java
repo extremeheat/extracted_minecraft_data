@@ -24,7 +24,7 @@ public class LinearPalette<T> implements Palette<T> {
          var4.size() <= this.values.length, "Can't initialize LinearPalette of size %d with %d entries", new Object[]{this.values.length, var4.size()}
       );
 
-      for(int var5 = 0; var5 < var4.size(); ++var5) {
+      for (int var5 = 0; var5 < var4.size(); var5++) {
          this.values[var5] = (T)var4.get(var5);
       }
 
@@ -41,12 +41,12 @@ public class LinearPalette<T> implements Palette<T> {
    }
 
    public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new LinearPalette<>(var1, var0, var2, var3);
+      return new LinearPalette(var1, var0, var2, var3);
    }
 
    @Override
    public int idFor(T var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
+      for (int var2 = 0; var2 < this.size; var2++) {
          if (this.values[var2] == var1) {
             return var2;
          }
@@ -55,7 +55,7 @@ public class LinearPalette<T> implements Palette<T> {
       int var3 = this.size;
       if (var3 < this.values.length) {
          this.values[var3] = (T)var1;
-         ++this.size;
+         this.size++;
          return var3;
       } else {
          return this.resizeHandler.onResize(this.bits + 1, (T)var1);
@@ -64,7 +64,7 @@ public class LinearPalette<T> implements Palette<T> {
 
    @Override
    public boolean maybeHas(Predicate<T> var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
+      for (int var2 = 0; var2 < this.size; var2++) {
          if (var1.test(this.values[var2])) {
             return true;
          }
@@ -86,7 +86,7 @@ public class LinearPalette<T> implements Palette<T> {
    public void read(FriendlyByteBuf var1) {
       this.size = var1.readVarInt();
 
-      for(int var2 = 0; var2 < this.size; ++var2) {
+      for (int var2 = 0; var2 < this.size; var2++) {
          this.values[var2] = this.registry.byIdOrThrow(var1.readVarInt());
       }
    }
@@ -95,7 +95,7 @@ public class LinearPalette<T> implements Palette<T> {
    public void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.size);
 
-      for(int var2 = 0; var2 < this.size; ++var2) {
+      for (int var2 = 0; var2 < this.size; var2++) {
          var1.writeVarInt(this.registry.getId(this.values[var2]));
       }
    }
@@ -104,7 +104,7 @@ public class LinearPalette<T> implements Palette<T> {
    public int getSerializedSize() {
       int var1 = VarInt.getByteSize(this.getSize());
 
-      for(int var2 = 0; var2 < this.getSize(); ++var2) {
+      for (int var2 = 0; var2 < this.getSize(); var2++) {
          var1 += VarInt.getByteSize(this.registry.getId(this.values[var2]));
       }
 

@@ -23,7 +23,7 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
    private final Codec<Either<TagKey<E>, List<Holder<E>>>> registryAwareCodec;
 
    private static <E> Codec<List<Holder<E>>> homogenousList(Codec<Holder<E>> var0, boolean var1) {
-      Codec var2 = ExtraCodecs.validate(var0.listOf(), ExtraCodecs.ensureHomogenous(Holder::kind));
+      Codec var2 = var0.listOf().validate(ExtraCodecs.ensureHomogenous(Holder::kind));
       return var1
          ? var2
          : Codec.either(var2, var0)
@@ -42,8 +42,6 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
       this.registryAwareCodec = Codec.either(TagKey.hashedCodec(var1), this.homogenousListCodec);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<Pair<HolderSet<E>, T>> decode(DynamicOps<T> var1, T var2) {
       if (var1 instanceof RegistryOps var3) {
          Optional var4 = var3.getter(this.registryKey);
@@ -53,9 +51,9 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
                .decode(var1, var2)
                .flatMap(
                   var1x -> {
-                     DataResult var2xx = (DataResult)((Either)var1x.getFirst())
+                     DataResult var2x = (DataResult)((Either)var1x.getFirst())
                         .map(var1xx -> lookupTag(var5, var1xx), var0x -> DataResult.success(HolderSet.direct(var0x)));
-                     return var2xx.map(var1xx -> Pair.of(var1xx, var1x.getSecond()));
+                     return var2x.map(var1xx -> Pair.of(var1xx, var1x.getSecond()));
                   }
                );
          }
@@ -65,13 +63,11 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
    }
 
    private static <E> DataResult<HolderSet<E>> lookupTag(HolderGetter<E> var0, TagKey<E> var1) {
-      return (DataResult<HolderSet<E>>)var0.get(var1)
-         .map(DataResult::success)
+      return var0.get(var1)
+         .<DataResult<HolderSet<E>>>map(DataResult::success)
          .orElseGet(() -> DataResult.error(() -> "Missing tag: '" + var1.location() + "' in '" + var1.registry().location() + "'"));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<T> encode(HolderSet<E> var1, DynamicOps<T> var2, T var3) {
       if (var2 instanceof RegistryOps var4) {
          Optional var5 = var4.owner(this.registryKey);
@@ -89,18 +85,17 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
 
    private <T> DataResult<Pair<HolderSet<E>, T>> decodeWithoutRegistry(DynamicOps<T> var1, T var2) {
       return this.elementCodec.listOf().decode(var1, var2).flatMap(var0 -> {
-         ArrayList var1xx = new ArrayList();
+         ArrayList var1x = new ArrayList();
 
-         for(Holder var3 : (List)var0.getFirst()) {
-            if (!(var3 instanceof Holder.Direct)) {
+         for (Holder var3 : (List)var0.getFirst()) {
+            if (!(var3 instanceof Holder.Direct var4)) {
                return DataResult.error(() -> "Can't decode element " + var3 + " without registry");
             }
 
-            Holder.Direct var4 = (Holder.Direct)var3;
-            var1xx.add(var4);
+            var1x.add(var4);
          }
 
-         return DataResult.success(new Pair(HolderSet.direct(var1xx), var0.getSecond()));
+         return DataResult.success(new Pair(HolderSet.direct(var1x), var0.getSecond()));
       });
    }
 

@@ -390,10 +390,10 @@ public class Turtle extends Animal {
             return false;
          } else if (this.turtle.hasEgg()) {
             return true;
-         } else if (this.turtle.getRandom().nextInt(reducedTickDelay(700)) != 0) {
-            return false;
          } else {
-            return !this.turtle.getHomePos().closerToCenterThan(this.turtle.position(), 64.0);
+            return this.turtle.getRandom().nextInt(reducedTickDelay(700)) != 0
+               ? false
+               : !this.turtle.getHomePos().closerToCenterThan(this.turtle.position(), 64.0);
          }
       }
 
@@ -421,7 +421,7 @@ public class Turtle extends Animal {
          BlockPos var1 = this.turtle.getHomePos();
          boolean var2 = var1.closerToCenterThan(this.turtle.position(), 16.0);
          if (var2) {
-            ++this.closeToHomeTryTicks;
+            this.closeToHomeTryTicks++;
          }
 
          if (this.turtle.getNavigation().isDone()) {
@@ -518,7 +518,7 @@ public class Turtle extends Animal {
             }
 
             if (this.turtle.isLayingEgg()) {
-               ++this.turtle.layEggCounter;
+               this.turtle.layEggCounter++;
             }
          }
       }
@@ -607,8 +607,7 @@ public class Turtle extends Animal {
 
       @Override
       public boolean isStableDestination(BlockPos var1) {
-         Mob var3 = this.mob;
-         if (var3 instanceof Turtle var2 && var2.isTravelling()) {
+         if (this.mob instanceof Turtle var2 && var2.isTravelling()) {
             return this.level.getBlockState(var1).is(Blocks.WATER);
          }
 
@@ -648,8 +647,8 @@ public class Turtle extends Animal {
 
       @Override
       public void start() {
-         boolean var1 = true;
-         boolean var2 = true;
+         short var1 = 512;
+         byte var2 = 4;
          RandomSource var3 = this.turtle.random;
          int var4 = var3.nextInt(1025) - 512;
          int var5 = var3.nextInt(9) - 4;
@@ -676,7 +675,7 @@ public class Turtle extends Animal {
             if (var2 != null) {
                int var3 = Mth.floor(var2.x);
                int var4 = Mth.floor(var2.z);
-               boolean var5 = true;
+               byte var5 = 34;
                if (!this.turtle.level().hasChunksAt(var3 - 34, var4 - 34, var3 + 34, var4 + 34)) {
                   var2 = null;
                }

@@ -29,7 +29,6 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Spawner;
 import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
@@ -51,8 +50,6 @@ public class SpawnEggItem extends Item {
       BY_ID.put(var1, this);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
@@ -63,8 +60,7 @@ public class SpawnEggItem extends Item {
          BlockPos var4 = var1.getClickedPos();
          Direction var5 = var1.getClickedFace();
          BlockState var6 = var2.getBlockState(var4);
-         BlockEntity var8 = var2.getBlockEntity(var4);
-         if (var8 instanceof Spawner var9) {
+         if (var2.getBlockEntity(var4) instanceof Spawner var9) {
             EntityType var11 = this.getType(var3);
             var9.setEntityId(var11, var2.getRandom());
             var2.sendBlockUpdated(var4, var6, var6, 3);

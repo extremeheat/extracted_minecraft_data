@@ -4,8 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record PoiRemovedDebugPayload(BlockPos c) implements CustomPacketPayload {
-   private final BlockPos pos;
+public record PoiRemovedDebugPayload(BlockPos pos) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, PoiRemovedDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
       PoiRemovedDebugPayload::write, PoiRemovedDebugPayload::new
    );
@@ -15,9 +14,9 @@ public record PoiRemovedDebugPayload(BlockPos c) implements CustomPacketPayload 
       this(var1.readBlockPos());
    }
 
-   public PoiRemovedDebugPayload(BlockPos var1) {
+   public PoiRemovedDebugPayload(BlockPos pos) {
       super();
-      this.pos = var1;
+      this.pos = pos;
    }
 
    private void write(FriendlyByteBuf var1) {

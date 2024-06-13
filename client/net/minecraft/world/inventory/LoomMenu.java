@@ -2,7 +2,6 @@ package net.minecraft.world.inventory;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
@@ -18,9 +17,7 @@ import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.BannerPatternItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
@@ -98,23 +95,23 @@ public class LoomMenu extends AbstractContainerMenu {
             }
 
             var3.execute((var1x, var2x) -> {
-               long var3xx = var1x.getGameTime();
-               if (LoomMenu.this.lastSoundTime != var3xx) {
+               long var3x = var1x.getGameTime();
+               if (LoomMenu.this.lastSoundTime != var3x) {
                   var1x.playSound(null, var2x, SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  LoomMenu.this.lastSoundTime = var3xx;
+                  LoomMenu.this.lastSoundTime = var3x;
                }
             });
             super.onTake(var1, var2);
          }
       });
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 9; ++var5) {
+      for (int var4 = 0; var4 < 3; var4++) {
+         for (int var5 = 0; var5 < 9; var5++) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
+      for (int var6 = 0; var6 < 9; var6++) {
          this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
       }
 
@@ -142,8 +139,7 @@ public class LoomMenu extends AbstractContainerMenu {
       if (var1.isEmpty()) {
          return this.patternGetter.get(BannerPatternTags.NO_ITEM_REQUIRED).<List<Holder<BannerPattern>>>map(ImmutableList::copyOf).orElse(ImmutableList.of());
       } else {
-         Item var3 = var1.getItem();
-         return var3 instanceof BannerPatternItem var2
+         return var1.getItem() instanceof BannerPatternItem var2
             ? this.patternGetter.get(var2.getBannerPattern()).<List<Holder<BannerPattern>>>map(ImmutableList::copyOf).orElse(ImmutableList.of())
             : List.of();
       }

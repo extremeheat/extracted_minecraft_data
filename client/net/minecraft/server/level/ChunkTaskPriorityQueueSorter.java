@@ -2,13 +2,11 @@ package net.minecraft.server.level;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -32,7 +30,7 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
 
    public ChunkTaskPriorityQueueSorter(List<ProcessorHandle<?>> var1, Executor var2, int var3) {
       super();
-      this.queues = var1.stream().collect(Collectors.toMap(Function.identity(), var1x -> new ChunkTaskPriorityQueue(var1x.name() + "_queue", var3)));
+      this.queues = var1.stream().collect(Collectors.toMap(Function.identity(), var1x -> new ChunkTaskPriorityQueue<>(var1x.name() + "_queue", var3)));
       this.sleeping = Sets.newHashSet(var1);
       this.mailbox = new ProcessorMailbox<>(new StrictQueue.FixedPriorityQueue(4), var2, "sorter");
    }
@@ -142,7 +140,7 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
             CompletableFuture.allOf(var3.map(var1xx -> (CompletableFuture)var1xx.map(var2::ask, var0x -> {
                   var0x.run();
                   return CompletableFuture.completedFuture(Unit.INSTANCE);
-               })).toArray(var0 -> new CompletableFuture[var0])).thenAccept(var3x -> this.pollTask(var1, var2));
+               })).toArray(CompletableFuture[]::new)).thenAccept(var3x -> this.pollTask(var1, var2));
          }
       }));
    }
@@ -158,13 +156,13 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
 
    @VisibleForTesting
    public String getDebugStatus() {
-      return (String)this.queues
+      return this.queues
             .entrySet()
             .stream()
             .map(
                var0 -> var0.getKey().name()
                      + "=["
-                     + (String)var0.getValue().getAcquired().stream().map(var0x -> var0x + ":" + new ChunkPos(var0x)).collect(Collectors.joining(","))
+                     + var0.getValue().getAcquired().stream().map(var0x -> var0x + ":" + new ChunkPos(var0x)).collect(Collectors.joining(","))
                      + "]"
             )
             .collect(Collectors.joining(","))

@@ -4,10 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.pathfinder.Path;
 
-public record PathfindingDebugPayload(int c, Path d, float e) implements CustomPacketPayload {
-   private final int entityId;
-   private final Path path;
-   private final float maxNodeDistance;
+public record PathfindingDebugPayload(int entityId, Path path, float maxNodeDistance) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, PathfindingDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
       PathfindingDebugPayload::write, PathfindingDebugPayload::new
    );
@@ -17,11 +14,11 @@ public record PathfindingDebugPayload(int c, Path d, float e) implements CustomP
       this(var1.readInt(), Path.createFromStream(var1), var1.readFloat());
    }
 
-   public PathfindingDebugPayload(int var1, Path var2, float var3) {
+   public PathfindingDebugPayload(int entityId, Path path, float maxNodeDistance) {
       super();
-      this.entityId = var1;
-      this.path = var2;
-      this.maxNodeDistance = var3;
+      this.entityId = entityId;
+      this.path = path;
+      this.maxNodeDistance = maxNodeDistance;
    }
 
    private void write(FriendlyByteBuf var1) {

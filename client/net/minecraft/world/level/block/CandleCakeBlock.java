@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -54,8 +53,8 @@ public class CandleCakeBlock extends AbstractCandleBlock {
       super(var2);
       this.registerDefaultState(this.stateDefinition.any().setValue(LIT, Boolean.valueOf(false)));
       if (var1 instanceof CandleBlock var3) {
-         BY_CANDLE.put((CandleBlock)var3, this);
-         this.candleBlock = (CandleBlock)var3;
+         BY_CANDLE.put(var3, this);
+         this.candleBlock = var3;
       } else {
          throw new IllegalArgumentException("Expected block to be of " + CandleBlock.class + " was " + var1.getClass());
       }

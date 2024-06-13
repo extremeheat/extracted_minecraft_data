@@ -17,7 +17,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IdMapper;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -37,7 +36,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -135,7 +133,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       if (var4.isEmpty()) {
          return var1;
       } else {
-         for(Entity var7 : var2.getEntities(null, var4.bounds())) {
+         for (Entity var7 : var2.getEntities(null, var4.bounds())) {
             double var8 = Shapes.collide(Direction.Axis.Y, var7.getBoundingBox().move(0.0, 1.0, 0.0), List.of(var4), -1.0);
             var7.teleportRelative(0.0, 1.0 + var8, 0.0);
          }
@@ -152,7 +150,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       BlockState var3 = var0;
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
 
-      for(Direction var8 : UPDATE_SHAPE_ORDER) {
+      for (Direction var8 : UPDATE_SHAPE_ORDER) {
          var4.setWithOffset(var2, var8);
          var3 = var3.updateShape(var8, var1.getBlockState(var4), var1, var2, var4);
       }
@@ -206,7 +204,7 @@ public class Block extends BlockBehaviour implements ItemLike {
          return false;
       } else if (var5.canOcclude()) {
          Block.BlockStatePairKey var6 = new Block.BlockStatePairKey(var0, var5, var3);
-         Object2ByteLinkedOpenHashMap var7 = (Object2ByteLinkedOpenHashMap)OCCLUSION_CACHE.get();
+         Object2ByteLinkedOpenHashMap var7 = OCCLUSION_CACHE.get();
          byte var8 = var7.getAndMoveToFirst(var6);
          if (var8 != 127) {
             return var8 != 0;
@@ -245,7 +243,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static boolean isShapeFullBlock(VoxelShape var0) {
-      return SHAPE_FULL_BLOCK_CACHE.getUnchecked(var0);
+      return (Boolean)SHAPE_FULL_BLOCK_CACHE.getUnchecked(var0);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
@@ -288,32 +286,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static void dropResources(BlockState var0, Level var1, BlockPos var2, @Nullable BlockEntity var3, @Nullable Entity var4, ItemStack var5) {
       if (var1 instanceof ServerLevel) {
          getDrops(var0, (ServerLevel)var1, var2, var3, var4, var5).forEach(var2x -> popResource(var1, var2, var2x));
-         int var6 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POTATOFICATION, var5);
-         if (var6 > 0) {
-            int var7 = var1.random.nextInt(var6 + 1);
-            int var8 = var6 - var7;
-            popPotatoes(var7, var1, var2, Items.POISONOUS_POTATO);
-            popPotatoes(var8, var1, var2, Items.POTATO);
-            if (var1.random.nextFloat() <= 0.05F) {
-               popPotatoes(1, var1, var2, Items.POISONOUS_POTATO_PLANT);
-            }
-         }
-
          var0.spawnAfterBreak((ServerLevel)var1, var2, var5, true);
-      }
-   }
-
-   public static void popPotatoes(int var0, Level var1, BlockPos var2, Item var3) {
-      for(int var4 = 0; var4 < Mth.square(var0); ++var4) {
-         ItemStack var5 = new ItemStack(var3);
-         double var6 = (double)EntityType.ITEM.getHeight() / 2.0;
-         double var8 = (double)var2.getX() + 0.5 + Mth.nextDouble(var1.random, -0.25, 0.25);
-         double var10 = (double)var2.getY() + 0.5 + Mth.nextDouble(var1.random, -0.25, 0.25) - var6;
-         double var12 = (double)var2.getZ() + 0.5 + Mth.nextDouble(var1.random, -0.25, 0.25);
-         double var14 = Mth.nextDouble(var1.random, -0.25, 0.25);
-         double var16 = Mth.nextDouble(var1.random, 0.0, 0.25);
-         double var18 = Mth.nextDouble(var1.random, -0.25, 0.25);
-         popResource(var1, () -> new ItemEntity(var1, var8, var10, var12, var5, var14, var16, var18), var5);
       }
    }
 
@@ -457,7 +430,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    public final BlockState withPropertiesOf(BlockState var1) {
       BlockState var2 = this.defaultBlockState();
 
-      for(Property var4 : var1.getBlock().getStateDefinition().getProperties()) {
+      for (Property var4 : var1.getBlock().getStateDefinition().getProperties()) {
          if (var2.hasProperty(var4)) {
             var2 = copyProperty(var1, var2, var4);
          }
@@ -488,7 +461,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       return "Block{" + BuiltInRegistries.BLOCK.getKey(this) + "}";
    }
 
-   public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4, @Nullable RegistryAccess var5) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
    }
 
    @Override
@@ -530,11 +503,10 @@ public class Block extends BlockBehaviour implements ItemLike {
       public boolean equals(Object var1) {
          if (this == var1) {
             return true;
-         } else if (!(var1 instanceof Block.BlockStatePairKey)) {
-            return false;
          } else {
-            Block.BlockStatePairKey var2 = (Block.BlockStatePairKey)var1;
-            return this.first == var2.first && this.second == var2.second && this.direction == var2.direction;
+            return !(var1 instanceof Block.BlockStatePairKey var2)
+               ? false
+               : this.first == var2.first && this.second == var2.second && this.direction == var2.direction;
          }
       }
 

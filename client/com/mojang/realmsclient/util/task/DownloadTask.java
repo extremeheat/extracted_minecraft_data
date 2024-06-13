@@ -32,7 +32,7 @@ public class DownloadTask extends LongRunningTask {
       RealmsClient var1 = RealmsClient.create();
       int var2 = 0;
 
-      while(var2 < 25) {
+      while (var2 < 25) {
          try {
             if (this.aborted()) {
                return;
@@ -53,7 +53,7 @@ public class DownloadTask extends LongRunningTask {
             }
 
             pause((long)var4.delaySeconds);
-            ++var2;
+            var2++;
          } catch (RealmsServiceException var5) {
             if (this.aborted()) {
                return;

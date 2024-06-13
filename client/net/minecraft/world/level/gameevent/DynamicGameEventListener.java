@@ -15,7 +15,7 @@ public class DynamicGameEventListener<T extends GameEventListener> {
 
    public DynamicGameEventListener(T var1) {
       super();
-      this.listener = var1;
+      this.listener = (T)var1;
    }
 
    public void add(ServerLevel var1) {

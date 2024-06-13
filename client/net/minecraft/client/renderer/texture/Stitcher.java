@@ -9,11 +9,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public class Stitcher<T extends Stitcher.Entry> {
-   private static final Comparator<Stitcher.Holder<?>> HOLDER_COMPARATOR = Comparator.comparing(var0 -> -var0.height)
+   private static final Comparator<Stitcher.Holder<?>> HOLDER_COMPARATOR = Comparator.<Stitcher.Holder<?>, Integer>comparing(var0 -> -var0.height)
       .thenComparing(var0 -> -var0.width)
       .thenComparing(var0 -> var0.entry.name());
    private final int mipLevel;
-   private final List<Stitcher.Holder<T>> texturesToBeStitched = new ArrayList();
+   private final List<Stitcher.Holder<T>> texturesToBeStitched = new ArrayList<>();
    private final List<Stitcher.Region<T>> storage = new ArrayList<>();
    private int storageX;
    private int storageY;
@@ -41,10 +41,10 @@ public class Stitcher<T extends Stitcher.Entry> {
    }
 
    public void stitch() {
-      ArrayList var1 = new ArrayList(this.texturesToBeStitched);
+      ArrayList var1 = new ArrayList<>(this.texturesToBeStitched);
       var1.sort(HOLDER_COMPARATOR);
 
-      for(Stitcher.Holder var3 : var1) {
+      for (Stitcher.Holder var3 : var1) {
          if (!this.addToStorage(var3)) {
             throw new StitcherException(var3.entry, var1.stream().map(var0 -> var0.entry).collect(ImmutableList.toImmutableList()));
          }
@@ -52,7 +52,7 @@ public class Stitcher<T extends Stitcher.Entry> {
    }
 
    public void gatherSprites(Stitcher.SpriteLoader<T> var1) {
-      for(Stitcher.Region var3 : this.storage) {
+      for (Stitcher.Region var3 : this.storage) {
          var3.walk(var1);
       }
    }
@@ -62,7 +62,7 @@ public class Stitcher<T extends Stitcher.Entry> {
    }
 
    private boolean addToStorage(Stitcher.Holder<T> var1) {
-      for(Stitcher.Region var3 : this.storage) {
+      for (Stitcher.Region var3 : this.storage) {
          if (var3.add(var1)) {
             return true;
          }
@@ -117,20 +117,17 @@ public class Stitcher<T extends Stitcher.Entry> {
       ResourceLocation name();
    }
 
-   static record Holder<T extends Stitcher.Entry>(T a, int b, int c) {
-      final T entry;
-      final int width;
-      final int height;
+   static record Holder<T extends Stitcher.Entry>(T entry, int width, int height) {
 
       public Holder(T var1, int var2) {
          this((T)var1, Stitcher.smallestFittingMinTexel(var1.width(), var2), Stitcher.smallestFittingMinTexel(var1.height(), var2));
       }
 
-      private Holder(T var1, int var2, int var3) {
+      private Holder(T entry, int width, int height) {
          super();
-         this.entry = var1;
-         this.width = var2;
-         this.height = var3;
+         this.entry = (T)entry;
+         this.width = width;
+         this.height = height;
       }
    }
 
@@ -193,7 +190,7 @@ public class Stitcher<T extends Stitcher.Entry> {
                      }
                   }
 
-                  for(Stitcher.Region var9 : this.subSlots) {
+                  for (Stitcher.Region var9 : this.subSlots) {
                      if (var9.add(var1)) {
                         return true;
                      }
@@ -211,7 +208,7 @@ public class Stitcher<T extends Stitcher.Entry> {
          if (this.holder != null) {
             var1.load(this.holder.entry, this.getX(), this.getY());
          } else if (this.subSlots != null) {
-            for(Stitcher.Region var3 : this.subSlots) {
+            for (Stitcher.Region var3 : this.subSlots) {
                var3.walk(var1);
             }
          }

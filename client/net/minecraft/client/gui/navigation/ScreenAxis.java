@@ -8,21 +8,21 @@ public enum ScreenAxis {
    }
 
    public ScreenAxis orthogonal() {
-      return switch(this) {
+      return switch (this) {
          case HORIZONTAL -> VERTICAL;
          case VERTICAL -> HORIZONTAL;
       };
    }
 
    public ScreenDirection getPositive() {
-      return switch(this) {
+      return switch (this) {
          case HORIZONTAL -> ScreenDirection.RIGHT;
          case VERTICAL -> ScreenDirection.DOWN;
       };
    }
 
    public ScreenDirection getNegative() {
-      return switch(this) {
+      return switch (this) {
          case HORIZONTAL -> ScreenDirection.LEFT;
          case VERTICAL -> ScreenDirection.UP;
       };

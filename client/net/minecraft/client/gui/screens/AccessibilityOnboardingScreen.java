@@ -11,7 +11,6 @@ import net.minecraft.client.gui.components.CommonButtons;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -113,7 +112,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    private void handleInitialNarrationDelay() {
       if (!this.hasNarrated && this.narratorAvailable) {
          if (this.timer < 40.0F) {
-            ++this.timer;
+            this.timer++;
          } else if (this.minecraft.isWindowActive()) {
             Narrator.getNarrator().say(ONBOARDING_NARRATOR_MESSAGE.getString(), true);
             this.hasNarrated = true;

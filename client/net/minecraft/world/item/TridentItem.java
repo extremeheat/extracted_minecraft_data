@@ -2,6 +2,8 @@ package net.minecraft.world.item;
 
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
@@ -25,7 +28,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class TridentItem extends Item {
+public class TridentItem extends Item implements ProjectileItem {
    public static final int THROW_THRESHOLD_TIME = 10;
    public static final float BASE_DAMAGE = 8.0F;
    public static final float SHOOT_POWER = 2.5F;
@@ -70,8 +73,7 @@ public class TridentItem extends Item {
 
    @Override
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
-      if (var3 instanceof Player) {
-         Player var5 = (Player)var3;
+      if (var3 instanceof Player var5) {
          int var6 = this.getUseDuration(var1) - var4;
          if (var6 >= 10) {
             int var7 = EnchantmentHelper.getRiptide(var1);
@@ -150,5 +152,12 @@ public class TridentItem extends Item {
    @Override
    public int getEnchantmentValue() {
       return 1;
+   }
+
+   @Override
+   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
+      ThrownTrident var5 = new ThrownTrident(var1, var2.x(), var2.y(), var2.z(), var3.copyWithCount(1));
+      var5.pickup = AbstractArrow.Pickup.ALLOWED;
+      return var5;
    }
 }

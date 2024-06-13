@@ -45,7 +45,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       super(var1);
       this.lastScreen = var2;
       this.reportingContext = var3;
-      this.reportBuilder = var4;
+      this.reportBuilder = (B)var4;
    }
 
    protected MultiLineEditBox createCommentBox(int var1, int var2, Consumer<String> var3) {
@@ -88,13 +88,10 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
          );
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void onReportSendError(Throwable var1) {
       LOGGER.error("Encountered error while sending abuse report", var1);
-      Throwable var4 = var1.getCause();
       Component var2;
-      if (var4 instanceof ThrowingComponent var3) {
+      if (var1.getCause() instanceof ThrowingComponent var3) {
          var2 = var3.getComponent();
       } else {
          var2 = REPORT_SEND_GENERIC_ERROR;

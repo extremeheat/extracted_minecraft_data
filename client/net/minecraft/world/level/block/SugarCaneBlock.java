@@ -52,8 +52,8 @@ public class SugarCaneBlock extends Block {
       if (var2.isEmptyBlock(var3.above())) {
          int var5 = 1;
 
-         while(var2.getBlockState(var3.below(var5)).is(this)) {
-            ++var5;
+         while (var2.getBlockState(var3.below(var5)).is(this)) {
+            var5++;
          }
 
          if (var5 < 3) {
@@ -86,7 +86,7 @@ public class SugarCaneBlock extends Block {
          if (var4.is(BlockTags.DIRT) || var4.is(BlockTags.SAND)) {
             BlockPos var5 = var3.below();
 
-            for(Direction var7 : Direction.Plane.HORIZONTAL) {
+            for (Direction var7 : Direction.Plane.HORIZONTAL) {
                BlockState var8 = var2.getBlockState(var5.relative(var7));
                FluidState var9 = var2.getFluidState(var5.relative(var7));
                if (var9.is(FluidTags.WATER) || var8.is(Blocks.FROSTED_ICE)) {

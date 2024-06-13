@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.doubles.Double2DoubleFunction;
 import java.util.Arrays;
 import java.util.Optional;
@@ -39,13 +38,13 @@ public final class DensityFunctions {
          var0 -> var0 instanceof DensityFunctions.Constant var1 ? Either.left(var1.value()) : Either.right(var0)
       );
 
-   public static Codec<? extends DensityFunction> bootstrap(Registry<Codec<? extends DensityFunction>> var0) {
+   public static MapCodec<? extends DensityFunction> bootstrap(Registry<MapCodec<? extends DensityFunction>> var0) {
       register(var0, "blend_alpha", DensityFunctions.BlendAlpha.CODEC);
       register(var0, "blend_offset", DensityFunctions.BlendOffset.CODEC);
       register(var0, "beardifier", DensityFunctions.BeardifierMarker.CODEC);
       register(var0, "old_blended_noise", BlendedNoise.CODEC);
 
-      for(DensityFunctions.Marker.Type var4 : DensityFunctions.Marker.Type.values()) {
+      for (DensityFunctions.Marker.Type var4 : DensityFunctions.Marker.Type.values()) {
          register(var0, var4.getSerializedName(), var4.codec);
       }
 
@@ -60,11 +59,11 @@ public final class DensityFunctions {
       register(var0, "blend_density", DensityFunctions.BlendDensity.CODEC);
       register(var0, "clamp", DensityFunctions.Clamp.CODEC);
 
-      for(DensityFunctions.Mapped.Type var11 : DensityFunctions.Mapped.Type.values()) {
+      for (DensityFunctions.Mapped.Type var11 : DensityFunctions.Mapped.Type.values()) {
          register(var0, var11.getSerializedName(), var11.codec);
       }
 
-      for(DensityFunctions.TwoArgumentSimpleFunction.Type var12 : DensityFunctions.TwoArgumentSimpleFunction.Type.values()) {
+      for (DensityFunctions.TwoArgumentSimpleFunction.Type var12 : DensityFunctions.TwoArgumentSimpleFunction.Type.values()) {
          register(var0, var12.getSerializedName(), var12.codec);
       }
 
@@ -73,8 +72,8 @@ public final class DensityFunctions {
       return register(var0, "y_clamped_gradient", DensityFunctions.YClampedGradient.CODEC);
    }
 
-   private static Codec<? extends DensityFunction> register(
-      Registry<Codec<? extends DensityFunction>> var0, String var1, KeyDispatchDataCodec<? extends DensityFunction> var2
+   private static MapCodec<? extends DensityFunction> register(
+      Registry<MapCodec<? extends DensityFunction>> var0, String var1, KeyDispatchDataCodec<? extends DensityFunction> var2
    ) {
       return Registry.register(var0, var1, var2.codec());
    }
@@ -237,8 +236,6 @@ public final class DensityFunctions {
       return DensityFunctions.BlendOffset.INSTANCE;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static DensityFunction lerp(DensityFunction var0, DensityFunction var1, DensityFunction var2) {
       if (var1 instanceof DensityFunctions.Constant var5) {
          return lerp(var0, var5.value, var2);
@@ -253,67 +250,62 @@ public final class DensityFunctions {
       return add(mul(var0, add(var3, constant(-var1))), constant(var1));
    }
 
-   static record Ap2(DensityFunctions.TwoArgumentSimpleFunction.Type e, DensityFunction f, DensityFunction g, double h, double i)
-      implements DensityFunctions.TwoArgumentSimpleFunction {
-      private final DensityFunctions.TwoArgumentSimpleFunction.Type type;
-      private final DensityFunction argument1;
-      private final DensityFunction argument2;
-      private final double minValue;
-      private final double maxValue;
-
-      Ap2(DensityFunctions.TwoArgumentSimpleFunction.Type var1, DensityFunction var2, DensityFunction var3, double var4, double var6) {
+   static record Ap2(
+      DensityFunctions.TwoArgumentSimpleFunction.Type type, DensityFunction argument1, DensityFunction argument2, double minValue, double maxValue
+   ) implements DensityFunctions.TwoArgumentSimpleFunction {
+      Ap2(DensityFunctions.TwoArgumentSimpleFunction.Type type, DensityFunction argument1, DensityFunction argument2, double minValue, double maxValue) {
          super();
-         this.type = var1;
-         this.argument1 = var2;
-         this.argument2 = var3;
-         this.minValue = var4;
-         this.maxValue = var6;
+         this.type = type;
+         this.argument1 = argument1;
+         this.argument2 = argument2;
+         this.minValue = minValue;
+         this.maxValue = maxValue;
       }
 
       @Override
       public double compute(DensityFunction.FunctionContext var1) {
          double var2 = this.argument1.compute(var1);
 
-         return switch(this.type) {
+         return switch (this.type) {
             case ADD -> var2 + this.argument2.compute(var1);
-            case MAX -> var2 > this.argument2.maxValue() ? var2 : Math.max(var2, this.argument2.compute(var1));
-            case MIN -> var2 < this.argument2.minValue() ? var2 : Math.min(var2, this.argument2.compute(var1));
             case MUL -> var2 == 0.0 ? 0.0 : var2 * this.argument2.compute(var1);
+            case MIN -> var2 < this.argument2.minValue() ? var2 : Math.min(var2, this.argument2.compute(var1));
+            case MAX -> var2 > this.argument2.maxValue() ? var2 : Math.max(var2, this.argument2.compute(var1));
          };
       }
 
       @Override
       public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
          this.argument1.fillArray(var1, var2);
-         switch(this.type) {
+         switch (this.type) {
             case ADD:
                double[] var10 = new double[var1.length];
                this.argument2.fillArray(var10, var2);
 
-               for(int var11 = 0; var11 < var1.length; ++var11) {
+               for (int var11 = 0; var11 < var1.length; var11++) {
                   var1[var11] += var10[var11];
                }
                break;
-            case MAX:
-               double var9 = this.argument2.maxValue();
-
-               for(int var12 = 0; var12 < var1.length; ++var12) {
-                  double var13 = var1[var12];
-                  var1[var12] = var13 > var9 ? var13 : Math.max(var13, this.argument2.compute(var2.forIndex(var12)));
+            case MUL:
+               for (int var9 = 0; var9 < var1.length; var9++) {
+                  double var4 = var1[var9];
+                  var1[var9] = var4 == 0.0 ? 0.0 : var4 * this.argument2.compute(var2.forIndex(var9));
                }
                break;
             case MIN:
                double var8 = this.argument2.minValue();
 
-               for(int var5 = 0; var5 < var1.length; ++var5) {
-                  double var6 = var1[var5];
-                  var1[var5] = var6 < var8 ? var6 : Math.min(var6, this.argument2.compute(var2.forIndex(var5)));
+               for (int var12 = 0; var12 < var1.length; var12++) {
+                  double var13 = var1[var12];
+                  var1[var12] = var13 < var8 ? var13 : Math.min(var13, this.argument2.compute(var2.forIndex(var12)));
                }
                break;
-            case MUL:
-               for(int var3 = 0; var3 < var1.length; ++var3) {
-                  double var4 = var1[var3];
-                  var1[var3] = var4 == 0.0 ? 0.0 : var4 * this.argument2.compute(var2.forIndex(var3));
+            case MAX:
+               double var3 = this.argument2.maxValue();
+
+               for (int var5 = 0; var5 < var1.length; var5++) {
+                  double var6 = var1[var5];
+                  var1[var5] = var6 > var3 ? var6 : Math.max(var6, this.argument2.compute(var2.forIndex(var5)));
                }
          }
       }
@@ -394,15 +386,14 @@ public final class DensityFunctions {
       }
    }
 
-   static record BlendDensity(DensityFunction a) implements DensityFunctions.TransformerWithContext {
-      private final DensityFunction input;
+   static record BlendDensity(DensityFunction input) implements DensityFunctions.TransformerWithContext {
       static final KeyDispatchDataCodec<DensityFunctions.BlendDensity> CODEC = DensityFunctions.singleFunctionArgumentCodec(
          DensityFunctions.BlendDensity::new, DensityFunctions.BlendDensity::input
       );
 
-      BlendDensity(DensityFunction var1) {
+      BlendDensity(DensityFunction input) {
          super();
-         this.input = var1;
+         this.input = input;
       }
 
       @Override
@@ -465,10 +456,7 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Clamp(DensityFunction e, double f, double g) implements DensityFunctions.PureTransformer {
-      private final DensityFunction input;
-      private final double minValue;
-      private final double maxValue;
+   protected static record Clamp(DensityFunction input, double minValue, double maxValue) implements DensityFunctions.PureTransformer {
       private static final MapCodec<DensityFunctions.Clamp> DATA_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   DensityFunction.DIRECT_CODEC.fieldOf("input").forGetter(DensityFunctions.Clamp::input),
@@ -479,11 +467,11 @@ public final class DensityFunctions {
       );
       public static final KeyDispatchDataCodec<DensityFunctions.Clamp> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
 
-      protected Clamp(DensityFunction var1, double var2, double var4) {
+      protected Clamp(DensityFunction input, double minValue, double maxValue) {
          super();
-         this.input = var1;
-         this.minValue = var2;
-         this.maxValue = var4;
+         this.input = input;
+         this.minValue = minValue;
+         this.maxValue = maxValue;
       }
 
       @Override
@@ -502,16 +490,15 @@ public final class DensityFunctions {
       }
    }
 
-   static record Constant(double a) implements DensityFunction.SimpleFunction {
-      final double value;
+   static record Constant(double value) implements DensityFunction.SimpleFunction {
       static final KeyDispatchDataCodec<DensityFunctions.Constant> CODEC = DensityFunctions.singleArgumentCodec(
          DensityFunctions.NOISE_VALUE_CODEC, DensityFunctions.Constant::new, DensityFunctions.Constant::value
       );
       static final DensityFunctions.Constant ZERO = new DensityFunctions.Constant(0.0);
 
-      Constant(double var1) {
+      Constant(double value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       @Override
@@ -562,8 +549,8 @@ public final class DensityFunctions {
          float var7 = 100.0F - Mth.sqrt((float)(var1 * var1 + var2 * var2)) * 8.0F;
          var7 = Mth.clamp(var7, -100.0F, 80.0F);
 
-         for(int var8 = -12; var8 <= 12; ++var8) {
-            for(int var9 = -12; var9 <= 12; ++var9) {
+         for (int var8 = -12; var8 <= 12; var8++) {
+            for (int var9 = -12; var9 <= 12; var9++) {
                long var10 = (long)(var3 + var8);
                long var12 = (long)(var4 + var9);
                if (var10 * var10 + var12 * var12 > 4096L && var0.getValue((double)var10, (double)var12) < -0.8999999761581421) {
@@ -602,12 +589,10 @@ public final class DensityFunctions {
    }
 
    @VisibleForDebug
-   public static record HolderHolder(Holder<DensityFunction> a) implements DensityFunction {
-      private final Holder<DensityFunction> function;
-
-      public HolderHolder(Holder<DensityFunction> var1) {
+   public static record HolderHolder(Holder<DensityFunction> function) implements DensityFunction {
+      public HolderHolder(Holder<DensityFunction> function) {
          super();
-         this.function = var1;
+         this.function = function;
       }
 
       @Override
@@ -641,18 +626,14 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Mapped(DensityFunctions.Mapped.Type a, DensityFunction e, double f, double g) implements DensityFunctions.PureTransformer {
-      private final DensityFunctions.Mapped.Type type;
-      private final DensityFunction input;
-      private final double minValue;
-      private final double maxValue;
-
-      protected Mapped(DensityFunctions.Mapped.Type var1, DensityFunction var2, double var3, double var5) {
+   protected static record Mapped(DensityFunctions.Mapped.Type type, DensityFunction input, double minValue, double maxValue)
+      implements DensityFunctions.PureTransformer {
+      protected Mapped(DensityFunctions.Mapped.Type type, DensityFunction input, double minValue, double maxValue) {
          super();
-         this.type = var1;
-         this.input = var2;
-         this.minValue = var3;
-         this.maxValue = var5;
+         this.type = type;
+         this.input = input;
+         this.minValue = minValue;
+         this.maxValue = maxValue;
       }
 
       public static DensityFunctions.Mapped create(DensityFunctions.Mapped.Type var0, DensityFunction var1) {
@@ -665,7 +646,7 @@ public final class DensityFunctions {
       }
 
       private static double transform(DensityFunctions.Mapped.Type var0, double var1) {
-         return switch(var0) {
+         return switch (var0) {
             case ABS -> Math.abs(var1);
             case SQUARE -> var1 * var1;
             case CUBE -> var1 * var1 * var1;
@@ -716,14 +697,11 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Marker(DensityFunctions.Marker.Type a, DensityFunction e) implements DensityFunctions.MarkerOrMarked {
-      private final DensityFunctions.Marker.Type type;
-      private final DensityFunction wrapped;
-
-      protected Marker(DensityFunctions.Marker.Type var1, DensityFunction var2) {
+   protected static record Marker(DensityFunctions.Marker.Type type, DensityFunction wrapped) implements DensityFunctions.MarkerOrMarked {
+      protected Marker(DensityFunctions.Marker.Type type, DensityFunction wrapped) {
          super();
-         this.type = var1;
-         this.wrapped = var2;
+         this.type = type;
+         this.wrapped = wrapped;
       }
 
       @Override
@@ -785,22 +763,16 @@ public final class DensityFunctions {
       }
    }
 
-   static record MulOrAdd(DensityFunctions.MulOrAdd.Type e, DensityFunction f, double g, double h, double i)
+   static record MulOrAdd(DensityFunctions.MulOrAdd.Type specificType, DensityFunction input, double minValue, double maxValue, double argument)
       implements DensityFunctions.PureTransformer,
       DensityFunctions.TwoArgumentSimpleFunction {
-      private final DensityFunctions.MulOrAdd.Type specificType;
-      private final DensityFunction input;
-      private final double minValue;
-      private final double maxValue;
-      private final double argument;
-
-      MulOrAdd(DensityFunctions.MulOrAdd.Type var1, DensityFunction var2, double var3, double var5, double var7) {
+      MulOrAdd(DensityFunctions.MulOrAdd.Type specificType, DensityFunction input, double minValue, double maxValue, double argument) {
          super();
-         this.specificType = var1;
-         this.input = var2;
-         this.minValue = var3;
-         this.maxValue = var5;
-         this.argument = var7;
+         this.specificType = specificType;
+         this.input = input;
+         this.minValue = minValue;
+         this.maxValue = maxValue;
+         this.argument = argument;
       }
 
       @Override
@@ -822,7 +794,7 @@ public final class DensityFunctions {
 
       @Override
       public double transform(double var1) {
-         return switch(this.specificType) {
+         return switch (this.specificType) {
             case MUL -> var1 * this.argument;
             case ADD -> var1 + this.argument;
          };
@@ -858,11 +830,7 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Noise(DensityFunction.NoiseHolder f, @Deprecated double g, double h) implements DensityFunction {
-      private final DensityFunction.NoiseHolder noise;
-      @Deprecated
-      private final double xzScale;
-      private final double yScale;
+   protected static record Noise(DensityFunction.NoiseHolder noise, @Deprecated double xzScale, double yScale) implements DensityFunction {
       public static final MapCodec<DensityFunctions.Noise> DATA_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   DensityFunction.NoiseHolder.CODEC.fieldOf("noise").forGetter(DensityFunctions.Noise::noise),
@@ -873,11 +841,11 @@ public final class DensityFunctions {
       );
       public static final KeyDispatchDataCodec<DensityFunctions.Noise> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
 
-      protected Noise(DensityFunction.NoiseHolder var1, @Deprecated double var2, double var4) {
+      protected Noise(DensityFunction.NoiseHolder noise, @Deprecated double xzScale, double yScale) {
          super();
-         this.noise = var1;
-         this.xzScale = var2;
-         this.yScale = var4;
+         this.noise = noise;
+         this.xzScale = xzScale;
+         this.yScale = yScale;
       }
 
       @Override
@@ -923,7 +891,7 @@ public final class DensityFunctions {
       default void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
          this.input().fillArray(var1, var2);
 
-         for(int var3 = 0; var3 < var1.length; ++var3) {
+         for (int var3 = 0; var3 < var1.length; var3++) {
             var1[var3] = this.transform(var1[var3]);
          }
       }
@@ -931,12 +899,8 @@ public final class DensityFunctions {
       double transform(double var1);
    }
 
-   static record RangeChoice(DensityFunction f, double g, double h, DensityFunction i, DensityFunction j) implements DensityFunction {
-      private final DensityFunction input;
-      private final double minInclusive;
-      private final double maxExclusive;
-      private final DensityFunction whenInRange;
-      private final DensityFunction whenOutOfRange;
+   static record RangeChoice(DensityFunction input, double minInclusive, double maxExclusive, DensityFunction whenInRange, DensityFunction whenOutOfRange)
+      implements DensityFunction {
       public static final MapCodec<DensityFunctions.RangeChoice> DATA_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   DensityFunction.HOLDER_HELPER_CODEC.fieldOf("input").forGetter(DensityFunctions.RangeChoice::input),
@@ -949,13 +913,13 @@ public final class DensityFunctions {
       );
       public static final KeyDispatchDataCodec<DensityFunctions.RangeChoice> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
 
-      RangeChoice(DensityFunction var1, double var2, double var4, DensityFunction var6, DensityFunction var7) {
+      RangeChoice(DensityFunction input, double minInclusive, double maxExclusive, DensityFunction whenInRange, DensityFunction whenOutOfRange) {
          super();
-         this.input = var1;
-         this.minInclusive = var2;
-         this.maxExclusive = var4;
-         this.whenInRange = var6;
-         this.whenOutOfRange = var7;
+         this.input = input;
+         this.minInclusive = minInclusive;
+         this.maxExclusive = maxExclusive;
+         this.whenInRange = whenInRange;
+         this.whenOutOfRange = whenOutOfRange;
       }
 
       @Override
@@ -968,7 +932,7 @@ public final class DensityFunctions {
       public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
          this.input.fillArray(var1, var2);
 
-         for(int var3 = 0; var3 < var1.length; ++var3) {
+         for (int var3 = 0; var3 < var1.length; var3++) {
             double var4 = var1[var3];
             if (var4 >= this.minInclusive && var4 < this.maxExclusive) {
                var1[var3] = this.whenInRange.compute(var2.forIndex(var3));
@@ -1003,15 +967,14 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Shift(DensityFunction.NoiseHolder a) implements DensityFunctions.ShiftNoise {
-      private final DensityFunction.NoiseHolder offsetNoise;
+   protected static record Shift(DensityFunction.NoiseHolder offsetNoise) implements DensityFunctions.ShiftNoise {
       static final KeyDispatchDataCodec<DensityFunctions.Shift> CODEC = DensityFunctions.singleArgumentCodec(
          DensityFunction.NoiseHolder.CODEC, DensityFunctions.Shift::new, DensityFunctions.Shift::offsetNoise
       );
 
-      protected Shift(DensityFunction.NoiseHolder var1) {
+      protected Shift(DensityFunction.NoiseHolder offsetNoise) {
          super();
-         this.offsetNoise = var1;
+         this.offsetNoise = offsetNoise;
       }
 
       @Override
@@ -1030,15 +993,14 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record ShiftA(DensityFunction.NoiseHolder a) implements DensityFunctions.ShiftNoise {
-      private final DensityFunction.NoiseHolder offsetNoise;
+   protected static record ShiftA(DensityFunction.NoiseHolder offsetNoise) implements DensityFunctions.ShiftNoise {
       static final KeyDispatchDataCodec<DensityFunctions.ShiftA> CODEC = DensityFunctions.singleArgumentCodec(
          DensityFunction.NoiseHolder.CODEC, DensityFunctions.ShiftA::new, DensityFunctions.ShiftA::offsetNoise
       );
 
-      protected ShiftA(DensityFunction.NoiseHolder var1) {
+      protected ShiftA(DensityFunction.NoiseHolder offsetNoise) {
          super();
-         this.offsetNoise = var1;
+         this.offsetNoise = offsetNoise;
       }
 
       @Override
@@ -1057,15 +1019,14 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record ShiftB(DensityFunction.NoiseHolder a) implements DensityFunctions.ShiftNoise {
-      private final DensityFunction.NoiseHolder offsetNoise;
+   protected static record ShiftB(DensityFunction.NoiseHolder offsetNoise) implements DensityFunctions.ShiftNoise {
       static final KeyDispatchDataCodec<DensityFunctions.ShiftB> CODEC = DensityFunctions.singleArgumentCodec(
          DensityFunction.NoiseHolder.CODEC, DensityFunctions.ShiftB::new, DensityFunctions.ShiftB::offsetNoise
       );
 
-      protected ShiftB(DensityFunction.NoiseHolder var1) {
+      protected ShiftB(DensityFunction.NoiseHolder offsetNoise) {
          super();
-         this.offsetNoise = var1;
+         this.offsetNoise = offsetNoise;
       }
 
       @Override
@@ -1107,14 +1068,9 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record ShiftedNoise(DensityFunction e, DensityFunction f, DensityFunction g, double h, double i, DensityFunction.NoiseHolder j)
-      implements DensityFunction {
-      private final DensityFunction shiftX;
-      private final DensityFunction shiftY;
-      private final DensityFunction shiftZ;
-      private final double xzScale;
-      private final double yScale;
-      private final DensityFunction.NoiseHolder noise;
+   protected static record ShiftedNoise(
+      DensityFunction shiftX, DensityFunction shiftY, DensityFunction shiftZ, double xzScale, double yScale, DensityFunction.NoiseHolder noise
+   ) implements DensityFunction {
       private static final MapCodec<DensityFunctions.ShiftedNoise> DATA_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   DensityFunction.HOLDER_HELPER_CODEC.fieldOf("shift_x").forGetter(DensityFunctions.ShiftedNoise::shiftX),
@@ -1128,14 +1084,16 @@ public final class DensityFunctions {
       );
       public static final KeyDispatchDataCodec<DensityFunctions.ShiftedNoise> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
 
-      protected ShiftedNoise(DensityFunction var1, DensityFunction var2, DensityFunction var3, double var4, double var6, DensityFunction.NoiseHolder var8) {
+      protected ShiftedNoise(
+         DensityFunction shiftX, DensityFunction shiftY, DensityFunction shiftZ, double xzScale, double yScale, DensityFunction.NoiseHolder noise
+      ) {
          super();
-         this.shiftX = var1;
-         this.shiftY = var2;
-         this.shiftZ = var3;
-         this.xzScale = var4;
-         this.yScale = var6;
-         this.noise = var8;
+         this.shiftX = shiftX;
+         this.shiftY = shiftY;
+         this.shiftZ = shiftZ;
+         this.xzScale = xzScale;
+         this.yScale = yScale;
+         this.noise = noise;
       }
 
       @Override
@@ -1176,8 +1134,7 @@ public final class DensityFunctions {
       }
    }
 
-   public static record Spline(CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate> e) implements DensityFunction {
-      private final CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate> spline;
+   public static record Spline(CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate> spline) implements DensityFunction {
       private static final Codec<CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate>> SPLINE_CODEC = CubicSpline.codec(
          DensityFunctions.Spline.Coordinate.CODEC
       );
@@ -1185,9 +1142,9 @@ public final class DensityFunctions {
          .xmap(DensityFunctions.Spline::new, DensityFunctions.Spline::spline);
       public static final KeyDispatchDataCodec<DensityFunctions.Spline> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
 
-      public Spline(CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate> var1) {
+      public Spline(CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate> spline) {
          super();
-         this.spline = var1;
+         this.spline = spline;
       }
 
       @Override
@@ -1220,14 +1177,13 @@ public final class DensityFunctions {
          return CODEC;
       }
 
-      public static record Coordinate(Holder<DensityFunction> c) implements ToFloatFunction<DensityFunctions.Spline.Point> {
-         private final Holder<DensityFunction> function;
+      public static record Coordinate(Holder<DensityFunction> function) implements ToFloatFunction<DensityFunctions.Spline.Point> {
          public static final Codec<DensityFunctions.Spline.Coordinate> CODEC = DensityFunction.CODEC
             .xmap(DensityFunctions.Spline.Coordinate::new, DensityFunctions.Spline.Coordinate::function);
 
-         public Coordinate(Holder<DensityFunction> var1) {
+         public Coordinate(Holder<DensityFunction> function) {
             super();
-            this.function = var1;
+            this.function = function;
          }
 
          @Override
@@ -1274,12 +1230,10 @@ public final class DensityFunctions {
          }
       }
 
-      public static record Point(DensityFunction.FunctionContext a) {
-         private final DensityFunction.FunctionContext context;
-
-         public Point(DensityFunction.FunctionContext var1) {
+      public static record Point(DensityFunction.FunctionContext context) {
+         public Point(DensityFunction.FunctionContext context) {
             super();
-            this.context = var1;
+            this.context = context;
          }
       }
    }
@@ -1296,7 +1250,7 @@ public final class DensityFunctions {
       default void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
          this.input().fillArray(var1, var2);
 
-         for(int var3 = 0; var3 < var1.length; ++var3) {
+         for (int var3 = 0; var3 < var1.length; var3++) {
             var1[var3] = this.transform(var2.forIndex(var3), var1[var3]);
          }
       }
@@ -1307,8 +1261,6 @@ public final class DensityFunctions {
    interface TwoArgumentSimpleFunction extends DensityFunction {
       Logger LOGGER = LogUtils.getLogger();
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       static DensityFunctions.TwoArgumentSimpleFunction create(DensityFunctions.TwoArgumentSimpleFunction.Type var0, DensityFunction var1, DensityFunction var2) {
          double var3 = var1.minValue();
          double var5 = var2.minValue();
@@ -1321,18 +1273,18 @@ public final class DensityFunctions {
                LOGGER.warn("Creating a " + var0 + " function between two non-overlapping inputs: " + var1 + " and " + var2);
             }
          }
-         double var16 = switch(var0) {
+         double var16 = switch (var0) {
             case ADD -> var3 + var5;
-            case MAX -> Math.max(var3, var5);
-            case MIN -> Math.min(var3, var5);
             case MUL -> var3 > 0.0 && var5 > 0.0 ? var3 * var5 : (var7 < 0.0 && var9 < 0.0 ? var7 * var9 : Math.min(var3 * var9, var7 * var5));
+            case MIN -> Math.min(var3, var5);
+            case MAX -> Math.max(var3, var5);
          };
 
-         double var13 = switch(var0) {
+         double var13 = switch (var0) {
             case ADD -> var7 + var9;
-            case MAX -> Math.max(var7, var9);
-            case MIN -> Math.min(var7, var9);
             case MUL -> var3 > 0.0 && var5 > 0.0 ? var7 * var9 : (var7 < 0.0 && var9 < 0.0 ? var3 * var5 : Math.max(var3 * var5, var7 * var9));
+            case MIN -> Math.min(var7, var9);
+            case MAX -> Math.max(var7, var9);
          };
          if (var0 == DensityFunctions.TwoArgumentSimpleFunction.Type.MUL || var0 == DensityFunctions.TwoArgumentSimpleFunction.Type.ADD) {
             if (var1 instanceof DensityFunctions.Constant var17) {
@@ -1394,11 +1346,9 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record WeirdScaledSampler(DensityFunction e, DensityFunction.NoiseHolder f, DensityFunctions.WeirdScaledSampler.RarityValueMapper g)
-      implements DensityFunctions.TransformerWithContext {
-      private final DensityFunction input;
-      private final DensityFunction.NoiseHolder noise;
-      private final DensityFunctions.WeirdScaledSampler.RarityValueMapper rarityValueMapper;
+   protected static record WeirdScaledSampler(
+      DensityFunction input, DensityFunction.NoiseHolder noise, DensityFunctions.WeirdScaledSampler.RarityValueMapper rarityValueMapper
+   ) implements DensityFunctions.TransformerWithContext {
       private static final MapCodec<DensityFunctions.WeirdScaledSampler> DATA_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   DensityFunction.HOLDER_HELPER_CODEC.fieldOf("input").forGetter(DensityFunctions.WeirdScaledSampler::input),
@@ -1411,11 +1361,13 @@ public final class DensityFunctions {
       );
       public static final KeyDispatchDataCodec<DensityFunctions.WeirdScaledSampler> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
 
-      protected WeirdScaledSampler(DensityFunction var1, DensityFunction.NoiseHolder var2, DensityFunctions.WeirdScaledSampler.RarityValueMapper var3) {
+      protected WeirdScaledSampler(
+         DensityFunction input, DensityFunction.NoiseHolder noise, DensityFunctions.WeirdScaledSampler.RarityValueMapper rarityValueMapper
+      ) {
          super();
-         this.input = var1;
-         this.noise = var2;
-         this.rarityValueMapper = var3;
+         this.input = input;
+         this.noise = noise;
+         this.rarityValueMapper = rarityValueMapper;
       }
 
       @Override
@@ -1468,11 +1420,7 @@ public final class DensityFunctions {
       }
    }
 
-   static record YClampedGradient(int e, int f, double g, double h) implements DensityFunction.SimpleFunction {
-      private final int fromY;
-      private final int toY;
-      private final double fromValue;
-      private final double toValue;
+   static record YClampedGradient(int fromY, int toY, double fromValue, double toValue) implements DensityFunction.SimpleFunction {
       private static final MapCodec<DensityFunctions.YClampedGradient> DATA_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   Codec.intRange(DimensionType.MIN_Y * 2, DimensionType.MAX_Y * 2).fieldOf("from_y").forGetter(DensityFunctions.YClampedGradient::fromY),
@@ -1484,12 +1432,12 @@ public final class DensityFunctions {
       );
       public static final KeyDispatchDataCodec<DensityFunctions.YClampedGradient> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
 
-      YClampedGradient(int var1, int var2, double var3, double var5) {
+      YClampedGradient(int fromY, int toY, double fromValue, double toValue) {
          super();
-         this.fromY = var1;
-         this.toY = var2;
-         this.fromValue = var3;
-         this.toValue = var5;
+         this.fromY = fromY;
+         this.toY = toY;
+         this.fromValue = fromValue;
+         this.toValue = toValue;
       }
 
       @Override

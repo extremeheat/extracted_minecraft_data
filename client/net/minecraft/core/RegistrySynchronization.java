@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -35,7 +34,7 @@ public class RegistrySynchronization {
       Set<KnownPack> var2,
       BiConsumer<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> var3
    ) {
-      RegistryDataLoader.SYNCHRONIZED_REGISTRIES.forEach(var4 -> packRegistry(var0, var4, var1, var2, var3));
+      RegistryDataLoader.SYNCHRONIZED_REGISTRIES.forEach(var4 -> packRegistry(var0, (RegistryDataLoader.RegistryData<?>)var4, var1, var2, var3));
    }
 
    private static <T> void packRegistry(
@@ -57,13 +56,12 @@ public class RegistrySynchronization {
                         if (var6) {
                            var7 = Optional.empty();
                         } else {
-                           Tag var8 = Util.getOrThrow(
-                              var1.elementCodec().encodeStart(var0, var5x.value()),
-                              var1xxx -> new IllegalArgumentException("Failed to serialize " + var5x.key() + ": " + var1xxx)
-                           );
+                           Tag var8 = (Tag)var1.elementCodec()
+                              .encodeStart(var0, var5x.value())
+                              .getOrThrow(var1xxx -> new IllegalArgumentException("Failed to serialize " + var5x.key() + ": " + var1xxx));
                            var7 = Optional.of(var8);
                         }
-            
+
                         var5.add(new RegistrySynchronization.PackedRegistryEntry(var5x.key().location(), var7));
                      }
                   );
@@ -86,9 +84,7 @@ public class RegistrySynchronization {
       return Stream.concat(var2, var1);
    }
 
-   public static record PackedRegistryEntry(ResourceLocation b, Optional<Tag> c) {
-      private final ResourceLocation id;
-      private final Optional<Tag> data;
+   public static record PackedRegistryEntry(ResourceLocation id, Optional<Tag> data) {
       public static final StreamCodec<ByteBuf, RegistrySynchronization.PackedRegistryEntry> STREAM_CODEC = StreamCodec.composite(
          ResourceLocation.STREAM_CODEC,
          RegistrySynchronization.PackedRegistryEntry::id,
@@ -97,10 +93,10 @@ public class RegistrySynchronization {
          RegistrySynchronization.PackedRegistryEntry::new
       );
 
-      public PackedRegistryEntry(ResourceLocation var1, Optional<Tag> var2) {
+      public PackedRegistryEntry(ResourceLocation id, Optional<Tag> data) {
          super();
-         this.id = var1;
-         this.data = var2;
+         this.id = id;
+         this.data = data;
       }
    }
 }

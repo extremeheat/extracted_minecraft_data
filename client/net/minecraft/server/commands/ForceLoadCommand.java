@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -164,11 +163,11 @@ public class ForceLoadCommand {
             ChunkPos var16 = null;
             int var17 = 0;
 
-            for(int var18 = var8; var18 <= var10; ++var18) {
-               for(int var19 = var9; var19 <= var11; ++var19) {
+            for (int var18 = var8; var18 <= var10; var18++) {
+               for (int var19 = var9; var19 <= var11; var19++) {
                   boolean var20 = var14.setChunkForced(var18, var19, var3);
                   if (var20) {
-                     ++var17;
+                     var17++;
                      if (var16 == null) {
                         var16 = new ChunkPos(var18, var19);
                      }

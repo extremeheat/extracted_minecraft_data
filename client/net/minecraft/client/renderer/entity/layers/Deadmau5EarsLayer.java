@@ -23,7 +23,7 @@ public class Deadmau5EarsLayer extends RenderLayer<AbstractClientPlayer, PlayerM
          VertexConsumer var11 = var2.getBuffer(RenderType.entitySolid(var4.getSkin().texture()));
          int var12 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
 
-         for(int var13 = 0; var13 < 2; ++var13) {
+         for (int var13 = 0; var13 < 2; var13++) {
             float var14 = Mth.lerp(var7, var4.yRotO, var4.getYRot()) - Mth.lerp(var7, var4.yBodyRotO, var4.yBodyRot);
             float var15 = Mth.lerp(var7, var4.xRotO, var4.getXRot());
             var1.pushPose();

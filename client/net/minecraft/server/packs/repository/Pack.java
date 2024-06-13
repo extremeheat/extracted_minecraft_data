@@ -71,7 +71,7 @@ public class Pack {
       if (var1.supportedFormats().isEmpty()) {
          return new InclusiveRange<>(var2);
       } else {
-         InclusiveRange var3 = (InclusiveRange)var1.supportedFormats().get();
+         InclusiveRange var3 = var1.supportedFormats().get();
          if (!var3.isValueInRange(var2)) {
             LOGGER.warn("Pack {} declared support for versions {} but declared main format is {}, defaulting to {}", new Object[]{var0, var3, var2, var2});
             return new InclusiveRange<>(var2);
@@ -137,11 +137,8 @@ public class Pack {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof Pack)) {
-         return false;
       } else {
-         Pack var2 = (Pack)var1;
-         return this.location.equals(var2.location);
+         return !(var1 instanceof Pack var2) ? false : this.location.equals(var2.location);
       }
    }
 
@@ -150,18 +147,14 @@ public class Pack {
       return this.location.hashCode();
    }
 
-   public static record Metadata(Component a, PackCompatibility b, FeatureFlagSet c, List<String> d) {
-      final Component description;
-      private final PackCompatibility compatibility;
-      private final FeatureFlagSet requestedFeatures;
-      private final List<String> overlays;
+   public static record Metadata(Component description, PackCompatibility compatibility, FeatureFlagSet requestedFeatures, List<String> overlays) {
 
-      public Metadata(Component var1, PackCompatibility var2, FeatureFlagSet var3, List<String> var4) {
+      public Metadata(Component description, PackCompatibility compatibility, FeatureFlagSet requestedFeatures, List<String> overlays) {
          super();
-         this.description = var1;
-         this.compatibility = var2;
-         this.requestedFeatures = var3;
-         this.overlays = var4;
+         this.description = description;
+         this.compatibility = compatibility;
+         this.requestedFeatures = requestedFeatures;
+         this.overlays = overlays;
       }
    }
 
@@ -176,7 +169,7 @@ public class Pack {
          Pack.Position var5 = var4 ? this.opposite() : this;
          if (var5 == BOTTOM) {
             int var8;
-            for(var8 = 0; var8 < var1.size(); ++var8) {
+            for (var8 = 0; var8 < var1.size(); var8++) {
                PackSelectionConfig var9 = (PackSelectionConfig)var3.apply(var1.get(var8));
                if (!var9.fixedPosition() || var9.defaultPosition() != this) {
                   break;
@@ -187,7 +180,7 @@ public class Pack {
             return var8;
          } else {
             int var6;
-            for(var6 = var1.size() - 1; var6 >= 0; --var6) {
+            for (var6 = var1.size() - 1; var6 >= 0; var6--) {
                PackSelectionConfig var7 = (PackSelectionConfig)var3.apply(var1.get(var6));
                if (!var7.fixedPosition() || var7.defaultPosition() != this) {
                   break;

@@ -72,7 +72,7 @@ public class TestFinder<T> implements StructureBlockPosFinder, TestFunctionFinde
             LinkedList var2 = new LinkedList();
             List var3 = ((Stream)var1.get()).toList();
 
-            for(int var4 = 0; var4 < var0; ++var4) {
+            for (int var4 = 0; var4 < var0; var4++) {
                var2.addAll(var3);
             }
 
@@ -141,7 +141,7 @@ public class TestFinder<T> implements StructureBlockPosFinder, TestFunctionFinde
       }
 
       public T byArgument(CommandContext<CommandSourceStack> var1, String var2) {
-         return this.build((CommandSourceStack)var1.getSource(), () -> Stream.of((T)TestFunctionArgument.getTestFunction(var1, var2)), TestFinder.NO_STRUCTURES);
+         return this.build((CommandSourceStack)var1.getSource(), () -> Stream.of(TestFunctionArgument.getTestFunction(var1, var2)), TestFinder.NO_STRUCTURES);
       }
 
       public T failedTests(CommandContext<CommandSourceStack> var1) {

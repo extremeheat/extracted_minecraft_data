@@ -43,8 +43,6 @@ public class LevelEvent {
    public static final int SOUND_SKELETON_TO_STRAY = 1048;
    public static final int SOUND_CRAFTER_CRAFT = 1049;
    public static final int SOUND_CRAFTER_FAIL = 1050;
-   public static final int SOUND_POTATO_ZOMBIE_INFECTED = 1051;
-   public static final int SOUND_POTATO_ZOMBIE_IRON_DOOR = 1052;
    public static final int COMPOSTER_FILL = 1500;
    public static final int LAVA_FIZZ = 1501;
    public static final int REDSTONE_TORCH_BURNOUT = 1502;
@@ -63,6 +61,7 @@ public class LevelEvent {
    public static final int PARTICLES_SHOOT_WHITE_SMOKE = 2010;
    public static final int PARTICLES_BEE_GROWTH = 2011;
    public static final int PARTICLES_TURTLE_EGG_PLACEMENT = 2012;
+   public static final int PARTICLES_SMASH_ATTACK = 2013;
    public static final int ANIMATION_END_GATEWAY_SPAWN = 3000;
    public static final int ANIMATION_DRAGON_SUMMON_ROAR = 3001;
    public static final int PARTICLES_ELECTRIC_SPARK = 3002;
@@ -80,6 +79,10 @@ public class LevelEvent {
    public static final int ANIMATION_VAULT_ACTIVATE = 3015;
    public static final int ANIMATION_VAULT_DEACTIVATE = 3016;
    public static final int ANIMATION_VAULT_EJECT_ITEM = 3017;
+   public static final int ANIMATION_SPAWN_COBWEB = 3018;
+   public static final int PARTICLES_TRIAL_SPAWNER_DETECT_PLAYER_OMINOUS = 3019;
+   public static final int PARTICLES_TRIAL_SPAWNER_BECOME_OMINOUS = 3020;
+   public static final int PARTICLES_TRIAL_SPAWNER_SPAWN_ITEM = 3021;
 
    public LevelEvent() {
       super();

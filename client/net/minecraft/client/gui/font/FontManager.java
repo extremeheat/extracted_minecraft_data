@@ -12,7 +12,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import java.io.BufferedReader;
 import java.util.ArrayList;
@@ -82,13 +81,13 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    private CompletableFuture<FontManager.Preparation> prepare(ResourceManager var1, Executor var2) {
       ArrayList var3 = new ArrayList();
 
-      for(Entry var5 : FONT_DEFINITIONS.listMatchingResourceStacks(var1).entrySet()) {
+      for (Entry var5 : FONT_DEFINITIONS.listMatchingResourceStacks(var1).entrySet()) {
          ResourceLocation var6 = FONT_DEFINITIONS.fileToId((ResourceLocation)var5.getKey());
          var3.add(CompletableFuture.supplyAsync(() -> {
-            List var5xx = loadResourceStack((List<Resource>)var5.getValue(), var6);
-            FontManager.UnresolvedBuilderBundle var6xx = new FontManager.UnresolvedBuilderBundle(var6);
+            List var5x = loadResourceStack((List<Resource>)var5.getValue(), var6);
+            FontManager.UnresolvedBuilderBundle var6x = new FontManager.UnresolvedBuilderBundle(var6);
 
-            for(Pair var8 : var5xx) {
+            for (Pair var8 : var5x) {
                FontManager.BuilderId var9 = (FontManager.BuilderId)var8.getFirst();
                FontOption.Filter var10 = ((GlyphProviderDefinition.Conditional)var8.getSecond()).filter();
                ((GlyphProviderDefinition.Conditional)var8.getSecond()).definition().unpack().ifLeft(var6xx -> {
@@ -97,27 +96,27 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
                }).ifRight(var3xx -> var6x.add(var9, var10, var3xx));
             }
 
-            return var6xx;
+            return var6x;
          }, var2));
       }
 
       return Util.sequence(var3)
          .thenCompose(
             var2x -> {
-               List var3xx = var2x.stream().flatMap(FontManager.UnresolvedBuilderBundle::listBuilders).collect(Collectors.toCollection(ArrayList::new));
+               List var3x = var2x.stream().flatMap(FontManager.UnresolvedBuilderBundle::listBuilders).collect(Collectors.toCollection(ArrayList::new));
                GlyphProvider.Conditional var4 = createFallbackProvider();
-               var3xx.add(CompletableFuture.completedFuture(Optional.of(var4.provider())));
-               return Util.sequence(var3xx)
+               var3x.add(CompletableFuture.completedFuture(Optional.of(var4.provider())));
+               return Util.sequence(var3x)
                   .thenCompose(
                      var4x -> {
-                        Map var5xx = this.resolveProviders(var2x);
-                        CompletableFuture[] var6xx = var5xx.values()
+                        Map var5x = this.resolveProviders(var2x);
+                        CompletableFuture[] var6x = var5x.values()
                            .stream()
                            .map(var3xxx -> CompletableFuture.runAsync(() -> this.finalizeProviderLoading(var3xxx, var4), var2))
-                           .toArray(var0 -> new CompletableFuture[var0]);
-                        return CompletableFuture.allOf(var6xx).thenApply(var2xxx -> {
-                           List var3xxxx = var4x.stream().flatMap(Optional::stream).toList();
-                           return new FontManager.Preparation(var5x, var3xxxx);
+                           .toArray(CompletableFuture[]::new);
+                        return CompletableFuture.allOf(var6x).thenApply(var2xxx -> {
+                           List var3xxx = var4x.stream().flatMap(Optional::stream).toList();
+                           return new FontManager.Preparation(var5x, var3xxx);
                         });
                      }
                   );
@@ -131,8 +130,8 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       return CompletableFuture.supplyAsync(() -> {
          try {
             return Optional.of(var2.load(var3));
-         } catch (Exception var4xx) {
-            LOGGER.warn("Failed to load builder {}, rejecting", var1, var4xx);
+         } catch (Exception var4x) {
+            LOGGER.warn("Failed to load builder {}, rejecting", var1, var4x);
             return Optional.empty();
          }
       }, var4);
@@ -150,14 +149,14 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       var1.add(0, var2);
       IntOpenHashSet var3 = new IntOpenHashSet();
 
-      for(GlyphProvider.Conditional var5 : var1) {
+      for (GlyphProvider.Conditional var5 : var1) {
          var3.addAll(var5.provider().getSupportedGlyphs());
       }
 
       var3.forEach(var1x -> {
          if (var1x != 32) {
-            for(GlyphProvider.Conditional var3xx : Lists.reverse(var1)) {
-               if (var3xx.provider().getGlyph(var1x) != null) {
+            for (GlyphProvider.Conditional var3x : Lists.reverse(var1)) {
+               if (var3x.provider().getGlyph(var1x) != null) {
                   break;
                }
             }
@@ -173,10 +172,6 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
 
       if (var0.japaneseGlyphVariants().get()) {
          var1.add(FontOption.JAPANESE_VARIANTS);
-      }
-
-      if (var0.potatoFont().get()) {
-         var1.add(FontOption.POTATIS);
       }
 
       return var1;
@@ -208,7 +203,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    public void updateOptions(Options var1) {
       Set var2 = getFontOptions(var1);
 
-      for(FontSet var4 : this.fontSets.values()) {
+      for (FontSet var4 : this.fontSets.values()) {
          var4.reload(var2);
       }
    }
@@ -216,13 +211,15 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    private static List<Pair<FontManager.BuilderId, GlyphProviderDefinition.Conditional>> loadResourceStack(List<Resource> var0, ResourceLocation var1) {
       ArrayList var2 = new ArrayList();
 
-      for(Resource var4 : var0) {
+      for (Resource var4 : var0) {
          try (BufferedReader var5 = var4.openAsReader()) {
             JsonElement var6 = (JsonElement)GSON.fromJson(var5, JsonElement.class);
-            FontManager.FontDefinitionFile var7 = Util.getOrThrow(FontManager.FontDefinitionFile.CODEC.parse(JsonOps.INSTANCE, var6), JsonParseException::new);
+            FontManager.FontDefinitionFile var7 = (FontManager.FontDefinitionFile)FontManager.FontDefinitionFile.CODEC
+               .parse(JsonOps.INSTANCE, var6)
+               .getOrThrow(JsonParseException::new);
             List var8 = var7.providers;
 
-            for(int var9 = var8.size() - 1; var9 >= 0; --var9) {
+            for (int var9 = var8.size() - 1; var9 >= 0; var9--) {
                FontManager.BuilderId var10 = new FontManager.BuilderId(var1, var4.sourcePackId(), var9);
                var2.add(Pair.of(var10, (GlyphProviderDefinition.Conditional)var8.get(var9)));
             }
@@ -264,16 +261,12 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       this.missingFontSet.close();
    }
 
-   static record BuilderId(ResourceLocation a, String b, int c) {
-      private final ResourceLocation fontId;
-      private final String pack;
-      private final int index;
-
-      BuilderId(ResourceLocation var1, String var2, int var3) {
+   static record BuilderId(ResourceLocation fontId, String pack, int index) {
+      BuilderId(ResourceLocation fontId, String pack, int index) {
          super();
-         this.fontId = var1;
-         this.pack = var2;
-         this.index = var3;
+         this.fontId = fontId;
+         this.pack = pack;
+         this.index = index;
       }
 
       public String toString() {
@@ -281,16 +274,13 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       }
    }
 
-   static record BuilderResult(FontManager.BuilderId a, FontOption.Filter b, Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> c) {
-      private final FontManager.BuilderId id;
-      private final FontOption.Filter filter;
-      final Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> result;
+   static record BuilderResult(FontManager.BuilderId id, FontOption.Filter filter, Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> result) {
 
-      BuilderResult(FontManager.BuilderId var1, FontOption.Filter var2, Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> var3) {
+      BuilderResult(FontManager.BuilderId id, FontOption.Filter filter, Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> result) {
          super();
-         this.id = var1;
-         this.filter = var2;
-         this.result = var3;
+         this.id = id;
+         this.filter = filter;
+         this.result = result;
       }
 
       public Optional<List<GlyphProvider.Conditional>> resolve(Function<ResourceLocation, List<GlyphProvider.Conditional>> var1) {
@@ -319,45 +309,39 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       }
    }
 
-   static record FontDefinitionFile(List<GlyphProviderDefinition.Conditional> b) {
-      final List<GlyphProviderDefinition.Conditional> providers;
+   static record FontDefinitionFile(List<GlyphProviderDefinition.Conditional> providers) {
       public static final Codec<FontManager.FontDefinitionFile> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(GlyphProviderDefinition.Conditional.CODEC.listOf().fieldOf("providers").forGetter(FontManager.FontDefinitionFile::providers))
                .apply(var0, FontManager.FontDefinitionFile::new)
       );
 
-      private FontDefinitionFile(List<GlyphProviderDefinition.Conditional> var1) {
+      private FontDefinitionFile(List<GlyphProviderDefinition.Conditional> providers) {
          super();
-         this.providers = var1;
+         this.providers = providers;
       }
    }
 
-   static record Preparation(Map<ResourceLocation, List<GlyphProvider.Conditional>> a, List<GlyphProvider> b) {
-      private final Map<ResourceLocation, List<GlyphProvider.Conditional>> fontSets;
-      final List<GlyphProvider> allProviders;
+   static record Preparation(Map<ResourceLocation, List<GlyphProvider.Conditional>> fontSets, List<GlyphProvider> allProviders) {
 
-      Preparation(Map<ResourceLocation, List<GlyphProvider.Conditional>> var1, List<GlyphProvider> var2) {
+      Preparation(Map<ResourceLocation, List<GlyphProvider.Conditional>> fontSets, List<GlyphProvider> allProviders) {
          super();
-         this.fontSets = var1;
-         this.allProviders = var2;
+         this.fontSets = fontSets;
+         this.allProviders = allProviders;
       }
    }
 
-   static record UnresolvedBuilderBundle(ResourceLocation a, List<FontManager.BuilderResult> b, Set<ResourceLocation> c)
+   static record UnresolvedBuilderBundle(ResourceLocation fontId, List<FontManager.BuilderResult> builders, Set<ResourceLocation> dependencies)
       implements DependencySorter.Entry<ResourceLocation> {
-      final ResourceLocation fontId;
-      private final List<FontManager.BuilderResult> builders;
-      private final Set<ResourceLocation> dependencies;
 
       public UnresolvedBuilderBundle(ResourceLocation var1) {
-         this(var1, new ArrayList(), new HashSet<>());
+         this(var1, new ArrayList<>(), new HashSet<>());
       }
 
-      private UnresolvedBuilderBundle(ResourceLocation var1, List<FontManager.BuilderResult> var2, Set<ResourceLocation> var3) {
+      private UnresolvedBuilderBundle(ResourceLocation fontId, List<FontManager.BuilderResult> builders, Set<ResourceLocation> dependencies) {
          super();
-         this.fontId = var1;
-         this.builders = var2;
-         this.dependencies = var3;
+         this.fontId = fontId;
+         this.builders = builders;
+         this.dependencies = dependencies;
       }
 
       public void add(FontManager.BuilderId var1, FontOption.Filter var2, GlyphProviderDefinition.Reference var3) {
@@ -376,7 +360,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       public Optional<List<GlyphProvider.Conditional>> resolve(Function<ResourceLocation, List<GlyphProvider.Conditional>> var1) {
          ArrayList var2 = new ArrayList();
 
-         for(FontManager.BuilderResult var4 : this.builders) {
+         for (FontManager.BuilderResult var4 : this.builders) {
             Optional var5 = var4.resolve(var1);
             if (!var5.isPresent()) {
                return Optional.empty();

@@ -2,11 +2,9 @@ package net.minecraft.world.entity.ai.behavior;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.block.Blocks;
@@ -39,8 +37,8 @@ public class TryFindLand {
                            BlockPos var9 = var6.blockPosition();
                            BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
                            CollisionContext var11 = CollisionContext.of(var6);
-         
-                           for(BlockPos var13 : BlockPos.withinManhattan(var9, var0, var0, var0)) {
+
+                           for (BlockPos var13 : BlockPos.withinManhattan(var9, var0, var0, var0)) {
                               if (var13.getX() != var9.getX() || var13.getZ() != var9.getZ()) {
                                  BlockState var14 = var5x.getBlockState(var13);
                                  BlockState var15 = var5x.getBlockState(var10.setWithOffset(var13, Direction.DOWN));
@@ -55,7 +53,7 @@ public class TryFindLand {
                                  }
                               }
                            }
-         
+
                            var2.setValue(var7 + 60L);
                            return true;
                         }

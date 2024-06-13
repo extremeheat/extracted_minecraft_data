@@ -82,11 +82,7 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
          return false;
       } else {
          int var5 = this.getAlternateSignal(var1, var2, var3);
-         if (var4 > var5) {
-            return true;
-         } else {
-            return var4 == var5 && var3.getValue(MODE) == ComparatorMode.COMPARE;
-         }
+         return var4 > var5 ? true : var4 == var5 && var3.getValue(MODE) == ComparatorMode.COMPARE;
       }
    }
 
@@ -152,8 +148,6 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void refreshOutputState(Level var1, BlockPos var2, BlockState var3) {
       int var4 = this.calculateOutputSignal(var1, var2, var3);
       BlockEntity var5 = var1.getBlockEntity(var2);

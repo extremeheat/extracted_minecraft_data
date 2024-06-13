@@ -173,7 +173,7 @@ public class Library {
 
             int var4 = 0;
 
-            while(var4 < var2) {
+            while (var4 < var2) {
                int var5 = var3.get(var4++);
                if (var5 == 0) {
                   break;

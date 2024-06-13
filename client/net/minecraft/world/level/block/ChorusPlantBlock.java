@@ -80,7 +80,7 @@ public class ChorusPlantBlock extends PipeBlock {
       BlockState var4 = var2.getBlockState(var3.below());
       boolean var5 = !var2.getBlockState(var3.above()).isAir() && !var4.isAir();
 
-      for(Direction var7 : Direction.Plane.HORIZONTAL) {
+      for (Direction var7 : Direction.Plane.HORIZONTAL) {
          BlockPos var8 = var3.relative(var7);
          BlockState var9 = var2.getBlockState(var8);
          if (var9.is(this)) {

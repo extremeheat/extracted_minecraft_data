@@ -2,7 +2,6 @@ package net.minecraft.network.chat;
 
 import com.google.gson.JsonParser;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -11,7 +10,6 @@ import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,15 +24,16 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class HoverEvent {
-   public static final Codec<HoverEvent> CODEC = Codec.either(HoverEvent.TypedHoverEvent.CODEC.codec(), HoverEvent.TypedHoverEvent.LEGACY_CODEC.codec())
-      .xmap(var0 -> new HoverEvent((HoverEvent.TypedHoverEvent<?>)var0.map(var0x -> var0x, var0x -> var0x)), var0 -> Either.left(var0.event));
+   public static final Codec<HoverEvent> CODEC = Codec.withAlternative(
+         HoverEvent.TypedHoverEvent.CODEC.codec(), HoverEvent.TypedHoverEvent.LEGACY_CODEC.codec()
+      )
+      .xmap(HoverEvent::new, var0 -> var0.event);
    private final HoverEvent.TypedHoverEvent<?> event;
 
    public <T> HoverEvent(HoverEvent.Action<T> var1, T var2) {
@@ -87,35 +86,35 @@ public class HoverEvent {
       public static final Codec<HoverEvent.Action<?>> UNSAFE_CODEC = StringRepresentable.fromValues(
          () -> new HoverEvent.Action[]{SHOW_TEXT, SHOW_ITEM, SHOW_ENTITY}
       );
-      public static final Codec<HoverEvent.Action<?>> CODEC = ExtraCodecs.validate(UNSAFE_CODEC, HoverEvent.Action::filterForSerialization);
+      public static final Codec<HoverEvent.Action<?>> CODEC = UNSAFE_CODEC.validate(HoverEvent.Action::filterForSerialization);
       private final String name;
       private final boolean allowFromServer;
-      final Codec<HoverEvent.TypedHoverEvent<T>> codec;
-      final Codec<HoverEvent.TypedHoverEvent<T>> legacyCodec;
+      final MapCodec<HoverEvent.TypedHoverEvent<T>> codec;
+      final MapCodec<HoverEvent.TypedHoverEvent<T>> legacyCodec;
 
       public Action(String var1, boolean var2, Codec<T> var3, final HoverEvent.LegacyConverter<T> var4) {
          super();
          this.name = var1;
          this.allowFromServer = var2;
-         this.codec = var3.xmap(var1x -> new HoverEvent.TypedHoverEvent<>(this, (T)var1x), var0 -> var0.value).fieldOf("contents").codec();
-         this.legacyCodec = new Codec<HoverEvent.TypedHoverEvent<T>>() {
+         this.codec = var3.xmap(var1x -> new HoverEvent.TypedHoverEvent<>(this, (T)var1x), var0 -> var0.value).fieldOf("contents");
+         this.legacyCodec = (new Codec<HoverEvent.TypedHoverEvent<T>>() {
             public <D> DataResult<Pair<HoverEvent.TypedHoverEvent<T>, D>> decode(DynamicOps<D> var1, D var2) {
                return ComponentSerialization.CODEC.decode(var1, var2).flatMap(var3 -> {
-                  DataResult var4xx;
+                  DataResult var4x;
                   if (var1 instanceof RegistryOps var5) {
-                     var4xx = var4.parse((Component)var3.getFirst(), (RegistryOps<?>)var5);
+                     var4x = var4.parse((Component)var3.getFirst(), var5);
                   } else {
-                     var4xx = var4.parse((Component)var3.getFirst(), null);
+                     var4x = var4.parse((Component)var3.getFirst(), null);
                   }
 
-                  return var4xx.map(var2xx -> Pair.of(new HoverEvent.TypedHoverEvent<Object>(Action.this, var2xx), var3.getSecond()));
+                  return var4x.map(var2xx -> Pair.of(new HoverEvent.TypedHoverEvent<>(Action.this, var2xx), var3.getSecond()));
                });
             }
 
             public <D> DataResult<D> encode(HoverEvent.TypedHoverEvent<T> var1, DynamicOps<D> var2, D var3) {
                return DataResult.error(() -> "Can't encode in legacy format");
             }
-         };
+         }).fieldOf("value");
       }
 
       public boolean isAllowedFromServer() {
@@ -150,7 +149,7 @@ public class HoverEvent {
          var0 -> var0.group(
                   BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("type").forGetter(var0x -> var0x.type),
                   UUIDUtil.LENIENT_CODEC.fieldOf("id").forGetter(var0x -> var0x.id),
-                  ExtraCodecs.strictOptionalField(ComponentSerialization.CODEC, "name").forGetter(var0x -> var0x.name)
+                  ComponentSerialization.CODEC.lenientOptionalFieldOf("name").forGetter(var0x -> var0x.name)
                )
                .apply(var0, HoverEvent.EntityTooltipInfo::new)
       );
@@ -220,7 +219,7 @@ public class HoverEvent {
          .xmap(HoverEvent.ItemStackInfo::new, HoverEvent.ItemStackInfo::getItemStack);
       private static final Codec<HoverEvent.ItemStackInfo> SIMPLE_CODEC = ItemStack.SIMPLE_ITEM_CODEC
          .xmap(HoverEvent.ItemStackInfo::new, HoverEvent.ItemStackInfo::getItemStack);
-      public static final Codec<HoverEvent.ItemStackInfo> CODEC = ExtraCodecs.withAlternative(FULL_CODEC, SIMPLE_CODEC);
+      public static final Codec<HoverEvent.ItemStackInfo> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
       private final Holder<Item> item;
       private final int count;
       private final DataComponentPatch components;
@@ -280,18 +279,16 @@ public class HoverEvent {
       DataResult<T> parse(Component var1, @Nullable RegistryOps<?> var2);
    }
 
-   static record TypedHoverEvent<T>(HoverEvent.Action<T> c, T d) {
-      final HoverEvent.Action<T> action;
-      final T value;
+   static record TypedHoverEvent<T>(HoverEvent.Action<T> action, T value) {
       public static final MapCodec<HoverEvent.TypedHoverEvent<?>> CODEC = HoverEvent.Action.CODEC
          .dispatchMap("action", HoverEvent.TypedHoverEvent::action, var0 -> var0.codec);
       public static final MapCodec<HoverEvent.TypedHoverEvent<?>> LEGACY_CODEC = HoverEvent.Action.CODEC
          .dispatchMap("action", HoverEvent.TypedHoverEvent::action, var0 -> var0.legacyCodec);
 
-      TypedHoverEvent(HoverEvent.Action<T> var1, T var2) {
+      TypedHoverEvent(HoverEvent.Action<T> action, T value) {
          super();
-         this.action = var1;
-         this.value = (T)var2;
+         this.action = action;
+         this.value = (T)value;
       }
    }
 }

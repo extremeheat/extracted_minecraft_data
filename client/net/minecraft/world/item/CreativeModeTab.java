@@ -235,7 +235,7 @@ public class CreativeModeTab {
                );
             } else {
                if (var1.getItem().isEnabled(this.featureFlagSet)) {
-                  switch(var2) {
+                  switch (var2) {
                      case PARENT_AND_SEARCH_TABS:
                         this.tabContents.add(var1);
                         this.searchTabContents.add(var1);
@@ -252,16 +252,13 @@ public class CreativeModeTab {
       }
    }
 
-   public static record ItemDisplayParameters(FeatureFlagSet a, boolean b, HolderLookup.Provider c) {
-      final FeatureFlagSet enabledFeatures;
-      private final boolean hasPermissions;
-      private final HolderLookup.Provider holders;
+   public static record ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
 
-      public ItemDisplayParameters(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
+      public ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
          super();
-         this.enabledFeatures = var1;
-         this.hasPermissions = var2;
-         this.holders = var3;
+         this.enabledFeatures = enabledFeatures;
+         this.hasPermissions = hasPermissions;
+         this.holders = holders;
       }
 
       public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {

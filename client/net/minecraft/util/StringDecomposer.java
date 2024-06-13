@@ -20,7 +20,7 @@ public class StringDecomposer {
    public static boolean iterate(String var0, Style var1, FormattedCharSink var2) {
       int var3 = var0.length();
 
-      for(int var4 = 0; var4 < var3; ++var4) {
+      for (int var4 = 0; var4 < var3; var4++) {
          char var5 = var0.charAt(var4);
          if (Character.isHighSurrogate(var5)) {
             if (var4 + 1 >= var3) {
@@ -36,7 +36,7 @@ public class StringDecomposer {
                   return false;
                }
 
-               ++var4;
+               var4++;
             } else if (!var2.accept(var4, var1, 65533)) {
                return false;
             }
@@ -51,7 +51,7 @@ public class StringDecomposer {
    public static boolean iterateBackwards(String var0, Style var1, FormattedCharSink var2) {
       int var3 = var0.length();
 
-      for(int var4 = var3 - 1; var4 >= 0; --var4) {
+      for (int var4 = var3 - 1; var4 >= 0; var4--) {
          char var5 = var0.charAt(var4);
          if (Character.isLowSurrogate(var5)) {
             if (var4 - 1 < 0) {
@@ -89,7 +89,7 @@ public class StringDecomposer {
       int var5 = var0.length();
       Style var6 = var2;
 
-      for(int var7 = var1; var7 < var5; ++var7) {
+      for (int var7 = var1; var7 < var5; var7++) {
          char var8 = var0.charAt(var7);
          if (var8 == 167) {
             if (var7 + 1 >= var5) {
@@ -102,7 +102,7 @@ public class StringDecomposer {
                var6 = var10 == ChatFormatting.RESET ? var3 : var6.applyLegacyFormat(var10);
             }
 
-            ++var7;
+            var7++;
          } else if (Character.isHighSurrogate(var8)) {
             if (var7 + 1 >= var5) {
                if (!var4.accept(var7, var6, 65533)) {
@@ -117,7 +117,7 @@ public class StringDecomposer {
                   return false;
                }
 
-               ++var7;
+               var7++;
             } else if (!var4.accept(var7, var6, 65533)) {
                return false;
             }

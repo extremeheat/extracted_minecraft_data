@@ -1,9 +1,8 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -11,16 +10,15 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import org.slf4j.Logger;
 
-public record ConditionReference(ResourceKey<LootItemCondition> b) implements LootItemCondition {
-   private final ResourceKey<LootItemCondition> name;
+public record ConditionReference(ResourceKey<LootItemCondition> name) implements LootItemCondition {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Codec<ConditionReference> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<ConditionReference> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(ResourceKey.codec(Registries.PREDICATE).fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new)
    );
 
-   public ConditionReference(ResourceKey<LootItemCondition> var1) {
+   public ConditionReference(ResourceKey<LootItemCondition> name) {
       super();
-      this.name = var1;
+      this.name = name;
    }
 
    @Override
@@ -37,7 +35,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> b) implements Lo
          var1.resolver()
             .get(Registries.PREDICATE, this.name)
             .ifPresentOrElse(
-               var2 -> ((LootItemCondition)var2.value()).validate(var1.enterElement(".{" + this.name.location() + "}", this.name)),
+               var2 -> var2.value().validate(var1.enterElement(".{" + this.name.location() + "}", this.name)),
                () -> var1.reportProblem("Unknown condition table called " + this.name.location())
             );
       }

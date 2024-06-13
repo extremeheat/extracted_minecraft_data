@@ -2,16 +2,15 @@ package net.minecraft.world.entity.ai.gossip;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.function.DoublePredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -53,7 +51,7 @@ public class GossipContainer {
    public void decay() {
       Iterator var1 = this.gossips.values().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          GossipContainer.EntityGossips var2 = (GossipContainer.EntityGossips)var1.next();
          var2.decay();
          if (var2.isEmpty()) {
@@ -63,7 +61,7 @@ public class GossipContainer {
    }
 
    private Stream<GossipContainer.GossipEntry> unpack() {
-      return this.gossips.entrySet().stream().flatMap(var0 -> ((GossipContainer.EntityGossips)var0.getValue()).unpack((UUID)var0.getKey()));
+      return this.gossips.entrySet().stream().flatMap(var0 -> var0.getValue().unpack(var0.getKey()));
    }
 
    private Collection<GossipContainer.GossipEntry> selectGossipsForTransfer(RandomSource var1, int var2) {
@@ -74,7 +72,7 @@ public class GossipContainer {
          int[] var4 = new int[var3.size()];
          int var5 = 0;
 
-         for(int var6 = 0; var6 < var3.size(); ++var6) {
+         for (int var6 = 0; var6 < var3.size(); var6++) {
             GossipContainer.GossipEntry var7 = (GossipContainer.GossipEntry)var3.get(var6);
             var5 += Math.abs(var7.weightedValue());
             var4[var6] = var5 - 1;
@@ -82,7 +80,7 @@ public class GossipContainer {
 
          Set var10 = Sets.newIdentityHashSet();
 
-         for(int var11 = 0; var11 < var2; ++var11) {
+         for (int var11 = 0; var11 < var2; var11++) {
             int var8 = var1.nextInt(var5);
             int var9 = Arrays.binarySearch(var4, var8);
             var10.add((GossipContainer.GossipEntry)var3.get(var9 < 0 ? -var9 - 1 : var9));
@@ -99,9 +97,9 @@ public class GossipContainer {
    public void transferFrom(GossipContainer var1, RandomSource var2, int var3) {
       Collection var4 = var1.selectGossipsForTransfer(var2, var3);
       var4.forEach(var1x -> {
-         int var2xx = var1x.value - var1x.type.decayPerTransfer;
-         if (var2xx >= 2) {
-            this.getOrCreate(var1x.target).entries.mergeInt(var1x.type, var2xx, GossipContainer::mergeValuesForTransfer);
+         int var2x = var1x.value - var1x.type.decayPerTransfer;
+         if (var2x >= 2) {
+            this.getOrCreate(var1x.target).entries.mergeInt(var1x.type, var2x, GossipContainer::mergeValuesForTransfer);
          }
       });
    }
@@ -141,7 +139,7 @@ public class GossipContainer {
    public void remove(GossipType var1) {
       Iterator var2 = this.gossips.values().iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          GossipContainer.EntityGossips var3 = (GossipContainer.EntityGossips)var2.next();
          var3.remove(var1);
          if (var3.isEmpty()) {
@@ -198,8 +196,8 @@ public class GossipContainer {
       public void decay() {
          ObjectIterator var1 = this.entries.object2IntEntrySet().iterator();
 
-         while(var1.hasNext()) {
-            it.unimi.dsi.fastutil.objects.Object2IntMap.Entry var2 = (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry)var1.next();
+         while (var1.hasNext()) {
+            Entry var2 = (Entry)var1.next();
             int var3 = var2.getIntValue() - ((GossipType)var2.getKey()).decayPerDay;
             if (var3 < 2) {
                var1.remove();
@@ -229,10 +227,7 @@ public class GossipContainer {
       }
    }
 
-   static record GossipEntry(UUID c, GossipType d, int e) {
-      final UUID target;
-      final GossipType type;
-      final int value;
+   static record GossipEntry(UUID target, GossipType type, int value) {
       public static final Codec<GossipContainer.GossipEntry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   UUIDUtil.CODEC.fieldOf("Target").forGetter(GossipContainer.GossipEntry::target),
@@ -243,11 +238,11 @@ public class GossipContainer {
       );
       public static final Codec<List<GossipContainer.GossipEntry>> LIST_CODEC = CODEC.listOf();
 
-      GossipEntry(UUID var1, GossipType var2, int var3) {
+      GossipEntry(UUID target, GossipType type, int value) {
          super();
-         this.target = var1;
-         this.type = var2;
-         this.value = var3;
+         this.target = target;
+         this.type = type;
+         this.value = value;
       }
 
       public int weightedValue() {

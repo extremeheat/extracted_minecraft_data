@@ -135,7 +135,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
          var4.bindKey(var1);
       } else {
-         var4 = this.byKey.computeIfAbsent(var1, var1x -> Holder.Reference.createStandAlone(this.holderOwner(), var1x));
+         var4 = this.byKey.computeIfAbsent(var1, var1x -> Holder.Reference.createStandAlone(this.holderOwner(), (ResourceKey<T>)var1x));
       }
 
       this.byKey.put(var1, var4);
@@ -204,8 +204,8 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          if (this.unregisteredIntrusiveHolders != null) {
             throw new IllegalStateException("This registry can't create new holders without value");
          } else {
-            this.validateWrite(var1x);
-            return Holder.Reference.createStandAlone(this.holderOwner(), var1x);
+            this.validateWrite((ResourceKey<T>)var1x);
+            return Holder.Reference.createStandAlone(this.holderOwner(), (ResourceKey<T>)var1x);
          }
       });
    }
@@ -217,7 +217,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Override
    public Optional<RegistrationInfo> registrationInfo(ResourceKey<T> var1) {
-      return Optional.ofNullable((RegistrationInfo)this.registrationInfos.get(var1));
+      return Optional.ofNullable(this.registrationInfos.get(var1));
    }
 
    @Override
@@ -264,7 +264,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Override
    public Stream<Pair<TagKey<T>, HolderSet.Named<T>>> getTags() {
-      return this.tags.entrySet().stream().map(var0 -> Pair.of((TagKey)var0.getKey(), (HolderSet.Named)var0.getValue()));
+      return this.tags.entrySet().stream().map(var0 -> Pair.of(var0.getKey(), var0.getValue()));
    }
 
    @Override
@@ -315,7 +315,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          return this;
       } else {
          this.frozen = true;
-         this.byValue.forEach((var0, var1x) -> var1x.bindValue(var0));
+         this.byValue.forEach((var0, var1x) -> var1x.bindValue((T)var0));
          List var1 = this.byKey.entrySet().stream().filter(var0 -> !var0.getValue().isBound()).map(var0 -> var0.getKey().location()).sorted().toList();
          if (!var1.isEmpty()) {
             throw new IllegalStateException("Unbound values in registry " + this.key() + ": " + var1);
@@ -339,7 +339,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          throw new IllegalStateException("This registry can't create intrusive holders");
       } else {
          this.validateWrite();
-         return this.unregisteredIntrusiveHolders.computeIfAbsent((T)var1, var1x -> Holder.Reference.createIntrusive(this.asLookup(), var1x));
+         return this.unregisteredIntrusiveHolders.computeIfAbsent((T)var1, var1x -> Holder.Reference.createIntrusive(this.asLookup(), (T)var1x));
       }
    }
 
@@ -353,16 +353,15 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       IdentityHashMap var2 = new IdentityHashMap();
       this.byKey.values().forEach(var1x -> var2.put(var1x, new ArrayList()));
       var1.forEach((var2x, var3x) -> {
-         for(Holder var5 : var3x) {
+         for (Holder var5 : var3x) {
             if (!var5.canSerializeIn(this.asLookup())) {
                throw new IllegalStateException("Can't create named set " + var2x + " containing value " + var5 + " from outside registry " + this);
             }
 
-            if (!(var5 instanceof Holder.Reference)) {
+            if (!(var5 instanceof Holder.Reference var6)) {
                throw new IllegalStateException("Found direct holder " + var5 + " value in tag " + var2x);
             }
 
-            Holder.Reference var6 = (Holder.Reference)var5;
             ((List)var2.get(var6)).add(var2x);
          }
       });
@@ -376,7 +375,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       }
 
       IdentityHashMap var4 = new IdentityHashMap<>(this.tags);
-      var1.forEach((var2x, var3x) -> var4.computeIfAbsent(var2x, this::createTag).bind(var3x));
+      var1.forEach((var2x, var3x) -> var4.computeIfAbsent(var2x, this::createTag).bind((List<Holder<T>>)var3x));
       var2.forEach(Holder.Reference::bindTags);
       this.tags = var4;
    }

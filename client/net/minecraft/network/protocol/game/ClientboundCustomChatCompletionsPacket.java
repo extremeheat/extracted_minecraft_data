@@ -6,10 +6,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundCustomChatCompletionsPacket(ClientboundCustomChatCompletionsPacket.Action b, List<String> c)
+public record ClientboundCustomChatCompletionsPacket(ClientboundCustomChatCompletionsPacket.Action action, List<String> entries)
    implements Packet<ClientGamePacketListener> {
-   private final ClientboundCustomChatCompletionsPacket.Action action;
-   private final List<String> entries;
    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC = Packet.codec(
       ClientboundCustomChatCompletionsPacket::write, ClientboundCustomChatCompletionsPacket::new
    );
@@ -18,10 +16,10 @@ public record ClientboundCustomChatCompletionsPacket(ClientboundCustomChatComple
       this(var1.readEnum(ClientboundCustomChatCompletionsPacket.Action.class), var1.readList(FriendlyByteBuf::readUtf));
    }
 
-   public ClientboundCustomChatCompletionsPacket(ClientboundCustomChatCompletionsPacket.Action var1, List<String> var2) {
+   public ClientboundCustomChatCompletionsPacket(ClientboundCustomChatCompletionsPacket.Action action, List<String> entries) {
       super();
-      this.action = var1;
-      this.entries = var2;
+      this.action = action;
+      this.entries = entries;
    }
 
    private void write(FriendlyByteBuf var1) {

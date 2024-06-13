@@ -71,7 +71,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       int var2 = (this.height - this.imageHeight) / 2;
       int var3 = var2 + 16 + 2;
 
-      for(int var4 = 0; var4 < 7; ++var4) {
+      for (int var4 = 0; var4 < 7; var4++) {
          this.tradeOfferButtons[var4] = this.addRenderableWidget(new MerchantScreen.TradeOfferButton(var1 + 5, var3, var4, var1x -> {
             if (var1x instanceof MerchantScreen.TradeOfferButton) {
                this.shopItem = ((MerchantScreen.TradeOfferButton)var1x).getIndex() + this.scrollOff;
@@ -125,7 +125,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          var1.blitSprite(EXPERIENCE_BAR_BACKGROUND_SPRITE, var2 + 136, var3 + 16, 0, 102, 5);
          int var7 = VillagerData.getMinXpPerLevel(var5);
          if (var6 >= var7 && VillagerData.canLevelUp(var5)) {
-            boolean var8 = true;
+            byte var8 = 102;
             float var9 = 102.0F / (float)(VillagerData.getMaxXpPerLevel(var5) - var7);
             int var10 = Math.min(Mth.floor(var9 * (float)(var6 - var7)), 102);
             var1.blitSprite(EXPERIENCE_BAR_CURRENT_SPRITE, 102, 5, 0, 0, var2 + 136, var3 + 16, 0, var10, 5);
@@ -143,7 +143,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       if (var5 > 1) {
          int var6 = 139 - (27 + (var5 - 1) * 139 / var5);
          int var7 = 1 + var6 / var5 + 139 / var5;
-         boolean var8 = true;
+         byte var8 = 113;
          int var9 = Math.min(113, this.scrollOff * var7);
          if (this.scrollOff == var5 - 1) {
             var9 = 113;
@@ -167,7 +167,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          this.renderScroller(var1, var6, var7, var5);
          int var10 = 0;
 
-         for(MerchantOffer var12 : var5) {
+         for (MerchantOffer var12 : var5) {
             if (!this.canScroll(var5.size()) || var10 >= this.scrollOff && var10 < 7 + this.scrollOff) {
                ItemStack var13 = var12.getBaseCostA();
                ItemStack var14 = var12.getCostA();
@@ -187,9 +187,9 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
                var1.renderItemDecorations(this.font, var16, var6 + 5 + 68, var17);
                var1.pose().popPose();
                var8 += 20;
-               ++var10;
+               var10++;
             } else {
-               ++var10;
+               var10++;
             }
          }
 
@@ -203,7 +203,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
             var1.renderTooltip(this.font, DEPRECATED_TOOLTIP, var2, var3);
          }
 
-         for(MerchantScreen.TradeOfferButton var23 : this.tradeOfferButtons) {
+         for (MerchantScreen.TradeOfferButton var23 : this.tradeOfferButtons) {
             if (var23.isHoveredOrFocused()) {
                var23.renderToolTip(var1, var2, var3);
             }

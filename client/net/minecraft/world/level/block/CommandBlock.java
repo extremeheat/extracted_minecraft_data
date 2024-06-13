@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -60,9 +59,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
    @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (!var2.isClientSide) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof CommandBlockEntity) {
-            CommandBlockEntity var8 = (CommandBlockEntity)var7;
+         if (var2.getBlockEntity(var3) instanceof CommandBlockEntity var8) {
             boolean var9 = var2.hasNeighborSignal(var3);
             boolean var10 = var8.isPowered();
             var8.setPowered(var9);
@@ -76,12 +73,9 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof CommandBlockEntity var6) {
+      if (var2.getBlockEntity(var3) instanceof CommandBlockEntity var6) {
          BaseCommandBlock var7 = var6.getCommandBlock();
          boolean var8 = !StringUtil.isNullOrEmpty(var7.getCommand());
          CommandBlockEntity.Mode var9 = var6.getMode();
@@ -143,9 +137,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
 
    @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      BlockEntity var6 = var1.getBlockEntity(var2);
-      if (var6 instanceof CommandBlockEntity) {
-         CommandBlockEntity var7 = (CommandBlockEntity)var6;
+      if (var1.getBlockEntity(var2) instanceof CommandBlockEntity var7) {
          BaseCommandBlock var8 = var7.getCommandBlock();
          if (!var1.isClientSide) {
             if (!var5.has(DataComponents.BLOCK_ENTITY_DATA)) {
@@ -189,24 +181,15 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
    private static void executeChain(Level var0, BlockPos var1, Direction var2) {
       BlockPos.MutableBlockPos var3 = var1.mutable();
       GameRules var4 = var0.getGameRules();
+      int var5 = var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH);
 
-      int var5;
-      BlockState var6;
-      for(var5 = var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH); var5-- > 0; var2 = var6.getValue(FACING)) {
+      while (var5-- > 0) {
          var3.move(var2);
-         var6 = var0.getBlockState(var3);
+         BlockState var6 = var0.getBlockState(var3);
          Block var7 = var6.getBlock();
-         if (!var6.is(Blocks.CHAIN_COMMAND_BLOCK)) {
-            break;
-         }
-
-         BlockEntity var8 = var0.getBlockEntity(var3);
-         if (!(var8 instanceof CommandBlockEntity)) {
-            break;
-         }
-
-         CommandBlockEntity var9 = (CommandBlockEntity)var8;
-         if (var9.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
+         if (!var6.is(Blocks.CHAIN_COMMAND_BLOCK)
+            || !(var0.getBlockEntity(var3) instanceof CommandBlockEntity var9)
+            || var9.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
             break;
          }
 
@@ -222,6 +205,8 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
                var10.setSuccessCount(0);
             }
          }
+
+         var2 = var6.getValue(FACING);
       }
 
       if (var5 <= 0) {

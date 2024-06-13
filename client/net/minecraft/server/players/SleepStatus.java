@@ -40,11 +40,11 @@ public class SleepStatus {
       this.activePlayers = 0;
       this.sleepingPlayers = 0;
 
-      for(ServerPlayer var5 : var1) {
+      for (ServerPlayer var5 : var1) {
          if (!var5.isSpectator()) {
-            ++this.activePlayers;
+            this.activePlayers++;
             if (var5.isSleeping()) {
-               ++this.sleepingPlayers;
+               this.sleepingPlayers++;
             }
          }
       }

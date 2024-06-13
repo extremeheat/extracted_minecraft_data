@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -30,15 +29,13 @@ import net.minecraft.client.DebugQueryHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.MapRenderer;
+import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.toasts.RecipeToast;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.DemoIntroScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.gui.screens.PotatoPoemScreen;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.SproutRespawnScreen;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.inventory.BookViewScreen;
@@ -47,7 +44,6 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerReconfigScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
-import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.client.particle.ItemPickupParticle;
 import net.minecraft.client.player.KeyboardInput;
@@ -113,7 +109,6 @@ import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundAddExperienceOrbPacket;
-import net.minecraft.network.protocol.game.ClientboundAddSubGridPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundAwardStatsPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
@@ -171,6 +166,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.game.ClientboundProjectilePowerPacket;
 import net.minecraft.network.protocol.game.ClientboundRecipePacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
@@ -209,7 +205,6 @@ import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
-import net.minecraft.network.protocol.game.ClientboundSoundSequencePacket;
 import net.minecraft.network.protocol.game.ClientboundStartConfigurationPacket;
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
@@ -227,6 +222,7 @@ import net.minecraft.network.protocol.game.CommonPlayerSpawnInfo;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundChatAckPacket;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
+import net.minecraft.network.protocol.game.ServerboundChatCommandSignedPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.network.protocol.game.ServerboundChatSessionUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundChunkBatchReceivedPacket;
@@ -270,10 +266,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.entity.player.ProfilePublicKey;
+import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.grid.GridCarrier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -287,7 +283,6 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -358,6 +353,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.pingDebugMonitor = new PingDebugMonitor(this, var1.getDebugOverlay().getPingLogger());
       this.recipeManager = new RecipeManager(this.registryAccess);
       this.debugSampleSubscriber = new DebugSampleSubscriber(this, var1.getDebugOverlay());
+      if (var3.chatState() != null) {
+         var1.gui.getChat().restoreState(var3.chatState());
+      }
    }
 
    public ClientSuggestionProvider getSuggestionsProvider() {
@@ -431,11 +429,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.player.setPortalCooldown(var2.portalCooldown());
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
       this.minecraft.options.setServerRenderDistance(var1.chunkRadius());
-      if (var2.waitForGrid() != null) {
-         this.minecraft.player.reloadAttachedGrid = var2.waitForGrid();
-         this.minecraft.player.reloadAttachedGridTimeout = 60;
-      }
-
       this.chatSession = null;
       this.lastSeenMessages = new LastSeenMessagesTracker(20);
       this.messageSignatureCache = MessageSignatureCache.createDefault();
@@ -486,14 +479,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    private void postAddEntitySoundInstance(Entity var1) {
       if (var1 instanceof AbstractMinecart var2) {
-         this.minecraft.getSoundManager().play(new MinecartSoundInstance((AbstractMinecart)var2));
+         this.minecraft.getSoundManager().play(new MinecartSoundInstance(var2));
       } else if (var1 instanceof Bee var3) {
-         boolean var4 = ((Bee)var3).isAngry();
+         boolean var4 = var3.isAngry();
          Object var5;
          if (var4) {
-            var5 = new BeeAggressiveSoundInstance((Bee)var3);
+            var5 = new BeeAggressiveSoundInstance(var3);
          } else {
-            var5 = new BeeFlyingSoundInstance((Bee)var3);
+            var5 = new BeeFlyingSoundInstance(var3);
          }
 
          this.minecraft.getSoundManager().queueTickingSound((TickableSoundInstance)var5);
@@ -512,22 +505,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var8.setXRot(0.0F);
       var8.setId(var1.getId());
       this.level.addEntity(var8);
-   }
-
-   @Override
-   public void handleAddSubGrid(ClientboundAddSubGridPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      GridCarrier var2 = new GridCarrier(EntityType.GRID_CARRIER, this.level);
-      double var3 = var1.x();
-      double var5 = var1.y();
-      double var7 = var1.z();
-      var2.syncPacketPositionCodec(var3, var5, var7);
-      var2.moveTo(var3, var5, var7);
-      var2.setId(var1.id());
-      var2.setUUID(var1.uuid());
-      var2.grid().setBlocks(var1.blocks());
-      var2.grid().setBiome(var1.biome());
-      this.level.addEntity(var2);
    }
 
    @Override
@@ -646,8 +623,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       if (var4) {
          var7 = var3.x();
          var9 = var2.getX() + var1.getX();
-         var2.xOld += var1.getX();
-         var2.xo += var1.getX();
+         var2.xOld = var2.xOld + var1.getX();
+         var2.xo = var2.xo + var1.getX();
       } else {
          var7 = 0.0;
          var9 = var1.getX();
@@ -660,8 +637,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       if (var5) {
          var11 = var3.y();
          var13 = var2.getY() + var1.getY();
-         var2.yOld += var1.getY();
-         var2.yo += var1.getY();
+         var2.yOld = var2.yOld + var1.getY();
+         var2.yo = var2.yo + var1.getY();
       } else {
          var11 = 0.0;
          var13 = var1.getY();
@@ -674,8 +651,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       if (var6) {
          var15 = var3.z();
          var17 = var2.getZ() + var1.getZ();
-         var2.zOld += var1.getZ();
-         var2.zo += var1.getZ();
+         var2.zOld = var2.zOld + var1.getZ();
+         var2.zo = var2.zo + var1.getZ();
       } else {
          var15 = 0.0;
          var17 = var1.getZ();
@@ -722,9 +699,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       ClientboundLightUpdatePacketData var4 = var1.getLightData();
       this.level.queueLightUpdate(() -> {
          this.applyLightData(var2, var3, var4);
-         LevelChunk var4xx = this.level.getChunkSource().getChunk(var2, var3, false);
-         if (var4xx != null) {
-            this.enableChunkLight(var4xx, var2, var3);
+         LevelChunk var4x = this.level.getChunkSource().getChunk(var2, var3, false);
+         if (var4x != null) {
+            this.enableChunkLight(var4x, var2, var3);
          }
       });
    }
@@ -733,18 +710,18 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleChunksBiomes(ClientboundChunksBiomesPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
 
-      for(ClientboundChunksBiomesPacket.ChunkBiomeData var3 : var1.chunkBiomeData()) {
+      for (ClientboundChunksBiomesPacket.ChunkBiomeData var3 : var1.chunkBiomeData()) {
          this.level.getChunkSource().replaceBiomes(var3.pos().x, var3.pos().z, var3.getReadBuffer());
       }
 
-      for(ClientboundChunksBiomesPacket.ChunkBiomeData var9 : var1.chunkBiomeData()) {
+      for (ClientboundChunksBiomesPacket.ChunkBiomeData var9 : var1.chunkBiomeData()) {
          this.level.onChunkLoaded(new ChunkPos(var9.pos().x, var9.pos().z));
       }
 
-      for(ClientboundChunksBiomesPacket.ChunkBiomeData var10 : var1.chunkBiomeData()) {
-         for(int var4 = -1; var4 <= 1; ++var4) {
-            for(int var5 = -1; var5 <= 1; ++var5) {
-               for(int var6 = this.level.getMinSection(); var6 < this.level.getMaxSection(); ++var6) {
+      for (ClientboundChunksBiomesPacket.ChunkBiomeData var10 : var1.chunkBiomeData()) {
+         for (int var4 = -1; var4 <= 1; var4++) {
+            for (int var5 = -1; var5 <= 1; var5++) {
+               for (int var6 = this.level.getMinSection(); var6 < this.level.getMaxSection(); var6++) {
                   this.minecraft.levelRenderer.setSectionDirty(var10.pos().x + var4, var6, var10.pos().z + var5);
                }
             }
@@ -761,7 +738,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       LevelChunkSection[] var5 = var1.getSections();
       ChunkPos var6 = var1.getPos();
 
-      for(int var7 = 0; var7 < var5.length; ++var7) {
+      for (int var7 = 0; var7 < var5.length; var7++) {
          LevelChunkSection var8 = var5[var7];
          int var9 = this.level.getSectionYFromSectionIndex(var7);
          var4.updateSectionStatus(SectionPos.of(var6, var9), var8.hasOnlyAir());
@@ -779,17 +756,17 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private void queueLightRemoval(ClientboundForgetLevelChunkPacket var1) {
       ChunkPos var2 = var1.pos();
       this.level.queueLightUpdate(() -> {
-         LevelLightEngine var2xx = this.level.getLightEngine();
-         var2xx.setLightEnabled(var2, false);
+         LevelLightEngine var2x = this.level.getLightEngine();
+         var2x.setLightEnabled(var2, false);
 
-         for(int var3 = var2xx.getMinLightSection(); var3 < var2xx.getMaxLightSection(); ++var3) {
+         for (int var3 = var2x.getMinLightSection(); var3 < var2x.getMaxLightSection(); var3++) {
             SectionPos var4 = SectionPos.of(var2, var3);
-            var2xx.queueSectionData(LightLayer.BLOCK, var4, null);
-            var2xx.queueSectionData(LightLayer.SKY, var4, null);
+            var2x.queueSectionData(LightLayer.BLOCK, var4, null);
+            var2x.queueSectionData(LightLayer.SKY, var4, null);
          }
 
-         for(int var5 = this.level.getMinSection(); var5 < this.level.getMaxSection(); ++var5) {
-            var2xx.updateSectionStatus(SectionPos.of(var2, var5), true);
+         for (int var5 = this.level.getMinSection(); var5 < this.level.getMaxSection(); var5++) {
+            var2x.updateSectionStatus(SectionPos.of(var2, var5), true);
          }
       });
    }
@@ -803,6 +780,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Override
    public void handleConfigurationStart(ClientboundStartConfigurationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      this.minecraft.getChatListener().clearQueue();
+      this.sendChatAcknowledgement();
+      ChatComponent.State var2 = this.minecraft.gui.getChat().storeState();
       this.minecraft.clearClientLevel(new ServerReconfigScreen(RECONFIGURE_SCREEN_MESSAGE, this.connection));
       this.connection
          .setupInboundProtocol(
@@ -818,7 +798,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   this.serverBrand,
                   this.serverData,
                   this.postDisconnectScreen,
-                  this.serverCookies
+                  this.serverCookies,
+                  var2
                )
             )
          );
@@ -826,8 +807,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleTakeItemEntity(ClientboundTakeItemEntityPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
@@ -996,7 +975,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          boolean var3 = var2.hasIndirectPassenger(this.minecraft.player);
          var2.ejectPassengers();
 
-         for(int var7 : var1.getPassengers()) {
+         for (int var7 : var1.getPassengers()) {
             Entity var8 = this.level.getEntity(var7);
             if (var8 != null) {
                var8.startRiding(var2, true);
@@ -1026,7 +1005,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private static ItemStack findTotem(Player var0) {
-      for(InteractionHand var4 : InteractionHand.values()) {
+      for (InteractionHand var4 : InteractionHand.values()) {
          ItemStack var5 = var0.getItemInHand(var4);
          if (var5.is(Items.TOTEM_OF_UNDYING)) {
             return var5;
@@ -1041,12 +1020,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       Entity var2 = var1.getEntity(this.level);
       if (var2 != null) {
-         switch(var1.getEventId()) {
+         switch (var1.getEventId()) {
             case 21:
                this.minecraft.getSoundManager().play(new GuardianAttackSoundInstance((Guardian)var2));
                break;
             case 35:
-               boolean var3 = true;
+               byte var3 = 40;
                this.minecraft.particleEngine.createTrackingEmitter(var2, ParticleTypes.TOTEM_OF_UNDYING, 30);
                this.level.playLocalSound(var2.getX(), var2.getY(), var2.getZ(), SoundEvents.TOTEM_USE, var2.getSoundSource(), 1.0F, 1.0F, false);
                if (var2 == this.minecraft.player) {
@@ -1161,10 +1140,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
-      if (var2.waitForGrid() != null) {
-         var10.reloadAttachedGrid = var2.waitForGrid();
-         var10.reloadAttachedGridTimeout = 60;
-      }
    }
 
    @Override
@@ -1194,13 +1169,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Override
    public void handleHorseScreenOpen(ClientboundHorseScreenOpenPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      Entity var2 = this.level.getEntity(var1.getEntityId());
-      if (var2 instanceof AbstractHorse var3) {
+      if (this.level.getEntity(var1.getEntityId()) instanceof AbstractHorse var3) {
          LocalPlayer var4 = this.minecraft.player;
          SimpleContainer var5 = new SimpleContainer(var1.getSize());
-         HorseInventoryMenu var6 = new HorseInventoryMenu(var1.getContainerId(), var4.getInventory(), var5, (AbstractHorse)var3);
+         HorseInventoryMenu var6 = new HorseInventoryMenu(var1.getContainerId(), var4.getInventory(), var5, var3);
          var4.containerMenu = var6;
-         this.minecraft.setScreen(new HorseInventoryScreen(var6, var4.getInventory(), (AbstractHorse)var3));
+         this.minecraft.setScreen(new HorseInventoryScreen(var6, var4.getInventory(), var3));
       }
    }
 
@@ -1210,8 +1184,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       MenuScreens.create(var1.getType(), this.minecraft, var1.getContainerId(), var1.getTitle());
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleContainerSetSlot(ClientboundContainerSetSlotPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
@@ -1227,8 +1199,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var2.getInventory().setItem(var4, var3);
       } else {
          boolean var5 = false;
-         Screen var7 = this.minecraft.screen;
-         if (var7 instanceof CreativeModeInventoryScreen var6) {
+         if (this.minecraft.screen instanceof CreativeModeInventoryScreen var6) {
             var5 = !var6.isInventoryOpen();
          }
 
@@ -1262,9 +1233,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleOpenSignEditor(ClientboundOpenSignEditorPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       BlockPos var2 = var1.getPos();
-      BlockEntity var4 = this.level.getBlockEntity(var2);
-      if (var4 instanceof SignBlockEntity var3) {
-         this.minecraft.player.openTextEdit((SignBlockEntity)var3, var1.isFrontText());
+      if (this.level.getBlockEntity(var2) instanceof SignBlockEntity var3) {
+         this.minecraft.player.openTextEdit(var3, var1.isFrontText());
       } else {
          BlockState var6 = this.level.getBlockState(var2);
          SignBlockEntity var5 = new SignBlockEntity(var2, var6);
@@ -1280,7 +1250,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.level.getBlockEntity(var2, var1.getType()).ifPresent(var2x -> {
          CompoundTag var3 = var1.getTag();
          if (!var3.isEmpty()) {
-            var2x.load(var3, this.registryAccess);
+            var2x.loadWithComponents(var3, this.registryAccess);
          }
 
          if (var2x instanceof CommandBlockEntity && this.minecraft.screen instanceof CommandBlockEditScreen) {
@@ -1301,8 +1271,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Override
    public void handleSetEquipment(ClientboundSetEquipmentPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      Entity var2 = this.level.getEntity(var1.getEntity());
-      if (var2 instanceof LivingEntity var3) {
+      if (this.level.getEntity(var1.getEntity()) instanceof LivingEntity var3) {
          var1.getSlots().forEach(var1x -> var3.setItemSlot((EquipmentSlot)var1x.getFirst(), (ItemStack)var1x.getSecond()));
       }
    }
@@ -1393,12 +1362,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.minecraft.player.setShowDeathScreen(var4 == 0.0F);
       } else if (var3 == ClientboundGameEventPacket.LIMITED_CRAFTING) {
          this.minecraft.player.setDoLimitedCrafting(var4 == 1.0F);
-      } else if (var3 == ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START) {
-         if (this.levelLoadStatusManager != null) {
-            this.levelLoadStatusManager.loadingPacketsReceived();
-         }
-      } else if (var3 == ClientboundGameEventPacket.POTATO_POEM) {
-         this.minecraft.setScreen(new PotatoPoemScreen(() -> this.minecraft.setScreen(new SproutRespawnScreen())));
+      } else if (var3 == ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START && this.levelLoadStatusManager != null) {
+         this.levelLoadStatusManager.loadingPacketsReceived();
       }
    }
 
@@ -1494,22 +1459,19 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleAwardStats(ClientboundAwardStatsPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       ObjectIterator var2 = var1.stats().object2IntEntrySet().iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          Entry var3 = (Entry)var2.next();
          Stat var4 = (Stat)var3.getKey();
          int var5 = var3.getIntValue();
          this.minecraft.player.getStats().setValue(this.minecraft.player, var4, var5);
       }
 
-      Screen var7 = this.minecraft.screen;
-      if (var7 instanceof StatsScreen var6) {
+      if (this.minecraft.screen instanceof StatsScreen var6) {
          var6.onStatsUpdated();
       }
    }
@@ -1520,28 +1482,28 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       ClientRecipeBook var2 = this.minecraft.player.getRecipeBook();
       var2.setBookSettings(var1.getBookSettings());
       ClientboundRecipePacket.State var3 = var1.getState();
-      switch(var3) {
+      switch (var3) {
          case REMOVE:
-            for(ResourceLocation var11 : var1.getRecipes()) {
+            for (ResourceLocation var11 : var1.getRecipes()) {
                this.recipeManager.byKey(var11).ifPresent(var2::remove);
             }
             break;
          case INIT:
-            for(ResourceLocation var9 : var1.getRecipes()) {
+            for (ResourceLocation var9 : var1.getRecipes()) {
                this.recipeManager.byKey(var9).ifPresent(var2::add);
             }
 
-            for(ResourceLocation var10 : var1.getHighlights()) {
+            for (ResourceLocation var10 : var1.getHighlights()) {
                this.recipeManager.byKey(var10).ifPresent(var2::addHighlight);
             }
             break;
          case ADD:
-            for(ResourceLocation var5 : var1.getRecipes()) {
+            for (ResourceLocation var5 : var1.getRecipes()) {
                this.recipeManager.byKey(var5).ifPresent(var2x -> {
-                  var2.add(var2x);
-                  var2.addHighlight(var2x);
+                  var2.add((RecipeHolder<?>)var2x);
+                  var2.addHighlight((RecipeHolder<?>)var2x);
                   if (var2x.value().showNotification()) {
-                     RecipeToast.addOrUpdate(this.minecraft.getToasts(), var2x);
+                     RecipeToast.addOrUpdate(this.minecraft.getToasts(), (RecipeHolder<?>)var2x);
                   }
                });
             }
@@ -1718,13 +1680,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.gui.getTabList().setFooter(var1.footer().getString().isEmpty() ? null : var1.footer());
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleRemoveMobEffect(ClientboundRemoveMobEffectPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      Entity var3 = var1.getEntity(this.level);
-      if (var3 instanceof LivingEntity var2) {
+      if (var1.getEntity(this.level) instanceof LivingEntity var2) {
          var2.removeEffectNoUpdate(var1.effect());
       }
    }
@@ -1733,7 +1692,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handlePlayerInfoRemove(ClientboundPlayerInfoRemovePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
 
-      for(UUID var3 : var1.profileIds()) {
+      for (UUID var3 : var1.profileIds()) {
          this.minecraft.getPlayerSocialManager().removePlayer(var3);
          PlayerInfo var4 = this.playerInfoMap.remove(var3);
          if (var4 != null) {
@@ -1746,19 +1705,19 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handlePlayerInfoUpdate(ClientboundPlayerInfoUpdatePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
 
-      for(ClientboundPlayerInfoUpdatePacket.Entry var3 : var1.newEntries()) {
+      for (ClientboundPlayerInfoUpdatePacket.Entry var3 : var1.newEntries()) {
          PlayerInfo var4 = new PlayerInfo(Objects.requireNonNull(var3.profile()), this.enforcesSecureChat());
          if (this.playerInfoMap.putIfAbsent(var3.profileId(), var4) == null) {
             this.minecraft.getPlayerSocialManager().addPlayer(var4);
          }
       }
 
-      for(ClientboundPlayerInfoUpdatePacket.Entry var8 : var1.entries()) {
+      for (ClientboundPlayerInfoUpdatePacket.Entry var8 : var1.entries()) {
          PlayerInfo var9 = this.playerInfoMap.get(var8.profileId());
          if (var9 == null) {
             LOGGER.warn("Ignoring player info update for unknown player {} ({})", var8.profileId(), var1.actions());
          } else {
-            for(ClientboundPlayerInfoUpdatePacket.Action var6 : var1.actions()) {
+            for (ClientboundPlayerInfoUpdatePacket.Action var6 : var1.actions()) {
                this.applyPlayerInfoUpdate(var6, var8, var9);
             }
          }
@@ -1766,7 +1725,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void applyPlayerInfoUpdate(ClientboundPlayerInfoUpdatePacket.Action var1, ClientboundPlayerInfoUpdatePacket.Entry var2, PlayerInfo var3) {
-      switch(var1) {
+      switch (var1) {
          case INITIALIZE_CHAT:
             this.initializeChatSession(var2, var3);
             break;
@@ -1841,18 +1800,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    @Override
-   public void handleSoundSequenceEvent(ClientboundSoundSequencePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-
-      for(ClientboundSoundSequencePacket.DelayedSound var3 : var1.getSounds()) {
-         ClientboundSoundPacket var4 = var3.packet();
-         this.minecraft
-            .level
-            .playDelayedSound(var3.ticks(), var4.getX(), var4.getY(), var4.getZ(), var4.getSound().value(), var4.getSource(), var4.getVolume(), var4.getPitch());
-      }
-   }
-
-   @Override
    public void handleSoundEntityEvent(ClientboundSoundEntityPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       Entity var2 = this.level.getEntity(var1.getId());
@@ -1899,8 +1846,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleCustomPayload(CustomPacketPayload var1) {
       if (var1 instanceof PathfindingDebugPayload var2) {
@@ -2036,14 +1981,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var2.setDisplayName(var1x.getDisplayName());
          var2.setColor(var1x.getColor());
          var2.unpackOptions(var1x.getOptions());
-         Team.Visibility var2xx = Team.Visibility.byName(var1x.getNametagVisibility());
-         if (var2xx != null) {
-            var2.setNameTagVisibility(var2xx);
+         Team.Visibility var2x = Team.Visibility.byName(var1x.getNametagVisibility());
+         if (var2x != null) {
+            var2.setNameTagVisibility(var2x);
          }
 
-         Team.CollisionRule var3xx = Team.CollisionRule.byName(var1x.getCollisionRule());
-         if (var3xx != null) {
-            var2.setCollisionRule(var3xx);
+         Team.CollisionRule var3x = Team.CollisionRule.byName(var1x.getCollisionRule());
+         if (var3x != null) {
+            var2.setCollisionRule(var3x);
          }
 
          var2.setPlayerPrefix(var1x.getPlayerPrefix());
@@ -2051,11 +1996,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       });
       ClientboundSetPlayerTeamPacket.Action var5 = var1.getPlayerAction();
       if (var5 == ClientboundSetPlayerTeamPacket.Action.ADD) {
-         for(String var7 : var1.getPlayers()) {
+         for (String var7 : var1.getPlayers()) {
             this.scoreboard.addPlayerToTeam(var7, var2);
          }
       } else if (var5 == ClientboundSetPlayerTeamPacket.Action.REMOVE) {
-         for(String var9 : var1.getPlayers()) {
+         for (String var9 : var1.getPlayers()) {
             this.scoreboard.removePlayerFromTeam(var9, var2);
          }
       }
@@ -2079,7 +2024,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             LOGGER.warn("Could not spawn particle effect {}", var1.getParticle());
          }
       } else {
-         for(int var18 = 0; var18 < var1.getCount(); ++var18) {
+         for (int var18 = 0; var18 < var1.getCount(); var18++) {
             double var3 = this.random.nextGaussian() * (double)var1.getXDist();
             double var5 = this.random.nextGaussian() * (double)var1.getYDist();
             double var7 = this.random.nextGaussian() * (double)var1.getZDist();
@@ -2108,7 +2053,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          } else {
             AttributeMap var3 = ((LivingEntity)var2).getAttributes();
 
-            for(ClientboundUpdateAttributesPacket.AttributeSnapshot var5 : var1.getValues()) {
+            for (ClientboundUpdateAttributesPacket.AttributeSnapshot var5 : var1.getValues()) {
                AttributeInstance var6 = var3.getInstance(var5.attribute());
                if (var6 == null) {
                   LOGGER.warn("Entity {} does not have attribute {}", var2, var5.attribute().getRegisteredName());
@@ -2116,7 +2061,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   var6.setBaseValue(var5.base());
                   var6.removeModifiers();
 
-                  for(AttributeModifier var8 : var5.modifiers()) {
+                  for (AttributeModifier var8 : var5.modifiers()) {
                      var6.addTransientModifier(var8);
                   }
                }
@@ -2133,7 +2078,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.recipeManager.byKey(var1.getRecipe()).ifPresent(var2x -> {
             if (this.minecraft.screen instanceof RecipeUpdateListener) {
                RecipeBookComponent var3 = ((RecipeUpdateListener)this.minecraft.screen).getRecipeBookComponent();
-               var3.setupGhostRecipe(var2x, var2.slots);
+               var3.setupGhostRecipe((RecipeHolder<?>)var2x, var2.slots);
             }
          });
       }
@@ -2161,8 +2106,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var4.setLightEnabled(new ChunkPos(var1, var2), true);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleMerchantOffers(ClientboundMerchantOffersPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
@@ -2207,8 +2150,18 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleBundlePacket(ClientboundBundlePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
 
-      for(Packet var3 : var1.subPackets()) {
+      for (Packet var3 : var1.subPackets()) {
          var3.handle(this);
+      }
+   }
+
+   @Override
+   public void handleProjectilePowerPacket(ClientboundProjectilePowerPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      if (this.level.getEntity(var1.getId()) instanceof AbstractHurtingProjectile var3) {
+         var3.xPower = var1.getXPower();
+         var3.yPower = var1.getYPower();
+         var3.zPower = var1.getZPower();
       }
    }
 
@@ -2234,7 +2187,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private void readSectionList(int var1, int var2, LevelLightEngine var3, LightLayer var4, BitSet var5, BitSet var6, Iterator<byte[]> var7) {
-      for(int var8 = 0; var8 < var3.getLightSectionCount(); ++var8) {
+      for (int var8 = 0; var8 < var3.getLightSectionCount(); var8++) {
          int var9 = var3.getMinLightSection() + var8;
          boolean var10 = var5.get(var8);
          boolean var11 = var6.get(var8);
@@ -2273,7 +2226,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    @Nullable
    public PlayerInfo getPlayerInfo(String var1) {
-      for(PlayerInfo var3 : this.playerInfoMap.values()) {
+      for (PlayerInfo var3 : this.playerInfoMap.values()) {
          if (var3.getProfile().getName().equals(var1)) {
             return var3;
          }
@@ -2337,20 +2290,24 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    public void sendCommand(String var1) {
-      Instant var2 = Instant.now();
-      long var3 = Crypt.SaltSupplier.getLong();
-      LastSeenMessagesTracker.Update var5 = this.lastSeenMessages.generateAndApplyUpdate();
-      ArgumentSignatures var6 = ArgumentSignatures.signCommand(SignableCommand.of(this.parseCommand(var1)), var5x -> {
-         SignedMessageBody var6xx = new SignedMessageBody(var5x, var2, var3, var5.lastSeen());
-         return this.signedMessageEncoder.pack(var6xx);
-      });
-      this.send(new ServerboundChatCommandPacket(var1, var2, var3, var6, var5.update()));
+      SignableCommand var2 = SignableCommand.of(this.parseCommand(var1));
+      if (var2.arguments().isEmpty()) {
+         this.send(new ServerboundChatCommandPacket(var1));
+      } else {
+         Instant var3 = Instant.now();
+         long var4 = Crypt.SaltSupplier.getLong();
+         LastSeenMessagesTracker.Update var6 = this.lastSeenMessages.generateAndApplyUpdate();
+         ArgumentSignatures var7 = ArgumentSignatures.signCommand(var2, var5 -> {
+            SignedMessageBody var6x = new SignedMessageBody(var5, var3, var4, var6.lastSeen());
+            return this.signedMessageEncoder.pack(var6x);
+         });
+         this.send(new ServerboundChatCommandSignedPacket(var1, var3, var4, var7, var6.update()));
+      }
    }
 
    public boolean sendUnsignedCommand(String var1) {
-      if (SignableCommand.of(this.parseCommand(var1)).arguments().isEmpty()) {
-         LastSeenMessagesTracker.Update var2 = this.lastSeenMessages.generateAndApplyUpdate();
-         this.send(new ServerboundChatCommandPacket(var1, Instant.now(), 0L, ArgumentSignatures.EMPTY, var2.update()));
+      if (!SignableCommand.hasSignableArguments(this.parseCommand(var1))) {
+         this.send(new ServerboundChatCommandPacket(var1));
          return true;
       } else {
          return false;

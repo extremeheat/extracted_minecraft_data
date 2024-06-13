@@ -120,7 +120,7 @@ public class DetectorRailBlock extends BaseRailBlock {
    protected void updatePowerToConnected(Level var1, BlockPos var2, BlockState var3, boolean var4) {
       RailState var5 = new RailState(var1, var2, var3);
 
-      for(BlockPos var8 : var5.getConnections()) {
+      for (BlockPos var8 : var5.getConnections()) {
          BlockState var9 = var1.getBlockState(var8);
          var1.neighborChanged(var9, var8, var9.getBlock(), var2, false);
       }
@@ -179,9 +179,9 @@ public class DetectorRailBlock extends BaseRailBlock {
 
    @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+      switch (var2) {
          case CLOCKWISE_180:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
                case ASCENDING_WEST:
@@ -200,7 +200,7 @@ public class DetectorRailBlock extends BaseRailBlock {
                   return var1.setValue(SHAPE, RailShape.SOUTH_WEST);
             }
          case COUNTERCLOCKWISE_90:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_NORTH);
                case ASCENDING_WEST:
@@ -223,7 +223,7 @@ public class DetectorRailBlock extends BaseRailBlock {
                   return var1.setValue(SHAPE, RailShape.NORTH_SOUTH);
             }
          case CLOCKWISE_90:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
                case ASCENDING_WEST:
@@ -253,9 +253,9 @@ public class DetectorRailBlock extends BaseRailBlock {
    @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
       RailShape var3 = var1.getValue(SHAPE);
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
-            switch(var3) {
+            switch (var3) {
                case ASCENDING_NORTH:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
                case ASCENDING_SOUTH:
@@ -272,7 +272,7 @@ public class DetectorRailBlock extends BaseRailBlock {
                   return super.mirror(var1, var2);
             }
          case FRONT_BACK:
-            switch(var3) {
+            switch (var3) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
                case ASCENDING_WEST:

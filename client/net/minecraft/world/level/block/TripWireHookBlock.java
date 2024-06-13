@@ -55,7 +55,7 @@ public class TripWireHookBlock extends Block {
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((Direction)var1.getValue(FACING)) {
+      switch ((Direction)var1.getValue(FACING)) {
          case EAST:
          default:
             return EAST_AABB;
@@ -91,7 +91,7 @@ public class TripWireHookBlock extends Block {
       BlockPos var4 = var1.getClickedPos();
       Direction[] var5 = var1.getNearestLookingDirections();
 
-      for(Direction var9 : var5) {
+      for (Direction var9 : var5) {
          if (var9.getAxis().isHorizontal()) {
             Direction var10 = var9.getOpposite();
             var2 = var2.setValue(FACING, var10);
@@ -121,7 +121,7 @@ public class TripWireHookBlock extends Block {
          int var14 = 0;
          BlockState[] var15 = new BlockState[42];
 
-         for(int var16 = 1; var16 < 42; ++var16) {
+         for (int var16 = 1; var16 < 42; var16++) {
             BlockPos var17 = var1.relative(var8, var16);
             BlockState var18 = var0.getBlockState(var17);
             if (var18.is(Blocks.TRIPWIRE_HOOK)) {
@@ -170,7 +170,7 @@ public class TripWireHookBlock extends Block {
          }
 
          if (var9 != var12) {
-            for(int var25 = 1; var25 < var14; ++var25) {
+            for (int var25 = 1; var25 < var14; var25++) {
                BlockPos var27 = var1.relative(var8, var25);
                BlockState var28 = var15[var25];
                if (var28 != null) {

@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -64,6 +63,7 @@ public class PopupScreen extends Screen {
       this.layout.addChild(new MultiLineTextWidget(this.message, this.font).setMaxWidth(this.contentWidth).setCentered(true));
       this.layout.addChild(this.buildButtonRow());
       this.layout.visitWidgets(var1 -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1);
       });
       this.repositionElements();
    }
@@ -74,7 +74,7 @@ public class PopupScreen extends Screen {
       LinearLayout var3 = LinearLayout.horizontal();
       var3.spacing(6);
 
-      for(PopupScreen.ButtonOption var5 : this.buttons) {
+      for (PopupScreen.ButtonOption var5 : this.buttons) {
          var3.addChild(Button.builder(var5.message(), var2x -> var5.action().accept(this)).width(var2).build());
       }
 
@@ -118,7 +118,7 @@ public class PopupScreen extends Screen {
       private int width = 250;
       @Nullable
       private ResourceLocation image;
-      private final List<PopupScreen.ButtonOption> buttons = new ArrayList();
+      private final List<PopupScreen.ButtonOption> buttons = new ArrayList<>();
       @Nullable
       private Runnable onClose = null;
 
@@ -162,14 +162,11 @@ public class PopupScreen extends Screen {
       }
    }
 
-   static record ButtonOption(Component a, Consumer<PopupScreen> b) {
-      private final Component message;
-      private final Consumer<PopupScreen> action;
-
-      ButtonOption(Component var1, Consumer<PopupScreen> var2) {
+   static record ButtonOption(Component message, Consumer<PopupScreen> action) {
+      ButtonOption(Component message, Consumer<PopupScreen> action) {
          super();
-         this.message = var1;
-         this.action = var2;
+         this.message = message;
+         this.action = action;
       }
    }
 }

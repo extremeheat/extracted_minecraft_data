@@ -121,7 +121,7 @@ public class EditBox extends AbstractWidget implements Renderable {
          int var6 = var5.length();
          if (var4 < var6) {
             if (Character.isHighSurrogate(var5.charAt(var4 - 1))) {
-               --var4;
+               var4--;
             }
 
             var5 = var5.substring(0, var4);
@@ -197,24 +197,24 @@ public class EditBox extends AbstractWidget implements Renderable {
       boolean var5 = var1 < 0;
       int var6 = Math.abs(var1);
 
-      for(int var7 = 0; var7 < var6; ++var7) {
+      for (int var7 = 0; var7 < var6; var7++) {
          if (!var5) {
             int var8 = this.value.length();
             var4 = this.value.indexOf(32, var4);
             if (var4 == -1) {
                var4 = var8;
             } else {
-               while(var3 && var4 < var8 && this.value.charAt(var4) == ' ') {
-                  ++var4;
+               while (var3 && var4 < var8 && this.value.charAt(var4) == ' ') {
+                  var4++;
                }
             }
          } else {
-            while(var3 && var4 > 0 && this.value.charAt(var4 - 1) == ' ') {
-               --var4;
+            while (var3 && var4 > 0 && this.value.charAt(var4 - 1) == ' ') {
+               var4--;
             }
 
-            while(var4 > 0 && this.value.charAt(var4 - 1) != ' ') {
-               --var4;
+            while (var4 > 0 && this.value.charAt(var4 - 1) != ' ') {
+               var4--;
             }
          }
       }
@@ -255,7 +255,7 @@ public class EditBox extends AbstractWidget implements Renderable {
    @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.isActive() && this.isFocused()) {
-         switch(var1) {
+         switch (var1) {
             case 259:
                if (this.isEditable) {
                   this.deleteText(-1);
@@ -389,7 +389,7 @@ public class EditBox extends AbstractWidget implements Renderable {
             var15 = var6 > 0 ? var10 + this.width : var10;
          } else if (var18) {
             var15 = var12 - 1;
-            --var12;
+            var12--;
          }
 
          if (!var7.isEmpty() && var8 && var6 < var7.length()) {
@@ -509,13 +509,13 @@ public class EditBox extends AbstractWidget implements Renderable {
          String var3 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), var2);
          int var4 = var3.length() + this.displayPos;
          if (var1 == this.displayPos) {
-            this.displayPos -= this.font.plainSubstrByWidth(this.value, var2, true).length();
+            this.displayPos = this.displayPos - this.font.plainSubstrByWidth(this.value, var2, true).length();
          }
 
          if (var1 > var4) {
             this.displayPos += var1 - var4;
          } else if (var1 <= this.displayPos) {
-            this.displayPos -= this.displayPos - var1;
+            this.displayPos = this.displayPos - (this.displayPos - var1);
          }
 
          this.displayPos = Mth.clamp(this.displayPos, 0, this.value.length());

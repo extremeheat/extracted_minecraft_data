@@ -1,14 +1,12 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -16,7 +14,7 @@ import org.slf4j.Logger;
 
 public class AppendLoot implements RuleBlockEntityModifier {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Codec<AppendLoot> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<AppendLoot> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(var0x -> var0x.lootTable)).apply(var0, AppendLoot::new)
    );
    private final ResourceKey<LootTable> lootTable;

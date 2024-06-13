@@ -15,7 +15,7 @@ public interface ToFloatFunction<C> {
    static ToFloatFunction<Float> createUnlimited(final Float2FloatFunction var0) {
       return new ToFloatFunction<Float>() {
          public float apply(Float var1) {
-            return var0.apply(var1);
+            return (Float)var0.apply(var1);
          }
 
          @Override
