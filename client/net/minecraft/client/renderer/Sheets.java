@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
+import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
@@ -59,10 +59,11 @@ public class Sheets {
    public static final Material SHIELD_BASE = new Material(SHIELD_SHEET, new ResourceLocation("entity/shield/base"));
    private static final Map<ResourceLocation, Material> BANNER_MATERIALS = new HashMap<>();
    private static final Map<ResourceLocation, Material> SHIELD_MATERIALS = new HashMap<>();
-   public static final Map<ResourceKey<String>, Material> DECORATED_POT_MATERIALS = BuiltInRegistries.DECORATED_POT_PATTERNS
-      .registryKeySet()
-      .stream()
-      .collect(Collectors.toMap(Function.identity(), Sheets::createDecoratedPotMaterial));
+   public static final Map<ResourceKey<DecoratedPotPattern>, Material> DECORATED_POT_MATERIALS = BuiltInRegistries.DECORATED_POT_PATTERN
+      .holders()
+      .collect(Collectors.toMap(Holder.Reference::key, var0 -> createDecoratedPotMaterial(var0.value().assetId())));
+   public static final Material DECORATED_POT_BASE = createDecoratedPotMaterial(new ResourceLocation("decorated_pot_base"));
+   public static final Material DECORATED_POT_SIDE = createDecoratedPotMaterial(new ResourceLocation("decorated_pot_side"));
    public static final Material[] BED_TEXTURES = Arrays.stream(DyeColor.values())
       .sorted(Comparator.comparingInt(DyeColor::getId))
       .map(var0 -> new Material(BED_SHEET, new ResourceLocation("entity/bed/" + var0.getName())))
@@ -164,12 +165,12 @@ public class Sheets {
       return new Material(CHEST_SHEET, new ResourceLocation("entity/chest/" + var0));
    }
 
-   private static Material createDecoratedPotMaterial(ResourceKey<String> var0) {
-      return new Material(DECORATED_POT_SHEET, DecoratedPotPatterns.location((ResourceKey<String>)var0));
+   private static Material createDecoratedPotMaterial(ResourceLocation var0) {
+      return new Material(DECORATED_POT_SHEET, var0.withPrefix("entity/decorated_pot/"));
    }
 
    @Nullable
-   public static Material getDecoratedPotMaterial(@Nullable ResourceKey<String> var0) {
+   public static Material getDecoratedPotMaterial(@Nullable ResourceKey<DecoratedPotPattern> var0) {
       return var0 == null ? null : DECORATED_POT_MATERIALS.get(var0);
    }
 

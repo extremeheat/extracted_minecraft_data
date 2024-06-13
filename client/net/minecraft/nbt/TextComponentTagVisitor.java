@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.slf4j.Logger;
@@ -20,14 +19,13 @@ public class TextComponentTagVisitor implements TagVisitor {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int INLINE_LIST_THRESHOLD = 8;
    private static final int MAX_DEPTH = 64;
+   private static final int MAX_LENGTH = 128;
    private static final ByteCollection INLINE_ELEMENT_TYPES = new ByteOpenHashSet(Arrays.asList((byte)1, (byte)2, (byte)3, (byte)4, (byte)5, (byte)6));
    private static final ChatFormatting SYNTAX_HIGHLIGHTING_KEY = ChatFormatting.AQUA;
    private static final ChatFormatting SYNTAX_HIGHLIGHTING_STRING = ChatFormatting.GREEN;
    private static final ChatFormatting SYNTAX_HIGHLIGHTING_NUMBER = ChatFormatting.GOLD;
    private static final ChatFormatting SYNTAX_HIGHLIGHTING_NUMBER_TYPE = ChatFormatting.RED;
    private static final Pattern SIMPLE_VALUE = Pattern.compile("[A-Za-z0-9._+-]+");
-   private static final String NAME_VALUE_SEPARATOR = String.valueOf(':');
-   private static final String ELEMENT_SEPARATOR = String.valueOf(',');
    private static final String LIST_OPEN = "[";
    private static final String LIST_CLOSE = "]";
    private static final String LIST_TYPE_SEPARATOR = ";";
@@ -35,21 +33,26 @@ public class TextComponentTagVisitor implements TagVisitor {
    private static final String STRUCT_OPEN = "{";
    private static final String STRUCT_CLOSE = "}";
    private static final String NEWLINE = "\n";
-   private static final Component TOO_DEEP = Component.literal("<...>").withStyle(ChatFormatting.GRAY);
+   private static final String NAME_VALUE_SEPARATOR = ": ";
+   private static final String ELEMENT_SEPARATOR = String.valueOf(',');
+   private static final String WRAPPED_ELEMENT_SEPARATOR = ELEMENT_SEPARATOR + "\n";
+   private static final String SPACED_ELEMENT_SEPARATOR = ELEMENT_SEPARATOR + " ";
+   private static final Component FOLDED = Component.literal("<...>").withStyle(ChatFormatting.GRAY);
+   private static final Component BYTE_TYPE = Component.literal("b").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
+   private static final Component SHORT_TYPE = Component.literal("s").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
+   private static final Component INT_TYPE = Component.literal("I").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
+   private static final Component LONG_TYPE = Component.literal("L").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
+   private static final Component FLOAT_TYPE = Component.literal("f").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
+   private static final Component DOUBLE_TYPE = Component.literal("d").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
+   private static final Component BYTE_ARRAY_TYPE = Component.literal("B").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
    private final String indentation;
-   private final int indentDepth;
-   private final int depth;
-   private Component result = CommonComponents.EMPTY;
+   private int indentDepth;
+   private int depth;
+   private final MutableComponent result = Component.empty();
 
    public TextComponentTagVisitor(String var1) {
-      this(var1, 0, 0);
-   }
-
-   private TextComponentTagVisitor(String var1, int var2, int var3) {
       super();
       this.indentation = var1;
-      this.indentDepth = var2;
-      this.depth = var3;
    }
 
    public Component visit(Tag var1) {
@@ -62,191 +65,199 @@ public class TextComponentTagVisitor implements TagVisitor {
       String var2 = StringTag.quoteAndEscape(var1.getAsString());
       String var3 = var2.substring(0, 1);
       MutableComponent var4 = Component.literal(var2.substring(1, var2.length() - 1)).withStyle(SYNTAX_HIGHLIGHTING_STRING);
-      this.result = Component.literal(var3).append(var4).append(var3);
+      this.result.append(var3).append(var4).append(var3);
    }
 
    @Override
    public void visitByte(ByteTag var1) {
-      MutableComponent var2 = Component.literal("b").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      this.result = Component.literal(String.valueOf(var1.getAsNumber())).append(var2).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+      this.result.append(Component.literal(String.valueOf(var1.getAsNumber())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(BYTE_TYPE);
    }
 
    @Override
    public void visitShort(ShortTag var1) {
-      MutableComponent var2 = Component.literal("s").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      this.result = Component.literal(String.valueOf(var1.getAsNumber())).append(var2).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+      this.result.append(Component.literal(String.valueOf(var1.getAsNumber())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(SHORT_TYPE);
    }
 
    @Override
    public void visitInt(IntTag var1) {
-      this.result = Component.literal(String.valueOf(var1.getAsNumber())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+      this.result.append(Component.literal(String.valueOf(var1.getAsNumber())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER));
    }
 
    @Override
    public void visitLong(LongTag var1) {
-      MutableComponent var2 = Component.literal("L").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      this.result = Component.literal(String.valueOf(var1.getAsNumber())).append(var2).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+      this.result.append(Component.literal(String.valueOf(var1.getAsNumber())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(LONG_TYPE);
    }
 
    @Override
    public void visitFloat(FloatTag var1) {
-      MutableComponent var2 = Component.literal("f").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      this.result = Component.literal(String.valueOf(var1.getAsFloat())).append(var2).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+      this.result.append(Component.literal(String.valueOf(var1.getAsFloat())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(FLOAT_TYPE);
    }
 
    @Override
    public void visitDouble(DoubleTag var1) {
-      MutableComponent var2 = Component.literal("d").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      this.result = Component.literal(String.valueOf(var1.getAsDouble())).append(var2).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+      this.result.append(Component.literal(String.valueOf(var1.getAsDouble())).withStyle(SYNTAX_HIGHLIGHTING_NUMBER)).append(DOUBLE_TYPE);
    }
 
    @Override
    public void visitByteArray(ByteArrayTag var1) {
-      MutableComponent var2 = Component.literal("B").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      MutableComponent var3 = Component.literal("[").append(var2).append(";");
-      byte[] var4 = var1.getAsByteArray();
+      this.result.append("[").append(BYTE_ARRAY_TYPE).append(";");
+      byte[] var2 = var1.getAsByteArray();
 
-      for (int var5 = 0; var5 < var4.length; var5++) {
-         MutableComponent var6 = Component.literal(String.valueOf(var4[var5])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
-         var3.append(" ").append(var6).append(var2);
-         if (var5 != var4.length - 1) {
-            var3.append(ELEMENT_SEPARATOR);
+      for (int var3 = 0; var3 < var2.length && var3 < 128; var3++) {
+         MutableComponent var4 = Component.literal(String.valueOf(var2[var3])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+         this.result.append(" ").append(var4).append(BYTE_ARRAY_TYPE);
+         if (var3 != var2.length - 1) {
+            this.result.append(ELEMENT_SEPARATOR);
          }
       }
 
-      var3.append("]");
-      this.result = var3;
+      if (var2.length > 128) {
+         this.result.append(FOLDED);
+      }
+
+      this.result.append("]");
    }
 
    @Override
    public void visitIntArray(IntArrayTag var1) {
-      MutableComponent var2 = Component.literal("I").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      MutableComponent var3 = Component.literal("[").append(var2).append(";");
-      int[] var4 = var1.getAsIntArray();
+      this.result.append("[").append(INT_TYPE).append(";");
+      int[] var2 = var1.getAsIntArray();
 
-      for (int var5 = 0; var5 < var4.length; var5++) {
-         var3.append(" ").append(Component.literal(String.valueOf(var4[var5])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER));
-         if (var5 != var4.length - 1) {
-            var3.append(ELEMENT_SEPARATOR);
+      for (int var3 = 0; var3 < var2.length && var3 < 128; var3++) {
+         this.result.append(" ").append(Component.literal(String.valueOf(var2[var3])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER));
+         if (var3 != var2.length - 1) {
+            this.result.append(ELEMENT_SEPARATOR);
          }
       }
 
-      var3.append("]");
-      this.result = var3;
+      if (var2.length > 128) {
+         this.result.append(FOLDED);
+      }
+
+      this.result.append("]");
    }
 
    @Override
    public void visitLongArray(LongArrayTag var1) {
-      MutableComponent var2 = Component.literal("L").withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      MutableComponent var3 = Component.literal("[").append(var2).append(";");
-      long[] var4 = var1.getAsLongArray();
+      this.result.append("[").append(LONG_TYPE).append(";");
+      long[] var2 = var1.getAsLongArray();
 
-      for (int var5 = 0; var5 < var4.length; var5++) {
-         MutableComponent var6 = Component.literal(String.valueOf(var4[var5])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
-         var3.append(" ").append(var6).append(var2);
-         if (var5 != var4.length - 1) {
-            var3.append(ELEMENT_SEPARATOR);
+      for (int var3 = 0; var3 < var2.length && var3 < 128; var3++) {
+         MutableComponent var4 = Component.literal(String.valueOf(var2[var3])).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+         this.result.append(" ").append(var4).append(LONG_TYPE);
+         if (var3 != var2.length - 1) {
+            this.result.append(ELEMENT_SEPARATOR);
          }
       }
 
-      var3.append("]");
-      this.result = var3;
+      if (var2.length > 128) {
+         this.result.append(FOLDED);
+      }
+
+      this.result.append("]");
    }
 
    @Override
    public void visitList(ListTag var1) {
       if (var1.isEmpty()) {
-         this.result = Component.literal("[]");
+         this.result.append("[]");
       } else if (this.depth >= 64) {
-         this.result = Component.literal("[").append(TOO_DEEP).append("]");
+         this.result.append("[" + FOLDED + "]");
       } else if (INLINE_ELEMENT_TYPES.contains(var1.getElementType()) && var1.size() <= 8) {
-         String var6 = ELEMENT_SEPARATOR + " ";
-         MutableComponent var7 = Component.literal("[");
-
-         for (int var8 = 0; var8 < var1.size(); var8++) {
-            if (var8 != 0) {
-               var7.append(var6);
-            }
-
-            var7.append(this.buildSubTag(var1.get(var8), false));
-         }
-
-         var7.append("]");
-         this.result = var7;
-      } else {
-         MutableComponent var2 = Component.literal("[");
-         if (!this.indentation.isEmpty()) {
-            var2.append("\n");
-         }
-
-         String var3 = Strings.repeat(this.indentation, this.indentDepth + 1);
+         this.result.append("[");
 
          for (int var4 = 0; var4 < var1.size(); var4++) {
-            MutableComponent var5 = Component.literal(var3);
-            var5.append(this.buildSubTag(var1.get(var4), true));
-            if (var4 != var1.size() - 1) {
-               var5.append(ELEMENT_SEPARATOR).append(this.indentation.isEmpty() ? " " : "\n");
+            if (var4 != 0) {
+               this.result.append(SPACED_ELEMENT_SEPARATOR);
             }
 
-            var2.append(var5);
+            this.appendSubTag(var1.get(var4), false);
+         }
+
+         this.result.append("]");
+      } else {
+         this.result.append("[");
+         if (!this.indentation.isEmpty()) {
+            this.result.append("\n");
+         }
+
+         Object var2 = Strings.repeat(this.indentation, this.indentDepth + 1);
+
+         for (int var3 = 0; var3 < var1.size() && var3 < 128; var3++) {
+            this.result.append((String)var2);
+            this.appendSubTag(var1.get(var3), true);
+            if (var3 != var1.size() - 1) {
+               this.result.append(this.indentation.isEmpty() ? SPACED_ELEMENT_SEPARATOR : WRAPPED_ELEMENT_SEPARATOR);
+            }
+         }
+
+         if (var1.size() > 128) {
+            this.result.append(var2 + FOLDED);
          }
 
          if (!this.indentation.isEmpty()) {
-            var2.append("\n").append(Strings.repeat(this.indentation, this.indentDepth));
+            this.result.append("\n" + Strings.repeat(this.indentation, this.indentDepth));
          }
 
-         var2.append("]");
-         this.result = var2;
+         this.result.append("]");
       }
    }
 
    @Override
    public void visitCompound(CompoundTag var1) {
       if (var1.isEmpty()) {
-         this.result = Component.literal("{}");
+         this.result.append("{}");
       } else if (this.depth >= 64) {
-         this.result = Component.literal("{").append(TOO_DEEP).append("}");
+         this.result.append("{" + FOLDED + "}");
       } else {
-         MutableComponent var2 = Component.literal("{");
-         Object var3 = var1.getAllKeys();
+         this.result.append("{");
+         Object var2 = var1.getAllKeys();
          if (LOGGER.isDebugEnabled()) {
-            ArrayList var4 = Lists.newArrayList(var1.getAllKeys());
-            Collections.sort(var4);
-            var3 = var4;
+            ArrayList var3 = Lists.newArrayList(var1.getAllKeys());
+            Collections.sort(var3);
+            var2 = var3;
          }
 
          if (!this.indentation.isEmpty()) {
-            var2.append("\n");
+            this.result.append("\n");
          }
 
-         String var8 = Strings.repeat(this.indentation, this.indentDepth + 1);
-         Iterator var5 = var3.iterator();
+         String var6 = Strings.repeat(this.indentation, this.indentDepth + 1);
+         Iterator var4 = var2.iterator();
 
-         while (var5.hasNext()) {
-            String var6 = (String)var5.next();
-            MutableComponent var7 = Component.literal(var8)
-               .append(handleEscapePretty(var6))
-               .append(NAME_VALUE_SEPARATOR)
-               .append(" ")
-               .append(this.buildSubTag(var1.get(var6), true));
-            if (var5.hasNext()) {
-               var7.append(ELEMENT_SEPARATOR).append(this.indentation.isEmpty() ? " " : "\n");
+         while (var4.hasNext()) {
+            String var5 = (String)var4.next();
+            this.result.append(var6).append(handleEscapePretty(var5)).append(": ");
+            this.appendSubTag(var1.get(var5), true);
+            if (var4.hasNext()) {
+               this.result.append(this.indentation.isEmpty() ? SPACED_ELEMENT_SEPARATOR : WRAPPED_ELEMENT_SEPARATOR);
             }
-
-            var2.append(var7);
          }
 
          if (!this.indentation.isEmpty()) {
-            var2.append("\n").append(Strings.repeat(this.indentation, this.indentDepth));
+            this.result.append("\n" + Strings.repeat(this.indentation, this.indentDepth));
          }
 
-         var2.append("}");
-         this.result = var2;
+         this.result.append("}");
       }
    }
 
-   private Component buildSubTag(Tag var1, boolean var2) {
-      return new TextComponentTagVisitor(this.indentation, var2 ? this.indentDepth + 1 : this.indentDepth, this.depth + 1).visit(var1);
+   private void appendSubTag(Tag var1, boolean var2) {
+      if (var2) {
+         this.indentDepth++;
+      }
+
+      this.depth++;
+
+      try {
+         var1.accept(this);
+      } finally {
+         if (var2) {
+            this.indentDepth--;
+         }
+
+         this.depth--;
+      }
    }
 
    protected static Component handleEscapePretty(String var0) {
@@ -262,6 +273,5 @@ public class TextComponentTagVisitor implements TagVisitor {
 
    @Override
    public void visitEnd(EndTag var1) {
-      this.result = CommonComponents.EMPTY;
    }
 }

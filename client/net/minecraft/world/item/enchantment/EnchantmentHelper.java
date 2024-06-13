@@ -274,18 +274,18 @@ public class EnchantmentHelper {
       RandomSource var5 = var1.getRandom();
       runIterationOnEquipment(var1, (var5x, var6, var7x) -> {
          LootContext var8 = Enchantment.damageContext(var0, var6, var1, var2);
-         var5x.value().getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach(var5xx -> {
-            if (var5xx.enchanted() == EnchantmentTarget.VICTIM && var5xx.affected() == EnchantmentTarget.VICTIM && var5xx.matches(var8)) {
-               var4.setValue(var5xx.effect().process(var7x.itemStack(), var6, var5, var4.floatValue()));
+         var5x.value().getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach(var4xx -> {
+            if (var4xx.enchanted() == EnchantmentTarget.VICTIM && var4xx.affected() == EnchantmentTarget.VICTIM && var4xx.matches(var8)) {
+               var4.setValue(var4xx.effect().process(var6, var5, var4.floatValue()));
             }
          });
       });
       if (var2.getEntity() instanceof LivingEntity var7) {
          runIterationOnEquipment(var7, (var5x, var6, var7x) -> {
             LootContext var8 = Enchantment.damageContext(var0, var6, var1, var2);
-            var5x.value().getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach(var5xx -> {
-               if (var5xx.enchanted() == EnchantmentTarget.ATTACKER && var5xx.affected() == EnchantmentTarget.VICTIM && var5xx.matches(var8)) {
-                  var4.setValue(var5xx.effect().process(var7x.itemStack(), var6, var5, var4.floatValue()));
+            var5x.value().getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach(var4xx -> {
+               if (var4xx.enchanted() == EnchantmentTarget.ATTACKER && var4xx.affected() == EnchantmentTarget.VICTIM && var4xx.matches(var8)) {
+                  var4.setValue(var4xx.effect().process(var6, var5, var4.floatValue()));
                }
             });
          });
@@ -320,16 +320,16 @@ public class EnchantmentHelper {
       return Math.max(0, var3.intValue());
    }
 
-   public static float modifyCrossbowChargingTime(ServerLevel var0, ItemStack var1, Entity var2, float var3) {
-      MutableFloat var4 = new MutableFloat(var3);
-      runIterationOnItem(var1, (var3x, var4x) -> var3x.value().modifyCrossbowChargeTime(var0, var4x, var1, var4));
-      return Math.max(0.0F, var4.floatValue());
+   public static float modifyCrossbowChargingTime(LivingEntity var0, float var1) {
+      MutableFloat var2 = new MutableFloat(var1);
+      runIterationOnEquipment(var0, (var2x, var3, var4) -> var2x.value().modifyCrossbowChargeTime(var0.getRandom(), var3, var2));
+      return Math.max(0.0F, var2.floatValue());
    }
 
-   public static float getTridentSpinAttackStrength(ServerLevel var0, ItemStack var1, LivingEntity var2) {
-      MutableFloat var3 = new MutableFloat(0.0F);
-      runIterationOnEquipment(var2, (var4, var5, var6) -> var4.value().modifyTridentSpinAttackStrength(var0, var5, var1, var2, var3));
-      return var3.floatValue();
+   public static float getTridentSpinAttackStrength(LivingEntity var0) {
+      MutableFloat var1 = new MutableFloat(0.0F);
+      runIterationOnEquipment(var0, (var2, var3, var4) -> var2.value().modifyTridentSpinAttackStrength(var0.getRandom(), var3, var1));
+      return var1.floatValue();
    }
 
    public static boolean hasTag(ItemStack var0, TagKey<Enchantment> var1) {

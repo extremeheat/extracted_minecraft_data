@@ -271,10 +271,7 @@ public class VaultBlockEntity extends BlockEntity {
                List var9 = resolveItemsToEject(var0, var3, var1, var6);
                if (!var9.isEmpty()) {
                   var6.awardStat(Stats.ITEM_USED.get(var7.getItem()));
-                  if (!var6.isCreative()) {
-                     var7.shrink(var3.keyItem().getCount());
-                  }
-
+                  var7.consume(var3.keyItem().getCount(), var6);
                   unlock(var0, var2, var1, var3, var4, var5, var9);
                   var4.addToRewardedPlayers(var6);
                   var5.updateConnectedPlayersWithinRange(var0, var1, var4, var3, var3.deactivationRange());
@@ -302,7 +299,7 @@ public class VaultBlockEntity extends BlockEntity {
       private static ItemStack getRandomDisplayItemFromLootTable(ServerLevel var0, BlockPos var1, ResourceKey<LootTable> var2) {
          LootTable var3 = var0.getServer().reloadableRegistries().getLootTable(var2);
          LootParams var4 = new LootParams.Builder(var0).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1)).create(LootContextParamSets.VAULT);
-         ObjectArrayList var5 = var3.getRandomItems(var4);
+         ObjectArrayList var5 = var3.getRandomItems(var4, var0.getRandom());
          return var5.isEmpty() ? ItemStack.EMPTY : Util.getRandom(var5, var0.getRandom());
       }
 

@@ -50,7 +50,7 @@ public record ApplyMobEffect(
          Optional var8 = this.toApply.getRandomElement(var7);
          if (var8.isPresent()) {
             int var9 = Math.round(Mth.randomBetween(var7, this.minDuration.calculate(var2), this.maxDuration.calculate(var2)) * 20.0F);
-            int var10 = Math.min(0, Math.round(Mth.randomBetween(var7, this.minAmplifier.calculate(var2), this.maxAmplifier.calculate(var2))));
+            int var10 = Math.max(0, Math.round(Mth.randomBetween(var7, this.minAmplifier.calculate(var2), this.maxAmplifier.calculate(var2))));
             var6.addEffect(new MobEffectInstance((Holder<MobEffect>)var8.get(), var9, var10));
          }
       }

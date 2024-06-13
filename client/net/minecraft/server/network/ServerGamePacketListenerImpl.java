@@ -775,7 +775,7 @@ public class ServerGamePacketListenerImpl
    private void signBook(FilteredText var1, List<FilteredText> var2, int var3) {
       ItemStack var4 = this.player.getInventory().getItem(var3);
       if (var4.is(Items.WRITABLE_BOOK)) {
-         ItemStack var5 = var4.transmuteCopy(Items.WRITTEN_BOOK, 1);
+         ItemStack var5 = var4.transmuteCopy(Items.WRITTEN_BOOK);
          var5.remove(DataComponents.WRITABLE_BOOK_CONTENT);
          List var6 = var2.stream().map(var1x -> this.filterableFromOutgoing(var1x).map(Component::literal)).toList();
          var5.set(
@@ -1348,7 +1348,9 @@ public class ServerGamePacketListenerImpl
 
    private void detectRateSpam() {
       this.chatSpamTickCount += 20;
-      if (this.chatSpamTickCount > 200 && !this.server.getPlayerList().isOp(this.player.getGameProfile())) {
+      if (this.chatSpamTickCount > 200
+         && !this.server.getPlayerList().isOp(this.player.getGameProfile())
+         && !this.server.isSingleplayerOwner(this.player.getGameProfile())) {
          this.disconnect(Component.translatable("disconnect.spam"));
       }
    }

@@ -50,11 +50,11 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
          }, var1, var3);
    }
 
-   public static ChunkTaskPriorityQueueSorter.Message<Runnable> message(ChunkHolder var0, Runnable var1) {
+   public static ChunkTaskPriorityQueueSorter.Message<Runnable> message(GenerationChunkHolder var0, Runnable var1) {
       return message(var1, var0.getPos().toLong(), var0::getQueueLevel);
    }
 
-   public static <T> ChunkTaskPriorityQueueSorter.Message<T> message(ChunkHolder var0, Function<ProcessorHandle<Unit>, T> var1) {
+   public static <T> ChunkTaskPriorityQueueSorter.Message<T> message(GenerationChunkHolder var0, Function<ProcessorHandle<Unit>, T> var1) {
       return message(var1, var0.getPos().toLong(), var0::getQueueLevel);
    }
 

@@ -8,7 +8,6 @@ import java.util.function.Function;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 
@@ -91,12 +90,12 @@ public interface AllOf {
       }
 
       @Override
-      public float process(ItemStack var1, int var2, RandomSource var3, float var4) {
-         for (EnchantmentValueEffect var6 : this.effects) {
-            var4 = var6.process(var1, var2, var3, var4);
+      public float process(int var1, RandomSource var2, float var3) {
+         for (EnchantmentValueEffect var5 : this.effects) {
+            var3 = var5.process(var1, var2, var3);
          }
 
-         return var4;
+         return var3;
       }
 
       @Override

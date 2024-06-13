@@ -31,6 +31,10 @@ public class CraftingInput implements RecipeInput {
    }
 
    public static CraftingInput of(int var0, int var1, List<ItemStack> var2) {
+      return ofPositioned(var0, var1, var2).input();
+   }
+
+   public static CraftingInput.Positioned ofPositioned(int var0, int var1, List<ItemStack> var2) {
       if (var0 != 0 && var1 != 0) {
          int var3 = var0 - 1;
          int var4 = 0;
@@ -58,9 +62,9 @@ public class CraftingInput implements RecipeInput {
          int var13 = var4 - var3 + 1;
          int var14 = var6 - var5 + 1;
          if (var13 <= 0 || var14 <= 0) {
-            return EMPTY;
+            return CraftingInput.Positioned.EMPTY;
          } else if (var13 == var0 && var14 == var1) {
-            return new CraftingInput(var0, var1, var2);
+            return new CraftingInput.Positioned(new CraftingInput(var0, var1, var2), var3, var5);
          } else {
             ArrayList var15 = new ArrayList(var13 * var14);
 
@@ -71,10 +75,10 @@ public class CraftingInput implements RecipeInput {
                }
             }
 
-            return new CraftingInput(var13, var14, var15);
+            return new CraftingInput.Positioned(new CraftingInput(var13, var14, var15), var3, var5);
          }
       } else {
-         return EMPTY;
+         return CraftingInput.Positioned.EMPTY;
       }
    }
 
@@ -136,5 +140,16 @@ public class CraftingInput implements RecipeInput {
       int var1 = ItemStack.hashStackList(this.items);
       var1 = 31 * var1 + this.width;
       return 31 * var1 + this.height;
+   }
+
+   public static record Positioned(CraftingInput input, int left, int top) {
+      public static final CraftingInput.Positioned EMPTY = new CraftingInput.Positioned(CraftingInput.EMPTY, 0, 0);
+
+      public Positioned(CraftingInput input, int left, int top) {
+         super();
+         this.input = input;
+         this.left = left;
+         this.top = top;
+      }
    }
 }

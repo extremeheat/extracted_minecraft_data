@@ -143,6 +143,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    public void shoot(double var1, double var3, double var5, float var7, float var8) {
       Vec3 var9 = this.getMovementToShoot(var1, var3, var5, var7, var8);
       this.setDeltaMovement(var9);
+      this.hasImpulse = true;
       double var10 = var9.horizontalDistance();
       this.setYRot((float)(Mth.atan2(var9.x, var9.z) * 57.2957763671875));
       this.setXRot((float)(Mth.atan2(var9.y, var10) * 57.2957763671875));

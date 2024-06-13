@@ -75,31 +75,27 @@ public abstract class AbstractArrow extends Projectile {
       super(var1, var2);
    }
 
-   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, Level var2, ItemStack var3, @Nullable ItemStack var4) {
-      this(var1, var2);
-      this.pickupItemStack = var3.copy();
-      this.setCustomName(var3.get(DataComponents.CUSTOM_NAME));
-      Unit var5 = var3.remove(DataComponents.INTANGIBLE_PROJECTILE);
-      if (var5 != null) {
-         this.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-      }
-
-      if (var4 != null && var2 instanceof ServerLevel var6) {
-         this.firedFromWeapon = var4.copy();
-         int var7 = EnchantmentHelper.getPiercingCount(var6, var4, this.pickupItemStack);
-         if (var7 > 0) {
-            this.setPierceLevel((byte)var7);
-         }
-
-         EnchantmentHelper.onProjectileSpawned(var6, var4, this, () -> this.firedFromWeapon = null);
-      }
-   }
-
    protected AbstractArrow(
       EntityType<? extends AbstractArrow> var1, double var2, double var4, double var6, Level var8, ItemStack var9, @Nullable ItemStack var10
    ) {
-      this(var1, var8, var9, var10);
+      this(var1, var8);
+      this.pickupItemStack = var9.copy();
+      this.setCustomName(var9.get(DataComponents.CUSTOM_NAME));
+      Unit var11 = var9.remove(DataComponents.INTANGIBLE_PROJECTILE);
+      if (var11 != null) {
+         this.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+      }
+
       this.setPos(var2, var4, var6);
+      if (var10 != null && var8 instanceof ServerLevel var12) {
+         this.firedFromWeapon = var10.copy();
+         int var13 = EnchantmentHelper.getPiercingCount(var12, var10, this.pickupItemStack);
+         if (var13 > 0) {
+            this.setPierceLevel((byte)var13);
+         }
+
+         EnchantmentHelper.onProjectileSpawned(var12, var10, this, () -> this.firedFromWeapon = null);
+      }
    }
 
    protected AbstractArrow(EntityType<? extends AbstractArrow> var1, LivingEntity var2, Level var3, ItemStack var4, @Nullable ItemStack var5) {
@@ -455,7 +451,6 @@ public abstract class AbstractArrow extends Projectile {
       this.setCritArrow(false);
       this.setPierceLevel((byte)0);
       this.setSoundEvent(SoundEvents.ARROW_HIT);
-      this.firedFromWeapon = null;
       this.resetPiercedEntities();
    }
 

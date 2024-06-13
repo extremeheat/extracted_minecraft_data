@@ -1020,9 +1020,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    private void refreshDirtyAttributes() {
-      for (AttributeInstance var2 : this.getAttributes().getDirtyAttributes()) {
-         this.onAttributeUpdated(var2.getAttribute());
+      Set var1 = this.getAttributes().getAttributesToUpdate();
+
+      for (AttributeInstance var3 : var1) {
+         this.onAttributeUpdated(var3.getAttribute());
       }
+
+      var1.clear();
    }
 
    private void onAttributeUpdated(Holder<Attribute> var1) {
@@ -3315,24 +3319,25 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return ItemStack.EMPTY;
    }
 
-   public ItemStack eat(Level var1, ItemStack var2) {
+   public final ItemStack eat(Level var1, ItemStack var2) {
       FoodProperties var3 = var2.get(DataComponents.FOOD);
-      if (var3 != null) {
-         var1.playSound(
-            null,
-            this.getX(),
-            this.getY(),
-            this.getZ(),
-            this.getEatingSound(var2),
-            SoundSource.NEUTRAL,
-            1.0F,
-            1.0F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.4F
-         );
-         this.addEatEffect(var3);
-         var2.consume(1, this);
-         this.gameEvent(GameEvent.EAT);
-      }
+      return var3 != null ? this.eat(var1, var2, var3) : var2;
+   }
 
+   public ItemStack eat(Level var1, ItemStack var2, FoodProperties var3) {
+      var1.playSound(
+         null,
+         this.getX(),
+         this.getY(),
+         this.getZ(),
+         this.getEatingSound(var2),
+         SoundSource.NEUTRAL,
+         1.0F,
+         1.0F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.4F
+      );
+      this.addEatEffect(var3);
+      var2.consume(1, this);
+      this.gameEvent(GameEvent.EAT);
       return var2;
    }
 

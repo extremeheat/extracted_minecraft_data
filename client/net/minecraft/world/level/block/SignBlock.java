@@ -88,10 +88,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
                   var8.executeClickCommandsIfPresent(var5, var3, var4, var14);
                   var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
                   var3.gameEvent(GameEvent.BLOCK_CHANGE, var8.getBlockPos(), GameEvent.Context.of(var5, var8.getBlockState()));
-                  if (!var5.isCreative()) {
-                     var1.shrink(1);
-                  }
-
+                  var1.consume(1, var5);
                   return ItemInteractionResult.SUCCESS;
                } else {
                   return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;

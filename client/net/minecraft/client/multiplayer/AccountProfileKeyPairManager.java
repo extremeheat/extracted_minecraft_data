@@ -135,7 +135,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
 
    private static ProfilePublicKey.Data parsePublicKey(KeyPairResponse var0) throws CryptException {
       KeyPair var1 = var0.keyPair();
-      if (!Strings.isNullOrEmpty(var1.publicKey()) && var0.publicKeySignature() != null && var0.publicKeySignature().array().length != 0) {
+      if (var1 != null && !Strings.isNullOrEmpty(var1.publicKey()) && var0.publicKeySignature() != null && var0.publicKeySignature().array().length != 0) {
          try {
             Instant var2 = Instant.parse(var0.expiresAt());
             PublicKey var3 = Crypt.stringToRsaPublicKey(var1.publicKey());

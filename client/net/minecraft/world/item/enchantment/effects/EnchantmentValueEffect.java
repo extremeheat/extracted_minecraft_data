@@ -6,7 +6,6 @@ import java.util.function.Function;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemStack;
 
 public interface EnchantmentValueEffect {
    Codec<EnchantmentValueEffect> CODEC = BuiltInRegistries.ENCHANTMENT_VALUE_EFFECT_TYPE
@@ -21,7 +20,7 @@ public interface EnchantmentValueEffect {
       return Registry.register(var0, "set", SetValue.CODEC);
    }
 
-   float process(ItemStack var1, int var2, RandomSource var3, float var4);
+   float process(int var1, RandomSource var2, float var3);
 
    MapCodec<? extends EnchantmentValueEffect> codec();
 }

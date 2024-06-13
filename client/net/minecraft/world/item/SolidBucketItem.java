@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
@@ -26,9 +25,8 @@ public class SolidBucketItem extends BlockItem implements DispensibleContainerIt
    public InteractionResult useOn(UseOnContext var1) {
       InteractionResult var2 = super.useOn(var1);
       Player var3 = var1.getPlayer();
-      if (var2.consumesAction() && var3 != null && !var3.isCreative()) {
-         InteractionHand var4 = var1.getHand();
-         var3.setItemInHand(var4, Items.BUCKET.getDefaultInstance());
+      if (var2.consumesAction() && var3 != null) {
+         var3.setItemInHand(var1.getHand(), BucketItem.getEmptySuccessItem(var1.getItemInHand(), var3));
       }
 
       return var2;

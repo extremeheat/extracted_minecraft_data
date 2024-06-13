@@ -19,6 +19,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractWindCharge extends AbstractHurtingProjectile implements ItemSupplier {
    public static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new SimpleExplosionDamageCalculator(
@@ -27,17 +28,18 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
 
    public AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2) {
       super(var1, var2);
+      this.accelerationPower = 0.0;
    }
 
    public AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2, Entity var3, double var4, double var6, double var8) {
       super(var1, var4, var6, var8, var2);
       this.setOwner(var3);
+      this.accelerationPower = 0.0;
    }
 
-   AbstractWindCharge(
-      EntityType<? extends AbstractWindCharge> var1, double var2, double var4, double var6, double var8, double var10, double var12, Level var14
-   ) {
-      super(var1, var2, var4, var6, var8, var10, var12, var14);
+   AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, double var2, double var4, double var6, Vec3 var8, Level var9) {
+      super(var1, var2, var4, var6, var8, var9);
+      this.accelerationPower = 0.0;
    }
 
    @Override

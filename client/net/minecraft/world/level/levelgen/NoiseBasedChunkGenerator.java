@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -74,10 +73,10 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    }
 
    @Override
-   public CompletableFuture<ChunkAccess> createBiomes(Executor var1, RandomState var2, Blender var3, StructureManager var4, ChunkAccess var5) {
+   public CompletableFuture<ChunkAccess> createBiomes(RandomState var1, Blender var2, StructureManager var3, ChunkAccess var4) {
       return CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName("init_biomes", () -> {
-         this.doCreateBiomes(var3, var2, var4, var5);
-         return var5;
+         this.doCreateBiomes(var2, var1, var3, var4);
+         return var4;
       }), Util.backgroundExecutor());
    }
 
@@ -264,33 +263,33 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    }
 
    @Override
-   public CompletableFuture<ChunkAccess> fillFromNoise(Executor var1, Blender var2, RandomState var3, StructureManager var4, ChunkAccess var5) {
-      NoiseSettings var6 = this.settings.value().noiseSettings().clampToHeightAccessor(var5.getHeightAccessorForGeneration());
-      int var7 = var6.minY();
-      int var8 = Mth.floorDiv(var7, var6.getCellHeight());
-      int var9 = Mth.floorDiv(var6.height(), var6.getCellHeight());
-      if (var9 <= 0) {
-         return CompletableFuture.completedFuture(var5);
-      } else {
-         int var10 = var5.getSectionIndex(var9 * var6.getCellHeight() - 1 + var7);
-         int var11 = var5.getSectionIndex(var7);
-         HashSet var12 = Sets.newHashSet();
+   public CompletableFuture<ChunkAccess> fillFromNoise(Blender var1, RandomState var2, StructureManager var3, ChunkAccess var4) {
+      NoiseSettings var5 = this.settings.value().noiseSettings().clampToHeightAccessor(var4.getHeightAccessorForGeneration());
+      int var6 = var5.minY();
+      int var7 = Mth.floorDiv(var6, var5.getCellHeight());
+      int var8 = Mth.floorDiv(var5.height(), var5.getCellHeight());
+      return var8 <= 0 ? CompletableFuture.completedFuture(var4) : CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName("wgen_fill_noise", () -> {
+         int var9 = var4.getSectionIndex(var8 * var5.getCellHeight() - 1 + var6);
+         int var10 = var4.getSectionIndex(var6);
+         HashSet var11 = Sets.newHashSet();
 
-         for (int var13 = var10; var13 >= var11; var13--) {
-            LevelChunkSection var14 = var5.getSection(var13);
-            var14.acquire();
-            var12.add(var14);
+         for (int var12 = var9; var12 >= var10; var12--) {
+            LevelChunkSection var13 = var4.getSection(var12);
+            var13.acquire();
+            var11.add(var13);
          }
 
-         return CompletableFuture.supplyAsync(
-               Util.wrapThreadWithTaskName("wgen_fill_noise", () -> this.doFill(var2, var4, var3, var5, var8, var9)), Util.backgroundExecutor()
-            )
-            .whenCompleteAsync((var1x, var2x) -> {
-               for (LevelChunkSection var4x : var12) {
-                  var4x.release();
-               }
-            }, var1);
-      }
+         ChunkAccess var20;
+         try {
+            var20 = this.doFill(var1, var3, var2, var4, var7, var8);
+         } finally {
+            for (LevelChunkSection var17 : var11) {
+               var17.release();
+            }
+         }
+
+         return var20;
+      }), Util.backgroundExecutor());
    }
 
    private ChunkAccess doFill(Blender var1, StructureManager var2, RandomState var3, ChunkAccess var4, int var5, int var6) {

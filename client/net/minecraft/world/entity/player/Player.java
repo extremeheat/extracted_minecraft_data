@@ -80,6 +80,7 @@ import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.food.FoodData;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -1127,7 +1128,7 @@ public abstract class Player extends LivingEntity {
             float var2 = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
             ItemStack var3 = this.getAttackingItemStack();
             DamageSource var4 = this.damageSources().playerAttack(this);
-            float var5 = var2 - this.getEnchantedDamage(var1, var2, var4);
+            float var5 = this.getEnchantedDamage(var1, var2, var4) - var2;
             float var6 = this.getAttackStrengthScale(0.5F);
             var2 *= 0.2F + var6 * var6 * 0.8F;
             var5 *= var6;
@@ -2019,15 +2020,25 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
-   public ItemStack eat(Level var1, ItemStack var2) {
-      this.getFoodData().eat(var2);
+   public ItemStack eat(Level var1, ItemStack var2, FoodProperties var3) {
+      this.getFoodData().eat(var3);
       this.awardStat(Stats.ITEM_USED.get(var2.getItem()));
       var1.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, var1.random.nextFloat() * 0.1F + 0.9F);
       if (this instanceof ServerPlayer) {
          CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer)this, var2);
       }
 
-      return super.eat(var1, var2);
+      ItemStack var4 = super.eat(var1, var2, var3);
+      Optional var5 = var3.usingConvertsTo();
+      if (var5.isPresent() && !this.hasInfiniteMaterials()) {
+         if (var4.isEmpty()) {
+            return ((ItemStack)var5.get()).copy();
+         }
+
+         this.getInventory().add(((ItemStack)var5.get()).copy());
+      }
+
+      return var4;
    }
 
    @Override

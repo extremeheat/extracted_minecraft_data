@@ -168,7 +168,7 @@ public class ItemProperties {
             } else {
                return CrossbowItem.isCharged(var0x)
                   ? 0.0F
-                  : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x, var2);
+                  : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var2);
             }
          }
       );

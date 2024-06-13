@@ -31,7 +31,9 @@ public record PlaySoundEffect(Holder<SoundEvent> soundEvent, FloatProvider volum
    @Override
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
       RandomSource var6 = var4.getRandom();
-      var4.playSound(this.soundEvent.value(), this.volume.sample(var6), this.pitch.sample(var6));
+      if (!var4.isSilent()) {
+         var1.playSound(null, var5.x(), var5.y(), var5.z(), this.soundEvent, var4.getSoundSource(), this.volume.sample(var6), this.pitch.sample(var6));
+      }
    }
 
    @Override

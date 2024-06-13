@@ -3,8 +3,10 @@ package net.minecraft.client.gui.components;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.audio.ListenerTransform;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -52,53 +54,57 @@ public class SubtitleOverlay implements SoundEventListener {
          }
 
          if (!this.audibleSubtitles.isEmpty()) {
-            int var29 = 0;
             int var30 = 0;
+            int var31 = 0;
             double var9 = this.minecraft.options.notificationDisplayTime().get();
             Iterator var11 = this.audibleSubtitles.iterator();
 
             while (var11.hasNext()) {
                SubtitleOverlay.Subtitle var12 = (SubtitleOverlay.Subtitle)var11.next();
-               if ((double)var12.getTime() + 3000.0 * var9 <= (double)Util.getMillis()) {
+               var12.purgeOldInstances(3000.0 * var9);
+               if (!var12.isStillActive()) {
                   var11.remove();
                } else {
-                  var30 = Math.max(var30, this.minecraft.font.width(var12.getText()));
+                  var31 = Math.max(var31, this.minecraft.font.width(var12.getText()));
                }
             }
 
-            var30 += this.minecraft.font.width("<") + this.minecraft.font.width(" ") + this.minecraft.font.width(">") + this.minecraft.font.width(" ");
+            var31 += this.minecraft.font.width("<") + this.minecraft.font.width(" ") + this.minecraft.font.width(">") + this.minecraft.font.width(" ");
 
-            for (SubtitleOverlay.Subtitle var33 : this.audibleSubtitles) {
+            for (SubtitleOverlay.Subtitle var34 : this.audibleSubtitles) {
                short var13 = 255;
-               Component var14 = var33.getText();
-               Vec3 var15 = var33.getLocation().subtract(var4).normalize();
-               double var16 = var6.dot(var15);
-               double var18 = var5.dot(var15);
-               boolean var20 = var18 > 0.5;
-               int var21 = var30 / 2;
-               byte var22 = 9;
-               int var23 = var22 / 2;
-               float var24 = 1.0F;
-               int var25 = this.minecraft.font.width(var14);
-               int var26 = Mth.floor(Mth.clampedLerp(255.0F, 75.0F, (float)(Util.getMillis() - var33.getTime()) / (float)(3000.0 * var9)));
-               int var27 = var26 << 16 | var26 << 8 | var26;
-               var1.pose().pushPose();
-               var1.pose()
-                  .translate((float)var1.guiWidth() - (float)var21 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var29 * (var22 + 1)) * 1.0F, 0.0F);
-               var1.pose().scale(1.0F, 1.0F, 1.0F);
-               var1.fill(-var21 - 1, -var23 - 1, var21 + 1, var23 + 1, this.minecraft.options.getBackgroundColor(0.8F));
-               int var28 = var27 + -16777216;
-               if (!var20) {
-                  if (var16 > 0.0) {
-                     var1.drawString(this.minecraft.font, ">", var21 - this.minecraft.font.width(">"), -var23, var28);
-                  } else if (var16 < 0.0) {
-                     var1.drawString(this.minecraft.font, "<", -var21, -var23, var28);
+               Component var14 = var34.getText();
+               SubtitleOverlay.SoundPlayedAt var15 = var34.getClosest(var4);
+               if (var15 != null) {
+                  Vec3 var16 = var15.location.subtract(var4).normalize();
+                  double var17 = var6.dot(var16);
+                  double var19 = var5.dot(var16);
+                  boolean var21 = var19 > 0.5;
+                  int var22 = var31 / 2;
+                  byte var23 = 9;
+                  int var24 = var23 / 2;
+                  float var25 = 1.0F;
+                  int var26 = this.minecraft.font.width(var14);
+                  int var27 = Mth.floor(Mth.clampedLerp(255.0F, 75.0F, (float)(Util.getMillis() - var15.time) / (float)(3000.0 * var9)));
+                  int var28 = var27 << 16 | var27 << 8 | var27;
+                  var1.pose().pushPose();
+                  var1.pose()
+                     .translate((float)var1.guiWidth() - (float)var22 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var30 * (var23 + 1)) * 1.0F, 0.0F);
+                  var1.pose().scale(1.0F, 1.0F, 1.0F);
+                  var1.fill(-var22 - 1, -var24 - 1, var22 + 1, var24 + 1, this.minecraft.options.getBackgroundColor(0.8F));
+                  int var29 = var28 + -16777216;
+                  if (!var21) {
+                     if (var17 > 0.0) {
+                        var1.drawString(this.minecraft.font, ">", var22 - this.minecraft.font.width(">"), -var24, var29);
+                     } else if (var17 < 0.0) {
+                        var1.drawString(this.minecraft.font, "<", -var22, -var24, var29);
+                     }
                   }
-               }
 
-               var1.drawString(this.minecraft.font, var14, -var25 / 2, -var23, var28);
-               var1.pose().popPose();
-               var29++;
+                  var1.drawString(this.minecraft.font, var14, -var26 / 2, -var24, var29);
+                  var1.pose().popPose();
+                  var30++;
+               }
             }
          }
       }
@@ -121,39 +127,65 @@ public class SubtitleOverlay implements SoundEventListener {
       }
    }
 
-   public static class Subtitle {
+   static record SoundPlayedAt(Vec3 location, long time) {
+
+      SoundPlayedAt(Vec3 location, long time) {
+         super();
+         this.location = location;
+         this.time = time;
+      }
+   }
+
+   static class Subtitle {
       private final Component text;
       private final float range;
-      private long time;
-      private Vec3 location;
+      private final List<SubtitleOverlay.SoundPlayedAt> playedAt = new ArrayList<>();
 
       public Subtitle(Component var1, float var2, Vec3 var3) {
          super();
          this.text = var1;
          this.range = var2;
-         this.location = var3;
-         this.time = Util.getMillis();
+         this.playedAt.add(new SubtitleOverlay.SoundPlayedAt(var3, Util.getMillis()));
       }
 
       public Component getText() {
          return this.text;
       }
 
-      public long getTime() {
-         return this.time;
-      }
-
-      public Vec3 getLocation() {
-         return this.location;
+      @Nullable
+      public SubtitleOverlay.SoundPlayedAt getClosest(Vec3 var1) {
+         if (this.playedAt.isEmpty()) {
+            return null;
+         } else {
+            return this.playedAt.size() == 1
+               ? (SubtitleOverlay.SoundPlayedAt)this.playedAt.getFirst()
+               : this.playedAt.stream().min(Comparator.comparingDouble(var1x -> var1x.location().distanceTo(var1))).orElse(null);
+         }
       }
 
       public void refresh(Vec3 var1) {
-         this.location = var1;
-         this.time = Util.getMillis();
+         this.playedAt.removeIf(var1x -> var1.equals(var1x.location()));
+         this.playedAt.add(new SubtitleOverlay.SoundPlayedAt(var1, Util.getMillis()));
       }
 
       public boolean isAudibleFrom(Vec3 var1) {
-         return Float.isInfinite(this.range) || var1.closerThan(this.location, (double)this.range);
+         if (Float.isInfinite(this.range)) {
+            return true;
+         } else if (this.playedAt.isEmpty()) {
+            return false;
+         } else {
+            SubtitleOverlay.SoundPlayedAt var2 = this.getClosest(var1);
+            return var2 == null ? false : var1.closerThan(var2.location, (double)this.range);
+         }
+      }
+
+      public void purgeOldInstances(double var1) {
+         long var3 = Util.getMillis();
+         this.playedAt.removeIf(var4 -> (double)(var3 - var4.time()) > var1);
+      }
+
+      public boolean isStillActive() {
+         return !this.playedAt.isEmpty();
       }
    }
 }

@@ -4,9 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.EnumSet;
-import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -22,7 +20,6 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
@@ -42,7 +39,6 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    private final ModelPart rightSide;
    private final ModelPart top;
    private final ModelPart bottom;
-   private final Material baseMaterial = Objects.requireNonNull(Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.BASE));
    private static final float WOBBLE_AMPLITUDE = 0.125F;
 
    public DecoratedPotRenderer(BlockEntityRendererProvider.Context var1) {
@@ -89,16 +85,15 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       return LayerDefinition.create(var0, 16, 16);
    }
 
-   @Nullable
-   private static Material getMaterial(Optional<Item> var0) {
+   private static Material getSideMaterial(Optional<Item> var0) {
       if (var0.isPresent()) {
-         Material var1 = Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.getResourceKey((Item)var0.get()));
+         Material var1 = Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.getPatternFromItem((Item)var0.get()));
          if (var1 != null) {
             return var1;
          }
       }
 
-      return Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.getResourceKey(Items.BRICK));
+      return Sheets.DECORATED_POT_SIDE;
    }
 
    public void render(DecoratedPotBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
@@ -126,25 +121,19 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
          }
       }
 
-      VertexConsumer var14 = this.baseMaterial.buffer(var4, RenderType::entitySolid);
+      VertexConsumer var14 = Sheets.DECORATED_POT_BASE.buffer(var4, RenderType::entitySolid);
       this.neck.render(var3, var14, var5, var6);
       this.top.render(var3, var14, var5, var6);
       this.bottom.render(var3, var14, var5, var6);
       PotDecorations var16 = var1.getDecorations();
-      this.renderSide(this.frontSide, var3, var4, var5, var6, getMaterial(var16.front()));
-      this.renderSide(this.backSide, var3, var4, var5, var6, getMaterial(var16.back()));
-      this.renderSide(this.leftSide, var3, var4, var5, var6, getMaterial(var16.left()));
-      this.renderSide(this.rightSide, var3, var4, var5, var6, getMaterial(var16.right()));
+      this.renderSide(this.frontSide, var3, var4, var5, var6, getSideMaterial(var16.front()));
+      this.renderSide(this.backSide, var3, var4, var5, var6, getSideMaterial(var16.back()));
+      this.renderSide(this.leftSide, var3, var4, var5, var6, getSideMaterial(var16.left()));
+      this.renderSide(this.rightSide, var3, var4, var5, var6, getSideMaterial(var16.right()));
       var3.popPose();
    }
 
-   private void renderSide(ModelPart var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, @Nullable Material var6) {
-      if (var6 == null) {
-         var6 = getMaterial(Optional.empty());
-      }
-
-      if (var6 != null) {
-         var1.render(var2, var6.buffer(var3, RenderType::entitySolid), var4, var5);
-      }
+   private void renderSide(ModelPart var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, Material var6) {
+      var1.render(var2, var6.buffer(var3, RenderType::entitySolid), var4, var5);
    }
 }

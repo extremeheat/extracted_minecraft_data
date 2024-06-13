@@ -575,7 +575,7 @@ public class LevelChunk extends ChunkAccess {
    }
 
    @Override
-   public ChunkStatus getStatus() {
+   public ChunkStatus getPersistedStatus() {
       return ChunkStatus.FULL;
    }
 

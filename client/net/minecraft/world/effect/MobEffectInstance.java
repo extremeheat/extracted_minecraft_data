@@ -294,7 +294,12 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       } else {
          return !(var1 instanceof MobEffectInstance var2)
             ? false
-            : this.duration == var2.duration && this.amplifier == var2.amplifier && this.ambient == var2.ambient && this.effect.equals(var2.effect);
+            : this.duration == var2.duration
+               && this.amplifier == var2.amplifier
+               && this.ambient == var2.ambient
+               && this.visible == var2.visible
+               && this.showIcon == var2.showIcon
+               && this.effect.equals(var2.effect);
       }
    }
 
@@ -303,7 +308,9 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       int var1 = this.effect.hashCode();
       var1 = 31 * var1 + this.duration;
       var1 = 31 * var1 + this.amplifier;
-      return 31 * var1 + (this.ambient ? 1 : 0);
+      var1 = 31 * var1 + (this.ambient ? 1 : 0);
+      var1 = 31 * var1 + (this.visible ? 1 : 0);
+      return 31 * var1 + (this.showIcon ? 1 : 0);
    }
 
    public Tag save() {

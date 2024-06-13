@@ -192,7 +192,7 @@ public class ChunkSerializer {
          }
 
          ChunkStatus var24 = ChunkStatus.byName(var3.getString("Status"));
-         var44.setStatus(var24);
+         var44.setPersistedStatus(var24);
          if (var24.isOrAfter(ChunkStatus.INITIALIZE_LIGHT)) {
             var44.setLightEngine(var12);
          }
@@ -202,7 +202,7 @@ public class ChunkSerializer {
       CompoundTag var40 = var3.getCompound("Heightmaps");
       EnumSet var43 = EnumSet.noneOf(Heightmap.Types.class);
 
-      for (Heightmap.Types var47 : ((ChunkAccess)var36).getStatus().heightmapsAfter()) {
+      for (Heightmap.Types var47 : ((ChunkAccess)var36).getPersistedStatus().heightmapsAfter()) {
          String var25 = var47.getSerializationKey();
          if (var40.contains(var25, 12)) {
             ((ChunkAccess)var36).setHeightmap(var47, var40.getLongArray(var25));
@@ -275,7 +275,7 @@ public class ChunkSerializer {
       var3.putInt("zPos", var2.z);
       var3.putLong("LastUpdate", var0.getGameTime());
       var3.putLong("InhabitedTime", var1.getInhabitedTime());
-      var3.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(var1.getStatus()).toString());
+      var3.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(var1.getPersistedStatus()).toString());
       BlendingData var4 = var1.getBlendingData();
       if (var4 != null) {
          BlendingData.CODEC.encodeStart(NbtOps.INSTANCE, var4).resultOrPartial(LOGGER::error).ifPresent(var1x -> var3.put("blending_data", var1x));
@@ -341,7 +341,7 @@ public class ChunkSerializer {
       }
 
       var3.put("block_entities", var22);
-      if (var1.getStatus().getChunkType() == ChunkType.PROTOCHUNK) {
+      if (var1.getPersistedStatus().getChunkType() == ChunkType.PROTOCHUNK) {
          ProtoChunk var24 = (ProtoChunk)var1;
          ListTag var27 = new ListTag();
          var27.addAll(var24.getEntities());
@@ -363,7 +363,7 @@ public class ChunkSerializer {
       CompoundTag var25 = new CompoundTag();
 
       for (Entry var31 : var1.getHeightmaps()) {
-         if (var1.getStatus().heightmapsAfter().contains(var31.getKey())) {
+         if (var1.getPersistedStatus().heightmapsAfter().contains(var31.getKey())) {
             var25.put(((Heightmap.Types)var31.getKey()).getSerializationKey(), new LongArrayTag(((Heightmap)var31.getValue()).getRawData()));
          }
       }

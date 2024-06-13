@@ -21,7 +21,8 @@ import org.slf4j.Logger;
 public class AttributeMap {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Map<Holder<Attribute>, AttributeInstance> attributes = new Object2ObjectOpenHashMap();
-   private final Set<AttributeInstance> dirtyAttributes = new ObjectOpenHashSet();
+   private final Set<AttributeInstance> attributesToSync = new ObjectOpenHashSet();
+   private final Set<AttributeInstance> attributesToUpdate = new ObjectOpenHashSet();
    private final AttributeSupplier supplier;
 
    public AttributeMap(AttributeSupplier var1) {
@@ -30,13 +31,18 @@ public class AttributeMap {
    }
 
    private void onAttributeModified(AttributeInstance var1) {
+      this.attributesToUpdate.add(var1);
       if (var1.getAttribute().value().isClientSyncable()) {
-         this.dirtyAttributes.add(var1);
+         this.attributesToSync.add(var1);
       }
    }
 
-   public Set<AttributeInstance> getDirtyAttributes() {
-      return this.dirtyAttributes;
+   public Set<AttributeInstance> getAttributesToSync() {
+      return this.attributesToSync;
+   }
+
+   public Set<AttributeInstance> getAttributesToUpdate() {
+      return this.attributesToUpdate;
    }
 
    public Collection<AttributeInstance> getSyncableAttributes() {

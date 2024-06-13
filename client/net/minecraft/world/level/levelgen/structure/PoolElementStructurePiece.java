@@ -50,8 +50,7 @@ public class PoolElementStructurePiece extends StructurePiece {
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.element = (StructurePoolElement)StructurePoolElement.CODEC
          .parse(var3, var2.getCompound("pool_element"))
-         .resultOrPartial(LOGGER::error)
-         .orElseThrow(() -> new IllegalStateException("Invalid pool element found"));
+         .getPartialOrThrow(var0 -> new IllegalStateException("Invalid pool element found: " + var0));
       this.rotation = Rotation.valueOf(var2.getString("rotation"));
       this.boundingBox = this.element.getBoundingBox(this.structureTemplateManager, this.position, this.rotation);
       ListTag var4 = var2.getList("junctions", 10);

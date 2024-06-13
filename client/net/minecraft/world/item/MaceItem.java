@@ -135,6 +135,9 @@ public class MaceItem extends Item {
          Vec3 var6 = var3.normalize().scale(var4);
          if (var4 > 0.0) {
             var2x.push(var6.x, 0.699999988079071, var6.z);
+            if (var2x instanceof ServerPlayer var7) {
+               var7.connection.send(new ClientboundSetEntityMotionPacket(var7));
+            }
          }
       });
    }

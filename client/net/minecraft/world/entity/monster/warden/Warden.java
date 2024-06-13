@@ -511,7 +511,7 @@ public class Warden extends Monster implements VibrationSystem {
          this.increaseAngerAt(var4, AngerLevel.ANGRY.getMinimumAnger() + 20, false);
          if (this.brain.getMemory(MemoryModuleType.ATTACK_TARGET).isEmpty()
             && var4 instanceof LivingEntity var5
-            && (!var1.isIndirect() || this.closerThan(var5, 5.0))) {
+            && (var1.isDirect() || this.closerThan(var5, 5.0))) {
             this.setAttackTarget(var5);
          }
       }

@@ -31,6 +31,6 @@ public class SetItemFunction extends LootItemConditionalFunction {
 
    @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
-      return var1.transmuteCopy(this.item.value(), var1.getCount());
+      return var1.transmuteCopy(this.item.value());
    }
 }

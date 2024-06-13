@@ -59,7 +59,10 @@ public class WindChargeItem extends Item implements ProjectileItem {
       double var6 = var5.triangle((double)var4.getStepX(), 0.11485000000000001);
       double var8 = var5.triangle((double)var4.getStepY(), 0.11485000000000001);
       double var10 = var5.triangle((double)var4.getStepZ(), 0.11485000000000001);
-      return new WindCharge(var1, var2.x(), var2.y(), var2.z(), var6, var8, var10);
+      Vec3 var12 = new Vec3(var6, var8, var10);
+      WindCharge var13 = new WindCharge(var1, var2.x(), var2.y(), var2.z(), var12);
+      var13.setDeltaMovement(var12);
+      return var13;
    }
 
    @Override

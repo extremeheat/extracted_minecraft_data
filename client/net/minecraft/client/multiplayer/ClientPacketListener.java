@@ -517,7 +517,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       Entity var2 = this.level.getEntity(var1.getId());
       if (var2 != null) {
-         var2.lerpMotion((double)var1.getXa() / 8000.0, (double)var1.getYa() / 8000.0, (double)var1.getZa() / 8000.0);
+         var2.lerpMotion(var1.getXa(), var1.getYa(), var1.getZa());
       }
    }
 
@@ -2183,9 +2183,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleProjectilePowerPacket(ClientboundProjectilePowerPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       if (this.level.getEntity(var1.getId()) instanceof AbstractHurtingProjectile var3) {
-         var3.xPower = var1.getXPower();
-         var3.yPower = var1.getYPower();
-         var3.zPower = var1.getZPower();
+         var3.accelerationPower = var1.getAccelerationPower();
       }
    }
 

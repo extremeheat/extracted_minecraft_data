@@ -64,7 +64,8 @@ public interface CauldronInteraction {
          return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
       } else {
          if (!var1.isClientSide) {
-            var3.setItemInHand(var4, var5.transmuteCopy(Blocks.SHULKER_BOX, 1));
+            ItemStack var7 = var5.transmuteCopy(Blocks.SHULKER_BOX, 1);
+            var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var7, false));
             var3.awardStat(Stats.CLEAN_SHULKER_BOX);
             LayeredCauldronBlock.lowerFillLevel(var0, var1, var2);
          }
@@ -80,15 +81,7 @@ public interface CauldronInteraction {
          if (!var1.isClientSide) {
             ItemStack var7 = var5.copyWithCount(1);
             var7.set(DataComponents.BANNER_PATTERNS, var6.removeLast());
-            var5.consume(1, var3);
-            if (var5.isEmpty()) {
-               var3.setItemInHand(var4, var7);
-            } else if (var3.getInventory().add(var7)) {
-               var3.inventoryMenu.sendAllDataToRemote();
-            } else {
-               var3.drop(var7, false);
-            }
-
+            var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var7, false));
             var3.awardStat(Stats.CLEAN_BANNER);
             LayeredCauldronBlock.lowerFillLevel(var0, var1, var2);
          }

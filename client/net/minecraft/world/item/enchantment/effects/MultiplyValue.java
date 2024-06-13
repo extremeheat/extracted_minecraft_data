@@ -3,7 +3,6 @@ package net.minecraft.world.item.enchantment.effects;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 
 public record MultiplyValue(LevelBasedValue factor) implements EnchantmentValueEffect {
@@ -17,8 +16,8 @@ public record MultiplyValue(LevelBasedValue factor) implements EnchantmentValueE
    }
 
    @Override
-   public float process(ItemStack var1, int var2, RandomSource var3, float var4) {
-      return var4 * this.factor.calculate(var2);
+   public float process(int var1, RandomSource var2, float var3) {
+      return var3 * this.factor.calculate(var1);
    }
 
    @Override

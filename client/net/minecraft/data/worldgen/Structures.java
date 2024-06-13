@@ -329,7 +329,8 @@ public class Structures {
             false,
             Optional.empty(),
             116,
-            List.of()
+            List.of(),
+            0
          )
       );
       var0.register(
@@ -365,7 +366,8 @@ public class Structures {
             false,
             Optional.empty(),
             116,
-            TrialChambersStructurePools.ALIAS_BINDINGS
+            TrialChambersStructurePools.ALIAS_BINDINGS,
+            10
          )
       );
    }

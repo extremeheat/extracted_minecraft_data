@@ -64,20 +64,21 @@ public final class DataComponentPatch {
          if (var2 == 0 && var3 == 0) {
             return DataComponentPatch.EMPTY;
          } else {
-            Reference2ObjectArrayMap var4 = new Reference2ObjectArrayMap(var2 + var3);
+            int var4 = var2 + var3;
+            Reference2ObjectArrayMap var5 = new Reference2ObjectArrayMap(Math.min(var4, 65536));
 
-            for (int var5 = 0; var5 < var2; var5++) {
-               DataComponentType var6 = DataComponentType.STREAM_CODEC.decode(var1);
-               Object var7 = var6.streamCodec().decode(var1);
-               var4.put(var6, Optional.of(var7));
+            for (int var6 = 0; var6 < var2; var6++) {
+               DataComponentType var7 = DataComponentType.STREAM_CODEC.decode(var1);
+               Object var8 = var7.streamCodec().decode(var1);
+               var5.put(var7, Optional.of(var8));
             }
 
-            for (int var8 = 0; var8 < var3; var8++) {
-               DataComponentType var9 = DataComponentType.STREAM_CODEC.decode(var1);
-               var4.put(var9, Optional.empty());
+            for (int var9 = 0; var9 < var3; var9++) {
+               DataComponentType var10 = DataComponentType.STREAM_CODEC.decode(var1);
+               var5.put(var10, Optional.empty());
             }
 
-            return new DataComponentPatch(var4);
+            return new DataComponentPatch(var5);
          }
       }
 

@@ -32,7 +32,13 @@ public record RunFunction(ResourceLocation function) implements EnchantmentEntit
       ServerFunctionManager var7 = var6.getFunctions();
       Optional var8 = var7.get(this.function);
       if (var8.isPresent()) {
-         CommandSourceStack var9 = var6.createCommandSourceStack().withPermission(2).withSuppressedOutput().withEntity(var4).withPosition(var5);
+         CommandSourceStack var9 = var6.createCommandSourceStack()
+            .withPermission(2)
+            .withSuppressedOutput()
+            .withEntity(var4)
+            .withLevel(var1)
+            .withPosition(var5)
+            .withRotation(var4.getRotationVector());
          var7.execute((CommandFunction<CommandSourceStack>)var8.get(), var9);
       } else {
          LOGGER.error("Enchantment run_function effect failed for non-existent function {}", this.function);

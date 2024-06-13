@@ -220,7 +220,7 @@ public interface DispenseItemBehavior {
             ServerLevel var5 = var1.level();
             if (var3.emptyContents(null, var5, var4, null)) {
                var3.checkExtraContent(null, var5, var2, var4);
-               return new ItemStack(Items.BUCKET);
+               return this.consumeWithRemainder(var1, var2, new ItemStack(Items.BUCKET));
             } else {
                return this.defaultDispenseItemBehavior.dispense(var1, var2);
             }
@@ -236,8 +236,6 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, var9);
       DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, var9);
       DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
-         private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             ServerLevel var3 = var1.level();
@@ -250,16 +248,7 @@ public interface DispenseItemBehavior {
                } else {
                   var3.gameEvent(null, GameEvent.FLUID_PICKUP, var4);
                   Item var7 = var9.getItem();
-                  var2.shrink(1);
-                  if (var2.isEmpty()) {
-                     return new ItemStack(var7);
-                  } else {
-                     if (var1.blockEntity().addItem(new ItemStack(var7)) < 0) {
-                        this.defaultDispenseItemBehavior.dispense(var1, new ItemStack(var7));
-                     }
-
-                     return var2;
-                  }
+                  return this.consumeWithRemainder(var1, var2, new ItemStack(var7));
                }
             } else {
                return super.execute(var1, var2);
@@ -395,20 +384,9 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(
          Items.GLASS_BOTTLE.asItem(),
          new OptionalDispenseItemBehavior() {
-            private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-
             private ItemStack takeLiquid(BlockSource var1, ItemStack var2, ItemStack var3) {
-               var2.shrink(1);
-               if (var2.isEmpty()) {
-                  var1.level().gameEvent(null, GameEvent.FLUID_PICKUP, var1.pos());
-                  return var3.copy();
-               } else {
-                  if (var1.blockEntity().addItem(var3.copy()) < 0) {
-                     this.defaultDispenseItemBehavior.dispense(var1, var3.copy());
-                  }
-
-                  return var2;
-               }
+               var1.level().gameEvent(null, GameEvent.FLUID_PICKUP, var1.pos());
+               return this.consumeWithRemainder(var1, var2, var3);
             }
 
             @Override
@@ -533,7 +511,7 @@ public interface DispenseItemBehavior {
                      var4.playSound(null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
                      var4.gameEvent(null, GameEvent.FLUID_PLACE, var5);
                      var4.setBlockAndUpdate(var6, Blocks.MUD.defaultBlockState());
-                     return new ItemStack(Items.GLASS_BOTTLE);
+                     return this.consumeWithRemainder(var1, var2, new ItemStack(Items.GLASS_BOTTLE));
                   }
                }
             }

@@ -11,6 +11,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class LargeFireball extends Fireball {
    private int explosionPower = 1;
@@ -19,9 +20,9 @@ public class LargeFireball extends Fireball {
       super(var1, var2);
    }
 
-   public LargeFireball(Level var1, LivingEntity var2, double var3, double var5, double var7, int var9) {
-      super(EntityType.FIREBALL, var2, var3, var5, var7, var1);
-      this.explosionPower = var9;
+   public LargeFireball(Level var1, LivingEntity var2, Vec3 var3, int var4) {
+      super(EntityType.FIREBALL, var2, var3, var1);
+      this.explosionPower = var4;
    }
 
    @Override

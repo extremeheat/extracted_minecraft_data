@@ -32,6 +32,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -195,7 +196,7 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
 
       for (ConditionalEffect var9 : this.getEffects(EnchantmentEffectComponents.DAMAGE_PROTECTION)) {
          if (var9.matches(var7)) {
-            var6.setValue(((EnchantmentValueEffect)var9.effect()).process(var3, var2, var4.getRandom(), var6.floatValue()));
+            var6.setValue(((EnchantmentValueEffect)var9.effect()).process(var2, var4.getRandom(), var6.floatValue()));
          }
       }
    }
@@ -228,8 +229,8 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
       this.modifyEntityFilteredValue(EnchantmentEffectComponents.TRIDENT_RETURN_ACCELERATION, var1, var2, var3, var4, var5);
    }
 
-   public void modifyTridentSpinAttackStrength(ServerLevel var1, int var2, ItemStack var3, Entity var4, MutableFloat var5) {
-      this.modifyEntityFilteredValue(EnchantmentEffectComponents.TRIDENT_SPIN_ATTACK_STRENGTH, var1, var2, var3, var4, var5);
+   public void modifyTridentSpinAttackStrength(RandomSource var1, int var2, MutableFloat var3) {
+      this.modifyUnfilteredValue(EnchantmentEffectComponents.TRIDENT_SPIN_ATTACK_STRENGTH, var1, var2, var3);
    }
 
    public void modifyFishingTimeReduction(ServerLevel var1, int var2, ItemStack var3, Entity var4, MutableFloat var5) {
@@ -287,8 +288,15 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
       this.modifyEntityFilteredValue(EnchantmentEffectComponents.PROJECTILE_SPREAD, var1, var2, var3, var4, var5);
    }
 
-   public void modifyCrossbowChargeTime(ServerLevel var1, int var2, ItemStack var3, MutableFloat var4) {
-      this.modifyItemFilteredCount(EnchantmentEffectComponents.CROSSBOW_CHARGE_TIME, var1, var2, var3, var4);
+   public void modifyCrossbowChargeTime(RandomSource var1, int var2, MutableFloat var3) {
+      this.modifyUnfilteredValue(EnchantmentEffectComponents.CROSSBOW_CHARGE_TIME, var1, var2, var3);
+   }
+
+   public void modifyUnfilteredValue(DataComponentType<EnchantmentValueEffect> var1, RandomSource var2, int var3, MutableFloat var4) {
+      EnchantmentValueEffect var5 = this.effects.get(var1);
+      if (var5 != null) {
+         var4.setValue(var5.process(var3, var2, var4.floatValue()));
+      }
    }
 
    public void tick(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4) {
@@ -316,7 +324,7 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
    private void modifyItemFilteredCount(
       DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> var1, ServerLevel var2, int var3, ItemStack var4, MutableFloat var5
    ) {
-      applyEffects(this.getEffects(var1), itemContext(var2, var3, var4), var4x -> var5.setValue(var4x.process(var4, var3, var2.getRandom(), var5.getValue())));
+      applyEffects(this.getEffects(var1), itemContext(var2, var3, var4), var3x -> var5.setValue(var3x.process(var3, var2.getRandom(), var5.getValue())));
    }
 
    private void modifyEntityFilteredValue(
@@ -325,7 +333,7 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
       applyEffects(
          this.getEffects(var1),
          entityContext(var2, var3, var5, var5.position()),
-         var4x -> var6.setValue(var4x.process(var4, var3, var5.getRandom(), var6.floatValue()))
+         var3x -> var6.setValue(var3x.process(var3, var5.getRandom(), var6.floatValue()))
       );
    }
 
@@ -339,7 +347,7 @@ public record Enchantment(Component description, Enchantment.EnchantmentDefiniti
       MutableFloat var7
    ) {
       applyEffects(
-         this.getEffects(var1), damageContext(var2, var3, var5, var6), var4x -> var7.setValue(var4x.process(var4, var3, var5.getRandom(), var7.floatValue()))
+         this.getEffects(var1), damageContext(var2, var3, var5, var6), var3x -> var7.setValue(var3x.process(var3, var5.getRandom(), var7.floatValue()))
       );
    }
 

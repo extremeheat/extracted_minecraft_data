@@ -106,7 +106,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
             if (!var1.isEmpty() && (var13.isEmpty() || ItemStack.isSameItemSameComponents(var13, var1) && var13.getCount() < var13.getMaxStackSize())) {
                var8.wobble(DecoratedPotBlockEntity.WobbleStyle.POSITIVE);
                var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
-               ItemStack var10 = var5.isCreative() ? var1.copyWithCount(1) : var1.split(1);
+               ItemStack var10 = var1.consumeAndReturn(1, var5);
                float var11;
                if (var8.isEmpty()) {
                   var8.setTheItem(var10);

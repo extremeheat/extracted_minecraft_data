@@ -428,14 +428,15 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       double var15 = var2 - var9;
       double var17 = var4 - var11;
       double var19 = var6 - var13;
-      WitherSkull var21 = new WitherSkull(this.level(), this, var15, var17, var19);
-      var21.setOwner(this);
+      Vec3 var21 = new Vec3(var15, var17, var19);
+      WitherSkull var22 = new WitherSkull(this.level(), this, var21.normalize());
+      var22.setOwner(this);
       if (var8) {
-         var21.setDangerous(true);
+         var22.setDangerous(true);
       }
 
-      var21.setPosRaw(var9, var11, var13);
-      this.level().addFreshEntity(var21);
+      var22.setPosRaw(var9, var11, var13);
+      this.level().addFreshEntity(var22);
    }
 
    @Override

@@ -53,14 +53,14 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          } else if (this.content == Fluids.EMPTY) {
             BlockState var13 = var1.getBlockState(var6);
             if (var13.getBlock() instanceof BucketPickup var14) {
-               ItemStack var15 = var14.pickupBlock(var2, var1, var6, var13);
-               if (!var15.isEmpty()) {
+               ItemStack var16 = var14.pickupBlock(var2, var1, var6, var13);
+               if (!var16.isEmpty()) {
                   var2.awardStat(Stats.ITEM_USED.get(this));
                   var14.getPickupSound().ifPresent(var1x -> var2.playSound(var1x, 1.0F, 1.0F));
                   var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var6);
-                  ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var15);
+                  ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var16);
                   if (!var1.isClientSide) {
-                     CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var15);
+                     CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var16);
                   }
 
                   return InteractionResultHolder.sidedSuccess(var12, var1.isClientSide());
@@ -78,7 +78,8 @@ public class BucketItem extends Item implements DispensibleContainerItem {
                }
 
                var2.awardStat(Stats.ITEM_USED.get(this));
-               return InteractionResultHolder.sidedSuccess(getEmptySuccessItem(var4, var2), var1.isClientSide());
+               ItemStack var11 = ItemUtils.createFilledResult(var4, var2, getEmptySuccessItem(var4, var2));
+               return InteractionResultHolder.sidedSuccess(var11, var1.isClientSide());
             } else {
                return InteractionResultHolder.fail(var4);
             }

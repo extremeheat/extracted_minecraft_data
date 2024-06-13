@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -63,28 +62,28 @@ public class FlatLevelSource extends ChunkGenerator {
    }
 
    @Override
-   public CompletableFuture<ChunkAccess> fillFromNoise(Executor var1, Blender var2, RandomState var3, StructureManager var4, ChunkAccess var5) {
-      List var6 = this.settings.getLayers();
-      BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
-      Heightmap var8 = var5.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
-      Heightmap var9 = var5.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
+   public CompletableFuture<ChunkAccess> fillFromNoise(Blender var1, RandomState var2, StructureManager var3, ChunkAccess var4) {
+      List var5 = this.settings.getLayers();
+      BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+      Heightmap var7 = var4.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
+      Heightmap var8 = var4.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
 
-      for (int var10 = 0; var10 < Math.min(var5.getHeight(), var6.size()); var10++) {
-         BlockState var11 = (BlockState)var6.get(var10);
-         if (var11 != null) {
-            int var12 = var5.getMinBuildHeight() + var10;
+      for (int var9 = 0; var9 < Math.min(var4.getHeight(), var5.size()); var9++) {
+         BlockState var10 = (BlockState)var5.get(var9);
+         if (var10 != null) {
+            int var11 = var4.getMinBuildHeight() + var9;
 
-            for (int var13 = 0; var13 < 16; var13++) {
-               for (int var14 = 0; var14 < 16; var14++) {
-                  var5.setBlockState(var7.set(var13, var12, var14), var11, false);
-                  var8.update(var13, var12, var14, var11);
-                  var9.update(var13, var12, var14, var11);
+            for (int var12 = 0; var12 < 16; var12++) {
+               for (int var13 = 0; var13 < 16; var13++) {
+                  var4.setBlockState(var6.set(var12, var11, var13), var10, false);
+                  var7.update(var12, var11, var13, var10);
+                  var8.update(var12, var11, var13, var10);
                }
             }
          }
       }
 
-      return CompletableFuture.completedFuture(var5);
+      return CompletableFuture.completedFuture(var4);
    }
 
    @Override

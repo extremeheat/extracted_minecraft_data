@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -17,18 +16,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public class TagManager implements PreparableReloadListener {
-   private static final Map<ResourceKey<? extends Registry<?>>, String> CUSTOM_REGISTRY_DIRECTORIES = Map.of(
-      Registries.BLOCK,
-      "tags/blocks",
-      Registries.ENTITY_TYPE,
-      "tags/entity_types",
-      Registries.FLUID,
-      "tags/fluids",
-      Registries.GAME_EVENT,
-      "tags/game_events",
-      Registries.ITEM,
-      "tags/items"
-   );
    private final RegistryAccess registryAccess;
    private List<TagManager.LoadResult<?>> results = List.of();
 
@@ -42,8 +29,7 @@ public class TagManager implements PreparableReloadListener {
    }
 
    public static String getTagDir(ResourceKey<? extends Registry<?>> var0) {
-      String var1 = CUSTOM_REGISTRY_DIRECTORIES.get(var0);
-      return var1 != null ? var1 : "tags/" + var0.location().getPath();
+      return "tags/" + var0.location().getPath();
    }
 
    @Override

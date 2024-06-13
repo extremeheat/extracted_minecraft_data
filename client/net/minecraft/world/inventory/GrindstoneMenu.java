@@ -189,7 +189,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    private ItemStack removeNonCursesFrom(ItemStack var1) {
       ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, var0 -> var0.removeIf(var0x -> !var0x.is(EnchantmentTags.CURSE)));
       if (var1.is(Items.ENCHANTED_BOOK) && var2.isEmpty()) {
-         var1 = var1.transmuteCopy(Items.BOOK, var1.getCount());
+         var1 = var1.transmuteCopy(Items.BOOK);
       }
 
       int var3 = 0;

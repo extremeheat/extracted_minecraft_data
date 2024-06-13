@@ -254,6 +254,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    protected final WorldData worldData;
    private final PotionBrewing potionBrewing;
    private volatile boolean isSaving;
+   private static final AtomicReference<RuntimeException> fatalException = new AtomicReference<>();
 
    public static <S extends MinecraftServer> S spin(Function<Thread, S> var0) {
       AtomicReference var1 = new AtomicReference();
@@ -767,6 +768,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    private boolean haveTime() {
       return this.runningTask() || Util.getNanos() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTimeNanos : this.nextTickTimeNanos);
+   }
+
+   public static boolean throwIfFatalException() {
+      RuntimeException var0 = fatalException.get();
+      if (var0 != null) {
+         throw var0;
+      } else {
+         return true;
+      }
+   }
+
+   public static void setFatalException(RuntimeException var0) {
+      fatalException.compareAndSet(null, var0);
+   }
+
+   @Override
+   public void managedBlock(BooleanSupplier var1) {
+      super.managedBlock(() -> throwIfFatalException() && var1.getAsBoolean());
    }
 
    protected void waitUntilNextTick() {
