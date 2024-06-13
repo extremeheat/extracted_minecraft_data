@@ -22,7 +22,9 @@ public class ChestedHorsesInventoryZeroIndexingFix extends DataFix {
       return TypeRewriteRule.seq(
          this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:llama"),
          new TypeRewriteRule[]{
-            this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:mule"), this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:donkey")
+            this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:trader_llama"),
+            this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:mule"),
+            this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:donkey")
          }
       );
    }
