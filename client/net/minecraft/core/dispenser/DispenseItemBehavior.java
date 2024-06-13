@@ -127,8 +127,7 @@ public interface DispenseItemBehavior {
                      LivingEntity.class, new AABB(var3), var0 -> !(var0 instanceof Saddleable var1x) ? false : !var1x.isSaddled() && var1x.isSaddleable()
                   );
                if (!var4.isEmpty()) {
-                  ((Saddleable)var4.get(0)).equipSaddle(SoundSource.BLOCKS);
-                  var2.shrink(1);
+                  ((Saddleable)var4.get(0)).equipSaddle(var2.split(1), SoundSource.BLOCKS);
                   this.setSuccess(true);
                   return var2;
                } else {

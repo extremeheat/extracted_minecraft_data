@@ -28,7 +28,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class MaceItem extends Item {
    private static final int DEFAULT_ATTACK_DAMAGE = 5;
-   private static final float DEFAULT_ATTACK_SPEED = -3.5F;
+   private static final float DEFAULT_ATTACK_SPEED = -3.4F;
    public static final float SMASH_ATTACK_FALL_THRESHOLD = 1.5F;
    private static final float SMASH_ATTACK_HEAVY_THRESHOLD = 5.0F;
    public static final float SMASH_ATTACK_KNOCKBACK_RADIUS = 3.5F;
@@ -41,7 +41,11 @@ public class MaceItem extends Item {
    public static ItemAttributeModifiers createAttributes() {
       return ItemAttributeModifiers.builder()
          .add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 5.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
-         .add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, -3.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
+         .add(
+            Attributes.ATTACK_SPEED,
+            new AttributeModifier(BASE_ATTACK_SPEED_ID, -3.4000000953674316, AttributeModifier.Operation.ADD_VALUE),
+            EquipmentSlotGroup.MAINHAND
+         )
          .build();
    }
 
@@ -63,8 +67,15 @@ public class MaceItem extends Item {
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
       if (var3 instanceof ServerPlayer var4 && canSmashAttack(var4)) {
          ServerLevel var5 = (ServerLevel)var3.level();
-         var4.currentImpulseImpactPos = var4.position();
-         var4.ignoreFallDamageFromCurrentImpulse = true;
+         if (var4.isIgnoringFallDamageFromCurrentImpulse() && var4.currentImpulseImpactPos != null) {
+            if (var4.currentImpulseImpactPos.y > var4.position().y) {
+               var4.currentImpulseImpactPos = var4.position();
+            }
+         } else {
+            var4.currentImpulseImpactPos = var4.position();
+         }
+
+         var4.setIgnoreFallDamageFromCurrentImpulse(true);
          var4.setDeltaMovement(var4.getDeltaMovement().with(Direction.Axis.Y, 0.009999999776482582));
          var4.connection.send(new ClientboundSetEntityMotionPacket(var4));
          if (var2.onGround()) {
@@ -84,6 +95,9 @@ public class MaceItem extends Item {
    @Override
    public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
       var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
+      if (canSmashAttack(var3)) {
+         var3.resetFallDistance();
+      }
    }
 
    @Override
@@ -110,7 +124,7 @@ public class MaceItem extends Item {
             }
 
             return var4.level() instanceof ServerLevel var9
-               ? var8 + EnchantmentHelper.modifyFallBasedDamage(var9, var4.getMainHandItem(), var1, var3, 0.0F) * var7
+               ? var8 + EnchantmentHelper.modifyFallBasedDamage(var9, var4.getWeaponItem(), var1, var3, 0.0F) * var7
                : var8;
          }
       } else {

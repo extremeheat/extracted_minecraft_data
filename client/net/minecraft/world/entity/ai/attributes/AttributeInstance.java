@@ -93,6 +93,12 @@ public class AttributeInstance {
       this.addModifier(var1);
    }
 
+   public void addOrReplacePermanentModifier(AttributeModifier var1) {
+      this.removeModifier(var1.id());
+      this.addModifier(var1);
+      this.permanentModifiers.put(var1.id(), var1);
+   }
+
    public void addPermanentModifier(AttributeModifier var1) {
       this.addModifier(var1);
       this.permanentModifiers.put(var1.id(), var1);
@@ -107,22 +113,13 @@ public class AttributeInstance {
       this.removeModifier(var1.id());
    }
 
-   public void removeModifier(ResourceLocation var1) {
+   public boolean removeModifier(ResourceLocation var1) {
       AttributeModifier var2 = this.modifierById.remove(var1);
-      if (var2 != null) {
-         this.getModifiers(var2.operation()).remove(var1);
-         this.permanentModifiers.remove(var1);
-         this.setDirty();
-      }
-   }
-
-   public boolean removePermanentModifier(ResourceLocation var1) {
-      AttributeModifier var2 = this.permanentModifiers.remove(var1);
       if (var2 == null) {
          return false;
       } else {
-         this.getModifiers(var2.operation()).remove(var2.id());
-         this.modifierById.remove(var1);
+         this.getModifiers(var2.operation()).remove(var1);
+         this.permanentModifiers.remove(var1);
          this.setDirty();
          return true;
       }

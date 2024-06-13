@@ -140,8 +140,8 @@ public enum TrialSpawnerState implements StringRepresentable {
                var4.nextMobSpawnsAt = 0L;
                yield ACTIVE;
             } else if (var4.isCooldownFinished(var3)) {
-               var4.cooldownEndsAt = 0L;
                var2.removeOminous(var3, var1);
+               var4.reset();
                yield WAITING_FOR_PLAYERS;
             } else {
                yield this;

@@ -8,15 +8,14 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.network.ClientboundPacketListener;
 import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.ProtocolInfo;
 import net.minecraft.network.ServerboundPacketListener;
 import net.minecraft.network.codec.StreamCodec;
 
 public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
-   private final ConnectionProtocol protocol;
-   private final PacketFlow flow;
+   final ConnectionProtocol protocol;
+   final PacketFlow flow;
    private final List<ProtocolInfoBuilder.CodecEntry<T, ?, B>> codecs = new ArrayList<>();
    @Nullable
    private BundlerInfo bundlerInfo;
@@ -42,7 +41,7 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
       return this;
    }
 
-   private StreamCodec<ByteBuf, Packet<? super T>> buildPacketCodec(Function<ByteBuf, B> var1, List<ProtocolInfoBuilder.CodecEntry<T, ?, B>> var2) {
+   StreamCodec<ByteBuf, Packet<? super T>> buildPacketCodec(Function<ByteBuf, B> var1, List<ProtocolInfoBuilder.CodecEntry<T, ?, B>> var2) {
       ProtocolCodecBuilder var3 = new ProtocolCodecBuilder(this.flow);
 
       for (ProtocolInfoBuilder.CodecEntry var5 : var2) {
@@ -57,32 +56,37 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
    }
 
    public ProtocolInfo.Unbound<T, B> buildUnbound() {
-      List var1 = List.copyOf(this.codecs);
-      BundlerInfo var2 = this.bundlerInfo;
-      return var3 -> new ProtocolInfoBuilder.Implementation<>(this.protocol, this.flow, this.buildPacketCodec(var3, var1), var2);
+      final List var1 = List.copyOf(this.codecs);
+      final BundlerInfo var2 = this.bundlerInfo;
+      return new ProtocolInfo.Unbound<T, B>() {
+         @Override
+         public ProtocolInfo<T> bind(Function<ByteBuf, B> var1x) {
+            return new ProtocolInfoBuilder.Implementation<>(
+               ProtocolInfoBuilder.this.protocol, ProtocolInfoBuilder.this.flow, ProtocolInfoBuilder.this.buildPacketCodec(var1x, var1), var2
+            );
+         }
+
+         @Override
+         public ConnectionProtocol id() {
+            return ProtocolInfoBuilder.this.protocol;
+         }
+
+         @Override
+         public PacketFlow flow() {
+            return ProtocolInfoBuilder.this.flow;
+         }
+
+         @Override
+         public void listPackets(ProtocolInfo.Unbound.PacketVisitor var1x) {
+            for (int var2x = 0; var2x < var1.size(); var2x++) {
+               ProtocolInfoBuilder.CodecEntry var3 = (ProtocolInfoBuilder.CodecEntry)var1.get(var2x);
+               var1x.accept(var3.type, var2x);
+            }
+         }
+      };
    }
 
-   private static <L extends PacketListener> ProtocolInfo<L> protocol(
-      ConnectionProtocol var0, PacketFlow var1, Consumer<ProtocolInfoBuilder<L, FriendlyByteBuf>> var2
-   ) {
-      ProtocolInfoBuilder var3 = new ProtocolInfoBuilder(var0, var1);
-      var2.accept(var3);
-      return var3.build(FriendlyByteBuf::new);
-   }
-
-   public static <T extends ServerboundPacketListener> ProtocolInfo<T> serverboundProtocol(
-      ConnectionProtocol var0, Consumer<ProtocolInfoBuilder<T, FriendlyByteBuf>> var1
-   ) {
-      return protocol(var0, PacketFlow.SERVERBOUND, var1);
-   }
-
-   public static <T extends ClientboundPacketListener> ProtocolInfo<T> clientboundProtocol(
-      ConnectionProtocol var0, Consumer<ProtocolInfoBuilder<T, FriendlyByteBuf>> var1
-   ) {
-      return protocol(var0, PacketFlow.CLIENTBOUND, var1);
-   }
-
-   private static <L extends PacketListener, B extends ByteBuf> ProtocolInfo.Unbound<L, B> protocolUnbound(
+   private static <L extends PacketListener, B extends ByteBuf> ProtocolInfo.Unbound<L, B> protocol(
       ConnectionProtocol var0, PacketFlow var1, Consumer<ProtocolInfoBuilder<L, B>> var2
    ) {
       ProtocolInfoBuilder var3 = new ProtocolInfoBuilder(var0, var1);
@@ -90,16 +94,16 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
       return var3.buildUnbound();
    }
 
-   public static <T extends ServerboundPacketListener, B extends ByteBuf> ProtocolInfo.Unbound<T, B> serverboundProtocolUnbound(
+   public static <T extends ServerboundPacketListener, B extends ByteBuf> ProtocolInfo.Unbound<T, B> serverboundProtocol(
       ConnectionProtocol var0, Consumer<ProtocolInfoBuilder<T, B>> var1
    ) {
-      return protocolUnbound(var0, PacketFlow.SERVERBOUND, var1);
+      return protocol(var0, PacketFlow.SERVERBOUND, var1);
    }
 
-   public static <T extends ClientboundPacketListener, B extends ByteBuf> ProtocolInfo.Unbound<T, B> clientboundProtocolUnbound(
+   public static <T extends ClientboundPacketListener, B extends ByteBuf> ProtocolInfo.Unbound<T, B> clientboundProtocol(
       ConnectionProtocol var0, Consumer<ProtocolInfoBuilder<T, B>> var1
    ) {
-      return protocolUnbound(var0, PacketFlow.CLIENTBOUND, var1);
+      return protocol(var0, PacketFlow.CLIENTBOUND, var1);
    }
 
 // $VF: Couldn't be decompiled

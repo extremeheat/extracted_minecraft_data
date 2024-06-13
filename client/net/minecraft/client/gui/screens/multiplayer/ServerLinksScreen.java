@@ -80,7 +80,7 @@ public class ServerLinksScreen extends Screen {
 
       LinkListEntry(Screen var1, ServerLinks.Entry var2) {
          super();
-         this.button = Button.builder(var2.displayName(), ConfirmLinkScreen.confirmLink(var1, var2.url(), false)).width(310).build();
+         this.button = Button.builder(var2.displayName(), ConfirmLinkScreen.confirmLink(var1, var2.link(), false)).width(310).build();
       }
 
       @Override

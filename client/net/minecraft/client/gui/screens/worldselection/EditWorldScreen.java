@@ -75,8 +75,7 @@ public class EditWorldScreen extends Screen {
          var2.getIconFile().ifPresent(var0x -> FileUtils.deleteQuietly(var0x.toFile()));
          var1x.active = false;
       }).width(200).build()).active = var2.getIconFile().filter(var0 -> Files.isRegularFile(var0)).isPresent();
-      this.layout
-         .addChild(Button.builder(FOLDER_BUTTON, var1x -> Util.getPlatform().openFile(var2.getLevelPath(LevelResource.ROOT).toFile())).width(200).build());
+      this.layout.addChild(Button.builder(FOLDER_BUTTON, var1x -> Util.getPlatform().openPath(var2.getLevelPath(LevelResource.ROOT))).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_BUTTON, var2x -> {
          boolean var3x = makeBackupAndShowToast(var2);
          this.callback.accept(!var3x);
@@ -91,7 +90,7 @@ public class EditWorldScreen extends Screen {
             throw new RuntimeException(var5x);
          }
 
-         Util.getPlatform().openFile(var3x.toFile());
+         Util.getPlatform().openPath(var3x);
       }).width(200).build());
       this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, var3x -> var1.setScreen(new BackupConfirmScreen(() -> var1.setScreen(this), (var3xx, var4x) -> {
             if (var3xx) {

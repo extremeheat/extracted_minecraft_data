@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.CommonLinks;
 
 public class AddRealmPopupScreen extends RealmsScreen {
    private static final Component POPUP_TEXT = Component.translatable("mco.selectServer.popup");
@@ -62,14 +63,14 @@ public class AddRealmPopupScreen extends RealmsScreen {
       this.backgroundScreen.resize(this.minecraft, this.width, this.height);
       if (this.trialAvailable) {
          this.createTrialButton = this.addRenderableWidget(
-            Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/startjavarealmstrial"))
+            Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, CommonLinks.START_REALMS_TRIAL))
                .bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20)
                .build()
          );
       }
 
       this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/BuyJavaRealms"))
+         Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, CommonLinks.BUY_REALMS))
             .bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20)
             .build()
       );

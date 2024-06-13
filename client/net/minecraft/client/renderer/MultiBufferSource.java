@@ -1,21 +1,22 @@
 package net.minecraft.client.renderer;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SequencedMap;
 import javax.annotation.Nullable;
 
 public interface MultiBufferSource {
    static MultiBufferSource.BufferSource immediate(ByteBufferBuilder var0) {
-      return immediateWithBuffers(ImmutableMap.of(), var0);
+      return immediateWithBuffers(Object2ObjectSortedMaps.emptyMap(), var0);
    }
 
-   static MultiBufferSource.BufferSource immediateWithBuffers(Map<RenderType, ByteBufferBuilder> var0, ByteBufferBuilder var1) {
+   static MultiBufferSource.BufferSource immediateWithBuffers(SequencedMap<RenderType, ByteBufferBuilder> var0, ByteBufferBuilder var1) {
       return new MultiBufferSource.BufferSource(var1, var0);
    }
 
@@ -23,12 +24,12 @@ public interface MultiBufferSource {
 
    public static class BufferSource implements MultiBufferSource {
       protected final ByteBufferBuilder sharedBuffer;
-      protected final Map<RenderType, ByteBufferBuilder> fixedBuffers;
+      protected final SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers;
       protected final Map<RenderType, BufferBuilder> startedBuilders = new HashMap<>();
       @Nullable
       protected RenderType lastSharedType;
 
-      protected BufferSource(ByteBufferBuilder var1, Map<RenderType, ByteBufferBuilder> var2) {
+      protected BufferSource(ByteBufferBuilder var1, SequencedMap<RenderType, ByteBufferBuilder> var2) {
          super();
          this.sharedBuffer = var1;
          this.fixedBuffers = var2;
@@ -45,7 +46,7 @@ public interface MultiBufferSource {
          if (var2 != null) {
             return var2;
          } else {
-            ByteBufferBuilder var3 = this.fixedBuffers.get(var1);
+            ByteBufferBuilder var3 = (ByteBufferBuilder)this.fixedBuffers.get(var1);
             if (var3 != null) {
                var2 = new BufferBuilder(var3, var1.mode(), var1.format());
             } else {
@@ -63,16 +64,18 @@ public interface MultiBufferSource {
       }
 
       public void endLastBatch() {
-         if (this.lastSharedType != null && !this.fixedBuffers.containsKey(this.lastSharedType)) {
+         if (this.lastSharedType != null) {
             this.endBatch(this.lastSharedType);
+            this.lastSharedType = null;
          }
-
-         this.lastSharedType = null;
       }
 
       public void endBatch() {
-         this.startedBuilders.forEach(this::endBatch);
-         this.startedBuilders.clear();
+         this.endLastBatch();
+
+         for (RenderType var2 : this.fixedBuffers.keySet()) {
+            this.endBatch(var2);
+         }
       }
 
       public void endBatch(RenderType var1) {
@@ -86,7 +89,7 @@ public interface MultiBufferSource {
          MeshData var3 = var2.build();
          if (var3 != null) {
             if (var1.sortOnUpload()) {
-               ByteBufferBuilder var4 = this.fixedBuffers.getOrDefault(var1, this.sharedBuffer);
+               ByteBufferBuilder var4 = (ByteBufferBuilder)this.fixedBuffers.getOrDefault(var1, this.sharedBuffer);
                var3.sortQuads(var4, RenderSystem.getVertexSorting());
             }
 

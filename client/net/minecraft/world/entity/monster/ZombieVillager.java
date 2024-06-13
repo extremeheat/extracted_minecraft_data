@@ -28,6 +28,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.npc.Villager;
@@ -212,44 +213,36 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    private void finishConversion(ServerLevel var1) {
       Villager var2 = this.convertTo(EntityType.VILLAGER, false);
+      if (var2 != null) {
+         for (EquipmentSlot var4 : this.dropPreservedEquipment(var0 -> !EnchantmentHelper.has(var0, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE))) {
+            SlotAccess var5 = var2.getSlot(var4.getIndex() + 300);
+            var5.set(this.getItemBySlot(var4));
+         }
 
-      for (EquipmentSlot var6 : EquipmentSlot.values()) {
-         ItemStack var7 = this.getItemBySlot(var6);
-         if (!var7.isEmpty()) {
-            if (EnchantmentHelper.has(var7, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
-               var2.getSlot(var6.getIndex() + 300).set(var7);
-            } else {
-               double var8 = (double)this.getEquipmentDropChance(var6);
-               if (var8 > 1.0) {
-                  this.spawnAtLocation(var7);
-               }
+         var2.setVillagerData(this.getVillagerData());
+         if (this.gossips != null) {
+            var2.setGossips(this.gossips);
+         }
+
+         if (this.tradeOffers != null) {
+            var2.setOffers(this.tradeOffers.copy());
+         }
+
+         var2.setVillagerXp(this.villagerXp);
+         var2.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2.blockPosition()), MobSpawnType.CONVERSION, null);
+         var2.refreshBrain(var1);
+         if (this.conversionStarter != null) {
+            Player var6 = var1.getPlayerByUUID(this.conversionStarter);
+            if (var6 instanceof ServerPlayer) {
+               CriteriaTriggers.CURED_ZOMBIE_VILLAGER.trigger((ServerPlayer)var6, this, var2);
+               var1.onReputationEvent(ReputationEventType.ZOMBIE_VILLAGER_CURED, var6, var2);
             }
          }
-      }
 
-      var2.setVillagerData(this.getVillagerData());
-      if (this.gossips != null) {
-         var2.setGossips(this.gossips);
-      }
-
-      if (this.tradeOffers != null) {
-         var2.setOffers(this.tradeOffers.copy());
-      }
-
-      var2.setVillagerXp(this.villagerXp);
-      var2.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2.blockPosition()), MobSpawnType.CONVERSION, null);
-      var2.refreshBrain(var1);
-      if (this.conversionStarter != null) {
-         Player var10 = var1.getPlayerByUUID(this.conversionStarter);
-         if (var10 instanceof ServerPlayer) {
-            CriteriaTriggers.CURED_ZOMBIE_VILLAGER.trigger((ServerPlayer)var10, this, var2);
-            var1.onReputationEvent(ReputationEventType.ZOMBIE_VILLAGER_CURED, var10, var2);
+         var2.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
+         if (!this.isSilent()) {
+            var1.levelEvent(null, 1027, this.blockPosition(), 0);
          }
-      }
-
-      var2.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
-      if (!this.isSilent()) {
-         var1.levelEvent(null, 1027, this.blockPosition(), 0);
       }
    }
 

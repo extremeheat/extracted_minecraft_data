@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.sounds.SoundEvents;
@@ -26,14 +25,9 @@ public class WindChargeItem extends Item implements ProjectileItem {
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       if (!var1.isClientSide()) {
-         Vec3 var4 = var2.getEyePosition().add(var2.getForward().scale(0.800000011920929));
-         if (!var1.getBlockState(BlockPos.containing(var4)).canBeReplaced()) {
-            var4 = var2.getEyePosition().add(var2.getForward().scale(0.05000000074505806));
-         }
-
-         WindCharge var5 = new WindCharge(var2, var1, var4.x(), var4.y(), var4.z());
-         var5.shootFromRotation(var2, var2.getXRot(), var2.getYRot(), 0.0F, 1.5F, 1.0F);
-         var1.addFreshEntity(var5);
+         WindCharge var4 = new WindCharge(var2, var1, var2.position().x(), var2.getEyePosition().y(), var2.position().z());
+         var4.shootFromRotation(var2, var2.getXRot(), var2.getYRot(), 0.0F, 1.5F, 1.0F);
+         var1.addFreshEntity(var4);
       }
 
       var1.playSound(
@@ -46,11 +40,11 @@ public class WindChargeItem extends Item implements ProjectileItem {
          0.5F,
          0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
       );
-      ItemStack var6 = var2.getItemInHand(var3);
+      ItemStack var5 = var2.getItemInHand(var3);
       var2.getCooldowns().addCooldown(this, 10);
       var2.awardStat(Stats.ITEM_USED.get(this));
-      var6.consume(1, var2);
-      return InteractionResultHolder.sidedSuccess(var6, var1.isClientSide());
+      var5.consume(1, var2);
+      return InteractionResultHolder.sidedSuccess(var5, var1.isClientSide());
    }
 
    @Override

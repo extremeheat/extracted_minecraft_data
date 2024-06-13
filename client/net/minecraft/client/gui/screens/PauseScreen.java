@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import com.mojang.realmsclient.RealmsMainScreen;
+import java.net.URI;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
@@ -21,6 +22,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
+import net.minecraft.util.CommonLinks;
 
 public class PauseScreen extends Screen {
    private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
@@ -102,13 +104,9 @@ public class PauseScreen extends Screen {
 
    static void addFeedbackButtons(Screen var0, GridLayout.RowHelper var1) {
       var1.addChild(
-         openLinkButton(
-            var0,
-            SEND_FEEDBACK,
-            SharedConstants.getCurrentVersion().isStable() ? "https://aka.ms/javafeedback?ref=game" : "https://aka.ms/snapshotfeedback?ref=game"
-         )
+         openLinkButton(var0, SEND_FEEDBACK, SharedConstants.getCurrentVersion().isStable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK)
       );
-      var1.addChild(openLinkButton(var0, REPORT_BUGS, "https://aka.ms/snapshotbugs?ref=game")).active = !SharedConstants.getCurrentVersion()
+      var1.addChild(openLinkButton(var0, REPORT_BUGS, CommonLinks.SNAPSHOT_BUGS_FEEDBACK)).active = !SharedConstants.getCurrentVersion()
          .getDataVersion()
          .isSideSeries();
    }
@@ -157,7 +155,7 @@ public class PauseScreen extends Screen {
       return Button.builder(var1, var2x -> this.minecraft.setScreen((Screen)var2.get())).width(98).build();
    }
 
-   private static Button openLinkButton(Screen var0, Component var1, String var2) {
+   private static Button openLinkButton(Screen var0, Component var1, URI var2) {
       return Button.builder(var1, ConfirmLinkScreen.confirmLink(var0, var2)).width(98).build();
    }
 

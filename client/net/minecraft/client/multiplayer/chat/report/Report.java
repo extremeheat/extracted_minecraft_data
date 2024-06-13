@@ -14,6 +14,7 @@ public abstract class Report {
    protected String comments = "";
    @Nullable
    protected ReportReason reason;
+   protected boolean attested;
 
    public Report(UUID var1, Instant var2, UUID var3) {
       super();
@@ -52,6 +53,10 @@ public abstract class Report {
          return this.report.comments;
       }
 
+      public boolean attested() {
+         return this.report().attested;
+      }
+
       public void setComments(String var1) {
          this.report.comments = var1;
       }
@@ -65,10 +70,16 @@ public abstract class Report {
          this.report.reason = var1;
       }
 
+      public void setAttested(boolean var1) {
+         this.report.attested = var1;
+      }
+
       public abstract boolean hasContent();
 
       @Nullable
-      public abstract Report.CannotBuildReason checkBuildable();
+      public Report.CannotBuildReason checkBuildable() {
+         return !this.report().attested ? Report.CannotBuildReason.NOT_ATTESTED : null;
+      }
 
       public abstract Either<Report.Result, Report.CannotBuildReason> build(ReportingContext var1);
    }

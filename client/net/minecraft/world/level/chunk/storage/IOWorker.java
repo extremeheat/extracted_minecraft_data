@@ -226,6 +226,10 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       }
    }
 
+   public RegionStorageInfo storageInfo() {
+      return this.storage.info();
+   }
+
    static class PendingStore {
       @Nullable
       CompoundTag data;

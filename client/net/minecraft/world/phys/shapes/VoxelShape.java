@@ -21,7 +21,7 @@ public abstract class VoxelShape {
    @Nullable
    private VoxelShape[] faces;
 
-   VoxelShape(DiscreteVoxelShape var1) {
+   protected VoxelShape(DiscreteVoxelShape var1) {
       super();
       this.shape = var1;
    }

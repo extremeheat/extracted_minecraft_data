@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 import net.minecraft.SharedConstants;
+import net.minecraft.util.CommonLinks;
 import org.slf4j.Logger;
 
 public class Eula {
@@ -46,7 +47,7 @@ public class Eula {
          try (OutputStream var1 = Files.newOutputStream(this.file)) {
             Properties var2 = new Properties();
             var2.setProperty("eula", "false");
-            var2.store(var1, "By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).");
+            var2.store(var1, "By changing the setting below to TRUE you are indicating your agreement to our EULA (" + CommonLinks.EULA + ").");
          } catch (Exception var6) {
             LOGGER.warn("Failed to save {}", this.file, var6);
          }

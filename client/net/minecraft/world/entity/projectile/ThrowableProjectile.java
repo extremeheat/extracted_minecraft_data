@@ -34,7 +34,7 @@ public abstract class ThrowableProjectile extends Projectile {
    }
 
    @Override
-   public boolean canChangeDimensions() {
+   public boolean canUsePortal(boolean var1) {
       return true;
    }
 

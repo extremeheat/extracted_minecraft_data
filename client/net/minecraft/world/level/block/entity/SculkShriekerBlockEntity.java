@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.OptionalInt;
@@ -12,6 +11,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -82,10 +82,11 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
          this.warningLevel = var1.getInt("warning_level");
       }
 
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("listener", 10)) {
          VibrationSystem.Data.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("listener")))
-            .resultOrPartial(LOGGER::error)
+            .parse(var3, var1.getCompound("listener"))
+            .resultOrPartial(var0 -> LOGGER.error("Failed to parse vibration listener for Sculk Shrieker: '{}'", var0))
             .ifPresent(var1x -> this.vibrationData = var1x);
       }
    }
@@ -94,9 +95,10 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putInt("warning_level", this.warningLevel);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       VibrationSystem.Data.CODEC
-         .encodeStart(NbtOps.INSTANCE, this.vibrationData)
-         .resultOrPartial(LOGGER::error)
+         .encodeStart(var3, this.vibrationData)
+         .resultOrPartial(var0 -> LOGGER.error("Failed to encode vibration listener for Sculk Shrieker: '{}'", var0))
          .ifPresent(var1x -> var1.put("listener", var1x));
    }
 

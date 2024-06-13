@@ -53,6 +53,7 @@ public class ChorusFruitItem extends Item {
          }
 
          if (var3 instanceof Player var15) {
+            var15.resetCurrentImpulseContext();
             var15.getCooldowns().addCooldown(this, 20);
          }
       }

@@ -299,7 +299,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          .clientTrackingRange(10)
    );
    public static final EntityType<EndCrystal> END_CRYSTAL = register(
-      "end_crystal", EntityType.Builder.<EndCrystal>of(EndCrystal::new, MobCategory.MISC).sized(2.0F, 2.0F).clientTrackingRange(16).updateInterval(2147483647)
+      "end_crystal",
+      EntityType.Builder.<EndCrystal>of(EndCrystal::new, MobCategory.MISC).fireImmune().sized(2.0F, 2.0F).clientTrackingRange(16).updateInterval(2147483647)
    );
    public static final EntityType<EnderDragon> ENDER_DRAGON = register(
       "ender_dragon",

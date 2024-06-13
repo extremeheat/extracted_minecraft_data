@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
@@ -46,11 +47,6 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          this.ownerUUID = var1.getUUID();
          this.cachedOwner = var1;
       }
-   }
-
-   protected void disown() {
-      this.ownerUUID = null;
-      this.cachedOwner = null;
    }
 
    @Nullable
@@ -265,9 +261,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    @Override
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      Entity var1 = this.getOwner();
-      return new ClientboundAddEntityPacket(this, var1 == null ? 0 : var1.getId());
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      Entity var2 = this.getOwner();
+      return new ClientboundAddEntityPacket(this, var1, var2 == null ? 0 : var2.getId());
    }
 
    @Override

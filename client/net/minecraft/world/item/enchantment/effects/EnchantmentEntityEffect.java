@@ -24,7 +24,7 @@ public interface EnchantmentEntityEffect extends EnchantmentLocationBasedEffect 
       Registry.register(var0, "ignite", Ignite.CODEC);
       Registry.register(var0, "play_sound", PlaySoundEffect.CODEC);
       Registry.register(var0, "replace_block", ReplaceBlock.CODEC);
-      Registry.register(var0, "replace_disc", ReplaceDisc.CODEC);
+      Registry.register(var0, "replace_disk", ReplaceDisk.CODEC);
       Registry.register(var0, "run_function", RunFunction.CODEC);
       Registry.register(var0, "set_block_properties", SetBlockProperties.CODEC);
       Registry.register(var0, "spawn_particles", SpawnParticlesEffect.CODEC);

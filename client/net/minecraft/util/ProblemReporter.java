@@ -57,7 +57,7 @@ public interface ProblemReporter {
             String var2 = var1.asMap()
                .entrySet()
                .stream()
-               .map(var0 -> "  at " + (String)var0.getKey() + ": " + String.join("; ", (Iterable<? extends CharSequence>)var0.getValue()))
+               .map(var0 -> " at " + (String)var0.getKey() + ": " + String.join("; ", (Iterable<? extends CharSequence>)var0.getValue()))
                .collect(Collectors.joining("\n"));
             return Optional.of(var2);
          } else {

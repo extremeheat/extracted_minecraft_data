@@ -13,6 +13,7 @@ public final class BlockTags {
    public static final TagKey<Block> BUTTONS = create("buttons");
    public static final TagKey<Block> WOOL_CARPETS = create("wool_carpets");
    public static final TagKey<Block> WOODEN_DOORS = create("wooden_doors");
+   public static final TagKey<Block> MOB_INTERACTABLE_DOORS = create("mob_interactable_doors");
    public static final TagKey<Block> WOODEN_STAIRS = create("wooden_stairs");
    public static final TagKey<Block> WOODEN_SLABS = create("wooden_slabs");
    public static final TagKey<Block> WOODEN_FENCES = create("wooden_fences");
@@ -187,7 +188,6 @@ public final class BlockTags {
    public static final TagKey<Block> MAINTAINS_FARMLAND = create("maintains_farmland");
    public static final TagKey<Block> BLOCKS_WIND_CHARGE_EXPLOSIONS = create("blocks_wind_charge_explosions");
    public static final TagKey<Block> DOES_NOT_BLOCK_HOPPERS = create("does_not_block_hoppers");
-   public static final TagKey<Block> FIRE_ASPECT_LIGHTABLE = create("fire_aspect_lightable");
    public static final TagKey<Block> AIR = create("air");
 
    private BlockTags() {

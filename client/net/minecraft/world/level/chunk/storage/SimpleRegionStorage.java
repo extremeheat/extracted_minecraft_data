@@ -50,4 +50,8 @@ public class SimpleRegionStorage implements AutoCloseable {
    public void close() throws IOException {
       this.worker.close();
    }
+
+   public RegionStorageInfo storageInfo() {
+      return this.worker.storageInfo();
+   }
 }

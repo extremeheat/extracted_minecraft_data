@@ -211,8 +211,8 @@ public class StructureTemplate {
             && this.size.getY() >= 1
             && this.size.getZ() >= 1) {
             BoundingBox var8 = var4.getBoundingBox();
-            ArrayList var9 = Lists.newArrayListWithCapacity(var4.shouldKeepLiquids() ? var7.size() : 0);
-            ArrayList var10 = Lists.newArrayListWithCapacity(var4.shouldKeepLiquids() ? var7.size() : 0);
+            ArrayList var9 = Lists.newArrayListWithCapacity(var4.shouldApplyWaterlogging() ? var7.size() : 0);
+            ArrayList var10 = Lists.newArrayListWithCapacity(var4.shouldApplyWaterlogging() ? var7.size() : 0);
             ArrayList var11 = Lists.newArrayListWithCapacity(var7.size());
             int var12 = 2147483647;
             int var13 = 2147483647;
@@ -224,7 +224,7 @@ public class StructureTemplate {
             for (StructureTemplate.StructureBlockInfo var20 : processBlockInfos(var1, var2, var3, var4, var7)) {
                BlockPos var21 = var20.pos;
                if (var8 == null || var8.isInside(var21)) {
-                  FluidState var22 = var4.shouldKeepLiquids() ? var1.getFluidState(var21) : null;
+                  FluidState var22 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var21) : null;
                   BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
                   if (var20.nbt != null) {
                      BlockEntity var24 = var1.getBlockEntity(var21);

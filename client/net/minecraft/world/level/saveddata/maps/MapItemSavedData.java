@@ -46,6 +46,7 @@ public class MapItemSavedData extends SavedData {
    private static final int HALF_MAP_SIZE = 64;
    public static final int MAX_SCALE = 4;
    public static final int TRACKED_DECORATION_LIMIT = 256;
+   private static final String FRAME_PREFIX = "frame-";
    public final int centerX;
    public final int centerZ;
    public final ResourceKey<Level> dimension;
@@ -129,7 +130,7 @@ public class MapItemSavedData extends SavedData {
             var9.addDecoration(
                MapDecorationTypes.FRAME,
                null,
-               "frame-" + var15.getEntityId(),
+               getFrameKey(var15.getEntityId()),
                (double)var15.getPos().getX(),
                (double)var15.getPos().getZ(),
                (double)var15.getRotation(),
@@ -220,14 +221,14 @@ public class MapItemSavedData extends SavedData {
          BlockPos var11 = var9.getPos();
          MapFrame var12 = this.frameMarkers.get(MapFrame.frameId(var11));
          if (var12 != null && var9.getId() != var12.getEntityId() && this.frameMarkers.containsKey(var12.getId())) {
-            this.removeDecoration("frame-" + var12.getEntityId());
+            this.removeDecoration(getFrameKey(var12.getEntityId()));
          }
 
          MapFrame var7 = new MapFrame(var11, var9.getDirection().get2DDataValue() * 90, var9.getId());
          this.addDecoration(
             MapDecorationTypes.FRAME,
             var1.level(),
-            "frame-" + var9.getId(),
+            getFrameKey(var9.getId()),
             (double)var11.getX(),
             (double)var11.getZ(),
             (double)(var9.getDirection().get2DDataValue() * 90),
@@ -409,7 +410,7 @@ public class MapItemSavedData extends SavedData {
    }
 
    public void removedFromFrame(BlockPos var1, int var2) {
-      this.removeDecoration("frame-" + var2);
+      this.removeDecoration(getFrameKey(var2));
       this.frameMarkers.remove(MapFrame.frameId(var1));
    }
 
@@ -457,6 +458,10 @@ public class MapItemSavedData extends SavedData {
 
    public boolean isTrackedCountOverLimit(int var1) {
       return this.trackedDecorationCount >= var1;
+   }
+
+   private static String getFrameKey(int var0) {
+      return "frame-" + var0;
    }
 
    public class HoldingPlayer {

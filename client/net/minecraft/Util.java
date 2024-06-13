@@ -23,10 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
@@ -44,6 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -92,6 +91,7 @@ public class Util {
    private static final ExecutorService DOWNLOAD_POOL = makeIoExecutor("Download-", true);
    private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
    public static final int LINEAR_LOOKUP_THRESHOLD = 8;
+   private static final Set<String> ALLOWED_UNTRUSTED_LINK_PROTOCOLS = Set.of("http", "https");
    public static final long NANOS_PER_MILLI = 1000000L;
    public static TimeSource.NanoTimeSource timeSource = System::nanoTime;
    public static final Ticker TICKER = new Ticker() {
@@ -311,40 +311,42 @@ public class Util {
    }
 
    public static <T> Predicate<T> allOf(List<? extends Predicate<T>> var0) {
-      List var1 = List.copyOf(var0);
-
-      return switch (var1.size()) {
+      return switch (var0.size()) {
          case 0 -> var0x -> true;
-         case 1 -> (Predicate)var1.get(0);
-         case 2 -> ((Predicate)var1.get(0)).and((Predicate<? super T>)var1.get(1));
-         default -> var1x -> {
-         for (Predicate var3 : var1) {
-            if (!var3.test(var1x)) {
-               return false;
-            }
-         }
+         case 1 -> (Predicate)var0.get(0);
+         case 2 -> ((Predicate)var0.get(0)).and((Predicate<? super T>)var0.get(1));
+         default -> {
+            Predicate[] var1 = var0.toArray(Predicate[]::new);
+            yield var1x -> {
+               for (Predicate var5 : var1) {
+                  if (!var5.test(var1x)) {
+                     return false;
+                  }
+               }
 
-         return true;
-      };
+               return true;
+            };
+         }
       };
    }
 
    public static <T> Predicate<T> anyOf(List<? extends Predicate<T>> var0) {
-      List var1 = List.copyOf(var0);
-
-      return switch (var1.size()) {
+      return switch (var0.size()) {
          case 0 -> var0x -> false;
-         case 1 -> (Predicate)var1.get(0);
-         case 2 -> ((Predicate)var1.get(0)).or((Predicate<? super T>)var1.get(1));
-         default -> var1x -> {
-         for (Predicate var3 : var1) {
-            if (var3.test(var1x)) {
-               return true;
-            }
-         }
+         case 1 -> (Predicate)var0.get(0);
+         case 2 -> ((Predicate)var0.get(0)).or((Predicate<? super T>)var0.get(1));
+         default -> {
+            Predicate[] var1 = var0.toArray(Predicate[]::new);
+            yield var1x -> {
+               for (Predicate var5 : var1) {
+                  if (var5.test(var1x)) {
+                     return true;
+                  }
+               }
 
-         return false;
-      };
+               return false;
+            };
+         }
       };
    }
 
@@ -383,6 +385,21 @@ public class Util {
          return Util.OS.LINUX;
       } else {
          return var0.contains("unix") ? Util.OS.LINUX : Util.OS.UNKNOWN;
+      }
+   }
+
+   public static URI parseAndValidateUntrustedUri(String var0) throws URISyntaxException {
+      URI var1 = new URI(var0);
+      String var2 = var1.getScheme();
+      if (var2 == null) {
+         throw new URISyntaxException(var0, "Missing protocol in URI: " + var0);
+      } else {
+         String var3 = var2.toLowerCase(Locale.ROOT);
+         if (!ALLOWED_UNTRUSTED_LINK_PROTOCOLS.contains(var3)) {
+            throw new URISyntaxException(var0, "Unsupported protocol in URI: " + var0);
+         } else {
+            return var1;
+         }
       }
    }
 
@@ -935,13 +952,13 @@ public class Util {
       SOLARIS("solaris"),
       WINDOWS("windows") {
          @Override
-         protected String[] getOpenUrlArguments(URL var1) {
+         protected String[] getOpenUriArguments(URI var1) {
             return new String[]{"rundll32", "url.dll,FileProtocolHandler", var1.toString()};
          }
       },
       OSX("mac") {
          @Override
-         protected String[] getOpenUrlArguments(URL var1) {
+         protected String[] getOpenUriArguments(URI var1) {
             return new String[]{"open", var1.toString()};
          }
       },
@@ -953,36 +970,28 @@ public class Util {
          this.telemetryName = nullxx;
       }
 
-      public void openUrl(URL var1) {
+      public void openUri(URI var1) {
          try {
-            Process var2 = AccessController.doPrivileged((PrivilegedExceptionAction<Process>)(() -> Runtime.getRuntime().exec(this.getOpenUrlArguments(var1))));
+            Process var2 = AccessController.doPrivileged((PrivilegedExceptionAction<Process>)(() -> Runtime.getRuntime().exec(this.getOpenUriArguments(var1))));
             var2.getInputStream().close();
             var2.getErrorStream().close();
             var2.getOutputStream().close();
          } catch (IOException | PrivilegedActionException var3) {
-            Util.LOGGER.error("Couldn't open url '{}'", var1, var3);
-         }
-      }
-
-      public void openUri(URI var1) {
-         try {
-            this.openUrl(var1.toURL());
-         } catch (MalformedURLException var3) {
-            Util.LOGGER.error("Couldn't open uri '{}'", var1, var3);
+            Util.LOGGER.error("Couldn't open location '{}'", var1, var3);
          }
       }
 
       public void openFile(File var1) {
-         try {
-            this.openUrl(var1.toURI().toURL());
-         } catch (MalformedURLException var3) {
-            Util.LOGGER.error("Couldn't open file '{}'", var1, var3);
-         }
+         this.openUri(var1.toURI());
       }
 
-      protected String[] getOpenUrlArguments(URL var1) {
+      public void openPath(Path var1) {
+         this.openUri(var1.toUri());
+      }
+
+      protected String[] getOpenUriArguments(URI var1) {
          String var2 = var1.toString();
-         if ("file".equals(var1.getProtocol())) {
+         if ("file".equals(var1.getScheme())) {
             var2 = var2.replace("file:", "file://");
          }
 
@@ -991,8 +1000,8 @@ public class Util {
 
       public void openUri(String var1) {
          try {
-            this.openUrl(new URI(var1).toURL());
-         } catch (MalformedURLException | IllegalArgumentException | URISyntaxException var3) {
+            this.openUri(new URI(var1));
+         } catch (IllegalArgumentException | URISyntaxException var3) {
             Util.LOGGER.error("Couldn't open uri '{}'", var1, var3);
          }
       }

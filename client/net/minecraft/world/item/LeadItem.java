@@ -1,10 +1,12 @@
 package net.minecraft.world.item;
 
 import java.util.List;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
@@ -37,27 +39,37 @@ public class LeadItem extends Item {
 
    public static InteractionResult bindPlayerMobs(Player var0, Level var1, BlockPos var2) {
       LeashFenceKnotEntity var3 = null;
-      double var4 = 7.0;
-      int var6 = var2.getX();
-      int var7 = var2.getY();
-      int var8 = var2.getZ();
-      AABB var9 = new AABB((double)var6 - 7.0, (double)var7 - 7.0, (double)var8 - 7.0, (double)var6 + 7.0, (double)var7 + 7.0, (double)var8 + 7.0);
-      List var10 = var1.getEntitiesOfClass(Mob.class, var9, var1x -> var1x.getLeashHolder() == var0);
+      List var4 = leashableInArea(var1, var2, var1x -> var1x.getLeashHolder() == var0);
 
-      for (Mob var12 : var10) {
+      for (Leashable var6 : var4) {
          if (var3 == null) {
             var3 = LeashFenceKnotEntity.getOrCreateKnot(var1, var2);
             var3.playPlacementSound();
          }
 
-         var12.setLeashedTo(var3, true);
+         var6.setLeashedTo(var3, true);
       }
 
-      if (!var10.isEmpty()) {
+      if (!var4.isEmpty()) {
          var1.gameEvent(GameEvent.BLOCK_ATTACH, var2, GameEvent.Context.of(var0));
          return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
+   }
+
+   public static List<Leashable> leashableInArea(Level var0, BlockPos var1, Predicate<Leashable> var2) {
+      double var3 = 7.0;
+      int var5 = var1.getX();
+      int var6 = var1.getY();
+      int var7 = var1.getZ();
+      AABB var8 = new AABB((double)var5 - 7.0, (double)var6 - 7.0, (double)var7 - 7.0, (double)var5 + 7.0, (double)var6 + 7.0, (double)var7 + 7.0);
+      return var0.getEntitiesOfClass(Entity.class, var8, var1x -> {
+         if (var1x instanceof Leashable var2x && var2.test(var2x)) {
+            return true;
+         }
+
+         return false;
+      }).stream().map(Leashable.class::cast).toList();
    }
 }

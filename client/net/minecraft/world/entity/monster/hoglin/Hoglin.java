@@ -93,8 +93,8 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Override
-   public boolean canBeLeashed(Player var1) {
-      return !this.isLeashed();
+   public boolean canBeLeashed() {
+      return true;
    }
 
    public static AttributeSupplier.Builder createAttributes() {

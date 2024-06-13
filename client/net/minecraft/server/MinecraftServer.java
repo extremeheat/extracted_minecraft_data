@@ -22,6 +22,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.net.Proxy;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyPair;
@@ -49,6 +50,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.FileUtil;
 import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
@@ -140,6 +143,8 @@ import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.storage.ChunkIOErrorReporter;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.PatrolSpawner;
@@ -159,7 +164,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements ServerInfo, CommandSource, AutoCloseable {
+public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements ServerInfo, ChunkIOErrorReporter, CommandSource, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String VANILLA_BRAND = "vanilla";
    private static final float AVERAGE_TICK_TIME_SMOOTHING = 0.8F;
@@ -1903,10 +1908,43 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return false;
    }
 
-   public void reportChunkLoadFailure(ChunkPos var1) {
+   private void storeChunkIoError(CrashReport var1, ChunkPos var2, RegionStorageInfo var3) {
+      Util.ioPool().execute(() -> {
+         try {
+            Path var4 = this.getFile("debug");
+            FileUtil.createDirectoriesSafe(var4);
+            String var5 = FileUtil.sanitizeName(var3.level());
+            Path var6 = var4.resolve("chunk-" + var5 + "-" + Util.getFilenameFormattedDateTime() + "-server.txt");
+            FileStore var7 = Files.getFileStore(var4);
+            long var8 = var7.getUsableSpace();
+            if (var8 < 8192L) {
+               LOGGER.warn("Not storing chunk IO report due to low space on drive {}", var7.name());
+               return;
+            }
+
+            CrashReportCategory var10 = var1.addCategory("Chunk Info");
+            var10.setDetail("Level", var3::level);
+            var10.setDetail("Dimension", () -> var3.dimension().location().toString());
+            var10.setDetail("Storage", var3::type);
+            var10.setDetail("Position", var2::toString);
+            var1.saveToFile(var6, ReportType.CHUNK_IO_ERROR);
+            LOGGER.info("Saved details to {}", var1.getSaveFile());
+         } catch (Exception var11) {
+            LOGGER.warn("Failed to store chunk IO exception", var11);
+         }
+      });
    }
 
-   public void reportChunkSaveFailure(ChunkPos var1) {
+   @Override
+   public void reportChunkLoadFailure(Throwable var1, RegionStorageInfo var2, ChunkPos var3) {
+      LOGGER.error("Failed to load chunk {},{}", new Object[]{var3.x, var3.z, var1});
+      this.storeChunkIoError(CrashReport.forThrowable(var1, "Chunk load failure"), var3, var2);
+   }
+
+   @Override
+   public void reportChunkSaveFailure(Throwable var1, RegionStorageInfo var2, ChunkPos var3) {
+      LOGGER.error("Failed to save chunk {},{}", new Object[]{var3.x, var3.z, var1});
+      this.storeChunkIoError(CrashReport.forThrowable(var1, "Chunk save failure"), var3, var2);
    }
 
    public PotionBrewing potionBrewing() {

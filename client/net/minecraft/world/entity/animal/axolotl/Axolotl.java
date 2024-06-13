@@ -273,7 +273,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    @Override
-   public boolean canBeLeashed(Player var1) {
+   public boolean canBeLeashed() {
       return true;
    }
 

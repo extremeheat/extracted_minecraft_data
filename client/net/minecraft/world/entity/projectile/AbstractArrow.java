@@ -88,6 +88,10 @@ public abstract class AbstractArrow extends Projectile {
 
       this.setPos(var2, var4, var6);
       if (var10 != null && var8 instanceof ServerLevel var12) {
+         if (var10.isEmpty()) {
+            throw new IllegalArgumentException("Invalid weapon firing an arrow");
+         }
+
          this.firedFromWeapon = var10.copy();
          int var13 = EnchantmentHelper.getPiercingCount(var12, var10, this.pickupItemStack);
          if (var13 > 0) {
@@ -468,8 +472,8 @@ public abstract class AbstractArrow extends Projectile {
       );
    }
 
-   @Nullable
-   protected ItemStack getWeaponItem() {
+   @Override
+   public ItemStack getWeaponItem() {
       return this.firedFromWeapon;
    }
 

@@ -2226,6 +2226,61 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       var1.addVertex(var12, var5, var6, var7).setColor(var8, var9, var10, var11);
    }
 
+   public static void renderFace(
+      PoseStack var0,
+      VertexConsumer var1,
+      Direction var2,
+      float var3,
+      float var4,
+      float var5,
+      float var6,
+      float var7,
+      float var8,
+      float var9,
+      float var10,
+      float var11,
+      float var12
+   ) {
+      Matrix4f var13 = var0.last().pose();
+      switch (var2) {
+         case DOWN:
+            var1.addVertex(var13, var3, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var3, var4, var8).setColor(var9, var10, var11, var12);
+            break;
+         case UP:
+            var1.addVertex(var13, var3, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var3, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var7, var5).setColor(var9, var10, var11, var12);
+            break;
+         case NORTH:
+            var1.addVertex(var13, var3, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var3, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var4, var5).setColor(var9, var10, var11, var12);
+            break;
+         case SOUTH:
+            var1.addVertex(var13, var3, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var3, var7, var8).setColor(var9, var10, var11, var12);
+            break;
+         case WEST:
+            var1.addVertex(var13, var3, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var3, var4, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var3, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var3, var7, var5).setColor(var9, var10, var11, var12);
+            break;
+         case EAST:
+            var1.addVertex(var13, var6, var4, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var7, var5).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var7, var8).setColor(var9, var10, var11, var12);
+            var1.addVertex(var13, var6, var4, var8).setColor(var9, var10, var11, var12);
+      }
+   }
+
    public void blockChanged(BlockGetter var1, BlockPos var2, BlockState var3, BlockState var4, int var5) {
       this.setBlockDirty(var2, (var5 & 8) != 0);
    }

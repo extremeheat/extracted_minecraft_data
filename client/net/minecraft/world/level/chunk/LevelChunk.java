@@ -377,12 +377,29 @@ public class LevelChunk extends ChunkAccess {
    @Override
    public void setBlockEntity(BlockEntity var1) {
       BlockPos var2 = var1.getBlockPos();
-      if (this.getBlockState(var2).hasBlockEntity()) {
+      BlockState var3 = this.getBlockState(var2);
+      if (!var3.hasBlockEntity()) {
+         LOGGER.warn("Trying to set block entity {} at position {}, but state {} does not allow it", new Object[]{var1, var2, var3});
+      } else {
+         BlockState var4 = var1.getBlockState();
+         if (var3 != var4) {
+            if (!var1.getType().isValid(var3)) {
+               LOGGER.warn("Trying to set block entity {} at position {}, but state {} does not allow it", new Object[]{var1, var2, var3});
+               return;
+            }
+
+            if (var3.getBlock() != var4.getBlock()) {
+               LOGGER.warn("Block state mismatch on block entity {} in position {}, {} != {}, updating", new Object[]{var1, var2, var3, var4});
+            }
+
+            var1.setBlockState(var3);
+         }
+
          var1.setLevel(this.level);
          var1.clearRemoved();
-         BlockEntity var3 = this.blockEntities.put(var2.immutable(), var1);
-         if (var3 != null && var3 != var1) {
-            var3.setRemoved();
+         BlockEntity var5 = this.blockEntities.put(var2.immutable(), var1);
+         if (var5 != null && var5 != var1) {
+            var5.setRemoved();
          }
       }
    }

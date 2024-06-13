@@ -642,8 +642,8 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    @Override
-   public boolean canBeLeashed(Player var1) {
-      return !this.isAngry() && super.canBeLeashed(var1);
+   public boolean canBeLeashed() {
+      return !this.isAngry();
    }
 
    @Override

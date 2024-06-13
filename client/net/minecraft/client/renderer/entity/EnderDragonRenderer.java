@@ -20,7 +20,8 @@ import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
    public static final ResourceLocation CRYSTAL_BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/end_crystal/end_crystal_beam.png");
@@ -59,72 +60,69 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
          VertexConsumer var13 = var5.getBuffer(DECAL);
          this.model.renderToBuffer(var4, var13, var6, OverlayTexture.pack(0.0F, var9));
       } else {
-         VertexConsumer var20 = var5.getBuffer(RENDER_TYPE);
-         this.model.renderToBuffer(var4, var20, var6, OverlayTexture.pack(0.0F, var9));
+         VertexConsumer var14 = var5.getBuffer(RENDER_TYPE);
+         this.model.renderToBuffer(var4, var14, var6, OverlayTexture.pack(0.0F, var9));
       }
 
-      VertexConsumer var21 = var5.getBuffer(EYES);
-      this.model.renderToBuffer(var4, var21, var6, OverlayTexture.NO_OVERLAY);
+      VertexConsumer var15 = var5.getBuffer(EYES);
+      this.model.renderToBuffer(var4, var15, var6, OverlayTexture.NO_OVERLAY);
       if (var1.dragonDeathTime > 0) {
-         float var22 = ((float)var1.dragonDeathTime + var3) / 200.0F;
-         float var24 = Math.min(var22 > 0.8F ? (var22 - 0.8F) / 0.2F : 0.0F, 1.0F);
-         RandomSource var26 = RandomSource.create(432L);
-         VertexConsumer var14 = var5.getBuffer(RenderType.lightning());
+         float var16 = ((float)var1.dragonDeathTime + var3) / 200.0F;
          var4.pushPose();
          var4.translate(0.0F, -1.0F, -2.0F);
-
-         for (int var15 = 0; (float)var15 < (var22 + var22 * var22) / 2.0F * 60.0F; var15++) {
-            var4.mulPose(Axis.XP.rotationDegrees(var26.nextFloat() * 360.0F));
-            var4.mulPose(Axis.YP.rotationDegrees(var26.nextFloat() * 360.0F));
-            var4.mulPose(Axis.ZP.rotationDegrees(var26.nextFloat() * 360.0F));
-            var4.mulPose(Axis.XP.rotationDegrees(var26.nextFloat() * 360.0F));
-            var4.mulPose(Axis.YP.rotationDegrees(var26.nextFloat() * 360.0F));
-            var4.mulPose(Axis.ZP.rotationDegrees(var26.nextFloat() * 360.0F + var22 * 90.0F));
-            float var16 = var26.nextFloat() * 20.0F + 5.0F + var24 * 10.0F;
-            float var17 = var26.nextFloat() * 2.0F + 1.0F + var24 * 2.0F;
-            Matrix4f var18 = var4.last().pose();
-            int var19 = (int)(255.0F * (1.0F - var24));
-            vertex01(var14, var18, var19);
-            vertex2(var14, var18, var16, var17);
-            vertex3(var14, var18, var16, var17);
-            vertex01(var14, var18, var19);
-            vertex3(var14, var18, var16, var17);
-            vertex4(var14, var18, var16, var17);
-            vertex01(var14, var18, var19);
-            vertex4(var14, var18, var16, var17);
-            vertex2(var14, var18, var16, var17);
-         }
-
+         renderRays(var4, var16, var5.getBuffer(RenderType.dragonRays()));
+         renderRays(var4, var16, var5.getBuffer(RenderType.dragonRaysDepth()));
          var4.popPose();
       }
 
       var4.popPose();
       if (var1.nearestCrystal != null) {
          var4.pushPose();
-         float var23 = (float)(var1.nearestCrystal.getX() - Mth.lerp((double)var3, var1.xo, var1.getX()));
-         float var25 = (float)(var1.nearestCrystal.getY() - Mth.lerp((double)var3, var1.yo, var1.getY()));
-         float var27 = (float)(var1.nearestCrystal.getZ() - Mth.lerp((double)var3, var1.zo, var1.getZ()));
-         renderCrystalBeams(var23, var25 + EndCrystalRenderer.getY(var1.nearestCrystal, var3), var27, var3, var1.tickCount, var4, var5, var6);
+         float var17 = (float)(var1.nearestCrystal.getX() - Mth.lerp((double)var3, var1.xo, var1.getX()));
+         float var18 = (float)(var1.nearestCrystal.getY() - Mth.lerp((double)var3, var1.yo, var1.getY()));
+         float var19 = (float)(var1.nearestCrystal.getZ() - Mth.lerp((double)var3, var1.zo, var1.getZ()));
+         renderCrystalBeams(var17, var18 + EndCrystalRenderer.getY(var1.nearestCrystal, var3), var19, var3, var1.tickCount, var4, var5, var6);
          var4.popPose();
       }
 
       super.render(var1, var2, var3, var4, var5, var6);
    }
 
-   private static void vertex01(VertexConsumer var0, Matrix4f var1, int var2) {
-      var0.addVertex(var1, 0.0F, 0.0F, 0.0F).setWhiteAlpha(var2);
-   }
+   private static void renderRays(PoseStack var0, float var1, VertexConsumer var2) {
+      var0.pushPose();
+      float var3 = Math.min(var1 > 0.8F ? (var1 - 0.8F) / 0.2F : 0.0F, 1.0F);
+      int var4 = FastColor.ARGB32.colorFromFloat(1.0F - var3, 1.0F, 1.0F, 1.0F);
+      int var5 = 16711935;
+      RandomSource var6 = RandomSource.create(432L);
+      Vector3f var7 = new Vector3f();
+      Vector3f var8 = new Vector3f();
+      Vector3f var9 = new Vector3f();
+      Vector3f var10 = new Vector3f();
+      Quaternionf var11 = new Quaternionf();
+      int var12 = Mth.floor((var1 + var1 * var1) / 2.0F * 60.0F);
 
-   private static void vertex2(VertexConsumer var0, Matrix4f var1, float var2, float var3) {
-      var0.addVertex(var1, -HALF_SQRT_3 * var3, var2, -0.5F * var3).setColor(16711935);
-   }
+      for (int var13 = 0; var13 < var12; var13++) {
+         var11.rotationXYZ(var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F)
+            .rotateXYZ(var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F + var1 * 1.5707964F);
+         var0.mulPose(var11);
+         float var14 = var6.nextFloat() * 20.0F + 5.0F + var3 * 10.0F;
+         float var15 = var6.nextFloat() * 2.0F + 1.0F + var3 * 2.0F;
+         var8.set(-HALF_SQRT_3 * var15, var14, -0.5F * var15);
+         var9.set(HALF_SQRT_3 * var15, var14, -0.5F * var15);
+         var10.set(0.0F, var14, var15);
+         PoseStack.Pose var16 = var0.last();
+         var2.addVertex(var16, var7).setColor(var4);
+         var2.addVertex(var16, var8).setColor(16711935);
+         var2.addVertex(var16, var9).setColor(16711935);
+         var2.addVertex(var16, var7).setColor(var4);
+         var2.addVertex(var16, var9).setColor(16711935);
+         var2.addVertex(var16, var10).setColor(16711935);
+         var2.addVertex(var16, var7).setColor(var4);
+         var2.addVertex(var16, var10).setColor(16711935);
+         var2.addVertex(var16, var8).setColor(16711935);
+      }
 
-   private static void vertex3(VertexConsumer var0, Matrix4f var1, float var2, float var3) {
-      var0.addVertex(var1, HALF_SQRT_3 * var3, var2, -0.5F * var3).setColor(16711935);
-   }
-
-   private static void vertex4(VertexConsumer var0, Matrix4f var1, float var2, float var3) {
-      var0.addVertex(var1, 0.0F, var2, 1.0F * var3).setColor(16711935);
+      var0.popPose();
    }
 
    public static void renderCrystalBeams(float var0, float var1, float var2, float var3, int var4, PoseStack var5, MultiBufferSource var6, int var7) {

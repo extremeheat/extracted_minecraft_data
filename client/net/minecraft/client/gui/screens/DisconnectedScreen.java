@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import java.net.URI;
 import net.minecraft.Util;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
@@ -49,10 +48,11 @@ public class DisconnectedScreen extends Screen {
       this.details
          .bugReportLink()
          .ifPresent(var1x -> this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, var1x, false)).width(200).build()));
-      this.details.report().ifPresent(var1x -> {
-         URI var2 = var1x.getParent().toUri();
-         this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, var1xx -> Util.getPlatform().openUri(var2)).width(200).build());
-      });
+      this.details
+         .report()
+         .ifPresent(
+            var1x -> this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, var1xx -> Util.getPlatform().openPath(var1x.getParent())).width(200).build())
+         );
       Button var1;
       if (this.minecraft.allowsMultiplayer()) {
          var1 = Button.builder(this.buttonText, var1x -> this.minecraft.setScreen(this.parent)).width(200).build();

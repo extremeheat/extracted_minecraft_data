@@ -162,7 +162,7 @@ public class TextComponentTagVisitor implements TagVisitor {
       if (var1.isEmpty()) {
          this.result.append("[]");
       } else if (this.depth >= 64) {
-         this.result.append("[" + FOLDED + "]");
+         this.result.append("[").append(FOLDED).append("]");
       } else if (INLINE_ELEMENT_TYPES.contains(var1.getElementType()) && var1.size() <= 8) {
          this.result.append("[");
 
@@ -181,10 +181,10 @@ public class TextComponentTagVisitor implements TagVisitor {
             this.result.append("\n");
          }
 
-         Object var2 = Strings.repeat(this.indentation, this.indentDepth + 1);
+         String var2 = Strings.repeat(this.indentation, this.indentDepth + 1);
 
          for (int var3 = 0; var3 < var1.size() && var3 < 128; var3++) {
-            this.result.append((String)var2);
+            this.result.append(var2);
             this.appendSubTag(var1.get(var3), true);
             if (var3 != var1.size() - 1) {
                this.result.append(this.indentation.isEmpty() ? SPACED_ELEMENT_SEPARATOR : WRAPPED_ELEMENT_SEPARATOR);
@@ -192,7 +192,7 @@ public class TextComponentTagVisitor implements TagVisitor {
          }
 
          if (var1.size() > 128) {
-            this.result.append(var2 + FOLDED);
+            this.result.append(var2).append(FOLDED);
          }
 
          if (!this.indentation.isEmpty()) {
@@ -208,7 +208,7 @@ public class TextComponentTagVisitor implements TagVisitor {
       if (var1.isEmpty()) {
          this.result.append("{}");
       } else if (this.depth >= 64) {
-         this.result.append("{" + FOLDED + "}");
+         this.result.append("{").append(FOLDED).append("}");
       } else {
          this.result.append("{");
          Object var2 = var1.getAllKeys();

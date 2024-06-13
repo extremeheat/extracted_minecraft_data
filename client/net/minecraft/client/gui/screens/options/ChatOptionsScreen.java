@@ -1,17 +1,12 @@
 package net.minecraft.client.gui.screens.options;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class ChatOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.chat.title");
-   @Nullable
-   private AbstractWidget narratorButton;
 
    private static OptionInstance<?>[] options(Options var0) {
       return new OptionInstance[]{
@@ -40,22 +35,7 @@ public class ChatOptionsScreen extends OptionsSubScreen {
    }
 
    @Override
-   public void init() {
-      super.init();
-      this.narratorButton = this.list.findOption(this.options.narrator());
-      if (this.narratorButton != null) {
-         this.narratorButton.active = this.minecraft.getNarrator().isActive();
-      }
-   }
-
-   @Override
    protected void addOptions() {
       this.list.addSmall(options(this.options));
-   }
-
-   public void updateNarratorButton() {
-      if (this.narratorButton instanceof CycleButton) {
-         ((CycleButton)this.narratorButton).setValue(this.options.narrator().get());
-      }
    }
 }

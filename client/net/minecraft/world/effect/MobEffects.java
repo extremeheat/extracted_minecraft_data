@@ -47,7 +47,7 @@ public class MobEffects {
       new MobEffect(MobEffectCategory.HARMFUL, 4866583)
          .addAttributeModifier(
             Attributes.ATTACK_SPEED,
-            ResourceLocation.withDefaultNamespace("effect.minining_fatigue"),
+            ResourceLocation.withDefaultNamespace("effect.mining_fatigue"),
             -0.10000000149011612,
             AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
          )

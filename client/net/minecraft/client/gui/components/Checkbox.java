@@ -10,7 +10,6 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 
 public class Checkbox extends AbstractButton {
    private static final ResourceLocation CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("widget/checkbox_selected_highlighted");
@@ -22,11 +21,27 @@ public class Checkbox extends AbstractButton {
    private static final int BOX_PADDING = 8;
    private boolean selected;
    private final Checkbox.OnValueChange onValueChange;
+   private final MultiLineTextWidget textWidget;
 
-   Checkbox(int var1, int var2, Component var3, Font var4, boolean var5, Checkbox.OnValueChange var6) {
-      super(var1, var2, getBoxSize(var4) + 4 + var4.width(var3), getBoxSize(var4), var3);
-      this.selected = var5;
-      this.onValueChange = var6;
+   Checkbox(int var1, int var2, int var3, Component var4, Font var5, boolean var6, Checkbox.OnValueChange var7) {
+      super(var1, var2, 0, 0, var4);
+      this.width = this.getAdjustedWidth(var3, var4, var5);
+      this.textWidget = new MultiLineTextWidget(var4, var5).setMaxWidth(this.width).setColor(14737632);
+      this.height = this.getAdjustedHeight(var5);
+      this.selected = var6;
+      this.onValueChange = var7;
+   }
+
+   private int getAdjustedWidth(int var1, Component var2, Font var3) {
+      return Math.min(getDefaultWidth(var2, var3), var1);
+   }
+
+   private int getAdjustedHeight(Font var1) {
+      return Math.max(getBoxSize(var1), this.textWidget.getHeight());
+   }
+
+   static int getDefaultWidth(Component var0, Font var1) {
+      return getBoxSize(var1) + 4 + var1.width(var0);
    }
 
    public static Checkbox.Builder builder(Component var0, Font var1) {
@@ -74,16 +89,17 @@ public class Checkbox extends AbstractButton {
       }
 
       int var8 = getBoxSize(var6);
-      int var9 = this.getX() + var8 + 4;
-      int var10 = this.getY() + (this.height >> 1) - (9 >> 1);
       var1.blitSprite(var7, this.getX(), this.getY(), var8, var8);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-      var1.drawString(var6, this.getMessage(), var9, var10, 14737632 | Mth.ceil(this.alpha * 255.0F) << 24);
+      int var9 = this.getX() + var8 + 4;
+      int var10 = this.getY() + var8 / 2 - this.textWidget.getHeight() / 2;
+      this.textWidget.setPosition(var9, var10);
+      this.textWidget.renderWidget(var1, var2, var3, var4);
    }
 
    public static class Builder {
       private final Component message;
       private final Font font;
+      private int maxWidth;
       private int x = 0;
       private int y = 0;
       private Checkbox.OnValueChange onValueChange = Checkbox.OnValueChange.NOP;
@@ -97,6 +113,7 @@ public class Checkbox extends AbstractButton {
          super();
          this.message = var1;
          this.font = var2;
+         this.maxWidth = Checkbox.getDefaultWidth(var1, var2);
       }
 
       public Checkbox.Builder pos(int var1, int var2) {
@@ -127,12 +144,17 @@ public class Checkbox extends AbstractButton {
          return this;
       }
 
+      public Checkbox.Builder maxWidth(int var1) {
+         this.maxWidth = var1;
+         return this;
+      }
+
       public Checkbox build() {
          Checkbox.OnValueChange var1 = this.option == null ? this.onValueChange : (var1x, var2x) -> {
             this.option.set(var2x);
             this.onValueChange.onValueChange(var1x, var2x);
          };
-         Checkbox var2 = new Checkbox(this.x, this.y, this.message, this.font, this.selected, var1);
+         Checkbox var2 = new Checkbox(this.x, this.y, this.maxWidth, this.message, this.font, this.selected, var1);
          var2.setTooltip(this.tooltip);
          return var2;
       }

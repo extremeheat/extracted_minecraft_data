@@ -1,13 +1,13 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Dynamic;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.SculkSensorBlock;
@@ -44,10 +44,11 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.lastVibrationFrequency = var1.getInt("last_vibration_frequency");
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("listener", 10)) {
          VibrationSystem.Data.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("listener")))
-            .resultOrPartial(LOGGER::error)
+            .parse(var3, var1.getCompound("listener"))
+            .resultOrPartial(var0 -> LOGGER.error("Failed to parse vibration listener for Sculk Sensor: '{}'", var0))
             .ifPresent(var1x -> this.vibrationData = var1x);
       }
    }
@@ -56,9 +57,10 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putInt("last_vibration_frequency", this.lastVibrationFrequency);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       VibrationSystem.Data.CODEC
-         .encodeStart(NbtOps.INSTANCE, this.vibrationData)
-         .resultOrPartial(LOGGER::error)
+         .encodeStart(var3, this.vibrationData)
+         .resultOrPartial(var0 -> LOGGER.error("Failed to encode vibration listener for Sculk Sensor: '{}'", var0))
          .ifPresent(var1x -> var1.put("listener", var1x));
    }
 

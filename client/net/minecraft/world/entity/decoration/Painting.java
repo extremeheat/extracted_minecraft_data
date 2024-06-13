@@ -18,6 +18,7 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.world.entity.Entity;
@@ -175,7 +176,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    @Override
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
       return new ClientboundAddEntityPacket(this, this.direction.get3DDataValue(), this.getPos());
    }
 

@@ -95,7 +95,7 @@ public class NetherPortalBlock extends Block implements Portal {
 
    @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var4.canChangeDimensions()) {
+      if (var4.canUsePortal(false)) {
          var4.setAsInsidePortal(this, var3);
       }
    }
@@ -118,66 +118,90 @@ public class NetherPortalBlock extends Block implements Portal {
    public DimensionTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       ResourceKey var4 = var1.dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;
       ServerLevel var5 = var1.getServer().getLevel(var4);
-      boolean var6 = var5.dimension() == Level.NETHER;
-      WorldBorder var7 = var5.getWorldBorder();
-      double var8 = DimensionType.getTeleportationScale(var1.dimensionType(), var5.dimensionType());
-      BlockPos var10 = var7.clampToBounds(var2.getX() * var8, var2.getY(), var2.getZ() * var8);
-      return this.getExitPortal(var5, var2, var3, var10, var6, var7);
+      if (var5 == null) {
+         return null;
+      } else {
+         boolean var6 = var5.dimension() == Level.NETHER;
+         WorldBorder var7 = var5.getWorldBorder();
+         double var8 = DimensionType.getTeleportationScale(var1.dimensionType(), var5.dimensionType());
+         BlockPos var10 = var7.clampToBounds(var2.getX() * var8, var2.getY(), var2.getZ() * var8);
+         return this.getExitPortal(var5, var2, var3, var10, var6, var7);
+      }
    }
 
    @Nullable
    private DimensionTransition getExitPortal(ServerLevel var1, Entity var2, BlockPos var3, BlockPos var4, boolean var5, WorldBorder var6) {
-      Optional var7 = var1.getPortalForcer().findPortalAround(var4, var5, var6);
-      if (var7.isEmpty()) {
-         Direction.Axis var8 = var2.level().getBlockState(var3).getOptionalValue(AXIS).orElse(Direction.Axis.X);
-         Optional var9 = var1.getPortalForcer().createPortal(var4, var8);
-         if (var9.isEmpty()) {
+      Optional var7 = var1.getPortalForcer().findClosestPortalPosition(var4, var5, var6);
+      BlockUtil.FoundRectangle var8;
+      DimensionTransition.PostDimensionTransition var9;
+      if (var7.isPresent()) {
+         BlockPos var10 = (BlockPos)var7.get();
+         BlockState var11 = var1.getBlockState(var10);
+         var8 = BlockUtil.getLargestRectangleAround(
+            var10, var11.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, var2x -> var1.getBlockState(var2x) == var11
+         );
+         var9 = DimensionTransition.PLAY_PORTAL_SOUND.then(var1x -> var1x.placePortalTicket(var10));
+      } else {
+         Direction.Axis var12 = var2.level().getBlockState(var3).getOptionalValue(AXIS).orElse(Direction.Axis.X);
+         Optional var13 = var1.getPortalForcer().createPortal(var4, var12);
+         if (var13.isEmpty()) {
             LOGGER.error("Unable to create a portal, likely target out of worldborder");
             return null;
-         } else {
-            return getDimensionTransitionFromExit(var2, var3, (BlockUtil.FoundRectangle)var9.get(), var1);
          }
-      } else {
-         return var7.<DimensionTransition>map(var3x -> getDimensionTransitionFromExit(var2, var3, var3x, var1)).orElse(null);
+
+         var8 = (BlockUtil.FoundRectangle)var13.get();
+         var9 = DimensionTransition.PLAY_PORTAL_SOUND.then(DimensionTransition.PLACE_PORTAL_TICKET);
       }
+
+      return getDimensionTransitionFromExit(var2, var3, var8, var1, var9);
    }
 
-   private static DimensionTransition getDimensionTransitionFromExit(Entity var0, BlockPos var1, BlockUtil.FoundRectangle var2, ServerLevel var3) {
-      BlockState var6 = var0.level().getBlockState(var1);
-      Direction.Axis var4;
-      Vec3 var5;
-      if (var6.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
-         var4 = var6.getValue(BlockStateProperties.HORIZONTAL_AXIS);
-         BlockUtil.FoundRectangle var7 = BlockUtil.getLargestRectangleAround(
-            var1, var4, 21, Direction.Axis.Y, 21, var2x -> var0.level().getBlockState(var2x) == var6
+   private static DimensionTransition getDimensionTransitionFromExit(
+      Entity var0, BlockPos var1, BlockUtil.FoundRectangle var2, ServerLevel var3, DimensionTransition.PostDimensionTransition var4
+   ) {
+      BlockState var7 = var0.level().getBlockState(var1);
+      Direction.Axis var5;
+      Vec3 var6;
+      if (var7.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
+         var5 = var7.getValue(BlockStateProperties.HORIZONTAL_AXIS);
+         BlockUtil.FoundRectangle var8 = BlockUtil.getLargestRectangleAround(
+            var1, var5, 21, Direction.Axis.Y, 21, var2x -> var0.level().getBlockState(var2x) == var7
          );
-         var5 = var0.getRelativePortalPosition(var4, var7);
+         var6 = var0.getRelativePortalPosition(var5, var8);
       } else {
-         var4 = Direction.Axis.X;
-         var5 = new Vec3(0.5, 0.0, 0.0);
+         var5 = Direction.Axis.X;
+         var6 = new Vec3(0.5, 0.0, 0.0);
       }
 
-      return createDimensionTransition(var3, var2, var4, var5, var0, var0.getDeltaMovement(), var0.getYRot(), var0.getXRot());
+      return createDimensionTransition(var3, var2, var5, var6, var0, var0.getDeltaMovement(), var0.getYRot(), var0.getXRot(), var4);
    }
 
    private static DimensionTransition createDimensionTransition(
-      ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, Entity var4, Vec3 var5, float var6, float var7
+      ServerLevel var0,
+      BlockUtil.FoundRectangle var1,
+      Direction.Axis var2,
+      Vec3 var3,
+      Entity var4,
+      Vec3 var5,
+      float var6,
+      float var7,
+      DimensionTransition.PostDimensionTransition var8
    ) {
-      BlockPos var8 = var1.minCorner;
-      BlockState var9 = var0.getBlockState(var8);
-      Direction.Axis var10 = var9.getOptionalValue(BlockStateProperties.HORIZONTAL_AXIS).orElse(Direction.Axis.X);
-      double var11 = (double)var1.axis1Size;
-      double var13 = (double)var1.axis2Size;
-      EntityDimensions var15 = var4.getDimensions(var4.getPose());
-      int var16 = var2 == var10 ? 0 : 90;
-      Vec3 var17 = var2 == var10 ? var5 : new Vec3(var5.z, var5.y, -var5.x);
-      double var18 = (double)var15.width() / 2.0 + (var11 - (double)var15.width()) * var3.x();
-      double var20 = (var13 - (double)var15.height()) * var3.y();
-      double var22 = 0.5 + var3.z();
-      boolean var24 = var10 == Direction.Axis.X;
-      Vec3 var25 = new Vec3((double)var8.getX() + (var24 ? var18 : var22), (double)var8.getY() + var20, (double)var8.getZ() + (var24 ? var22 : var18));
-      Vec3 var26 = PortalShape.findCollisionFreePosition(var25, var0, var4, var15);
-      return new DimensionTransition(var0, var26, var17, var6 + (float)var16, var7);
+      BlockPos var9 = var1.minCorner;
+      BlockState var10 = var0.getBlockState(var9);
+      Direction.Axis var11 = var10.getOptionalValue(BlockStateProperties.HORIZONTAL_AXIS).orElse(Direction.Axis.X);
+      double var12 = (double)var1.axis1Size;
+      double var14 = (double)var1.axis2Size;
+      EntityDimensions var16 = var4.getDimensions(var4.getPose());
+      int var17 = var2 == var11 ? 0 : 90;
+      Vec3 var18 = var2 == var11 ? var5 : new Vec3(var5.z, var5.y, -var5.x);
+      double var19 = (double)var16.width() / 2.0 + (var12 - (double)var16.width()) * var3.x();
+      double var21 = (var14 - (double)var16.height()) * var3.y();
+      double var23 = 0.5 + var3.z();
+      boolean var25 = var11 == Direction.Axis.X;
+      Vec3 var26 = new Vec3((double)var9.getX() + (var25 ? var19 : var23), (double)var9.getY() + var21, (double)var9.getZ() + (var25 ? var23 : var19));
+      Vec3 var27 = PortalShape.findCollisionFreePosition(var26, var0, var4, var16);
+      return new DimensionTransition(var0, var27, var18, var6 + (float)var17, var7, var8);
    }
 
    @Override

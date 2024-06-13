@@ -182,7 +182,7 @@ public class SystemToast implements Toast {
       addOrUpdate(
          var0.getToasts(),
          SystemToast.SystemToastId.CHUNK_LOAD_FAILURE,
-         Component.translatable("chunk.toast.loadFailure", var1).withStyle(ChatFormatting.RED),
+         Component.translatable("chunk.toast.loadFailure", Component.translationArg(var1)).withStyle(ChatFormatting.RED),
          Component.translatable("chunk.toast.checkLog")
       );
    }
@@ -191,7 +191,7 @@ public class SystemToast implements Toast {
       addOrUpdate(
          var0.getToasts(),
          SystemToast.SystemToastId.CHUNK_SAVE_FAILURE,
-         Component.translatable("chunk.toast.saveFailure", var1).withStyle(ChatFormatting.RED),
+         Component.translatable("chunk.toast.saveFailure", Component.translationArg(var1)).withStyle(ChatFormatting.RED),
          Component.translatable("chunk.toast.checkLog")
       );
    }

@@ -1,38 +1,31 @@
 package net.minecraft.client.gui.components;
 
-import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 
 public interface MultiLineLabel {
    MultiLineLabel EMPTY = new MultiLineLabel() {
       @Override
-      public int renderCentered(GuiGraphics var1, int var2, int var3) {
-         return var3;
+      public void renderCentered(GuiGraphics var1, int var2, int var3) {
       }
 
       @Override
-      public int renderCentered(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-         return var3;
+      public void renderCentered(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       }
 
       @Override
-      public int renderLeftAligned(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-         return var3;
+      public void renderLeftAligned(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       }
 
       @Override
       public int renderLeftAlignedNoShadow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
          return var3;
-      }
-
-      @Override
-      public void renderBackgroundCentered(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
       }
 
       @Override
@@ -46,131 +39,118 @@ public interface MultiLineLabel {
       }
    };
 
-   static MultiLineLabel create(Font var0, FormattedText var1, int var2) {
-      return createFixed(
-         var0,
-         var0.split(var1, var2).stream().map(var1x -> new MultiLineLabel.TextWithWidth(var1x, var0.width(var1x))).collect(ImmutableList.toImmutableList())
-      );
-   }
-
-   static MultiLineLabel create(Font var0, FormattedText var1, int var2, int var3) {
-      return createFixed(
-         var0,
-         var0.split(var1, var2)
-            .stream()
-            .limit((long)var3)
-            .map(var1x -> new MultiLineLabel.TextWithWidth(var1x, var0.width(var1x)))
-            .collect(ImmutableList.toImmutableList())
-      );
-   }
-
    static MultiLineLabel create(Font var0, Component... var1) {
-      return createFixed(
-         var0,
-         Arrays.stream(var1)
-            .map(Component::getVisualOrderText)
-            .map(var1x -> new MultiLineLabel.TextWithWidth(var1x, var0.width(var1x)))
-            .collect(ImmutableList.toImmutableList())
-      );
+      return create(var0, 2147483647, 2147483647, var1);
    }
 
-   static MultiLineLabel create(Font var0, List<Component> var1) {
-      return createFixed(
-         var0,
-         var1.stream()
-            .map(Component::getVisualOrderText)
-            .map(var1x -> new MultiLineLabel.TextWithWidth(var1x, var0.width(var1x)))
-            .collect(ImmutableList.toImmutableList())
-      );
+   static MultiLineLabel create(Font var0, int var1, Component... var2) {
+      return create(var0, var1, 2147483647, var2);
    }
 
-   static MultiLineLabel createFixed(final Font var0, final List<MultiLineLabel.TextWithWidth> var1) {
-      return var1.isEmpty() ? EMPTY : new MultiLineLabel() {
-         private final int width = var1.stream().mapToInt(var0xx -> var0xx.width).max().orElse(0);
+   static MultiLineLabel create(Font var0, Component var1, int var2) {
+      return create(var0, var2, 2147483647, var1);
+   }
+
+   static MultiLineLabel create(final Font var0, final int var1, final int var2, final Component... var3) {
+      return var3.length == 0 ? EMPTY : new MultiLineLabel() {
+         @Nullable
+         private List<MultiLineLabel.TextAndWidth> cachedTextAndWidth;
+         @Nullable
+         private Language splitWithLanguage;
 
          @Override
-         public int renderCentered(GuiGraphics var1x, int var2, int var3) {
-            return this.renderCentered(var1x, var2, var3, 9, 16777215);
+         public void renderCentered(GuiGraphics var1x, int var2x, int var3x) {
+            this.renderCentered(var1x, var2x, var3x, 9, -1);
          }
 
          @Override
-         public int renderCentered(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
-            int var6 = var3;
+         public void renderCentered(GuiGraphics var1x, int var2x, int var3x, int var4, int var5) {
+            int var6 = var3x;
 
-            for (MultiLineLabel.TextWithWidth var8 : var1) {
-               var1x.drawString(var0, var8.text, var2 - var8.width / 2, var6, var5);
+            for (MultiLineLabel.TextAndWidth var8 : this.getSplitMessage()) {
+               var1x.drawCenteredString(var0, var8.text, var2x, var6, var5);
+               var6 += var4;
+            }
+         }
+
+         @Override
+         public void renderLeftAligned(GuiGraphics var1x, int var2x, int var3x, int var4, int var5) {
+            int var6 = var3x;
+
+            for (MultiLineLabel.TextAndWidth var8 : this.getSplitMessage()) {
+               var1x.drawString(var0, var8.text, var2x, var6, var5);
+               var6 += var4;
+            }
+         }
+
+         @Override
+         public int renderLeftAlignedNoShadow(GuiGraphics var1x, int var2x, int var3x, int var4, int var5) {
+            int var6 = var3x;
+
+            for (MultiLineLabel.TextAndWidth var8 : this.getSplitMessage()) {
+               var1x.drawString(var0, var8.text, var2x, var6, var5, false);
                var6 += var4;
             }
 
             return var6;
          }
 
-         @Override
-         public int renderLeftAligned(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
-            int var6 = var3;
+         private List<MultiLineLabel.TextAndWidth> getSplitMessage() {
+            Language var1x = Language.getInstance();
+            if (this.cachedTextAndWidth != null && var1x == this.splitWithLanguage) {
+               return this.cachedTextAndWidth;
+            } else {
+               this.splitWithLanguage = var1x;
+               ArrayList var2x = new ArrayList();
 
-            for (MultiLineLabel.TextWithWidth var8 : var1) {
-               var1x.drawString(var0, var8.text, var2, var6, var5);
-               var6 += var4;
-            }
+               for (Component var6 : var3) {
+                  var2x.addAll(var0.split(var6, var1));
+               }
 
-            return var6;
-         }
+               this.cachedTextAndWidth = new ArrayList<>();
 
-         @Override
-         public int renderLeftAlignedNoShadow(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
-            int var6 = var3;
+               for (FormattedCharSequence var8 : var2x.subList(0, Math.min(var2x.size(), var2))) {
+                  this.cachedTextAndWidth.add(new MultiLineLabel.TextAndWidth(var8, var0.width(var8)));
+               }
 
-            for (MultiLineLabel.TextWithWidth var8 : var1) {
-               var1x.drawString(var0, var8.text, var2, var6, var5, false);
-               var6 += var4;
-            }
-
-            return var6;
-         }
-
-         @Override
-         public void renderBackgroundCentered(GuiGraphics var1x, int var2, int var3, int var4, int var5, int var6) {
-            int var7 = var1.stream().mapToInt(var0xx -> var0xx.width).max().orElse(0);
-            if (var7 > 0) {
-               var1x.fill(var2 - var7 / 2 - var5, var3 - var5, var2 + var7 / 2 + var5, var3 + var1.size() * var4 + var5, var6);
+               return this.cachedTextAndWidth;
             }
          }
 
          @Override
          public int getLineCount() {
-            return var1.size();
+            return this.getSplitMessage().size();
          }
 
          @Override
          public int getWidth() {
-            return this.width;
+            return Math.min(var1, this.getSplitMessage().stream().mapToInt(MultiLineLabel.TextAndWidth::width).max().orElse(0));
          }
       };
    }
 
-   int renderCentered(GuiGraphics var1, int var2, int var3);
+   void renderCentered(GuiGraphics var1, int var2, int var3);
 
-   int renderCentered(GuiGraphics var1, int var2, int var3, int var4, int var5);
+   void renderCentered(GuiGraphics var1, int var2, int var3, int var4, int var5);
 
-   int renderLeftAligned(GuiGraphics var1, int var2, int var3, int var4, int var5);
+   void renderLeftAligned(GuiGraphics var1, int var2, int var3, int var4, int var5);
 
    int renderLeftAlignedNoShadow(GuiGraphics var1, int var2, int var3, int var4, int var5);
-
-   void renderBackgroundCentered(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6);
 
    int getLineCount();
 
    int getWidth();
 
-   public static class TextWithWidth {
-      final FormattedCharSequence text;
-      final int width;
-
-      TextWithWidth(FormattedCharSequence var1, int var2) {
-         super();
-         this.text = var1;
-         this.width = var2;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

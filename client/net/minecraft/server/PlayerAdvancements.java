@@ -150,7 +150,7 @@ public class PlayerAdvancements {
          try (BufferedWriter var2 = Files.newBufferedWriter(this.playerSavePath, StandardCharsets.UTF_8)) {
             GSON.toJson(var1, GSON.newJsonWriter(var2));
          }
-      } catch (IOException var7) {
+      } catch (JsonIOException | IOException var7) {
          LOGGER.error("Couldn't save player advancements to {}", this.playerSavePath, var7);
       }
    }

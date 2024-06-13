@@ -129,7 +129,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    }
 
    @Override
-   protected void jumpFromGround() {
+   public void jumpFromGround() {
       super.jumpFromGround();
       double var1 = this.moveControl.getSpeedModifier();
       if (var1 > 0.0) {

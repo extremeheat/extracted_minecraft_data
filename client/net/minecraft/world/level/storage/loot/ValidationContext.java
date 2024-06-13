@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceKey;
@@ -10,14 +11,18 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 public class ValidationContext {
    private final ProblemReporter reporter;
    private final LootContextParamSet params;
-   private final HolderGetter.Provider resolver;
+   private final Optional<HolderGetter.Provider> resolver;
    private final Set<ResourceKey<?>> visitedElements;
 
    public ValidationContext(ProblemReporter var1, LootContextParamSet var2, HolderGetter.Provider var3) {
-      this(var1, var2, var3, Set.of());
+      this(var1, var2, Optional.of(var3), Set.of());
    }
 
-   private ValidationContext(ProblemReporter var1, LootContextParamSet var2, HolderGetter.Provider var3, Set<ResourceKey<?>> var4) {
+   public ValidationContext(ProblemReporter var1, LootContextParamSet var2) {
+      this(var1, var2, Optional.empty(), Set.of());
+   }
+
+   private ValidationContext(ProblemReporter var1, LootContextParamSet var2, Optional<HolderGetter.Provider> var3, Set<ResourceKey<?>> var4) {
       super();
       this.reporter = var1;
       this.params = var2;
@@ -47,7 +52,11 @@ public class ValidationContext {
    }
 
    public HolderGetter.Provider resolver() {
-      return this.resolver;
+      return this.resolver.orElseThrow(() -> new UnsupportedOperationException("References not allowed"));
+   }
+
+   public boolean allowsReferences() {
+      return this.resolver.isPresent();
    }
 
    public ValidationContext setParams(LootContextParamSet var1) {

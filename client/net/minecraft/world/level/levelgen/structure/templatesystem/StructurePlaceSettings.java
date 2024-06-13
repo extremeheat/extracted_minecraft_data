@@ -18,7 +18,7 @@ public class StructurePlaceSettings {
    private boolean ignoreEntities;
    @Nullable
    private BoundingBox boundingBox;
-   private boolean keepLiquids = true;
+   private LiquidSettings liquidSettings = LiquidSettings.APPLY_WATERLOGGING;
    @Nullable
    private RandomSource random;
    private int palette;
@@ -37,7 +37,7 @@ public class StructurePlaceSettings {
       var1.rotationPivot = this.rotationPivot;
       var1.ignoreEntities = this.ignoreEntities;
       var1.boundingBox = this.boundingBox;
-      var1.keepLiquids = this.keepLiquids;
+      var1.liquidSettings = this.liquidSettings;
       var1.random = this.random;
       var1.palette = this.palette;
       var1.processors.addAll(this.processors);
@@ -76,8 +76,8 @@ public class StructurePlaceSettings {
       return this;
    }
 
-   public StructurePlaceSettings setKeepLiquids(boolean var1) {
-      this.keepLiquids = var1;
+   public StructurePlaceSettings setLiquidSettings(LiquidSettings var1) {
+      this.liquidSettings = var1;
       return this;
    }
 
@@ -138,8 +138,8 @@ public class StructurePlaceSettings {
       return this.processors;
    }
 
-   public boolean shouldKeepLiquids() {
-      return this.keepLiquids;
+   public boolean shouldApplyWaterlogging() {
+      return this.liquidSettings == LiquidSettings.APPLY_WATERLOGGING;
    }
 
    public StructureTemplate.Palette getRandomPalette(List<StructureTemplate.Palette> var1, @Nullable BlockPos var2) {

@@ -8,7 +8,6 @@ import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.core.BlockMath;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -36,70 +35,69 @@ public class FaceBakery {
       Direction var5,
       ModelState var6,
       @Nullable BlockElementRotation var7,
-      boolean var8,
-      ResourceLocation var9
+      boolean var8
    ) {
-      BlockFaceUV var10 = var3.uv;
+      BlockFaceUV var9 = var3.uv();
       if (var6.isUvLocked()) {
-         var10 = recomputeUVs(var3.uv, var5, var6.getRotation(), var9);
+         var9 = recomputeUVs(var3.uv(), var5, var6.getRotation());
       }
 
-      float[] var11 = new float[var10.uvs.length];
-      System.arraycopy(var10.uvs, 0, var11, 0, var11.length);
-      float var12 = var4.uvShrinkRatio();
-      float var13 = (var10.uvs[0] + var10.uvs[0] + var10.uvs[2] + var10.uvs[2]) / 4.0F;
-      float var14 = (var10.uvs[1] + var10.uvs[1] + var10.uvs[3] + var10.uvs[3]) / 4.0F;
-      var10.uvs[0] = Mth.lerp(var12, var10.uvs[0], var13);
-      var10.uvs[2] = Mth.lerp(var12, var10.uvs[2], var13);
-      var10.uvs[1] = Mth.lerp(var12, var10.uvs[1], var14);
-      var10.uvs[3] = Mth.lerp(var12, var10.uvs[3], var14);
-      int[] var15 = this.makeVertices(var10, var4, var5, this.setupShape(var1, var2), var6.getRotation(), var7, var8);
-      Direction var16 = calculateFacing(var15);
-      System.arraycopy(var11, 0, var10.uvs, 0, var11.length);
+      float[] var10 = new float[var9.uvs.length];
+      System.arraycopy(var9.uvs, 0, var10, 0, var10.length);
+      float var11 = var4.uvShrinkRatio();
+      float var12 = (var9.uvs[0] + var9.uvs[0] + var9.uvs[2] + var9.uvs[2]) / 4.0F;
+      float var13 = (var9.uvs[1] + var9.uvs[1] + var9.uvs[3] + var9.uvs[3]) / 4.0F;
+      var9.uvs[0] = Mth.lerp(var11, var9.uvs[0], var12);
+      var9.uvs[2] = Mth.lerp(var11, var9.uvs[2], var12);
+      var9.uvs[1] = Mth.lerp(var11, var9.uvs[1], var13);
+      var9.uvs[3] = Mth.lerp(var11, var9.uvs[3], var13);
+      int[] var14 = this.makeVertices(var9, var4, var5, this.setupShape(var1, var2), var6.getRotation(), var7, var8);
+      Direction var15 = calculateFacing(var14);
+      System.arraycopy(var10, 0, var9.uvs, 0, var10.length);
       if (var7 == null) {
-         this.recalculateWinding(var15, var16);
+         this.recalculateWinding(var14, var15);
       }
 
-      return new BakedQuad(var15, var3.tintIndex, var16, var4, var8);
+      return new BakedQuad(var14, var3.tintIndex(), var15, var4, var8);
    }
 
-   public static BlockFaceUV recomputeUVs(BlockFaceUV var0, Direction var1, Transformation var2, ResourceLocation var3) {
-      Matrix4f var4 = BlockMath.getUVLockTransform(var2, var1, () -> "Unable to resolve UVLock for model: " + var3).getMatrix();
-      float var5 = var0.getU(var0.getReverseIndex(0));
-      float var6 = var0.getV(var0.getReverseIndex(0));
-      Vector4f var7 = var4.transform(new Vector4f(var5 / 16.0F, var6 / 16.0F, 0.0F, 1.0F));
-      float var8 = 16.0F * var7.x();
-      float var9 = 16.0F * var7.y();
-      float var10 = var0.getU(var0.getReverseIndex(2));
-      float var11 = var0.getV(var0.getReverseIndex(2));
-      Vector4f var12 = var4.transform(new Vector4f(var10 / 16.0F, var11 / 16.0F, 0.0F, 1.0F));
-      float var13 = 16.0F * var12.x();
-      float var14 = 16.0F * var12.y();
+   public static BlockFaceUV recomputeUVs(BlockFaceUV var0, Direction var1, Transformation var2) {
+      Matrix4f var3 = BlockMath.getUVLockTransform(var2, var1).getMatrix();
+      float var4 = var0.getU(var0.getReverseIndex(0));
+      float var5 = var0.getV(var0.getReverseIndex(0));
+      Vector4f var6 = var3.transform(new Vector4f(var4 / 16.0F, var5 / 16.0F, 0.0F, 1.0F));
+      float var7 = 16.0F * var6.x();
+      float var8 = 16.0F * var6.y();
+      float var9 = var0.getU(var0.getReverseIndex(2));
+      float var10 = var0.getV(var0.getReverseIndex(2));
+      Vector4f var11 = var3.transform(new Vector4f(var9 / 16.0F, var10 / 16.0F, 0.0F, 1.0F));
+      float var12 = 16.0F * var11.x();
+      float var13 = 16.0F * var11.y();
+      float var14;
       float var15;
+      if (Math.signum(var9 - var4) == Math.signum(var12 - var7)) {
+         var14 = var7;
+         var15 = var12;
+      } else {
+         var14 = var12;
+         var15 = var7;
+      }
+
       float var16;
-      if (Math.signum(var10 - var5) == Math.signum(var13 - var8)) {
-         var15 = var8;
-         var16 = var13;
-      } else {
-         var15 = var13;
-         var16 = var8;
-      }
-
       float var17;
-      float var18;
-      if (Math.signum(var11 - var6) == Math.signum(var14 - var9)) {
-         var17 = var9;
-         var18 = var14;
+      if (Math.signum(var10 - var5) == Math.signum(var13 - var8)) {
+         var16 = var8;
+         var17 = var13;
       } else {
-         var17 = var14;
-         var18 = var9;
+         var16 = var13;
+         var17 = var8;
       }
 
-      float var19 = (float)Math.toRadians((double)var0.rotation);
-      Matrix3f var20 = new Matrix3f(var4);
-      Vector3f var21 = var20.transform(new Vector3f(Mth.cos(var19), Mth.sin(var19), 0.0F));
-      int var22 = Math.floorMod(-((int)Math.round(Math.toDegrees(Math.atan2((double)var21.y(), (double)var21.x())) / 90.0)) * 90, 360);
-      return new BlockFaceUV(new float[]{var15, var17, var16, var18}, var22);
+      float var18 = (float)Math.toRadians((double)var0.rotation);
+      Matrix3f var19 = new Matrix3f(var3);
+      Vector3f var20 = var19.transform(new Vector3f(Mth.cos(var18), Mth.sin(var18), 0.0F));
+      int var21 = Math.floorMod(-((int)Math.round(Math.toDegrees(Math.atan2((double)var20.y(), (double)var20.x())) / 90.0)) * 90, 360);
+      return new BlockFaceUV(new float[]{var14, var16, var15, var17}, var21);
    }
 
    private int[] makeVertices(

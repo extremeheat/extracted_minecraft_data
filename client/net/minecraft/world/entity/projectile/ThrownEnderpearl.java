@@ -13,11 +13,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 
 public class ThrownEnderpearl extends ThrowableItemProjectile {
    public ThrownEnderpearl(EntityType<? extends ThrownEnderpearl> var1, Level var2) {
@@ -58,31 +59,51 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
       if (this.level() instanceof ServerLevel var6 && !this.isRemoved()) {
          Entity var7 = this.getOwner();
-         if (var7 instanceof ServerPlayer var4) {
-            if (var4.connection.isAcceptingMessages() && var4.canChangeDimensions()) {
-               if (this.random.nextFloat() < 0.05F && var6.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                  Endermite var5 = EntityType.ENDERMITE.create(var6);
-                  if (var5 != null) {
-                     var5.moveTo(var7.getX(), var7.getY(), var7.getZ(), var7.getYRot(), var7.getXRot());
-                     var6.addFreshEntity(var5);
+         if (var7 != null && isAllowedToTeleportOwner(var7, var6)) {
+            if (var7.isPassenger()) {
+               var7.unRide();
+            }
+
+            if (var7 instanceof ServerPlayer var4) {
+               if (var4.connection.isAcceptingMessages()) {
+                  if (this.random.nextFloat() < 0.05F && var6.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                     Endermite var5 = EntityType.ENDERMITE.create(var6);
+                     if (var5 != null) {
+                        var5.moveTo(var7.getX(), var7.getY(), var7.getZ(), var7.getYRot(), var7.getXRot());
+                        var6.addFreshEntity(var5);
+                     }
                   }
-               }
 
-               if (var7.isPassenger()) {
-                  this.unRide();
+                  var7.changeDimension(
+                     new DimensionTransition(var6, this.position(), var7.getDeltaMovement(), var7.getYRot(), var7.getXRot(), DimensionTransition.DO_NOTHING)
+                  );
+                  var7.resetFallDistance();
+                  var4.resetCurrentImpulseContext();
+                  var7.hurt(this.damageSources().fall(), 5.0F);
+                  this.playSound(var6, this.position());
                }
-
-               var7.changeDimension(new DimensionTransition(var6, this.position(), var7.getDeltaMovement(), var7.getYRot(), var7.getXRot()));
+            } else {
+               var7.changeDimension(
+                  new DimensionTransition(var6, this.position(), var7.getDeltaMovement(), var7.getYRot(), var7.getXRot(), DimensionTransition.DO_NOTHING)
+               );
                var7.resetFallDistance();
-               var7.hurt(this.damageSources().fall(), 5.0F);
                this.playSound(var6, this.position());
             }
-         } else if (var7 != null) {
-            var7.changeDimension(new DimensionTransition(var6, this.position(), var7.getDeltaMovement(), var7.getYRot(), var7.getXRot()));
-            var7.resetFallDistance();
+
+            this.discard();
+            return;
          }
 
          this.discard();
+         return;
+      }
+   }
+
+   private static boolean isAllowedToTeleportOwner(Entity var0, Level var1) {
+      if (var0.level().dimension() == var1.dimension()) {
+         return !(var0 instanceof LivingEntity var2) ? var0.isAlive() : var2.isAlive() && !var2.isSleeping();
+      } else {
+         return var0.canUsePortal(true);
       }
    }
 
@@ -96,17 +117,22 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       }
    }
 
-   @Nullable
-   @Override
-   public Entity changeDimension(DimensionTransition var1) {
-      if (this.level().dimension() != var1.newLevel().dimension()) {
-         this.disown();
-      }
-
-      return super.changeDimension(var1);
-   }
-
    private void playSound(Level var1, Vec3 var2) {
       var1.playSound(null, var2.x, var2.y, var2.z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
+   }
+
+   @Override
+   public boolean canChangeDimensions(Level var1, Level var2) {
+      return var1.dimension() == Level.END && this.getOwner() instanceof ServerPlayer var3
+         ? super.canChangeDimensions(var1, var2) && var3.seenCredits
+         : super.canChangeDimensions(var1, var2);
+   }
+
+   @Override
+   protected void onInsideBlock(BlockState var1) {
+      super.onInsideBlock(var1);
+      if (var1.is(Blocks.END_GATEWAY) && this.getOwner() instanceof ServerPlayer var2) {
+         var2.onInsideBlock(var1);
+      }
    }
 }

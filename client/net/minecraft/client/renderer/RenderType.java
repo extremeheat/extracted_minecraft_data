@@ -532,6 +532,28 @@ public abstract class RenderType extends RenderStateShard {
          .setOutputState(WEATHER_TARGET)
          .createCompositeState(false)
    );
+   private static final RenderType DRAGON_RAYS = create(
+      "dragon_rays",
+      DefaultVertexFormat.POSITION_COLOR,
+      VertexFormat.Mode.TRIANGLES,
+      1536,
+      false,
+      false,
+      RenderType.CompositeState.builder()
+         .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
+         .setWriteMaskState(COLOR_WRITE)
+         .setTransparencyState(LIGHTNING_TRANSPARENCY)
+         .createCompositeState(false)
+   );
+   private static final RenderType DRAGON_RAYS_DEPTH = create(
+      "dragon_rays_depth",
+      DefaultVertexFormat.POSITION,
+      VertexFormat.Mode.TRIANGLES,
+      1536,
+      false,
+      false,
+      RenderType.CompositeState.builder().setShaderState(RenderStateShard.POSITION_SHADER).setWriteMaskState(DEPTH_WRITE).createCompositeState(false)
+   );
    private static final RenderType TRIPWIRE = create("tripwire", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 1536, true, true, tripwireState());
    private static final RenderType END_PORTAL = create(
       "end_portal",
@@ -637,6 +659,21 @@ public abstract class RenderType extends RenderStateShard {
          .setShaderState(POSITION_COLOR_SHADER)
          .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
          .setCullState(NO_CULL)
+         .createCompositeState(false)
+   );
+   private static final RenderType.CompositeRenderType DEBUG_STRUCTURE_QUADS = create(
+      "debug_structure_quads",
+      DefaultVertexFormat.POSITION_COLOR,
+      VertexFormat.Mode.QUADS,
+      1536,
+      false,
+      true,
+      RenderType.CompositeState.builder()
+         .setShaderState(POSITION_COLOR_SHADER)
+         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+         .setCullState(NO_CULL)
+         .setDepthTestState(LEQUAL_DEPTH_TEST)
+         .setWriteMaskState(COLOR_WRITE)
          .createCompositeState(false)
    );
    private static final RenderType.CompositeRenderType DEBUG_SECTION_QUADS = create(
@@ -961,6 +998,14 @@ public abstract class RenderType extends RenderStateShard {
       return LIGHTNING;
    }
 
+   public static RenderType dragonRays() {
+      return DRAGON_RAYS;
+   }
+
+   public static RenderType dragonRaysDepth() {
+      return DRAGON_RAYS_DEPTH;
+   }
+
    private static RenderType.CompositeState tripwireState() {
       return RenderType.CompositeState.builder()
          .setLightmapState(LIGHTMAP)
@@ -1028,6 +1073,10 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType debugQuads() {
       return DEBUG_QUADS;
+   }
+
+   public static RenderType debugStructureQuads() {
+      return DEBUG_STRUCTURE_QUADS;
    }
 
    public static RenderType debugSectionQuads() {

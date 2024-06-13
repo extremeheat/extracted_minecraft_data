@@ -2,7 +2,7 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import java.util.SortedMap;
+import java.util.SequencedMap;
 import net.minecraft.Util;
 import net.minecraft.client.resources.model.ModelBakery;
 
@@ -16,7 +16,7 @@ public class RenderBuffers {
    public RenderBuffers(int var1) {
       super();
       this.sectionBufferPool = SectionBufferBuilderPool.allocate(var1);
-      SortedMap var2 = Util.make(new Object2ObjectLinkedOpenHashMap(), var1x -> {
+      SequencedMap var2 = Util.make(new Object2ObjectLinkedOpenHashMap(), var1x -> {
          var1x.put(Sheets.solidBlockSheet(), this.fixedBufferPack.buffer(RenderType.solid()));
          var1x.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.buffer(RenderType.cutout()));
          var1x.put(Sheets.bannerSheet(), this.fixedBufferPack.buffer(RenderType.cutoutMipped()));

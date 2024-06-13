@@ -192,35 +192,35 @@ public class BlockModel implements UnbakedModel {
    }
 
    @Override
-   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
-      return this.bake(var1, this, var2, var3, var4, true);
+   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
+      return this.bake(var1, this, var2, var3, true);
    }
 
-   public BakedModel bake(ModelBaker var1, BlockModel var2, Function<Material, TextureAtlasSprite> var3, ModelState var4, ResourceLocation var5, boolean var6) {
-      TextureAtlasSprite var7 = (TextureAtlasSprite)var3.apply(this.getMaterial("particle"));
+   public BakedModel bake(ModelBaker var1, BlockModel var2, Function<Material, TextureAtlasSprite> var3, ModelState var4, boolean var5) {
+      TextureAtlasSprite var6 = (TextureAtlasSprite)var3.apply(this.getMaterial("particle"));
       if (this.getRootModel() == ModelBakery.BLOCK_ENTITY_MARKER) {
-         return new BuiltInModel(this.getTransforms(), this.getItemOverrides(var1, var2), var7, this.getGuiLight().lightLikeBlock());
+         return new BuiltInModel(this.getTransforms(), this.getItemOverrides(var1, var2), var6, this.getGuiLight().lightLikeBlock());
       } else {
-         SimpleBakedModel.Builder var8 = new SimpleBakedModel.Builder(this, this.getItemOverrides(var1, var2), var6).particle(var7);
+         SimpleBakedModel.Builder var7 = new SimpleBakedModel.Builder(this, this.getItemOverrides(var1, var2), var5).particle(var6);
 
-         for (BlockElement var10 : this.getElements()) {
-            for (Direction var12 : var10.faces.keySet()) {
-               BlockElementFace var13 = var10.faces.get(var12);
-               TextureAtlasSprite var14 = (TextureAtlasSprite)var3.apply(this.getMaterial(var13.texture));
-               if (var13.cullForDirection == null) {
-                  var8.addUnculledFace(bakeFace(var10, var13, var14, var12, var4, var5));
+         for (BlockElement var9 : this.getElements()) {
+            for (Direction var11 : var9.faces.keySet()) {
+               BlockElementFace var12 = var9.faces.get(var11);
+               TextureAtlasSprite var13 = (TextureAtlasSprite)var3.apply(this.getMaterial(var12.texture()));
+               if (var12.cullForDirection() == null) {
+                  var7.addUnculledFace(bakeFace(var9, var12, var13, var11, var4));
                } else {
-                  var8.addCulledFace(Direction.rotate(var4.getRotation().getMatrix(), var13.cullForDirection), bakeFace(var10, var13, var14, var12, var4, var5));
+                  var7.addCulledFace(Direction.rotate(var4.getRotation().getMatrix(), var12.cullForDirection()), bakeFace(var9, var12, var13, var11, var4));
                }
             }
          }
 
-         return var8.build();
+         return var7.build();
       }
    }
 
-   private static BakedQuad bakeFace(BlockElement var0, BlockElementFace var1, TextureAtlasSprite var2, Direction var3, ModelState var4, ResourceLocation var5) {
-      return FACE_BAKERY.bakeQuad(var0.from, var0.to, var1, var2, var3, var4, var0.rotation, var0.shade, var5);
+   private static BakedQuad bakeFace(BlockElement var0, BlockElementFace var1, TextureAtlasSprite var2, Direction var3, ModelState var4) {
+      return FACE_BAKERY.bakeQuad(var0.from, var0.to, var1, var2, var3, var4, var0.rotation, var0.shade);
    }
 
    public boolean hasTexture(String var1) {

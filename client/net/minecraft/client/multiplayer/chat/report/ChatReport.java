@@ -45,6 +45,7 @@ public class ChatReport extends Report {
       var1.reportedMessages.addAll(this.reportedMessages);
       var1.comments = this.comments;
       var1.reason = this.reason;
+      var1.attested = this.attested;
       return var1;
    }
 
@@ -89,7 +90,7 @@ public class ChatReport extends Report {
          } else if (this.report.reason == null) {
             return Report.CannotBuildReason.NO_REASON;
          } else {
-            return this.report.comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : null;
+            return this.report.comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
          }
       }
 

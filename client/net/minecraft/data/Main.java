@@ -22,6 +22,7 @@ import net.minecraft.data.info.BiomeParametersDumpReport;
 import net.minecraft.data.info.BlockListReport;
 import net.minecraft.data.info.CommandsReport;
 import net.minecraft.data.info.ItemListReport;
+import net.minecraft.data.info.PacketReport;
 import net.minecraft.data.info.RegistryDumpReport;
 import net.minecraft.data.loot.packs.TradeRebalanceLootTableProvider;
 import net.minecraft.data.loot.packs.VanillaLootTableProvider;
@@ -147,6 +148,7 @@ public class Main {
       var16.addProvider(bindRegistries(BlockListReport::new, var19));
       var16.addProvider(bindRegistries(CommandsReport::new, var19));
       var16.addProvider(RegistryDumpReport::new);
+      var16.addProvider(PacketReport::new);
       var16 = var9.getBuiltinDatapack(var3, "bundle");
       var16.addProvider(bindRegistries(BundleRecipeProvider::new, var19));
       var16.addProvider(

@@ -11,6 +11,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
@@ -48,7 +49,8 @@ public class EmptyPoolElement extends StructurePoolElement {
       Rotation var7,
       BoundingBox var8,
       RandomSource var9,
-      boolean var10
+      LiquidSettings var10,
+      boolean var11
    ) {
       return true;
    }

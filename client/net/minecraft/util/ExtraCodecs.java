@@ -75,7 +75,8 @@ public class ExtraCodecs {
    public static final Codec<Quaternionf> QUATERNIONF_COMPONENTS = Codec.FLOAT
       .listOf()
       .comapFlatMap(
-         var0 -> Util.fixedSize(var0, 4).map(var0x -> new Quaternionf((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3))),
+         var0 -> Util.fixedSize(var0, 4)
+               .map(var0x -> new Quaternionf((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3)).normalize()),
          var0 -> List.of(var0.x, var0.y, var0.z, var0.w)
       );
    public static final Codec<AxisAngle4f> AXISANGLE4F = RecordCodecBuilder.create(

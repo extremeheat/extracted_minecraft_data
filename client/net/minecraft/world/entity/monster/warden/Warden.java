@@ -20,6 +20,8 @@ import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -126,8 +128,8 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    @Override
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this, this.hasPose(Pose.EMERGING) ? 1 : 0);
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      return new ClientboundAddEntityPacket(this, var1, this.hasPose(Pose.EMERGING) ? 1 : 0);
    }
 
    @Override
@@ -408,31 +410,33 @@ public class Warden extends Monster implements VibrationSystem {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       AngerManagement.codec(this::canTargetEntity)
-         .encodeStart(NbtOps.INSTANCE, this.angerManagement)
-         .resultOrPartial(LOGGER::error)
+         .encodeStart(var2, this.angerManagement)
+         .resultOrPartial(var0 -> LOGGER.error("Failed to encode anger state for Warden: '{}'", var0))
          .ifPresent(var1x -> var1.put("anger", var1x));
       VibrationSystem.Data.CODEC
-         .encodeStart(NbtOps.INSTANCE, this.vibrationData)
-         .resultOrPartial(LOGGER::error)
+         .encodeStart(var2, this.vibrationData)
+         .resultOrPartial(var0 -> LOGGER.error("Failed to encode vibration listener for Warden: '{}'", var0))
          .ifPresent(var1x -> var1.put("listener", var1x));
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("anger")) {
          AngerManagement.codec(this::canTargetEntity)
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.get("anger")))
-            .resultOrPartial(LOGGER::error)
+            .parse(var2, var1.get("anger"))
+            .resultOrPartial(var0 -> LOGGER.error("Failed to parse anger state for Warden: '{}'", var0))
             .ifPresent(var1x -> this.angerManagement = var1x);
          this.syncClientAngerLevel();
       }
 
       if (var1.contains("listener", 10)) {
          VibrationSystem.Data.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("listener")))
-            .resultOrPartial(LOGGER::error)
+            .parse(var2, var1.getCompound("listener"))
+            .resultOrPartial(var0 -> LOGGER.error("Failed to parse vibration listener for Warden: '{}'", var0))
             .ifPresent(var1x -> this.vibrationData = var1x);
       }
    }

@@ -181,7 +181,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       this.lightEngine = new ThreadedLevelLightEngine(var7, this, this.level.dimensionType().hasSkyLight(), var20, this.queueSorter.getProcessor(var20, false));
       this.distanceManager = new ChunkMap.DistanceManager(var5, var6);
       this.overworldDataStorage = var11;
-      this.poiManager = new PoiManager(new RegionStorageInfo(var2.getLevelId(), var1.dimension(), "poi"), var14.resolve("poi"), var3, var13, var15, var1);
+      this.poiManager = new PoiManager(
+         new RegionStorageInfo(var2.getLevelId(), var1.dimension(), "poi"), var14.resolve("poi"), var3, var13, var15, var1.getServer(), var1
+      );
       this.setServerViewDistance(var12);
       this.worldGenContext = new WorldGenContext(var1, var8, var4, this.lightEngine, this.mainThreadMailbox);
    }
@@ -515,7 +517,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          })).thenApplyAsync(var2 -> {
          this.level.getProfiler().incrementCounter("chunkLoad");
          if (var2.isPresent()) {
-            ProtoChunk var3 = ChunkSerializer.read(this.level, this.poiManager, var1, var2.get());
+            ProtoChunk var3 = ChunkSerializer.read(this.level, this.poiManager, this.storageInfo(), var1, var2.get());
             this.markPosition(var1, var3.getPersistedStatus().getChunkType());
             return var3;
          } else {
@@ -533,9 +535,11 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       Throwable var9 = var3 instanceof ReportedException var5 ? var5.getCause() : var3;
       boolean var10 = var9 instanceof Error;
       boolean var6 = var9 instanceof IOException || var9 instanceof NbtException;
-      if (!var10 && var6) {
-         LOGGER.error("Couldn't load chunk {}", var2, var9);
-         this.level.getServer().reportChunkLoadFailure(var2);
+      if (!var10) {
+         if (!var6) {
+         }
+
+         this.level.getServer().reportChunkLoadFailure(var9, this.storageInfo(), var2);
          return this.createEmptyChunk(var2);
       } else {
          CrashReport var7 = CrashReport.forThrowable(var1, "Exception loading chunk");
@@ -718,15 +722,14 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
             this.level.getProfiler().incrementCounter("chunkSave");
             CompoundTag var4 = ChunkSerializer.write(this.level, var1);
-            this.write(var2, var4).exceptionallyAsync(var2x -> {
-               this.level.getServer().reportChunkSaveFailure(var2);
+            this.write(var2, var4).exceptionally(var2x -> {
+               this.level.getServer().reportChunkSaveFailure(var2x, this.storageInfo(), var2);
                return null;
-            }, this.mainThreadExecutor);
+            });
             this.markPosition(var2, var3.getChunkType());
             return true;
          } catch (Exception var5) {
-            LOGGER.error("Failed to save chunk {},{}", new Object[]{var2.x, var2.z, var5});
-            this.level.getServer().reportChunkSaveFailure(var2);
+            this.level.getServer().reportChunkSaveFailure(var5, this.storageInfo(), var2);
             return false;
          }
       }

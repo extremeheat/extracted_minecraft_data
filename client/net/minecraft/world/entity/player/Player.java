@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -127,6 +128,7 @@ public abstract class Player extends LivingEntity {
    public static final float SWIMMING_BB_WIDTH = 0.6F;
    public static final float SWIMMING_BB_HEIGHT = 0.6F;
    public static final float DEFAULT_EYE_HEIGHT = 1.62F;
+   private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
    public static final Vec3 DEFAULT_VEHICLE_ATTACHMENT = new Vec3(0.0, 0.6, 0.0);
    public static final EntityDimensions STANDING_DIMENSIONS = EntityDimensions.scalable(0.6F, 1.8F)
       .withEyeHeight(1.62F)
@@ -188,7 +190,8 @@ public abstract class Player extends LivingEntity {
    public Vec3 currentImpulseImpactPos;
    @Nullable
    public Entity currentExplosionCause;
-   public boolean ignoreFallDamageFromCurrentImpulse;
+   private boolean ignoreFallDamageFromCurrentImpulse;
+   private int currentImpulseContextResetGraceTime;
 
    public Player(Level var1, BlockPos var2, float var3, GameProfile var4) {
       super(EntityType.PLAYER, var1);
@@ -311,6 +314,9 @@ public abstract class Player extends LivingEntity {
       this.turtleHelmetTick();
       this.cooldowns.tick();
       this.updatePlayerPose();
+      if (this.currentImpulseContextResetGraceTime > 0) {
+         this.currentImpulseContextResetGraceTime--;
+      }
    }
 
    @Override
@@ -615,8 +621,10 @@ public abstract class Player extends LivingEntity {
       }
    }
 
-   private ItemStack getAttackingItemStack() {
-      return this.isAutoSpinAttack() && this.autoSpinAttackItemStack != null ? this.autoSpinAttackItemStack : this.getMainHandItem();
+   @Nonnull
+   @Override
+   public ItemStack getWeaponItem() {
+      return this.isAutoSpinAttack() && this.autoSpinAttackItemStack != null ? this.autoSpinAttackItemStack : super.getWeaponItem();
    }
 
    @Override
@@ -796,6 +804,7 @@ public abstract class Player extends LivingEntity {
       }
 
       this.ignoreFallDamageFromCurrentImpulse = var1.getBoolean("ignore_fall_damage_from_current_explosion");
+      this.currentImpulseContextResetGraceTime = var1.getInt("current_impulse_context_reset_grace_time");
    }
 
    @Override
@@ -829,6 +838,7 @@ public abstract class Player extends LivingEntity {
       }
 
       var1.putBoolean("ignore_fall_damage_from_current_explosion", this.ignoreFallDamageFromCurrentImpulse);
+      var1.putInt("current_impulse_context_reset_grace_time", this.currentImpulseContextResetGraceTime);
    }
 
    @Override
@@ -1116,7 +1126,7 @@ public abstract class Player extends LivingEntity {
       if (var1.isAttackable()) {
          if (!var1.skipAttackInteraction(this)) {
             float var2 = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
-            ItemStack var3 = this.getAttackingItemStack();
+            ItemStack var3 = this.getWeaponItem();
             DamageSource var4 = this.damageSources().playerAttack(this);
             float var5 = this.getEnchantedDamage(var1, var2, var4) - var2;
             float var6 = this.getAttackStrengthScale(0.5F);
@@ -1131,9 +1141,9 @@ public abstract class Player extends LivingEntity {
             }
 
             if (var2 > 0.0F || var5 > 0.0F) {
-               boolean var29 = var6 > 0.9F;
+               boolean var28 = var6 > 0.9F;
                boolean var8;
-               if (this.isSprinting() && var29) {
+               if (this.isSprinting() && var28) {
                   this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
                   var8 = true;
                } else {
@@ -1141,7 +1151,7 @@ public abstract class Player extends LivingEntity {
                }
 
                var2 += var3.getItem().getAttackDamageBonus(var1, var2, var4);
-               boolean var9 = var29
+               boolean var9 = var28
                   && this.fallDistance > 0.0F
                   && !this.onGround()
                   && !this.onClimbable()
@@ -1154,35 +1164,35 @@ public abstract class Player extends LivingEntity {
                   var2 *= 1.5F;
                }
 
-               float var11 = var2 + var5;
-               boolean var12 = false;
-               double var13 = (double)(this.walkDist - this.walkDistO);
-               if (var29 && !var9 && !var8 && this.onGround() && var13 < (double)this.getSpeed()) {
-                  ItemStack var15 = this.getItemInHand(InteractionHand.MAIN_HAND);
-                  if (var15.getItem() instanceof SwordItem) {
-                     var12 = true;
+               float var10 = var2 + var5;
+               boolean var11 = false;
+               double var12 = (double)(this.walkDist - this.walkDistO);
+               if (var28 && !var9 && !var8 && this.onGround() && var12 < (double)this.getSpeed()) {
+                  ItemStack var14 = this.getItemInHand(InteractionHand.MAIN_HAND);
+                  if (var14.getItem() instanceof SwordItem) {
+                     var11 = true;
                   }
                }
 
-               float var30 = 0.0F;
-               if (var1 instanceof LivingEntity var16) {
-                  var30 = var16.getHealth();
+               float var29 = 0.0F;
+               if (var1 instanceof LivingEntity var15) {
+                  var29 = var15.getHealth();
                }
 
-               Vec3 var31 = var1.getDeltaMovement();
-               boolean var17 = var1.hurt(var4, var11);
-               if (var17) {
-                  float var18 = this.getKnockback(var1, var4) + (var8 ? 1.0F : 0.0F);
-                  if (var18 > 0.0F) {
-                     if (var1 instanceof LivingEntity var19) {
-                        var19.knockback(
-                           (double)(var18 * 0.5F), (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F))
+               Vec3 var30 = var1.getDeltaMovement();
+               boolean var16 = var1.hurt(var4, var10);
+               if (var16) {
+                  float var17 = this.getKnockback(var1, var4) + (var8 ? 1.0F : 0.0F);
+                  if (var17 > 0.0F) {
+                     if (var1 instanceof LivingEntity var18) {
+                        var18.knockback(
+                           (double)(var17 * 0.5F), (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F))
                         );
                      } else {
                         var1.push(
-                           (double)(-Mth.sin(this.getYRot() * 0.017453292F) * var18 * 0.5F),
+                           (double)(-Mth.sin(this.getYRot() * 0.017453292F) * var17 * 0.5F),
                            0.1,
-                           (double)(Mth.cos(this.getYRot() * 0.017453292F) * var18 * 0.5F)
+                           (double)(Mth.cos(this.getYRot() * 0.017453292F) * var17 * 0.5F)
                         );
                      }
 
@@ -1190,22 +1200,22 @@ public abstract class Player extends LivingEntity {
                      this.setSprinting(false);
                   }
 
-                  if (var12) {
-                     float var32 = 1.0F + (float)this.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * var2;
+                  if (var11) {
+                     float var31 = 1.0F + (float)this.getAttributeValue(Attributes.SWEEPING_DAMAGE_RATIO) * var2;
 
-                     for (LivingEntity var22 : this.level().getEntitiesOfClass(LivingEntity.class, var1.getBoundingBox().inflate(1.0, 0.25, 1.0))) {
-                        if (var22 != this
-                           && var22 != var1
-                           && !this.isAlliedTo(var22)
-                           && (!(var22 instanceof ArmorStand) || !((ArmorStand)var22).isMarker())
-                           && this.distanceToSqr(var22) < 9.0) {
-                           float var23 = this.getEnchantedDamage(var22, var32, var4) * var6;
-                           var22.knockback(
+                     for (LivingEntity var21 : this.level().getEntitiesOfClass(LivingEntity.class, var1.getBoundingBox().inflate(1.0, 0.25, 1.0))) {
+                        if (var21 != this
+                           && var21 != var1
+                           && !this.isAlliedTo(var21)
+                           && (!(var21 instanceof ArmorStand) || !((ArmorStand)var21).isMarker())
+                           && this.distanceToSqr(var21) < 9.0) {
+                           float var22 = this.getEnchantedDamage(var21, var31, var4) * var6;
+                           var21.knockback(
                               0.4000000059604645, (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F))
                            );
-                           var22.hurt(var4, var23);
-                           if (this.level() instanceof ServerLevel var24) {
-                              EnchantmentHelper.doPostAttackEffects(var24, var22, var4);
+                           var21.hurt(var4, var22);
+                           if (this.level() instanceof ServerLevel var23) {
+                              EnchantmentHelper.doPostAttackEffects(var23, var21, var4);
                            }
                         }
                      }
@@ -1217,7 +1227,7 @@ public abstract class Player extends LivingEntity {
                   if (var1 instanceof ServerPlayer && var1.hurtMarked) {
                      ((ServerPlayer)var1).connection.send(new ClientboundSetEntityMotionPacket(var1));
                      var1.hurtMarked = false;
-                     var1.setDeltaMovement(var31);
+                     var1.setDeltaMovement(var30);
                   }
 
                   if (var9) {
@@ -1225,8 +1235,8 @@ public abstract class Player extends LivingEntity {
                      this.crit(var1);
                   }
 
-                  if (!var9 && !var12) {
-                     if (var29) {
+                  if (!var9 && !var11) {
+                     if (var28) {
                         this.level()
                            .playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, this.getSoundSource(), 1.0F, 1.0F);
                      } else {
@@ -1239,23 +1249,23 @@ public abstract class Player extends LivingEntity {
                   }
 
                   this.setLastHurtMob(var1);
-                  Object var33 = var1;
+                  Object var32 = var1;
                   if (var1 instanceof EnderDragonPart) {
-                     var33 = ((EnderDragonPart)var1).parentMob;
+                     var32 = ((EnderDragonPart)var1).parentMob;
                   }
 
-                  boolean var34 = false;
-                  if (this.level() instanceof ServerLevel var35) {
-                     if (var33 instanceof LivingEntity var38) {
-                        var34 = var3.hurtEnemy(var38, this);
+                  boolean var33 = false;
+                  if (this.level() instanceof ServerLevel var34) {
+                     if (var32 instanceof LivingEntity var37) {
+                        var33 = var3.hurtEnemy(var37, this);
                      }
 
-                     EnchantmentHelper.doPostAttackEffects(var35, var1, var4);
+                     EnchantmentHelper.doPostAttackEffects(var34, var1, var4);
                   }
 
-                  if (!this.level().isClientSide && !var3.isEmpty() && var33 instanceof LivingEntity) {
-                     if (var34) {
-                        var3.postHurtEnemy((LivingEntity)var33, this);
+                  if (!this.level().isClientSide && !var3.isEmpty() && var32 instanceof LivingEntity) {
+                     if (var33) {
+                        var3.postHurtEnemy((LivingEntity)var32, this);
                      }
 
                      if (var3.isEmpty()) {
@@ -1268,12 +1278,12 @@ public abstract class Player extends LivingEntity {
                   }
 
                   if (var1 instanceof LivingEntity) {
-                     float var36 = var30 - ((LivingEntity)var1).getHealth();
-                     this.awardStat(Stats.DAMAGE_DEALT, Math.round(var36 * 10.0F));
-                     if (this.level() instanceof ServerLevel && var36 > 2.0F) {
-                        int var39 = (int)((double)var36 * 0.5);
+                     float var35 = var29 - ((LivingEntity)var1).getHealth();
+                     this.awardStat(Stats.DAMAGE_DEALT, Math.round(var35 * 10.0F));
+                     if (this.level() instanceof ServerLevel && var35 > 2.0F) {
+                        int var38 = (int)((double)var35 * 0.5);
                         ((ServerLevel)this.level())
-                           .sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var39, 0.1, 0.0, 0.1, 0.2);
+                           .sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var38, 0.1, 0.0, 0.1, 0.2);
                      }
                   }
 
@@ -1481,13 +1491,25 @@ public abstract class Player extends LivingEntity {
             this.awardStat(Stats.FALL_ONE_CM, (int)Math.round((double)var1 * 100.0));
          }
 
+         boolean var4;
          if (this.ignoreFallDamageFromCurrentImpulse && this.currentImpulseImpactPos != null) {
-            double var4 = this.currentImpulseImpactPos.y;
-            this.resetCurrentImpulseContext();
-            return var4 < this.getY() ? false : super.causeFallDamage((float)(var4 - this.getY()), var2, var3);
+            double var5 = this.currentImpulseImpactPos.y;
+            this.tryResetCurrentImpulseContext();
+            if (var5 < this.getY()) {
+               return false;
+            }
+
+            float var7 = Math.min(var1, (float)(var5 - this.getY()));
+            var4 = super.causeFallDamage(var7, var2, var3);
          } else {
-            return super.causeFallDamage(var1, var2, var3);
+            var4 = super.causeFallDamage(var1, var2, var3);
          }
+
+         if (var4) {
+            this.resetCurrentImpulseContext();
+         }
+
+         return var4;
       }
    }
 
@@ -1556,7 +1578,7 @@ public abstract class Player extends LivingEntity {
          super.makeStuckInBlock(var1, var2);
       }
 
-      this.resetCurrentImpulseContext();
+      this.tryResetCurrentImpulseContext();
    }
 
    public void giveExperiencePoints(int var1) {
@@ -2003,7 +2025,9 @@ public abstract class Player extends LivingEntity {
             return ((ItemStack)var5.get()).copy();
          }
 
-         this.getInventory().add(((ItemStack)var5.get()).copy());
+         if (!this.level().isClientSide()) {
+            this.getInventory().add(((ItemStack)var5.get()).copy());
+         }
       }
 
       return var4;
@@ -2107,7 +2131,27 @@ public abstract class Player extends LivingEntity {
       return new AABB(var1).distanceToSqr(this.getEyePosition()) < var4 * var4;
    }
 
+   public void setIgnoreFallDamageFromCurrentImpulse(boolean var1) {
+      this.ignoreFallDamageFromCurrentImpulse = var1;
+      if (var1) {
+         this.currentImpulseContextResetGraceTime = 40;
+      } else {
+         this.currentImpulseContextResetGraceTime = 0;
+      }
+   }
+
+   public boolean isIgnoringFallDamageFromCurrentImpulse() {
+      return this.ignoreFallDamageFromCurrentImpulse;
+   }
+
+   public void tryResetCurrentImpulseContext() {
+      if (this.currentImpulseContextResetGraceTime == 0) {
+         this.resetCurrentImpulseContext();
+      }
+   }
+
    public void resetCurrentImpulseContext() {
+      this.currentImpulseContextResetGraceTime = 0;
       this.currentExplosionCause = null;
       this.currentImpulseImpactPos = null;
       this.ignoreFallDamageFromCurrentImpulse = false;

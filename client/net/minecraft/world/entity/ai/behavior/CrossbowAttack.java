@@ -62,7 +62,7 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
 
          int var3 = var1.getTicksUsingItem();
          ItemStack var4 = var1.getUseItem();
-         if (var3 >= CrossbowItem.getChargeDuration(var1)) {
+         if (var3 >= CrossbowItem.getChargeDuration(var4, var1)) {
             var1.releaseUsingItem();
             this.crossbowState = CrossbowAttack.CrossbowState.CHARGED;
             this.attackDelay = 20 + var1.getRandom().nextInt(20);

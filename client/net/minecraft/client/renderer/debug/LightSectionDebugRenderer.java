@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.Instant;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
@@ -84,51 +85,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       float var13 = (float)((double)SectionPos.sectionToBlockCoord(var9) - var3);
       float var14 = (float)((double)SectionPos.sectionToBlockCoord(var10) - var5);
       float var15 = (float)((double)SectionPos.sectionToBlockCoord(var11) - var7);
-      float var16 = var13 + 16.0F;
-      float var17 = var14 + 16.0F;
-      float var18 = var15 + 16.0F;
-      float var19 = var12.x();
-      float var20 = var12.y();
-      float var21 = var12.z();
-      float var22 = var12.w();
-      Matrix4f var23 = var0.last().pose();
-      switch (var2) {
-         case DOWN:
-            var1.addVertex(var23, var13, var14, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var14, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var14, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var13, var14, var18).setColor(var19, var20, var21, var22);
-            break;
-         case UP:
-            var1.addVertex(var23, var13, var17, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var13, var17, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var17, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var17, var15).setColor(var19, var20, var21, var22);
-            break;
-         case NORTH:
-            var1.addVertex(var23, var13, var14, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var13, var17, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var17, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var14, var15).setColor(var19, var20, var21, var22);
-            break;
-         case SOUTH:
-            var1.addVertex(var23, var13, var14, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var14, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var17, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var13, var17, var18).setColor(var19, var20, var21, var22);
-            break;
-         case WEST:
-            var1.addVertex(var23, var13, var14, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var13, var14, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var13, var17, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var13, var17, var15).setColor(var19, var20, var21, var22);
-            break;
-         case EAST:
-            var1.addVertex(var23, var16, var14, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var17, var15).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var17, var18).setColor(var19, var20, var21, var22);
-            var1.addVertex(var23, var16, var14, var18).setColor(var19, var20, var21, var22);
-      }
+      LevelRenderer.renderFace(var0, var1, var2, var13, var14, var15, var13 + 16.0F, var14 + 16.0F, var15 + 16.0F, var12.x(), var12.y(), var12.z(), var12.w());
    }
 
    private static void renderEdge(

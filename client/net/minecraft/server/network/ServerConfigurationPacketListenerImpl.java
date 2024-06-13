@@ -72,7 +72,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
       ServerLinks var1 = this.server.serverLinks();
       if (!var1.isEmpty()) {
-         this.send(new ClientboundServerLinksPacket(var1));
+         this.send(new ClientboundServerLinksPacket(var1.untrust()));
       }
 
       LayeredRegistryAccess var2 = this.server.registries();
@@ -122,7 +122,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    public void handleConfigurationFinished(ServerboundFinishConfigurationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.server);
       this.finishCurrentTask(JoinWorldTask.TYPE);
-      this.connection.setupOutboundProtocol(GameProtocols.CLIENTBOUND.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())));
+      this.connection.setupOutboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())));
 
       try {
          PlayerList var2 = this.server.getPlayerList();

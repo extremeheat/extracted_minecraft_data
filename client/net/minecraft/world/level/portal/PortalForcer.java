@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -19,8 +20,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 public class PortalForcer {
    public static final int TICKET_RADIUS = 3;
-   private static final int SEARCH_RADIUS = 128;
-   private static final int CREATE_RADIUS = 16;
+   private static final int NETHER_PORTAL_RADIUS = 16;
+   private static final int OVERWORLD_PORTAL_RADIUS = 128;
    private static final int FRAME_HEIGHT = 5;
    private static final int FRAME_WIDTH = 4;
    private static final int FRAME_BOX = 3;
@@ -38,24 +39,15 @@ public class PortalForcer {
       this.level = var1;
    }
 
-   public Optional<BlockUtil.FoundRectangle> findPortalAround(BlockPos var1, boolean var2, WorldBorder var3) {
+   public Optional<BlockPos> findClosestPortalPosition(BlockPos var1, boolean var2, WorldBorder var3) {
       PoiManager var4 = this.level.getPoiManager();
       int var5 = var2 ? 16 : 128;
       var4.ensureLoadedAndValid(this.level, var1, var5);
-      Optional var6 = var4.getInSquare(var0 -> var0.is(PoiTypes.NETHER_PORTAL), var1, var5, PoiManager.Occupancy.ANY)
-         .filter(var1x -> var3.isWithinBounds(var1x.getPos()))
-         .sorted(Comparator.<PoiRecord>comparingDouble(var1x -> var1x.getPos().distSqr(var1)).thenComparingInt(var0 -> var0.getPos().getY()))
-         .filter(var1x -> this.level.getBlockState(var1x.getPos()).hasProperty(BlockStateProperties.HORIZONTAL_AXIS))
-         .findFirst();
-      return var6.map(
-         var1x -> {
-            BlockPos var2x = var1x.getPos();
-            BlockState var3x = this.level.getBlockState(var2x);
-            return BlockUtil.getLargestRectangleAround(
-               var2x, var3x.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, var2xx -> this.level.getBlockState(var2xx) == var3x
-            );
-         }
-      );
+      return var4.getInSquare(var0 -> var0.is(PoiTypes.NETHER_PORTAL), var1, var5, PoiManager.Occupancy.ANY)
+         .map(PoiRecord::getPos)
+         .filter(var3::isWithinBounds)
+         .filter(var1x -> this.level.getBlockState(var1x).hasProperty(BlockStateProperties.HORIZONTAL_AXIS))
+         .min(Comparator.<BlockPos>comparingDouble(var1x -> var1x.distSqr(var1)).thenComparingInt(Vec3i::getY));
    }
 
    public Optional<BlockUtil.FoundRectangle> createPortal(BlockPos var1, Direction.Axis var2) {
@@ -66,37 +58,37 @@ public class PortalForcer {
       BlockPos var9 = null;
       WorldBorder var10 = this.level.getWorldBorder();
       int var11 = Math.min(this.level.getMaxBuildHeight(), this.level.getMinBuildHeight() + this.level.getLogicalHeight()) - 1;
-      BlockPos.MutableBlockPos var12 = var1.mutable();
+      boolean var12 = true;
+      BlockPos.MutableBlockPos var13 = var1.mutable();
 
-      for (BlockPos.MutableBlockPos var14 : BlockPos.spiralAround(var1, 16, Direction.EAST, Direction.SOUTH)) {
-         int var15 = Math.min(var11, this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, var14.getX(), var14.getZ()));
-         boolean var16 = true;
-         if (var10.isWithinBounds(var14) && var10.isWithinBounds(var14.move(var3, 1))) {
-            var14.move(var3.getOpposite(), 1);
+      for (BlockPos.MutableBlockPos var15 : BlockPos.spiralAround(var1, 16, Direction.EAST, Direction.SOUTH)) {
+         int var16 = Math.min(var11, this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, var15.getX(), var15.getZ()));
+         if (var10.isWithinBounds(var15) && var10.isWithinBounds(var15.move(var3, 1))) {
+            var15.move(var3.getOpposite(), 1);
 
-            for (int var17 = var15; var17 >= this.level.getMinBuildHeight(); var17--) {
-               var14.setY(var17);
-               if (this.canPortalReplaceBlock(var14)) {
+            for (int var17 = var16; var17 >= this.level.getMinBuildHeight(); var17--) {
+               var15.setY(var17);
+               if (this.canPortalReplaceBlock(var15)) {
                   int var18 = var17;
 
-                  while (var17 > this.level.getMinBuildHeight() && this.canPortalReplaceBlock(var14.move(Direction.DOWN))) {
+                  while (var17 > this.level.getMinBuildHeight() && this.canPortalReplaceBlock(var15.move(Direction.DOWN))) {
                      var17--;
                   }
 
                   if (var17 + 4 <= var11) {
                      int var19 = var18 - var17;
                      if (var19 <= 0 || var19 >= 3) {
-                        var14.setY(var17);
-                        if (this.canHostFrame(var14, var12, var3, 0)) {
-                           double var20 = var1.distSqr(var14);
-                           if (this.canHostFrame(var14, var12, var3, -1) && this.canHostFrame(var14, var12, var3, 1) && (var4 == -1.0 || var4 > var20)) {
+                        var15.setY(var17);
+                        if (this.canHostFrame(var15, var13, var3, 0)) {
+                           double var20 = var1.distSqr(var15);
+                           if (this.canHostFrame(var15, var13, var3, -1) && this.canHostFrame(var15, var13, var3, 1) && (var4 == -1.0 || var4 > var20)) {
                               var4 = var20;
-                              var6 = var14.immutable();
+                              var6 = var15.immutable();
                            }
 
                            if (var4 == -1.0 && (var7 == -1.0 || var7 > var20)) {
                               var7 = var20;
-                              var9 = var14.immutable();
+                              var9 = var15.immutable();
                            }
                         }
                      }
@@ -112,44 +104,42 @@ public class PortalForcer {
       }
 
       if (var4 == -1.0) {
-         int var22 = Math.max(this.level.getMinBuildHeight() - -1, 70);
-         int var25 = var11 - 9;
-         if (var25 < var22) {
+         int var23 = Math.max(this.level.getMinBuildHeight() - -1, 70);
+         int var26 = var11 - 9;
+         if (var26 < var23) {
             return Optional.empty();
          }
 
-         var6 = new BlockPos(var1.getX(), Mth.clamp(var1.getY(), var22, var25), var1.getZ()).immutable();
-         Direction var28 = var3.getClockWise();
-         if (!var10.isWithinBounds(var6)) {
-            return Optional.empty();
-         }
+         var6 = new BlockPos(var1.getX() - var3.getStepX() * 1, Mth.clamp(var1.getY(), var23, var26), var1.getZ() - var3.getStepZ() * 1).immutable();
+         var6 = var10.clampToBounds(var6);
+         Direction var29 = var3.getClockWise();
 
-         for (int var30 = -1; var30 < 2; var30++) {
-            for (int var31 = 0; var31 < 2; var31++) {
-               for (int var32 = -1; var32 < 3; var32++) {
-                  BlockState var33 = var32 < 0 ? Blocks.OBSIDIAN.defaultBlockState() : Blocks.AIR.defaultBlockState();
-                  var12.setWithOffset(var6, var31 * var3.getStepX() + var30 * var28.getStepX(), var32, var31 * var3.getStepZ() + var30 * var28.getStepZ());
-                  this.level.setBlockAndUpdate(var12, var33);
+         for (int var31 = -1; var31 < 2; var31++) {
+            for (int var32 = 0; var32 < 2; var32++) {
+               for (int var33 = -1; var33 < 3; var33++) {
+                  BlockState var34 = var33 < 0 ? Blocks.OBSIDIAN.defaultBlockState() : Blocks.AIR.defaultBlockState();
+                  var13.setWithOffset(var6, var32 * var3.getStepX() + var31 * var29.getStepX(), var33, var32 * var3.getStepZ() + var31 * var29.getStepZ());
+                  this.level.setBlockAndUpdate(var13, var34);
                }
             }
          }
       }
 
-      for (int var23 = -1; var23 < 3; var23++) {
-         for (int var26 = -1; var26 < 4; var26++) {
-            if (var23 == -1 || var23 == 2 || var26 == -1 || var26 == 3) {
-               var12.setWithOffset(var6, var23 * var3.getStepX(), var26, var23 * var3.getStepZ());
-               this.level.setBlock(var12, Blocks.OBSIDIAN.defaultBlockState(), 3);
+      for (int var24 = -1; var24 < 3; var24++) {
+         for (int var27 = -1; var27 < 4; var27++) {
+            if (var24 == -1 || var24 == 2 || var27 == -1 || var27 == 3) {
+               var13.setWithOffset(var6, var24 * var3.getStepX(), var27, var24 * var3.getStepZ());
+               this.level.setBlock(var13, Blocks.OBSIDIAN.defaultBlockState(), 3);
             }
          }
       }
 
-      BlockState var24 = Blocks.NETHER_PORTAL.defaultBlockState().setValue(NetherPortalBlock.AXIS, var2);
+      BlockState var25 = Blocks.NETHER_PORTAL.defaultBlockState().setValue(NetherPortalBlock.AXIS, var2);
 
-      for (int var27 = 0; var27 < 2; var27++) {
-         for (int var29 = 0; var29 < 3; var29++) {
-            var12.setWithOffset(var6, var27 * var3.getStepX(), var29, var27 * var3.getStepZ());
-            this.level.setBlock(var12, var24, 18);
+      for (int var28 = 0; var28 < 2; var28++) {
+         for (int var30 = 0; var30 < 3; var30++) {
+            var13.setWithOffset(var6, var28 * var3.getStepX(), var30, var28 * var3.getStepZ());
+            this.level.setBlock(var13, var25, 18);
          }
       }
 
