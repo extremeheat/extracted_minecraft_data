@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.vertex;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
 
 public class Tesselator {
@@ -10,7 +9,6 @@ public class Tesselator {
    private static Tesselator instance;
 
    public static void init() {
-      RenderSystem.assertOnGameThreadOrInit();
       if (instance != null) {
          throw new IllegalStateException("Tesselator has already been initialized");
       } else {
@@ -19,7 +17,6 @@ public class Tesselator {
    }
 
    public static Tesselator getInstance() {
-      RenderSystem.assertOnGameThreadOrInit();
       if (instance == null) {
          throw new IllegalStateException("Tesselator has not been initialized");
       } else {

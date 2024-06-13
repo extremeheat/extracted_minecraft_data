@@ -25,7 +25,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -154,12 +153,12 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    @Override
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
-      super.dropCustomDeathLoot(var1, var2);
-      if (var1.getEntity() instanceof Creeper var4 && var4.canDropMobsSkull()) {
-         ItemStack var5 = new ItemStack(Items.PIGLIN_HEAD);
-         var4.increaseDroppedSkulls();
-         this.spawnAtLocation(var5);
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropCustomDeathLoot(var1, var2, var3);
+      if (var2.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
+         ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
+         var5.increaseDroppedSkulls();
+         this.spawnAtLocation(var6);
       }
 
       this.inventory.removeAllItems().forEach(this::spawnAtLocation);
@@ -214,7 +213,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
       PiglinAi.initMemories(this, var1.getRandom());
       this.populateDefaultEquipmentSlots(var5, var2);
-      this.populateDefaultEquipmentEnchantments(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var1, var5, var2);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
@@ -408,7 +407,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    protected boolean canReplaceCurrentItem(ItemStack var1) {
-      EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       ItemStack var3 = this.getItemBySlot(var2);
       return this.canReplaceCurrentItem(var1, var3);
    }

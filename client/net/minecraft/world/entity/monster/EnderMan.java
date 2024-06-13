@@ -332,19 +332,21 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    @Override
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
-      super.dropCustomDeathLoot(var1, var2);
-      BlockState var3 = this.getCarriedBlock();
-      if (var3 != null) {
-         ItemStack var4 = new ItemStack(Items.DIAMOND_AXE);
-         EnchantmentHelper.enchantItemFromProvider(var4, VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, this.level(), this.blockPosition(), this.getRandom());
-         LootParams.Builder var5 = new LootParams.Builder((ServerLevel)this.level())
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropCustomDeathLoot(var1, var2, var3);
+      BlockState var4 = this.getCarriedBlock();
+      if (var4 != null) {
+         ItemStack var5 = new ItemStack(Items.DIAMOND_AXE);
+         EnchantmentHelper.enchantItemFromProvider(
+            var5, var1.registryAccess(), VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, var1.getCurrentDifficultyAt(this.blockPosition()), this.getRandom()
+         );
+         LootParams.Builder var6 = new LootParams.Builder((ServerLevel)this.level())
             .withParameter(LootContextParams.ORIGIN, this.position())
-            .withParameter(LootContextParams.TOOL, var4)
+            .withParameter(LootContextParams.TOOL, var5)
             .withOptionalParameter(LootContextParams.THIS_ENTITY, this);
 
-         for (ItemStack var8 : var3.getDrops(var5)) {
-            this.spawnAtLocation(var8);
+         for (ItemStack var9 : var4.getDrops(var6)) {
+            this.spawnAtLocation(var9);
          }
       }
    }

@@ -106,11 +106,11 @@ public class Main {
          }
 
          Stopwatch var36 = Stopwatch.createStarted(Ticker.systemTicker());
-         Stopwatch var83 = Stopwatch.createStarted(Ticker.systemTicker());
+         Stopwatch var81 = Stopwatch.createStarted(Ticker.systemTicker());
          GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_TOTAL_TIME_MS, var36);
-         GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS, var83);
+         GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS, var81);
          SharedConstants.tryDetectVersion();
-         CompletableFuture var85 = DataFixers.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST);
+         CompletableFuture var83 = DataFixers.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST);
          CrashReport.preload();
          var33 = LogUtils.getLogger();
          var35 = "Bootstrap";
@@ -134,7 +134,7 @@ public class Main {
          if (var42 != null) {
             try {
                var43 = new Proxy(Type.SOCKS, new InetSocketAddress(var42, parseArgument(var30, var11)));
-            } catch (Exception var80) {
+            } catch (Exception var78) {
             }
          }
 
@@ -184,9 +184,9 @@ public class Main {
             new GameConfig.QuickPlayData(var64, var65, var66, var67)
          );
          Util.startTimerHackThread();
-         var85.join();
-      } catch (Throwable var81) {
-         CrashReport var37 = CrashReport.forThrowable(var81, var35);
+         var83.join();
+      } catch (Throwable var79) {
+         CrashReport var37 = CrashReport.forThrowable(var79, var35);
          CrashReportCategory var38 = var37.addCategory("Initialization");
          NativeModuleLister.addCrashSection(var38);
          Minecraft.fillReport(null, null, var32, null, var37);
@@ -194,7 +194,7 @@ public class Main {
          return;
       }
 
-      Thread var82 = new Thread("Client Shutdown Thread") {
+      Thread var80 = new Thread("Client Shutdown Thread") {
          @Override
          public void run() {
             Minecraft var1 = Minecraft.getInstance();
@@ -206,60 +206,37 @@ public class Main {
             }
          }
       };
-      var82.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(var33));
-      Runtime.getRuntime().addShutdownHook(var82);
-      final Minecraft var84 = null;
+      var80.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(var33));
+      Runtime.getRuntime().addShutdownHook(var80);
+      Minecraft var82 = null;
 
       try {
          Thread.currentThread().setName("Render thread");
          RenderSystem.initRenderThread();
          RenderSystem.beginInitialization();
-         var84 = new Minecraft(var34);
+         var82 = new Minecraft(var34);
          RenderSystem.finishInitialization();
-      } catch (SilentInitException var78) {
+      } catch (SilentInitException var76) {
          Util.shutdownExecutors();
-         var33.warn("Failed to create window: ", var78);
+         var33.warn("Failed to create window: ", var76);
          return;
-      } catch (Throwable var79) {
-         CrashReport var87 = CrashReport.forThrowable(var79, "Initializing game");
-         CrashReportCategory var89 = var87.addCategory("Initialization");
-         NativeModuleLister.addCrashSection(var89);
-         Minecraft.fillReport(var84, null, var34.game.launchVersion, null, var87);
-         Minecraft.crash(var84, var34.location.gameDirectory, var87);
+      } catch (Throwable var77) {
+         CrashReport var85 = CrashReport.forThrowable(var77, "Initializing game");
+         CrashReportCategory var86 = var85.addCategory("Initialization");
+         NativeModuleLister.addCrashSection(var86);
+         Minecraft.fillReport(var82, null, var34.game.launchVersion, null, var85);
+         Minecraft.crash(var82, var34.location.gameDirectory, var85);
          return;
       }
 
-      Minecraft var86 = var84;
-      Thread var88;
-      if (var84.renderOnThread()) {
-         var88 = new Thread("Game thread") {
-            @Override
-            public void run() {
-               RenderSystem.initGameThread(true);
-               var84.run();
-            }
-         };
-         var88.start();
-
-         while (var86.isRunning()) {
-         }
-      } else {
-         var88 = null;
-         RenderSystem.initGameThread(false);
-         var84.run();
-      }
-
+      Minecraft var84 = var82;
+      var82.run();
       BufferUploader.reset();
 
       try {
-         var86.stop();
-         if (var88 != null) {
-            var88.join();
-         }
-      } catch (InterruptedException var76) {
-         var33.error("Exception during client thread shutdown", var76);
+         var84.stop();
       } finally {
-         var86.destroy();
+         var82.destroy();
       }
    }
 

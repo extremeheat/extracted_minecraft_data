@@ -55,7 +55,6 @@ public final class Window implements AutoCloseable {
 
    public Window(WindowEventHandler var1, ScreenManager var2, DisplayData var3, @Nullable String var4, String var5) {
       super();
-      RenderSystem.assertInInitPhase();
       this.screenManager = var2;
       this.setBootErrorCallback();
       this.setErrorSection("Pre startup");
@@ -114,7 +113,6 @@ public final class Window implements AutoCloseable {
    }
 
    public static void checkGlfwError(BiConsumer<Integer, String> var0) {
-      RenderSystem.assertInInitPhase();
       MemoryStack var1 = MemoryStack.stackPush();
 
       try {
@@ -143,7 +141,6 @@ public final class Window implements AutoCloseable {
    }
 
    public void setIcon(PackResources var1, IconSet var2) throws IOException {
-      RenderSystem.assertInInitPhase();
       int var3 = GLFW.glfwGetPlatform();
       switch (var3) {
          case 393217:
@@ -204,12 +201,10 @@ public final class Window implements AutoCloseable {
    }
 
    private void setBootErrorCallback() {
-      RenderSystem.assertInInitPhase();
       GLFW.glfwSetErrorCallback(Window::bootCrash);
    }
 
    private static void bootCrash(int var0, long var1) {
-      RenderSystem.assertInInitPhase();
       String var3 = "GLFW error " + var0 + ": " + MemoryUtil.memUTF8(var1);
       TinyFileDialogs.tinyfd_messageBox(
          "Minecraft", var3 + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).", "ok", "error", false
@@ -267,7 +262,6 @@ public final class Window implements AutoCloseable {
    }
 
    private void refreshFramebufferSize() {
-      RenderSystem.assertInInitPhase();
       int[] var1 = new int[1];
       int[] var2 = new int[1];
       GLFW.glfwGetFramebufferSize(this.window, var1, var2);
@@ -329,7 +323,6 @@ public final class Window implements AutoCloseable {
    }
 
    private void setMode() {
-      RenderSystem.assertInInitPhase();
       boolean var1 = GLFW.glfwGetWindowMonitor(this.window) != 0L;
       if (this.fullscreen) {
          Monitor var2 = this.screenManager.findBestMonitor(this);

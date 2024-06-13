@@ -35,6 +35,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
+import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.phys.AABB;
@@ -61,7 +62,7 @@ public class JigsawPlacement {
       Optional<Heightmap.Types> var6,
       int var7,
       PoolAliasLookup var8,
-      int var9
+      DimensionPadding var9
    ) {
       RegistryAccess var10 = var0.registryAccess();
       ChunkGenerator var11 = var0.chunkGenerator();
@@ -120,10 +121,10 @@ public class JigsawPlacement {
                   if (var3 > 0) {
                      AABB var18x = new AABB(
                         (double)(var24 - var7),
-                        (double)Math.max(var28 - var7, var13.getMinBuildHeight() + var9),
+                        (double)Math.max(var28 - var7, var13.getMinBuildHeight() + var9.bottom()),
                         (double)(var25 - var7),
                         (double)(var24 + var7 + 1),
-                        (double)Math.min(var28 + var7 + 1, var13.getMaxBuildHeight() - var9),
+                        (double)Math.min(var28 + var7 + 1, var13.getMaxBuildHeight() - var9.top()),
                         (double)(var25 + var7 + 1)
                      );
                      VoxelShape var19x = Shapes.join(Shapes.create(var18x), Shapes.create(AABB.of(var23)), BooleanOp.ONLY_FIRST);
@@ -184,7 +185,9 @@ public class JigsawPlacement {
       Structure.GenerationContext var10 = new Structure.GenerationContext(
          var0.registryAccess(), var6, var6.getBiomeSource(), var0.getChunkSource().randomState(), var7, var0.getSeed(), new ChunkPos(var4), var0, var0x -> true
       );
-      Optional var11 = addPieces(var10, var1, Optional.of(var2), var3, var4, false, Optional.empty(), 128, PoolAliasLookup.EMPTY, 0);
+      Optional var11 = addPieces(
+         var10, var1, Optional.of(var2), var3, var4, false, Optional.empty(), 128, PoolAliasLookup.EMPTY, JigsawStructure.DEFAULT_DIMENSION_PADDING
+      );
       if (var11.isPresent()) {
          StructurePiecesBuilder var12 = ((Structure.GenerationStub)var11.get()).getPiecesBuilder();
 

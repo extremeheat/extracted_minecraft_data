@@ -12,22 +12,30 @@ public class ServerboundUseItemPacket implements Packet<ServerGamePacketListener
    );
    private final InteractionHand hand;
    private final int sequence;
+   private final float yRot;
+   private final float xRot;
 
-   public ServerboundUseItemPacket(InteractionHand var1, int var2) {
+   public ServerboundUseItemPacket(InteractionHand var1, int var2, float var3, float var4) {
       super();
       this.hand = var1;
       this.sequence = var2;
+      this.yRot = var3;
+      this.xRot = var4;
    }
 
    private ServerboundUseItemPacket(FriendlyByteBuf var1) {
       super();
       this.hand = var1.readEnum(InteractionHand.class);
       this.sequence = var1.readVarInt();
+      this.yRot = var1.readFloat();
+      this.xRot = var1.readFloat();
    }
 
    private void write(FriendlyByteBuf var1) {
       var1.writeEnum(this.hand);
       var1.writeVarInt(this.sequence);
+      var1.writeFloat(this.yRot);
+      var1.writeFloat(this.xRot);
    }
 
    @Override
@@ -45,5 +53,13 @@ public class ServerboundUseItemPacket implements Packet<ServerGamePacketListener
 
    public int getSequence() {
       return this.sequence;
+   }
+
+   public float getYRot() {
+      return this.yRot;
+   }
+
+   public float getXRot() {
+      return this.xRot;
    }
 }

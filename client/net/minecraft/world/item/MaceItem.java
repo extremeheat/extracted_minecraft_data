@@ -84,10 +84,9 @@ public class MaceItem extends Item {
          }
 
          knockback(var5, var4, var2);
-         return true;
       }
 
-      return false;
+      return true;
    }
 
    @Override

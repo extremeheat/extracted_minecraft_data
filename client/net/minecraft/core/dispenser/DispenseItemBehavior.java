@@ -15,6 +15,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Saddleable;
@@ -141,7 +142,8 @@ public interface DispenseItemBehavior {
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
 
-            for (AbstractHorse var6 : var1.level().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canWearBodyArmor())) {
+            for (AbstractHorse var6 : var1.level()
+               .getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canUseSlot(EquipmentSlot.BODY))) {
                if (var6.isBodyArmorItem(var2) && !var6.isWearingBodyArmor() && var6.isTamed()) {
                   var6.setBodyArmorItem(var2.split(1));
                   this.setSuccess(true);
@@ -277,7 +279,8 @@ public interface DispenseItemBehavior {
             }
 
             if (this.isSuccess()) {
-               var2.hurtAndBreak(1, var3, null, () -> var2.setCount(0));
+               var2.hurtAndBreak(1, var3, null, var0 -> {
+               });
             }
 
             return var2;
@@ -444,9 +447,7 @@ public interface DispenseItemBehavior {
             } else {
                for (Armadillo var7 : var5) {
                   if (var7.brushOffScute()) {
-                     var2.hurtAndBreak(16, var3, null, () -> {
-                        var2.shrink(1);
-                        var2.setDamageValue(0);
+                     var2.hurtAndBreak(16, var3, null, var0 -> {
                      });
                      return var2;
                   }

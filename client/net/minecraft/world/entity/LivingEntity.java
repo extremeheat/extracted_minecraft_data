@@ -666,6 +666,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
          for (MobEffectInstance var3 : this.getActiveEffects()) {
             var3.onMobRemoved(this, var1);
          }
+
+         this.activeEffects.clear();
       }
 
       super.remove(var1);
@@ -1158,9 +1160,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
                   DoubleDoubleImmutablePair var22 = var12.calculateHorizontalHurtKnockbackDirection(this, var1);
                   var17 = -var22.leftDouble();
                   var20 = -var22.rightDouble();
-               } else if (var15 != null) {
-                  var17 = var15.getX() - this.getX();
-                  var20 = var15.getZ() - this.getZ();
+               } else if (var1.getSourcePosition() != null) {
+                  var17 = var1.getSourcePosition().x() - this.getX();
+                  var20 = var1.getSourcePosition().z() - this.getZ();
                }
 
                this.knockback(0.4000000059604645, var17, var20);
@@ -1329,7 +1331,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
          if (this.level() instanceof ServerLevel var4) {
             if (var2 == null || var2.killedEntity(var4, this)) {
                this.gameEvent(GameEvent.ENTITY_DIE);
-               this.dropAllDeathLoot(var1);
+               this.dropAllDeathLoot(var4, var1);
                this.createWitherRose(var3);
             }
 
@@ -1361,15 +1363,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   protected void dropAllDeathLoot(DamageSource var1) {
-      boolean var2 = this.lastHurtByPlayerTime > 0;
-      if (this.shouldDropLoot() && this.level().getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-         this.dropFromLootTable(var1, var2);
-         this.dropCustomDeathLoot(var1, var2);
+   protected void dropAllDeathLoot(ServerLevel var1, DamageSource var2) {
+      boolean var3 = this.lastHurtByPlayerTime > 0;
+      if (this.shouldDropLoot() && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         this.dropFromLootTable(var2, var3);
+         this.dropCustomDeathLoot(var1, var2, var3);
       }
 
       this.dropEquipment();
-      this.dropExperience(var1.getEntity());
+      this.dropExperience(var2.getEntity());
    }
 
    protected void dropEquipment() {
@@ -1386,7 +1388,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
    }
 
    public ResourceKey<LootTable> getLootTable() {
@@ -2436,8 +2438,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       for (EquipmentSlot var5 : EquipmentSlot.values()) {
          ItemStack var6 = switch (var5.getType()) {
             case HAND -> this.getLastHandItem(var5);
-            case ARMOR -> this.getLastArmorItem(var5);
-            case BODY -> this.lastBodyItemStack;
+            case HUMANOID_ARMOR -> this.getLastArmorItem(var5);
+            case ANIMAL_ARMOR -> this.lastBodyItemStack;
          };
          ItemStack var7 = this.getItemBySlot(var5);
          if (this.equipmentHasChanged(var6, var7)) {
@@ -2505,10 +2507,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
             case HAND:
                this.setLastHandItem(var2x, var4);
                break;
-            case ARMOR:
+            case HUMANOID_ARMOR:
                this.setLastArmorItem(var2x, var4);
                break;
-            case BODY:
+            case ANIMAL_ARMOR:
                this.lastBodyItemStack = var4;
          }
       });
@@ -3363,8 +3365,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       };
    }
 
-   public void broadcastBreakEvent(EquipmentSlot var1) {
-      this.level().broadcastEntityEvent(this, entityEventForEquipmentBreak(var1));
+   public void onEquippedItemBroken(Item var1, EquipmentSlot var2) {
+      this.level().broadcastEntityEvent(this, entityEventForEquipmentBreak(var2));
    }
 
    public static EquipmentSlot getSlotForHand(InteractionHand var0) {
@@ -3381,14 +3383,21 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   public static EquipmentSlot getEquipmentSlotForItem(ItemStack var0) {
-      Equipable var1 = Equipable.get(var0);
-      return var1 != null ? var1.getEquipmentSlot() : EquipmentSlot.MAINHAND;
+   public EquipmentSlot getEquipmentSlotForItem(ItemStack var1) {
+      Equipable var2 = Equipable.get(var1);
+      if (var2 != null) {
+         EquipmentSlot var3 = var2.getEquipmentSlot();
+         if (this.canUseSlot(var3)) {
+            return var3;
+         }
+      }
+
+      return EquipmentSlot.MAINHAND;
    }
 
    private static SlotAccess createEquipmentSlotAccess(LivingEntity var0, EquipmentSlot var1) {
       return var1 != EquipmentSlot.HEAD && var1 != EquipmentSlot.MAINHAND && var1 != EquipmentSlot.OFFHAND
-         ? SlotAccess.forEquipmentSlot(var0, var1, var1x -> var1x.isEmpty() || Mob.getEquipmentSlotForItem(var1x) == var1)
+         ? SlotAccess.forEquipmentSlot(var0, var1, var2 -> var2.isEmpty() || var0.getEquipmentSlotForItem(var2) == var1)
          : SlotAccess.forEquipmentSlot(var0, var1);
    }
 

@@ -948,11 +948,6 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                         .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)))
                   )
                   .add(
-                     LootItem.lootTableItem(Items.REDSTONE)
-                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 2.0F)))
-                        .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)))
-                  )
-                  .add(
                      LootItem.lootTableItem(Items.SPIDER_EYE)
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 2.0F)))
                         .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)))
@@ -971,6 +966,15 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                      LootItem.lootTableItem(Items.STICK)
                         .setWeight(2)
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 2.0F)))
+                        .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)))
+                  )
+            )
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(
+                     LootItem.lootTableItem(Items.REDSTONE)
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 8.0F)))
                         .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries, UniformGenerator.between(0.0F, 1.0F)))
                   )
             )

@@ -424,50 +424,54 @@ public class Mth {
    }
 
    public static int hsvToRgb(float var0, float var1, float var2) {
-      int var3 = (int)(var0 * 6.0F) % 6;
-      float var4 = var0 * 6.0F - (float)var3;
-      float var5 = var2 * (1.0F - var1);
-      float var6 = var2 * (1.0F - var4 * var1);
-      float var7 = var2 * (1.0F - (1.0F - var4) * var1);
-      float var8;
+      return hsvToArgb(var0, var1, var2, 0);
+   }
+
+   public static int hsvToArgb(float var0, float var1, float var2, int var3) {
+      int var4 = (int)(var0 * 6.0F) % 6;
+      float var5 = var0 * 6.0F - (float)var4;
+      float var6 = var2 * (1.0F - var1);
+      float var7 = var2 * (1.0F - var5 * var1);
+      float var8 = var2 * (1.0F - (1.0F - var5) * var1);
       float var9;
       float var10;
-      switch (var3) {
+      float var11;
+      switch (var4) {
          case 0:
-            var8 = var2;
-            var9 = var7;
-            var10 = var5;
+            var9 = var2;
+            var10 = var8;
+            var11 = var6;
             break;
          case 1:
-            var8 = var6;
-            var9 = var2;
-            var10 = var5;
+            var9 = var7;
+            var10 = var2;
+            var11 = var6;
             break;
          case 2:
-            var8 = var5;
-            var9 = var2;
-            var10 = var7;
-            break;
-         case 3:
-            var8 = var5;
             var9 = var6;
             var10 = var2;
+            var11 = var8;
+            break;
+         case 3:
+            var9 = var6;
+            var10 = var7;
+            var11 = var2;
             break;
          case 4:
-            var8 = var7;
-            var9 = var5;
-            var10 = var2;
+            var9 = var8;
+            var10 = var6;
+            var11 = var2;
             break;
          case 5:
-            var8 = var2;
-            var9 = var5;
+            var9 = var2;
             var10 = var6;
+            var11 = var7;
             break;
          default:
             throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + var0 + ", " + var1 + ", " + var2);
       }
 
-      return FastColor.ARGB32.color(0, clamp((int)(var8 * 255.0F), 0, 255), clamp((int)(var9 * 255.0F), 0, 255), clamp((int)(var10 * 255.0F), 0, 255));
+      return FastColor.ARGB32.color(var3, clamp((int)(var9 * 255.0F), 0, 255), clamp((int)(var10 * 255.0F), 0, 255), clamp((int)(var11 * 255.0F), 0, 255));
    }
 
    public static int murmurHash3Mixer(int var0) {

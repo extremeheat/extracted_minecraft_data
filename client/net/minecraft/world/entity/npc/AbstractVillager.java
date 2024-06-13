@@ -13,7 +13,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -161,9 +160,11 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      MerchantOffers var2 = this.getOffers();
-      if (!var2.isEmpty()) {
-         var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow());
+      if (!this.level().isClientSide) {
+         MerchantOffers var2 = this.getOffers();
+         if (!var2.isEmpty()) {
+            var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow());
+         }
       }
 
       this.writeInventoryToTag(var1, this.registryAccess());
@@ -184,7 +185,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    @Nullable
    @Override
-   public Entity changeDimension(ServerLevel var1) {
+   public Entity changeDimension(Entity.DimensionTransitionSupplier var1) {
       this.stopTrading();
       return super.changeDimension(var1);
    }

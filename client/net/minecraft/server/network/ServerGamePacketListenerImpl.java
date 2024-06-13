@@ -888,12 +888,12 @@ public class ServerGamePacketListenerImpl
                         }
                      }
 
-                     AABB var42 = this.player.getBoundingBox();
+                     AABB var43 = this.player.getBoundingBox();
                      var17 = var3 - this.lastGoodX;
                      var19 = var5 - this.lastGoodY;
                      var21 = var7 - this.lastGoodZ;
-                     boolean var43 = var19 > 0.0;
-                     if (this.player.onGround() && !var1.isOnGround() && var43) {
+                     boolean var44 = var19 > 0.0;
+                     if (this.player.onGround() && !var1.isOnGround() && var44) {
                         this.player.jumpFromGround();
                      }
 
@@ -919,7 +919,7 @@ public class ServerGamePacketListenerImpl
 
                      if (this.player.noPhysics
                         || this.player.isSleeping()
-                        || (!var33 || !var2.noCollision(this.player, var42)) && !this.isPlayerCollidingWithAnythingNew(var2, var42, var3, var5, var7)) {
+                        || (!var33 || !var2.noCollision(this.player, var43)) && !this.isPlayerCollidingWithAnythingNew(var2, var43, var3, var5, var7)) {
                         this.player.absMoveTo(var3, var5, var7, var9, var10);
                         boolean var34 = this.player.isAutoSpinAttack();
                         this.clientIsFloating = var19 >= -0.03125
@@ -933,11 +933,10 @@ public class ServerGamePacketListenerImpl
                            && this.noBlocksAround(this.player);
                         this.player.serverLevel().getChunkSource().move(this.player);
                         this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
-                        this.player
-                           .setOnGroundWithKnownMovement(
-                              var1.isOnGround(), new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15)
-                           );
-                        if (var43) {
+                        Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
+                        this.player.setOnGroundWithMovement(var1.isOnGround(), var35);
+                        this.player.setKnownMovement(var35);
+                        if (var44) {
                            this.player.resetFallDistance();
                         }
 
@@ -1106,8 +1105,14 @@ public class ServerGamePacketListenerImpl
       ItemStack var4 = this.player.getItemInHand(var3);
       this.player.resetLastActionTime();
       if (!var4.isEmpty() && var4.isItemEnabled(var2.enabledFeatures())) {
-         InteractionResult var5 = this.player.gameMode.useItem(this.player, var2, var4, var3);
-         if (var5.shouldSwing()) {
+         float var5 = Mth.wrapDegrees(var1.getYRot());
+         float var6 = Mth.wrapDegrees(var1.getXRot());
+         if (var6 != this.player.getXRot() || var5 != this.player.getYRot()) {
+            this.player.absRotateTo(var5, var6);
+         }
+
+         InteractionResult var7 = this.player.gameMode.useItem(this.player, var2, var4, var3);
+         if (var7.shouldSwing()) {
             this.player.swing(var3, true);
          }
       }
@@ -1551,14 +1556,14 @@ public class ServerGamePacketListenerImpl
          case PERFORM_RESPAWN:
             if (this.player.wonGame) {
                this.player.wonGame = false;
-               this.player = this.server.getPlayerList().respawn(this.player, true);
+               this.player = this.server.getPlayerList().respawn(this.player, true, Entity.RemovalReason.CHANGED_DIMENSION);
                CriteriaTriggers.CHANGED_DIMENSION.trigger(this.player, Level.END, Level.OVERWORLD);
             } else {
                if (this.player.getHealth() > 0.0F) {
                   return;
                }
 
-               this.player = this.server.getPlayerList().respawn(this.player, false);
+               this.player = this.server.getPlayerList().respawn(this.player, false, Entity.RemovalReason.KILLED);
                if (this.server.isHardcore()) {
                   this.player.setGameMode(GameType.SPECTATOR);
                   this.player.level().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(false, this.server);

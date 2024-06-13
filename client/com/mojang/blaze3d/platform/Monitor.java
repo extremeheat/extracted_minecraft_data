@@ -1,7 +1,6 @@
 package com.mojang.blaze3d.platform;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -24,7 +23,6 @@ public final class Monitor {
    }
 
    public void refreshVideoModes() {
-      RenderSystem.assertInInitPhase();
       this.videoModes.clear();
       Buffer var1 = GLFW.glfwGetVideoModes(this.monitor);
 
@@ -46,7 +44,6 @@ public final class Monitor {
    }
 
    public VideoMode getPreferredVidMode(Optional<VideoMode> var1) {
-      RenderSystem.assertInInitPhase();
       if (var1.isPresent()) {
          VideoMode var2 = (VideoMode)var1.get();
 
@@ -61,7 +58,6 @@ public final class Monitor {
    }
 
    public int getVideoModeIndex(VideoMode var1) {
-      RenderSystem.assertInInitPhase();
       return this.videoModes.indexOf(var1);
    }
 

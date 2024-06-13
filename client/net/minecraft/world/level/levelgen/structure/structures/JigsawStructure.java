@@ -15,12 +15,14 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
+import net.minecraft.world.level.levelgen.structure.pools.DimensionPadding;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
 
 public final class JigsawStructure extends Structure {
+   public static final DimensionPadding DEFAULT_DIMENSION_PADDING = DimensionPadding.ZERO;
    public static final int MAX_TOTAL_STRUCTURE_RANGE = 128;
    public static final int MIN_DEPTH = 0;
    public static final int MAX_DEPTH = 20;
@@ -35,12 +37,11 @@ public final class JigsawStructure extends Structure {
                   Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap").forGetter(var0x -> var0x.projectStartToHeightmap),
                   Codec.intRange(1, 128).fieldOf("max_distance_from_center").forGetter(var0x -> var0x.maxDistanceFromCenter),
                   Codec.list(PoolAliasBinding.CODEC).optionalFieldOf("pool_aliases", List.of()).forGetter(var0x -> var0x.poolAliases),
-                  Codec.intRange(0, 2147483647).lenientOptionalFieldOf("dimension_padding", 0).forGetter(var0x -> var0x.dimensionPadding)
+                  DimensionPadding.CODEC.optionalFieldOf("dimension_padding", DEFAULT_DIMENSION_PADDING).forGetter(var0x -> var0x.dimensionPadding)
                )
                .apply(var0, JigsawStructure::new)
       )
       .validate(JigsawStructure::verifyRange);
-   public static final int DEFAULT_DIMENSION_PADDING = 0;
    private final Holder<StructureTemplatePool> startPool;
    private final Optional<ResourceLocation> startJigsawName;
    private final int maxDepth;
@@ -49,7 +50,7 @@ public final class JigsawStructure extends Structure {
    private final Optional<Heightmap.Types> projectStartToHeightmap;
    private final int maxDistanceFromCenter;
    private final List<PoolAliasBinding> poolAliases;
-   private final int dimensionPadding;
+   private final DimensionPadding dimensionPadding;
 
    private static DataResult<JigsawStructure> verifyRange(JigsawStructure var0) {
       byte var1 = switch (var0.terrainAdaptation()) {
@@ -71,7 +72,7 @@ public final class JigsawStructure extends Structure {
       Optional<Heightmap.Types> var7,
       int var8,
       List<PoolAliasBinding> var9,
-      int var10
+      DimensionPadding var10
    ) {
       super(var1);
       this.startPool = var2;
@@ -88,11 +89,11 @@ public final class JigsawStructure extends Structure {
    public JigsawStructure(
       Structure.StructureSettings var1, Holder<StructureTemplatePool> var2, int var3, HeightProvider var4, boolean var5, Heightmap.Types var6
    ) {
-      this(var1, var2, Optional.empty(), var3, var4, var5, Optional.of(var6), 80, List.of(), 0);
+      this(var1, var2, Optional.empty(), var3, var4, var5, Optional.of(var6), 80, List.of(), DEFAULT_DIMENSION_PADDING);
    }
 
    public JigsawStructure(Structure.StructureSettings var1, Holder<StructureTemplatePool> var2, int var3, HeightProvider var4, boolean var5) {
-      this(var1, var2, Optional.empty(), var3, var4, var5, Optional.empty(), 80, List.of(), 0);
+      this(var1, var2, Optional.empty(), var3, var4, var5, Optional.empty(), 80, List.of(), DEFAULT_DIMENSION_PADDING);
    }
 
    @Override

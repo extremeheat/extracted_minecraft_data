@@ -43,29 +43,29 @@ public class ChunkStorage implements AutoCloseable {
       ResourceKey<Level> var1, Supplier<DimensionDataStorage> var2, CompoundTag var3, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> var4
    ) {
       int var5 = getVersion(var3);
-
-      try {
-         if (var5 < 1493) {
-            var3 = DataFixTypes.CHUNK.update(this.fixerUpper, var3, var5, 1493);
-            if (var3.getCompound("Level").getBoolean("hasLegacyStructureData")) {
-               LegacyStructureDataHandler var6 = this.getLegacyStructureHandler(var1, var2);
-               var3 = var6.updateFromLegacy(var3);
-            }
-         }
-
-         injectDatafixingContext(var3, var1, var4);
-         var3 = DataFixTypes.CHUNK.updateToCurrentVersion(this.fixerUpper, var3, Math.max(1493, var5));
-         if (var5 < SharedConstants.getCurrentVersion().getDataVersion().getVersion()) {
-            NbtUtils.addCurrentDataVersion(var3);
-         }
-
-         var3.remove("__context");
+      if (var5 == SharedConstants.getCurrentVersion().getDataVersion().getVersion()) {
          return var3;
-      } catch (Exception var9) {
-         CrashReport var7 = CrashReport.forThrowable(var9, "Updated chunk");
-         CrashReportCategory var8 = var7.addCategory("Updated chunk details");
-         var8.setDetail("Data version", var5);
-         throw new ReportedException(var7);
+      } else {
+         try {
+            if (var5 < 1493) {
+               var3 = DataFixTypes.CHUNK.update(this.fixerUpper, var3, var5, 1493);
+               if (var3.getCompound("Level").getBoolean("hasLegacyStructureData")) {
+                  LegacyStructureDataHandler var6 = this.getLegacyStructureHandler(var1, var2);
+                  var3 = var6.updateFromLegacy(var3);
+               }
+            }
+
+            injectDatafixingContext(var3, var1, var4);
+            var3 = DataFixTypes.CHUNK.updateToCurrentVersion(this.fixerUpper, var3, Math.max(1493, var5));
+            removeDatafixingContext(var3);
+            NbtUtils.addCurrentDataVersion(var3);
+            return var3;
+         } catch (Exception var9) {
+            CrashReport var7 = CrashReport.forThrowable(var9, "Updated chunk");
+            CrashReportCategory var8 = var7.addCategory("Updated chunk details");
+            var8.setDetail("Data version", var5);
+            throw new ReportedException(var7);
+         }
       }
    }
 
@@ -88,6 +88,10 @@ public class ChunkStorage implements AutoCloseable {
       var3.putString("dimension", var1.location().toString());
       var2.ifPresent(var1x -> var3.putString("generator", var1x.location().toString()));
       var0.put("__context", var3);
+   }
+
+   private static void removeDatafixingContext(CompoundTag var0) {
+      var0.remove("__context");
    }
 
    public static int getVersion(CompoundTag var0) {

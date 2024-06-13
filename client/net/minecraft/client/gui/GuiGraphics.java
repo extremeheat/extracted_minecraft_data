@@ -324,6 +324,16 @@ public class GuiGraphics {
       }
    }
 
+   public int drawStringWithBackdrop(Font var1, Component var2, int var3, int var4, int var5, int var6) {
+      int var7 = this.minecraft.options.getBackgroundColor(0.0F);
+      if (var7 != 0) {
+         byte var8 = 2;
+         this.fill(var3 - 2, var4 - 2, var3 + var5 + 2, var4 + 9 + 2, FastColor.ARGB32.multiply(var7, var6));
+      }
+
+      return this.drawString(var1, var2, var3, var4, var6, true);
+   }
+
    public void blit(int var1, int var2, int var3, int var4, int var5, TextureAtlasSprite var6) {
       this.blitSprite(var6, var1, var2, var3, var4, var5);
    }
@@ -649,7 +659,9 @@ public class GuiGraphics {
          }
 
          LocalPlayer var11 = this.minecraft.player;
-         float var12 = var11 == null ? 0.0F : var11.getCooldowns().getCooldownPercent(var2.getItem(), this.minecraft.getFrameTime());
+         float var12 = var11 == null
+            ? 0.0F
+            : var11.getCooldowns().getCooldownPercent(var2.getItem(), this.minecraft.getTimer().getGameTimeDeltaPartialTick(true));
          if (var12 > 0.0F) {
             int var13 = var4 + Mth.floor(16.0F * (1.0F - var12));
             int var14 = var13 + Mth.ceil(16.0F * var12);

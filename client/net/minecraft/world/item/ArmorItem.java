@@ -55,7 +55,7 @@ public class ArmorItem extends Item implements Equipable {
          return false;
       } else {
          LivingEntity var4 = (LivingEntity)var3.get(0);
-         EquipmentSlot var5 = Mob.getEquipmentSlotForItem(var1);
+         EquipmentSlot var5 = var4.getEquipmentSlotForItem(var1);
          ItemStack var6 = var1.split(1);
          var4.setItemSlot(var5, var6);
          if (var4 instanceof Mob) {

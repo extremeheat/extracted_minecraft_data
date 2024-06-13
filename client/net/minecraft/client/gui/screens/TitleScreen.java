@@ -327,7 +327,7 @@ public class TitleScreen extends Screen {
 
    @Override
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, this.advancePanoramaTime());
+      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, var2);
    }
 
    @Override

@@ -43,7 +43,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
 
          @Override
          public boolean isActive() {
-            return var4.canWearBodyArmor();
+            return var4.canUseSlot(EquipmentSlot.BODY);
          }
       });
       if (this.hasChest(var4)) {

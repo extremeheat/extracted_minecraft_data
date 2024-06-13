@@ -12,7 +12,6 @@ import java.util.Set;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -104,7 +103,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    static record EffectEntry(Holder<MobEffect> effect, NumberProvider duration) {
       public static final Codec<SetStewEffectFunction.EffectEntry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("type").forGetter(SetStewEffectFunction.EffectEntry::effect),
+                  MobEffect.CODEC.fieldOf("type").forGetter(SetStewEffectFunction.EffectEntry::effect),
                   NumberProviders.CODEC.fieldOf("duration").forGetter(SetStewEffectFunction.EffectEntry::duration)
                )
                .apply(var0, SetStewEffectFunction.EffectEntry::new)

@@ -78,12 +78,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagNetworkSerialization;
-import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -92,6 +91,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.PlayerDataStorage;
@@ -223,26 +223,22 @@ public abstract class PlayerList {
       this.sendLevelInfo(var2, var10);
       var10.addNewPlayer(var2);
       this.server.getCustomBossEvents().onPlayerConnect(var2);
-
-      for (MobEffectInstance var21 : var2.getActiveEffects()) {
-         var13.send(new ClientboundUpdateMobEffectPacket(var2.getId(), var21, false));
-      }
-
+      this.sendActivePlayerEffects(var2);
       if (var25.isPresent() && ((CompoundTag)var25.get()).contains("RootVehicle", 10)) {
-         CompoundTag var26 = ((CompoundTag)var25.get()).getCompound("RootVehicle");
-         Entity var27 = EntityType.loadEntityRecursive(var26.getCompound("Entity"), var10, var1x -> !var10.addWithUUID(var1x) ? null : var1x);
-         if (var27 != null) {
+         CompoundTag var20 = ((CompoundTag)var25.get()).getCompound("RootVehicle");
+         Entity var21 = EntityType.loadEntityRecursive(var20.getCompound("Entity"), var10, var1x -> !var10.addWithUUID(var1x) ? null : var1x);
+         if (var21 != null) {
             UUID var22;
-            if (var26.hasUUID("Attach")) {
-               var22 = var26.getUUID("Attach");
+            if (var20.hasUUID("Attach")) {
+               var22 = var20.getUUID("Attach");
             } else {
                var22 = null;
             }
 
-            if (var27.getUUID().equals(var22)) {
-               var2.startRiding(var27, true);
+            if (var21.getUUID().equals(var22)) {
+               var2.startRiding(var21, true);
             } else {
-               for (Entity var24 : var27.getIndirectPassengers()) {
+               for (Entity var24 : var21.getIndirectPassengers()) {
                   if (var24.getUUID().equals(var22)) {
                      var2.startRiding(var24, true);
                      break;
@@ -252,10 +248,10 @@ public abstract class PlayerList {
 
             if (!var2.isPassenger()) {
                LOGGER.warn("Couldn't reattach entity to player");
-               var27.discard();
+               var21.discard();
 
-               for (Entity var29 : var27.getIndirectPassengers()) {
-                  var29.discard();
+               for (Entity var27 : var21.getIndirectPassengers()) {
+                  var27.discard();
                }
             }
          }
@@ -429,87 +425,77 @@ public abstract class PlayerList {
       return !var3.isEmpty();
    }
 
-   public ServerPlayer respawn(ServerPlayer var1, boolean var2) {
+   public ServerPlayer respawn(ServerPlayer var1, boolean var2, Entity.RemovalReason var3) {
       this.players.remove(var1);
-      var1.serverLevel().removePlayerImmediately(var1, Entity.RemovalReason.DISCARDED);
-      BlockPos var3 = var1.getRespawnPosition();
-      float var4 = var1.getRespawnAngle();
-      boolean var5 = var1.isRespawnForced();
-      ServerLevel var6 = this.server.getLevel(var1.getRespawnDimension());
-      Optional var7;
-      if (var6 != null && var3 != null) {
-         var7 = Player.findRespawnPositionAndUseSpawnBlock(var6, var3, var4, var5, var2);
-      } else {
-         var7 = Optional.empty();
+      var1.serverLevel().removePlayerImmediately(var1, var3);
+      DimensionTransition var4 = var1.findRespawnPositionAndUseSpawnBlock(var2);
+      ServerLevel var5 = var4.newDimension();
+      ServerPlayer var6 = new ServerPlayer(this.server, var5, var1.getGameProfile(), var1.clientInformation());
+      var6.connection = var1.connection;
+      var6.restoreFrom(var1, var2);
+      var6.setId(var1.getId());
+      var6.setMainArm(var1.getMainArm());
+      if (!var4.missingRespawnBlock()) {
+         var6.copyRespawnPosition(var1);
       }
 
-      ServerLevel var8 = var6 != null && var7.isPresent() ? var6 : this.server.overworld();
-      ServerPlayer var9 = new ServerPlayer(this.server, var8, var1.getGameProfile(), var1.clientInformation());
-      var9.connection = var1.connection;
-      var9.restoreFrom(var1, var2);
-      var9.setId(var1.getId());
-      var9.setMainArm(var1.getMainArm());
-
-      for (String var11 : var1.getTags()) {
-         var9.addTag(var11);
+      for (String var8 : var1.getTags()) {
+         var6.addTag(var8);
       }
 
-      boolean var16 = false;
-      if (var7.isPresent()) {
-         BlockState var17 = var8.getBlockState(var3);
-         boolean var12 = var17.is(Blocks.RESPAWN_ANCHOR);
-         Vec3 var13 = (Vec3)var7.get();
-         float var14;
-         if (!var17.is(BlockTags.BEDS) && !var12) {
-            var14 = var4;
-         } else {
-            Vec3 var15 = Vec3.atBottomCenterOf(var3).subtract(var13).normalize();
-            var14 = (float)Mth.wrapDegrees(Mth.atan2(var15.z, var15.x) * 57.2957763671875 - 90.0);
+      Vec3 var13 = var4.pos();
+      var6.moveTo(var13.x, var13.y, var13.z, var4.yRot(), var4.xRot());
+      if (var4.missingRespawnBlock()) {
+         var6.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
+      }
+
+      int var14 = var2 ? 1 : 0;
+      ServerLevel var9 = var6.serverLevel();
+      LevelData var10 = var9.getLevelData();
+      var6.connection.send(new ClientboundRespawnPacket(var6.createCommonSpawnInfo(var9), (byte)var14));
+      var6.connection.teleport(var6.getX(), var6.getY(), var6.getZ(), var6.getYRot(), var6.getXRot());
+      var6.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var5.getSharedSpawnPos(), var5.getSharedSpawnAngle()));
+      var6.connection.send(new ClientboundChangeDifficultyPacket(var10.getDifficulty(), var10.isDifficultyLocked()));
+      var6.connection.send(new ClientboundSetExperiencePacket(var6.experienceProgress, var6.totalExperience, var6.experienceLevel));
+      this.sendActivePlayerEffects(var6);
+      this.sendLevelInfo(var6, var5);
+      this.sendPlayerPermissionLevel(var6);
+      var5.addRespawnedPlayer(var6);
+      this.players.add(var6);
+      this.playersByUUID.put(var6.getUUID(), var6);
+      var6.initInventoryMenu();
+      var6.setHealth(var6.getHealth());
+      if (!var2) {
+         BlockPos var11 = BlockPos.containing(var4.pos());
+         BlockState var12 = var5.getBlockState(var11);
+         if (var12.is(Blocks.RESPAWN_ANCHOR)) {
+            var6.connection
+               .send(
+                  new ClientboundSoundPacket(
+                     SoundEvents.RESPAWN_ANCHOR_DEPLETE,
+                     SoundSource.BLOCKS,
+                     (double)var11.getX(),
+                     (double)var11.getY(),
+                     (double)var11.getZ(),
+                     1.0F,
+                     1.0F,
+                     var5.getRandom().nextLong()
+                  )
+               );
          }
-
-         var9.moveTo(var13.x, var13.y, var13.z, var14, 0.0F);
-         var9.setRespawnPosition(var8.dimension(), var3, var4, var5, false);
-         var16 = !var2 && var12;
-      } else if (var3 != null) {
-         var9.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
       }
 
-      while (!var8.noCollision(var9) && var9.getY() < (double)var8.getMaxBuildHeight()) {
-         var9.setPos(var9.getX(), var9.getY() + 1.0, var9.getZ());
-      }
+      return var6;
+   }
 
-      int var18 = var2 ? 1 : 0;
-      ServerLevel var19 = var9.serverLevel();
-      LevelData var20 = var19.getLevelData();
-      var9.connection.send(new ClientboundRespawnPacket(var9.createCommonSpawnInfo(var19), (byte)var18));
-      var9.connection.teleport(var9.getX(), var9.getY(), var9.getZ(), var9.getYRot(), var9.getXRot());
-      var9.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var8.getSharedSpawnPos(), var8.getSharedSpawnAngle()));
-      var9.connection.send(new ClientboundChangeDifficultyPacket(var20.getDifficulty(), var20.isDifficultyLocked()));
-      var9.connection.send(new ClientboundSetExperiencePacket(var9.experienceProgress, var9.totalExperience, var9.experienceLevel));
-      this.sendLevelInfo(var9, var8);
-      this.sendPlayerPermissionLevel(var9);
-      var8.addRespawnedPlayer(var9);
-      this.players.add(var9);
-      this.playersByUUID.put(var9.getUUID(), var9);
-      var9.initInventoryMenu();
-      var9.setHealth(var9.getHealth());
-      if (var16) {
-         var9.connection
-            .send(
-               new ClientboundSoundPacket(
-                  SoundEvents.RESPAWN_ANCHOR_DEPLETE,
-                  SoundSource.BLOCKS,
-                  (double)var3.getX(),
-                  (double)var3.getY(),
-                  (double)var3.getZ(),
-                  1.0F,
-                  1.0F,
-                  var8.getRandom().nextLong()
-               )
-            );
-      }
+   public void sendActivePlayerEffects(ServerPlayer var1) {
+      this.sendActiveEffects(var1, var1.connection);
+   }
 
-      return var9;
+   public void sendActiveEffects(LivingEntity var1, ServerGamePacketListenerImpl var2) {
+      for (MobEffectInstance var4 : var1.getActiveEffects()) {
+         var2.send(new ClientboundUpdateMobEffectPacket(var1.getId(), var4, false));
+      }
    }
 
    public void sendPlayerPermissionLevel(ServerPlayer var1) {

@@ -866,15 +866,11 @@ public class ServerLevel extends Level implements WorldGenLevel {
    }
 
    public void addDuringTeleport(Entity var1) {
-      this.addEntity(var1);
-   }
-
-   public void addDuringCommandTeleport(ServerPlayer var1) {
-      this.addPlayer(var1);
-   }
-
-   public void addDuringPortalTeleport(ServerPlayer var1) {
-      this.addPlayer(var1);
+      if (var1 instanceof ServerPlayer var2) {
+         this.addPlayer(var2);
+      } else {
+         this.addEntity(var1);
+      }
    }
 
    public void addNewPlayer(ServerPlayer var1) {

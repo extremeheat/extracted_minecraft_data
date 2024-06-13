@@ -53,12 +53,10 @@ public class GLX {
    }
 
    public static String _getLWJGLVersion() {
-      RenderSystem.assertInInitPhase();
       return Version.getVersion();
    }
 
    public static LongSupplier _initGlfw() {
-      RenderSystem.assertInInitPhase();
       Window.checkGlfwError((var0x, var1x) -> {
          throw new IllegalStateException(String.format(Locale.ROOT, "GLFW error before init: [0x%X]%s", var0x, var1x));
       });
@@ -82,7 +80,6 @@ public class GLX {
    }
 
    public static void _setGlfwErrorCallback(GLFWErrorCallbackI var0) {
-      RenderSystem.assertInInitPhase();
       GLFWErrorCallback var1 = GLFW.glfwSetErrorCallback(var0);
       if (var1 != null) {
          var1.free();
@@ -94,8 +91,6 @@ public class GLX {
    }
 
    public static void _init(int var0, boolean var1) {
-      RenderSystem.assertInInitPhase();
-
       try {
          CentralProcessor var2 = new SystemInfo().getHardware().getProcessor();
          cpuInfo = String.format(Locale.ROOT, "%dx %s", var2.getLogicalProcessorCount(), var2.getProcessorIdentifier().getName()).replaceAll("\\s+", " ");

@@ -75,6 +75,11 @@ public class LegacyRandomSource implements BitRandomSource {
          return new LegacyRandomSource((long)var2 ^ this.seed);
       }
 
+      @Override
+      public RandomSource fromSeed(long var1) {
+         return new LegacyRandomSource(var1);
+      }
+
       @VisibleForTesting
       @Override
       public void parityConfigString(StringBuilder var1) {

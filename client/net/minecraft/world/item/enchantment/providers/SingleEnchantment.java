@@ -2,15 +2,14 @@ package net.minecraft.world.item.enchantment.providers;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-import net.minecraft.world.level.Level;
 
 public record SingleEnchantment(Holder<Enchantment> enchantment, IntProvider level) implements EnchantmentProvider {
    public static final MapCodec<SingleEnchantment> CODEC = RecordCodecBuilder.mapCodec(
@@ -28,7 +27,7 @@ public record SingleEnchantment(Holder<Enchantment> enchantment, IntProvider lev
    }
 
    @Override
-   public void enchant(ItemStack var1, ItemEnchantments.Mutable var2, RandomSource var3, Level var4, BlockPos var5) {
+   public void enchant(ItemStack var1, ItemEnchantments.Mutable var2, RandomSource var3, DifficultyInstance var4) {
       var2.upgrade(this.enchantment, Mth.clamp(this.level.sample(var3), this.enchantment.value().getMinLevel(), this.enchantment.value().getMaxLevel()));
    }
 

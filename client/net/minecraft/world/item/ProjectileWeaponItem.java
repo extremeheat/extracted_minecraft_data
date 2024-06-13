@@ -95,14 +95,17 @@ public abstract class ProjectileWeaponItem extends Item {
          return List.of();
       } else {
          int var3 = var2.level() instanceof ServerLevel var4 ? EnchantmentHelper.processProjectileCount(var4, var0, var2, 1) : 1;
-         ArrayList var7 = new ArrayList(var3);
-         ItemStack var8 = var1.copy();
+         ArrayList var8 = new ArrayList(var3);
+         ItemStack var9 = var1.copy();
 
          for (int var6 = 0; var6 < var3; var6++) {
-            var7.add(useAmmo(var0, var6 == 0 ? var1 : var8, var2, var6 > 0));
+            ItemStack var7 = useAmmo(var0, var6 == 0 ? var1 : var9, var2, var6 > 0);
+            if (!var7.isEmpty()) {
+               var8.add(var7);
+            }
          }
 
-         return var7;
+         return var8;
       }
    }
 

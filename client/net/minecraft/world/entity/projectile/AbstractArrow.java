@@ -94,7 +94,7 @@ public abstract class AbstractArrow extends Projectile {
             this.setPierceLevel((byte)var13);
          }
 
-         EnchantmentHelper.onProjectileSpawned(var12, var10, this, () -> this.firedFromWeapon = null);
+         EnchantmentHelper.onProjectileSpawned(var12, var10, this, var1x -> this.firedFromWeapon = null);
       }
    }
 
@@ -329,8 +329,8 @@ public abstract class AbstractArrow extends Projectile {
       double var4 = this.baseDamage;
       Entity var6 = this.getOwner();
       DamageSource var7 = this.damageSources().arrow(this, (Entity)(var6 != null ? var6 : this));
-      if (this.firedFromWeapon != null && this.level() instanceof ServerLevel var8) {
-         var4 = (double)EnchantmentHelper.modifyDamage(var8, this.firedFromWeapon, var2, var7, (float)var4);
+      if (this.getWeaponItem() != null && this.level() instanceof ServerLevel var8) {
+         var4 = (double)EnchantmentHelper.modifyDamage(var8, this.getWeaponItem(), var2, var7, (float)var4);
       }
 
       int var14 = Mth.ceil(Mth.clamp((double)var3 * var4, 0.0, 2.147483647E9));
@@ -378,7 +378,7 @@ public abstract class AbstractArrow extends Projectile {
 
             this.doKnockback(var11, var7);
             if (this.level() instanceof ServerLevel var12) {
-               EnchantmentHelper.doPostAttackEffects(var12, var11, var7);
+               EnchantmentHelper.doPostAttackEffectsWithItemSource(var12, var11, var7, this.getWeaponItem());
             }
 
             this.doPostHurtEffects(var11);
@@ -455,8 +455,9 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    protected void hitBlockEnchantmentEffects(ServerLevel var1, BlockHitResult var2, ItemStack var3) {
-      EnchantmentHelper.onHitBlock(var1, var3, this.getOwner() instanceof LivingEntity var4 ? var4 : null, this, null, var2.getLocation(), () -> {
-      });
+      EnchantmentHelper.onHitBlock(
+         var1, var3, this.getOwner() instanceof LivingEntity var4 ? var4 : null, this, null, var2.getLocation(), var1x -> this.firedFromWeapon = null
+      );
    }
 
    @Nullable

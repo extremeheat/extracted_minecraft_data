@@ -63,7 +63,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
@@ -99,9 +98,6 @@ import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -633,8 +629,8 @@ public abstract class Player extends LivingEntity {
    public void die(DamageSource var1) {
       super.die(var1);
       this.reapplyPosition();
-      if (!this.isSpectator()) {
-         this.dropAllDeathLoot(var1);
+      if (!this.isSpectator() && this.level() instanceof ServerLevel var2) {
+         this.dropAllDeathLoot(var2, var1);
       }
 
       if (var1 != null) {
@@ -1385,28 +1381,6 @@ public abstract class Player extends LivingEntity {
       this.stopSleepInBed(true, true);
    }
 
-   public static Optional<Vec3> findRespawnPositionAndUseSpawnBlock(ServerLevel var0, BlockPos var1, float var2, boolean var3, boolean var4) {
-      BlockState var5 = var0.getBlockState(var1);
-      Block var6 = var5.getBlock();
-      if (var6 instanceof RespawnAnchorBlock && (var3 || var5.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
-         Optional var10 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var1);
-         if (!var3 && !var4 && var10.isPresent()) {
-            var0.setBlock(var1, var5.setValue(RespawnAnchorBlock.CHARGE, Integer.valueOf(var5.getValue(RespawnAnchorBlock.CHARGE) - 1)), 3);
-         }
-
-         return var10;
-      } else if (var6 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
-         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var1, var5.getValue(BedBlock.FACING), var2);
-      } else if (!var3) {
-         return Optional.empty();
-      } else {
-         boolean var7 = var6.isPossibleToRespawnInThis(var5);
-         BlockState var8 = var0.getBlockState(var1.above());
-         boolean var9 = var8.getBlock().isPossibleToRespawnInThis(var8);
-         return var7 && var9 ? Optional.of(new Vec3((double)var1.getX() + 0.5, (double)var1.getY() + 0.1, (double)var1.getZ() + 0.5)) : Optional.empty();
-      }
-   }
-
    public boolean isSleepingLongEnough() {
       return this.isSleeping() && this.sleepCounter >= 100;
    }
@@ -1734,13 +1708,13 @@ public abstract class Player extends LivingEntity {
       } else if (var1 == EquipmentSlot.OFFHAND) {
          return this.inventory.offhand.get(0);
       } else {
-         return var1.getType() == EquipmentSlot.Type.ARMOR ? this.inventory.armor.get(var1.getIndex()) : ItemStack.EMPTY;
+         return var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR ? this.inventory.armor.get(var1.getIndex()) : ItemStack.EMPTY;
       }
    }
 
    @Override
    protected boolean doesEmitEquipEvent(EquipmentSlot var1) {
-      return var1.getType() == EquipmentSlot.Type.ARMOR;
+      return var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR;
    }
 
    @Override
@@ -1750,7 +1724,7 @@ public abstract class Player extends LivingEntity {
          this.onEquipItem(var1, this.inventory.items.set(this.inventory.selected, var2), var2);
       } else if (var1 == EquipmentSlot.OFFHAND) {
          this.onEquipItem(var1, this.inventory.offhand.set(0, var2), var2);
-      } else if (var1.getType() == EquipmentSlot.Type.ARMOR) {
+      } else if (var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
          this.onEquipItem(var1, this.inventory.armor.set(var1.getIndex(), var2), var2);
       }
    }
@@ -1981,7 +1955,7 @@ public abstract class Player extends LivingEntity {
 
    @Override
    public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       return this.getItemBySlot(var2).isEmpty();
    }
 

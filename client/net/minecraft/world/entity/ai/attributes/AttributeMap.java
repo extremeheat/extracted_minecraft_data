@@ -97,11 +97,20 @@ public class AttributeMap {
       });
    }
 
-   public void assignValues(AttributeMap var1) {
+   public void assignAllValues(AttributeMap var1) {
       var1.attributes.values().forEach(var1x -> {
          AttributeInstance var2 = this.getInstance(var1x.getAttribute());
          if (var2 != null) {
             var2.replaceFrom(var1x);
+         }
+      });
+   }
+
+   public void assignBaseValues(AttributeMap var1) {
+      var1.attributes.values().forEach(var1x -> {
+         AttributeInstance var2 = this.getInstance(var1x.getAttribute());
+         if (var2 != null) {
+            var2.setBaseValue(var1x.getBaseValue());
          }
       });
    }

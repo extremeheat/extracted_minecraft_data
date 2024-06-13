@@ -209,12 +209,7 @@ public abstract class RenderTarget {
    }
 
    public void blitToScreen(int var1, int var2, boolean var3) {
-      RenderSystem.assertOnGameThreadOrInit();
-      if (!RenderSystem.isInInitPhase()) {
-         RenderSystem.recordRenderCall(() -> this._blitToScreen(var1, var2, var3));
-      } else {
-         this._blitToScreen(var1, var2, var3);
-      }
+      this._blitToScreen(var1, var2, var3);
    }
 
    private void _blitToScreen(int var1, int var2, boolean var3) {

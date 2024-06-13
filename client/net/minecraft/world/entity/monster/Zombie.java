@@ -54,6 +54,7 @@ import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
@@ -226,9 +227,10 @@ public class Zombie extends Monster {
             ItemStack var2 = this.getItemBySlot(EquipmentSlot.HEAD);
             if (!var2.isEmpty()) {
                if (var2.isDamageableItem()) {
+                  Item var3 = var2.getItem();
                   var2.setDamageValue(var2.getDamageValue() + this.random.nextInt(2));
                   if (var2.getDamageValue() >= var2.getMaxDamage()) {
-                     this.broadcastBreakEvent(EquipmentSlot.HEAD);
+                     this.onEquippedItemBroken(var3, EquipmentSlot.HEAD);
                      this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
                   }
                }
@@ -473,7 +475,7 @@ public class Zombie extends Monster {
 
          this.setCanBreakDoors(this.supportsBreakDoorGoal() && var5.nextFloat() < var6 * 0.1F);
          this.populateDefaultEquipmentSlots(var5, var2);
-         this.populateDefaultEquipmentEnchantments(var5, var2);
+         this.populateDefaultEquipmentEnchantments(var1, var5, var2);
       }
 
       if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -522,13 +524,13 @@ public class Zombie extends Monster {
    }
 
    @Override
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
-      super.dropCustomDeathLoot(var1, var2);
-      if (var1.getEntity() instanceof Creeper var4 && var4.canDropMobsSkull()) {
-         ItemStack var5 = this.getSkull();
-         if (!var5.isEmpty()) {
-            var4.increaseDroppedSkulls();
-            this.spawnAtLocation(var5);
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropCustomDeathLoot(var1, var2, var3);
+      if (var2.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
+         ItemStack var6 = this.getSkull();
+         if (!var6.isEmpty()) {
+            var5.increaseDroppedSkulls();
+            this.spawnAtLocation(var6);
          }
       }
    }

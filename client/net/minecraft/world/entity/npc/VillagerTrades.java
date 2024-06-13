@@ -52,6 +52,7 @@ import net.minecraft.world.item.enchantment.providers.TradeRebalanceEnchantmentP
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -1568,9 +1569,12 @@ public class VillagerTrades {
       @Override
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemStack var3 = this.toItem.copy();
+         Level var4 = var1.level();
          this.enchantmentProvider
             .ifPresent(
-               var3x -> EnchantmentHelper.enchantItemFromProvider(var3, (ResourceKey<EnchantmentProvider>)var3x, var1.level(), var1.blockPosition(), var2)
+               var4x -> EnchantmentHelper.enchantItemFromProvider(
+                     var3, var4.registryAccess(), (ResourceKey<EnchantmentProvider>)var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2
+                  )
             );
          return new MerchantOffer(
             new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(this.fromItem), var3, 0, this.maxUses, this.villagerXp, this.priceMultiplier
@@ -1628,9 +1632,12 @@ public class VillagerTrades {
       @Override
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemStack var3 = this.itemStack.copy();
+         Level var4 = var1.level();
          this.enchantmentProvider
             .ifPresent(
-               var3x -> EnchantmentHelper.enchantItemFromProvider(var3, (ResourceKey<EnchantmentProvider>)var3x, var1.level(), var1.blockPosition(), var2)
+               var4x -> EnchantmentHelper.enchantItemFromProvider(
+                     var3, var4.registryAccess(), (ResourceKey<EnchantmentProvider>)var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2
+                  )
             );
          return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), var3, this.maxUses, this.villagerXp, this.priceMultiplier);
       }

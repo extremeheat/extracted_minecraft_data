@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Llama;
@@ -36,7 +37,7 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
          var1.blitSprite(SADDLE_SLOT_SPRITE, var5 + 7, var6 + 35 - 18, 18, 18);
       }
 
-      if (this.horse.canWearBodyArmor()) {
+      if (this.horse.canUseSlot(EquipmentSlot.BODY)) {
          if (this.horse instanceof Llama) {
             var1.blitSprite(LLAMA_ARMOR_SLOT_SPRITE, var5 + 7, var6 + 35, 18, 18);
          } else {

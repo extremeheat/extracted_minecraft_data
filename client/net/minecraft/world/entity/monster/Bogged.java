@@ -24,7 +24,6 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -137,7 +136,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    private void spawnShearedMushrooms() {
-      if (this.level() instanceof ServerLevel var1 && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+      if (this.level() instanceof ServerLevel var1) {
          LootTable var6 = var1.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.BOGGED_SHEAR);
          LootParams var3 = new LootParams.Builder(var1)
             .withParameter(LootContextParams.ORIGIN, this.position())
@@ -147,7 +146,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
 
          while (var4.hasNext()) {
             ItemStack var5 = (ItemStack)var4.next();
-            this.spawnAtLocation(var5);
+            this.spawnAtLocation(var5, this.getBbHeight());
          }
       }
    }

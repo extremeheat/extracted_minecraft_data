@@ -2,7 +2,6 @@ package net.minecraft.world.entity.projectile;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -14,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -97,12 +97,14 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
    @Nullable
    @Override
-   public Entity changeDimension(ServerLevel var1) {
-      Entity var2 = this.getOwner();
-      if (var2 != null && var2.level().dimension() != var1.dimension()) {
-         this.setOwner(null);
-      }
+   public Entity changeDimension(Entity.DimensionTransitionSupplier var1) {
+      return super.changeDimension(() -> {
+         DimensionTransition var2 = var1.get();
+         if (var2 != null && this.getOwner() != null && this.getOwner().level().dimension() != var2.newDimension().dimension()) {
+            this.setOwner(null);
+         }
 
-      return super.changeDimension(var1);
+         return var2;
+      });
    }
 }

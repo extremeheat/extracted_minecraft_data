@@ -287,7 +287,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   public boolean canWearBodyArmor() {
+   public boolean canUseSlot(EquipmentSlot var1) {
       return true;
    }
 

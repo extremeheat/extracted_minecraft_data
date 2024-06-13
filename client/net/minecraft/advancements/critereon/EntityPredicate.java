@@ -1,6 +1,7 @@
 package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +27,7 @@ public record EntityPredicate(
    Optional<EntityTypePredicate> entityType,
    Optional<DistancePredicate> distanceToPlayer,
    Optional<MovementPredicate> movement,
-   Optional<LocationPredicate> location,
-   Optional<LocationPredicate> steppingOnLocation,
+   EntityPredicate.LocationWrapper location,
    Optional<MobEffectsPredicate> effects,
    Optional<NbtPredicate> nbt,
    Optional<EntityFlagsPredicate> flags,
@@ -47,8 +47,7 @@ public record EntityPredicate(
                      EntityTypePredicate.CODEC.optionalFieldOf("type").forGetter(EntityPredicate::entityType),
                      DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(EntityPredicate::distanceToPlayer),
                      MovementPredicate.CODEC.optionalFieldOf("movement").forGetter(EntityPredicate::movement),
-                     LocationPredicate.CODEC.optionalFieldOf("location").forGetter(EntityPredicate::location),
-                     LocationPredicate.CODEC.optionalFieldOf("stepping_on").forGetter(EntityPredicate::steppingOnLocation),
+                     EntityPredicate.LocationWrapper.CODEC.forGetter(EntityPredicate::location),
                      MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(EntityPredicate::effects),
                      NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(EntityPredicate::nbt),
                      EntityFlagsPredicate.CODEC.optionalFieldOf("flags").forGetter(EntityPredicate::flags),
@@ -70,8 +69,7 @@ public record EntityPredicate(
       Optional<EntityTypePredicate> entityType,
       Optional<DistancePredicate> distanceToPlayer,
       Optional<MovementPredicate> movement,
-      Optional<LocationPredicate> location,
-      Optional<LocationPredicate> steppingOnLocation,
+      EntityPredicate.LocationWrapper location,
       Optional<MobEffectsPredicate> effects,
       Optional<NbtPredicate> nbt,
       Optional<EntityFlagsPredicate> flags,
@@ -89,7 +87,6 @@ public record EntityPredicate(
       this.distanceToPlayer = distanceToPlayer;
       this.movement = movement;
       this.location = location;
-      this.steppingOnLocation = steppingOnLocation;
       this.effects = effects;
       this.nbt = nbt;
       this.flags = flags;
@@ -139,19 +136,26 @@ public record EntityPredicate(
          }
 
          if (this.movement.isPresent()) {
-            Vec3 var4 = var3.getDeltaMovement();
+            Vec3 var4 = var3.getKnownMovement();
             Vec3 var5 = var4.scale(20.0);
             if (!this.movement.get().matches(var5.x, var5.y, var5.z, (double)var3.fallDistance)) {
                return false;
             }
          }
 
-         if (this.location.isPresent() && !this.location.get().matches(var1, var3.getX(), var3.getY(), var3.getZ())) {
+         if (this.location.located.isPresent() && !this.location.located.get().matches(var1, var3.getX(), var3.getY(), var3.getZ())) {
             return false;
          } else {
-            if (this.steppingOnLocation.isPresent()) {
+            if (this.location.steppingOn.isPresent()) {
                Vec3 var6 = Vec3.atCenterOf(var3.getOnPos());
-               if (!this.steppingOnLocation.get().matches(var1, var6.x(), var6.y(), var6.z())) {
+               if (!this.location.steppingOn.get().matches(var1, var6.x(), var6.y(), var6.z())) {
+                  return false;
+               }
+            }
+
+            if (this.location.affectsMovement.isPresent()) {
+               Vec3 var7 = Vec3.atCenterOf(var3.getBlockPosBelowThatAffectsMyMovement());
+               if (!this.location.affectsMovement.get().matches(var1, var7.x(), var7.y(), var7.z())) {
                   return false;
                }
             }
@@ -174,8 +178,8 @@ public record EntityPredicate(
                return false;
             } else {
                if (this.team.isPresent()) {
-                  PlayerTeam var7 = var3.getTeam();
-                  if (var7 == null || !this.team.get().equals(var7.getName())) {
+                  PlayerTeam var8 = var3.getTeam();
+                  if (var8 == null || !this.team.get().equals(var8.getName())) {
                      return false;
                   }
                }
@@ -199,8 +203,10 @@ public record EntityPredicate(
       private Optional<DistancePredicate> distanceToPlayer = Optional.empty();
       private Optional<DistancePredicate> fallDistance = Optional.empty();
       private Optional<MovementPredicate> movement = Optional.empty();
-      private Optional<LocationPredicate> location = Optional.empty();
+      private Optional<EntityPredicate.LocationWrapper> location = Optional.empty();
+      private Optional<LocationPredicate> located = Optional.empty();
       private Optional<LocationPredicate> steppingOnLocation = Optional.empty();
+      private Optional<LocationPredicate> movementAffectedBy = Optional.empty();
       private Optional<MobEffectsPredicate> effects = Optional.empty();
       private Optional<NbtPredicate> nbt = Optional.empty();
       private Optional<EntityFlagsPredicate> flags = Optional.empty();
@@ -247,12 +253,17 @@ public record EntityPredicate(
       }
 
       public EntityPredicate.Builder located(LocationPredicate.Builder var1) {
-         this.location = Optional.of(var1.build());
+         this.located = Optional.of(var1.build());
          return this;
       }
 
       public EntityPredicate.Builder steppingOn(LocationPredicate.Builder var1) {
          this.steppingOnLocation = Optional.of(var1.build());
+         return this;
+      }
+
+      public EntityPredicate.Builder movementAffectedBy(LocationPredicate.Builder var1) {
+         this.movementAffectedBy = Optional.of(var1.build());
          return this;
       }
 
@@ -321,8 +332,7 @@ public record EntityPredicate(
             this.entityType,
             this.distanceToPlayer,
             this.movement,
-            this.location,
-            this.steppingOnLocation,
+            new EntityPredicate.LocationWrapper(this.located, this.steppingOnLocation, this.movementAffectedBy),
             this.effects,
             this.nbt,
             this.flags,
@@ -335,6 +345,26 @@ public record EntityPredicate(
             this.team,
             this.slots
          );
+      }
+   }
+
+   public static record LocationWrapper(
+      Optional<LocationPredicate> located, Optional<LocationPredicate> steppingOn, Optional<LocationPredicate> affectsMovement
+   ) {
+      public static final MapCodec<EntityPredicate.LocationWrapper> CODEC = RecordCodecBuilder.mapCodec(
+         var0 -> var0.group(
+                  LocationPredicate.CODEC.optionalFieldOf("location").forGetter(EntityPredicate.LocationWrapper::located),
+                  LocationPredicate.CODEC.optionalFieldOf("stepping_on").forGetter(EntityPredicate.LocationWrapper::steppingOn),
+                  LocationPredicate.CODEC.optionalFieldOf("movement_affected_by").forGetter(EntityPredicate.LocationWrapper::affectsMovement)
+               )
+               .apply(var0, EntityPredicate.LocationWrapper::new)
+      );
+
+      public LocationWrapper(Optional<LocationPredicate> located, Optional<LocationPredicate> steppingOn, Optional<LocationPredicate> affectsMovement) {
+         super();
+         this.located = located;
+         this.steppingOn = steppingOn;
+         this.affectsMovement = affectsMovement;
       }
    }
 }

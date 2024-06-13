@@ -2,10 +2,8 @@ package net.minecraft.network.protocol.game;
 
 import java.util.Optional;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
@@ -19,9 +17,6 @@ public record ClientboundDamageEventPacket(int entityId, Holder<DamageType> sour
    implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDamageEventPacket> STREAM_CODEC = Packet.codec(
       ClientboundDamageEventPacket::write, ClientboundDamageEventPacket::new
-   );
-   private static final StreamCodec<RegistryFriendlyByteBuf, Holder<DamageType>> DAMAGE_TYPE_ID_STREAM_CODEC = ByteBufCodecs.holderRegistry(
-      Registries.DAMAGE_TYPE
    );
 
    public ClientboundDamageEventPacket(Entity var1, DamageSource var2) {
@@ -37,7 +32,7 @@ public record ClientboundDamageEventPacket(int entityId, Holder<DamageType> sour
    private ClientboundDamageEventPacket(RegistryFriendlyByteBuf var1) {
       this(
          var1.readVarInt(),
-         DAMAGE_TYPE_ID_STREAM_CODEC.decode(var1),
+         DamageType.STREAM_CODEC.decode(var1),
          readOptionalEntityId(var1),
          readOptionalEntityId(var1),
          var1.readOptional(var0 -> new Vec3(var0.readDouble(), var0.readDouble(), var0.readDouble()))
@@ -63,7 +58,7 @@ public record ClientboundDamageEventPacket(int entityId, Holder<DamageType> sour
 
    private void write(RegistryFriendlyByteBuf var1) {
       var1.writeVarInt(this.entityId);
-      DAMAGE_TYPE_ID_STREAM_CODEC.encode(var1, this.sourceType);
+      DamageType.STREAM_CODEC.encode(var1, this.sourceType);
       writeOptionalEntityId(var1, this.sourceCauseId);
       writeOptionalEntityId(var1, this.sourceDirectId);
       var1.writeOptional(this.sourcePosition, (var0, var1x) -> {

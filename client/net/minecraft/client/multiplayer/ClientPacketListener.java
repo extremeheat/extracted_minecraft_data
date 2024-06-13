@@ -1130,7 +1130,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       if (var1.shouldKeep((byte)1)) {
-         var13.getAttributes().assignValues(var5.getAttributes());
+         var13.getAttributes().assignAllValues(var5.getAttributes());
+      } else {
+         var13.getAttributes().assignBaseValues(var5.getAttributes());
       }
 
       var13.resetPos();
@@ -1334,15 +1336,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else if (var3 == ClientboundGameEventPacket.CHANGE_GAME_MODE) {
          this.minecraft.gameMode.setLocalMode(GameType.byId(var5));
       } else if (var3 == ClientboundGameEventPacket.WIN_GAME) {
-         if (var5 == 0) {
+         this.minecraft.setScreen(new WinScreen(true, () -> {
             this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-            this.minecraft.setScreen(new ReceivingLevelScreen(() -> false, ReceivingLevelScreen.Reason.END_PORTAL));
-         } else if (var5 == 1) {
-            this.minecraft.setScreen(new WinScreen(true, () -> {
-               this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-               this.minecraft.setScreen(null);
-            }));
-         }
+            this.minecraft.setScreen(null);
+         }));
       } else if (var3 == ClientboundGameEventPacket.DEMO_EVENT) {
          Options var6 = this.minecraft.options;
          if (var4 == 0.0F) {

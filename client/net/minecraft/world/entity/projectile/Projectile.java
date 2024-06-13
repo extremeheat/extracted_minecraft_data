@@ -156,7 +156,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       float var8 = -Mth.sin((var2 + var4) * 0.017453292F);
       float var9 = Mth.cos(var3 * 0.017453292F) * Mth.cos(var2 * 0.017453292F);
       this.shoot((double)var7, (double)var8, (double)var9, var5, var6);
-      Vec3 var10 = var1.getDeltaMovement();
+      Vec3 var10 = var1.getKnownMovement();
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
    }
 

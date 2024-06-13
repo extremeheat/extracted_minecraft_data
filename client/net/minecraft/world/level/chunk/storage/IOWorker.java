@@ -128,7 +128,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       return this.submitTask(() -> {
          IOWorker.PendingStore var2 = this.pendingWrites.get(var1);
          if (var2 != null) {
-            return Either.left(Optional.ofNullable(var2.data));
+            return Either.left(Optional.ofNullable(var2.copyData()));
          } else {
             try {
                CompoundTag var3 = this.storage.read(var1);
@@ -234,6 +234,12 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       public PendingStore(@Nullable CompoundTag var1) {
          super();
          this.data = var1;
+      }
+
+      @Nullable
+      CompoundTag copyData() {
+         CompoundTag var1 = this.data;
+         return var1 == null ? null : var1.copy();
       }
    }
 

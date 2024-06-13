@@ -199,7 +199,7 @@ public class PortalShape {
       return new Vec3(var9, var16, var14);
    }
 
-   public static PortalInfo createPortalInfo(
+   public static DimensionTransition createDimensionTransition(
       ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, Entity var4, Vec3 var5, float var6, float var7
    ) {
       BlockPos var8 = var1.minCorner;
@@ -216,7 +216,7 @@ public class PortalShape {
       boolean var24 = var10 == Direction.Axis.X;
       Vec3 var25 = new Vec3((double)var8.getX() + (var24 ? var18 : var22), (double)var8.getY() + var20, (double)var8.getZ() + (var24 ? var22 : var18));
       Vec3 var26 = findCollisionFreePosition(var25, var0, var4, var15);
-      return new PortalInfo(var26, var17, var6 + (float)var16, var7);
+      return new DimensionTransition(var0, var26, var17, var6 + (float)var16, var7);
    }
 
    private static Vec3 findCollisionFreePosition(Vec3 var0, ServerLevel var1, Entity var2, EntityDimensions var3) {

@@ -125,7 +125,7 @@ public class Vindicator extends AbstractIllager {
       ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
       RandomSource var6 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var6, var2);
-      this.populateDefaultEquipmentEnchantments(var6, var2);
+      this.populateDefaultEquipmentEnchantments(var1, var6, var2);
       return var5;
    }
 
@@ -160,18 +160,18 @@ public class Vindicator extends AbstractIllager {
    }
 
    @Override
-   public void applyRaidBuffs(int var1, boolean var2) {
-      ItemStack var3 = new ItemStack(Items.IRON_AXE);
-      Raid var4 = this.getCurrentRaid();
-      boolean var5 = this.random.nextFloat() <= var4.getEnchantOdds();
-      if (var5) {
-         ResourceKey var6 = var1 > var4.getNumGroups(Difficulty.NORMAL)
+   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
+      ItemStack var4 = new ItemStack(Items.IRON_AXE);
+      Raid var5 = this.getCurrentRaid();
+      boolean var6 = this.random.nextFloat() <= var5.getEnchantOdds();
+      if (var6) {
+         ResourceKey var7 = var2 > var5.getNumGroups(Difficulty.NORMAL)
             ? VanillaEnchantmentProviders.RAID_VINDICATOR_POST_WAVE_5
             : VanillaEnchantmentProviders.RAID_VINDICATOR;
-         EnchantmentHelper.enchantItemFromProvider(var3, var6, this.level(), this.blockPosition(), this.random);
+         EnchantmentHelper.enchantItemFromProvider(var4, var1.registryAccess(), var7, var1.getCurrentDifficultyAt(this.blockPosition()), this.random);
       }
 
-      this.setItemSlot(EquipmentSlot.MAINHAND, var3);
+      this.setItemSlot(EquipmentSlot.MAINHAND, var4);
    }
 
    static class VindicatorBreakDoorGoal extends BreakDoorGoal {

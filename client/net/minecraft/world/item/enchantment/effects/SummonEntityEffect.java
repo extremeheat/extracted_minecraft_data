@@ -42,7 +42,7 @@ public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean j
          if (!var7.isEmpty()) {
             Entity var8 = ((EntityType)((Holder)var7.get()).value()).spawn(var1, var6, MobSpawnType.TRIGGERED);
             if (var8 != null) {
-               if (var8 instanceof LightningBolt var9 && var4 instanceof ServerPlayer var10) {
+               if (var8 instanceof LightningBolt var9 && var3.owner() instanceof ServerPlayer var10) {
                   var9.setCause(var10);
                }
 

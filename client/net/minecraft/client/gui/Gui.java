@@ -13,6 +13,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.BossHealthOverlay;
@@ -108,7 +109,6 @@ public class Gui {
       .thenComparing(PlayerScoreEntry::owner, String.CASE_INSENSITIVE_ORDER);
    private static final Component DEMO_EXPIRED_TEXT = Component.translatable("demo.demoExpired");
    private static final Component SAVING_TEXT = Component.translatable("menu.savingLevel");
-   private static final int COLOR_WHITE = 16777215;
    private static final float MIN_CROSSHAIR_ATTACK_SPEED = 5.0F;
    private static final int NUM_HEARTS_PER_ROW = 10;
    private static final int LINE_HEIGHT = 10;
@@ -190,18 +190,18 @@ public class Gui {
       this.titleFadeOutTime = 20;
    }
 
-   public void render(GuiGraphics var1, float var2) {
+   public void render(GuiGraphics var1, DeltaTracker var2) {
       RenderSystem.enableDepthTest();
       this.layers.render(var1, var2);
       RenderSystem.disableDepthTest();
    }
 
-   private void renderCameraOverlays(GuiGraphics var1, float var2) {
+   private void renderCameraOverlays(GuiGraphics var1, DeltaTracker var2) {
       if (Minecraft.useFancyGraphics()) {
          this.renderVignette(var1, this.minecraft.getCameraEntity());
       }
 
-      float var3 = this.minecraft.getDeltaFrameTime();
+      float var3 = var2.getGameTimeDeltaTicks();
       this.scopeScale = Mth.lerp(0.5F * var3, this.scopeScale, 1.125F);
       if (this.minecraft.options.getCameraType().isFirstPerson()) {
          if (this.minecraft.player.isScoping()) {
@@ -219,13 +219,15 @@ public class Gui {
          this.renderTextureOverlay(var1, POWDER_SNOW_OUTLINE_LOCATION, this.minecraft.player.getPercentFrozen());
       }
 
-      float var5 = Mth.lerp(var2, this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity);
+      float var5 = Mth.lerp(
+         var2.getGameTimeDeltaPartialTick(false), this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity
+      );
       if (var5 > 0.0F && !this.minecraft.player.hasEffect(MobEffects.CONFUSION)) {
          this.renderPortalOverlay(var1, var5);
       }
    }
 
-   private void renderSleepOverlay(GuiGraphics var1, float var2) {
+   private void renderSleepOverlay(GuiGraphics var1, DeltaTracker var2) {
       if (this.minecraft.player.getSleepTimer() > 0) {
          this.minecraft.getProfiler().push("sleep");
          float var3 = (float)this.minecraft.player.getSleepTimer();
@@ -240,11 +242,11 @@ public class Gui {
       }
    }
 
-   private void renderOverlayMessage(GuiGraphics var1, float var2) {
+   private void renderOverlayMessage(GuiGraphics var1, DeltaTracker var2) {
       Font var3 = this.getFont();
       if (this.overlayMessageString != null && this.overlayMessageTime > 0) {
          this.minecraft.getProfiler().push("overlayMessage");
-         float var4 = (float)this.overlayMessageTime - var2;
+         float var4 = (float)this.overlayMessageTime - var2.getGameTimeDeltaPartialTick(false);
          int var5 = (int)(var4 * 255.0F / 20.0F);
          if (var5 > 255) {
             var5 = 255;
@@ -253,15 +255,15 @@ public class Gui {
          if (var5 > 8) {
             var1.pose().pushPose();
             var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() - 68), 0.0F);
-            int var6 = 16777215;
+            int var6;
             if (this.animateOverlayMessageColor) {
-               var6 = Mth.hsvToRgb(var4 / 50.0F, 0.7F, 0.6F) & 16777215;
+               var6 = Mth.hsvToArgb(var4 / 50.0F, 0.7F, 0.6F, var5);
+            } else {
+               var6 = FastColor.ARGB32.color(var5, -1);
             }
 
-            int var7 = var5 << 24 & 0xFF000000;
-            int var8 = var3.width(this.overlayMessageString);
-            this.drawBackdrop(var1, var3, -4, var8, 16777215 | var7);
-            var1.drawString(var3, this.overlayMessageString, -var8 / 2, -4, var6 | var7);
+            int var7 = var3.width(this.overlayMessageString);
+            var1.drawStringWithBackdrop(var3, this.overlayMessageString, -var7 / 2, -4, var7, var6);
             var1.pose().popPose();
          }
 
@@ -269,11 +271,11 @@ public class Gui {
       }
    }
 
-   private void renderTitle(GuiGraphics var1, float var2) {
+   private void renderTitle(GuiGraphics var1, DeltaTracker var2) {
       if (this.title != null && this.titleTime > 0) {
          Font var3 = this.getFont();
          this.minecraft.getProfiler().push("titleAndSubtitle");
-         float var4 = (float)this.titleTime - var2;
+         float var4 = (float)this.titleTime - var2.getGameTimeDeltaPartialTick(false);
          int var5 = 255;
          if (this.titleTime > this.titleFadeOutTime + this.titleStayTime) {
             float var6 = (float)(this.titleFadeInTime + this.titleStayTime + this.titleFadeOutTime) - var4;
@@ -290,17 +292,15 @@ public class Gui {
             var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() / 2), 0.0F);
             var1.pose().pushPose();
             var1.pose().scale(4.0F, 4.0F, 4.0F);
-            int var10 = var5 << 24 & 0xFF000000;
-            int var7 = var3.width(this.title);
-            this.drawBackdrop(var1, var3, -10, var7, 16777215 | var10);
-            var1.drawString(var3, this.title, -var7 / 2, -10, 16777215 | var10);
+            int var10 = var3.width(this.title);
+            int var7 = FastColor.ARGB32.color(var5, -1);
+            var1.drawStringWithBackdrop(var3, this.title, -var10 / 2, -10, var10, var7);
             var1.pose().popPose();
             if (this.subtitle != null) {
                var1.pose().pushPose();
                var1.pose().scale(2.0F, 2.0F, 2.0F);
                int var8 = var3.width(this.subtitle);
-               this.drawBackdrop(var1, var3, 5, var8, 16777215 | var10);
-               var1.drawString(var3, this.subtitle, -var8 / 2, 5, 16777215 | var10);
+               var1.drawStringWithBackdrop(var3, this.subtitle, -var8 / 2, 5, var8, var7);
                var1.pose().popPose();
             }
 
@@ -311,7 +311,7 @@ public class Gui {
       }
    }
 
-   private void renderChat(GuiGraphics var1, float var2) {
+   private void renderChat(GuiGraphics var1, DeltaTracker var2) {
       if (!this.chat.isChatFocused()) {
          Window var3 = this.minecraft.getWindow();
          int var4 = Mth.floor(this.minecraft.mouseHandler.xpos() * (double)var3.getGuiScaledWidth() / (double)var3.getScreenWidth());
@@ -320,7 +320,7 @@ public class Gui {
       }
    }
 
-   private void renderScoreboardSidebar(GuiGraphics var1, float var2) {
+   private void renderScoreboardSidebar(GuiGraphics var1, DeltaTracker var2) {
       Scoreboard var3 = this.minecraft.level.getScoreboard();
       Objective var4 = null;
       PlayerTeam var5 = var3.getPlayersTeam(this.minecraft.player.getScoreboardName());
@@ -337,7 +337,7 @@ public class Gui {
       }
    }
 
-   private void renderTabList(GuiGraphics var1, float var2) {
+   private void renderTabList(GuiGraphics var1, DeltaTracker var2) {
       Scoreboard var3 = this.minecraft.level.getScoreboard();
       Objective var4 = var3.getDisplayObjective(DisplaySlot.LIST);
       if (!this.minecraft.options.keyPlayerList.isDown()
@@ -349,15 +349,7 @@ public class Gui {
       }
    }
 
-   private void drawBackdrop(GuiGraphics var1, Font var2, int var3, int var4, int var5) {
-      int var6 = this.minecraft.options.getBackgroundColor(0.0F);
-      if (var6 != 0) {
-         int var7 = -var4 / 2;
-         var1.fill(var7 - 2, var3 - 2, var7 + var4 + 2, var3 + 9 + 2, FastColor.ARGB32.multiply(var6, var5));
-      }
-   }
-
-   private void renderCrosshair(GuiGraphics var1, float var2) {
+   private void renderCrosshair(GuiGraphics var1, DeltaTracker var2) {
       Options var3 = this.minecraft.options;
       if (var3.getCameraType().isFirstPerson()) {
          if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
@@ -425,7 +417,7 @@ public class Gui {
       }
    }
 
-   private void renderEffects(GuiGraphics var1, float var2) {
+   private void renderEffects(GuiGraphics var1, DeltaTracker var2) {
       Collection var3 = this.minecraft.player.getActiveEffects();
       if (!var3.isEmpty()) {
          if (this.minecraft.screen instanceof EffectRenderingInventoryScreen var4 && var4.canSeeEffects()) {
@@ -486,7 +478,7 @@ public class Gui {
       }
    }
 
-   private void renderHotbarAndDecorations(GuiGraphics var1, float var2) {
+   private void renderHotbarAndDecorations(GuiGraphics var1, DeltaTracker var2) {
       if (this.minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
          this.spectatorGui.renderHotbar(var1);
       } else {
@@ -513,7 +505,7 @@ public class Gui {
       }
    }
 
-   private void renderItemHotbar(GuiGraphics var1, float var2) {
+   private void renderItemHotbar(GuiGraphics var1, DeltaTracker var2) {
       Player var3 = this.getCameraPlayer();
       if (var3 != null) {
          ItemStack var4 = var3.getOffhandItem();
@@ -610,7 +602,7 @@ public class Gui {
       this.minecraft.getProfiler().pop();
    }
 
-   private void renderExperienceLevel(GuiGraphics var1, float var2) {
+   private void renderExperienceLevel(GuiGraphics var1, DeltaTracker var2) {
       int var3 = this.minecraft.player.experienceLevel;
       if (this.isExperienceBarVisible() && var3 > 0) {
          this.minecraft.getProfiler().push("expLevel");
@@ -651,15 +643,14 @@ public class Gui {
          }
 
          if (var6 > 0) {
-            var1.fill(var4 - 2, var5 - 2, var4 + var3 + 2, var5 + 9 + 2, this.minecraft.options.getBackgroundColor(0));
-            var1.drawString(this.getFont(), var2, var4, var5, 16777215 + (var6 << 24));
+            var1.drawStringWithBackdrop(this.getFont(), var2, var4, var5, var3, FastColor.ARGB32.color(var6, -1));
          }
       }
 
       this.minecraft.getProfiler().pop();
    }
 
-   private void renderDemoOverlay(GuiGraphics var1, float var2) {
+   private void renderDemoOverlay(GuiGraphics var1, DeltaTracker var2) {
       if (this.minecraft.isDemo()) {
          this.minecraft.getProfiler().push("demo");
          Object var3;
@@ -673,7 +664,9 @@ public class Gui {
          }
 
          int var4 = this.getFont().width((FormattedText)var3);
-         var1.drawString(this.getFont(), (Component)var3, var1.guiWidth() - var4 - 10, 5, 16777215);
+         int var5 = var1.guiWidth() - var4 - 10;
+         byte var6 = 5;
+         var1.drawStringWithBackdrop(this.getFont(), (Component)var3, var5, 5, var4, -1);
          this.minecraft.getProfiler().pop();
       }
    }
@@ -1087,9 +1080,9 @@ public class Gui {
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
-   private void renderSlot(GuiGraphics var1, int var2, int var3, float var4, Player var5, ItemStack var6, int var7) {
+   private void renderSlot(GuiGraphics var1, int var2, int var3, DeltaTracker var4, Player var5, ItemStack var6, int var7) {
       if (!var6.isEmpty()) {
-         float var8 = (float)var6.getPopTime() - var4;
+         float var8 = (float)var6.getPopTime() - var4.getGameTimeDeltaPartialTick(false);
          if (var8 > 0.0F) {
             float var9 = 1.0F + var8 / 5.0F;
             var1.pose().pushPose();
@@ -1252,16 +1245,18 @@ public class Gui {
       this.debugOverlay.clearChunkCache();
    }
 
-   public void renderSavingIndicator(GuiGraphics var1, float var2) {
+   public void renderSavingIndicator(GuiGraphics var1, DeltaTracker var2) {
       if (this.minecraft.options.showAutosaveIndicator().get() && (this.autosaveIndicatorValue > 0.0F || this.lastAutosaveIndicatorValue > 0.0F)) {
          int var3 = Mth.floor(
-            255.0F * Mth.clamp(Mth.lerp(this.minecraft.getFrameTime(), this.lastAutosaveIndicatorValue, this.autosaveIndicatorValue), 0.0F, 1.0F)
+            255.0F * Mth.clamp(Mth.lerp(var2.getRealtimeDeltaTicks(), this.lastAutosaveIndicatorValue, this.autosaveIndicatorValue), 0.0F, 1.0F)
          );
          if (var3 > 8) {
             Font var4 = this.getFont();
             int var5 = var4.width(SAVING_TEXT);
-            int var6 = 16777215 | var3 << 24 & 0xFF000000;
-            var1.drawString(var4, SAVING_TEXT, var1.guiWidth() - var5 - 10, var1.guiHeight() - 15, var6);
+            int var6 = FastColor.ARGB32.color(var3, -1);
+            int var7 = var1.guiWidth() - var5 - 2;
+            int var8 = var1.guiHeight() - 35;
+            var1.drawStringWithBackdrop(var4, SAVING_TEXT, var7, var8, var5, var6);
          }
       }
    }

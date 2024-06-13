@@ -2,8 +2,14 @@ package net.minecraft.network.chat;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import java.util.List;
+import java.util.function.IntFunction;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public record ChatTypeDecoration(String translationKey, List<ChatTypeDecoration.Parameter> parameters, Style style) {
@@ -14,6 +20,15 @@ public record ChatTypeDecoration(String translationKey, List<ChatTypeDecoration.
                Style.Serializer.CODEC.optionalFieldOf("style", Style.EMPTY).forGetter(ChatTypeDecoration::style)
             )
             .apply(var0, ChatTypeDecoration::new)
+   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ChatTypeDecoration> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.STRING_UTF8,
+      ChatTypeDecoration::translationKey,
+      ChatTypeDecoration.Parameter.STREAM_CODEC.apply(ByteBufCodecs.list()),
+      ChatTypeDecoration::parameters,
+      Style.Serializer.TRUSTED_STREAM_CODEC,
+      ChatTypeDecoration::style,
+      ChatTypeDecoration::new
    );
 
    public ChatTypeDecoration(String translationKey, List<ChatTypeDecoration.Parameter> parameters, Style style) {
@@ -60,17 +75,21 @@ public record ChatTypeDecoration(String translationKey, List<ChatTypeDecoration.
    }
 
    public static enum Parameter implements StringRepresentable {
-      SENDER("sender", (var0, var1) -> var1.name()),
-      TARGET("target", (var0, var1) -> var1.targetName().orElse(CommonComponents.EMPTY)),
-      CONTENT("content", (var0, var1) -> var0);
+      SENDER(0, "sender", (var0, var1) -> var1.name()),
+      TARGET(1, "target", (var0, var1) -> var1.targetName().orElse(CommonComponents.EMPTY)),
+      CONTENT(2, "content", (var0, var1) -> var0);
 
+      private static final IntFunction<ChatTypeDecoration.Parameter> BY_ID = ByIdMap.continuous(var0 -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final Codec<ChatTypeDecoration.Parameter> CODEC = StringRepresentable.fromEnum(ChatTypeDecoration.Parameter::values);
+      public static final StreamCodec<ByteBuf, ChatTypeDecoration.Parameter> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, var0 -> var0.id);
+      private final int id;
       private final String name;
       private final ChatTypeDecoration.Parameter.Selector selector;
 
-      private Parameter(final String nullxx, final ChatTypeDecoration.Parameter.Selector nullxxx) {
-         this.name = nullxx;
-         this.selector = nullxxx;
+      private Parameter(final int nullxx, final String nullxxx, final ChatTypeDecoration.Parameter.Selector nullxxxx) {
+         this.id = nullxx;
+         this.name = nullxxx;
+         this.selector = nullxxxx;
       }
 
       public Component select(Component var1, ChatType.Bound var2) {

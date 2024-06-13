@@ -28,6 +28,7 @@ public class OverworldBiomes {
    private static final int OVERWORLD_FOG_COLOR = 12638463;
    @Nullable
    private static final Music NORMAL_MUSIC = null;
+   public static final int SWAMP_SKELETON_WEIGHT = 70;
 
    public OverworldBiomes() {
       super();
@@ -581,9 +582,9 @@ public class OverworldBiomes {
    public static Biome swamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
       MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(var2);
-      BiomeDefaultFeatures.commonSpawns(var2);
+      BiomeDefaultFeatures.commonSpawns(var2, 70);
       var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
-      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 50, 4, 4));
+      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 30, 4, 4));
       var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
       BiomeDefaultFeatures.addFossilDecoration(var3);
@@ -618,9 +619,9 @@ public class OverworldBiomes {
 
    public static Biome mangroveSwamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
       MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.commonSpawns(var2);
+      BiomeDefaultFeatures.commonSpawns(var2, 70);
       var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
-      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 50, 4, 4));
+      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 30, 4, 4));
       var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
       var2.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);

@@ -7,8 +7,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -25,13 +23,9 @@ public record CommonPlayerSpawnInfo(
    Optional<GlobalPos> lastDeathLocation,
    int portalCooldown
 ) {
-   private static final StreamCodec<RegistryFriendlyByteBuf, Holder<DimensionType>> DIMENSION_TYPE_ID_STREAM_CODEC = ByteBufCodecs.holderRegistry(
-      Registries.DIMENSION_TYPE
-   );
-
    public CommonPlayerSpawnInfo(RegistryFriendlyByteBuf var1) {
       this(
-         DIMENSION_TYPE_ID_STREAM_CODEC.decode(var1),
+         DimensionType.STREAM_CODEC.decode(var1),
          var1.readResourceKey(Registries.DIMENSION),
          var1.readLong(),
          GameType.byId(var1.readByte()),
@@ -67,7 +61,7 @@ public record CommonPlayerSpawnInfo(
    }
 
    public void write(RegistryFriendlyByteBuf var1) {
-      DIMENSION_TYPE_ID_STREAM_CODEC.encode(var1, this.dimensionType);
+      DimensionType.STREAM_CODEC.encode(var1, this.dimensionType);
       var1.writeResourceKey(this.dimension);
       var1.writeLong(this.seed);
       var1.writeByte(this.gameType.getId());
