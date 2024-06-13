@@ -1,36 +1,13 @@
 package net.minecraft.network.protocol.common.custom;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-
-public record GameTestAddMarkerDebugPayload(BlockPos pos, int color, String text, int durationMs) implements CustomPacketPayload {
-   public static final StreamCodec<FriendlyByteBuf, GameTestAddMarkerDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      GameTestAddMarkerDebugPayload::write, GameTestAddMarkerDebugPayload::new
-   );
-   public static final CustomPacketPayload.Type<GameTestAddMarkerDebugPayload> TYPE = CustomPacketPayload.createType("debug/game_test_add_marker");
-
-   private GameTestAddMarkerDebugPayload(FriendlyByteBuf var1) {
-      this(var1.readBlockPos(), var1.readInt(), var1.readUtf(), var1.readInt());
-   }
-
-   public GameTestAddMarkerDebugPayload(BlockPos pos, int color, String text, int durationMs) {
-      super();
-      this.pos = pos;
-      this.color = color;
-      this.text = text;
-      this.durationMs = durationMs;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeInt(this.color);
-      var1.writeUtf(this.text);
-      var1.writeInt(this.durationMs);
-   }
-
-   @Override
-   public CustomPacketPayload.Type<GameTestAddMarkerDebugPayload> type() {
-      return TYPE;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

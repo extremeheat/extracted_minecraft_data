@@ -1,31 +1,13 @@
 package net.minecraft.advancements.critereon;
 
-import com.mojang.serialization.Codec;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.EntityType;
-
-public record EntityTypePredicate(HolderSet<EntityType<?>> types) {
-   public static final Codec<EntityTypePredicate> CODEC = RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE)
-      .xmap(EntityTypePredicate::new, EntityTypePredicate::types);
-
-   public EntityTypePredicate(HolderSet<EntityType<?>> types) {
-      super();
-      this.types = types;
-   }
-
-   public static EntityTypePredicate of(EntityType<?> var0) {
-      return new EntityTypePredicate(HolderSet.direct(var0.builtInRegistryHolder()));
-   }
-
-   public static EntityTypePredicate of(TagKey<EntityType<?>> var0) {
-      return new EntityTypePredicate(BuiltInRegistries.ENTITY_TYPE.getOrCreateTag(var0));
-   }
-
-   public boolean matches(EntityType<?> var1) {
-      return var1.is(this.types);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

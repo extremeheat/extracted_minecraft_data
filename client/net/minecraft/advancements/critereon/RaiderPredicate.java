@@ -1,37 +1,13 @@
 package net.minecraft.advancements.critereon;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.raid.Raider;
-import net.minecraft.world.phys.Vec3;
-
-public record RaiderPredicate(boolean hasRaid, boolean isCaptain) implements EntitySubPredicate {
-   public static final MapCodec<RaiderPredicate> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(
-               Codec.BOOL.optionalFieldOf("has_raid", false).forGetter(RaiderPredicate::hasRaid),
-               Codec.BOOL.optionalFieldOf("is_captain", false).forGetter(RaiderPredicate::isCaptain)
-            )
-            .apply(var0, RaiderPredicate::new)
-   );
-   public static final RaiderPredicate CAPTAIN_WITHOUT_RAID = new RaiderPredicate(false, true);
-
-   public RaiderPredicate(boolean hasRaid, boolean isCaptain) {
-      super();
-      this.hasRaid = hasRaid;
-      this.isCaptain = isCaptain;
-   }
-
-   @Override
-   public MapCodec<RaiderPredicate> codec() {
-      return EntitySubPredicates.RAIDER;
-   }
-
-   @Override
-   public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
-      return !(var1 instanceof Raider var4) ? false : var4.hasRaid() == this.hasRaid && var4.isCaptain() == this.isCaptain;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

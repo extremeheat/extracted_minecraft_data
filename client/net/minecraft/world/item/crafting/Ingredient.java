@@ -1,24 +1,17 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntComparators;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
@@ -145,55 +138,31 @@ public final class Ingredient implements Predicate<ItemStack> {
          );
    }
 
-   static record ItemValue(ItemStack item) implements Ingredient.Value {
-      static final Codec<Ingredient.ItemValue> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(ItemStack.SIMPLE_ITEM_CODEC.fieldOf("item").forGetter(var0x -> var0x.item)).apply(var0, Ingredient.ItemValue::new)
-      );
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      private ItemValue(ItemStack item) {
-         super();
-         this.item = item;
-      }
-
-      @Override
-      public boolean equals(Object var1) {
-         return !(var1 instanceof Ingredient.ItemValue var2)
-            ? false
-            : var2.item.getItem().equals(this.item.getItem()) && var2.item.getCount() == this.item.getCount();
-      }
-
-      @Override
-      public Collection<ItemStack> getItems() {
-         return Collections.singleton(this.item);
-      }
-   }
-
-   static record TagValue(TagKey<Item> tag) implements Ingredient.Value {
-      static final Codec<Ingredient.TagValue> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(TagKey.codec(Registries.ITEM).fieldOf("tag").forGetter(var0x -> var0x.tag)).apply(var0, Ingredient.TagValue::new)
-      );
-
-      TagValue(TagKey<Item> tag) {
-         super();
-         this.tag = tag;
-      }
-
-      @Override
-      public boolean equals(Object var1) {
-         return var1 instanceof Ingredient.TagValue var2 ? var2.tag.location().equals(this.tag.location()) : false;
-      }
-
-      @Override
-      public Collection<ItemStack> getItems() {
-         ArrayList var1 = Lists.newArrayList();
-
-         for (Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(this.tag)) {
-            var1.add(new ItemStack(var3));
-         }
-
-         return var1;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface Value {
       Codec<Ingredient.Value> CODEC = Codec.xor(Ingredient.ItemValue.CODEC, Ingredient.TagValue.CODEC)

@@ -1,35 +1,13 @@
 package net.minecraft.advancements.critereon;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import javax.annotation.Nullable;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.Slime;
-import net.minecraft.world.phys.Vec3;
-
-public record SlimePredicate(MinMaxBounds.Ints size) implements EntitySubPredicate {
-   public static final MapCodec<SlimePredicate> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("size", MinMaxBounds.Ints.ANY).forGetter(SlimePredicate::size))
-            .apply(var0, SlimePredicate::new)
-   );
-
-   public SlimePredicate(MinMaxBounds.Ints size) {
-      super();
-      this.size = size;
-   }
-
-   public static SlimePredicate sized(MinMaxBounds.Ints var0) {
-      return new SlimePredicate(var0);
-   }
-
-   @Override
-   public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
-      return var1 instanceof Slime var4 ? this.size.matches(var4.getSize()) : false;
-   }
-
-   @Override
-   public MapCodec<SlimePredicate> codec() {
-      return EntitySubPredicates.SLIME;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

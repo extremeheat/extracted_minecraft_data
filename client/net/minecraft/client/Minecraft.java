@@ -29,6 +29,7 @@ import com.mojang.blaze3d.systems.TimerQuery;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
@@ -69,6 +70,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.FileUtil;
 import net.minecraft.Optionull;
+import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
@@ -195,6 +197,7 @@ import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.FileZipper;
 import net.minecraft.util.MemoryReserve;
 import net.minecraft.util.ModCheck;
@@ -248,10 +251,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final boolean ON_OSX = Util.getPlatform() == Util.OS.OSX;
    private static final int MAX_TICKS_PER_UPDATE = 10;
-   public static final ResourceLocation DEFAULT_FONT = new ResourceLocation("default");
-   public static final ResourceLocation UNIFORM_FONT = new ResourceLocation("uniform");
-   public static final ResourceLocation ALT_FONT = new ResourceLocation("alt");
-   private static final ResourceLocation REGIONAL_COMPLIANCIES = new ResourceLocation("regional_compliancies.json");
+   public static final ResourceLocation DEFAULT_FONT = ResourceLocation.withDefaultNamespace("default");
+   public static final ResourceLocation UNIFORM_FONT = ResourceLocation.withDefaultNamespace("uniform");
+   public static final ResourceLocation ALT_FONT = ResourceLocation.withDefaultNamespace("alt");
+   private static final ResourceLocation REGIONAL_COMPLIANCIES = ResourceLocation.withDefaultNamespace("regional_compliancies.json");
    private static final CompletableFuture<Unit> RESOURCE_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
    private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
    public static final String UPDATE_DRIVERS_ADVICE = "Please make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).";
@@ -840,18 +843,18 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public static void crash(@Nullable Minecraft var0, File var1, CrashReport var2) {
-      File var3 = new File(var1, "crash-reports");
-      File var4 = new File(var3, "crash-" + Util.getFilenameFormattedDateTime() + "-client.txt");
-      Bootstrap.realStdoutPrintln(var2.getFriendlyReport());
+      Path var3 = var1.toPath().resolve("crash-reports");
+      Path var4 = var3.resolve("crash-" + Util.getFilenameFormattedDateTime() + "-client.txt");
+      Bootstrap.realStdoutPrintln(var2.getFriendlyReport(ReportType.CRASH));
       if (var0 != null) {
          var0.soundManager.emergencyShutdown();
       }
 
       if (var2.getSaveFile() != null) {
-         Bootstrap.realStdoutPrintln("#@!@# Game crashed! Crash report saved to: #@!@# " + var2.getSaveFile());
+         Bootstrap.realStdoutPrintln("#@!@# Game crashed! Crash report saved to: #@!@# " + var2.getSaveFile().toAbsolutePath());
          System.exit(-1);
-      } else if (var2.saveToFile(var4)) {
-         Bootstrap.realStdoutPrintln("#@!@# Game crashed! Crash report saved to: #@!@# " + var4.getAbsolutePath());
+      } else if (var2.saveToFile(var4, ReportType.CRASH)) {
+         Bootstrap.realStdoutPrintln("#@!@# Game crashed! Crash report saved to: #@!@# " + var4.toAbsolutePath());
          System.exit(-1);
       } else {
          Bootstrap.realStdoutPrintln("#@?@# Game crashed! Crash report could not be saved. #@?@#");
@@ -1459,103 +1462,93 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    private void renderFpsMeter(GuiGraphics var1, ProfileResults var2) {
       List var3 = var2.getTimes(this.debugPath);
-      ResultField var4 = (ResultField)var3.remove(0);
+      ResultField var4 = (ResultField)var3.removeFirst();
       RenderSystem.clear(256, ON_OSX);
       RenderSystem.setShader(GameRenderer::getPositionColorShader);
       Matrix4f var5 = new Matrix4f().setOrtho(0.0F, (float)this.window.getWidth(), (float)this.window.getHeight(), 0.0F, 1000.0F, 3000.0F);
       RenderSystem.setProjectionMatrix(var5, VertexSorting.ORTHOGRAPHIC_Z);
-      Matrix4fStack var6 = RenderSystem.getModelViewStack();
-      var6.pushMatrix();
-      var6.translation(0.0F, 0.0F, -2000.0F);
+      Tesselator var6 = Tesselator.getInstance();
+      Matrix4fStack var7 = RenderSystem.getModelViewStack();
+      var7.pushMatrix();
+      var7.translation(0.0F, 0.0F, -2000.0F);
       RenderSystem.applyModelViewMatrix();
-      RenderSystem.lineWidth(1.0F);
-      Tesselator var7 = Tesselator.getInstance();
-      BufferBuilder var8 = var7.getBuilder();
-      short var9 = 160;
-      int var10 = this.window.getWidth() - 160 - 10;
-      int var11 = this.window.getHeight() - 320;
-      RenderSystem.enableBlend();
-      var8.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-      var8.vertex((double)((float)var10 - 176.0F), (double)((float)var11 - 96.0F - 16.0F), 0.0).color(200, 0, 0, 0).endVertex();
-      var8.vertex((double)((float)var10 - 176.0F), (double)(var11 + 320), 0.0).color(200, 0, 0, 0).endVertex();
-      var8.vertex((double)((float)var10 + 176.0F), (double)(var11 + 320), 0.0).color(200, 0, 0, 0).endVertex();
-      var8.vertex((double)((float)var10 + 176.0F), (double)((float)var11 - 96.0F - 16.0F), 0.0).color(200, 0, 0, 0).endVertex();
-      var7.end();
-      RenderSystem.disableBlend();
-      double var12 = 0.0;
+      short var8 = 160;
+      int var9 = this.window.getWidth() - 160 - 10;
+      int var10 = this.window.getHeight() - 320;
+      double var11 = 0.0;
 
-      for (ResultField var15 : var3) {
-         int var16 = Mth.floor(var15.percentage / 4.0) + 1;
-         var8.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-         int var17 = var15.getColor();
-         int var18 = var17 >> 16 & 0xFF;
-         int var19 = var17 >> 8 & 0xFF;
-         int var20 = var17 & 0xFF;
-         var8.vertex((double)var10, (double)var11, 0.0).color(var18, var19, var20, 255).endVertex();
+      for (ResultField var14 : var3) {
+         int var15 = Mth.floor(var14.percentage / 4.0) + 1;
+         BufferBuilder var16 = var6.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+         int var17 = FastColor.ARGB32.opaque(var14.getColor());
+         int var18 = FastColor.ARGB32.multiply(var17, -8355712);
+         var16.addVertex((float)var9, (float)var10, 0.0F).setColor(var17);
 
-         for (int var21 = var16; var21 >= 0; var21--) {
-            float var22 = (float)((var12 + var15.percentage * (double)var21 / (double)var16) * 6.2831854820251465 / 100.0);
-            float var23 = Mth.sin(var22) * 160.0F;
-            float var24 = Mth.cos(var22) * 160.0F * 0.5F;
-            var8.vertex((double)((float)var10 + var23), (double)((float)var11 - var24), 0.0).color(var18, var19, var20, 255).endVertex();
+         for (int var19 = var15; var19 >= 0; var19--) {
+            float var20 = (float)((var11 + var14.percentage * (double)var19 / (double)var15) * 6.2831854820251465 / 100.0);
+            float var21 = Mth.sin(var20) * 160.0F;
+            float var22 = Mth.cos(var20) * 160.0F * 0.5F;
+            var16.addVertex((float)var9 + var21, (float)var10 - var22, 0.0F).setColor(var17);
          }
 
-         var7.end();
-         var8.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+         BufferUploader.drawWithShader(var16.buildOrThrow());
+         var16 = var6.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
 
-         for (int var37 = var16; var37 >= 0; var37--) {
-            float var38 = (float)((var12 + var15.percentage * (double)var37 / (double)var16) * 6.2831854820251465 / 100.0);
+         for (int var36 = var15; var36 >= 0; var36--) {
+            float var38 = (float)((var11 + var14.percentage * (double)var36 / (double)var15) * 6.2831854820251465 / 100.0);
             float var39 = Mth.sin(var38) * 160.0F;
             float var40 = Mth.cos(var38) * 160.0F * 0.5F;
             if (!(var40 > 0.0F)) {
-               var8.vertex((double)((float)var10 + var39), (double)((float)var11 - var40), 0.0).color(var18 >> 1, var19 >> 1, var20 >> 1, 255).endVertex();
-               var8.vertex((double)((float)var10 + var39), (double)((float)var11 - var40 + 10.0F), 0.0)
-                  .color(var18 >> 1, var19 >> 1, var20 >> 1, 255)
-                  .endVertex();
+               var16.addVertex((float)var9 + var39, (float)var10 - var40, 0.0F).setColor(var18);
+               var16.addVertex((float)var9 + var39, (float)var10 - var40 + 10.0F, 0.0F).setColor(var18);
             }
          }
 
-         var7.end();
-         var12 += var15.percentage;
-      }
-
-      DecimalFormat var25 = new DecimalFormat("##0.00");
-      var25.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
-      String var26 = ProfileResults.demanglePath(var4.name);
-      String var28 = "";
-      if (!"unspecified".equals(var26)) {
-         var28 = var28 + "[0] ";
-      }
-
-      if (var26.isEmpty()) {
-         var28 = var28 + "ROOT ";
-      } else {
-         var28 = var28 + var26 + " ";
-      }
-
-      int var32 = 16777215;
-      var1.drawString(this.font, var28, var10 - 160, var11 - 80 - 16, 16777215);
-      var28 = var25.format(var4.globalPercentage) + "%";
-      var1.drawString(this.font, var28, var10 + 160 - this.font.width(var28), var11 - 80 - 16, 16777215);
-
-      for (int var27 = 0; var27 < var3.size(); var27++) {
-         ResultField var31 = (ResultField)var3.get(var27);
-         StringBuilder var33 = new StringBuilder();
-         if ("unspecified".equals(var31.name)) {
-            var33.append("[?] ");
-         } else {
-            var33.append("[").append(var27 + 1).append("] ");
+         MeshData var37 = var16.build();
+         if (var37 != null) {
+            BufferUploader.drawWithShader(var37);
          }
 
-         String var34 = var33.append(var31.name).toString();
-         var1.drawString(this.font, var34, var10 - 160, var11 + 80 + var27 * 8 + 20, var31.getColor());
-         var34 = var25.format(var31.percentage) + "%";
-         var1.drawString(this.font, var34, var10 + 160 - 50 - this.font.width(var34), var11 + 80 + var27 * 8 + 20, var31.getColor());
-         var34 = var25.format(var31.globalPercentage) + "%";
-         var1.drawString(this.font, var34, var10 + 160 - this.font.width(var34), var11 + 80 + var27 * 8 + 20, var31.getColor());
+         var11 += var14.percentage;
       }
 
-      var6.popMatrix();
+      DecimalFormat var23 = new DecimalFormat("##0.00");
+      var23.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
+      String var24 = ProfileResults.demanglePath(var4.name);
+      String var26 = "";
+      if (!"unspecified".equals(var24)) {
+         var26 = var26 + "[0] ";
+      }
+
+      if (var24.isEmpty()) {
+         var26 = var26 + "ROOT ";
+      } else {
+         var26 = var26 + var24 + " ";
+      }
+
+      int var31 = 16777215;
+      var1.drawString(this.font, var26, var9 - 160, var10 - 80 - 16, 16777215);
+      var26 = var23.format(var4.globalPercentage) + "%";
+      var1.drawString(this.font, var26, var9 + 160 - this.font.width(var26), var10 - 80 - 16, 16777215);
+
+      for (int var25 = 0; var25 < var3.size(); var25++) {
+         ResultField var29 = (ResultField)var3.get(var25);
+         StringBuilder var32 = new StringBuilder();
+         if ("unspecified".equals(var29.name)) {
+            var32.append("[?] ");
+         } else {
+            var32.append("[").append(var25 + 1).append("] ");
+         }
+
+         String var33 = var32.append(var29.name).toString();
+         var1.drawString(this.font, var33, var9 - 160, var10 + 80 + var25 * 8 + 20, var29.getColor());
+         var33 = var23.format(var29.percentage) + "%";
+         var1.drawString(this.font, var33, var9 + 160 - 50 - this.font.width(var33), var10 + 80 + var25 * 8 + 20, var29.getColor());
+         var33 = var23.format(var29.globalPercentage) + "%";
+         var1.drawString(this.font, var33, var9 + 160 - this.font.width(var33), var10 + 80 + var25 * 8 + 20, var29.getColor());
+      }
+
+      var7.popMatrix();
       RenderSystem.applyModelViewMatrix();
    }
 
@@ -2358,9 +2351,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var0.setDetail("Backend library", RenderSystem::getBackendDescription);
       var0.setDetail("Backend API", RenderSystem::getApiDescription);
       var0.setDetail("Window size", () -> var1 != null ? var1.window.getWidth() + "x" + var1.window.getHeight() : "<not initialized>");
+      var0.setDetail("GFLW Platform", Window::getPlatform);
       var0.setDetail("GL Caps", RenderSystem::getCapsString);
       var0.setDetail("GL debug messages", () -> GlDebug.isDebugEnabled() ? String.join("\n", GlDebug.getLastOpenGlDebugMessages()) : "<disabled>");
-      var0.setDetail("Using VBOs", () -> "Yes");
       var0.setDetail("Is Modded", () -> checkModStatus().fullDescription());
       var0.setDetail("Universe", () -> var1 != null ? Long.toHexString(var1.canary) : "404");
       var0.setDetail("Type", "Client (map_client.txt)");
@@ -2385,6 +2378,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       var0.setDetail("Locale", String.valueOf(Locale.getDefault()));
+      var0.setDetail("System encoding", () -> System.getProperty("sun.jnu.encoding", "<not set>"));
+      var0.setDetail("File encoding", () -> System.getProperty("file.encoding", "<not set>"));
       var0.setDetail("CPU", GlUtil::getCpuInfo);
       return var0;
    }
@@ -2895,11 +2890,16 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       public abstract boolean isChatAllowed(boolean var1);
    }
 
-   static record GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
-      GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
-         super();
-         this.realmsClient = realmsClient;
-         this.quickPlayData = quickPlayData;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

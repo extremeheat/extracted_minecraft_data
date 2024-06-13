@@ -2,7 +2,6 @@ package net.minecraft.world.level.biome;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import java.util.Optional;
@@ -337,27 +336,18 @@ public final class Biome {
       }
    }
 
-   static record ClimateSettings(boolean hasPrecipitation, float temperature, Biome.TemperatureModifier temperatureModifier, float downfall) {
-      public static final MapCodec<Biome.ClimateSettings> CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  Codec.BOOL.fieldOf("has_precipitation").forGetter(var0x -> var0x.hasPrecipitation),
-                  Codec.FLOAT.fieldOf("temperature").forGetter(var0x -> var0x.temperature),
-                  Biome.TemperatureModifier.CODEC
-                     .optionalFieldOf("temperature_modifier", Biome.TemperatureModifier.NONE)
-                     .forGetter(var0x -> var0x.temperatureModifier),
-                  Codec.FLOAT.fieldOf("downfall").forGetter(var0x -> var0x.downfall)
-               )
-               .apply(var0, Biome.ClimateSettings::new)
-      );
-
-      ClimateSettings(boolean hasPrecipitation, float temperature, Biome.TemperatureModifier temperatureModifier, float downfall) {
-         super();
-         this.hasPrecipitation = hasPrecipitation;
-         this.temperature = temperature;
-         this.temperatureModifier = temperatureModifier;
-         this.downfall = downfall;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static enum Precipitation implements StringRepresentable {
       NONE("none"),

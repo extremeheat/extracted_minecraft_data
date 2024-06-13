@@ -11,7 +11,7 @@ import net.minecraft.world.entity.monster.Illusioner;
 import net.minecraft.world.phys.Vec3;
 
 public class IllusionerRenderer extends IllagerRenderer<Illusioner> {
-   private static final ResourceLocation ILLUSIONER = new ResourceLocation("textures/entity/illager/illusioner.png");
+   private static final ResourceLocation ILLUSIONER = ResourceLocation.withDefaultNamespace("textures/entity/illager/illusioner.png");
 
    public IllusionerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel<>(var1.bakeLayer(ModelLayers.ILLUSIONER)), 0.5F);

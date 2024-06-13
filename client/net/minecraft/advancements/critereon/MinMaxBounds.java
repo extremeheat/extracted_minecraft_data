@@ -118,127 +118,29 @@ public interface MinMaxBounds<T extends Number> {
       R create(StringReader var1, Optional<T> var2, Optional<T> var3) throws CommandSyntaxException;
    }
 
-   public static record Doubles(Optional<Double> min, Optional<Double> max, Optional<Double> minSq, Optional<Double> maxSq) implements MinMaxBounds<Double> {
-      public static final MinMaxBounds.Doubles ANY = new MinMaxBounds.Doubles(Optional.empty(), Optional.empty());
-      public static final Codec<MinMaxBounds.Doubles> CODEC = MinMaxBounds.createCodec(Codec.DOUBLE, MinMaxBounds.Doubles::new);
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      private Doubles(Optional<Double> var1, Optional<Double> var2) {
-         this(var1, var2, squareOpt(var1), squareOpt(var2));
-      }
-
-      public Doubles(Optional<Double> min, Optional<Double> max, Optional<Double> minSq, Optional<Double> maxSq) {
-         super();
-         this.min = min;
-         this.max = max;
-         this.minSq = minSq;
-         this.maxSq = maxSq;
-      }
-
-      private static MinMaxBounds.Doubles create(StringReader var0, Optional<Double> var1, Optional<Double> var2) throws CommandSyntaxException {
-         if (var1.isPresent() && var2.isPresent() && (Double)var1.get() > (Double)var2.get()) {
-            throw ERROR_SWAPPED.createWithContext(var0);
-         } else {
-            return new MinMaxBounds.Doubles(var1, var2);
-         }
-      }
-
-      private static Optional<Double> squareOpt(Optional<Double> var0) {
-         return var0.map(var0x -> var0x * var0x);
-      }
-
-      public static MinMaxBounds.Doubles exactly(double var0) {
-         return new MinMaxBounds.Doubles(Optional.of(var0), Optional.of(var0));
-      }
-
-      public static MinMaxBounds.Doubles between(double var0, double var2) {
-         return new MinMaxBounds.Doubles(Optional.of(var0), Optional.of(var2));
-      }
-
-      public static MinMaxBounds.Doubles atLeast(double var0) {
-         return new MinMaxBounds.Doubles(Optional.of(var0), Optional.empty());
-      }
-
-      public static MinMaxBounds.Doubles atMost(double var0) {
-         return new MinMaxBounds.Doubles(Optional.empty(), Optional.of(var0));
-      }
-
-      public boolean matches(double var1) {
-         return this.min.isPresent() && this.min.get() > var1 ? false : this.max.isEmpty() || !(this.max.get() < var1);
-      }
-
-      public boolean matchesSqr(double var1) {
-         return this.minSq.isPresent() && this.minSq.get() > var1 ? false : this.maxSq.isEmpty() || !(this.maxSq.get() < var1);
-      }
-
-      public static MinMaxBounds.Doubles fromReader(StringReader var0) throws CommandSyntaxException {
-         return fromReader(var0, var0x -> var0x);
-      }
-
-      public static MinMaxBounds.Doubles fromReader(StringReader var0, Function<Double, Double> var1) throws CommandSyntaxException {
-         return MinMaxBounds.fromReader(
-            var0, MinMaxBounds.Doubles::create, Double::parseDouble, CommandSyntaxException.BUILT_IN_EXCEPTIONS::readerInvalidDouble, var1
-         );
-      }
-   }
-
-   public static record Ints(Optional<Integer> min, Optional<Integer> max, Optional<Long> minSq, Optional<Long> maxSq) implements MinMaxBounds<Integer> {
-      public static final MinMaxBounds.Ints ANY = new MinMaxBounds.Ints(Optional.empty(), Optional.empty());
-      public static final Codec<MinMaxBounds.Ints> CODEC = MinMaxBounds.createCodec(Codec.INT, MinMaxBounds.Ints::new);
-
-      private Ints(Optional<Integer> var1, Optional<Integer> var2) {
-         this(var1, var2, var1.map(var0 -> var0.longValue() * var0.longValue()), squareOpt(var2));
-      }
-
-      public Ints(Optional<Integer> min, Optional<Integer> max, Optional<Long> minSq, Optional<Long> maxSq) {
-         super();
-         this.min = min;
-         this.max = max;
-         this.minSq = minSq;
-         this.maxSq = maxSq;
-      }
-
-      private static MinMaxBounds.Ints create(StringReader var0, Optional<Integer> var1, Optional<Integer> var2) throws CommandSyntaxException {
-         if (var1.isPresent() && var2.isPresent() && (Integer)var1.get() > (Integer)var2.get()) {
-            throw ERROR_SWAPPED.createWithContext(var0);
-         } else {
-            return new MinMaxBounds.Ints(var1, var2);
-         }
-      }
-
-      private static Optional<Long> squareOpt(Optional<Integer> var0) {
-         return var0.map(var0x -> var0x.longValue() * var0x.longValue());
-      }
-
-      public static MinMaxBounds.Ints exactly(int var0) {
-         return new MinMaxBounds.Ints(Optional.of(var0), Optional.of(var0));
-      }
-
-      public static MinMaxBounds.Ints between(int var0, int var1) {
-         return new MinMaxBounds.Ints(Optional.of(var0), Optional.of(var1));
-      }
-
-      public static MinMaxBounds.Ints atLeast(int var0) {
-         return new MinMaxBounds.Ints(Optional.of(var0), Optional.empty());
-      }
-
-      public static MinMaxBounds.Ints atMost(int var0) {
-         return new MinMaxBounds.Ints(Optional.empty(), Optional.of(var0));
-      }
-
-      public boolean matches(int var1) {
-         return this.min.isPresent() && this.min.get() > var1 ? false : this.max.isEmpty() || this.max.get() >= var1;
-      }
-
-      public boolean matchesSqr(long var1) {
-         return this.minSq.isPresent() && this.minSq.get() > var1 ? false : this.maxSq.isEmpty() || this.maxSq.get() >= var1;
-      }
-
-      public static MinMaxBounds.Ints fromReader(StringReader var0) throws CommandSyntaxException {
-         return fromReader(var0, var0x -> var0x);
-      }
-
-      public static MinMaxBounds.Ints fromReader(StringReader var0, Function<Integer, Integer> var1) throws CommandSyntaxException {
-         return MinMaxBounds.fromReader(var0, MinMaxBounds.Ints::create, Integer::parseInt, CommandSyntaxException.BUILT_IN_EXCEPTIONS::readerInvalidInt, var1);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

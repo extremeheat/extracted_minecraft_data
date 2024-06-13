@@ -151,10 +151,10 @@ public class MemoryModuleType<U> {
    }
 
    private static <U> MemoryModuleType<U> register(String var0, Codec<U> var1) {
-      return Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, new ResourceLocation(var0), new MemoryModuleType<>(Optional.of(var1)));
+      return Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, ResourceLocation.withDefaultNamespace(var0), new MemoryModuleType<>(Optional.of(var1)));
    }
 
    private static <U> MemoryModuleType<U> register(String var0) {
-      return Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, new ResourceLocation(var0), new MemoryModuleType<>(Optional.empty()));
+      return Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, ResourceLocation.withDefaultNamespace(var0), new MemoryModuleType<>(Optional.empty()));
    }
 }

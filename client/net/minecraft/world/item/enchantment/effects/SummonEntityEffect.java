@@ -1,63 +1,13 @@
 package net.minecraft.world.item.enchantment.effects;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.item.enchantment.EnchantedItemInUse;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
-
-public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean joinTeam) implements EnchantmentEntityEffect {
-   public static final MapCodec<SummonEntityEffect> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(
-               RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).fieldOf("entity").forGetter(SummonEntityEffect::entityTypes),
-               Codec.BOOL.optionalFieldOf("join_team", false).forGetter(SummonEntityEffect::joinTeam)
-            )
-            .apply(var0, SummonEntityEffect::new)
-   );
-
-   public SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean joinTeam) {
-      super();
-      this.entityTypes = entityTypes;
-      this.joinTeam = joinTeam;
-   }
-
-   @Override
-   public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      BlockPos var6 = BlockPos.containing(var5);
-      if (Level.isInSpawnableBounds(var6)) {
-         Optional var7 = this.entityTypes().getRandomElement(var1.getRandom());
-         if (!var7.isEmpty()) {
-            Entity var8 = ((EntityType)((Holder)var7.get()).value()).spawn(var1, var6, MobSpawnType.TRIGGERED);
-            if (var8 != null) {
-               if (var8 instanceof LightningBolt var9 && var3.owner() instanceof ServerPlayer var10) {
-                  var9.setCause(var10);
-               }
-
-               if (this.joinTeam && var4.getTeam() != null) {
-                  var1.getScoreboard().addPlayerToTeam(var8.getScoreboardName(), var4.getTeam());
-               }
-
-               var8.moveTo(var5.x, var5.y, var5.z, var8.getYRot(), var8.getXRot());
-            }
-         }
-      }
-   }
-
-   @Override
-   public MapCodec<SummonEntityEffect> codec() {
-      return CODEC;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

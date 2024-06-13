@@ -24,7 +24,7 @@ import net.minecraft.util.StringUtil;
 
 public class EditBox extends AbstractWidget implements Renderable {
    private static final WidgetSprites SPRITES = new WidgetSprites(
-      new ResourceLocation("widget/text_field"), new ResourceLocation("widget/text_field_highlighted")
+      ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted")
    );
    public static final int BACKWARDS = -1;
    public static final int FORWARDS = 1;

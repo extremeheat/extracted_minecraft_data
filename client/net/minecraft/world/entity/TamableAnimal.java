@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
@@ -12,14 +13,25 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.OldUsersConverter;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.scores.PlayerTeam;
 
 public abstract class TamableAnimal extends Animal implements OwnableEntity {
+   public static final int TELEPORT_WHEN_DISTANCE_IS_SQ = 144;
+   private static final int MIN_HORIZONTAL_DISTANCE_FROM_TARGET_AFTER_TELEPORTING = 2;
+   private static final int MAX_HORIZONTAL_DISTANCE_FROM_TARGET_AFTER_TELEPORTING = 3;
+   private static final int MAX_VERTICAL_DISTANCE_FROM_TARGET_AFTER_TELEPORTING = 1;
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(TamableAnimal.class, EntityDataSerializers.BYTE);
    protected static final EntityDataAccessor<Optional<UUID>> DATA_OWNERUUID_ID = SynchedEntityData.defineId(
       TamableAnimal.class, EntityDataSerializers.OPTIONAL_UUID
@@ -208,5 +220,82 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    public void setOrderedToSit(boolean var1) {
       this.orderedToSit = var1;
+   }
+
+   public void tryToTeleportToOwner() {
+      LivingEntity var1 = this.getOwner();
+      if (var1 != null) {
+         this.teleportToAroundBlockPos(var1.blockPosition());
+      }
+   }
+
+   public boolean shouldTryTeleportToOwner() {
+      LivingEntity var1 = this.getOwner();
+      return var1 != null && this.distanceToSqr(this.getOwner()) >= 144.0;
+   }
+
+   private void teleportToAroundBlockPos(BlockPos var1) {
+      for (int var2 = 0; var2 < 10; var2++) {
+         int var3 = this.random.nextIntBetweenInclusive(-3, 3);
+         int var4 = this.random.nextIntBetweenInclusive(-3, 3);
+         if (Math.abs(var3) >= 2 || Math.abs(var4) >= 2) {
+            int var5 = this.random.nextIntBetweenInclusive(-1, 1);
+            if (this.maybeTeleportTo(var1.getX() + var3, var1.getY() + var5, var1.getZ() + var4)) {
+               return;
+            }
+         }
+      }
+   }
+
+   private boolean maybeTeleportTo(int var1, int var2, int var3) {
+      if (!this.canTeleportTo(new BlockPos(var1, var2, var3))) {
+         return false;
+      } else {
+         this.moveTo((double)var1 + 0.5, (double)var2, (double)var3 + 0.5, this.getYRot(), this.getXRot());
+         this.navigation.stop();
+         return true;
+      }
+   }
+
+   private boolean canTeleportTo(BlockPos var1) {
+      PathType var2 = WalkNodeEvaluator.getPathTypeStatic(this, var1);
+      if (var2 != PathType.WALKABLE) {
+         return false;
+      } else {
+         BlockState var3 = this.level().getBlockState(var1.below());
+         if (!this.canFlyToOwner() && var3.getBlock() instanceof LeavesBlock) {
+            return false;
+         } else {
+            BlockPos var4 = var1.subtract(this.blockPosition());
+            return this.level().noCollision(this, this.getBoundingBox().move(var4));
+         }
+      }
+   }
+
+   public final boolean unableToMoveToOwner() {
+      return this.isOrderedToSit() || this.isPassenger() || this.mayBeLeashed() || this.getOwner() != null && this.getOwner().isSpectator();
+   }
+
+   protected boolean canFlyToOwner() {
+      return false;
+   }
+
+   public class TamableAnimalPanicGoal extends PanicGoal {
+      public TamableAnimalPanicGoal(final double param3, final TagKey<DamageType> TamableAnimal.this) {
+         super(TamableAnimal.this, nullx, nullxx);
+      }
+
+      public TamableAnimalPanicGoal(final double nullx) {
+         super(TamableAnimal.this, nullx);
+      }
+
+      @Override
+      public void tick() {
+         if (!TamableAnimal.this.unableToMoveToOwner() && TamableAnimal.this.shouldTryTeleportToOwner()) {
+            TamableAnimal.this.tryToTeleportToOwner();
+         }
+
+         super.tick();
+      }
    }
 }

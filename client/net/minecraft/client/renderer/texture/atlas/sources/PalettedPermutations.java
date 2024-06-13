@@ -8,7 +8,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -16,17 +15,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.IntUnaryOperator;
-import javax.annotation.Nullable;
-import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
 import net.minecraft.client.renderer.texture.atlas.SpriteSources;
-import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.FastColor;
 import org.slf4j.Logger;
 
@@ -130,34 +124,16 @@ public class PalettedPermutations implements SpriteSource {
       return SpriteSources.PALETTED_PERMUTATIONS;
    }
 
-   static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation)
-      implements SpriteSource.SpriteSupplier {
-      PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) {
-         super();
-         this.baseImage = baseImage;
-         this.palette = palette;
-         this.permutationLocation = permutationLocation;
-      }
-
-      @Nullable
-      public SpriteContents apply(SpriteResourceLoader var1) {
-         Object var3;
-         try {
-            NativeImage var2 = this.baseImage.get().mappedCopy(this.palette.get());
-            return new SpriteContents(this.permutationLocation, new FrameSize(var2.getWidth(), var2.getHeight()), var2, ResourceMetadata.EMPTY);
-         } catch (IllegalArgumentException | IOException var7) {
-            PalettedPermutations.LOGGER.error("unable to apply palette to {}", this.permutationLocation, var7);
-            var3 = null;
-         } finally {
-            this.baseImage.release();
-         }
-
-         return (SpriteContents)var3;
-      }
-
-      @Override
-      public void discard() {
-         this.baseImage.release();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

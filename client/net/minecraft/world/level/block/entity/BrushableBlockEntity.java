@@ -172,7 +172,7 @@ public class BrushableBlockEntity extends BlockEntity {
 
    private boolean tryLoadLootTable(CompoundTag var1) {
       if (var1.contains("LootTable", 8)) {
-         this.lootTable = ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var1.getString("LootTable")));
+         this.lootTable = ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("LootTable")));
          this.lootTableSeed = var1.getLong("LootTableSeed");
          return true;
       } else {

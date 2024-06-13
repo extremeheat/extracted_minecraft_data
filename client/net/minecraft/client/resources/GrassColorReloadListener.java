@@ -8,7 +8,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.GrassColor;
 
 public class GrassColorReloadListener extends SimplePreparableReloadListener<int[]> {
-   private static final ResourceLocation LOCATION = new ResourceLocation("textures/colormap/grass.png");
+   private static final ResourceLocation LOCATION = ResourceLocation.withDefaultNamespace("textures/colormap/grass.png");
 
    public GrassColorReloadListener() {
       super();

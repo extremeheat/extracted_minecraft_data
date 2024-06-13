@@ -1,7 +1,6 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.particles.SimpleParticleType;
 
 public class SculkChargePopParticle extends TextureSheetParticle {
    private final SpriteSet sprites;
@@ -31,18 +30,16 @@ public class SculkChargePopParticle extends TextureSheetParticle {
       this.setSpriteFromAge(this.sprites);
    }
 
-   public static record Provider(SpriteSet sprite) implements ParticleProvider<SimpleParticleType> {
-      public Provider(SpriteSet sprite) {
-         super();
-         this.sprite = sprite;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SculkChargePopParticle var15 = new SculkChargePopParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var15.setAlpha(1.0F);
-         var15.setParticleSpeed(var9, var11, var13);
-         var15.setLifetime(var2.random.nextInt(4) + 6);
-         return var15;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

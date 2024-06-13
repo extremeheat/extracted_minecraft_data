@@ -119,27 +119,16 @@ public class BrushItem extends Item {
       }
    }
 
-   static record DustParticlesDelta(double xd, double yd, double zd) {
-      private static final double ALONG_SIDE_DELTA = 1.0;
-      private static final double OUT_FROM_SIDE_DELTA = 0.1;
-
-      private DustParticlesDelta(double xd, double yd, double zd) {
-         super();
-         this.xd = xd;
-         this.yd = yd;
-         this.zd = zd;
-      }
-
-      public static BrushItem.DustParticlesDelta fromDirection(Vec3 var0, Direction var1) {
-         double var2 = 0.0;
-
-         return switch (var1) {
-            case DOWN, UP -> new BrushItem.DustParticlesDelta(var0.z(), 0.0, -var0.x());
-            case NORTH -> new BrushItem.DustParticlesDelta(1.0, 0.0, -0.1);
-            case SOUTH -> new BrushItem.DustParticlesDelta(-1.0, 0.0, 0.1);
-            case WEST -> new BrushItem.DustParticlesDelta(-0.1, 0.0, -1.0);
-            case EAST -> new BrushItem.DustParticlesDelta(0.1, 0.0, 1.0);
-         };
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

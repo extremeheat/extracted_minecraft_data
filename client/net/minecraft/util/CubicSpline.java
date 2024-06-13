@@ -23,14 +23,19 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
    static <C, I extends ToFloatFunction<C>> Codec<CubicSpline<C, I>> codec(Codec<I> var0) {
       MutableObject var1 = new MutableObject();
 
-      record 1Point<C, I extends ToFloatFunction<C>>(float location, CubicSpline<C, I> value, float derivative) {
-         _Point/* $VF was: 1Point*/(float location, CubicSpline<C, I> value, float derivative) {
-            super();
-            this.location = location;
-            this.value = value;
-            this.derivative = derivative;
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent.toJava(VarExprent.java:124)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.listToJava(ExprProcessor.java:895)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.BasicBlockStatement.toJava(BasicBlockStatement.java:90)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.RootStatement.toJava(RootStatement.java:36)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeMethod(ClassWriter.java:1283)
 
       Codec var2 = RecordCodecBuilder.create(
          var1x -> var1x.group(
@@ -141,38 +146,18 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
       }
    }
 
-   @VisibleForDebug
-   public static record Constant<C, I extends ToFloatFunction<C>>(float value) implements CubicSpline<C, I> {
-      public Constant(float value) {
-         super();
-         this.value = value;
-      }
-
-      @Override
-      public float apply(C var1) {
-         return this.value;
-      }
-
-      @Override
-      public String parityString() {
-         return String.format(Locale.ROOT, "k=%.3f", this.value);
-      }
-
-      @Override
-      public float minValue() {
-         return this.value;
-      }
-
-      @Override
-      public float maxValue() {
-         return this.value;
-      }
-
-      @Override
-      public CubicSpline<C, I> mapAll(CubicSpline.CoordinateVisitor<I> var1) {
-         return this;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface CoordinateVisitor<I> {
       I visit(I var1);

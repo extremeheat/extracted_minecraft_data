@@ -1042,7 +1042,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static Optional<EntityType<?>> by(CompoundTag var0) {
-      return BuiltInRegistries.ENTITY_TYPE.getOptional(new ResourceLocation(var0.getString("id")));
+      return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.parse(var0.getString("id")));
    }
 
    @Nullable

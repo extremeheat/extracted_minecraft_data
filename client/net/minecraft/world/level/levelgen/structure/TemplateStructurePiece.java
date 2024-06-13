@@ -58,7 +58,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
    }
 
    protected ResourceLocation makeTemplateLocation() {
-      return new ResourceLocation(this.templateName);
+      return ResourceLocation.parse(this.templateName);
    }
 
    @Override

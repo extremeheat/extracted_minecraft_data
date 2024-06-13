@@ -69,41 +69,47 @@ import net.minecraft.world.scores.Scoreboard;
 import org.joml.Matrix4fStack;
 
 public class Gui {
-   private static final ResourceLocation CROSSHAIR_SPRITE = new ResourceLocation("hud/crosshair");
-   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE = new ResourceLocation("hud/crosshair_attack_indicator_full");
-   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE = new ResourceLocation("hud/crosshair_attack_indicator_background");
-   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE = new ResourceLocation("hud/crosshair_attack_indicator_progress");
-   private static final ResourceLocation EFFECT_BACKGROUND_AMBIENT_SPRITE = new ResourceLocation("hud/effect_background_ambient");
-   private static final ResourceLocation EFFECT_BACKGROUND_SPRITE = new ResourceLocation("hud/effect_background");
-   private static final ResourceLocation HOTBAR_SPRITE = new ResourceLocation("hud/hotbar");
-   private static final ResourceLocation HOTBAR_SELECTION_SPRITE = new ResourceLocation("hud/hotbar_selection");
-   private static final ResourceLocation HOTBAR_OFFHAND_LEFT_SPRITE = new ResourceLocation("hud/hotbar_offhand_left");
-   private static final ResourceLocation HOTBAR_OFFHAND_RIGHT_SPRITE = new ResourceLocation("hud/hotbar_offhand_right");
-   private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE = new ResourceLocation("hud/hotbar_attack_indicator_background");
-   private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE = new ResourceLocation("hud/hotbar_attack_indicator_progress");
-   private static final ResourceLocation JUMP_BAR_BACKGROUND_SPRITE = new ResourceLocation("hud/jump_bar_background");
-   private static final ResourceLocation JUMP_BAR_COOLDOWN_SPRITE = new ResourceLocation("hud/jump_bar_cooldown");
-   private static final ResourceLocation JUMP_BAR_PROGRESS_SPRITE = new ResourceLocation("hud/jump_bar_progress");
-   private static final ResourceLocation EXPERIENCE_BAR_BACKGROUND_SPRITE = new ResourceLocation("hud/experience_bar_background");
-   private static final ResourceLocation EXPERIENCE_BAR_PROGRESS_SPRITE = new ResourceLocation("hud/experience_bar_progress");
-   private static final ResourceLocation ARMOR_EMPTY_SPRITE = new ResourceLocation("hud/armor_empty");
-   private static final ResourceLocation ARMOR_HALF_SPRITE = new ResourceLocation("hud/armor_half");
-   private static final ResourceLocation ARMOR_FULL_SPRITE = new ResourceLocation("hud/armor_full");
-   private static final ResourceLocation FOOD_EMPTY_HUNGER_SPRITE = new ResourceLocation("hud/food_empty_hunger");
-   private static final ResourceLocation FOOD_HALF_HUNGER_SPRITE = new ResourceLocation("hud/food_half_hunger");
-   private static final ResourceLocation FOOD_FULL_HUNGER_SPRITE = new ResourceLocation("hud/food_full_hunger");
-   private static final ResourceLocation FOOD_EMPTY_SPRITE = new ResourceLocation("hud/food_empty");
-   private static final ResourceLocation FOOD_HALF_SPRITE = new ResourceLocation("hud/food_half");
-   private static final ResourceLocation FOOD_FULL_SPRITE = new ResourceLocation("hud/food_full");
-   private static final ResourceLocation AIR_SPRITE = new ResourceLocation("hud/air");
-   private static final ResourceLocation AIR_BURSTING_SPRITE = new ResourceLocation("hud/air_bursting");
-   private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = new ResourceLocation("hud/heart/vehicle_container");
-   private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = new ResourceLocation("hud/heart/vehicle_full");
-   private static final ResourceLocation HEART_VEHICLE_HALF_SPRITE = new ResourceLocation("hud/heart/vehicle_half");
-   private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/vignette.png");
-   private static final ResourceLocation PUMPKIN_BLUR_LOCATION = new ResourceLocation("textures/misc/pumpkinblur.png");
-   private static final ResourceLocation SPYGLASS_SCOPE_LOCATION = new ResourceLocation("textures/misc/spyglass_scope.png");
-   private static final ResourceLocation POWDER_SNOW_OUTLINE_LOCATION = new ResourceLocation("textures/misc/powder_snow_outline.png");
+   private static final ResourceLocation CROSSHAIR_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair");
+   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/crosshair_attack_indicator_full");
+   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace(
+      "hud/crosshair_attack_indicator_background"
+   );
+   private static final ResourceLocation CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace(
+      "hud/crosshair_attack_indicator_progress"
+   );
+   private static final ResourceLocation EFFECT_BACKGROUND_AMBIENT_SPRITE = ResourceLocation.withDefaultNamespace("hud/effect_background_ambient");
+   private static final ResourceLocation EFFECT_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/effect_background");
+   private static final ResourceLocation HOTBAR_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar");
+   private static final ResourceLocation HOTBAR_SELECTION_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_selection");
+   private static final ResourceLocation HOTBAR_OFFHAND_LEFT_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left");
+   private static final ResourceLocation HOTBAR_OFFHAND_RIGHT_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_right");
+   private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace(
+      "hud/hotbar_attack_indicator_background"
+   );
+   private static final ResourceLocation HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_attack_indicator_progress");
+   private static final ResourceLocation JUMP_BAR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/jump_bar_background");
+   private static final ResourceLocation JUMP_BAR_COOLDOWN_SPRITE = ResourceLocation.withDefaultNamespace("hud/jump_bar_cooldown");
+   private static final ResourceLocation JUMP_BAR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/jump_bar_progress");
+   private static final ResourceLocation EXPERIENCE_BAR_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("hud/experience_bar_background");
+   private static final ResourceLocation EXPERIENCE_BAR_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("hud/experience_bar_progress");
+   private static final ResourceLocation ARMOR_EMPTY_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_empty");
+   private static final ResourceLocation ARMOR_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_half");
+   private static final ResourceLocation ARMOR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/armor_full");
+   private static final ResourceLocation FOOD_EMPTY_HUNGER_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_empty_hunger");
+   private static final ResourceLocation FOOD_HALF_HUNGER_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_half_hunger");
+   private static final ResourceLocation FOOD_FULL_HUNGER_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_full_hunger");
+   private static final ResourceLocation FOOD_EMPTY_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_empty");
+   private static final ResourceLocation FOOD_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_half");
+   private static final ResourceLocation FOOD_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_full");
+   private static final ResourceLocation AIR_SPRITE = ResourceLocation.withDefaultNamespace("hud/air");
+   private static final ResourceLocation AIR_BURSTING_SPRITE = ResourceLocation.withDefaultNamespace("hud/air_bursting");
+   private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_container");
+   private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_full");
+   private static final ResourceLocation HEART_VEHICLE_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_half");
+   private static final ResourceLocation VIGNETTE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/vignette.png");
+   private static final ResourceLocation PUMPKIN_BLUR_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/pumpkinblur.png");
+   private static final ResourceLocation SPYGLASS_SCOPE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/spyglass_scope.png");
+   private static final ResourceLocation POWDER_SNOW_OUTLINE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/powder_snow_outline.png");
    private static final Comparator<PlayerScoreEntry> SCORE_DISPLAY_ORDER = Comparator.comparing(PlayerScoreEntry::value)
       .reversed()
       .thenComparing(PlayerScoreEntry::owner, String.CASE_INSENSITIVE_ORDER);
@@ -675,15 +681,21 @@ public class Gui {
       Scoreboard var3 = var2.getScoreboard();
       NumberFormat var4 = var2.numberFormatOrDefault(StyledFormat.SIDEBAR_DEFAULT);
 
-      record 1DisplayEntry(Component name, Component score, int scoreWidth) {
-
-         _DisplayEntry/* $VF was: 1DisplayEntry*/(Component name, Component score, int scoreWidth) {
-            super();
-            this.name = name;
-            this.score = score;
-            this.scoreWidth = scoreWidth;
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent.toJava(VarExprent.java:124)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.listToJava(ExprProcessor.java:895)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.BasicBlockStatement.toJava(BasicBlockStatement.java:90)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.jmpWrapper(ExprProcessor.java:833)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.SequenceStatement.toJava(SequenceStatement.java:107)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.RootStatement.toJava(RootStatement.java:36)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeMethod(ClassWriter.java:1283)
 
       1DisplayEntry[] var5 = var3.listPlayerScores(var2).stream().filter(var0 -> !var0.isHidden()).sorted(SCORE_DISPLAY_ORDER).limit(15L).map(var3x -> {
          PlayerTeam var4x = var3.getPlayersTeam(var3x.owner());
@@ -1263,64 +1275,64 @@ public class Gui {
 
    static enum HeartType {
       CONTAINER(
-         new ResourceLocation("hud/heart/container"),
-         new ResourceLocation("hud/heart/container_blinking"),
-         new ResourceLocation("hud/heart/container"),
-         new ResourceLocation("hud/heart/container_blinking"),
-         new ResourceLocation("hud/heart/container_hardcore"),
-         new ResourceLocation("hud/heart/container_hardcore_blinking"),
-         new ResourceLocation("hud/heart/container_hardcore"),
-         new ResourceLocation("hud/heart/container_hardcore_blinking")
+         ResourceLocation.withDefaultNamespace("hud/heart/container"),
+         ResourceLocation.withDefaultNamespace("hud/heart/container_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/container"),
+         ResourceLocation.withDefaultNamespace("hud/heart/container_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore"),
+         ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore"),
+         ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore_blinking")
       ),
       NORMAL(
-         new ResourceLocation("hud/heart/full"),
-         new ResourceLocation("hud/heart/full_blinking"),
-         new ResourceLocation("hud/heart/half"),
-         new ResourceLocation("hud/heart/half_blinking"),
-         new ResourceLocation("hud/heart/hardcore_full"),
-         new ResourceLocation("hud/heart/hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/hardcore_half"),
-         new ResourceLocation("hud/heart/hardcore_half_blinking")
+         ResourceLocation.withDefaultNamespace("hud/heart/full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/half_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/hardcore_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/hardcore_half_blinking")
       ),
       POISIONED(
-         new ResourceLocation("hud/heart/poisoned_full"),
-         new ResourceLocation("hud/heart/poisoned_full_blinking"),
-         new ResourceLocation("hud/heart/poisoned_half"),
-         new ResourceLocation("hud/heart/poisoned_half_blinking"),
-         new ResourceLocation("hud/heart/poisoned_hardcore_full"),
-         new ResourceLocation("hud/heart/poisoned_hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/poisoned_hardcore_half"),
-         new ResourceLocation("hud/heart/poisoned_hardcore_half_blinking")
+         ResourceLocation.withDefaultNamespace("hud/heart/poisoned_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/poisoned_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/poisoned_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/poisoned_half_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_half_blinking")
       ),
       WITHERED(
-         new ResourceLocation("hud/heart/withered_full"),
-         new ResourceLocation("hud/heart/withered_full_blinking"),
-         new ResourceLocation("hud/heart/withered_half"),
-         new ResourceLocation("hud/heart/withered_half_blinking"),
-         new ResourceLocation("hud/heart/withered_hardcore_full"),
-         new ResourceLocation("hud/heart/withered_hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/withered_hardcore_half"),
-         new ResourceLocation("hud/heart/withered_hardcore_half_blinking")
+         ResourceLocation.withDefaultNamespace("hud/heart/withered_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/withered_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/withered_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/withered_half_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/withered_hardcore_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/withered_hardcore_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/withered_hardcore_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/withered_hardcore_half_blinking")
       ),
       ABSORBING(
-         new ResourceLocation("hud/heart/absorbing_full"),
-         new ResourceLocation("hud/heart/absorbing_full_blinking"),
-         new ResourceLocation("hud/heart/absorbing_half"),
-         new ResourceLocation("hud/heart/absorbing_half_blinking"),
-         new ResourceLocation("hud/heart/absorbing_hardcore_full"),
-         new ResourceLocation("hud/heart/absorbing_hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/absorbing_hardcore_half"),
-         new ResourceLocation("hud/heart/absorbing_hardcore_half_blinking")
+         ResourceLocation.withDefaultNamespace("hud/heart/absorbing_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/absorbing_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/absorbing_hardcore_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/absorbing_hardcore_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/absorbing_hardcore_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/absorbing_hardcore_half_blinking")
       ),
       FROZEN(
-         new ResourceLocation("hud/heart/frozen_full"),
-         new ResourceLocation("hud/heart/frozen_full_blinking"),
-         new ResourceLocation("hud/heart/frozen_half"),
-         new ResourceLocation("hud/heart/frozen_half_blinking"),
-         new ResourceLocation("hud/heart/frozen_hardcore_full"),
-         new ResourceLocation("hud/heart/frozen_hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/frozen_hardcore_half"),
-         new ResourceLocation("hud/heart/frozen_hardcore_half_blinking")
+         ResourceLocation.withDefaultNamespace("hud/heart/frozen_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/frozen_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/frozen_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/frozen_half_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/frozen_hardcore_full"),
+         ResourceLocation.withDefaultNamespace("hud/heart/frozen_hardcore_full_blinking"),
+         ResourceLocation.withDefaultNamespace("hud/heart/frozen_hardcore_half"),
+         ResourceLocation.withDefaultNamespace("hud/heart/frozen_hardcore_half_blinking")
       );
 
       private final ResourceLocation full;

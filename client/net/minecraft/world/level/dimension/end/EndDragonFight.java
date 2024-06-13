@@ -7,8 +7,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,7 +19,6 @@ import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.EndFeatures;
 import net.minecraft.network.chat.Component;
@@ -539,46 +536,16 @@ public class EndDragonFight {
       return this.dragonUUID;
    }
 
-   public static record Data(
-      boolean needsStateScanning,
-      boolean dragonKilled,
-      boolean previouslyKilled,
-      boolean isRespawning,
-      Optional<UUID> dragonUUID,
-      Optional<BlockPos> exitPortalLocation,
-      Optional<List<Integer>> gateways
-   ) {
-      public static final Codec<EndDragonFight.Data> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  Codec.BOOL.fieldOf("NeedsStateScanning").orElse(true).forGetter(EndDragonFight.Data::needsStateScanning),
-                  Codec.BOOL.fieldOf("DragonKilled").orElse(false).forGetter(EndDragonFight.Data::dragonKilled),
-                  Codec.BOOL.fieldOf("PreviouslyKilled").orElse(false).forGetter(EndDragonFight.Data::previouslyKilled),
-                  Codec.BOOL.lenientOptionalFieldOf("IsRespawning", false).forGetter(EndDragonFight.Data::isRespawning),
-                  UUIDUtil.CODEC.lenientOptionalFieldOf("Dragon").forGetter(EndDragonFight.Data::dragonUUID),
-                  BlockPos.CODEC.lenientOptionalFieldOf("ExitPortalLocation").forGetter(EndDragonFight.Data::exitPortalLocation),
-                  Codec.list(Codec.INT).lenientOptionalFieldOf("Gateways").forGetter(EndDragonFight.Data::gateways)
-               )
-               .apply(var0, EndDragonFight.Data::new)
-      );
-      public static final EndDragonFight.Data DEFAULT = new EndDragonFight.Data(true, false, false, false, Optional.empty(), Optional.empty(), Optional.empty());
-
-      public Data(
-         boolean needsStateScanning,
-         boolean dragonKilled,
-         boolean previouslyKilled,
-         boolean isRespawning,
-         Optional<UUID> dragonUUID,
-         Optional<BlockPos> exitPortalLocation,
-         Optional<List<Integer>> gateways
-      ) {
-         super();
-         this.needsStateScanning = needsStateScanning;
-         this.dragonKilled = dragonKilled;
-         this.previouslyKilled = previouslyKilled;
-         this.isRespawning = isRespawning;
-         this.dragonUUID = dragonUUID;
-         this.exitPortalLocation = exitPortalLocation;
-         this.gateways = gateways;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

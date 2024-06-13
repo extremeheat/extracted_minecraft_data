@@ -7,14 +7,14 @@ import net.minecraft.world.item.ItemStack;
 enum AdvancementTabType {
    ABOVE(
       new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_above_left_selected"),
-         new ResourceLocation("advancements/tab_above_middle_selected"),
-         new ResourceLocation("advancements/tab_above_right_selected")
+         ResourceLocation.withDefaultNamespace("advancements/tab_above_left_selected"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_above_middle_selected"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_above_right_selected")
       ),
       new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_above_left"),
-         new ResourceLocation("advancements/tab_above_middle"),
-         new ResourceLocation("advancements/tab_above_right")
+         ResourceLocation.withDefaultNamespace("advancements/tab_above_left"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_above_middle"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_above_right")
       ),
       28,
       32,
@@ -22,14 +22,14 @@ enum AdvancementTabType {
    ),
    BELOW(
       new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_below_left_selected"),
-         new ResourceLocation("advancements/tab_below_middle_selected"),
-         new ResourceLocation("advancements/tab_below_right_selected")
+         ResourceLocation.withDefaultNamespace("advancements/tab_below_left_selected"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_below_middle_selected"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_below_right_selected")
       ),
       new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_below_left"),
-         new ResourceLocation("advancements/tab_below_middle"),
-         new ResourceLocation("advancements/tab_below_right")
+         ResourceLocation.withDefaultNamespace("advancements/tab_below_left"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_below_middle"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_below_right")
       ),
       28,
       32,
@@ -37,14 +37,14 @@ enum AdvancementTabType {
    ),
    LEFT(
       new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_left_top_selected"),
-         new ResourceLocation("advancements/tab_left_middle_selected"),
-         new ResourceLocation("advancements/tab_left_bottom_selected")
+         ResourceLocation.withDefaultNamespace("advancements/tab_left_top_selected"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_left_middle_selected"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_left_bottom_selected")
       ),
       new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_left_top"),
-         new ResourceLocation("advancements/tab_left_middle"),
-         new ResourceLocation("advancements/tab_left_bottom")
+         ResourceLocation.withDefaultNamespace("advancements/tab_left_top"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_left_middle"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_left_bottom")
       ),
       32,
       28,
@@ -52,14 +52,14 @@ enum AdvancementTabType {
    ),
    RIGHT(
       new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_right_top_selected"),
-         new ResourceLocation("advancements/tab_right_middle_selected"),
-         new ResourceLocation("advancements/tab_right_bottom_selected")
+         ResourceLocation.withDefaultNamespace("advancements/tab_right_top_selected"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_right_middle_selected"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom_selected")
       ),
       new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_right_top"),
-         new ResourceLocation("advancements/tab_right_middle"),
-         new ResourceLocation("advancements/tab_right_bottom")
+         ResourceLocation.withDefaultNamespace("advancements/tab_right_top"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_right_middle"),
+         ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom")
       ),
       32,
       28,
@@ -160,12 +160,16 @@ enum AdvancementTabType {
       return var4 > (double)var8 && var4 < (double)(var8 + this.width) && var6 > (double)var9 && var6 < (double)(var9 + this.height);
    }
 
-   static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
-      Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
-         super();
-         this.first = first;
-         this.middle = middle;
-         this.last = last;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

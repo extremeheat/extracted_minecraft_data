@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Optionull;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -143,47 +142,18 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       }
    }
 
-   public static record Entry(
-      UUID profileId,
-      @Nullable GameProfile profile,
-      boolean listed,
-      int latency,
-      GameType gameMode,
-      @Nullable Component displayName,
-      @Nullable RemoteChatSession.Data chatSession
-   ) {
-
-      Entry(ServerPlayer var1) {
-         this(
-            var1.getUUID(),
-            var1.getGameProfile(),
-            true,
-            var1.connection.latency(),
-            var1.gameMode.getGameModeForPlayer(),
-            var1.getTabListDisplayName(),
-            Optionull.map(var1.getChatSession(), RemoteChatSession::asData)
-         );
-      }
-
-      public Entry(
-         UUID profileId,
-         @Nullable GameProfile profile,
-         boolean listed,
-         int latency,
-         GameType gameMode,
-         @Nullable Component displayName,
-         @Nullable RemoteChatSession.Data chatSession
-      ) {
-         super();
-         this.profileId = profileId;
-         this.profile = profile;
-         this.listed = listed;
-         this.latency = latency;
-         this.gameMode = gameMode;
-         this.displayName = displayName;
-         this.chatSession = chatSession;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class EntryBuilder {
       final UUID profileId;

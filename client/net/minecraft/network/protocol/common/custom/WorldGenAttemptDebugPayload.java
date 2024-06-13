@@ -1,40 +1,13 @@
 package net.minecraft.network.protocol.common.custom;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-
-public record WorldGenAttemptDebugPayload(BlockPos pos, float scale, float red, float green, float blue, float alpha) implements CustomPacketPayload {
-   public static final StreamCodec<FriendlyByteBuf, WorldGenAttemptDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      WorldGenAttemptDebugPayload::write, WorldGenAttemptDebugPayload::new
-   );
-   public static final CustomPacketPayload.Type<WorldGenAttemptDebugPayload> TYPE = CustomPacketPayload.createType("debug/worldgen_attempt");
-
-   private WorldGenAttemptDebugPayload(FriendlyByteBuf var1) {
-      this(var1.readBlockPos(), var1.readFloat(), var1.readFloat(), var1.readFloat(), var1.readFloat(), var1.readFloat());
-   }
-
-   public WorldGenAttemptDebugPayload(BlockPos pos, float scale, float red, float green, float blue, float alpha) {
-      super();
-      this.pos = pos;
-      this.scale = scale;
-      this.red = red;
-      this.green = green;
-      this.blue = blue;
-      this.alpha = alpha;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeFloat(this.scale);
-      var1.writeFloat(this.red);
-      var1.writeFloat(this.green);
-      var1.writeFloat(this.blue);
-      var1.writeFloat(this.alpha);
-   }
-
-   @Override
-   public CustomPacketPayload.Type<WorldGenAttemptDebugPayload> type() {
-      return TYPE;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -64,6 +64,6 @@ public class TrimMaterials {
    }
 
    private static ResourceKey<TrimMaterial> registryKey(String var0) {
-      return ResourceKey.create(Registries.TRIM_MATERIAL, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.TRIM_MATERIAL, ResourceLocation.withDefaultNamespace(var0));
    }
 }

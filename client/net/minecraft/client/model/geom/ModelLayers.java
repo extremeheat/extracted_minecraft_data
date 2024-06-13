@@ -29,6 +29,7 @@ public class ModelLayers {
    public static final ModelLayerLocation BOGGED_OUTER_LAYER = register("bogged", "outer");
    public static final ModelLayerLocation BOOK = register("book");
    public static final ModelLayerLocation BREEZE = register("breeze");
+   public static final ModelLayerLocation BREEZE_WIND = register("breeze_wind");
    public static final ModelLayerLocation CAT = register("cat");
    public static final ModelLayerLocation CAT_COLLAR = register("cat", "collar");
    public static final ModelLayerLocation CAMEL = register("camel");
@@ -201,7 +202,7 @@ public class ModelLayers {
    }
 
    private static ModelLayerLocation createLocation(String var0, String var1) {
-      return new ModelLayerLocation(new ResourceLocation("minecraft", var0), var1);
+      return new ModelLayerLocation(ResourceLocation.withDefaultNamespace(var0), var1);
    }
 
    private static ModelLayerLocation registerInnerArmor(String var0) {

@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 
 public class StructureUpdater implements SnbtToNbt.Filter {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final String PREFIX = PackType.SERVER_DATA.getDirectory() + "/minecraft/structure/";
 
    public StructureUpdater() {
       super();
@@ -18,7 +20,7 @@ public class StructureUpdater implements SnbtToNbt.Filter {
 
    @Override
    public CompoundTag apply(String var1, CompoundTag var2) {
-      return var1.startsWith("data/minecraft/structures/") ? update(var1, var2) : var2;
+      return var1.startsWith(PREFIX) ? update(var1, var2) : var2;
    }
 
    public static CompoundTag update(String var0, CompoundTag var1) {

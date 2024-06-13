@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public class TutorialToast implements Toast {
-   private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("toast/tutorial");
+   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/tutorial");
    public static final int PROGRESS_BAR_WIDTH = 154;
    public static final int PROGRESS_BAR_HEIGHT = 1;
    public static final int PROGRESS_BAR_X = 3;
@@ -69,13 +69,13 @@ public class TutorialToast implements Toast {
    }
 
    public static enum Icons {
-      MOVEMENT_KEYS(new ResourceLocation("toast/movement_keys")),
-      MOUSE(new ResourceLocation("toast/mouse")),
-      TREE(new ResourceLocation("toast/tree")),
-      RECIPE_BOOK(new ResourceLocation("toast/recipe_book")),
-      WOODEN_PLANKS(new ResourceLocation("toast/wooden_planks")),
-      SOCIAL_INTERACTIONS(new ResourceLocation("toast/social_interactions")),
-      RIGHT_CLICK(new ResourceLocation("toast/right_click"));
+      MOVEMENT_KEYS(ResourceLocation.withDefaultNamespace("toast/movement_keys")),
+      MOUSE(ResourceLocation.withDefaultNamespace("toast/mouse")),
+      TREE(ResourceLocation.withDefaultNamespace("toast/tree")),
+      RECIPE_BOOK(ResourceLocation.withDefaultNamespace("toast/recipe_book")),
+      WOODEN_PLANKS(ResourceLocation.withDefaultNamespace("toast/wooden_planks")),
+      SOCIAL_INTERACTIONS(ResourceLocation.withDefaultNamespace("toast/social_interactions")),
+      RIGHT_CLICK(ResourceLocation.withDefaultNamespace("toast/right_click"));
 
       private final ResourceLocation sprite;
 

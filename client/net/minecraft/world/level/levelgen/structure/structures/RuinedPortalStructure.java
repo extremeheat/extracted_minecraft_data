@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -103,9 +102,9 @@ public class RuinedPortalStructure extends Structure {
          var2.replaceWithBlackstone = var20.replaceWithBlackstone();
          ResourceLocation var22;
          if (var3.nextFloat() < 0.05F) {
-            var22 = new ResourceLocation(STRUCTURE_LOCATION_GIANT_PORTALS[var3.nextInt(STRUCTURE_LOCATION_GIANT_PORTALS.length)]);
+            var22 = ResourceLocation.withDefaultNamespace(STRUCTURE_LOCATION_GIANT_PORTALS[var3.nextInt(STRUCTURE_LOCATION_GIANT_PORTALS.length)]);
          } else {
-            var22 = new ResourceLocation(STRUCTURE_LOCATION_PORTALS[var3.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
+            var22 = ResourceLocation.withDefaultNamespace(STRUCTURE_LOCATION_PORTALS[var3.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
          }
 
          StructureTemplate var24 = var1.structureTemplateManager().getOrCreate(var22);
@@ -221,49 +220,16 @@ public class RuinedPortalStructure extends Structure {
       return StructureType.RUINED_PORTAL;
    }
 
-   public static record Setup(
-      RuinedPortalPiece.VerticalPlacement placement,
-      float airPocketProbability,
-      float mossiness,
-      boolean overgrown,
-      boolean vines,
-      boolean canBeCold,
-      boolean replaceWithBlackstone,
-      float weight
-   ) {
-      public static final Codec<RuinedPortalStructure.Setup> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  RuinedPortalPiece.VerticalPlacement.CODEC.fieldOf("placement").forGetter(RuinedPortalStructure.Setup::placement),
-                  Codec.floatRange(0.0F, 1.0F).fieldOf("air_pocket_probability").forGetter(RuinedPortalStructure.Setup::airPocketProbability),
-                  Codec.floatRange(0.0F, 1.0F).fieldOf("mossiness").forGetter(RuinedPortalStructure.Setup::mossiness),
-                  Codec.BOOL.fieldOf("overgrown").forGetter(RuinedPortalStructure.Setup::overgrown),
-                  Codec.BOOL.fieldOf("vines").forGetter(RuinedPortalStructure.Setup::vines),
-                  Codec.BOOL.fieldOf("can_be_cold").forGetter(RuinedPortalStructure.Setup::canBeCold),
-                  Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(RuinedPortalStructure.Setup::replaceWithBlackstone),
-                  ExtraCodecs.POSITIVE_FLOAT.fieldOf("weight").forGetter(RuinedPortalStructure.Setup::weight)
-               )
-               .apply(var0, RuinedPortalStructure.Setup::new)
-      );
-
-      public Setup(
-         RuinedPortalPiece.VerticalPlacement placement,
-         float airPocketProbability,
-         float mossiness,
-         boolean overgrown,
-         boolean vines,
-         boolean canBeCold,
-         boolean replaceWithBlackstone,
-         float weight
-      ) {
-         super();
-         this.placement = placement;
-         this.airPocketProbability = airPocketProbability;
-         this.mossiness = mossiness;
-         this.overgrown = overgrown;
-         this.vines = vines;
-         this.canBeCold = canBeCold;
-         this.replaceWithBlackstone = replaceWithBlackstone;
-         this.weight = weight;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

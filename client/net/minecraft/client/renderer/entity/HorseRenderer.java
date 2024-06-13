@@ -13,13 +13,13 @@ import net.minecraft.world.entity.animal.horse.Variant;
 
 public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseModel<Horse>> {
    private static final Map<Variant, ResourceLocation> LOCATION_BY_VARIANT = Util.make(Maps.newEnumMap(Variant.class), var0 -> {
-      var0.put(Variant.WHITE, new ResourceLocation("textures/entity/horse/horse_white.png"));
-      var0.put(Variant.CREAMY, new ResourceLocation("textures/entity/horse/horse_creamy.png"));
-      var0.put(Variant.CHESTNUT, new ResourceLocation("textures/entity/horse/horse_chestnut.png"));
-      var0.put(Variant.BROWN, new ResourceLocation("textures/entity/horse/horse_brown.png"));
-      var0.put(Variant.BLACK, new ResourceLocation("textures/entity/horse/horse_black.png"));
-      var0.put(Variant.GRAY, new ResourceLocation("textures/entity/horse/horse_gray.png"));
-      var0.put(Variant.DARK_BROWN, new ResourceLocation("textures/entity/horse/horse_darkbrown.png"));
+      var0.put(Variant.WHITE, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_white.png"));
+      var0.put(Variant.CREAMY, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_creamy.png"));
+      var0.put(Variant.CHESTNUT, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_chestnut.png"));
+      var0.put(Variant.BROWN, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_brown.png"));
+      var0.put(Variant.BLACK, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_black.png"));
+      var0.put(Variant.GRAY, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_gray.png"));
+      var0.put(Variant.DARK_BROWN, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_darkbrown.png"));
    });
 
    public HorseRenderer(EntityRendererProvider.Context var1) {

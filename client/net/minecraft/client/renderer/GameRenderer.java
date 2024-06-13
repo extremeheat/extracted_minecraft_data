@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -76,12 +75,13 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 public class GameRenderer implements AutoCloseable {
-   private static final ResourceLocation NAUSEA_LOCATION = new ResourceLocation("textures/misc/nausea.png");
-   private static final ResourceLocation BLUR_LOCATION = new ResourceLocation("shaders/post/blur.json");
+   private static final ResourceLocation NAUSEA_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/nausea.png");
+   private static final ResourceLocation BLUR_LOCATION = ResourceLocation.withDefaultNamespace("shaders/post/blur.json");
    public static final int MAX_BLUR_RADIUS = 10;
    static final Logger LOGGER = LogUtils.getLogger();
    private static final boolean DEPTH_BUFFER_DEBUG = false;
@@ -122,14 +122,13 @@ public class GameRenderer implements AutoCloseable {
    private PostChain blurEffect;
    private boolean effectActive;
    private final Camera mainCamera = new Camera();
+   @Nullable
    public ShaderInstance blitShader;
    private final Map<String, ShaderInstance> shaders = Maps.newHashMap();
    @Nullable
    private static ShaderInstance positionShader;
    @Nullable
    private static ShaderInstance positionColorShader;
-   @Nullable
-   private static ShaderInstance positionColorTexShader;
    @Nullable
    private static ShaderInstance positionTexShader;
    @Nullable
@@ -303,11 +302,11 @@ public class GameRenderer implements AutoCloseable {
 
       this.postEffect = null;
       if (var1 instanceof Creeper) {
-         this.loadEffect(new ResourceLocation("shaders/post/creeper.json"));
+         this.loadEffect(ResourceLocation.withDefaultNamespace("shaders/post/creeper.json"));
       } else if (var1 instanceof Spider) {
-         this.loadEffect(new ResourceLocation("shaders/post/spider.json"));
+         this.loadEffect(ResourceLocation.withDefaultNamespace("shaders/post/spider.json"));
       } else if (var1 instanceof EnderMan) {
-         this.loadEffect(new ResourceLocation("shaders/post/invert.json"));
+         this.loadEffect(ResourceLocation.withDefaultNamespace("shaders/post/invert.json"));
       }
    }
 
@@ -347,10 +346,8 @@ public class GameRenderer implements AutoCloseable {
    public void processBlurEffect(float var1) {
       float var2 = (float)this.minecraft.options.getMenuBackgroundBlurriness();
       if (this.blurEffect != null && var2 >= 1.0F) {
-         RenderSystem.enableBlend();
          this.blurEffect.setUniform("Radius", var2);
          this.blurEffect.process(var1);
-         RenderSystem.disableBlend();
       }
    }
 
@@ -410,7 +407,6 @@ public class GameRenderer implements AutoCloseable {
          rendertypeGuiOverlayShader = this.preloadShader(var1, "rendertype_gui_overlay", DefaultVertexFormat.POSITION_COLOR);
          positionShader = this.preloadShader(var1, "position", DefaultVertexFormat.POSITION);
          positionColorShader = this.preloadShader(var1, "position_color", DefaultVertexFormat.POSITION_COLOR);
-         positionColorTexShader = this.preloadShader(var1, "position_color_tex", DefaultVertexFormat.POSITION_COLOR_TEX);
          positionTexShader = this.preloadShader(var1, "position_tex", DefaultVertexFormat.POSITION_TEX);
          positionTexColorShader = this.preloadShader(var1, "position_tex_color", DefaultVertexFormat.POSITION_TEX_COLOR);
          rendertypeTextShader = this.preloadShader(var1, "rendertype_text", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP);
@@ -447,12 +443,6 @@ public class GameRenderer implements AutoCloseable {
             Pair.of(
                new ShaderInstance(var1, "position_color_lightmap", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP),
                (Consumer<ShaderInstance>)var0 -> positionColorLightmapShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "position_color_tex", DefaultVertexFormat.POSITION_COLOR_TEX),
-               (Consumer<ShaderInstance>)var0 -> positionColorTexShader = var0
             )
          );
          var3.add(
@@ -607,14 +597,8 @@ public class GameRenderer implements AutoCloseable {
          );
          var3.add(
             Pair.of(
-               new ShaderInstance(var1, "rendertype_outline", DefaultVertexFormat.POSITION_COLOR_TEX),
+               new ShaderInstance(var1, "rendertype_outline", DefaultVertexFormat.POSITION_TEX_COLOR),
                (Consumer<ShaderInstance>)var0 -> rendertypeOutlineShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_armor_glint", DefaultVertexFormat.POSITION_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeArmorGlintShader = var0
             )
          );
          var3.add(
@@ -632,12 +616,6 @@ public class GameRenderer implements AutoCloseable {
          var3.add(
             Pair.of(
                new ShaderInstance(var1, "rendertype_glint", DefaultVertexFormat.POSITION_TEX), (Consumer<ShaderInstance>)var0 -> rendertypeGlintShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_glint_direct", DefaultVertexFormat.POSITION_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeGlintDirectShader = var0
             )
          );
          var3.add(
@@ -1089,9 +1067,7 @@ public class GameRenderer implements AutoCloseable {
             }
 
             if (!this.minecraft.options.hideGui) {
-               this.renderItemActivationAnimation(
-                  this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight(), var1.getGameTimeDeltaPartialTick(false)
-               );
+               this.renderItemActivationAnimation(var9, var1.getGameTimeDeltaPartialTick(false));
             }
 
             this.minecraft.gui.render(var9, var1);
@@ -1278,15 +1254,16 @@ public class GameRenderer implements AutoCloseable {
       }
 
       this.resetProjectionMatrix(var9);
-      Matrix4f var17 = new Matrix4f().rotationXYZ(var4.getXRot() * 0.017453292F, var4.getYRot() * 0.017453292F + 3.1415927F, 0.0F);
+      Quaternionf var17 = var4.rotation().conjugate(new Quaternionf());
+      Matrix4f var19 = new Matrix4f().rotation(var17);
       this.minecraft
          .levelRenderer
-         .prepareCullFrustum(var4.getPosition(), var17, this.getProjectionMatrix(Math.max(var7, (double)this.minecraft.options.fov().get().intValue())));
-      this.minecraft.levelRenderer.renderLevel(var1, var3, var4, this, this.lightTexture, var17, var9);
+         .prepareCullFrustum(var4.getPosition(), var19, this.getProjectionMatrix(Math.max(var7, (double)this.minecraft.options.fov().get().intValue())));
+      this.minecraft.levelRenderer.renderLevel(var1, var3, var4, this, this.lightTexture, var19, var9);
       this.minecraft.getProfiler().popPush("hand");
       if (this.renderHand) {
          RenderSystem.clear(256, Minecraft.ON_OSX);
-         this.renderItemInHand(var4, var2, var17);
+         this.renderItemInHand(var4, var2, var19);
       }
 
       this.minecraft.getProfiler().pop();
@@ -1310,34 +1287,41 @@ public class GameRenderer implements AutoCloseable {
       this.itemActivationOffY = this.random.nextFloat() * 2.0F - 1.0F;
    }
 
-   private void renderItemActivationAnimation(int var1, int var2, float var3) {
+   private void renderItemActivationAnimation(GuiGraphics var1, float var2) {
       if (this.itemActivationItem != null && this.itemActivationTicks > 0) {
-         int var4 = 40 - this.itemActivationTicks;
-         float var5 = ((float)var4 + var3) / 40.0F;
-         float var6 = var5 * var5;
-         float var7 = var5 * var6;
-         float var8 = 10.25F * var7 * var6 - 24.95F * var6 * var6 + 25.5F * var7 - 13.8F * var6 + 4.0F * var5;
-         float var9 = var8 * 3.1415927F;
-         float var10 = this.itemActivationOffX * (float)(var1 / 4);
-         float var11 = this.itemActivationOffY * (float)(var2 / 4);
-         RenderSystem.enableDepthTest();
-         RenderSystem.disableCull();
-         PoseStack var12 = new PoseStack();
-         var12.pushPose();
-         var12.translate((float)(var1 / 2) + var10 * Mth.abs(Mth.sin(var9 * 2.0F)), (float)(var2 / 2) + var11 * Mth.abs(Mth.sin(var9 * 2.0F)), -50.0F);
-         float var13 = 50.0F + 175.0F * Mth.sin(var9);
-         var12.scale(var13, -var13, var13);
-         var12.mulPose(Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var9))));
-         var12.mulPose(Axis.XP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
-         var12.mulPose(Axis.ZP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
-         MultiBufferSource.BufferSource var14 = this.renderBuffers.bufferSource();
-         this.minecraft
-            .getItemRenderer()
-            .renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var12, var14, this.minecraft.level, 0);
-         var12.popPose();
-         var14.endBatch();
-         RenderSystem.enableCull();
-         RenderSystem.disableDepthTest();
+         int var3 = 40 - this.itemActivationTicks;
+         float var4 = ((float)var3 + var2) / 40.0F;
+         float var5 = var4 * var4;
+         float var6 = var4 * var5;
+         float var7 = 10.25F * var6 * var5 - 24.95F * var5 * var5 + 25.5F * var6 - 13.8F * var5 + 4.0F * var4;
+         float var8 = var7 * 3.1415927F;
+         float var9 = this.itemActivationOffX * (float)(var1.guiWidth() / 4);
+         float var10 = this.itemActivationOffY * (float)(var1.guiHeight() / 4);
+         PoseStack var11 = new PoseStack();
+         var11.pushPose();
+         var11.translate(
+            (float)(var1.guiWidth() / 2) + var9 * Mth.abs(Mth.sin(var8 * 2.0F)), (float)(var1.guiHeight() / 2) + var10 * Mth.abs(Mth.sin(var8 * 2.0F)), -50.0F
+         );
+         float var12 = 50.0F + 175.0F * Mth.sin(var8);
+         var11.scale(var12, -var12, var12);
+         var11.mulPose(Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var8))));
+         var11.mulPose(Axis.XP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
+         var11.mulPose(Axis.ZP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
+         var1.drawManaged(
+            () -> this.minecraft
+                  .getItemRenderer()
+                  .renderStatic(
+                     this.itemActivationItem,
+                     ItemDisplayContext.FIXED,
+                     15728880,
+                     OverlayTexture.NO_OVERLAY,
+                     var11,
+                     var1.bufferSource(),
+                     this.minecraft.level,
+                     0
+                  )
+         );
+         var11.popPose();
       }
    }
 
@@ -1400,11 +1384,6 @@ public class GameRenderer implements AutoCloseable {
    @Nullable
    public static ShaderInstance getPositionColorShader() {
       return positionColorShader;
-   }
-
-   @Nullable
-   public static ShaderInstance getPositionColorTexShader() {
-      return positionColorTexShader;
    }
 
    @Nullable
@@ -1682,17 +1661,16 @@ public class GameRenderer implements AutoCloseable {
       return rendertypeGuiGhostRecipeOverlayShader;
    }
 
-   public static record ResourceCache(ResourceProvider original, Map<ResourceLocation, Resource> cache) implements ResourceProvider {
-      public ResourceCache(ResourceProvider original, Map<ResourceLocation, Resource> cache) {
-         super();
-         this.original = original;
-         this.cache = cache;
-      }
-
-      @Override
-      public Optional<Resource> getResource(ResourceLocation var1) {
-         Resource var2 = this.cache.get(var1);
-         return var2 != null ? Optional.of(var2) : this.original.getResource(var1);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

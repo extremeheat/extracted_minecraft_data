@@ -1,49 +1,13 @@
 package net.minecraft.tags;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import java.util.Optional;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-
-public record TagKey<T>(ResourceKey<? extends Registry<T>> registry, ResourceLocation location) {
-   private static final Interner<TagKey<?>> VALUES = Interners.newWeakInterner();
-
-   @Deprecated
-   public TagKey(ResourceKey<? extends Registry<T>> registry, ResourceLocation location) {
-      super();
-      this.registry = registry;
-      this.location = location;
-   }
-
-   public static <T> Codec<TagKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {
-      return ResourceLocation.CODEC.xmap(var1 -> create(var0, var1), TagKey::location);
-   }
-
-   public static <T> Codec<TagKey<T>> hashedCodec(ResourceKey<? extends Registry<T>> var0) {
-      return Codec.STRING
-         .comapFlatMap(
-            var1 -> var1.startsWith("#") ? ResourceLocation.read(var1.substring(1)).map(var1x -> create(var0, var1x)) : DataResult.error(() -> "Not a tag id"),
-            var0x -> "#" + var0x.location
-         );
-   }
-
-   public static <T> TagKey<T> create(ResourceKey<? extends Registry<T>> var0, ResourceLocation var1) {
-      return (TagKey<T>)VALUES.intern(new TagKey(var0, var1));
-   }
-
-   public boolean isFor(ResourceKey<? extends Registry<?>> var1) {
-      return this.registry == var1;
-   }
-
-   public <E> Optional<TagKey<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-      return this.isFor(var1) ? Optional.of((TagKey<E>)this) : Optional.empty();
-   }
-
-   public String toString() {
-      return "TagKey[" + this.registry.location() + " / " + this.location + "]";
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

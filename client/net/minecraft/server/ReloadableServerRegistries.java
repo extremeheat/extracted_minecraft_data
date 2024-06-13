@@ -60,7 +60,8 @@ public class ReloadableServerRegistries {
          () -> {
             MappedRegistry var3x = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
             HashMap var4 = new HashMap();
-            SimpleJsonResourceReloadListener.scanDirectory(var2, var0.directory(), GSON, var4);
+            String var5 = Registries.elementsDirPath(var0.registryKey());
+            SimpleJsonResourceReloadListener.scanDirectory(var2, var5, GSON, var4);
             var4.forEach(
                (var3xx, var4x) -> var0.deserialize(var3xx, var1, var4x)
                      .ifPresent(var3xxx -> var3x.register(ResourceKey.create(var0.registryKey(), var3xx), var3xxx, DEFAULT_REGISTRATION_INFO))

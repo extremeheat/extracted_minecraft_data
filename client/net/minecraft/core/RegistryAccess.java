@@ -6,7 +6,6 @@ import com.mojang.serialization.Lifecycle;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.resources.ResourceKey;
@@ -100,26 +99,16 @@ public interface RegistryAccess extends HolderLookup.Provider {
       }
    }
 
-   public static record RegistryEntry<T>(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
-
-      public RegistryEntry(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
-         super();
-         this.key = key;
-         this.value = value;
-      }
-
-      private static <T, R extends Registry<? extends T>> RegistryAccess.RegistryEntry<T> fromMapEntry(
-         Entry<? extends ResourceKey<? extends Registry<?>>, R> var0
-      ) {
-         return fromUntyped((ResourceKey<? extends Registry<?>>)var0.getKey(), (Registry<?>)var0.getValue());
-      }
-
-      private static <T> RegistryAccess.RegistryEntry<T> fromUntyped(ResourceKey<? extends Registry<?>> var0, Registry<?> var1) {
-         return new RegistryAccess.RegistryEntry<>(var0, var1);
-      }
-
-      private RegistryAccess.RegistryEntry<T> freeze() {
-         return new RegistryAccess.RegistryEntry<>(this.key, this.value.freeze());
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

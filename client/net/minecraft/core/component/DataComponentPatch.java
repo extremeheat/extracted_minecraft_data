@@ -2,7 +2,6 @@ package net.minecraft.core.component;
 
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
@@ -12,10 +11,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 
 public final class DataComponentPatch {
@@ -264,52 +261,29 @@ public final class DataComponentPatch {
       }
    }
 
-   static record PatchKey(DataComponentType<?> type, boolean removed) {
-      public static final Codec<DataComponentPatch.PatchKey> CODEC = Codec.STRING
-         .flatXmap(
-            var0 -> {
-               boolean var1 = var0.startsWith("!");
-               if (var1) {
-                  var0 = var0.substring("!".length());
-               }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-               ResourceLocation var2 = ResourceLocation.tryParse(var0);
-               DataComponentType var3 = BuiltInRegistries.DATA_COMPONENT_TYPE.get(var2);
-               if (var3 == null) {
-                  return DataResult.error(() -> "No component with type: '" + var2 + "'");
-               } else {
-                  return var3.isTransient()
-                     ? DataResult.error(() -> "'" + var2 + "' is not a persistent component")
-                     : DataResult.success(new DataComponentPatch.PatchKey(var3, var1));
-               }
-            },
-            var0 -> {
-               DataComponentType var1 = var0.type();
-               ResourceLocation var2 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var1);
-               return var2 == null
-                  ? DataResult.error(() -> "Unregistered component: " + var1)
-                  : DataResult.success(var0.removed() ? "!" + var2 : var2.toString());
-            }
-         );
-
-      PatchKey(DataComponentType<?> type, boolean removed) {
-         super();
-         this.type = type;
-         this.removed = removed;
-      }
-
-      public Codec<?> valueCodec() {
-         return this.removed ? Codec.EMPTY.codec() : this.type.codecOrThrow();
-      }
-   }
-
-   public static record SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
-      public static final DataComponentPatch.SplitResult EMPTY = new DataComponentPatch.SplitResult(DataComponentMap.EMPTY, Set.of());
-
-      public SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
-         super();
-         this.added = added;
-         this.removed = removed;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

@@ -1,32 +1,13 @@
 package net.minecraft.server.packs.repository;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.SharedConstants;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-
-public record KnownPack(String namespace, String id, String version) {
-   public static final StreamCodec<ByteBuf, KnownPack> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.STRING_UTF8, KnownPack::namespace, ByteBufCodecs.STRING_UTF8, KnownPack::id, ByteBufCodecs.STRING_UTF8, KnownPack::version, KnownPack::new
-   );
-   public static final String VANILLA_NAMESPACE = "minecraft";
-
-   public KnownPack(String namespace, String id, String version) {
-      super();
-      this.namespace = namespace;
-      this.id = id;
-      this.version = version;
-   }
-
-   public static KnownPack vanilla(String var0) {
-      return new KnownPack("minecraft", var0, SharedConstants.getCurrentVersion().getId());
-   }
-
-   public boolean isVanilla() {
-      return this.namespace.equals("minecraft");
-   }
-
-   public String toString() {
-      return this.namespace + ":" + this.id + ":" + this.version;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -324,7 +324,7 @@ public class Structures {
                TerrainAdjustment.BEARD_BOX
             ),
             var2.getOrThrow(AncientCityStructurePieces.START),
-            Optional.of(new ResourceLocation("city_anchor")),
+            Optional.of(ResourceLocation.withDefaultNamespace("city_anchor")),
             7,
             ConstantHeight.of(VerticalAnchor.absolute(-27)),
             false,

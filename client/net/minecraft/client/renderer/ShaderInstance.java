@@ -3,15 +3,14 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.collect.UnmodifiableIterator;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.AbstractUniform;
-import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.ProgramManager;
 import com.mojang.blaze3d.shaders.Shader;
@@ -36,6 +35,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
 import org.apache.commons.io.IOUtils;
+import org.joml.Matrix4f;
 import org.slf4j.Logger;
 
 public class ShaderInstance implements Shader, AutoCloseable {
@@ -56,7 +56,6 @@ public class ShaderInstance implements Shader, AutoCloseable {
    private final int programId;
    private final String name;
    private boolean dirty;
-   private final BlendMode blend;
    private final Program vertexProgram;
    private final Program fragmentProgram;
    private final VertexFormat vertexFormat;
@@ -95,7 +94,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
       super();
       this.name = var2;
       this.vertexFormat = var3;
-      ResourceLocation var4 = new ResourceLocation("shaders/core/" + var2 + ".json");
+      ResourceLocation var4 = ResourceLocation.withDefaultNamespace("shaders/core/" + var2 + ".json");
 
       try (BufferedReader var6 = var1.openAsReader(var4)) {
          JsonObject var5 = GsonHelper.parse(var6);
@@ -135,15 +134,14 @@ public class ShaderInstance implements Shader, AutoCloseable {
             }
          }
 
-         this.blend = parseBlendNode(GsonHelper.getAsJsonObject(var5, "blend", null));
          this.vertexProgram = getOrCreate(var1, Program.Type.VERTEX, var21);
          this.fragmentProgram = getOrCreate(var1, Program.Type.FRAGMENT, var8);
          this.programId = ProgramManager.createProgram();
          int var24 = 0;
 
-         for (UnmodifiableIterator var26 = var3.getElementAttributeNames().iterator(); var26.hasNext(); var24++) {
-            String var27 = (String)var26.next();
+         for (String var27 : var3.getElementAttributeNames()) {
             Uniform.glBindAttribLocation(this.programId, var24, var27);
+            var24++;
          }
 
          ProgramManager.linkShader(this);
@@ -177,7 +175,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
       Program var3;
       if (var4 == null) {
          String var5 = "shaders/core/" + var2 + var1.getExtension();
-         Resource var6 = var0.getResourceOrThrow(new ResourceLocation(var5));
+         Resource var6 = var0.getResourceOrThrow(ResourceLocation.withDefaultNamespace(var5));
 
          try (InputStream var7 = var6.open()) {
             final String var8 = FileUtil.getFullResourcePath(var5);
@@ -190,7 +188,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
                   if (!this.importedPaths.add(var2)) {
                      return null;
                   } else {
-                     ResourceLocation var3 = new ResourceLocation(var2);
+                     ResourceLocation var3 = ResourceLocation.parse(var2);
 
                      try {
                         String var5;
@@ -212,64 +210,6 @@ public class ShaderInstance implements Shader, AutoCloseable {
       }
 
       return var3;
-   }
-
-   public static BlendMode parseBlendNode(JsonObject var0) {
-      if (var0 == null) {
-         return new BlendMode();
-      } else {
-         int var1 = 32774;
-         int var2 = 1;
-         int var3 = 0;
-         int var4 = 1;
-         int var5 = 0;
-         boolean var6 = true;
-         boolean var7 = false;
-         if (GsonHelper.isStringValue(var0, "func")) {
-            var1 = BlendMode.stringToBlendFunc(var0.get("func").getAsString());
-            if (var1 != 32774) {
-               var6 = false;
-            }
-         }
-
-         if (GsonHelper.isStringValue(var0, "srcrgb")) {
-            var2 = BlendMode.stringToBlendFactor(var0.get("srcrgb").getAsString());
-            if (var2 != 1) {
-               var6 = false;
-            }
-         }
-
-         if (GsonHelper.isStringValue(var0, "dstrgb")) {
-            var3 = BlendMode.stringToBlendFactor(var0.get("dstrgb").getAsString());
-            if (var3 != 0) {
-               var6 = false;
-            }
-         }
-
-         if (GsonHelper.isStringValue(var0, "srcalpha")) {
-            var4 = BlendMode.stringToBlendFactor(var0.get("srcalpha").getAsString());
-            if (var4 != 1) {
-               var6 = false;
-            }
-
-            var7 = true;
-         }
-
-         if (GsonHelper.isStringValue(var0, "dstalpha")) {
-            var5 = BlendMode.stringToBlendFactor(var0.get("dstalpha").getAsString());
-            if (var5 != 0) {
-               var6 = false;
-            }
-
-            var7 = true;
-         }
-
-         if (var6) {
-            return new BlendMode();
-         } else {
-            return var7 ? new BlendMode(var2, var3, var4, var5, var1) : new BlendMode(var2, var3, var1);
-         }
-      }
    }
 
    @Override
@@ -302,7 +242,6 @@ public class ShaderInstance implements Shader, AutoCloseable {
       RenderSystem.assertOnRenderThread();
       this.dirty = false;
       lastAppliedShader = this;
-      this.blend.apply();
       if (this.programId != lastProgramId) {
          ProgramManager.glUseProgram(this.programId);
          lastProgramId = this.programId;
@@ -477,5 +416,62 @@ public class ShaderInstance implements Shader, AutoCloseable {
    @Override
    public int getId() {
       return this.programId;
+   }
+
+   public void setDefaultUniforms(VertexFormat.Mode var1, Matrix4f var2, Matrix4f var3, Window var4) {
+      for (int var5 = 0; var5 < 12; var5++) {
+         int var6 = RenderSystem.getShaderTexture(var5);
+         this.setSampler("Sampler" + var5, var6);
+      }
+
+      if (this.MODEL_VIEW_MATRIX != null) {
+         this.MODEL_VIEW_MATRIX.set(var2);
+      }
+
+      if (this.PROJECTION_MATRIX != null) {
+         this.PROJECTION_MATRIX.set(var3);
+      }
+
+      if (this.COLOR_MODULATOR != null) {
+         this.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
+      }
+
+      if (this.GLINT_ALPHA != null) {
+         this.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
+      }
+
+      if (this.FOG_START != null) {
+         this.FOG_START.set(RenderSystem.getShaderFogStart());
+      }
+
+      if (this.FOG_END != null) {
+         this.FOG_END.set(RenderSystem.getShaderFogEnd());
+      }
+
+      if (this.FOG_COLOR != null) {
+         this.FOG_COLOR.set(RenderSystem.getShaderFogColor());
+      }
+
+      if (this.FOG_SHAPE != null) {
+         this.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
+      }
+
+      if (this.TEXTURE_MATRIX != null) {
+         this.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
+      }
+
+      if (this.GAME_TIME != null) {
+         this.GAME_TIME.set(RenderSystem.getShaderGameTime());
+      }
+
+      if (this.SCREEN_SIZE != null) {
+         this.SCREEN_SIZE.set((float)var4.getWidth(), (float)var4.getHeight());
+      }
+
+      if (this.LINE_WIDTH != null && (var1 == VertexFormat.Mode.LINES || var1 == VertexFormat.Mode.LINE_STRIP)) {
+         this.LINE_WIDTH.set(RenderSystem.getShaderLineWidth());
+      }
+
+      RenderSystem.setupShaderLights(this);
    }
 }

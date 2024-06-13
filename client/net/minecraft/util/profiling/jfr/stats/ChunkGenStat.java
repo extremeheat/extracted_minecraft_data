@@ -1,28 +1,13 @@
 package net.minecraft.util.profiling.jfr.stats;
 
-import java.time.Duration;
-import jdk.jfr.consumer.RecordedEvent;
-import net.minecraft.server.level.ColumnPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
-
-public record ChunkGenStat(Duration duration, ChunkPos chunkPos, ColumnPos worldPos, ChunkStatus status, String level) implements TimedStat {
-   public ChunkGenStat(Duration duration, ChunkPos chunkPos, ColumnPos worldPos, ChunkStatus status, String level) {
-      super();
-      this.duration = duration;
-      this.chunkPos = chunkPos;
-      this.worldPos = worldPos;
-      this.status = status;
-      this.level = level;
-   }
-
-   public static ChunkGenStat from(RecordedEvent var0) {
-      return new ChunkGenStat(
-         var0.getDuration(),
-         new ChunkPos(var0.getInt("chunkPosX"), var0.getInt("chunkPosX")),
-         new ColumnPos(var0.getInt("worldPosX"), var0.getInt("worldPosZ")),
-         ChunkStatus.byName(var0.getString("status")),
-         var0.getString("level")
-      );
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

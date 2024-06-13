@@ -93,7 +93,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    @Nullable
    private volatile PacketListener packetListener;
    @Nullable
-   private Component disconnectedReason;
+   private DisconnectionDetails disconnectionDetails;
    private boolean encrypted;
    private boolean disconnectionHandled;
    private int receivedPackets;
@@ -103,7 +103,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    private int tickCount;
    private boolean handlingFault;
    @Nullable
-   private volatile Component delayedDisconnect;
+   private volatile DisconnectionDetails delayedDisconnect;
    @Nullable
    BandwidthDebugMonitor bandwidthDebugMonitor;
 
@@ -137,19 +137,27 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                this.disconnect(Component.translatable("disconnect.timeout"));
             } else {
                MutableComponent var4 = Component.translatable("disconnect.genericReason", "Internal Exception: " + var2);
+               PacketListener var6 = this.packetListener;
+               DisconnectionDetails var5;
+               if (var6 != null) {
+                  var5 = var6.createDisconnectionInfo(var4, var2);
+               } else {
+                  var5 = new DisconnectionDetails(var4);
+               }
+
                if (var3) {
                   LOGGER.debug("Failed to sent packet", var2);
                   if (this.getSending() == PacketFlow.CLIENTBOUND) {
-                     Object var5 = this.sendLoginDisconnect ? new ClientboundLoginDisconnectPacket(var4) : new ClientboundDisconnectPacket(var4);
-                     this.send((Packet<?>)var5, PacketSendListener.thenRun(() -> this.disconnect(var4)));
+                     Object var7 = this.sendLoginDisconnect ? new ClientboundLoginDisconnectPacket(var4) : new ClientboundDisconnectPacket(var4);
+                     this.send((Packet<?>)var7, PacketSendListener.thenRun(() -> this.disconnect(var5)));
                   } else {
-                     this.disconnect(var4);
+                     this.disconnect(var5);
                   }
 
                   this.setReadOnly();
                } else {
                   LOGGER.debug("Double fault", var2);
-                  this.disconnect(var4);
+                  this.disconnect(var5);
                }
             }
          }
@@ -405,13 +413,17 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    public void disconnect(Component var1) {
+      this.disconnect(new DisconnectionDetails(var1));
+   }
+
+   public void disconnect(DisconnectionDetails var1) {
       if (this.channel == null) {
          this.delayedDisconnect = var1;
       }
 
       if (this.isConnected()) {
          this.channel.close().awaitUninterruptibly();
-         this.disconnectedReason = var1;
+         this.disconnectionDetails = var1;
       }
    }
 
@@ -548,8 +560,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    @Nullable
-   public Component getDisconnectedReason() {
-      return this.disconnectedReason;
+   public DisconnectionDetails getDisconnectionDetails() {
+      return this.disconnectionDetails;
    }
 
    public void setReadOnly() {
@@ -591,7 +603,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             PacketListener var1 = this.getPacketListener();
             PacketListener var2 = var1 != null ? var1 : this.disconnectListener;
             if (var2 != null) {
-               Component var3 = Objects.requireNonNullElseGet(this.getDisconnectedReason(), () -> Component.translatable("multiplayer.disconnect.generic"));
+               DisconnectionDetails var3 = Objects.requireNonNullElseGet(
+                  this.getDisconnectionDetails(), () -> new DisconnectionDetails(Component.translatable("multiplayer.disconnect.generic"))
+               );
                var2.onDisconnect(var3);
             }
          }

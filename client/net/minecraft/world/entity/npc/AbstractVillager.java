@@ -34,6 +34,7 @@ import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -185,7 +186,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    @Nullable
    @Override
-   public Entity changeDimension(Entity.DimensionTransitionSupplier var1) {
+   public Entity changeDimension(DimensionTransition var1) {
       this.stopTrading();
       return super.changeDimension(var1);
    }

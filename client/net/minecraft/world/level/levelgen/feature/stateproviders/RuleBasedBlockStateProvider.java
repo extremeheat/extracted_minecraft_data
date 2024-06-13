@@ -1,61 +1,13 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
-
-public record RuleBasedBlockStateProvider(BlockStateProvider fallback, List<RuleBasedBlockStateProvider.Rule> rules) {
-   public static final Codec<RuleBasedBlockStateProvider> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               BlockStateProvider.CODEC.fieldOf("fallback").forGetter(RuleBasedBlockStateProvider::fallback),
-               RuleBasedBlockStateProvider.Rule.CODEC.listOf().fieldOf("rules").forGetter(RuleBasedBlockStateProvider::rules)
-            )
-            .apply(var0, RuleBasedBlockStateProvider::new)
-   );
-
-   public RuleBasedBlockStateProvider(BlockStateProvider fallback, List<RuleBasedBlockStateProvider.Rule> rules) {
-      super();
-      this.fallback = fallback;
-      this.rules = rules;
-   }
-
-   public static RuleBasedBlockStateProvider simple(BlockStateProvider var0) {
-      return new RuleBasedBlockStateProvider(var0, List.of());
-   }
-
-   public static RuleBasedBlockStateProvider simple(Block var0) {
-      return simple(BlockStateProvider.simple(var0));
-   }
-
-   public BlockState getState(WorldGenLevel var1, RandomSource var2, BlockPos var3) {
-      for (RuleBasedBlockStateProvider.Rule var5 : this.rules) {
-         if (var5.ifTrue().test(var1, var3)) {
-            return var5.then().getState(var2, var3);
-         }
-      }
-
-      return this.fallback.getState(var2, var3);
-   }
-
-   public static record Rule(BlockPredicate ifTrue, BlockStateProvider then) {
-      public static final Codec<RuleBasedBlockStateProvider.Rule> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  BlockPredicate.CODEC.fieldOf("if_true").forGetter(RuleBasedBlockStateProvider.Rule::ifTrue),
-                  BlockStateProvider.CODEC.fieldOf("then").forGetter(RuleBasedBlockStateProvider.Rule::then)
-               )
-               .apply(var0, RuleBasedBlockStateProvider.Rule::new)
-      );
-
-      public Rule(BlockPredicate ifTrue, BlockStateProvider then) {
-         super();
-         this.ifTrue = ifTrue;
-         this.then = then;
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

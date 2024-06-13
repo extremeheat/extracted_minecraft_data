@@ -5,8 +5,6 @@ import com.mojang.serialization.Codec;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
@@ -65,37 +63,16 @@ public record MessageSignature(byte[] bytes) {
       return var2 != -1 ? new MessageSignature.Packed(var2) : new MessageSignature.Packed(this);
    }
 
-   public static record Packed(int id, @Nullable MessageSignature fullSignature) {
-      public static final int FULL_SIGNATURE = -1;
-
-      public Packed(MessageSignature var1) {
-         this(-1, var1);
-      }
-
-      public Packed(int var1) {
-         this(var1, null);
-      }
-
-      public Packed(int id, @Nullable MessageSignature fullSignature) {
-         super();
-         this.id = id;
-         this.fullSignature = fullSignature;
-      }
-
-      public static MessageSignature.Packed read(FriendlyByteBuf var0) {
-         int var1 = var0.readVarInt() - 1;
-         return var1 == -1 ? new MessageSignature.Packed(MessageSignature.read(var0)) : new MessageSignature.Packed(var1);
-      }
-
-      public static void write(FriendlyByteBuf var0, MessageSignature.Packed var1) {
-         var0.writeVarInt(var1.id() + 1);
-         if (var1.fullSignature() != null) {
-            MessageSignature.write(var0, var1.fullSignature());
-         }
-      }
-
-      public Optional<MessageSignature> unpack(MessageSignatureCache var1) {
-         return this.fullSignature != null ? Optional.of(this.fullSignature) : Optional.ofNullable(var1.unpack(this.id));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

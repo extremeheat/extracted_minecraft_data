@@ -25,8 +25,8 @@ public class KnowledgeBookItem extends Item {
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      var4.consume(1, var2);
       List var5 = var4.getOrDefault(DataComponents.RECIPES, List.of());
+      var4.consume(1, var2);
       if (var5.isEmpty()) {
          return InteractionResultHolder.fail(var4);
       } else {

@@ -94,40 +94,40 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       Matrix4f var23 = var0.last().pose();
       switch (var2) {
          case DOWN:
-            var1.vertex(var23, var13, var14, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var14, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var14, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var13, var14, var18).color(var19, var20, var21, var22).endVertex();
+            var1.addVertex(var23, var13, var14, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var14, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var14, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var13, var14, var18).setColor(var19, var20, var21, var22);
             break;
          case UP:
-            var1.vertex(var23, var13, var17, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var13, var17, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var17, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var17, var15).color(var19, var20, var21, var22).endVertex();
+            var1.addVertex(var23, var13, var17, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var13, var17, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var17, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var17, var15).setColor(var19, var20, var21, var22);
             break;
          case NORTH:
-            var1.vertex(var23, var13, var14, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var13, var17, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var17, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var14, var15).color(var19, var20, var21, var22).endVertex();
+            var1.addVertex(var23, var13, var14, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var13, var17, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var17, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var14, var15).setColor(var19, var20, var21, var22);
             break;
          case SOUTH:
-            var1.vertex(var23, var13, var14, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var14, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var17, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var13, var17, var18).color(var19, var20, var21, var22).endVertex();
+            var1.addVertex(var23, var13, var14, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var14, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var17, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var13, var17, var18).setColor(var19, var20, var21, var22);
             break;
          case WEST:
-            var1.vertex(var23, var13, var14, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var13, var14, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var13, var17, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var13, var17, var15).color(var19, var20, var21, var22).endVertex();
+            var1.addVertex(var23, var13, var14, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var13, var14, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var13, var17, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var13, var17, var15).setColor(var19, var20, var21, var22);
             break;
          case EAST:
-            var1.vertex(var23, var16, var14, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var17, var15).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var17, var18).color(var19, var20, var21, var22).endVertex();
-            var1.vertex(var23, var16, var14, var18).color(var19, var20, var21, var22).endVertex();
+            var1.addVertex(var23, var16, var14, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var17, var15).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var17, var18).setColor(var19, var20, var21, var22);
+            var1.addVertex(var23, var16, var14, var18).setColor(var19, var20, var21, var22);
       }
    }
 
@@ -152,8 +152,8 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       float var19 = (float)((double)SectionPos.sectionToBlockCoord(var12) - var4);
       float var20 = (float)((double)SectionPos.sectionToBlockCoord(var13) - var6);
       Matrix4f var21 = var0.last().pose();
-      var1.vertex(var21, var15, var16, var17).color(var14.x(), var14.y(), var14.z(), 1.0F).endVertex();
-      var1.vertex(var21, var18, var19, var20).color(var14.x(), var14.y(), var14.z(), 1.0F).endVertex();
+      var1.addVertex(var21, var15, var16, var17).setColor(var14.x(), var14.y(), var14.z(), 1.0F);
+      var1.addVertex(var21, var18, var19, var20).setColor(var14.x(), var14.y(), var14.z(), 1.0F);
    }
 
    static final class SectionData {

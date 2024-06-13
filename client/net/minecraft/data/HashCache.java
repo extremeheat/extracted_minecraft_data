@@ -1,13 +1,9 @@
 package net.minecraft.data;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.UnmodifiableIterator;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.mojang.logging.LogUtils;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -23,12 +19,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import net.minecraft.WorldVersion;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
@@ -182,97 +174,47 @@ public class HashCache {
       }
    }
 
-   static record ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
-         super();
-         this.version = version;
-         this.data = data;
-      }
-
-      @Nullable
-      public HashCode get(Path var1) {
-         return (HashCode)this.data.get(var1);
-      }
-
-      public int count() {
-         return this.data.size();
-      }
-
-      public static HashCache.ProviderCache load(Path var0, Path var1) throws IOException {
-         HashCache.ProviderCache var7;
-         try (BufferedReader var2 = Files.newBufferedReader(var1, StandardCharsets.UTF_8)) {
-            String var3 = var2.readLine();
-            if (!var3.startsWith("// ")) {
-               throw new IllegalStateException("Missing cache file header");
-            }
-
-            String[] var4 = var3.substring("// ".length()).split("\t", 2);
-            String var5 = var4[0];
-            Builder var6 = ImmutableMap.builder();
-            var2.lines().forEach(var2x -> {
-               int var3x = var2x.indexOf(32);
-               var6.put(var0.resolve(var2x.substring(var3x + 1)), HashCode.fromString(var2x.substring(0, var3x)));
-            });
-            var7 = new HashCache.ProviderCache(var5, var6.build());
-         }
-
-         return var7;
-      }
-
-      public void save(Path var1, Path var2, String var3) {
-         try (BufferedWriter var4 = Files.newBufferedWriter(var2, StandardCharsets.UTF_8)) {
-            var4.write("// ");
-            var4.write(this.version);
-            var4.write(9);
-            var4.write(var3);
-            var4.newLine();
-            UnmodifiableIterator var5 = this.data.entrySet().iterator();
-
-            while (var5.hasNext()) {
-               Entry var6 = (Entry)var5.next();
-               var4.write(((HashCode)var6.getValue()).toString());
-               var4.write(32);
-               var4.write(var1.relativize((Path)var6.getKey()).toString());
-               var4.newLine();
-            }
-         } catch (IOException var9) {
-            HashCache.LOGGER.warn("Unable write cachefile {}: {}", var2, var9);
-         }
-      }
-   }
-
-   static record ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
-      ProviderCacheBuilder(String var1) {
-         this(var1, new ConcurrentHashMap<>());
-      }
-
-      private ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
-         super();
-         this.version = version;
-         this.data = data;
-      }
-
-      public void put(Path var1, HashCode var2) {
-         this.data.put(var1, var2);
-      }
-
-      public HashCache.ProviderCache build() {
-         return new HashCache.ProviderCache(this.version, ImmutableMap.copyOf(this.data));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    @FunctionalInterface
    public interface UpdateFunction {
       CompletableFuture<?> update(CachedOutput var1);
    }
 
-   public static record UpdateResult(String providerId, HashCache.ProviderCache cache, int writes) {
-      public UpdateResult(String providerId, HashCache.ProviderCache cache, int writes) {
-         super();
-         this.providerId = providerId;
-         this.cache = cache;
-         this.writes = writes;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

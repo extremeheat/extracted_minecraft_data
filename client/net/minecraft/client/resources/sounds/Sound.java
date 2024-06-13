@@ -19,9 +19,9 @@ public class Sound implements Weighted<Sound> {
    private final boolean preload;
    private final int attenuationDistance;
 
-   public Sound(String var1, SampledFloat var2, SampledFloat var3, int var4, Sound.Type var5, boolean var6, boolean var7, int var8) {
+   public Sound(ResourceLocation var1, SampledFloat var2, SampledFloat var3, int var4, Sound.Type var5, boolean var6, boolean var7, int var8) {
       super();
-      this.location = new ResourceLocation(var1);
+      this.location = var1;
       this.volume = var2;
       this.pitch = var3;
       this.weight = var4;

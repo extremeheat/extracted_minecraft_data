@@ -40,23 +40,23 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<ResourceLocation, ResourceLocation> VANILLA_ATLASES = Map.of(
       Sheets.BANNER_SHEET,
-      new ResourceLocation("banner_patterns"),
+      ResourceLocation.withDefaultNamespace("banner_patterns"),
       Sheets.BED_SHEET,
-      new ResourceLocation("beds"),
+      ResourceLocation.withDefaultNamespace("beds"),
       Sheets.CHEST_SHEET,
-      new ResourceLocation("chests"),
+      ResourceLocation.withDefaultNamespace("chests"),
       Sheets.SHIELD_SHEET,
-      new ResourceLocation("shield_patterns"),
+      ResourceLocation.withDefaultNamespace("shield_patterns"),
       Sheets.SIGN_SHEET,
-      new ResourceLocation("signs"),
+      ResourceLocation.withDefaultNamespace("signs"),
       Sheets.SHULKER_SHEET,
-      new ResourceLocation("shulker_boxes"),
+      ResourceLocation.withDefaultNamespace("shulker_boxes"),
       Sheets.ARMOR_TRIMS_SHEET,
-      new ResourceLocation("armor_trims"),
+      ResourceLocation.withDefaultNamespace("armor_trims"),
       Sheets.DECORATED_POT_SHEET,
-      new ResourceLocation("decorated_pot"),
+      ResourceLocation.withDefaultNamespace("decorated_pot"),
       TextureAtlas.LOCATION_BLOCKS,
-      new ResourceLocation("blocks")
+      ResourceLocation.withDefaultNamespace("blocks")
    );
    private Map<ResourceLocation, BakedModel> bakedRegistry;
    private final AtlasSet atlases;
@@ -264,27 +264,16 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       this.maxMipmapLevels = var1;
    }
 
-   static record ReloadState(
-      ModelBakery modelBakery,
-      BakedModel missingModel,
-      Map<BlockState, BakedModel> modelCache,
-      Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations,
-      CompletableFuture<Void> readyForUpload
-   ) {
-
-      ReloadState(
-         ModelBakery modelBakery,
-         BakedModel missingModel,
-         Map<BlockState, BakedModel> modelCache,
-         Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations,
-         CompletableFuture<Void> readyForUpload
-      ) {
-         super();
-         this.modelBakery = modelBakery;
-         this.missingModel = missingModel;
-         this.modelCache = modelCache;
-         this.atlasPreparations = atlasPreparations;
-         this.readyForUpload = readyForUpload;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

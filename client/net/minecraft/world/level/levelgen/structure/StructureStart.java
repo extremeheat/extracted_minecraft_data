@@ -45,7 +45,7 @@ public final class StructureStart {
          return INVALID_START;
       } else {
          Registry var5 = var0.registryAccess().registryOrThrow(Registries.STRUCTURE);
-         Structure var6 = (Structure)var5.get(new ResourceLocation(var4));
+         Structure var6 = (Structure)var5.get(ResourceLocation.parse(var4));
          if (var6 == null) {
             LOGGER.error("Unknown stucture id: {}", var4);
             return null;

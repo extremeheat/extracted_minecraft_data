@@ -30,12 +30,15 @@ import org.slf4j.Logger;
 
 public class WinScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/credits_vignette.png");
+   private static final ResourceLocation VIGNETTE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/credits_vignette.png");
    private static final Component SECTION_HEADING = Component.literal("============").withStyle(ChatFormatting.WHITE);
    private static final String NAME_PREFIX = "           ";
    private static final String OBFUSCATE_TOKEN = "" + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + ChatFormatting.GREEN + ChatFormatting.AQUA;
    private static final float SPEEDUP_FACTOR = 5.0F;
    private static final float SPEEDUP_FACTOR_FAST = 15.0F;
+   private static final ResourceLocation END_POEM_LOCATION = ResourceLocation.withDefaultNamespace("texts/end.txt");
+   private static final ResourceLocation CREDITS_LOCATION = ResourceLocation.withDefaultNamespace("texts/credits.json");
+   private static final ResourceLocation POSTCREDITS_LOCATION = ResourceLocation.withDefaultNamespace("texts/postcredits.txt");
    private final boolean poem;
    private final Runnable onFinished;
    private float scroll;
@@ -124,23 +127,23 @@ public class WinScreen extends Screen {
          this.lines = Lists.newArrayList();
          this.centeredLines = new IntOpenHashSet();
          if (this.poem) {
-            this.wrapCreditsIO("texts/end.txt", this::addPoemFile);
+            this.wrapCreditsIO(END_POEM_LOCATION, this::addPoemFile);
          }
 
-         this.wrapCreditsIO("texts/credits.json", this::addCreditsFile);
+         this.wrapCreditsIO(CREDITS_LOCATION, this::addCreditsFile);
          if (this.poem) {
-            this.wrapCreditsIO("texts/postcredits.txt", this::addPoemFile);
+            this.wrapCreditsIO(POSTCREDITS_LOCATION, this::addPoemFile);
          }
 
          this.totalScrollLength = this.lines.size() * 12;
       }
    }
 
-   private void wrapCreditsIO(String var1, WinScreen.CreditsReader var2) {
-      try (BufferedReader var3 = this.minecraft.getResourceManager().openAsReader(new ResourceLocation(var1))) {
+   private void wrapCreditsIO(ResourceLocation var1, WinScreen.CreditsReader var2) {
+      try (BufferedReader var3 = this.minecraft.getResourceManager().openAsReader(var1)) {
          var2.read(var3);
       } catch (Exception var8) {
-         LOGGER.error("Couldn't load credits", var8);
+         LOGGER.error("Couldn't load credits from file {}", var1, var8);
       }
    }
 

@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class ElytraLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
-   private static final ResourceLocation WINGS_LOCATION = new ResourceLocation("textures/entity/elytra.png");
+   private static final ResourceLocation WINGS_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/elytra.png");
    private final ElytraModel<T> elytraModel;
 
    public ElytraLayer(RenderLayerParent<T, M> var1, EntityModelSet var2) {
@@ -50,8 +50,8 @@ public class ElytraLayer<T extends LivingEntity, M extends EntityModel<T>> exten
          var1.translate(0.0F, 0.0F, 0.125F);
          this.getParentModel().copyPropertiesTo(this.elytraModel);
          this.elytraModel.setupAnim((T)var4, var5, var6, var8, var9, var10);
-         VertexConsumer var15 = ItemRenderer.getArmorFoilBuffer(var2, RenderType.armorCutoutNoCull(var12), false, var11.hasFoil());
-         this.elytraModel.renderToBuffer(var1, var15, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+         VertexConsumer var15 = ItemRenderer.getArmorFoilBuffer(var2, RenderType.armorCutoutNoCull(var12), var11.hasFoil());
+         this.elytraModel.renderToBuffer(var1, var15, var3, OverlayTexture.NO_OVERLAY);
          var1.popPose();
       }
    }

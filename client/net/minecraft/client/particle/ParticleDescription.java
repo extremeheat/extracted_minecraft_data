@@ -27,7 +27,7 @@ public class ParticleDescription {
       } else {
          List var2 = Streams.stream(var1)
             .map(var0x -> GsonHelper.convertToString(var0x, "texture"))
-            .map(ResourceLocation::new)
+            .map(ResourceLocation::parse)
             .collect(ImmutableList.toImmutableList());
          return new ParticleDescription(var2);
       }

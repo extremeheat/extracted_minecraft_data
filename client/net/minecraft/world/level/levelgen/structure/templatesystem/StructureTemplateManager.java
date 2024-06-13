@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.FileUtil;
 import net.minecraft.ResourceLocationException;
@@ -47,7 +46,7 @@ import org.slf4j.Logger;
 
 public class StructureTemplateManager {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final String STRUCTURE_DIRECTORY_NAME = "structures";
+   public static final String STRUCTURE_DIRECTORY_NAME = "structure";
    private static final String STRUCTURE_FILE_EXTENSION = ".nbt";
    private static final String STRUCTURE_TEXT_FILE_EXTENSION = ".snbt";
    private final Map<ResourceLocation, Optional<StructureTemplate>> structureRepository = Maps.newConcurrentMap();
@@ -56,7 +55,7 @@ public class StructureTemplateManager {
    private final Path generatedDir;
    private final List<StructureTemplateManager.Source> sources;
    private final HolderGetter<Block> blockLookup;
-   private static final FileToIdConverter LISTER = new FileToIdConverter("structures", ".nbt");
+   private static final FileToIdConverter LISTER = new FileToIdConverter("structure", ".nbt");
 
    public StructureTemplateManager(ResourceManager var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, HolderGetter<Block> var4) {
       super();
@@ -151,7 +150,7 @@ public class StructureTemplateManager {
    }
 
    private Stream<ResourceLocation> listGeneratedInNamespace(Path var1) {
-      Path var2 = var1.resolve("structures");
+      Path var2 = var1.resolve("structure");
       return this.listFolderContents(var2, var1.getFileName().toString(), ".nbt");
    }
 
@@ -165,7 +164,7 @@ public class StructureTemplateManager {
          try {
             return Files.walk(var1).filter(var1x -> var1x.toString().endsWith(var3)).mapMulti((var4x, var5x) -> {
                try {
-                  var5x.accept(new ResourceLocation(var2, (String)var5.apply(this.relativize(var1, var4x))));
+                  var5x.accept(ResourceLocation.fromNamespaceAndPath(var2, (String)var5.apply(this.relativize(var1, var4x))));
                } catch (ResourceLocationException var7x) {
                   LOGGER.error("Invalid location while listing pack contents", var7x);
                }
@@ -275,7 +274,7 @@ public class StructureTemplateManager {
    public static Path createPathToStructure(Path var0, ResourceLocation var1, String var2) {
       try {
          Path var3 = var0.resolve(var1.getNamespace());
-         Path var4 = var3.resolve("structures");
+         Path var4 = var3.resolve("structure");
          return FileUtil.createPathToResource(var4, var1.getPath(), var2);
       } catch (InvalidPathException var5) {
          throw new ResourceLocationException("Invalid resource path: " + var1, var5);
@@ -304,11 +303,16 @@ public class StructureTemplateManager {
       InputStream open() throws IOException;
    }
 
-   static record Source(Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
-      Source(Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
-         super();
-         this.loader = loader;
-         this.lister = lister;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

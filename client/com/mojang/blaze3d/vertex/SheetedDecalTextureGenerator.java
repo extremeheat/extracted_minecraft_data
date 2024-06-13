@@ -4,22 +4,17 @@ import net.minecraft.core.Direction;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
-public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
+public class SheetedDecalTextureGenerator implements VertexConsumer {
    private final VertexConsumer delegate;
    private final Matrix4f cameraInversePose;
    private final Matrix3f normalInversePose;
    private final float textureScale;
+   private final Vector3f worldPos = new Vector3f();
+   private final Vector3f normal = new Vector3f();
    private float x;
    private float y;
    private float z;
-   private int overlayU;
-   private int overlayV;
-   private int lightCoords;
-   private float nx;
-   private float ny;
-   private float nz;
 
    public SheetedDecalTextureGenerator(VertexConsumer var1, PoseStack.Pose var2, float var3) {
       super();
@@ -27,78 +22,50 @@ public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
       this.cameraInversePose = new Matrix4f(var2.pose()).invert();
       this.normalInversePose = new Matrix3f(var2.normal()).invert();
       this.textureScale = var3;
-      this.resetState();
-   }
-
-   private void resetState() {
-      this.x = 0.0F;
-      this.y = 0.0F;
-      this.z = 0.0F;
-      this.overlayU = 0;
-      this.overlayV = 10;
-      this.lightCoords = 15728880;
-      this.nx = 0.0F;
-      this.ny = 1.0F;
-      this.nz = 0.0F;
    }
 
    @Override
-   public void endVertex() {
-      Vector3f var1 = this.normalInversePose.transform(new Vector3f(this.nx, this.ny, this.nz));
-      Direction var2 = Direction.getNearest(var1.x(), var1.y(), var1.z());
-      Vector4f var3 = this.cameraInversePose.transform(new Vector4f(this.x, this.y, this.z, 1.0F));
-      var3.rotateY(3.1415927F);
-      var3.rotateX(-1.5707964F);
-      var3.rotate(var2.getRotation());
-      float var4 = -var3.x() * this.textureScale;
-      float var5 = -var3.y() * this.textureScale;
-      this.delegate
-         .vertex((double)this.x, (double)this.y, (double)this.z)
-         .color(1.0F, 1.0F, 1.0F, 1.0F)
-         .uv(var4, var5)
-         .overlayCoords(this.overlayU, this.overlayV)
-         .uv2(this.lightCoords)
-         .normal(this.nx, this.ny, this.nz)
-         .endVertex();
-      this.resetState();
-   }
-
-   @Override
-   public VertexConsumer vertex(double var1, double var3, double var5) {
-      this.x = (float)var1;
-      this.y = (float)var3;
-      this.z = (float)var5;
+   public VertexConsumer addVertex(float var1, float var2, float var3) {
+      this.x = var1;
+      this.y = var2;
+      this.z = var3;
+      this.delegate.addVertex(var1, var2, var3);
       return this;
    }
 
    @Override
-   public VertexConsumer color(int var1, int var2, int var3, int var4) {
+   public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
+      this.delegate.setColor(-1);
       return this;
    }
 
    @Override
-   public VertexConsumer uv(float var1, float var2) {
+   public VertexConsumer setUv(float var1, float var2) {
       return this;
    }
 
    @Override
-   public VertexConsumer overlayCoords(int var1, int var2) {
-      this.overlayU = var1;
-      this.overlayV = var2;
+   public VertexConsumer setUv1(int var1, int var2) {
+      this.delegate.setUv1(var1, var2);
       return this;
    }
 
    @Override
-   public VertexConsumer uv2(int var1, int var2) {
-      this.lightCoords = var1 | var2 << 16;
+   public VertexConsumer setUv2(int var1, int var2) {
+      this.delegate.setUv2(var1, var2);
       return this;
    }
 
    @Override
-   public VertexConsumer normal(float var1, float var2, float var3) {
-      this.nx = var1;
-      this.ny = var2;
-      this.nz = var3;
+   public VertexConsumer setNormal(float var1, float var2, float var3) {
+      this.delegate.setNormal(var1, var2, var3);
+      Vector3f var4 = this.normalInversePose.transform(var1, var2, var3, this.normal);
+      Direction var5 = Direction.getNearest(var4.x(), var4.y(), var4.z());
+      Vector3f var6 = this.cameraInversePose.transformPosition(this.x, this.y, this.z, this.worldPos);
+      var6.rotateY(3.1415927F);
+      var6.rotateX(-1.5707964F);
+      var6.rotate(var5.getRotation());
+      this.delegate.setUv(-var6.x() * this.textureScale, -var6.y() * this.textureScale);
       return this;
    }
 }

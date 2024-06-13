@@ -1,22 +1,17 @@
 package net.minecraft.commands.arguments;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.selector.EntitySelector;
-import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -85,100 +80,29 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
       return EXAMPLES;
    }
 
-   public static record Message(String text, MessageArgument.Part[] parts) {
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public Message(String text, MessageArgument.Part[] parts) {
-         super();
-         this.text = text;
-         this.parts = parts;
-      }
-
-      Component resolveComponent(CommandSourceStack var1) throws CommandSyntaxException {
-         return this.toComponent(var1, var1.hasPermission(2));
-      }
-
-      public Component toComponent(CommandSourceStack var1, boolean var2) throws CommandSyntaxException {
-         if (this.parts.length != 0 && var2) {
-            MutableComponent var3 = Component.literal(this.text.substring(0, this.parts[0].start()));
-            int var4 = this.parts[0].start();
-
-            for (MessageArgument.Part var8 : this.parts) {
-               Component var9 = var8.toComponent(var1);
-               if (var4 < var8.start()) {
-                  var3.append(this.text.substring(var4, var8.start()));
-               }
-
-               var3.append(var9);
-               var4 = var8.end();
-            }
-
-            if (var4 < this.text.length()) {
-               var3.append(this.text.substring(var4));
-            }
-
-            return var3;
-         } else {
-            return Component.literal(this.text);
-         }
-      }
-
-      public static MessageArgument.Message parseText(StringReader var0, boolean var1) throws CommandSyntaxException {
-         if (var0.getRemainingLength() > 256) {
-            throw MessageArgument.TOO_LONG.create(var0.getRemainingLength(), 256);
-         } else {
-            String var2 = var0.getRemaining();
-            if (!var1) {
-               var0.setCursor(var0.getTotalLength());
-               return new MessageArgument.Message(var2, new MessageArgument.Part[0]);
-            } else {
-               ArrayList var3 = Lists.newArrayList();
-               int var4 = var0.getCursor();
-
-               while (true) {
-                  int var5;
-                  EntitySelector var6;
-                  while (true) {
-                     if (!var0.canRead()) {
-                        return new MessageArgument.Message(var2, var3.toArray(new MessageArgument.Part[0]));
-                     }
-
-                     if (var0.peek() == '@') {
-                        var5 = var0.getCursor();
-
-                        try {
-                           EntitySelectorParser var7 = new EntitySelectorParser(var0);
-                           var6 = var7.parse();
-                           break;
-                        } catch (CommandSyntaxException var8) {
-                           if (var8.getType() != EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE
-                              && var8.getType() != EntitySelectorParser.ERROR_UNKNOWN_SELECTOR_TYPE) {
-                              throw var8;
-                           }
-
-                           var0.setCursor(var5 + 1);
-                        }
-                     } else {
-                        var0.skip();
-                     }
-                  }
-
-                  var3.add(new MessageArgument.Part(var5 - var4, var0.getCursor() - var4, var6));
-               }
-            }
-         }
-      }
-   }
-
-   public static record Part(int start, int end, EntitySelector selector) {
-      public Part(int start, int end, EntitySelector selector) {
-         super();
-         this.start = start;
-         this.end = end;
-         this.selector = selector;
-      }
-
-      public Component toComponent(CommandSourceStack var1) throws CommandSyntaxException {
-         return EntitySelector.joinNames(this.selector.findEntities(var1));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

@@ -168,6 +168,7 @@ public class ServerPlayerGameMode {
                   this.player,
                   EquipmentSlot.MAINHAND,
                   Vec3.atCenterOf(var1),
+                  var7,
                   var1x -> this.player.onEquippedItemBroken(var1x, EquipmentSlot.MAINHAND)
                );
                var7.attack(this.level, var1, this.player);

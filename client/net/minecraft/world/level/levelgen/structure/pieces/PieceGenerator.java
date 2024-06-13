@@ -1,42 +1,21 @@
 package net.minecraft.world.level.levelgen.structure.pieces;
 
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 @FunctionalInterface
 public interface PieceGenerator<C extends FeatureConfiguration> {
    void generatePieces(StructurePiecesBuilder var1, PieceGenerator.Context<C> var2);
 
-   public static record Context<C extends FeatureConfiguration>(
-      C config,
-      ChunkGenerator chunkGenerator,
-      StructureTemplateManager structureTemplateManager,
-      ChunkPos chunkPos,
-      LevelHeightAccessor heightAccessor,
-      WorldgenRandom random,
-      long seed
-   ) {
-      public Context(
-         C config,
-         ChunkGenerator chunkGenerator,
-         StructureTemplateManager structureTemplateManager,
-         ChunkPos chunkPos,
-         LevelHeightAccessor heightAccessor,
-         WorldgenRandom random,
-         long seed
-      ) {
-         super();
-         this.config = (C)config;
-         this.chunkGenerator = chunkGenerator;
-         this.structureTemplateManager = structureTemplateManager;
-         this.chunkPos = chunkPos;
-         this.heightAccessor = heightAccessor;
-         this.random = random;
-         this.seed = seed;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

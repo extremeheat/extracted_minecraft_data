@@ -23,11 +23,11 @@ public class WolfArmorLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
    private final WolfModel<Wolf> model;
    private static final Map<Crackiness.Level, ResourceLocation> ARMOR_CRACK_LOCATIONS = Map.of(
       Crackiness.Level.LOW,
-      new ResourceLocation("textures/entity/wolf/wolf_armor_crackiness_low.png"),
+      ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_low.png"),
       Crackiness.Level.MEDIUM,
-      new ResourceLocation("textures/entity/wolf/wolf_armor_crackiness_medium.png"),
+      ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_medium.png"),
       Crackiness.Level.HIGH,
-      new ResourceLocation("textures/entity/wolf/wolf_armor_crackiness_high.png")
+      ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf_armor_crackiness_high.png")
    );
 
    public WolfArmorLayer(RenderLayerParent<Wolf, WolfModel<Wolf>> var1, EntityModelSet var2) {
@@ -43,7 +43,7 @@ public class WolfArmorLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
             this.model.prepareMobModel(var4, var5, var6, var7);
             this.model.setupAnim(var4, var5, var6, var8, var9, var10);
             VertexConsumer var14 = var2.getBuffer(RenderType.entityCutoutNoCull(var12.getTexture()));
-            this.model.renderToBuffer(var1, var14, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+            this.model.renderToBuffer(var1, var14, var3, OverlayTexture.NO_OVERLAY);
             this.maybeRenderColoredLayer(var1, var2, var3, var11, var12);
             this.maybeRenderCracks(var1, var2, var3, var11);
             return;
@@ -63,10 +63,7 @@ public class WolfArmorLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
             return;
          }
 
-         float var8 = (float)FastColor.ARGB32.red(var6) / 255.0F;
-         float var9 = (float)FastColor.ARGB32.green(var6) / 255.0F;
-         float var10 = (float)FastColor.ARGB32.blue(var6) / 255.0F;
-         this.model.renderToBuffer(var1, var2.getBuffer(RenderType.entityCutoutNoCull(var7)), var3, OverlayTexture.NO_OVERLAY, var8, var9, var10, 1.0F);
+         this.model.renderToBuffer(var1, var2.getBuffer(RenderType.entityCutoutNoCull(var7)), var3, OverlayTexture.NO_OVERLAY, FastColor.ARGB32.opaque(var6));
       }
    }
 
@@ -75,7 +72,7 @@ public class WolfArmorLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
       if (var5 != Crackiness.Level.NONE) {
          ResourceLocation var6 = ARMOR_CRACK_LOCATIONS.get(var5);
          VertexConsumer var7 = var2.getBuffer(RenderType.entityTranslucent(var6));
-         this.model.renderToBuffer(var1, var7, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+         this.model.renderToBuffer(var1, var7, var3, OverlayTexture.NO_OVERLAY);
       }
    }
 }

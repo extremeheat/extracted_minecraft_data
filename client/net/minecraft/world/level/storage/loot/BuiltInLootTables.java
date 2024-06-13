@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 public class BuiltInLootTables {
    private static final Set<ResourceKey<LootTable>> LOCATIONS = new HashSet<>();
    private static final Set<ResourceKey<LootTable>> IMMUTABLE_LOCATIONS = Collections.unmodifiableSet(LOCATIONS);
-   public static final ResourceKey<LootTable> EMPTY = ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation("empty"));
+   public static final ResourceKey<LootTable> EMPTY = ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.withDefaultNamespace("empty"));
    public static final ResourceKey<LootTable> SPAWN_BONUS_CHEST = register("chests/spawn_bonus_chest");
    public static final ResourceKey<LootTable> END_CITY_TREASURE = register("chests/end_city_treasure");
    public static final ResourceKey<LootTable> SIMPLE_DUNGEON = register("chests/simple_dungeon");
@@ -129,7 +129,7 @@ public class BuiltInLootTables {
    }
 
    private static ResourceKey<LootTable> register(String var0) {
-      return register(ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var0)));
+      return register(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.withDefaultNamespace(var0)));
    }
 
    private static ResourceKey<LootTable> register(ResourceKey<LootTable> var0) {

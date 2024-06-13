@@ -40,11 +40,12 @@ import net.minecraft.util.valueproviders.MultipliedFloats;
 import org.slf4j.Logger;
 
 public class SoundManager extends SimplePreparableReloadListener<SoundManager.Preparations> {
-   public static final Sound EMPTY_SOUND = new Sound("minecraft:empty", ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
-   public static final ResourceLocation INTENTIONALLY_EMPTY_SOUND_LOCATION = new ResourceLocation("minecraft", "intentionally_empty");
+   public static final ResourceLocation EMPTY_SOUND_LOCATION = ResourceLocation.withDefaultNamespace("empty");
+   public static final Sound EMPTY_SOUND = new Sound(EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
+   public static final ResourceLocation INTENTIONALLY_EMPTY_SOUND_LOCATION = ResourceLocation.withDefaultNamespace("intentionally_empty");
    public static final WeighedSoundEvents INTENTIONALLY_EMPTY_SOUND_EVENT = new WeighedSoundEvents(INTENTIONALLY_EMPTY_SOUND_LOCATION, null);
    public static final Sound INTENTIONALLY_EMPTY_SOUND = new Sound(
-      INTENTIONALLY_EMPTY_SOUND_LOCATION.toString(), ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16
+      INTENTIONALLY_EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16
    );
    static final Logger LOGGER = LogUtils.getLogger();
    private static final String SOUNDS_PATH = "sounds.json";
@@ -74,7 +75,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
          var2.push(var5);
 
          try {
-            for (Resource var8 : var1.getResourceStack(new ResourceLocation(var5, "sounds.json"))) {
+            for (Resource var8 : var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"))) {
                var2.push(var8.sourcePackId());
 
                try (BufferedReader var9 = var8.openAsReader()) {
@@ -83,7 +84,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
                   var2.popPush("register");
 
                   for (Entry var12 : var10.entrySet()) {
-                     var3.handleRegistration(new ResourceLocation(var5, (String)var12.getKey()), (SoundEventRegistration)var12.getValue());
+                     var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var12.getKey()), (SoundEventRegistration)var12.getValue());
                   }
 
                   var2.pop();
@@ -280,7 +281,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
                         } else {
                            Sound var3 = var2.getSound(var1);
                            return new Sound(
-                              var3.getLocation().toString(),
+                              var3.getLocation(),
                               new MultipliedFloats(var3.getVolume(), var7.getVolume()),
                               new MultipliedFloats(var3.getPitch(), var7.getPitch()),
                               var7.getWeight(),

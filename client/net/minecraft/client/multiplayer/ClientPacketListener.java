@@ -233,6 +233,7 @@ import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.ServerLinks;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stat;
@@ -805,7 +806,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   this.postDisconnectScreen,
                   this.serverCookies,
                   var2,
-                  this.strictErrorHandling
+                  this.strictErrorHandling,
+                  this.customReportDetails,
+                  this.serverLinks
                )
             )
          );
@@ -2395,5 +2398,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public SessionSearchTrees searchTrees() {
       return this.searchTrees;
+   }
+
+   public ServerLinks serverLinks() {
+      return this.serverLinks;
    }
 }

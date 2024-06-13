@@ -38,80 +38,29 @@ public interface ChunkResult<T> {
 
    <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E;
 
-   public static record Fail<T>(Supplier<String> error) implements ChunkResult<T> {
-      public Fail(Supplier<String> error) {
-         super();
-         this.error = error;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public boolean isSuccess() {
-         return false;
-      }
-
-      @Nullable
-      @Override
-      public T orElse(@Nullable T var1) {
-         return (T)var1;
-      }
-
-      @Override
-      public String getError() {
-         return this.error.get();
-      }
-
-      @Override
-      public ChunkResult<T> ifSuccess(Consumer<T> var1) {
-         return this;
-      }
-
-      @Override
-      public <R> ChunkResult<R> map(Function<T, R> var1) {
-         return new ChunkResult.Fail(this.error);
-      }
-
-      @Override
-      public <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E {
-         throw (Throwable)var1.get();
-      }
-   }
-
-   public static record Success<T>(T value) implements ChunkResult<T> {
-      public Success(T value) {
-         super();
-         this.value = (T)value;
-      }
-
-      @Override
-      public boolean isSuccess() {
-         return true;
-      }
-
-      @Override
-      public T orElse(@Nullable T var1) {
-         return this.value;
-      }
-
-      @Nullable
-      @Override
-      public String getError() {
-         return null;
-      }
-
-      @Override
-      public ChunkResult<T> ifSuccess(Consumer<T> var1) {
-         var1.accept(this.value);
-         return this;
-      }
-
-      @Override
-      public <R> ChunkResult<R> map(Function<T, R> var1) {
-         return (ChunkResult<R>)(new ChunkResult.Success<>(var1.apply(this.value)));
-      }
-
-      @Override
-      public <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E {
-         return this.value;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

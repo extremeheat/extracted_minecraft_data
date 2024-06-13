@@ -1,53 +1,13 @@
 package net.minecraft.network.chat;
 
-import com.google.common.primitives.Ints;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.security.SignatureException;
-import java.util.UUID;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.SignatureUpdater;
-
-public record SignedMessageLink(int index, UUID sender, UUID sessionId) {
-   public static final Codec<SignedMessageLink> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.NON_NEGATIVE_INT.fieldOf("index").forGetter(SignedMessageLink::index),
-               UUIDUtil.CODEC.fieldOf("sender").forGetter(SignedMessageLink::sender),
-               UUIDUtil.CODEC.fieldOf("session_id").forGetter(SignedMessageLink::sessionId)
-            )
-            .apply(var0, SignedMessageLink::new)
-   );
-
-   public SignedMessageLink(int index, UUID sender, UUID sessionId) {
-      super();
-      this.index = index;
-      this.sender = sender;
-      this.sessionId = sessionId;
-   }
-
-   public static SignedMessageLink unsigned(UUID var0) {
-      return root(var0, Util.NIL_UUID);
-   }
-
-   public static SignedMessageLink root(UUID var0, UUID var1) {
-      return new SignedMessageLink(0, var0, var1);
-   }
-
-   public void updateSignature(SignatureUpdater.Output var1) throws SignatureException {
-      var1.update(UUIDUtil.uuidToByteArray(this.sender));
-      var1.update(UUIDUtil.uuidToByteArray(this.sessionId));
-      var1.update(Ints.toByteArray(this.index));
-   }
-
-   public boolean isDescendantOf(SignedMessageLink var1) {
-      return this.index > var1.index() && this.sender.equals(var1.sender()) && this.sessionId.equals(var1.sessionId());
-   }
-
-   @Nullable
-   public SignedMessageLink advance() {
-      return this.index == 2147483647 ? null : new SignedMessageLink(this.index + 1, this.sender, this.sessionId);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

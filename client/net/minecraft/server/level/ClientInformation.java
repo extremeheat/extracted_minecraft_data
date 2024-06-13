@@ -1,68 +1,13 @@
 package net.minecraft.server.level;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.player.ChatVisiblity;
-import net.minecraft.world.entity.player.Player;
-
-public record ClientInformation(
-   String language,
-   int viewDistance,
-   ChatVisiblity chatVisibility,
-   boolean chatColors,
-   int modelCustomisation,
-   HumanoidArm mainHand,
-   boolean textFilteringEnabled,
-   boolean allowsListing
-) {
-   public static final int MAX_LANGUAGE_LENGTH = 16;
-
-   public ClientInformation(FriendlyByteBuf var1) {
-      this(
-         var1.readUtf(16),
-         var1.readByte(),
-         var1.readEnum(ChatVisiblity.class),
-         var1.readBoolean(),
-         var1.readUnsignedByte(),
-         var1.readEnum(HumanoidArm.class),
-         var1.readBoolean(),
-         var1.readBoolean()
-      );
-   }
-
-   public ClientInformation(
-      String language,
-      int viewDistance,
-      ChatVisiblity chatVisibility,
-      boolean chatColors,
-      int modelCustomisation,
-      HumanoidArm mainHand,
-      boolean textFilteringEnabled,
-      boolean allowsListing
-   ) {
-      super();
-      this.language = language;
-      this.viewDistance = viewDistance;
-      this.chatVisibility = chatVisibility;
-      this.chatColors = chatColors;
-      this.modelCustomisation = modelCustomisation;
-      this.mainHand = mainHand;
-      this.textFilteringEnabled = textFilteringEnabled;
-      this.allowsListing = allowsListing;
-   }
-
-   public void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.language);
-      var1.writeByte(this.viewDistance);
-      var1.writeEnum(this.chatVisibility);
-      var1.writeBoolean(this.chatColors);
-      var1.writeByte(this.modelCustomisation);
-      var1.writeEnum(this.mainHand);
-      var1.writeBoolean(this.textFilteringEnabled);
-      var1.writeBoolean(this.allowsListing);
-   }
-
-   public static ClientInformation createDefault() {
-      return new ClientInformation("en_us", 2, ChatVisiblity.FULL, true, 0, Player.DEFAULT_MAIN_HAND, false, false);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

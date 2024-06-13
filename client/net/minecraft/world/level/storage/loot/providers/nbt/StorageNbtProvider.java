@@ -1,38 +1,13 @@
 package net.minecraft.world.level.storage.loot.providers.nbt;
 
-import com.google.common.collect.ImmutableSet;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
-import javax.annotation.Nullable;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
-
-public record StorageNbtProvider(ResourceLocation id) implements NbtProvider {
-   public static final MapCodec<StorageNbtProvider> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(ResourceLocation.CODEC.fieldOf("source").forGetter(StorageNbtProvider::id)).apply(var0, StorageNbtProvider::new)
-   );
-
-   public StorageNbtProvider(ResourceLocation id) {
-      super();
-      this.id = id;
-   }
-
-   @Override
-   public LootNbtProviderType getType() {
-      return NbtProviders.STORAGE;
-   }
-
-   @Nullable
-   @Override
-   public Tag get(LootContext var1) {
-      return var1.getLevel().getServer().getCommandStorage().get(this.id);
-   }
-
-   @Override
-   public Set<LootContextParam<?>> getReferencedContextParams() {
-      return ImmutableSet.of();
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

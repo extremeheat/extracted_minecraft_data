@@ -1,61 +1,13 @@
 package net.minecraft.network.protocol.common.custom;
 
-import java.util.UUID;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
-
-public record BreezeDebugPayload(BreezeDebugPayload.BreezeInfo breezeInfo) implements CustomPacketPayload {
-   public static final StreamCodec<FriendlyByteBuf, BreezeDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      BreezeDebugPayload::write, BreezeDebugPayload::new
-   );
-   public static final CustomPacketPayload.Type<BreezeDebugPayload> TYPE = CustomPacketPayload.createType("debug/breeze");
-
-   private BreezeDebugPayload(FriendlyByteBuf var1) {
-      this(new BreezeDebugPayload.BreezeInfo(var1));
-   }
-
-   public BreezeDebugPayload(BreezeDebugPayload.BreezeInfo breezeInfo) {
-      super();
-      this.breezeInfo = breezeInfo;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      this.breezeInfo.write(var1);
-   }
-
-   @Override
-   public CustomPacketPayload.Type<BreezeDebugPayload> type() {
-      return TYPE;
-   }
-
-   public static record BreezeInfo(UUID uuid, int id, Integer attackTarget, BlockPos jumpTarget) {
-      public BreezeInfo(FriendlyByteBuf var1) {
-         this(var1.readUUID(), var1.readInt(), var1.readNullable(FriendlyByteBuf::readInt), var1.readNullable(BlockPos.STREAM_CODEC));
-      }
-
-      public BreezeInfo(UUID uuid, int id, Integer attackTarget, BlockPos jumpTarget) {
-         super();
-         this.uuid = uuid;
-         this.id = id;
-         this.attackTarget = attackTarget;
-         this.jumpTarget = jumpTarget;
-      }
-
-      public void write(FriendlyByteBuf var1) {
-         var1.writeUUID(this.uuid);
-         var1.writeInt(this.id);
-         var1.writeNullable(this.attackTarget, FriendlyByteBuf::writeInt);
-         var1.writeNullable(this.jumpTarget, BlockPos.STREAM_CODEC);
-      }
-
-      public String generateName() {
-         return DebugEntityNameGenerator.getEntityName(this.uuid);
-      }
-
-      public String toString() {
-         return this.generateName();
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

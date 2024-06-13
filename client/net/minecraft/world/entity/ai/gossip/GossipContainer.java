@@ -3,10 +3,8 @@ package net.minecraft.world.entity.ai.gossip;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -23,8 +21,6 @@ import java.util.UUID;
 import java.util.function.DoublePredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
 import org.slf4j.Logger;
@@ -227,26 +223,16 @@ public class GossipContainer {
       }
    }
 
-   static record GossipEntry(UUID target, GossipType type, int value) {
-      public static final Codec<GossipContainer.GossipEntry> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  UUIDUtil.CODEC.fieldOf("Target").forGetter(GossipContainer.GossipEntry::target),
-                  GossipType.CODEC.fieldOf("Type").forGetter(GossipContainer.GossipEntry::type),
-                  ExtraCodecs.POSITIVE_INT.fieldOf("Value").forGetter(GossipContainer.GossipEntry::value)
-               )
-               .apply(var0, GossipContainer.GossipEntry::new)
-      );
-      public static final Codec<List<GossipContainer.GossipEntry>> LIST_CODEC = CODEC.listOf();
-
-      GossipEntry(UUID target, GossipType type, int value) {
-         super();
-         this.target = target;
-         this.type = type;
-         this.value = value;
-      }
-
-      public int weightedValue() {
-         return this.value * this.type.weight;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

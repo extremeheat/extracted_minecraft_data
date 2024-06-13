@@ -31,6 +31,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -50,7 +51,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class EntityRenderDispatcher implements ResourceManagerReloadListener {
-   private static final RenderType SHADOW_RENDER_TYPE = RenderType.entityShadow(new ResourceLocation("textures/misc/shadow.png"));
+   private static final RenderType SHADOW_RENDER_TYPE = RenderType.entityShadow(ResourceLocation.withDefaultNamespace("textures/misc/shadow.png"));
    private static final float MAX_SHADOW_RADIUS = 32.0F;
    private static final float SHADOW_POWER_FALLOFF_Y = 0.5F;
    private Map<EntityType<?>, EntityRenderer<?>> renderers = ImmutableMap.of();
@@ -231,11 +232,10 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
 
       Vec3 var23 = var2.getViewVector(var3);
       PoseStack.Pose var25 = var0.last();
-      var1.vertex(var25, 0.0F, var2.getEyeHeight(), 0.0F).color(0, 0, 255, 255).normal(var25, (float)var23.x, (float)var23.y, (float)var23.z).endVertex();
-      var1.vertex(var25, (float)(var23.x * 2.0), (float)((double)var2.getEyeHeight() + var23.y * 2.0), (float)(var23.z * 2.0))
-         .color(0, 0, 255, 255)
-         .normal(var25, (float)var23.x, (float)var23.y, (float)var23.z)
-         .endVertex();
+      var1.addVertex(var25, 0.0F, var2.getEyeHeight(), 0.0F).setColor(-16776961).setNormal(var25, (float)var23.x, (float)var23.y, (float)var23.z);
+      var1.addVertex(var25, (float)(var23.x * 2.0), (float)((double)var2.getEyeHeight() + var23.y * 2.0), (float)(var23.z * 2.0))
+         .setColor(0, 0, 255, 255)
+         .setNormal(var25, (float)var23.x, (float)var23.y, (float)var23.z);
    }
 
    private void renderFlame(PoseStack var1, MultiBufferSource var2, Entity var3, Quaternionf var4) {
@@ -249,7 +249,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       float var10 = var3.getBbHeight() / var7;
       float var11 = 0.0F;
       var1.mulPose(var4);
-      var1.translate(0.0F, 0.0F, -0.3F + (float)((int)var10) * 0.02F);
+      var1.translate(0.0F, 0.0F, 0.3F - (float)((int)var10) * 0.02F);
       float var12 = 0.0F;
       int var13 = 0;
       VertexConsumer var14 = var2.getBuffer(Sheets.cutoutBlockSheet());
@@ -266,21 +266,21 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             var17 = var21;
          }
 
-         fireVertex(var15, var14, var8 - 0.0F, 0.0F - var11, var12, var19, var20);
-         fireVertex(var15, var14, -var8 - 0.0F, 0.0F - var11, var12, var17, var20);
-         fireVertex(var15, var14, -var8 - 0.0F, 1.4F - var11, var12, var17, var18);
-         fireVertex(var15, var14, var8 - 0.0F, 1.4F - var11, var12, var19, var18);
+         fireVertex(var15, var14, -var8 - 0.0F, 0.0F - var11, var12, var19, var20);
+         fireVertex(var15, var14, var8 - 0.0F, 0.0F - var11, var12, var17, var20);
+         fireVertex(var15, var14, var8 - 0.0F, 1.4F - var11, var12, var17, var18);
+         fireVertex(var15, var14, -var8 - 0.0F, 1.4F - var11, var12, var19, var18);
          var10 -= 0.45F;
          var11 -= 0.45F;
          var8 *= 0.9F;
-         var12 += 0.03F;
+         var12 -= 0.03F;
       }
 
       var1.popPose();
    }
 
    private static void fireVertex(PoseStack.Pose var0, VertexConsumer var1, float var2, float var3, float var4, float var5, float var6) {
-      var1.vertex(var0, var2, var3, var4).color(255, 255, 255, 255).uv(var5, var6).overlayCoords(0, 10).uv2(240).normal(var0, 0.0F, 1.0F, 0.0F).endVertex();
+      var1.addVertex(var0, var2, var3, var4).setColor(-1).setUv(var5, var6).setUv1(0, 10).setLight(240).setNormal(var0, 0.0F, 1.0F, 0.0F);
    }
 
    private static void renderShadow(PoseStack var0, MultiBufferSource var1, Entity var2, float var3, float var4, LevelReader var5, float var6) {
@@ -337,34 +337,35 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
                      var17 = 1.0F;
                   }
 
-                  AABB var18 = var15.bounds();
-                  double var19 = (double)var4.getX() + var18.minX;
-                  double var21 = (double)var4.getX() + var18.maxX;
-                  double var23 = (double)var4.getY() + var18.minY;
-                  double var25 = (double)var4.getZ() + var18.minZ;
-                  double var27 = (double)var4.getZ() + var18.maxZ;
-                  float var29 = (float)(var19 - var5);
-                  float var30 = (float)(var21 - var5);
-                  float var31 = (float)(var23 - var7);
-                  float var32 = (float)(var25 - var9);
-                  float var33 = (float)(var27 - var9);
-                  float var34 = -var29 / 2.0F / var11 + 0.5F;
+                  int var18 = FastColor.ARGB32.color(Mth.floor(var17 * 255.0F), 255, 255, 255);
+                  AABB var19 = var15.bounds();
+                  double var20 = (double)var4.getX() + var19.minX;
+                  double var22 = (double)var4.getX() + var19.maxX;
+                  double var24 = (double)var4.getY() + var19.minY;
+                  double var26 = (double)var4.getZ() + var19.minZ;
+                  double var28 = (double)var4.getZ() + var19.maxZ;
+                  float var30 = (float)(var20 - var5);
+                  float var31 = (float)(var22 - var5);
+                  float var32 = (float)(var24 - var7);
+                  float var33 = (float)(var26 - var9);
+                  float var34 = (float)(var28 - var9);
                   float var35 = -var30 / 2.0F / var11 + 0.5F;
-                  float var36 = -var32 / 2.0F / var11 + 0.5F;
+                  float var36 = -var31 / 2.0F / var11 + 0.5F;
                   float var37 = -var33 / 2.0F / var11 + 0.5F;
-                  shadowVertex(var0, var1, var17, var29, var31, var32, var34, var36);
-                  shadowVertex(var0, var1, var17, var29, var31, var33, var34, var37);
-                  shadowVertex(var0, var1, var17, var30, var31, var33, var35, var37);
-                  shadowVertex(var0, var1, var17, var30, var31, var32, var35, var36);
+                  float var38 = -var34 / 2.0F / var11 + 0.5F;
+                  shadowVertex(var0, var1, var18, var30, var32, var33, var35, var37);
+                  shadowVertex(var0, var1, var18, var30, var32, var34, var35, var38);
+                  shadowVertex(var0, var1, var18, var31, var32, var34, var36, var38);
+                  shadowVertex(var0, var1, var18, var31, var32, var33, var36, var37);
                }
             }
          }
       }
    }
 
-   private static void shadowVertex(PoseStack.Pose var0, VertexConsumer var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+   private static void shadowVertex(PoseStack.Pose var0, VertexConsumer var1, int var2, float var3, float var4, float var5, float var6, float var7) {
       Vector3f var8 = var0.pose().transformPosition(var3, var4, var5, new Vector3f());
-      var1.vertex(var8.x(), var8.y(), var8.z(), 1.0F, 1.0F, 1.0F, var2, var6, var7, OverlayTexture.NO_OVERLAY, 15728880, 0.0F, 1.0F, 0.0F);
+      var1.addVertex(var8.x(), var8.y(), var8.z(), var2, var6, var7, OverlayTexture.NO_OVERLAY, 15728880, 0.0F, 1.0F, 0.0F);
    }
 
    public void setLevel(@Nullable Level var1) {

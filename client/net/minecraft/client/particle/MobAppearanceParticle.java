@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ElderGuardianRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 
 public class MobAppearanceParticle extends Particle {
@@ -36,15 +37,16 @@ public class MobAppearanceParticle extends Particle {
    public void render(VertexConsumer var1, Camera var2, float var3) {
       float var4 = ((float)this.age + var3) / (float)this.lifetime;
       float var5 = 0.05F + 0.5F * Mth.sin(var4 * 3.1415927F);
-      PoseStack var6 = new PoseStack();
-      var6.mulPose(var2.rotation());
-      var6.mulPose(Axis.XP.rotationDegrees(150.0F * var4 - 60.0F));
-      var6.scale(-1.0F, -1.0F, 1.0F);
-      var6.translate(0.0F, -1.101F, 1.5F);
-      MultiBufferSource.BufferSource var7 = Minecraft.getInstance().renderBuffers().bufferSource();
-      VertexConsumer var8 = var7.getBuffer(this.renderType);
-      this.model.renderToBuffer(var6, var8, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, var5);
-      var7.endBatch();
+      int var6 = FastColor.ARGB32.colorFromFloat(var5, 1.0F, 1.0F, 1.0F);
+      PoseStack var7 = new PoseStack();
+      var7.mulPose(var2.rotation());
+      var7.mulPose(Axis.XP.rotationDegrees(150.0F * var4 - 60.0F));
+      var7.scale(1.0F, -1.0F, -1.0F);
+      var7.translate(0.0F, -1.101F, 1.5F);
+      MultiBufferSource.BufferSource var8 = Minecraft.getInstance().renderBuffers().bufferSource();
+      VertexConsumer var9 = var8.getBuffer(this.renderType);
+      this.model.renderToBuffer(var7, var9, 15728880, OverlayTexture.NO_OVERLAY, var6);
+      var8.endBatch();
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {

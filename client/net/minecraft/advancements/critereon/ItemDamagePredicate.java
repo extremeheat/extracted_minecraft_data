@@ -1,36 +1,13 @@
 package net.minecraft.advancements.critereon;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.ItemStack;
-
-public record ItemDamagePredicate(MinMaxBounds.Ints durability, MinMaxBounds.Ints damage) implements SingleComponentItemPredicate<Integer> {
-   public static final Codec<ItemDamagePredicate> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               MinMaxBounds.Ints.CODEC.optionalFieldOf("durability", MinMaxBounds.Ints.ANY).forGetter(ItemDamagePredicate::durability),
-               MinMaxBounds.Ints.CODEC.optionalFieldOf("damage", MinMaxBounds.Ints.ANY).forGetter(ItemDamagePredicate::damage)
-            )
-            .apply(var0, ItemDamagePredicate::new)
-   );
-
-   public ItemDamagePredicate(MinMaxBounds.Ints durability, MinMaxBounds.Ints damage) {
-      super();
-      this.durability = durability;
-      this.damage = damage;
-   }
-
-   @Override
-   public DataComponentType<Integer> componentType() {
-      return DataComponents.DAMAGE;
-   }
-
-   public boolean matches(ItemStack var1, Integer var2) {
-      return !this.durability.matches(var1.getMaxDamage() - var2) ? false : this.damage.matches(var2);
-   }
-
-   public static ItemDamagePredicate durability(MinMaxBounds.Ints var0) {
-      return new ItemDamagePredicate(var0, MinMaxBounds.Ints.ANY);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -5,13 +5,16 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SimpleExplosionDamageCalculator;
@@ -76,12 +79,16 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
       super.onHitEntity(var1);
       if (!this.level().isClientSide) {
          LivingEntity var2 = this.getOwner() instanceof LivingEntity var3 ? var3 : null;
-         Entity var5 = var1.getEntity().getPassengerClosestTo(var1.getLocation()).orElse(var1.getEntity());
+         Entity var6 = var1.getEntity();
          if (var2 != null) {
-            var2.setLastHurtMob(var5);
+            var2.setLastHurtMob(var6);
          }
 
-         var5.hurt(this.damageSources().windCharge(this, var2), 1.0F);
+         DamageSource var7 = this.damageSources().windCharge(this, var2);
+         if (var6.hurt(var7, 1.0F) && var6 instanceof LivingEntity var5) {
+            EnchantmentHelper.doPostAttackEffects((ServerLevel)this.level(), var5, var7);
+         }
+
          this.explode();
       }
    }

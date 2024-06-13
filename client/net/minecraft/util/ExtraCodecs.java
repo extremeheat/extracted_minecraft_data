@@ -1,8 +1,6 @@
 package net.minecraft.util;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.primitives.UnsignedBytes;
 import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
@@ -22,8 +20,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.Codec.ResultFunction;
-import com.mojang.serialization.DataResult.Error;
-import com.mojang.serialization.codecs.BaseMapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
@@ -487,64 +483,29 @@ public class ExtraCodecs {
       };
    }
 
-   public static record StrictUnboundedMapCodec<K, V>(Codec<K> keyCodec, Codec<V> elementCodec) implements Codec<Map<K, V>>, BaseMapCodec<K, V> {
-      public StrictUnboundedMapCodec(Codec<K> keyCodec, Codec<V> elementCodec) {
-         super();
-         this.keyCodec = keyCodec;
-         this.elementCodec = elementCodec;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public <T> DataResult<Map<K, V>> decode(DynamicOps<T> var1, MapLike<T> var2) {
-         Builder var3 = ImmutableMap.builder();
-
-         for (Pair var5 : var2.entries().toList()) {
-            DataResult var6 = this.keyCodec().parse(var1, var5.getFirst());
-            DataResult var7 = this.elementCodec().parse(var1, var5.getSecond());
-            DataResult var8 = var6.apply2stable(Pair::of, var7);
-            Optional var9 = var8.error();
-            if (var9.isPresent()) {
-               String var12 = ((Error)var9.get()).message();
-               return DataResult.error(() -> var6.result().isPresent() ? "Map entry '" + var6.result().get() + "' : " + var12 : var12);
-            }
-
-            if (!var8.result().isPresent()) {
-               return DataResult.error(() -> "Empty or invalid map contents are not allowed");
-            }
-
-            Pair var10 = (Pair)var8.result().get();
-            var3.put(var10.getFirst(), var10.getSecond());
-         }
-
-         ImmutableMap var11 = var3.build();
-         return DataResult.success(var11);
-      }
-
-      public <T> DataResult<Pair<Map<K, V>, T>> decode(DynamicOps<T> var1, T var2) {
-         return var1.getMap(var2).setLifecycle(Lifecycle.stable()).flatMap(var2x -> this.decode(var1, var2x)).map(var1x -> Pair.of(var1x, var2));
-      }
-
-      public <T> DataResult<T> encode(Map<K, V> var1, DynamicOps<T> var2, T var3) {
-         return this.encode(var1, var2, var2.mapBuilder()).build(var3);
-      }
-
-      public String toString() {
-         return "StrictUnboundedMapCodec[" + this.keyCodec + " -> " + this.elementCodec + "]";
-      }
-   }
-
-   public static record TagOrElementLocation(ResourceLocation id, boolean tag) {
-      public TagOrElementLocation(ResourceLocation id, boolean tag) {
-         super();
-         this.id = id;
-         this.tag = tag;
-      }
-
-      public String toString() {
-         return this.decoratedId();
-      }
-
-      private String decoratedId() {
-         return this.tag ? "#" + this.id : this.id.toString();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

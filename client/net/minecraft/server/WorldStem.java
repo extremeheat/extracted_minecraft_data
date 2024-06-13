@@ -1,27 +1,13 @@
 package net.minecraft.server;
 
-import net.minecraft.core.LayeredRegistryAccess;
-import net.minecraft.server.packs.resources.CloseableResourceManager;
-import net.minecraft.world.level.storage.WorldData;
-
-public record WorldStem(
-   CloseableResourceManager resourceManager, ReloadableServerResources dataPackResources, LayeredRegistryAccess<RegistryLayer> registries, WorldData worldData
-) implements AutoCloseable {
-   public WorldStem(
-      CloseableResourceManager resourceManager,
-      ReloadableServerResources dataPackResources,
-      LayeredRegistryAccess<RegistryLayer> registries,
-      WorldData worldData
-   ) {
-      super();
-      this.resourceManager = resourceManager;
-      this.dataPackResources = dataPackResources;
-      this.registries = registries;
-      this.worldData = worldData;
-   }
-
-   @Override
-   public void close() {
-      this.resourceManager.close();
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

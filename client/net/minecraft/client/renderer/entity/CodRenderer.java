@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Cod;
 
 public class CodRenderer extends MobRenderer<Cod, CodModel<Cod>> {
-   private static final ResourceLocation COD_LOCATION = new ResourceLocation("textures/entity/fish/cod.png");
+   private static final ResourceLocation COD_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fish/cod.png");
 
    public CodRenderer(EntityRendererProvider.Context var1) {
       super(var1, new CodModel<>(var1.bakeLayer(ModelLayers.COD)), 0.3F);

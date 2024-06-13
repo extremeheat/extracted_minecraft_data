@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 
 public class TextureManager implements PreparableReloadListener, Tickable, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final ResourceLocation INTENTIONAL_MISSING_TEXTURE = new ResourceLocation("");
+   public static final ResourceLocation INTENTIONAL_MISSING_TEXTURE = ResourceLocation.withDefaultNamespace("");
    private final Map<ResourceLocation, AbstractTexture> byPath = Maps.newHashMap();
    private final Set<Tickable> tickableTextures = Sets.newHashSet();
    private final Map<String, Integer> prefixRegister = Maps.newHashMap();
@@ -127,7 +127,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       }
 
       this.prefixRegister.put(var1, var3);
-      ResourceLocation var4 = new ResourceLocation(String.format(Locale.ROOT, "dynamic/%s_%d", var1, var3));
+      ResourceLocation var4 = ResourceLocation.withDefaultNamespace(String.format(Locale.ROOT, "dynamic/%s_%d", var1, var3));
       this.register(var4, var2);
       return var4;
    }

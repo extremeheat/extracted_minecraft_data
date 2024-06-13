@@ -19,8 +19,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import net.minecraft.ReportType;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -185,10 +185,7 @@ public class FilledProfileResults implements ProfileResults {
 
    protected String getProfilerResults(long var1, int var3) {
       StringBuilder var4 = new StringBuilder();
-      var4.append("---- Minecraft Profiler Results ----\n");
-      var4.append("// ");
-      var4.append(getComment());
-      var4.append("\n\n");
+      ReportType.PROFILE.appendHeader(var4, List.of());
       var4.append("Version: ").append(SharedConstants.getCurrentVersion().getId()).append('\n');
       var4.append("Time span: ").append(var1 / 1000000L).append(" ms\n");
       var4.append("Tick span: ").append(var3).append(" ticks\n");
@@ -291,32 +288,6 @@ public class FilledProfileResults implements ProfileResults {
          this.appendCounterResults(0, "root", var4.children.get("root"), var3, var2);
          var2.append("\n\n");
       });
-   }
-
-   private static String getComment() {
-      String[] var0 = new String[]{
-         "I'd Rather Be Surfing",
-         "Shiny numbers!",
-         "Am I not running fast enough? :(",
-         "I'm working as hard as I can!",
-         "Will I ever be good enough for you? :(",
-         "Speedy. Zoooooom!",
-         "Hello world",
-         "40% better than a crash report.",
-         "Now with extra numbers",
-         "Now with less numbers",
-         "Now with the same numbers",
-         "You should add flames to things, it makes them go faster!",
-         "Do you feel the need for... optimization?",
-         "*cracks redstone whip*",
-         "Maybe if you treated it better then it'll have more motivation to work faster! Poor server."
-      };
-
-      try {
-         return var0[(int)(Util.getNanos() % (long)var0.length)];
-      } catch (Throwable var2) {
-         return "Witty comment unavailable :(";
-      }
    }
 
    @Override

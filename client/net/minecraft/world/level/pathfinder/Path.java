@@ -1,6 +1,5 @@
 package net.minecraft.world.level.pathfinder;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -191,26 +190,16 @@ public class Path {
       return var1;
    }
 
-   public static record DebugData(Node[] openSet, Node[] closedSet, Set<Target> targetNodes) {
-
-      public DebugData(Node[] openSet, Node[] closedSet, Set<Target> targetNodes) {
-         super();
-         this.openSet = openSet;
-         this.closedSet = closedSet;
-         this.targetNodes = targetNodes;
-      }
-
-      public void write(FriendlyByteBuf var1) {
-         var1.writeCollection(this.targetNodes, (var0, var1x) -> var1x.writeToStream(var0));
-         Path.writeNodeArray(var1, this.openSet);
-         Path.writeNodeArray(var1, this.closedSet);
-      }
-
-      public static Path.DebugData read(FriendlyByteBuf var0) {
-         HashSet var1 = var0.readCollection(HashSet::new, Target::createFromStream);
-         Node[] var2 = Path.readNodeArray(var0);
-         Node[] var3 = Path.readNodeArray(var0);
-         return new Path.DebugData(var2, var3, var1);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

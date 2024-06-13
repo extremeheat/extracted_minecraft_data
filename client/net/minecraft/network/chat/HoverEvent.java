@@ -175,7 +175,7 @@ public class HoverEvent {
             CompoundTag var2 = TagParser.parseTag(var0.getString());
             Object var3 = var1 != null ? var1.withParent(JsonOps.INSTANCE) : JsonOps.INSTANCE;
             DataResult var4 = ComponentSerialization.CODEC.parse((DynamicOps)var3, JsonParser.parseString(var2.getString("name")));
-            EntityType var5 = BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(var2.getString("type")));
+            EntityType var5 = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(var2.getString("type")));
             UUID var6 = UUID.fromString(var2.getString("id"));
             return var4.map(var2x -> new HoverEvent.EntityTooltipInfo(var5, var6, var2x));
          } catch (Exception var7) {
@@ -279,16 +279,16 @@ public class HoverEvent {
       DataResult<T> parse(Component var1, @Nullable RegistryOps<?> var2);
    }
 
-   static record TypedHoverEvent<T>(HoverEvent.Action<T> action, T value) {
-      public static final MapCodec<HoverEvent.TypedHoverEvent<?>> CODEC = HoverEvent.Action.CODEC
-         .dispatchMap("action", HoverEvent.TypedHoverEvent::action, var0 -> var0.codec);
-      public static final MapCodec<HoverEvent.TypedHoverEvent<?>> LEGACY_CODEC = HoverEvent.Action.CODEC
-         .dispatchMap("action", HoverEvent.TypedHoverEvent::action, var0 -> var0.legacyCodec);
-
-      TypedHoverEvent(HoverEvent.Action<T> action, T value) {
-         super();
-         this.action = action;
-         this.value = (T)value;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

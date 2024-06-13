@@ -8,11 +8,7 @@ import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
-import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
@@ -79,29 +75,16 @@ public class PlayerSkinWidget extends AbstractWidget {
       return null;
    }
 
-   static record Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
-      private Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
-         super();
-         this.wideModel = wideModel;
-         this.slimModel = slimModel;
-      }
-
-      public static PlayerSkinWidget.Model bake(EntityModelSet var0) {
-         PlayerModel var1 = new PlayerModel(var0.bakeLayer(ModelLayers.PLAYER), false);
-         PlayerModel var2 = new PlayerModel(var0.bakeLayer(ModelLayers.PLAYER_SLIM), true);
-         var1.young = false;
-         var2.young = false;
-         return new PlayerSkinWidget.Model(var1, var2);
-      }
-
-      public void render(GuiGraphics var1, PlayerSkin var2) {
-         var1.pose().pushPose();
-         var1.pose().scale(1.0F, 1.0F, -1.0F);
-         var1.pose().translate(0.0F, -1.5F, 0.0F);
-         PlayerModel var3 = var2.model() == PlayerSkin.Model.SLIM ? this.slimModel : this.wideModel;
-         RenderType var4 = var3.renderType(var2.texture());
-         var3.renderToBuffer(var1.pose(), var1.bufferSource().getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-         var1.pose().popPose();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

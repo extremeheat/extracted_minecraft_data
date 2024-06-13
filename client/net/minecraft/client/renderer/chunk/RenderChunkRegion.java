@@ -13,31 +13,29 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 
 public class RenderChunkRegion implements BlockAndTintGetter {
-   private final int centerX;
-   private final int centerZ;
-   protected final RenderChunk[][] chunks;
+   public static final int RADIUS = 1;
+   public static final int SIZE = 3;
+   private final int minChunkX;
+   private final int minChunkZ;
+   protected final RenderChunk[] chunks;
    protected final Level level;
 
-   RenderChunkRegion(Level var1, int var2, int var3, RenderChunk[][] var4) {
+   RenderChunkRegion(Level var1, int var2, int var3, RenderChunk[] var4) {
       super();
       this.level = var1;
-      this.centerX = var2;
-      this.centerZ = var3;
+      this.minChunkX = var2;
+      this.minChunkZ = var3;
       this.chunks = var4;
    }
 
    @Override
    public BlockState getBlockState(BlockPos var1) {
-      int var2 = SectionPos.blockToSectionCoord(var1.getX()) - this.centerX;
-      int var3 = SectionPos.blockToSectionCoord(var1.getZ()) - this.centerZ;
-      return this.chunks[var2][var3].getBlockState(var1);
+      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockState(var1);
    }
 
    @Override
    public FluidState getFluidState(BlockPos var1) {
-      int var2 = SectionPos.blockToSectionCoord(var1.getX()) - this.centerX;
-      int var3 = SectionPos.blockToSectionCoord(var1.getZ()) - this.centerZ;
-      return this.chunks[var2][var3].getBlockState(var1).getFluidState();
+      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockState(var1).getFluidState();
    }
 
    @Override
@@ -53,9 +51,11 @@ public class RenderChunkRegion implements BlockAndTintGetter {
    @Nullable
    @Override
    public BlockEntity getBlockEntity(BlockPos var1) {
-      int var2 = SectionPos.blockToSectionCoord(var1.getX()) - this.centerX;
-      int var3 = SectionPos.blockToSectionCoord(var1.getZ()) - this.centerZ;
-      return this.chunks[var2][var3].getBlockEntity(var1);
+      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockEntity(var1);
+   }
+
+   private RenderChunk getChunk(int var1, int var2) {
+      return this.chunks[index(this.minChunkX, this.minChunkZ, var1, var2)];
    }
 
    @Override
@@ -71,5 +71,9 @@ public class RenderChunkRegion implements BlockAndTintGetter {
    @Override
    public int getHeight() {
       return this.level.getHeight();
+   }
+
+   public static int index(int var0, int var1, int var2, int var3) {
+      return var2 - var0 + (var3 - var1) * 3;
    }
 }

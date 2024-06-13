@@ -5,17 +5,21 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportType;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
@@ -28,6 +32,7 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.ServerboundPacketListener;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -35,11 +40,13 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ClientboundCustomReportDetailsPacket;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
+import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.network.protocol.common.ClientboundTransferPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
@@ -52,6 +59,7 @@ import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.realms.DisconnectedRealmsScreen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.ServerLinks;
 import org.slf4j.Logger;
 
 public abstract class ClientCommonPacketListenerImpl implements ClientCommonPacketListener {
@@ -73,6 +81,8 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected final boolean strictErrorHandling;
    private final List<ClientCommonPacketListenerImpl.DeferredPacket> deferredPackets = new ArrayList<>();
    protected final Map<ResourceLocation, byte[]> serverCookies;
+   protected Map<String, String> customReportDetails;
+   protected ServerLinks serverLinks;
 
    protected ClientCommonPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super();
@@ -84,15 +94,36 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.postDisconnectScreen = var3.postDisconnectScreen();
       this.serverCookies = var3.serverCookies();
       this.strictErrorHandling = var3.strictErrorHandling();
+      this.customReportDetails = var3.customReportDetails();
+      this.serverLinks = var3.serverLinks();
    }
 
    @Override
    public void onPacketError(Packet var1, Exception var2) {
       LOGGER.error("Failed to handle packet {}", var1, var2);
       ClientCommonPacketListener.super.onPacketError(var1, var2);
+      Optional var3 = this.storeDisconnectionReport(var1, var2);
+      Optional var4 = this.serverLinks.findKnownType(ServerLinks.KnownLinkType.BUG_REPORT).map(ServerLinks.Entry::url);
       if (this.strictErrorHandling) {
-         this.connection.disconnect(Component.translatable("disconnect.packetError"));
+         this.connection.disconnect(new DisconnectionDetails(Component.translatable("disconnect.packetError"), var3, var4));
       }
+   }
+
+   @Override
+   public DisconnectionDetails createDisconnectionInfo(Component var1, Throwable var2) {
+      Optional var3 = this.storeDisconnectionReport(null, var2);
+      Optional var4 = this.serverLinks.findKnownType(ServerLinks.KnownLinkType.BUG_REPORT).map(ServerLinks.Entry::url);
+      return new DisconnectionDetails(var1, var3, var4);
+   }
+
+   private Optional<Path> storeDisconnectionReport(@Nullable Packet var1, Throwable var2) {
+      CrashReport var3 = CrashReport.forThrowable(var2, "Packet handling error");
+      PacketUtils.fillCrashReport(var3, this, var1);
+      Path var4 = this.minecraft.gameDirectory.toPath().resolve("debug");
+      Path var5 = var4.resolve("disconnect-" + Util.getFilenameFormattedDateTime() + "-client.txt");
+      Optional var6 = this.serverLinks.findKnownType(ServerLinks.KnownLinkType.BUG_REPORT);
+      List var7 = var6.<List>map(var0 -> List.of("Server bug reporting link: " + var0.url())).orElse(List.of());
+      return var3.saveToFile(var5, ReportType.NETWORK_PROTOCOL_ERROR, var7) ? Optional.of(var5) : Optional.empty();
    }
 
    @Override
@@ -182,6 +213,18 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    @Override
+   public void handleCustomReportDetails(ClientboundCustomReportDetailsPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      this.customReportDetails = var1.details();
+   }
+
+   @Override
+   public void handleServerLinks(ClientboundServerLinksPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      this.serverLinks = var1.links();
+   }
+
+   @Override
    public void handleTransfer(ClientboundTransferPacket var1) {
       this.isTransferring = true;
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
@@ -227,22 +270,26 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    @Override
-   public void onDisconnect(Component var1) {
+   public void onDisconnect(DisconnectionDetails var1) {
       this.telemetryManager.onDisconnect();
       this.minecraft.disconnect(this.createDisconnectScreen(var1), this.isTransferring);
-      LOGGER.warn("Client disconnected with reason: {}", var1.getString());
+      LOGGER.warn("Client disconnected with reason: {}", var1.reason().getString());
    }
 
    @Override
-   public void fillListenerSpecificCrashDetails(CrashReportCategory var1) {
-      var1.setDetail("Server type", () -> this.serverData != null ? this.serverData.type().toString() : "<none>");
-      var1.setDetail("Server brand", () -> this.serverBrand);
+   public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
+      var2.setDetail("Server type", () -> this.serverData != null ? this.serverData.type().toString() : "<none>");
+      var2.setDetail("Server brand", () -> this.serverBrand);
+      if (!this.customReportDetails.isEmpty()) {
+         CrashReportCategory var3 = var1.addCategory("Custom Server Details");
+         this.customReportDetails.forEach(var3::setDetail);
+      }
    }
 
-   protected Screen createDisconnectScreen(Component var1) {
+   protected Screen createDisconnectScreen(DisconnectionDetails var1) {
       Screen var2 = Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> new JoinMultiplayerScreen(new TitleScreen()));
       return (Screen)(this.serverData != null && this.serverData.isRealm()
-         ? new DisconnectedRealmsScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1)
+         ? new DisconnectedRealmsScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1.reason())
          : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1));
    }
 
@@ -268,15 +315,18 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          );
    }
 
-   static record DeferredPacket(Packet<? extends ServerboundPacketListener> packet, BooleanSupplier sendCondition, long expirationTime) {
-
-      DeferredPacket(Packet<? extends ServerboundPacketListener> packet, BooleanSupplier sendCondition, long expirationTime) {
-         super();
-         this.packet = packet;
-         this.sendCondition = sendCondition;
-         this.expirationTime = expirationTime;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    class PackConfirmScreen extends ConfirmScreen {
       private final List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> requests;
@@ -339,14 +389,18 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          return ClientCommonPacketListenerImpl.this.new PackConfirmScreen(var1, this.parentScreen, var7, var5, var6);
       }
 
-      static record PendingRequest(UUID id, URL url, String hash) {
-
-         PendingRequest(UUID id, URL url, String hash) {
-            super();
-            this.id = id;
-            this.url = url;
-            this.hash = hash;
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
    }
 }

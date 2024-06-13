@@ -2,6 +2,7 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -28,85 +29,84 @@ public class CubeMap {
 
    public void render(Minecraft var1, float var2, float var3, float var4) {
       Tesselator var5 = Tesselator.getInstance();
-      BufferBuilder var6 = var5.getBuilder();
-      Matrix4f var7 = new Matrix4f().setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
+      Matrix4f var6 = new Matrix4f().setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
       RenderSystem.backupProjectionMatrix();
-      RenderSystem.setProjectionMatrix(var7, VertexSorting.DISTANCE_TO_ORIGIN);
-      Matrix4fStack var8 = RenderSystem.getModelViewStack();
-      var8.pushMatrix();
-      var8.rotationX(3.1415927F);
+      RenderSystem.setProjectionMatrix(var6, VertexSorting.DISTANCE_TO_ORIGIN);
+      Matrix4fStack var7 = RenderSystem.getModelViewStack();
+      var7.pushMatrix();
+      var7.rotationX(3.1415927F);
       RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
       RenderSystem.enableBlend();
       RenderSystem.disableCull();
       RenderSystem.depthMask(false);
-      byte var9 = 2;
+      byte var8 = 2;
 
-      for (int var10 = 0; var10 < 4; var10++) {
-         var8.pushMatrix();
-         float var11 = ((float)(var10 % 2) / 2.0F - 0.5F) / 256.0F;
-         float var12 = ((float)(var10 / 2) / 2.0F - 0.5F) / 256.0F;
-         float var13 = 0.0F;
-         var8.translate(var11, var12, 0.0F);
-         var8.rotateX(var2 * 0.017453292F);
-         var8.rotateY(var3 * 0.017453292F);
+      for (int var9 = 0; var9 < 4; var9++) {
+         var7.pushMatrix();
+         float var10 = ((float)(var9 % 2) / 2.0F - 0.5F) / 256.0F;
+         float var11 = ((float)(var9 / 2) / 2.0F - 0.5F) / 256.0F;
+         float var12 = 0.0F;
+         var7.translate(var10, var11, 0.0F);
+         var7.rotateX(var2 * 0.017453292F);
+         var7.rotateY(var3 * 0.017453292F);
          RenderSystem.applyModelViewMatrix();
 
-         for (int var14 = 0; var14 < 6; var14++) {
-            RenderSystem.setShaderTexture(0, this.images[var14]);
-            var6.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-            int var15 = Math.round(255.0F * var4) / (var10 + 1);
-            if (var14 == 0) {
-               var6.vertex(-1.0, -1.0, 1.0).uv(0.0F, 0.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(-1.0, 1.0, 1.0).uv(0.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, 1.0, 1.0).uv(1.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, -1.0, 1.0).uv(1.0F, 0.0F).color(255, 255, 255, var15).endVertex();
+         for (int var13 = 0; var13 < 6; var13++) {
+            RenderSystem.setShaderTexture(0, this.images[var13]);
+            BufferBuilder var14 = var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            int var15 = Math.round(255.0F * var4) / (var9 + 1);
+            if (var13 == 0) {
+               var14.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
+               var14.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
             }
 
-            if (var14 == 1) {
-               var6.vertex(1.0, -1.0, 1.0).uv(0.0F, 0.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, 1.0, 1.0).uv(0.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, 1.0, -1.0).uv(1.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, -1.0, -1.0).uv(1.0F, 0.0F).color(255, 255, 255, var15).endVertex();
+            if (var13 == 1) {
+               var14.addVertex(1.0F, -1.0F, 1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, 1.0F, 1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
             }
 
-            if (var14 == 2) {
-               var6.vertex(1.0, -1.0, -1.0).uv(0.0F, 0.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, 1.0, -1.0).uv(0.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(-1.0, 1.0, -1.0).uv(1.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(-1.0, -1.0, -1.0).uv(1.0F, 0.0F).color(255, 255, 255, var15).endVertex();
+            if (var13 == 2) {
+               var14.addVertex(1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(-1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(-1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
             }
 
-            if (var14 == 3) {
-               var6.vertex(-1.0, -1.0, -1.0).uv(0.0F, 0.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(-1.0, 1.0, -1.0).uv(0.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(-1.0, 1.0, 1.0).uv(1.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(-1.0, -1.0, 1.0).uv(1.0F, 0.0F).color(255, 255, 255, var15).endVertex();
+            if (var13 == 3) {
+               var14.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
+               var14.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(-1.0F, 1.0F, 1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(-1.0F, -1.0F, 1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
             }
 
-            if (var14 == 4) {
-               var6.vertex(-1.0, -1.0, -1.0).uv(0.0F, 0.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(-1.0, -1.0, 1.0).uv(0.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, -1.0, 1.0).uv(1.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, -1.0, -1.0).uv(1.0F, 0.0F).color(255, 255, 255, var15).endVertex();
+            if (var13 == 4) {
+               var14.addVertex(-1.0F, -1.0F, -1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
+               var14.addVertex(-1.0F, -1.0F, 1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, -1.0F, 1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, -1.0F, -1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
             }
 
-            if (var14 == 5) {
-               var6.vertex(-1.0, 1.0, 1.0).uv(0.0F, 0.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(-1.0, 1.0, -1.0).uv(0.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, 1.0, -1.0).uv(1.0F, 1.0F).color(255, 255, 255, var15).endVertex();
-               var6.vertex(1.0, 1.0, 1.0).uv(1.0F, 0.0F).color(255, 255, 255, var15).endVertex();
+            if (var13 == 5) {
+               var14.addVertex(-1.0F, 1.0F, 1.0F).setUv(0.0F, 0.0F).setWhiteAlpha(var15);
+               var14.addVertex(-1.0F, 1.0F, -1.0F).setUv(0.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, 1.0F, -1.0F).setUv(1.0F, 1.0F).setWhiteAlpha(var15);
+               var14.addVertex(1.0F, 1.0F, 1.0F).setUv(1.0F, 0.0F).setWhiteAlpha(var15);
             }
 
-            var5.end();
+            BufferUploader.drawWithShader(var14.buildOrThrow());
          }
 
-         var8.popMatrix();
+         var7.popMatrix();
          RenderSystem.colorMask(true, true, true, false);
       }
 
       RenderSystem.colorMask(true, true, true, true);
       RenderSystem.restoreProjectionMatrix();
-      var8.popMatrix();
+      var7.popMatrix();
       RenderSystem.applyModelViewMatrix();
       RenderSystem.depthMask(true);
       RenderSystem.enableCull();

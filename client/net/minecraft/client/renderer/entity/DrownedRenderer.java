@@ -11,7 +11,7 @@ import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.Zombie;
 
 public class DrownedRenderer extends AbstractZombieRenderer<Drowned, DrownedModel<Drowned>> {
-   private static final ResourceLocation DROWNED_LOCATION = new ResourceLocation("textures/entity/zombie/drowned.png");
+   private static final ResourceLocation DROWNED_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/drowned.png");
 
    public DrownedRenderer(EntityRendererProvider.Context var1) {
       super(

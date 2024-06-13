@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -238,7 +239,7 @@ public class ArmadilloAi {
 
    public static class ArmadilloPanic extends AnimalPanic<Armadillo> {
       public ArmadilloPanic(float var1) {
-         super(var1, Armadillo::shouldPanic);
+         super(var1, var0 -> DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES);
       }
 
       protected void start(ServerLevel var1, Armadillo var2, long var3) {

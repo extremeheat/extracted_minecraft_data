@@ -7,8 +7,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.GrindstoneMenu;
 
 public class GrindstoneScreen extends AbstractContainerScreen<GrindstoneMenu> {
-   private static final ResourceLocation ERROR_SPRITE = new ResourceLocation("container/grindstone/error");
-   private static final ResourceLocation GRINDSTONE_LOCATION = new ResourceLocation("textures/gui/container/grindstone.png");
+   private static final ResourceLocation ERROR_SPRITE = ResourceLocation.withDefaultNamespace("container/grindstone/error");
+   private static final ResourceLocation GRINDSTONE_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/grindstone.png");
 
    public GrindstoneScreen(GrindstoneMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);

@@ -40,7 +40,7 @@ public class ItemOverride {
 
       public ItemOverride deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
          JsonObject var4 = var1.getAsJsonObject();
-         ResourceLocation var5 = new ResourceLocation(GsonHelper.getAsString(var4, "model"));
+         ResourceLocation var5 = ResourceLocation.parse(GsonHelper.getAsString(var4, "model"));
          List var6 = this.getPredicates(var4);
          return new ItemOverride(var5, var6);
       }
@@ -50,7 +50,7 @@ public class ItemOverride {
          JsonObject var3 = GsonHelper.getAsJsonObject(var1, "predicate");
 
          for (Entry var5 : var3.entrySet()) {
-            var2.put(new ResourceLocation((String)var5.getKey()), GsonHelper.convertToFloat((JsonElement)var5.getValue(), (String)var5.getKey()));
+            var2.put(ResourceLocation.parse((String)var5.getKey()), GsonHelper.convertToFloat((JsonElement)var5.getValue(), (String)var5.getKey()));
          }
 
          return var2.entrySet()

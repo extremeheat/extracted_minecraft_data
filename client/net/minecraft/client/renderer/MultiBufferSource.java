@@ -1,98 +1,100 @@
 package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import javax.annotation.Nullable;
 
 public interface MultiBufferSource {
-   static MultiBufferSource.BufferSource immediate(BufferBuilder var0) {
+   static MultiBufferSource.BufferSource immediate(ByteBufferBuilder var0) {
       return immediateWithBuffers(ImmutableMap.of(), var0);
    }
 
-   static MultiBufferSource.BufferSource immediateWithBuffers(Map<RenderType, BufferBuilder> var0, BufferBuilder var1) {
+   static MultiBufferSource.BufferSource immediateWithBuffers(Map<RenderType, ByteBufferBuilder> var0, ByteBufferBuilder var1) {
       return new MultiBufferSource.BufferSource(var1, var0);
    }
 
    VertexConsumer getBuffer(RenderType var1);
 
    public static class BufferSource implements MultiBufferSource {
-      protected final BufferBuilder builder;
-      protected final Map<RenderType, BufferBuilder> fixedBuffers;
-      protected Optional<RenderType> lastState = Optional.empty();
-      protected final Set<BufferBuilder> startedBuffers = Sets.newHashSet();
+      protected final ByteBufferBuilder sharedBuffer;
+      protected final Map<RenderType, ByteBufferBuilder> fixedBuffers;
+      protected final Map<RenderType, BufferBuilder> startedBuilders = new HashMap<>();
+      @Nullable
+      protected RenderType lastSharedType;
 
-      protected BufferSource(BufferBuilder var1, Map<RenderType, BufferBuilder> var2) {
+      protected BufferSource(ByteBufferBuilder var1, Map<RenderType, ByteBufferBuilder> var2) {
          super();
-         this.builder = var1;
+         this.sharedBuffer = var1;
          this.fixedBuffers = var2;
       }
 
       @Override
       public VertexConsumer getBuffer(RenderType var1) {
-         Optional var2 = var1.asOptional();
-         BufferBuilder var3 = this.getBuilderRaw(var1);
-         if (!Objects.equals(this.lastState, var2) || !var1.canConsolidateConsecutiveGeometry()) {
-            if (this.lastState.isPresent()) {
-               RenderType var4 = this.lastState.get();
-               if (!this.fixedBuffers.containsKey(var4)) {
-                  this.endBatch(var4);
-               }
-            }
-
-            if (this.startedBuffers.add(var3)) {
-               var3.begin(var1.mode(), var1.format());
-            }
-
-            this.lastState = var2;
+         BufferBuilder var2 = this.startedBuilders.get(var1);
+         if (var2 != null && !var1.canConsolidateConsecutiveGeometry()) {
+            this.endBatch(var1, var2);
+            var2 = null;
          }
 
-         return var3;
-      }
+         if (var2 != null) {
+            return var2;
+         } else {
+            ByteBufferBuilder var3 = this.fixedBuffers.get(var1);
+            if (var3 != null) {
+               var2 = new BufferBuilder(var3, var1.mode(), var1.format());
+            } else {
+               if (this.lastSharedType != null) {
+                  this.endBatch(this.lastSharedType);
+               }
 
-      private BufferBuilder getBuilderRaw(RenderType var1) {
-         return this.fixedBuffers.getOrDefault(var1, this.builder);
+               var2 = new BufferBuilder(this.sharedBuffer, var1.mode(), var1.format());
+               this.lastSharedType = var1;
+            }
+
+            this.startedBuilders.put(var1, var2);
+            return var2;
+         }
       }
 
       public void endLastBatch() {
-         if (this.lastState.isPresent()) {
-            RenderType var1 = this.lastState.get();
-            if (!this.fixedBuffers.containsKey(var1)) {
-               this.endBatch(var1);
-            }
-
-            this.lastState = Optional.empty();
+         if (this.lastSharedType != null && !this.fixedBuffers.containsKey(this.lastSharedType)) {
+            this.endBatch(this.lastSharedType);
          }
+
+         this.lastSharedType = null;
       }
 
       public void endBatch() {
-         this.lastState.ifPresent(var1 -> {
-            VertexConsumer var2x = this.getBuffer(var1);
-            if (var2x == this.builder) {
-               this.endBatch(var1);
-            }
-         });
-
-         for (RenderType var2 : this.fixedBuffers.keySet()) {
-            this.endBatch(var2);
-         }
+         this.startedBuilders.forEach(this::endBatch);
+         this.startedBuilders.clear();
       }
 
       public void endBatch(RenderType var1) {
-         BufferBuilder var2 = this.getBuilderRaw(var1);
-         boolean var3 = Objects.equals(this.lastState, var1.asOptional());
-         if (var3 || var2 != this.builder) {
-            if (this.startedBuffers.remove(var2)) {
-               var1.end(var2, RenderSystem.getVertexSorting());
-               if (var3) {
-                  this.lastState = Optional.empty();
-               }
+         BufferBuilder var2 = this.startedBuilders.remove(var1);
+         if (var2 != null) {
+            this.endBatch(var1, var2);
+         }
+      }
+
+      private void endBatch(RenderType var1, BufferBuilder var2) {
+         MeshData var3 = var2.build();
+         if (var3 != null) {
+            if (var1.sortOnUpload()) {
+               ByteBufferBuilder var4 = this.fixedBuffers.getOrDefault(var1, this.sharedBuffer);
+               var3.sortQuads(var4, RenderSystem.getVertexSorting());
             }
+
+            var1.draw(var3);
+         }
+
+         if (var1.equals(this.lastSharedType)) {
+            this.lastSharedType = null;
          }
       }
    }

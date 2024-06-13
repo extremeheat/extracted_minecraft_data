@@ -1,10 +1,13 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -15,9 +18,14 @@ import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
-public class EndGatewayBlock extends BaseEntityBlock {
+public class EndGatewayBlock extends BaseEntityBlock implements Portal {
    public static final MapCodec<EndGatewayBlock> CODEC = simpleCodec(EndGatewayBlock::new);
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int GATEWAY_HEIGHT_ABOVE_SURFACE = 10;
 
    @Override
    public MapCodec<EndGatewayBlock> codec() {
@@ -37,7 +45,7 @@ public class EndGatewayBlock extends BaseEntityBlock {
    @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createTickerHelper(
-         var3, BlockEntityType.END_GATEWAY, var1.isClientSide ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::teleportTick
+         var3, BlockEntityType.END_GATEWAY, var1.isClientSide ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::portalTick
       );
    }
 
@@ -76,5 +84,24 @@ public class EndGatewayBlock extends BaseEntityBlock {
    @Override
    protected boolean canBeReplaced(BlockState var1, Fluid var2) {
       return false;
+   }
+
+   @Override
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+      if (var4.canChangeDimensions() && !var2.isClientSide && var2.getBlockEntity(var3) instanceof TheEndGatewayBlockEntity var6 && !var6.isCoolingDown()) {
+         var4.setAsInsidePortal(this, var3);
+         TheEndGatewayBlockEntity.triggerCooldown(var2, var3, var1, var6);
+      }
+   }
+
+   @Nullable
+   @Override
+   public DimensionTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
+      if (var1.getBlockEntity(var3) instanceof TheEndGatewayBlockEntity var5) {
+         Vec3 var6 = var5.getPortalPosition(var1, var3);
+         return var6 != null ? new DimensionTransition(var1, var6, var2.getDeltaMovement(), var2.getYRot(), var2.getXRot()) : null;
+      } else {
+         return null;
+      }
    }
 }

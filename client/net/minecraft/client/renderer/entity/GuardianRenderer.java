@@ -18,8 +18,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
-   private static final ResourceLocation GUARDIAN_LOCATION = new ResourceLocation("textures/entity/guardian.png");
-   private static final ResourceLocation GUARDIAN_BEAM_LOCATION = new ResourceLocation("textures/entity/guardian_beam.png");
+   private static final ResourceLocation GUARDIAN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/guardian.png");
+   private static final ResourceLocation GUARDIAN_BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/guardian_beam.png");
    private static final RenderType BEAM_RENDER_TYPE = RenderType.entityCutoutNoCull(GUARDIAN_BEAM_LOCATION);
 
    public GuardianRenderer(EntityRendererProvider.Context var1) {
@@ -127,13 +127,12 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
    private static void vertex(
       VertexConsumer var0, PoseStack.Pose var1, float var2, float var3, float var4, int var5, int var6, int var7, float var8, float var9
    ) {
-      var0.vertex(var1, var2, var3, var4)
-         .color(var5, var6, var7, 255)
-         .uv(var8, var9)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(15728880)
-         .normal(var1, 0.0F, 1.0F, 0.0F)
-         .endVertex();
+      var0.addVertex(var1, var2, var3, var4)
+         .setColor(var5, var6, var7, 255)
+         .setUv(var8, var9)
+         .setOverlay(OverlayTexture.NO_OVERLAY)
+         .setLight(15728880)
+         .setNormal(var1, 0.0F, 1.0F, 0.0F);
    }
 
    public ResourceLocation getTextureLocation(Guardian var1) {

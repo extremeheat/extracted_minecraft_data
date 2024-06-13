@@ -1,20 +1,14 @@
 package net.minecraft.network.protocol.game;
 
 import com.google.common.collect.Lists;
-import io.netty.buffer.ByteBuf;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import net.minecraft.core.Holder;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAttributesPacket> STREAM_CODEC = StreamCodec.composite(
@@ -60,31 +54,16 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       return this.attributes;
    }
 
-   public static record AttributeSnapshot(Holder<Attribute> attribute, double base, Collection<AttributeModifier> modifiers) {
-      public static final StreamCodec<ByteBuf, AttributeModifier> MODIFIER_STREAM_CODEC = StreamCodec.composite(
-         UUIDUtil.STREAM_CODEC,
-         AttributeModifier::id,
-         ByteBufCodecs.DOUBLE,
-         AttributeModifier::amount,
-         AttributeModifier.Operation.STREAM_CODEC,
-         AttributeModifier::operation,
-         (var0, var1, var2) -> new AttributeModifier(var0, "Unknown synced attribute modifier", var1, var2)
-      );
-      public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAttributesPacket.AttributeSnapshot> STREAM_CODEC = StreamCodec.composite(
-         Attribute.STREAM_CODEC,
-         ClientboundUpdateAttributesPacket.AttributeSnapshot::attribute,
-         ByteBufCodecs.DOUBLE,
-         ClientboundUpdateAttributesPacket.AttributeSnapshot::base,
-         MODIFIER_STREAM_CODEC.apply(ByteBufCodecs.collection(ArrayList::new)),
-         ClientboundUpdateAttributesPacket.AttributeSnapshot::modifiers,
-         ClientboundUpdateAttributesPacket.AttributeSnapshot::new
-      );
-
-      public AttributeSnapshot(Holder<Attribute> attribute, double base, Collection<AttributeModifier> modifiers) {
-         super();
-         this.attribute = attribute;
-         this.base = base;
-         this.modifiers = modifiers;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

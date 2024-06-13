@@ -52,30 +52,18 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
          if (var8.getEquipmentSlot() == var4) {
             this.getParentModel().copyPropertiesTo(var6);
             this.setPartVisibility((A)var6, var4);
-            boolean var17 = this.usesInnerModel(var4);
+            boolean var15 = this.usesInnerModel(var4);
             ArmorMaterial var10 = var8.getMaterial().value();
-            int var11 = var7.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var7, -6265536) : -1;
+            int var11 = var7.is(ItemTags.DYEABLE) ? FastColor.ARGB32.opaque(DyedItemColor.getOrDefault(var7, -6265536)) : -1;
 
             for (ArmorMaterial.Layer var13 : var10.layers()) {
-               float var14;
-               float var15;
-               float var16;
-               if (var13.dyeable() && var11 != -1) {
-                  var14 = (float)FastColor.ARGB32.red(var11) / 255.0F;
-                  var15 = (float)FastColor.ARGB32.green(var11) / 255.0F;
-                  var16 = (float)FastColor.ARGB32.blue(var11) / 255.0F;
-               } else {
-                  var14 = 1.0F;
-                  var15 = 1.0F;
-                  var16 = 1.0F;
-               }
-
-               this.renderModel(var1, var2, var5, (A)var6, var14, var15, var16, var13.texture(var17));
+               int var14 = var13.dyeable() ? var11 : -1;
+               this.renderModel(var1, var2, var5, (A)var6, var14, var13.texture(var15));
             }
 
-            ArmorTrim var18 = var7.get(DataComponents.TRIM);
-            if (var18 != null) {
-               this.renderTrim(var8.getMaterial(), var1, var2, var5, var18, (A)var6, var17);
+            ArmorTrim var16 = var7.get(DataComponents.TRIM);
+            if (var16 != null) {
+               this.renderTrim(var8.getMaterial(), var1, var2, var5, var16, (A)var6, var15);
             }
 
             if (var7.hasFoil()) {
@@ -108,19 +96,19 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
       }
    }
 
-   private void renderModel(PoseStack var1, MultiBufferSource var2, int var3, A var4, float var5, float var6, float var7, ResourceLocation var8) {
-      VertexConsumer var9 = var2.getBuffer(RenderType.armorCutoutNoCull(var8));
-      var4.renderToBuffer(var1, var9, var3, OverlayTexture.NO_OVERLAY, var5, var6, var7, 1.0F);
+   private void renderModel(PoseStack var1, MultiBufferSource var2, int var3, A var4, int var5, ResourceLocation var6) {
+      VertexConsumer var7 = var2.getBuffer(RenderType.armorCutoutNoCull(var6));
+      var4.renderToBuffer(var1, var7, var3, OverlayTexture.NO_OVERLAY, var5);
    }
 
    private void renderTrim(Holder<ArmorMaterial> var1, PoseStack var2, MultiBufferSource var3, int var4, ArmorTrim var5, A var6, boolean var7) {
       TextureAtlasSprite var8 = this.armorTrimAtlas.getSprite(var7 ? var5.innerTexture(var1) : var5.outerTexture(var1));
       VertexConsumer var9 = var8.wrap(var3.getBuffer(Sheets.armorTrimsSheet(var5.pattern().value().decal())));
-      var6.renderToBuffer(var2, var9, var4, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      var6.renderToBuffer(var2, var9, var4, OverlayTexture.NO_OVERLAY);
    }
 
    private void renderGlint(PoseStack var1, MultiBufferSource var2, int var3, A var4) {
-      var4.renderToBuffer(var1, var2.getBuffer(RenderType.armorEntityGlint()), var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      var4.renderToBuffer(var1, var2.getBuffer(RenderType.armorEntityGlint()), var3, OverlayTexture.NO_OVERLAY);
    }
 
    private A getArmorModel(EquipmentSlot var1) {

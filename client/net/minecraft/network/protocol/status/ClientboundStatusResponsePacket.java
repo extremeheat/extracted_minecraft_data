@@ -1,34 +1,13 @@
 package net.minecraft.network.protocol.status;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-
-public record ClientboundStatusResponsePacket(ServerStatus status) implements Packet<ClientStatusPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundStatusResponsePacket> STREAM_CODEC = Packet.codec(
-      ClientboundStatusResponsePacket::write, ClientboundStatusResponsePacket::new
-   );
-
-   private ClientboundStatusResponsePacket(FriendlyByteBuf var1) {
-      this(var1.readJsonWithCodec(ServerStatus.CODEC));
-   }
-
-   public ClientboundStatusResponsePacket(ServerStatus status) {
-      super();
-      this.status = status;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeJsonWithCodec(ServerStatus.CODEC, this.status);
-   }
-
-   @Override
-   public PacketType<ClientboundStatusResponsePacket> type() {
-      return StatusPacketTypes.CLIENTBOUND_STATUS_RESPONSE;
-   }
-
-   public void handle(ClientStatusPacketListener var1) {
-      var1.handleStatusResponse(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -1,70 +1,13 @@
 package net.minecraft.world.item.trading;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
-import java.util.function.UnaryOperator;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentHolder;
-import net.minecraft.core.component.DataComponentPredicate;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ItemLike;
-
-public record ItemCost(Holder<Item> item, int count, DataComponentPredicate components, ItemStack itemStack) {
-   public static final Codec<ItemCost> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemCost::item),
-               ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemCost::count),
-               DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemCost::components)
-            )
-            .apply(var0, ItemCost::new)
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, ItemCost> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.holderRegistry(Registries.ITEM),
-      ItemCost::item,
-      ByteBufCodecs.VAR_INT,
-      ItemCost::count,
-      DataComponentPredicate.STREAM_CODEC,
-      ItemCost::components,
-      ItemCost::new
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, Optional<ItemCost>> OPTIONAL_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs::optional);
-
-   public ItemCost(ItemLike var1) {
-      this(var1, 1);
-   }
-
-   public ItemCost(ItemLike var1, int var2) {
-      this(var1.asItem().builtInRegistryHolder(), var2, DataComponentPredicate.EMPTY);
-   }
-
-   public ItemCost(Holder<Item> var1, int var2, DataComponentPredicate var3) {
-      this(var1, var2, var3, createStack(var1, var2, var3));
-   }
-
-   public ItemCost(Holder<Item> item, int count, DataComponentPredicate components, ItemStack itemStack) {
-      super();
-      this.item = item;
-      this.count = count;
-      this.components = components;
-      this.itemStack = itemStack;
-   }
-
-   public ItemCost withComponents(UnaryOperator<DataComponentPredicate.Builder> var1) {
-      return new ItemCost(this.item, this.count, var1.apply(DataComponentPredicate.builder()).build());
-   }
-
-   private static ItemStack createStack(Holder<Item> var0, int var1, DataComponentPredicate var2) {
-      return new ItemStack(var0, var1, var2.asPatch());
-   }
-
-   public boolean test(ItemStack var1) {
-      return var1.is(this.item) && this.components.test((DataComponentHolder)var1);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

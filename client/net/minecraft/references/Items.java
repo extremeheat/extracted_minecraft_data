@@ -14,6 +14,6 @@ public class Items {
    }
 
    private static ResourceKey<Item> createKey(String var0) {
-      return ResourceKey.create(Registries.ITEM, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace(var0));
    }
 }

@@ -33,6 +33,6 @@ public class LootItemConditions {
    }
 
    private static LootItemConditionType register(String var0, MapCodec<? extends LootItemCondition> var1) {
-      return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, new ResourceLocation(var0), new LootItemConditionType(var1));
+      return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, ResourceLocation.withDefaultNamespace(var0), new LootItemConditionType(var1));
    }
 }

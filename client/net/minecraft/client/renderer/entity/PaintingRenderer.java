@@ -119,12 +119,11 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
    private void vertex(
       PoseStack.Pose var1, VertexConsumer var2, float var3, float var4, float var5, float var6, float var7, int var8, int var9, int var10, int var11
    ) {
-      var2.vertex(var1, var3, var4, var7)
-         .color(255, 255, 255, 255)
-         .uv(var5, var6)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var11)
-         .normal(var1, (float)var8, (float)var9, (float)var10)
-         .endVertex();
+      var2.addVertex(var1, var3, var4, var7)
+         .setColor(-1)
+         .setUv(var5, var6)
+         .setOverlay(OverlayTexture.NO_OVERLAY)
+         .setLight(var11)
+         .setNormal(var1, (float)var8, (float)var9, (float)var10);
    }
 }

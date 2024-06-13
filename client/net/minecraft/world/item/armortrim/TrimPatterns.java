@@ -71,6 +71,6 @@ public class TrimPatterns {
    }
 
    private static ResourceKey<TrimPattern> registryKey(String var0) {
-      return ResourceKey.create(Registries.TRIM_PATTERN, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.TRIM_PATTERN, ResourceLocation.withDefaultNamespace(var0));
    }
 }

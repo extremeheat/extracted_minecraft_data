@@ -1,41 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-import net.minecraft.world.entity.LivingEntity;
-
-public record ClientboundHurtAnimationPacket(int id, float yaw) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundHurtAnimationPacket> STREAM_CODEC = Packet.codec(
-      ClientboundHurtAnimationPacket::write, ClientboundHurtAnimationPacket::new
-   );
-
-   public ClientboundHurtAnimationPacket(LivingEntity var1) {
-      this(var1.getId(), var1.getHurtDir());
-   }
-
-   private ClientboundHurtAnimationPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt(), var1.readFloat());
-   }
-
-   public ClientboundHurtAnimationPacket(int id, float yaw) {
-      super();
-      this.id = id;
-      this.yaw = yaw;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.id);
-      var1.writeFloat(this.yaw);
-   }
-
-   @Override
-   public PacketType<ClientboundHurtAnimationPacket> type() {
-      return GamePacketTypes.CLIENTBOUND_HURT_ANIMATION;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleHurtAnimation(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

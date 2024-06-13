@@ -3,17 +3,11 @@ package com.mojang.realmsclient;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.exception.RealmsServiceException;
-import com.mojang.realmsclient.gui.screens.RealmsClientOutdatedScreen;
-import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
-import com.mojang.realmsclient.gui.screens.RealmsParentalConsentScreen;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
 
 public class RealmsAvailability {
@@ -65,34 +59,18 @@ public class RealmsAvailability {
          );
    }
 
-   public static record Result(RealmsAvailability.Type type, @Nullable RealmsServiceException exception) {
-      public Result(RealmsAvailability.Type var1) {
-         this(var1, null);
-      }
-
-      public Result(RealmsServiceException var1) {
-         this(RealmsAvailability.Type.UNEXPECTED_ERROR, var1);
-      }
-
-      public Result(RealmsAvailability.Type type, @Nullable RealmsServiceException exception) {
-         super();
-         this.type = type;
-         this.exception = exception;
-      }
-
-      @Nullable
-      public Screen createErrorScreen(Screen var1) {
-         return (Screen)(switch (this.type) {
-            case SUCCESS -> null;
-            case INCOMPATIBLE_CLIENT -> new RealmsClientOutdatedScreen(var1);
-            case NEEDS_PARENTAL_CONSENT -> new RealmsParentalConsentScreen(var1);
-            case AUTHENTICATION_ERROR -> new RealmsGenericErrorScreen(
-            Component.translatable("mco.error.invalid.session.title"), Component.translatable("mco.error.invalid.session.message"), var1
-         );
-            case UNEXPECTED_ERROR -> new RealmsGenericErrorScreen(Objects.requireNonNull(this.exception), var1);
-         });
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static enum Type {
       SUCCESS,

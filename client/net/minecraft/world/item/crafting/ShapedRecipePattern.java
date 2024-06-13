@@ -1,20 +1,16 @@
 package net.minecraft.world.item.crafting;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public final class ShapedRecipePattern {
@@ -211,47 +207,16 @@ public final class ShapedRecipePattern {
       return this.ingredients;
    }
 
-   public static record Data(Map<Character, Ingredient> key, List<String> pattern) {
-      private static final Codec<List<String>> PATTERN_CODEC = Codec.STRING.listOf().comapFlatMap(var0 -> {
-         if (var0.size() > 3) {
-            return DataResult.error(() -> "Invalid pattern: too many rows, 3 is maximum");
-         } else if (var0.isEmpty()) {
-            return DataResult.error(() -> "Invalid pattern: empty pattern not allowed");
-         } else {
-            int var1 = ((String)var0.getFirst()).length();
-
-            for (String var3 : var0) {
-               if (var3.length() > 3) {
-                  return DataResult.error(() -> "Invalid pattern: too many columns, 3 is maximum");
-               }
-
-               if (var1 != var3.length()) {
-                  return DataResult.error(() -> "Invalid pattern: each row must be the same width");
-               }
-            }
-
-            return DataResult.success(var0);
-         }
-      }, Function.identity());
-      private static final Codec<Character> SYMBOL_CODEC = Codec.STRING.comapFlatMap(var0 -> {
-         if (var0.length() != 1) {
-            return DataResult.error(() -> "Invalid key entry: '" + var0 + "' is an invalid symbol (must be 1 character only).");
-         } else {
-            return " ".equals(var0) ? DataResult.error(() -> "Invalid key entry: ' ' is a reserved symbol.") : DataResult.success(var0.charAt(0));
-         }
-      }, String::valueOf);
-      public static final MapCodec<ShapedRecipePattern.Data> MAP_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  ExtraCodecs.strictUnboundedMap(SYMBOL_CODEC, Ingredient.CODEC_NONEMPTY).fieldOf("key").forGetter(var0x -> var0x.key),
-                  PATTERN_CODEC.fieldOf("pattern").forGetter(var0x -> var0x.pattern)
-               )
-               .apply(var0, ShapedRecipePattern.Data::new)
-      );
-
-      public Data(Map<Character, Ingredient> key, List<String> pattern) {
-         super();
-         this.key = key;
-         this.pattern = pattern;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

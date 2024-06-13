@@ -1,17 +1,13 @@
 package net.minecraft.core;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,7 +15,6 @@ import javax.annotation.Nullable;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.apache.commons.lang3.mutable.MutableObject;
 
@@ -85,23 +80,19 @@ public class RegistrySetBuilder {
    ) {
       final HashMap var3 = new HashMap();
 
-      record 1Entry<T>(HolderLookup.RegistryLookup<T> lookup, RegistryOps.RegistryInfo<T> opsInfo) {
-         _Entry/* $VF was: 1Entry*/(HolderLookup.RegistryLookup<T> lookup, RegistryOps.RegistryInfo<T> opsInfo) {
-            super();
-            this.lookup = lookup;
-            this.opsInfo = opsInfo;
-         }
-
-         public static <T> 1Entry<T> createForContextRegistry(HolderLookup.RegistryLookup<T> var0) {
-            return new 1Entry<>(new RegistrySetBuilder.EmptyTagLookupWrapper<>(var0, var0), RegistryOps.RegistryInfo.fromRegistryLookup(var0));
-         }
-
-         public static <T> 1Entry<T> createForNewRegistry(RegistrySetBuilder.UniversalOwner var0, HolderLookup.RegistryLookup<T> var1) {
-            return new 1Entry<>(
-               new RegistrySetBuilder.EmptyTagLookupWrapper<>(var0.cast(), var1), new RegistryOps.RegistryInfo<>(var0.cast(), var1, var1.registryLifecycle())
-            );
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent.toJava(VarExprent.java:124)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.listToJava(ExprProcessor.java:895)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.BasicBlockStatement.toJava(BasicBlockStatement.java:90)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.RootStatement.toJava(RootStatement.java:36)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeMethod(ClassWriter.java:1283)
 
       var1.registries().forEach(var1x -> var3.put(var1x.key(), 1Entry.createForContextRegistry(var1x.value().asLookup())));
       var2.forEach(var2x -> var3.put(var2x.key(), 1Entry.createForNewRegistry(var0, var2x)));
@@ -212,80 +203,18 @@ public class RegistrySetBuilder {
       return new RegistrySetBuilder.PatchedRegistries(var9, var8);
    }
 
-   static record BuildState(
-      RegistrySetBuilder.UniversalOwner owner,
-      RegistrySetBuilder.UniversalLookup lookup,
-      Map<ResourceLocation, HolderGetter<?>> registries,
-      Map<ResourceKey<?>, RegistrySetBuilder.RegisteredValue<?>> registeredValues,
-      List<RuntimeException> errors
-   ) {
-
-      private BuildState(
-         RegistrySetBuilder.UniversalOwner owner,
-         RegistrySetBuilder.UniversalLookup lookup,
-         Map<ResourceLocation, HolderGetter<?>> registries,
-         Map<ResourceKey<?>, RegistrySetBuilder.RegisteredValue<?>> registeredValues,
-         List<RuntimeException> errors
-      ) {
-         super();
-         this.owner = owner;
-         this.lookup = lookup;
-         this.registries = registries;
-         this.registeredValues = registeredValues;
-         this.errors = errors;
-      }
-
-      public static RegistrySetBuilder.BuildState create(RegistryAccess var0, Stream<ResourceKey<? extends Registry<?>>> var1) {
-         RegistrySetBuilder.UniversalOwner var2 = new RegistrySetBuilder.UniversalOwner();
-         ArrayList var3 = new ArrayList();
-         RegistrySetBuilder.UniversalLookup var4 = new RegistrySetBuilder.UniversalLookup(var2);
-         Builder var5 = ImmutableMap.builder();
-         var0.registries().forEach(var1x -> var5.put(var1x.key().location(), RegistrySetBuilder.wrapContextLookup(var1x.value().asLookup())));
-         var1.forEach(var2x -> var5.put(var2x.location(), var4));
-         return new RegistrySetBuilder.BuildState(var2, var4, var5.build(), new HashMap<>(), var3);
-      }
-
-      public <T> BootstrapContext<T> bootstrapContext() {
-         return new BootstrapContext<T>() {
-            @Override
-            public Holder.Reference<T> register(ResourceKey<T> var1, T var2, Lifecycle var3) {
-               RegistrySetBuilder.RegisteredValue var4 = BuildState.this.registeredValues.put(var1, new RegistrySetBuilder.RegisteredValue<>(var2, var3));
-               if (var4 != null) {
-                  BuildState.this.errors.add(new IllegalStateException("Duplicate registration for " + var1 + ", new=" + var2 + ", old=" + var4.value));
-               }
-
-               return BuildState.this.lookup.getOrCreate(var1);
-            }
-
-            @Override
-            public <S> HolderGetter<S> lookup(ResourceKey<? extends Registry<? extends S>> var1) {
-               return (HolderGetter<S>)BuildState.this.registries.getOrDefault(var1.location(), BuildState.this.lookup);
-            }
-         };
-      }
-
-      public void reportUnclaimedRegisteredValues() {
-         this.registeredValues.forEach((var1, var2) -> this.errors.add(new IllegalStateException("Orpaned value " + var2.value + " for key " + var1)));
-      }
-
-      public void reportNotCollectedHolders() {
-         for (ResourceKey var2 : this.lookup.holders.keySet()) {
-            this.errors.add(new IllegalStateException("Unreferenced key: " + var2));
-         }
-      }
-
-      public void throwOnError() {
-         if (!this.errors.isEmpty()) {
-            IllegalStateException var1 = new IllegalStateException("Errors during registry creation");
-
-            for (RuntimeException var3 : this.errors) {
-               var1.addSuppressed(var3);
-            }
-
-            throw var1;
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    abstract static class EmptyTagLookup<T> implements HolderGetter<T> {
       protected final HolderOwner<T> owner;
@@ -350,80 +279,62 @@ public class RegistrySetBuilder {
       }
    }
 
-   public static record PatchedRegistries(HolderLookup.Provider full, HolderLookup.Provider patches) {
-      public PatchedRegistries(HolderLookup.Provider full, HolderLookup.Provider patches) {
-         super();
-         this.full = full;
-         this.patches = patches;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-   static record RegisteredValue<T>(T value, Lifecycle lifecycle) {
-
-      RegisteredValue(T value, Lifecycle lifecycle) {
-         super();
-         this.value = (T)value;
-         this.lifecycle = lifecycle;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    @FunctionalInterface
    public interface RegistryBootstrap<T> {
       void run(BootstrapContext<T> var1);
    }
 
-   static record RegistryContents<T>(
-      ResourceKey<? extends Registry<? extends T>> key, Lifecycle lifecycle, Map<ResourceKey<T>, RegistrySetBuilder.ValueAndHolder<T>> values
-   ) {
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      RegistryContents(ResourceKey<? extends Registry<? extends T>> key, Lifecycle lifecycle, Map<ResourceKey<T>, RegistrySetBuilder.ValueAndHolder<T>> values) {
-         super();
-         this.key = key;
-         this.lifecycle = lifecycle;
-         this.values = values;
-      }
-
-      public HolderLookup.RegistryLookup<T> buildAsLookup(RegistrySetBuilder.UniversalOwner var1) {
-         Map var2 = this.values.entrySet().stream().collect(Collectors.toUnmodifiableMap(Entry::getKey, var1x -> {
-            RegistrySetBuilder.ValueAndHolder var2x = (RegistrySetBuilder.ValueAndHolder)var1x.getValue();
-            Holder.Reference var3 = var2x.holder().orElseGet(() -> Holder.Reference.createStandAlone(var1.cast(), (ResourceKey<T>)var1x.getKey()));
-            var3.bindValue(var2x.value().value());
-            return var3;
-         }));
-         return RegistrySetBuilder.lookupFromMap(this.key, this.lifecycle, var1.cast(), var2);
-      }
-   }
-
-   static record RegistryStub<T>(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle, RegistrySetBuilder.RegistryBootstrap<T> bootstrap) {
-      RegistryStub(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle, RegistrySetBuilder.RegistryBootstrap<T> bootstrap) {
-         super();
-         this.key = key;
-         this.lifecycle = lifecycle;
-         this.bootstrap = bootstrap;
-      }
-
-      void apply(RegistrySetBuilder.BuildState var1) {
-         this.bootstrap.run(var1.bootstrapContext());
-      }
-
-      public RegistrySetBuilder.RegistryContents<T> collectRegisteredValues(RegistrySetBuilder.BuildState var1) {
-         HashMap var2 = new HashMap();
-         Iterator var3 = var1.registeredValues.entrySet().iterator();
-
-         while (var3.hasNext()) {
-            Entry var4 = (Entry)var3.next();
-            ResourceKey var5 = (ResourceKey)var4.getKey();
-            if (var5.isFor(this.key)) {
-               RegistrySetBuilder.RegisteredValue var7 = (RegistrySetBuilder.RegisteredValue)var4.getValue();
-               Holder.Reference var8 = var1.lookup.holders.remove(var5);
-               var2.put(var5, new RegistrySetBuilder.ValueAndHolder(var7, Optional.ofNullable(var8)));
-               var3.remove();
-            }
-         }
-
-         return new RegistrySetBuilder.RegistryContents<>(this.key, this.lifecycle, var2);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class UniversalLookup extends RegistrySetBuilder.EmptyTagLookup<Object> {
       final Map<ResourceKey<Object>, Holder.Reference<Object>> holders = new HashMap<>();
@@ -452,11 +363,16 @@ public class RegistrySetBuilder {
       }
    }
 
-   static record ValueAndHolder<T>(RegistrySetBuilder.RegisteredValue<T> value, Optional<Holder.Reference<T>> holder) {
-      ValueAndHolder(RegistrySetBuilder.RegisteredValue<T> value, Optional<Holder.Reference<T>> holder) {
-         super();
-         this.value = value;
-         this.holder = holder;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

@@ -119,6 +119,6 @@ public class PaintingVariants {
    }
 
    private static ResourceKey<PaintingVariant> create(String var0) {
-      return ResourceKey.create(Registries.PAINTING_VARIANT, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.PAINTING_VARIANT, ResourceLocation.withDefaultNamespace(var0));
    }
 }

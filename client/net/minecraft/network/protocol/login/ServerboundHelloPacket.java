@@ -1,37 +1,13 @@
 package net.minecraft.network.protocol.login;
 
-import java.util.UUID;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-
-public record ServerboundHelloPacket(String name, UUID profileId) implements Packet<ServerLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundHelloPacket> STREAM_CODEC = Packet.codec(
-      ServerboundHelloPacket::write, ServerboundHelloPacket::new
-   );
-
-   private ServerboundHelloPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(16), var1.readUUID());
-   }
-
-   public ServerboundHelloPacket(String name, UUID profileId) {
-      super();
-      this.name = name;
-      this.profileId = profileId;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.name, 16);
-      var1.writeUUID(this.profileId);
-   }
-
-   @Override
-   public PacketType<ServerboundHelloPacket> type() {
-      return LoginPacketTypes.SERVERBOUND_HELLO;
-   }
-
-   public void handle(ServerLoginPacketListener var1) {
-      var1.handleHello(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

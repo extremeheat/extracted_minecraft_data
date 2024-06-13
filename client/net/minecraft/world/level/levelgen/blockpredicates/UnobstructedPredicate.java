@@ -1,28 +1,13 @@
 package net.minecraft.world.level.levelgen.blockpredicates;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.phys.shapes.Shapes;
-
-record UnobstructedPredicate(Vec3i offset) implements BlockPredicate {
-   public static MapCodec<UnobstructedPredicate> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(UnobstructedPredicate::offset)).apply(var0, UnobstructedPredicate::new)
-   );
-
-   UnobstructedPredicate(Vec3i offset) {
-      super();
-      this.offset = offset;
-   }
-
-   @Override
-   public BlockPredicateType<?> type() {
-      return BlockPredicateType.UNOBSTRUCTED;
-   }
-
-   public boolean test(WorldGenLevel var1, BlockPos var2) {
-      return var1.isUnobstructed(null, Shapes.block().move((double)var2.getX(), (double)var2.getY(), (double)var2.getZ()));
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

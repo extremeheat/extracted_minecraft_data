@@ -1,79 +1,13 @@
 package net.minecraft.client.multiplayer.chat.report;
 
-import com.mojang.authlib.yggdrasil.request.AbuseReportRequest.ClientInfo;
-import com.mojang.authlib.yggdrasil.request.AbuseReportRequest.RealmInfo;
-import com.mojang.authlib.yggdrasil.request.AbuseReportRequest.ThirdPartyServerInfo;
-import com.mojang.realmsclient.dto.RealmsServer;
-import java.util.Locale;
-import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
-
-public record ReportEnvironment(String clientVersion, @Nullable ReportEnvironment.Server server) {
-   public ReportEnvironment(String clientVersion, @Nullable ReportEnvironment.Server server) {
-      super();
-      this.clientVersion = clientVersion;
-      this.server = server;
-   }
-
-   public static ReportEnvironment local() {
-      return create(null);
-   }
-
-   public static ReportEnvironment thirdParty(String var0) {
-      return create(new ReportEnvironment.Server.ThirdParty(var0));
-   }
-
-   public static ReportEnvironment realm(RealmsServer var0) {
-      return create(new ReportEnvironment.Server.Realm(var0));
-   }
-
-   public static ReportEnvironment create(@Nullable ReportEnvironment.Server var0) {
-      return new ReportEnvironment(getClientVersion(), var0);
-   }
-
-   public ClientInfo clientInfo() {
-      return new ClientInfo(this.clientVersion, Locale.getDefault().toLanguageTag());
-   }
-
-   @Nullable
-   public ThirdPartyServerInfo thirdPartyServerInfo() {
-      return this.server instanceof ReportEnvironment.Server.ThirdParty var1 ? new ThirdPartyServerInfo(var1.ip) : null;
-   }
-
-   @Nullable
-   public RealmInfo realmInfo() {
-      return this.server instanceof ReportEnvironment.Server.Realm var1 ? new RealmInfo(String.valueOf(var1.realmId()), var1.slotId()) : null;
-   }
-
-   private static String getClientVersion() {
-      StringBuilder var0 = new StringBuilder();
-      var0.append("24w20a");
-      if (Minecraft.checkModStatus().shouldReportAsModified()) {
-         var0.append(" (modded)");
-      }
-
-      return var0.toString();
-   }
-
-   public interface Server {
-      public static record Realm(long realmId, int slotId) implements ReportEnvironment.Server {
-         public Realm(RealmsServer var1) {
-            this(var1.id, var1.activeSlot);
-         }
-
-         public Realm(long realmId, int slotId) {
-            super();
-            this.realmId = realmId;
-            this.slotId = slotId;
-         }
-      }
-
-      public static record ThirdParty(String ip) implements ReportEnvironment.Server {
-
-         public ThirdParty(String ip) {
-            super();
-            this.ip = ip;
-         }
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

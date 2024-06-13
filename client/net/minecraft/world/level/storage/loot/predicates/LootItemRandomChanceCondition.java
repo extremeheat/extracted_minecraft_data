@@ -1,38 +1,13 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
-
-public record LootItemRandomChanceCondition(NumberProvider chance) implements LootItemCondition {
-   public static final MapCodec<LootItemRandomChanceCondition> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(NumberProviders.CODEC.fieldOf("chance").forGetter(LootItemRandomChanceCondition::chance))
-            .apply(var0, LootItemRandomChanceCondition::new)
-   );
-
-   public LootItemRandomChanceCondition(NumberProvider chance) {
-      super();
-      this.chance = chance;
-   }
-
-   @Override
-   public LootItemConditionType getType() {
-      return LootItemConditions.RANDOM_CHANCE;
-   }
-
-   public boolean test(LootContext var1) {
-      float var2 = this.chance.getFloat(var1);
-      return var1.getRandom().nextFloat() < var2;
-   }
-
-   public static LootItemCondition.Builder randomChance(float var0) {
-      return () -> new LootItemRandomChanceCondition(ConstantValue.exactly(var0));
-   }
-
-   public static LootItemCondition.Builder randomChance(NumberProvider var0) {
-      return () -> new LootItemRandomChanceCondition(var0);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

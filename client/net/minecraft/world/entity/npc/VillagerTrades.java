@@ -7,7 +7,6 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -1745,26 +1744,16 @@ public class VillagerTrades {
       }
    }
 
-   static record TypeSpecificTrade(Map<VillagerType, VillagerTrades.ItemListing> trades) implements VillagerTrades.ItemListing {
-      TypeSpecificTrade(Map<VillagerType, VillagerTrades.ItemListing> trades) {
-         super();
-         this.trades = trades;
-      }
-
-      public static VillagerTrades.TypeSpecificTrade oneTradeInBiomes(VillagerTrades.ItemListing var0, VillagerType... var1) {
-         return new VillagerTrades.TypeSpecificTrade(Arrays.stream(var1).collect(Collectors.toMap(var0x -> (VillagerType)var0x, var1x -> var0)));
-      }
-
-      @Nullable
-      @Override
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         if (var1 instanceof VillagerDataHolder var3) {
-            VillagerType var4 = var3.getVillagerData().getType();
-            VillagerTrades.ItemListing var5 = this.trades.get(var4);
-            return var5 == null ? null : var5.getOffer(var1, var2);
-         } else {
-            return null;
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

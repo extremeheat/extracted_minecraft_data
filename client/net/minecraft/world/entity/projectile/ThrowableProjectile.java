@@ -1,15 +1,9 @@
 package net.minecraft.world.entity.projectile;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -40,51 +34,39 @@ public abstract class ThrowableProjectile extends Projectile {
    }
 
    @Override
+   public boolean canChangeDimensions() {
+      return true;
+   }
+
+   @Override
    public void tick() {
       super.tick();
       HitResult var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-      boolean var2 = false;
-      if (var1.getType() == HitResult.Type.BLOCK) {
-         BlockPos var3 = ((BlockHitResult)var1).getBlockPos();
-         BlockState var4 = this.level().getBlockState(var3);
-         if (var4.is(Blocks.NETHER_PORTAL)) {
-            this.handleInsidePortal(var3);
-            var2 = true;
-         } else if (var4.is(Blocks.END_GATEWAY)) {
-            BlockEntity var5 = this.level().getBlockEntity(var3);
-            if (var5 instanceof TheEndGatewayBlockEntity && TheEndGatewayBlockEntity.canEntityTeleport(this)) {
-               TheEndGatewayBlockEntity.teleportEntity(this.level(), var3, var4, this, (TheEndGatewayBlockEntity)var5);
-            }
-
-            var2 = true;
-         }
-      }
-
-      if (var1.getType() != HitResult.Type.MISS && !var2) {
+      if (var1.getType() != HitResult.Type.MISS) {
          this.hitTargetOrDeflectSelf(var1);
       }
 
       this.checkInsideBlocks();
-      Vec3 var13 = this.getDeltaMovement();
-      double var14 = this.getX() + var13.x;
-      double var6 = this.getY() + var13.y;
-      double var8 = this.getZ() + var13.z;
+      Vec3 var2 = this.getDeltaMovement();
+      double var3 = this.getX() + var2.x;
+      double var5 = this.getY() + var2.y;
+      double var7 = this.getZ() + var2.z;
       this.updateRotation();
-      float var10;
+      float var9;
       if (this.isInWater()) {
-         for (int var11 = 0; var11 < 4; var11++) {
-            float var12 = 0.25F;
-            this.level().addParticle(ParticleTypes.BUBBLE, var14 - var13.x * 0.25, var6 - var13.y * 0.25, var8 - var13.z * 0.25, var13.x, var13.y, var13.z);
+         for (int var10 = 0; var10 < 4; var10++) {
+            float var11 = 0.25F;
+            this.level().addParticle(ParticleTypes.BUBBLE, var3 - var2.x * 0.25, var5 - var2.y * 0.25, var7 - var2.z * 0.25, var2.x, var2.y, var2.z);
          }
 
-         var10 = 0.8F;
+         var9 = 0.8F;
       } else {
-         var10 = 0.99F;
+         var9 = 0.99F;
       }
 
-      this.setDeltaMovement(var13.scale((double)var10));
+      this.setDeltaMovement(var2.scale((double)var9));
       this.applyGravity();
-      this.setPos(var14, var6, var8);
+      this.setPos(var3, var5, var7);
    }
 
    @Override

@@ -2,23 +2,22 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import java.util.UUID;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceArgument;
-import net.minecraft.commands.arguments.UuidArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -117,53 +116,47 @@ public class AttributeCommand {
                                     .then(
                                        Commands.literal("add")
                                           .then(
-                                             Commands.argument("uuid", UuidArgument.uuid())
+                                             Commands.argument("id", ResourceLocationArgument.id())
                                                 .then(
-                                                   Commands.argument("name", StringArgumentType.string())
-                                                      .then(
-                                                         ((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument(
-                                                                     "value", DoubleArgumentType.doubleArg()
-                                                                  )
-                                                                  .then(
-                                                                     Commands.literal("add_value")
-                                                                        .executes(
-                                                                           var0x -> addModifier(
-                                                                                 (CommandSourceStack)var0x.getSource(),
-                                                                                 EntityArgument.getEntity(var0x, "target"),
-                                                                                 ResourceArgument.getAttribute(var0x, "attribute"),
-                                                                                 UuidArgument.getUuid(var0x, "uuid"),
-                                                                                 StringArgumentType.getString(var0x, "name"),
-                                                                                 DoubleArgumentType.getDouble(var0x, "value"),
-                                                                                 AttributeModifier.Operation.ADD_VALUE
-                                                                              )
-                                                                        )
-                                                                  ))
-                                                               .then(
-                                                                  Commands.literal("add_multiplied_base")
-                                                                     .executes(
-                                                                        var0x -> addModifier(
-                                                                              (CommandSourceStack)var0x.getSource(),
-                                                                              EntityArgument.getEntity(var0x, "target"),
-                                                                              ResourceArgument.getAttribute(var0x, "attribute"),
-                                                                              UuidArgument.getUuid(var0x, "uuid"),
-                                                                              StringArgumentType.getString(var0x, "name"),
-                                                                              DoubleArgumentType.getDouble(var0x, "value"),
-                                                                              AttributeModifier.Operation.ADD_MULTIPLIED_BASE
-                                                                           )
-                                                                     )
-                                                               ))
+                                                   ((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument(
+                                                               "value", DoubleArgumentType.doubleArg()
+                                                            )
                                                             .then(
-                                                               Commands.literal("add_multiplied_total")
+                                                               Commands.literal("add_value")
                                                                   .executes(
                                                                      var0x -> addModifier(
                                                                            (CommandSourceStack)var0x.getSource(),
                                                                            EntityArgument.getEntity(var0x, "target"),
                                                                            ResourceArgument.getAttribute(var0x, "attribute"),
-                                                                           UuidArgument.getUuid(var0x, "uuid"),
-                                                                           StringArgumentType.getString(var0x, "name"),
+                                                                           ResourceLocationArgument.getId(var0x, "id"),
                                                                            DoubleArgumentType.getDouble(var0x, "value"),
-                                                                           AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                                                                           AttributeModifier.Operation.ADD_VALUE
                                                                         )
+                                                                  )
+                                                            ))
+                                                         .then(
+                                                            Commands.literal("add_multiplied_base")
+                                                               .executes(
+                                                                  var0x -> addModifier(
+                                                                        (CommandSourceStack)var0x.getSource(),
+                                                                        EntityArgument.getEntity(var0x, "target"),
+                                                                        ResourceArgument.getAttribute(var0x, "attribute"),
+                                                                        ResourceLocationArgument.getId(var0x, "id"),
+                                                                        DoubleArgumentType.getDouble(var0x, "value"),
+                                                                        AttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                                                                     )
+                                                               )
+                                                         ))
+                                                      .then(
+                                                         Commands.literal("add_multiplied_total")
+                                                            .executes(
+                                                               var0x -> addModifier(
+                                                                     (CommandSourceStack)var0x.getSource(),
+                                                                     EntityArgument.getEntity(var0x, "target"),
+                                                                     ResourceArgument.getAttribute(var0x, "attribute"),
+                                                                     ResourceLocationArgument.getId(var0x, "id"),
+                                                                     DoubleArgumentType.getDouble(var0x, "value"),
+                                                                     AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                                                                   )
                                                             )
                                                       )
@@ -173,13 +166,13 @@ public class AttributeCommand {
                                  .then(
                                     Commands.literal("remove")
                                        .then(
-                                          Commands.argument("uuid", UuidArgument.uuid())
+                                          Commands.argument("id", ResourceLocationArgument.id())
                                              .executes(
                                                 var0x -> removeModifier(
                                                       (CommandSourceStack)var0x.getSource(),
                                                       EntityArgument.getEntity(var0x, "target"),
                                                       ResourceArgument.getAttribute(var0x, "attribute"),
-                                                      UuidArgument.getUuid(var0x, "uuid")
+                                                      ResourceLocationArgument.getId(var0x, "id")
                                                    )
                                              )
                                        )
@@ -189,13 +182,13 @@ public class AttributeCommand {
                                     .then(
                                        Commands.literal("get")
                                           .then(
-                                             ((RequiredArgumentBuilder)Commands.argument("uuid", UuidArgument.uuid())
+                                             ((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id())
                                                    .executes(
                                                       var0x -> getAttributeModifier(
                                                             (CommandSourceStack)var0x.getSource(),
                                                             EntityArgument.getEntity(var0x, "target"),
                                                             ResourceArgument.getAttribute(var0x, "attribute"),
-                                                            UuidArgument.getUuid(var0x, "uuid"),
+                                                            ResourceLocationArgument.getId(var0x, "id"),
                                                             1.0
                                                          )
                                                    ))
@@ -206,7 +199,7 @@ public class AttributeCommand {
                                                                (CommandSourceStack)var0x.getSource(),
                                                                EntityArgument.getEntity(var0x, "target"),
                                                                ResourceArgument.getAttribute(var0x, "attribute"),
-                                                               UuidArgument.getUuid(var0x, "uuid"),
+                                                               ResourceLocationArgument.getId(var0x, "id"),
                                                                DoubleArgumentType.getDouble(var0x, "scale")
                                                             )
                                                       )
@@ -260,7 +253,7 @@ public class AttributeCommand {
       return (int)(var6 * var3);
    }
 
-   private static int getAttributeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, UUID var3, double var4) throws CommandSyntaxException {
+   private static int getAttributeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, ResourceLocation var3, double var4) throws CommandSyntaxException {
       LivingEntity var6 = getEntityWithAttribute(var1, var2);
       AttributeMap var7 = var6.getAttributes();
       if (!var7.hasModifier(var2, var3)) {
@@ -284,14 +277,14 @@ public class AttributeCommand {
    }
 
    private static int addModifier(
-      CommandSourceStack var0, Entity var1, Holder<Attribute> var2, UUID var3, String var4, double var5, AttributeModifier.Operation var7
+      CommandSourceStack var0, Entity var1, Holder<Attribute> var2, ResourceLocation var3, double var4, AttributeModifier.Operation var6
    ) throws CommandSyntaxException {
-      AttributeInstance var8 = getAttributeInstance(var1, var2);
-      AttributeModifier var9 = new AttributeModifier(var3, var4, var5, var7);
-      if (var8.hasModifier(var9)) {
+      AttributeInstance var7 = getAttributeInstance(var1, var2);
+      AttributeModifier var8 = new AttributeModifier(var3, var4, var6);
+      if (var7.hasModifier(var3)) {
          throw ERROR_MODIFIER_ALREADY_PRESENT.create(var1.getName(), getAttributeDescription(var2), var3);
       } else {
-         var8.addPermanentModifier(var9);
+         var7.addPermanentModifier(var8);
          var0.sendSuccess(
             () -> Component.translatable(
                   "commands.attribute.modifier.add.success", Component.translationArg(var3), getAttributeDescription(var2), var1.getName()
@@ -302,7 +295,7 @@ public class AttributeCommand {
       }
    }
 
-   private static int removeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, UUID var3) throws CommandSyntaxException {
+   private static int removeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, ResourceLocation var3) throws CommandSyntaxException {
       AttributeInstance var4 = getAttributeInstance(var1, var2);
       if (var4.removePermanentModifier(var3)) {
          var0.sendSuccess(

@@ -107,7 +107,7 @@ public class Attributes {
    }
 
    private static Holder<Attribute> register(String var0, Attribute var1) {
-      return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, new ResourceLocation(var0), var1);
+      return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, ResourceLocation.withDefaultNamespace(var0), var1);
    }
 
    public static Holder<Attribute> bootstrap(Registry<Attribute> var0) {

@@ -14,7 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> extends StuckInBodyLayer<T, M> {
-   private static final ResourceLocation BEE_STINGER_LOCATION = new ResourceLocation("textures/entity/bee/bee_stinger.png");
+   private static final ResourceLocation BEE_STINGER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/bee/bee_stinger.png");
 
    public BeeStingerLayer(LivingEntityRenderer<T, M> var1) {
       super(var1);
@@ -54,12 +54,11 @@ public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> e
    }
 
    private static void vertex(VertexConsumer var0, PoseStack.Pose var1, float var2, int var3, float var4, float var5, int var6) {
-      var0.vertex(var1, var2, (float)var3, 0.0F)
-         .color(255, 255, 255, 255)
-         .uv(var4, var5)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var6)
-         .normal(var1, 0.0F, 1.0F, 0.0F)
-         .endVertex();
+      var0.addVertex(var1, var2, (float)var3, 0.0F)
+         .setColor(-1)
+         .setUv(var4, var5)
+         .setOverlay(OverlayTexture.NO_OVERLAY)
+         .setLight(var6)
+         .setNormal(var1, 0.0F, 1.0F, 0.0F);
    }
 }

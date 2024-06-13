@@ -13,6 +13,6 @@ public class WorldPresetTags {
    }
 
    private static TagKey<WorldPreset> create(String var0) {
-      return TagKey.create(Registries.WORLD_PRESET, new ResourceLocation(var0));
+      return TagKey.create(Registries.WORLD_PRESET, ResourceLocation.withDefaultNamespace(var0));
    }
 }

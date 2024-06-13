@@ -2,18 +2,8 @@ package net.minecraft.world.level.levelgen.structure.pieces;
 
 import java.util.Optional;
 import java.util.function.Predicate;
-import net.minecraft.core.Holder;
-import net.minecraft.core.QuartPos;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeSource;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 @FunctionalInterface
 public interface PieceGeneratorSupplier<C extends FeatureConfiguration> {
@@ -28,51 +18,16 @@ public interface PieceGeneratorSupplier<C extends FeatureConfiguration> {
       return var1 -> var1.validBiomeOnTop(var0);
    }
 
-   public static record Context<C extends FeatureConfiguration>(
-      ChunkGenerator chunkGenerator,
-      BiomeSource biomeSource,
-      RandomState randomState,
-      long seed,
-      ChunkPos chunkPos,
-      C config,
-      LevelHeightAccessor heightAccessor,
-      Predicate<Holder<Biome>> validBiome,
-      StructureTemplateManager structureTemplateManager,
-      RegistryAccess registryAccess
-   ) {
-      public Context(
-         ChunkGenerator chunkGenerator,
-         BiomeSource biomeSource,
-         RandomState randomState,
-         long seed,
-         ChunkPos chunkPos,
-         C config,
-         LevelHeightAccessor heightAccessor,
-         Predicate<Holder<Biome>> validBiome,
-         StructureTemplateManager structureTemplateManager,
-         RegistryAccess registryAccess
-      ) {
-         super();
-         this.chunkGenerator = chunkGenerator;
-         this.biomeSource = biomeSource;
-         this.randomState = randomState;
-         this.seed = seed;
-         this.chunkPos = chunkPos;
-         this.config = (C)config;
-         this.heightAccessor = heightAccessor;
-         this.validBiome = validBiome;
-         this.structureTemplateManager = structureTemplateManager;
-         this.registryAccess = registryAccess;
-      }
-
-      public boolean validBiomeOnTop(Heightmap.Types var1) {
-         int var2 = this.chunkPos.getMiddleBlockX();
-         int var3 = this.chunkPos.getMiddleBlockZ();
-         int var4 = this.chunkGenerator.getFirstOccupiedHeight(var2, var3, var1, this.heightAccessor, this.randomState);
-         Holder var5 = this.chunkGenerator
-            .getBiomeSource()
-            .getNoiseBiome(QuartPos.fromBlock(var2), QuartPos.fromBlock(var4), QuartPos.fromBlock(var3), this.randomState.sampler());
-         return this.validBiome.test(var5);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

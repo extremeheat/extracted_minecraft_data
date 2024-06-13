@@ -636,6 +636,10 @@ public class Mth {
       return Math.sqrt(lengthSquared(var0, var2, var4));
    }
 
+   public static float lengthSquared(float var0, float var1, float var2) {
+      return var0 * var0 + var1 * var1 + var2 * var2;
+   }
+
    public static int quantize(double var0, int var2) {
       return floor(var0 / (double)var2) * var2;
    }

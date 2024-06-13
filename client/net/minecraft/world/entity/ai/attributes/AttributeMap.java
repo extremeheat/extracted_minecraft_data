@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -58,7 +57,7 @@ public class AttributeMap {
       return this.attributes.get(var1) != null || this.supplier.hasAttribute(var1);
    }
 
-   public boolean hasModifier(Holder<Attribute> var1, UUID var2) {
+   public boolean hasModifier(Holder<Attribute> var1, ResourceLocation var2) {
       AttributeInstance var3 = this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2) != null : this.supplier.hasModifier(var1, var2);
    }
@@ -73,7 +72,7 @@ public class AttributeMap {
       return var2 != null ? var2.getBaseValue() : this.supplier.getBaseValue(var1);
    }
 
-   public double getModifierValue(Holder<Attribute> var1, UUID var2) {
+   public double getModifierValue(Holder<Attribute> var1, ResourceLocation var2) {
       AttributeInstance var3 = this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2).amount() : this.supplier.getModifierValue(var1, var2);
    }
@@ -128,7 +127,7 @@ public class AttributeMap {
    public void load(ListTag var1) {
       for (int var2 = 0; var2 < var1.size(); var2++) {
          CompoundTag var3 = var1.getCompound(var2);
-         String var4 = var3.getString("Name");
+         String var4 = var3.getString("id");
          ResourceLocation var5 = ResourceLocation.tryParse(var4);
          if (var5 != null) {
             Util.ifElse(BuiltInRegistries.ATTRIBUTE.getHolder(var5), var2x -> {

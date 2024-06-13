@@ -396,7 +396,7 @@ public class TestCommand {
 
    private static int exportTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir);
-      ResourceLocation var3 = new ResourceLocation(var1);
+      ResourceLocation var3 = ResourceLocation.parse(var1);
       Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
       Path var5 = NbtToSnbt.convertStructure(CachedOutput.NO_CACHE, var4, var3.getPath(), var2);
       if (var5 == null) {
@@ -417,7 +417,7 @@ public class TestCommand {
    }
 
    private static boolean verifyStructureExists(ServerLevel var0, String var1) {
-      if (var0.getStructureManager().get(new ResourceLocation(var1)).isEmpty()) {
+      if (var0.getStructureManager().get(ResourceLocation.parse(var1)).isEmpty()) {
          say(var0, "Test structure " + var1 + " could not be found", ChatFormatting.RED);
          return false;
       } else {
@@ -437,7 +437,7 @@ public class TestCommand {
 
    private static int importTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir, var1 + ".snbt");
-      ResourceLocation var3 = new ResourceLocation("minecraft", var1);
+      ResourceLocation var3 = ResourceLocation.withDefaultNamespace(var1);
       Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
 
       try {
@@ -615,61 +615,29 @@ public class TestCommand {
       }
    }
 
-   static record TestBatchSummaryDisplayer(CommandSourceStack source) implements GameTestBatchListener {
-      TestBatchSummaryDisplayer(CommandSourceStack source) {
-         super();
-         this.source = source;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public void testBatchStarting(GameTestBatch var1) {
-         TestCommand.say(this.source, "Starting batch: " + var1.name());
-      }
-
-      @Override
-      public void testBatchFinished(GameTestBatch var1) {
-      }
-   }
-
-   public static record TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) implements GameTestListener {
-      public TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) {
-         super();
-         this.level = level;
-         this.tracker = tracker;
-      }
-
-      @Override
-      public void testStructureLoaded(GameTestInfo var1) {
-      }
-
-      @Override
-      public void testPassed(GameTestInfo var1, GameTestRunner var2) {
-         showTestSummaryIfAllDone(this.level, this.tracker);
-      }
-
-      @Override
-      public void testFailed(GameTestInfo var1, GameTestRunner var2) {
-         showTestSummaryIfAllDone(this.level, this.tracker);
-      }
-
-      @Override
-      public void testAddedForRerun(GameTestInfo var1, GameTestInfo var2, GameTestRunner var3) {
-         this.tracker.addTestToTrack(var2);
-      }
-
-      private static void showTestSummaryIfAllDone(ServerLevel var0, MultipleTestTracker var1) {
-         if (var1.isDone()) {
-            TestCommand.say(var0, "GameTest done! " + var1.getTotalCount() + " tests were run", ChatFormatting.WHITE);
-            if (var1.hasFailedRequired()) {
-               TestCommand.say(var0, var1.getFailedRequiredCount() + " required tests failed :(", ChatFormatting.RED);
-            } else {
-               TestCommand.say(var0, "All required tests passed :)", ChatFormatting.GREEN);
-            }
-
-            if (var1.hasFailedOptional()) {
-               TestCommand.say(var0, var1.getFailedOptionalCount() + " optional tests failed", ChatFormatting.GRAY);
-            }
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

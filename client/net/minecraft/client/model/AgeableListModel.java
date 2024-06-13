@@ -39,26 +39,26 @@ public abstract class AgeableListModel<E extends Entity> extends EntityModel<E> 
    }
 
    @Override
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
+   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
       if (this.young) {
          var1.pushPose();
          if (this.scaleHead) {
-            float var9 = 1.5F / this.babyHeadScale;
-            var1.scale(var9, var9, var9);
+            float var6 = 1.5F / this.babyHeadScale;
+            var1.scale(var6, var6, var6);
          }
 
          var1.translate(0.0F, this.babyYHeadOffset / 16.0F, this.babyZHeadOffset / 16.0F);
-         this.headParts().forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
+         this.headParts().forEach(var5x -> var5x.render(var1, var2, var3, var4, var5));
          var1.popPose();
          var1.pushPose();
-         float var10 = 1.0F / this.babyBodyScale;
-         var1.scale(var10, var10, var10);
+         float var7 = 1.0F / this.babyBodyScale;
+         var1.scale(var7, var7, var7);
          var1.translate(0.0F, this.bodyYOffset / 16.0F, 0.0F);
-         this.bodyParts().forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
+         this.bodyParts().forEach(var5x -> var5x.render(var1, var2, var3, var4, var5));
          var1.popPose();
       } else {
-         this.headParts().forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
-         this.bodyParts().forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
+         this.headParts().forEach(var5x -> var5x.render(var1, var2, var3, var4, var5));
+         this.bodyParts().forEach(var5x -> var5x.render(var1, var2, var3, var4, var5));
       }
    }
 

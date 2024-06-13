@@ -1,42 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-
-public record ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> effect) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRemoveMobEffectPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.VAR_INT,
-      ClientboundRemoveMobEffectPacket::entityId,
-      MobEffect.STREAM_CODEC,
-      ClientboundRemoveMobEffectPacket::effect,
-      ClientboundRemoveMobEffectPacket::new
-   );
-
-   public ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> effect) {
-      super();
-      this.entityId = entityId;
-      this.effect = effect;
-   }
-
-   @Override
-   public PacketType<ClientboundRemoveMobEffectPacket> type() {
-      return GamePacketTypes.CLIENTBOUND_REMOVE_MOB_EFFECT;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRemoveMobEffect(this);
-   }
-
-   @Nullable
-   public Entity getEntity(Level var1) {
-      return var1.getEntity(this.entityId);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

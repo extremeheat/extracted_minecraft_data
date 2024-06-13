@@ -1,41 +1,13 @@
 package net.minecraft.advancements.critereon;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.projectile.FishingHook;
-import net.minecraft.world.phys.Vec3;
-
-public record FishingHookPredicate(Optional<Boolean> inOpenWater) implements EntitySubPredicate {
-   public static final FishingHookPredicate ANY = new FishingHookPredicate(Optional.empty());
-   public static final MapCodec<FishingHookPredicate> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(Codec.BOOL.optionalFieldOf("in_open_water").forGetter(FishingHookPredicate::inOpenWater)).apply(var0, FishingHookPredicate::new)
-   );
-
-   public FishingHookPredicate(Optional<Boolean> inOpenWater) {
-      super();
-      this.inOpenWater = inOpenWater;
-   }
-
-   public static FishingHookPredicate inOpenWater(boolean var0) {
-      return new FishingHookPredicate(Optional.of(var0));
-   }
-
-   @Override
-   public MapCodec<FishingHookPredicate> codec() {
-      return EntitySubPredicates.FISHING_HOOK;
-   }
-
-   @Override
-   public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
-      if (this.inOpenWater.isEmpty()) {
-         return true;
-      } else {
-         return var1 instanceof FishingHook var4 ? this.inOpenWater.get() == var4.isOpenWaterFishing() : false;
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -45,72 +45,18 @@ public interface Holder<T> {
       return new Holder.Direct<>((T)var0);
    }
 
-   public static record Direct<T>(T value) implements Holder<T> {
-      public Direct(T value) {
-         super();
-         this.value = (T)value;
-      }
-
-      @Override
-      public boolean isBound() {
-         return true;
-      }
-
-      @Override
-      public boolean is(ResourceLocation var1) {
-         return false;
-      }
-
-      @Override
-      public boolean is(ResourceKey<T> var1) {
-         return false;
-      }
-
-      @Override
-      public boolean is(TagKey<T> var1) {
-         return false;
-      }
-
-      @Override
-      public boolean is(Holder<T> var1) {
-         return this.value.equals(var1.value());
-      }
-
-      @Override
-      public boolean is(Predicate<ResourceKey<T>> var1) {
-         return false;
-      }
-
-      @Override
-      public Either<ResourceKey<T>, T> unwrap() {
-         return Either.right(this.value);
-      }
-
-      @Override
-      public Optional<ResourceKey<T>> unwrapKey() {
-         return Optional.empty();
-      }
-
-      @Override
-      public Holder.Kind kind() {
-         return Holder.Kind.DIRECT;
-      }
-
-      @Override
-      public String toString() {
-         return "Direct{" + this.value + "}";
-      }
-
-      @Override
-      public boolean canSerializeIn(HolderOwner<T> var1) {
-         return true;
-      }
-
-      @Override
-      public Stream<TagKey<T>> tags() {
-         return Stream.of();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static enum Kind {
       REFERENCE,

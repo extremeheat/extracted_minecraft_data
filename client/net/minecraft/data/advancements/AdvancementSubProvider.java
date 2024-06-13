@@ -10,6 +10,6 @@ public interface AdvancementSubProvider {
    void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2);
 
    static AdvancementHolder createPlaceholder(String var0) {
-      return Advancement.Builder.advancement().build(new ResourceLocation(var0));
+      return Advancement.Builder.advancement().build(ResourceLocation.parse(var0));
    }
 }

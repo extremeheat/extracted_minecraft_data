@@ -1,126 +1,13 @@
 package net.minecraft.advancements;
 
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-import net.minecraft.network.FriendlyByteBuf;
-
-public record AdvancementRequirements(List<List<String>> requirements) {
-   public static final Codec<AdvancementRequirements> CODEC = Codec.STRING
-      .listOf()
-      .listOf()
-      .xmap(AdvancementRequirements::new, AdvancementRequirements::requirements);
-   public static final AdvancementRequirements EMPTY = new AdvancementRequirements(List.of());
-
-   public AdvancementRequirements(FriendlyByteBuf var1) {
-      this(var1.readList(var0 -> var0.readList(FriendlyByteBuf::readUtf)));
-   }
-
-   public AdvancementRequirements(List<List<String>> requirements) {
-      super();
-      this.requirements = requirements;
-   }
-
-   public void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.requirements, (var0, var1x) -> var0.writeCollection(var1x, FriendlyByteBuf::writeUtf));
-   }
-
-   public static AdvancementRequirements allOf(Collection<String> var0) {
-      return new AdvancementRequirements(var0.stream().map(List::of).toList());
-   }
-
-   public static AdvancementRequirements anyOf(Collection<String> var0) {
-      return new AdvancementRequirements(List.of(List.copyOf(var0)));
-   }
-
-   public int size() {
-      return this.requirements.size();
-   }
-
-   public boolean test(Predicate<String> var1) {
-      if (this.requirements.isEmpty()) {
-         return false;
-      } else {
-         for (List var3 : this.requirements) {
-            if (!anyMatch(var3, var1)) {
-               return false;
-            }
-         }
-
-         return true;
-      }
-   }
-
-   public int count(Predicate<String> var1) {
-      int var2 = 0;
-
-      for (List var4 : this.requirements) {
-         if (anyMatch(var4, var1)) {
-            var2++;
-         }
-      }
-
-      return var2;
-   }
-
-   private static boolean anyMatch(List<String> var0, Predicate<String> var1) {
-      for (String var3 : var0) {
-         if (var1.test(var3)) {
-            return true;
-         }
-      }
-
-      return false;
-   }
-
-   public DataResult<AdvancementRequirements> validate(Set<String> var1) {
-      ObjectOpenHashSet var2 = new ObjectOpenHashSet();
-
-      for (List var4 : this.requirements) {
-         if (var4.isEmpty() && var1.isEmpty()) {
-            return DataResult.error(() -> "Requirement entry cannot be empty");
-         }
-
-         var2.addAll(var4);
-      }
-
-      if (!var1.equals(var2)) {
-         SetView var5 = Sets.difference(var1, var2);
-         SetView var6 = Sets.difference(var2, var1);
-         return DataResult.error(() -> "Advancement completion requirements did not exactly match specified criteria. Missing: " + var5 + ". Unknown: " + var6);
-      } else {
-         return DataResult.success(this);
-      }
-   }
-
-   public boolean isEmpty() {
-      return this.requirements.isEmpty();
-   }
-
-   public String toString() {
-      return this.requirements.toString();
-   }
-
-   public Set<String> names() {
-      ObjectOpenHashSet var1 = new ObjectOpenHashSet();
-
-      for (List var3 : this.requirements) {
-         var1.addAll(var3);
-      }
-
-      return var1;
-   }
-
-   public interface Strategy {
-      AdvancementRequirements.Strategy AND = AdvancementRequirements::allOf;
-      AdvancementRequirements.Strategy OR = AdvancementRequirements::anyOf;
-
-      AdvancementRequirements create(Collection<String> var1);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

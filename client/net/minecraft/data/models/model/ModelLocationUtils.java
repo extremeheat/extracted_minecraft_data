@@ -12,11 +12,11 @@ public class ModelLocationUtils {
 
    @Deprecated
    public static ResourceLocation decorateBlockModelLocation(String var0) {
-      return new ResourceLocation("minecraft", "block/" + var0);
+      return ResourceLocation.withDefaultNamespace("block/" + var0);
    }
 
    public static ResourceLocation decorateItemModelLocation(String var0) {
-      return new ResourceLocation("minecraft", "item/" + var0);
+      return ResourceLocation.withDefaultNamespace("item/" + var0);
    }
 
    public static ResourceLocation getModelLocation(Block var0, String var1) {

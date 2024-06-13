@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.IronGolem;
 
 public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemModel<IronGolem>> {
-   private static final ResourceLocation GOLEM_LOCATION = new ResourceLocation("textures/entity/iron_golem/iron_golem.png");
+   private static final ResourceLocation GOLEM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/iron_golem/iron_golem.png");
 
    public IronGolemRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IronGolemModel<>(var1.bakeLayer(ModelLayers.IRON_GOLEM)), 0.7F);

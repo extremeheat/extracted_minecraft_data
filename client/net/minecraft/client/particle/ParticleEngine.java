@@ -7,6 +7,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -64,7 +66,7 @@ import org.slf4j.Logger;
 public class ParticleEngine implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final FileToIdConverter PARTICLE_LISTER = FileToIdConverter.json("particles");
-   private static final ResourceLocation PARTICLES_ATLAS_INFO = new ResourceLocation("particles");
+   private static final ResourceLocation PARTICLES_ATLAS_INFO = ResourceLocation.withDefaultNamespace("particles");
    private static final int MAX_PARTICLES_PER_LAYER = 16384;
    private static final List<ParticleRenderType> RENDER_ORDER = ImmutableList.of(
       ParticleRenderType.TERRAIN_SHEET,
@@ -230,13 +232,19 @@ public class ParticleEngine implements PreparableReloadListener {
    public CompletableFuture<Void> reload(
       PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
    ) {
-      record 1ParticleDefinition(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
-         _ParticleDefinition/* $VF was: 1ParticleDefinition*/(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
-            super();
-            this.id = id;
-            this.sprites = sprites;
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent.toJava(VarExprent.java:124)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.listToJava(ExprProcessor.java:895)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.BasicBlockStatement.toJava(BasicBlockStatement.java:90)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.RootStatement.toJava(RootStatement.java:36)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeMethod(ClassWriter.java:1283)
 
       CompletableFuture var7 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var2), var5)
          .thenCompose(var2x -> {
@@ -413,26 +421,29 @@ public class ParticleEngine implements PreparableReloadListener {
       RenderSystem.enableDepthTest();
 
       for (ParticleRenderType var5 : RENDER_ORDER) {
-         Iterable var6 = this.particles.get(var5);
-         if (var6 != null) {
+         Queue var6 = this.particles.get(var5);
+         if (var6 != null && !var6.isEmpty()) {
             RenderSystem.setShader(GameRenderer::getParticleShader);
             Tesselator var7 = Tesselator.getInstance();
-            BufferBuilder var8 = var7.getBuilder();
-            var5.begin(var8, this.textureManager);
+            BufferBuilder var8 = var5.begin(var7, this.textureManager);
+            if (var8 != null) {
+               for (Particle var10 : var6) {
+                  try {
+                     var10.render(var8, var2, var3);
+                  } catch (Throwable var14) {
+                     CrashReport var12 = CrashReport.forThrowable(var14, "Rendering Particle");
+                     CrashReportCategory var13 = var12.addCategory("Particle being rendered");
+                     var13.setDetail("Particle", var10::toString);
+                     var13.setDetail("Particle Type", var5::toString);
+                     throw new ReportedException(var12);
+                  }
+               }
 
-            for (Particle var10 : var6) {
-               try {
-                  var10.render(var8, var2, var3);
-               } catch (Throwable var14) {
-                  CrashReport var12 = CrashReport.forThrowable(var14, "Rendering Particle");
-                  CrashReportCategory var13 = var12.addCategory("Particle being rendered");
-                  var13.setDetail("Particle", var10::toString);
-                  var13.setDetail("Particle Type", var5::toString);
-                  throw new ReportedException(var12);
+               MeshData var15 = var8.build();
+               if (var15 != null) {
+                  BufferUploader.drawWithShader(var15);
                }
             }
-
-            var5.end(var7);
          }
       }
 

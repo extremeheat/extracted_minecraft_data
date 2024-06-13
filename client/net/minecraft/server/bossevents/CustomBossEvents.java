@@ -52,7 +52,7 @@ public class CustomBossEvents {
 
    public void load(CompoundTag var1, HolderLookup.Provider var2) {
       for (String var4 : var1.getAllKeys()) {
-         ResourceLocation var5 = new ResourceLocation(var4);
+         ResourceLocation var5 = ResourceLocation.parse(var4);
          this.events.put(var5, CustomBossEvent.load(var1.getCompound(var4), var5, var2));
       }
    }

@@ -1,89 +1,13 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import java.util.function.BiFunction;
-import java.util.function.UnaryOperator;
-import net.minecraft.core.LayeredRegistryAccess;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.server.RegistryLayer;
-import net.minecraft.server.ReloadableServerResources;
-import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.levelgen.WorldDimensions;
-import net.minecraft.world.level.levelgen.WorldGenSettings;
-import net.minecraft.world.level.levelgen.WorldOptions;
-
-public record WorldCreationContext(
-   WorldOptions options,
-   Registry<LevelStem> datapackDimensions,
-   WorldDimensions selectedDimensions,
-   LayeredRegistryAccess<RegistryLayer> worldgenRegistries,
-   ReloadableServerResources dataPackResources,
-   WorldDataConfiguration dataConfiguration
-) {
-   public WorldCreationContext(WorldGenSettings var1, LayeredRegistryAccess<RegistryLayer> var2, ReloadableServerResources var3, WorldDataConfiguration var4) {
-      this(var1.options(), var1.dimensions(), var2, var3, var4);
-   }
-
-   public WorldCreationContext(
-      WorldOptions var1, WorldDimensions var2, LayeredRegistryAccess<RegistryLayer> var3, ReloadableServerResources var4, WorldDataConfiguration var5
-   ) {
-      this(var1, var3.getLayer(RegistryLayer.DIMENSIONS).registryOrThrow(Registries.LEVEL_STEM), var2, var3.replaceFrom(RegistryLayer.DIMENSIONS), var4, var5);
-   }
-
-   public WorldCreationContext(
-      WorldOptions options,
-      Registry<LevelStem> datapackDimensions,
-      WorldDimensions selectedDimensions,
-      LayeredRegistryAccess<RegistryLayer> worldgenRegistries,
-      ReloadableServerResources dataPackResources,
-      WorldDataConfiguration dataConfiguration
-   ) {
-      super();
-      this.options = options;
-      this.datapackDimensions = datapackDimensions;
-      this.selectedDimensions = selectedDimensions;
-      this.worldgenRegistries = worldgenRegistries;
-      this.dataPackResources = dataPackResources;
-      this.dataConfiguration = dataConfiguration;
-   }
-
-   public WorldCreationContext withSettings(WorldOptions var1, WorldDimensions var2) {
-      return new WorldCreationContext(var1, this.datapackDimensions, var2, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration);
-   }
-
-   public WorldCreationContext withOptions(WorldCreationContext.OptionsModifier var1) {
-      return new WorldCreationContext(
-         var1.apply(this.options), this.datapackDimensions, this.selectedDimensions, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration
-      );
-   }
-
-   public WorldCreationContext withDimensions(WorldCreationContext.DimensionsUpdater var1) {
-      return new WorldCreationContext(
-         this.options,
-         this.datapackDimensions,
-         var1.apply(this.worldgenLoadContext(), this.selectedDimensions),
-         this.worldgenRegistries,
-         this.dataPackResources,
-         this.dataConfiguration
-      );
-   }
-
-   public RegistryAccess.Frozen worldgenLoadContext() {
-      return this.worldgenRegistries.compositeAccess();
-   }
-
-   public void validate() {
-      for (LevelStem var2 : this.datapackDimensions()) {
-         var2.generator().validate();
-      }
-   }
-
-   @FunctionalInterface
-   public interface DimensionsUpdater extends BiFunction<RegistryAccess.Frozen, WorldDimensions, WorldDimensions> {
-   }
-
-   public interface OptionsModifier extends UnaryOperator<WorldOptions> {
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

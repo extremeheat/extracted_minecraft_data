@@ -1,37 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-import net.minecraft.util.debugchart.RemoteDebugSampleType;
-
-public record ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType debugSampleType) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundDebugSamplePacket> STREAM_CODEC = Packet.codec(
-      ClientboundDebugSamplePacket::write, ClientboundDebugSamplePacket::new
-   );
-
-   private ClientboundDebugSamplePacket(FriendlyByteBuf var1) {
-      this(var1.readLongArray(), var1.readEnum(RemoteDebugSampleType.class));
-   }
-
-   public ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType debugSampleType) {
-      super();
-      this.sample = sample;
-      this.debugSampleType = debugSampleType;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeLongArray(this.sample);
-      var1.writeEnum(this.debugSampleType);
-   }
-
-   @Override
-   public PacketType<ClientboundDebugSamplePacket> type() {
-      return GamePacketTypes.CLIENTBOUND_DEBUG_SAMPLE;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleDebugSample(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

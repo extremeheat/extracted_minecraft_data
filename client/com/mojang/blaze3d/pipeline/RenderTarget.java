@@ -6,13 +6,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexSorting;
+import java.util.Objects;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
-import org.joml.Matrix4f;
 
 public abstract class RenderTarget {
    private static final int RED_CHANNEL = 0;
@@ -223,31 +221,15 @@ public abstract class RenderTarget {
       }
 
       Minecraft var4 = Minecraft.getInstance();
-      ShaderInstance var5 = var4.gameRenderer.blitShader;
+      ShaderInstance var5 = Objects.requireNonNull(var4.gameRenderer.blitShader, "Blit shader not loaded");
       var5.setSampler("DiffuseSampler", this.colorTextureId);
-      Matrix4f var6 = new Matrix4f().setOrtho(0.0F, (float)var1, (float)var2, 0.0F, 1000.0F, 3000.0F);
-      RenderSystem.setProjectionMatrix(var6, VertexSorting.ORTHOGRAPHIC_Z);
-      if (var5.MODEL_VIEW_MATRIX != null) {
-         var5.MODEL_VIEW_MATRIX.set(new Matrix4f().translation(0.0F, 0.0F, -2000.0F));
-      }
-
-      if (var5.PROJECTION_MATRIX != null) {
-         var5.PROJECTION_MATRIX.set(var6);
-      }
-
       var5.apply();
-      float var7 = (float)var1;
-      float var8 = (float)var2;
-      float var9 = (float)this.viewWidth / (float)this.width;
-      float var10 = (float)this.viewHeight / (float)this.height;
-      Tesselator var11 = RenderSystem.renderThreadTesselator();
-      BufferBuilder var12 = var11.getBuilder();
-      var12.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-      var12.vertex(0.0, (double)var8, 0.0).uv(0.0F, 0.0F).color(255, 255, 255, 255).endVertex();
-      var12.vertex((double)var7, (double)var8, 0.0).uv(var9, 0.0F).color(255, 255, 255, 255).endVertex();
-      var12.vertex((double)var7, 0.0, 0.0).uv(var9, var10).color(255, 255, 255, 255).endVertex();
-      var12.vertex(0.0, 0.0, 0.0).uv(0.0F, var10).color(255, 255, 255, 255).endVertex();
-      BufferUploader.draw(var12.end());
+      BufferBuilder var6 = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLIT_SCREEN);
+      var6.addVertex(0.0F, 0.0F, 0.0F);
+      var6.addVertex(1.0F, 0.0F, 0.0F);
+      var6.addVertex(1.0F, 1.0F, 0.0F);
+      var6.addVertex(0.0F, 1.0F, 0.0F);
+      BufferUploader.draw(var6.buildOrThrow());
       var5.clear();
       GlStateManager._depthMask(true);
       GlStateManager._colorMask(true, true, true, true);

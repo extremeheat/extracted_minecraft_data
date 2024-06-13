@@ -243,6 +243,14 @@ public class BlockPos extends Vec3i {
       return new BlockPos.MutableBlockPos(this.getX(), this.getY(), this.getZ());
    }
 
+   public Vec3 clampLocationWithin(Vec3 var1) {
+      return new Vec3(
+         Mth.clamp(var1.x, (double)((float)this.getX() + 1.0E-5F), (double)this.getX() + 1.0 - 9.999999747378752E-6),
+         Mth.clamp(var1.y, (double)((float)this.getY() + 1.0E-5F), (double)this.getY() + 1.0 - 9.999999747378752E-6),
+         Mth.clamp(var1.z, (double)((float)this.getZ() + 1.0E-5F), (double)this.getZ() + 1.0 - 9.999999747378752E-6)
+      );
+   }
+
    public static Iterable<BlockPos> randomInCube(RandomSource var0, int var1, BlockPos var2, int var3) {
       return randomBetweenClosed(
          var0, var1, var2.getX() - var3, var2.getY() - var3, var2.getZ() - var3, var2.getX() + var3, var2.getY() + var3, var2.getZ() + var3

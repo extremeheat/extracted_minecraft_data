@@ -43,8 +43,8 @@ import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.StainedGlassPaneBlock;
 
 public class ItemRenderer implements ResourceManagerReloadListener {
-   public static final ResourceLocation ENCHANTED_GLINT_ENTITY = new ResourceLocation("textures/misc/enchanted_glint_entity.png");
-   public static final ResourceLocation ENCHANTED_GLINT_ITEM = new ResourceLocation("textures/misc/enchanted_glint_item.png");
+   public static final ResourceLocation ENCHANTED_GLINT_ENTITY = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_entity.png");
+   public static final ResourceLocation ENCHANTED_GLINT_ITEM = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_item.png");
    private static final Set<Item> IGNORED = Sets.newHashSet(new Item[]{Items.AIR});
    public static final int GUI_SLOT_CENTER_X = 8;
    public static final int GUI_SLOT_CENTER_Y = 8;
@@ -111,15 +111,15 @@ public class ItemRenderer implements ResourceManagerReloadListener {
          var4.translate(-0.5F, -0.5F, -0.5F);
          if (!var8.isCustomRenderer() && (!var1.is(Items.TRIDENT) || var9)) {
             boolean var10;
-            if (var2 != ItemDisplayContext.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem) {
-               Block var11 = ((BlockItem)var1.getItem()).getBlock();
-               var10 = !(var11 instanceof HalfTransparentBlock) && !(var11 instanceof StainedGlassPaneBlock);
+            if (var2 != ItemDisplayContext.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem var11) {
+               Block var15 = var11.getBlock();
+               var10 = !(var15 instanceof HalfTransparentBlock) && !(var15 instanceof StainedGlassPaneBlock);
             } else {
                var10 = true;
             }
 
             RenderType var14 = ItemBlockRenderTypes.getRenderType(var1, var10);
-            VertexConsumer var12;
+            VertexConsumer var16;
             if (hasAnimatedTexture(var1) && var1.hasFoil()) {
                PoseStack.Pose var13 = var4.last().copy();
                if (var2 == ItemDisplayContext.GUI) {
@@ -128,18 +128,14 @@ public class ItemRenderer implements ResourceManagerReloadListener {
                   MatrixUtil.mulComponentWise(var13.pose(), 0.75F);
                }
 
-               if (var10) {
-                  var12 = getCompassFoilBufferDirect(var5, var14, var13);
-               } else {
-                  var12 = getCompassFoilBuffer(var5, var14, var13);
-               }
+               var16 = getCompassFoilBuffer(var5, var14, var13);
             } else if (var10) {
-               var12 = getFoilBufferDirect(var5, var14, true, var1.hasFoil());
+               var16 = getFoilBufferDirect(var5, var14, true, var1.hasFoil());
             } else {
-               var12 = getFoilBuffer(var5, var14, true, var1.hasFoil());
+               var16 = getFoilBuffer(var5, var14, true, var1.hasFoil());
             }
 
-            this.renderModelLists(var8, var1, var6, var7, var4, var12);
+            this.renderModelLists(var8, var1, var6, var7, var4, var16);
          } else {
             this.blockEntityRenderer.renderByItem(var1, var2, var4, var5, var6, var7);
          }
@@ -152,18 +148,12 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       return var0.is(ItemTags.COMPASSES) || var0.is(Items.CLOCK);
    }
 
-   public static VertexConsumer getArmorFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
-      return var3
-         ? VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.armorGlint() : RenderType.armorEntityGlint()), var0.getBuffer(var1))
-         : var0.getBuffer(var1);
+   public static VertexConsumer getArmorFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2) {
+      return var2 ? VertexMultiConsumer.create(var0.getBuffer(RenderType.armorEntityGlint()), var0.getBuffer(var1)) : var0.getBuffer(var1);
    }
 
    public static VertexConsumer getCompassFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
       return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glint()), var2, 0.0078125F), var0.getBuffer(var1));
-   }
-
-   public static VertexConsumer getCompassFoilBufferDirect(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
-      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glintDirect()), var2, 0.0078125F), var0.getBuffer(var1));
    }
 
    public static VertexConsumer getFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
@@ -178,7 +168,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
    public static VertexConsumer getFoilBufferDirect(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
       return var3
-         ? VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glintDirect() : RenderType.entityGlintDirect()), var0.getBuffer(var1))
+         ? VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glint() : RenderType.entityGlintDirect()), var0.getBuffer(var1))
          : var0.getBuffer(var1);
    }
 

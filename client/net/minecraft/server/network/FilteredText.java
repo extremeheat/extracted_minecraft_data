@@ -1,36 +1,13 @@
 package net.minecraft.server.network;
 
-import java.util.Objects;
-import javax.annotation.Nullable;
-import net.minecraft.network.chat.FilterMask;
-
-public record FilteredText(String raw, FilterMask mask) {
-   public static final FilteredText EMPTY = passThrough("");
-
-   public FilteredText(String raw, FilterMask mask) {
-      super();
-      this.raw = raw;
-      this.mask = mask;
-   }
-
-   public static FilteredText passThrough(String var0) {
-      return new FilteredText(var0, FilterMask.PASS_THROUGH);
-   }
-
-   public static FilteredText fullyFiltered(String var0) {
-      return new FilteredText(var0, FilterMask.FULLY_FILTERED);
-   }
-
-   @Nullable
-   public String filtered() {
-      return this.mask.apply(this.raw);
-   }
-
-   public String filteredOrEmpty() {
-      return Objects.requireNonNullElse(this.filtered(), "");
-   }
-
-   public boolean isFiltered() {
-      return !this.mask.isEmpty();
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

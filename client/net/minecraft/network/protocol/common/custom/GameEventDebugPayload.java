@@ -1,35 +1,13 @@
 package net.minecraft.network.protocol.common.custom;
 
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.phys.Vec3;
-
-public record GameEventDebugPayload(ResourceKey<GameEvent> gameEventType, Vec3 pos) implements CustomPacketPayload {
-   public static final StreamCodec<FriendlyByteBuf, GameEventDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      GameEventDebugPayload::write, GameEventDebugPayload::new
-   );
-   public static final CustomPacketPayload.Type<GameEventDebugPayload> TYPE = CustomPacketPayload.createType("debug/game_event");
-
-   private GameEventDebugPayload(FriendlyByteBuf var1) {
-      this(var1.readResourceKey(Registries.GAME_EVENT), var1.readVec3());
-   }
-
-   public GameEventDebugPayload(ResourceKey<GameEvent> gameEventType, Vec3 pos) {
-      super();
-      this.gameEventType = gameEventType;
-      this.pos = pos;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeResourceKey(this.gameEventType);
-      var1.writeVec3(this.pos);
-   }
-
-   @Override
-   public CustomPacketPayload.Type<GameEventDebugPayload> type() {
-      return TYPE;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

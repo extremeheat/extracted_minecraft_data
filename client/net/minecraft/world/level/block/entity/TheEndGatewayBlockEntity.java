@@ -1,9 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
-import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -13,12 +11,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -28,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -77,30 +70,19 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       }
    }
 
-   public static void teleportTick(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
+   public static void portalTick(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
       boolean var4 = var3.isSpawning();
       boolean var5 = var3.isCoolingDown();
       var3.age++;
       if (var5) {
          var3.teleportCooldown--;
-      } else {
-         List var6 = var0.getEntitiesOfClass(Entity.class, new AABB(var1), TheEndGatewayBlockEntity::canEntityTeleport);
-         if (!var6.isEmpty()) {
-            teleportEntity(var0, var1, var2, (Entity)var6.get(var0.random.nextInt(var6.size())), var3);
-         }
-
-         if (var3.age % 2400L == 0L) {
-            triggerCooldown(var0, var1, var2, var3);
-         }
+      } else if (var3.age % 2400L == 0L) {
+         triggerCooldown(var0, var1, var2, var3);
       }
 
       if (var4 != var3.isSpawning() || var5 != var3.isCoolingDown()) {
          setChanged(var0, var1, var2);
       }
-   }
-
-   public static boolean canEntityTeleport(Entity var0) {
-      return EntitySelector.NO_SPECTATORS.test(var0) && !var0.getRootVehicle().isOnPortalCooldown();
    }
 
    public boolean isSpawning() {
@@ -128,7 +110,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       return this.saveCustomOnly(var1);
    }
 
-   private static void triggerCooldown(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
+   public static void triggerCooldown(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
       if (!var0.isClientSide) {
          var3.teleportCooldown = 40;
          var0.blockEvent(var1, var2.getBlock(), 1, 0);
@@ -146,42 +128,21 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       }
    }
 
-   public static void teleportEntity(Level var0, BlockPos var1, BlockState var2, Entity var3, TheEndGatewayBlockEntity var4) {
-      if (var0 instanceof ServerLevel && !var4.isCoolingDown()) {
-         ServerLevel var5 = (ServerLevel)var0;
-         var4.teleportCooldown = 100;
-         if (var4.exitPortal == null && var0.dimension() == Level.END) {
-            BlockPos var6 = findOrCreateValidTeleportPos(var5, var1);
-            var6 = var6.above(10);
-            LOGGER.debug("Creating portal at {}", var6);
-            spawnGatewayPortal(var5, var6, EndGatewayConfiguration.knownExit(var1, false));
-            var4.exitPortal = var6;
-         }
+   @Nullable
+   public Vec3 getPortalPosition(ServerLevel var1, BlockPos var2) {
+      if (this.exitPortal == null && var1.dimension() == Level.END) {
+         BlockPos var3 = findOrCreateValidTeleportPos(var1, var2);
+         var3 = var3.above(10);
+         LOGGER.debug("Creating portal at {}", var3);
+         spawnGatewayPortal(var1, var3, EndGatewayConfiguration.knownExit(var2, false));
+         this.exitPortal = var3;
+      }
 
-         if (var4.exitPortal != null) {
-            BlockPos var10 = var4.exactTeleport ? var4.exitPortal : findExitPosition(var0, var4.exitPortal);
-            Entity var7;
-            if (var3 instanceof ThrownEnderpearl) {
-               Entity var8 = ((ThrownEnderpearl)var3).getOwner();
-               if (var8 instanceof ServerPlayer) {
-                  CriteriaTriggers.ENTER_BLOCK.trigger((ServerPlayer)var8, var2);
-               }
-
-               if (var8 != null) {
-                  var7 = var8;
-                  var3.discard();
-               } else {
-                  var7 = var3;
-               }
-            } else {
-               var7 = var3.getRootVehicle();
-            }
-
-            var7.setPortalCooldown();
-            var7.teleportToWithTicket((double)var10.getX() + 0.5, (double)var10.getY(), (double)var10.getZ() + 0.5);
-         }
-
-         triggerCooldown(var0, var1, var2, var4);
+      if (this.exitPortal != null) {
+         BlockPos var5 = this.exactTeleport ? this.exitPortal : findExitPosition(var1, this.exitPortal);
+         return new Vec3((double)var5.getX() + 0.5, (double)var5.getY(), (double)var5.getZ() + 0.5);
+      } else {
+         return null;
       }
    }
 

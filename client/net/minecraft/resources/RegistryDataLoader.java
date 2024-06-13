@@ -3,7 +3,6 @@ package net.minecraft.resources;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.JsonOps;
@@ -18,11 +17,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.minecraft.Util;
-import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -39,6 +36,7 @@ import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.decoration.PaintingVariant;
+import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.armortrim.TrimMaterial;
 import net.minecraft.world.item.armortrim.TrimPattern;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -93,7 +91,8 @@ public class RegistryDataLoader {
       new RegistryDataLoader.RegistryData<>(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC)
    );
    public static final List<RegistryDataLoader.RegistryData<?>> DIMENSION_REGISTRIES = List.of(
       new RegistryDataLoader.RegistryData<>(Registries.LEVEL_STEM, LevelStem.CODEC)
@@ -108,7 +107,8 @@ public class RegistryDataLoader {
       new RegistryDataLoader.RegistryData<>(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC)
    );
 
    public RegistryDataLoader() {
@@ -195,10 +195,6 @@ public class RegistryDataLoader {
       LOGGER.error("Registry loading errors:\n{}", var1);
    }
 
-   private static String registryDirPath(ResourceLocation var0) {
-      return var0.getPath();
-   }
-
    private static <E> void loadElementFromResource(
       WritableRegistry<E> var0, Decoder<E> var1, RegistryOps<JsonElement> var2, ResourceKey<E> var3, Resource var4, RegistrationInfo var5
    ) throws IOException {
@@ -213,7 +209,7 @@ public class RegistryDataLoader {
    static <E> void loadContentsFromManager(
       ResourceManager var0, RegistryOps.RegistryInfoLookup var1, WritableRegistry<E> var2, Decoder<E> var3, Map<ResourceKey<?>, Exception> var4
    ) {
-      String var5 = registryDirPath(var2.key().location());
+      String var5 = Registries.elementsDirPath(var2.key());
       FileToIdConverter var6 = FileToIdConverter.json(var5);
       RegistryOps var7 = RegistryOps.create(JsonOps.INSTANCE, var1);
 
@@ -243,7 +239,7 @@ public class RegistryDataLoader {
       if (var6 != null) {
          RegistryOps var7 = RegistryOps.create(NbtOps.INSTANCE, var2);
          RegistryOps var8 = RegistryOps.create(JsonOps.INSTANCE, var2);
-         String var9 = registryDirPath(var3.key().location());
+         String var9 = Registries.elementsDirPath(var3.key());
          FileToIdConverter var10 = FileToIdConverter.json(var9);
 
          for (RegistrySynchronization.PackedRegistryEntry var12 : var6) {
@@ -271,53 +267,34 @@ public class RegistryDataLoader {
       }
    }
 
-   static record Loader<T>(RegistryDataLoader.RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
-
-      Loader(RegistryDataLoader.RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
-         super();
-         this.data = data;
-         this.registry = registry;
-         this.loadingErrors = loadingErrors;
-      }
-
-      public void loadFromResources(ResourceManager var1, RegistryOps.RegistryInfoLookup var2) {
-         RegistryDataLoader.loadContentsFromManager(var1, var2, this.registry, this.data.elementCodec, this.loadingErrors);
-      }
-
-      public void loadFromNetwork(
-         Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> var1,
-         ResourceProvider var2,
-         RegistryOps.RegistryInfoLookup var3
-      ) {
-         RegistryDataLoader.loadContentsFromNetwork(var1, var2, var3, this.registry, this.data.elementCodec, this.loadingErrors);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    @FunctionalInterface
    interface LoadingFunction {
       void apply(RegistryDataLoader.Loader<?> var1, RegistryOps.RegistryInfoLookup var2);
    }
 
-   public static record RegistryData<T>(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {
-
-      RegistryData(ResourceKey<? extends Registry<T>> var1, Codec<T> var2) {
-         this(var1, var2, false);
-      }
-
-      public RegistryData(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {
-         super();
-         this.key = key;
-         this.elementCodec = elementCodec;
-         this.requiredNonEmpty = requiredNonEmpty;
-      }
-
-      RegistryDataLoader.Loader<T> create(Lifecycle var1, Map<ResourceKey<?>, Exception> var2) {
-         MappedRegistry var3 = new MappedRegistry<>(this.key, var1);
-         return new RegistryDataLoader.Loader<>(this, var3, var2);
-      }
-
-      public void runWithArguments(BiConsumer<ResourceKey<? extends Registry<T>>, Codec<T>> var1) {
-         var1.accept(this.key, this.elementCodec);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

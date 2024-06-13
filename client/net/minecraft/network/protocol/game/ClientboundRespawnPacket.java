@@ -1,43 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-
-public record ClientboundRespawnPacket(CommonPlayerSpawnInfo commonPlayerSpawnInfo, byte dataToKeep) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRespawnPacket> STREAM_CODEC = Packet.codec(
-      ClientboundRespawnPacket::write, ClientboundRespawnPacket::new
-   );
-   public static final byte KEEP_ATTRIBUTE_MODIFIERS = 1;
-   public static final byte KEEP_ENTITY_DATA = 2;
-   public static final byte KEEP_ALL_DATA = 3;
-
-   private ClientboundRespawnPacket(RegistryFriendlyByteBuf var1) {
-      this(new CommonPlayerSpawnInfo(var1), var1.readByte());
-   }
-
-   public ClientboundRespawnPacket(CommonPlayerSpawnInfo commonPlayerSpawnInfo, byte dataToKeep) {
-      super();
-      this.commonPlayerSpawnInfo = commonPlayerSpawnInfo;
-      this.dataToKeep = dataToKeep;
-   }
-
-   private void write(RegistryFriendlyByteBuf var1) {
-      this.commonPlayerSpawnInfo.write(var1);
-      var1.writeByte(this.dataToKeep);
-   }
-
-   @Override
-   public PacketType<ClientboundRespawnPacket> type() {
-      return GamePacketTypes.CLIENTBOUND_RESPAWN;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRespawn(this);
-   }
-
-   public boolean shouldKeep(byte var1) {
-      return (this.dataToKeep & var1) != 0;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -99,7 +99,7 @@ public class StructureUtils {
       var4.setBlockAndUpdate(var1, Blocks.STRUCTURE_BLOCK.defaultBlockState());
       StructureBlockEntity var6 = (StructureBlockEntity)var4.getBlockEntity(var1);
       var6.setIgnoreEntities(false);
-      var6.setStructureName(new ResourceLocation(var0));
+      var6.setStructureName(ResourceLocation.parse(var0));
       var6.setStructureSize(var2);
       var6.setMode(StructureMode.SAVE);
       var6.setShowBoundingBox(true);
@@ -107,7 +107,7 @@ public class StructureUtils {
 
    public static StructureBlockEntity prepareTestStructure(GameTestInfo var0, BlockPos var1, Rotation var2, ServerLevel var3) {
       Vec3i var4 = var3.getStructureManager()
-         .get(new ResourceLocation(var0.getStructureName()))
+         .get(ResourceLocation.parse(var0.getStructureName()))
          .orElseThrow(() -> new IllegalStateException("Missing test structure: " + var0.getStructureName()))
          .getSize();
       BoundingBox var5 = getStructureBoundingBox(var1, var4, var2);
@@ -212,7 +212,7 @@ public class StructureUtils {
       var4.setMode(StructureMode.LOAD);
       var4.setRotation(var2);
       var4.setIgnoreEntities(false);
-      var4.setStructureName(new ResourceLocation(var0.getStructureName()));
+      var4.setStructureName(ResourceLocation.parse(var0.getStructureName()));
       var4.setMetaData(var0.getTestName());
       if (!var4.loadStructureInfo(var3)) {
          throw new RuntimeException("Failed to load structure info for test: " + var0.getTestName() + ". Structure name: " + var0.getStructureName());

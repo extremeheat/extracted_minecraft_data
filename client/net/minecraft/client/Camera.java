@@ -21,17 +21,20 @@ import org.joml.Vector3f;
 
 public class Camera {
    private static final float DEFAULT_CAMERA_DISTANCE = 4.0F;
+   private static final Vector3f FORWARDS = new Vector3f(0.0F, 0.0F, -1.0F);
+   private static final Vector3f UP = new Vector3f(0.0F, 1.0F, 0.0F);
+   private static final Vector3f LEFT = new Vector3f(-1.0F, 0.0F, 0.0F);
    private boolean initialized;
    private BlockGetter level;
    private Entity entity;
    private Vec3 position = Vec3.ZERO;
    private final BlockPos.MutableBlockPos blockPosition = new BlockPos.MutableBlockPos();
-   private final Vector3f forwards = new Vector3f(0.0F, 0.0F, 1.0F);
-   private final Vector3f up = new Vector3f(0.0F, 1.0F, 0.0F);
-   private final Vector3f left = new Vector3f(1.0F, 0.0F, 0.0F);
+   private final Vector3f forwards = new Vector3f(FORWARDS);
+   private final Vector3f up = new Vector3f(UP);
+   private final Vector3f left = new Vector3f(LEFT);
    private float xRot;
    private float yRot;
-   private final Quaternionf rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
+   private final Quaternionf rotation = new Quaternionf();
    private boolean detached;
    private float eyeHeight;
    private float eyeHeightOld;
@@ -60,11 +63,11 @@ public class Camera {
          }
 
          float var6 = var2 instanceof LivingEntity var7 ? var7.getScale() : 1.0F;
-         this.move(-this.getMaxZoom((double)(4.0F * var6)), 0.0, 0.0);
+         this.move(-this.getMaxZoom(4.0F * var6), 0.0F, 0.0F);
       } else if (var2 instanceof LivingEntity && ((LivingEntity)var2).isSleeping()) {
          Direction var8 = ((LivingEntity)var2).getBedOrientation();
          this.setRotation(var8 != null ? var8.toYRot() - 180.0F : 0.0F, 0.0F);
-         this.move(0.0, 0.3, 0.0);
+         this.move(0.0F, 0.3F, 0.0F);
       }
    }
 
@@ -75,25 +78,20 @@ public class Camera {
       }
    }
 
-   private double getMaxZoom(double var1) {
+   private float getMaxZoom(float var1) {
+      float var2 = 0.1F;
+
       for (int var3 = 0; var3 < 8; var3++) {
          float var4 = (float)((var3 & 1) * 2 - 1);
          float var5 = (float)((var3 >> 1 & 1) * 2 - 1);
          float var6 = (float)((var3 >> 2 & 1) * 2 - 1);
-         var4 *= 0.1F;
-         var5 *= 0.1F;
-         var6 *= 0.1F;
-         Vec3 var7 = this.position.add((double)var4, (double)var5, (double)var6);
-         Vec3 var8 = new Vec3(
-            this.position.x - (double)this.forwards.x() * var1 + (double)var4,
-            this.position.y - (double)this.forwards.y() * var1 + (double)var5,
-            this.position.z - (double)this.forwards.z() * var1 + (double)var6
-         );
+         Vec3 var7 = this.position.add((double)(var4 * 0.1F), (double)(var5 * 0.1F), (double)(var6 * 0.1F));
+         Vec3 var8 = var7.add(new Vec3(this.forwards).scale((double)(-var1)));
          BlockHitResult var9 = this.level.clip(new ClipContext(var7, var8, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, this.entity));
          if (var9.getType() != HitResult.Type.MISS) {
-            double var10 = var9.getLocation().distanceTo(this.position);
-            if (var10 < var1) {
-               var1 = var10;
+            float var10 = (float)var9.getLocation().distanceToSqr(this.position);
+            if (var10 < Mth.square(var1)) {
+               var1 = Mth.sqrt(var10);
             }
          }
       }
@@ -101,20 +99,18 @@ public class Camera {
       return var1;
    }
 
-   protected void move(double var1, double var3, double var5) {
-      double var7 = (double)this.forwards.x() * var1 + (double)this.up.x() * var3 + (double)this.left.x() * var5;
-      double var9 = (double)this.forwards.y() * var1 + (double)this.up.y() * var3 + (double)this.left.y() * var5;
-      double var11 = (double)this.forwards.z() * var1 + (double)this.up.z() * var3 + (double)this.left.z() * var5;
-      this.setPosition(new Vec3(this.position.x + var7, this.position.y + var9, this.position.z + var11));
+   protected void move(float var1, float var2, float var3) {
+      Vector3f var4 = new Vector3f(var3, var2, -var1).rotate(this.rotation);
+      this.setPosition(new Vec3(this.position.x + (double)var4.x, this.position.y + (double)var4.y, this.position.z + (double)var4.z));
    }
 
    protected void setRotation(float var1, float var2) {
       this.xRot = var2;
       this.yRot = var1;
-      this.rotation.rotationYXZ(-var1 * 0.017453292F, var2 * 0.017453292F, 0.0F);
-      this.forwards.set(0.0F, 0.0F, 1.0F).rotate(this.rotation);
-      this.up.set(0.0F, 1.0F, 0.0F).rotate(this.rotation);
-      this.left.set(1.0F, 0.0F, 0.0F).rotate(this.rotation);
+      this.rotation.rotationYXZ(3.1415927F - var1 * 0.017453292F, -var2 * 0.017453292F, 0.0F);
+      FORWARDS.rotate(this.rotation, this.forwards);
+      UP.rotate(this.rotation, this.up);
+      LEFT.rotate(this.rotation, this.left);
    }
 
    protected void setPosition(double var1, double var3, double var5) {

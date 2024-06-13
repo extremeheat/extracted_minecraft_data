@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -17,7 +16,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 public class FishingHookRenderer extends EntityRenderer<FishingHook> {
-   private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/fishing_hook.png");
+   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fishing_hook.png");
    private static final RenderType RENDER_TYPE = RenderType.entityCutout(TEXTURE_LOCATION);
    private static final double VIEW_BOBBING_SCALE = 960.0;
 
@@ -32,7 +31,6 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook> {
          var4.pushPose();
          var4.scale(0.5F, 0.5F, 0.5F);
          var4.mulPose(this.entityRenderDispatcher.cameraOrientation());
-         var4.mulPose(Axis.YP.rotationDegrees(180.0F));
          PoseStack.Pose var8 = var4.last();
          VertexConsumer var9 = var5.getBuffer(RENDER_TYPE);
          vertex(var9, var8, var6, 0.0F, 0, 0, 1);
@@ -94,13 +92,12 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook> {
    }
 
    private static void vertex(VertexConsumer var0, PoseStack.Pose var1, int var2, float var3, int var4, int var5, int var6) {
-      var0.vertex(var1, var3 - 0.5F, (float)var4 - 0.5F, 0.0F)
-         .color(255, 255, 255, 255)
-         .uv((float)var5, (float)var6)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var2)
-         .normal(var1, 0.0F, 1.0F, 0.0F)
-         .endVertex();
+      var0.addVertex(var1, var3 - 0.5F, (float)var4 - 0.5F, 0.0F)
+         .setColor(-1)
+         .setUv((float)var5, (float)var6)
+         .setOverlay(OverlayTexture.NO_OVERLAY)
+         .setLight(var2)
+         .setNormal(var1, 0.0F, 1.0F, 0.0F);
    }
 
    private static void stringVertex(float var0, float var1, float var2, VertexConsumer var3, PoseStack.Pose var4, float var5, float var6) {
@@ -114,7 +111,7 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook> {
       var10 /= var13;
       var11 /= var13;
       var12 /= var13;
-      var3.vertex(var4, var7, var8, var9).color(0, 0, 0, 255).normal(var4, var10, var11, var12).endVertex();
+      var3.addVertex(var4, var7, var8, var9).setColor(-16777216).setNormal(var4, var10, var11, var12);
    }
 
    public ResourceLocation getTextureLocation(FishingHook var1) {

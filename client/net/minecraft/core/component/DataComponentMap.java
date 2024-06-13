@@ -176,42 +176,18 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
          }
       }
 
-      static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) implements DataComponentMap {
-         SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) {
-            super();
-            this.map = map;
-         }
-
-         @Nullable
-         @Override
-         public <T> T get(DataComponentType<? extends T> var1) {
-            return (T)this.map.get(var1);
-         }
-
-         @Override
-         public boolean has(DataComponentType<?> var1) {
-            return this.map.containsKey(var1);
-         }
-
-         @Override
-         public Set<DataComponentType<?>> keySet() {
-            return this.map.keySet();
-         }
-
-         @Override
-         public Iterator<TypedDataComponent<?>> iterator() {
-            return Iterators.transform(Reference2ObjectMaps.fastIterator(this.map), TypedDataComponent::fromEntryUnchecked);
-         }
-
-         @Override
-         public int size() {
-            return this.map.size();
-         }
-
-         @Override
-         public String toString() {
-            return this.map.toString();
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
    }
 }

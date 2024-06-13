@@ -3,9 +3,7 @@ package net.minecraft.world.effect;
 import com.google.common.collect.ComparisonChain;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -15,9 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -397,55 +393,16 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       }
    }
 
-   static record Details(
-      int amplifier, int duration, boolean ambient, boolean showParticles, boolean showIcon, Optional<MobEffectInstance.Details> hiddenEffect
-   ) {
-      public static final MapCodec<MobEffectInstance.Details> MAP_CODEC = MapCodec.recursive(
-         "MobEffectInstance.Details",
-         var0 -> RecordCodecBuilder.mapCodec(
-               var1 -> var1.group(
-                        ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("amplifier", 0).forGetter(MobEffectInstance.Details::amplifier),
-                        Codec.INT.optionalFieldOf("duration", 0).forGetter(MobEffectInstance.Details::duration),
-                        Codec.BOOL.optionalFieldOf("ambient", false).forGetter(MobEffectInstance.Details::ambient),
-                        Codec.BOOL.optionalFieldOf("show_particles", true).forGetter(MobEffectInstance.Details::showParticles),
-                        Codec.BOOL.optionalFieldOf("show_icon").forGetter(var0xx -> Optional.of(var0xx.showIcon())),
-                        var0.optionalFieldOf("hidden_effect").forGetter(MobEffectInstance.Details::hiddenEffect)
-                     )
-                     .apply(var1, MobEffectInstance.Details::create)
-            )
-      );
-      public static final StreamCodec<ByteBuf, MobEffectInstance.Details> STREAM_CODEC = StreamCodec.recursive(
-         var0 -> StreamCodec.composite(
-               ByteBufCodecs.VAR_INT,
-               MobEffectInstance.Details::amplifier,
-               ByteBufCodecs.VAR_INT,
-               MobEffectInstance.Details::duration,
-               ByteBufCodecs.BOOL,
-               MobEffectInstance.Details::ambient,
-               ByteBufCodecs.BOOL,
-               MobEffectInstance.Details::showParticles,
-               ByteBufCodecs.BOOL,
-               MobEffectInstance.Details::showIcon,
-               var0.apply(ByteBufCodecs::optional),
-               MobEffectInstance.Details::hiddenEffect,
-               MobEffectInstance.Details::new
-            )
-      );
-
-      Details(int amplifier, int duration, boolean ambient, boolean showParticles, boolean showIcon, Optional<MobEffectInstance.Details> hiddenEffect) {
-         super();
-         this.amplifier = amplifier;
-         this.duration = duration;
-         this.ambient = ambient;
-         this.showParticles = showParticles;
-         this.showIcon = showIcon;
-         this.hiddenEffect = hiddenEffect;
-      }
-
-      private static MobEffectInstance.Details create(
-         int var0, int var1, boolean var2, boolean var3, Optional<Boolean> var4, Optional<MobEffectInstance.Details> var5
-      ) {
-         return new MobEffectInstance.Details(var0, var1, var2, var3, var4.orElse(var3), var5);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

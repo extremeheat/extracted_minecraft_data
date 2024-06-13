@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.advancements.Advancement;
@@ -330,17 +329,16 @@ public class PlayerAdvancements {
       });
    }
 
-   static record Data(Map<ResourceLocation, AdvancementProgress> map) {
-      public static final Codec<PlayerAdvancements.Data> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, AdvancementProgress.CODEC)
-         .xmap(PlayerAdvancements.Data::new, PlayerAdvancements.Data::map);
-
-      Data(Map<ResourceLocation, AdvancementProgress> map) {
-         super();
-         this.map = map;
-      }
-
-      public void forEach(BiConsumer<ResourceLocation, AdvancementProgress> var1) {
-         this.map.entrySet().stream().sorted(Entry.comparingByValue()).forEach(var1x -> var1.accept(var1x.getKey(), var1x.getValue()));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

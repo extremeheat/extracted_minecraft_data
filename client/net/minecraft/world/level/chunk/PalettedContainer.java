@@ -15,7 +15,6 @@ import java.util.stream.LongStream;
 import javax.annotation.Nullable;
 import net.minecraft.core.IdMap;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.VarInt;
 import net.minecraft.util.BitStorage;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
@@ -287,55 +286,36 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       }
    }
 
-   static record Configuration<T>(Palette.Factory factory, int bits) {
-      Configuration(Palette.Factory factory, int bits) {
-         super();
-         this.factory = factory;
-         this.bits = bits;
-      }
-
-      public PalettedContainer.Data<T> createData(IdMap<T> var1, PaletteResize<T> var2, int var3) {
-         Object var4 = this.bits == 0 ? new ZeroBitStorage(var3) : new SimpleBitStorage(this.bits, var3);
-         Palette var5 = this.factory.create(this.bits, var1, var2, List.of());
-         return new PalettedContainer.Data<>(this, (BitStorage)var4, var5);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    @FunctionalInterface
    public interface CountConsumer<T> {
       void accept(T var1, int var2);
    }
 
-   static record Data<T>(PalettedContainer.Configuration<T> configuration, BitStorage storage, Palette<T> palette) {
-
-      Data(PalettedContainer.Configuration<T> configuration, BitStorage storage, Palette<T> palette) {
-         super();
-         this.configuration = configuration;
-         this.storage = storage;
-         this.palette = palette;
-      }
-
-      public void copyFrom(Palette<T> var1, BitStorage var2) {
-         for (int var3 = 0; var3 < var2.getSize(); var3++) {
-            Object var4 = var1.valueFor(var2.get(var3));
-            this.storage.set(var3, this.palette.idFor((T)var4));
-         }
-      }
-
-      public int getSerializedSize() {
-         return 1 + this.palette.getSerializedSize() + VarInt.getByteSize(this.storage.getRaw().length) + this.storage.getRaw().length * 8;
-      }
-
-      public void write(FriendlyByteBuf var1) {
-         var1.writeByte(this.storage.getBits());
-         this.palette.write(var1);
-         var1.writeLongArray(this.storage.getRaw());
-      }
-
-      public PalettedContainer.Data<T> copy() {
-         return new PalettedContainer.Data<>(this.configuration, this.storage.copy(), this.palette.copy());
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public abstract static class Strategy {
       public static final Palette.Factory SINGLE_VALUE_PALETTE_FACTORY = SingleValuePalette::create;

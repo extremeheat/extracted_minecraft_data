@@ -1,14 +1,11 @@
 package net.minecraft.network.syncher;
 
 import com.mojang.logging.LogUtils;
-import io.netty.handler.codec.DecoderException;
-import io.netty.handler.codec.EncoderException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.ClassTreeIdRegistry;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -214,43 +211,16 @@ public class SynchedEntityData {
       }
    }
 
-   public static record DataValue<T>(int id, EntityDataSerializer<T> serializer, T value) {
-
-      public DataValue(int id, EntityDataSerializer<T> serializer, T value) {
-         super();
-         this.id = id;
-         this.serializer = serializer;
-         this.value = (T)value;
-      }
-
-      public static <T> SynchedEntityData.DataValue<T> create(EntityDataAccessor<T> var0, T var1) {
-         EntityDataSerializer var2 = var0.serializer();
-         return new SynchedEntityData.DataValue<>(var0.id(), var2, (T)var2.copy(var1));
-      }
-
-      public void write(RegistryFriendlyByteBuf var1) {
-         int var2 = EntityDataSerializers.getSerializedId(this.serializer);
-         if (var2 < 0) {
-            throw new EncoderException("Unknown serializer type " + this.serializer);
-         } else {
-            var1.writeByte(this.id);
-            var1.writeVarInt(var2);
-            this.serializer.codec().encode(var1, this.value);
-         }
-      }
-
-      public static SynchedEntityData.DataValue<?> read(RegistryFriendlyByteBuf var0, int var1) {
-         int var2 = var0.readVarInt();
-         EntityDataSerializer var3 = EntityDataSerializers.getSerializer(var2);
-         if (var3 == null) {
-            throw new DecoderException("Unknown serializer type " + var2);
-         } else {
-            return read(var0, var1, var3);
-         }
-      }
-
-      private static <T> SynchedEntityData.DataValue<T> read(RegistryFriendlyByteBuf var0, int var1, EntityDataSerializer<T> var2) {
-         return new SynchedEntityData.DataValue<>(var1, var2, (T)var2.codec().decode(var0));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

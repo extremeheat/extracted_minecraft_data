@@ -1,14 +1,11 @@
 package net.minecraft.client.multiplayer.chat.report;
 
-import com.mojang.authlib.minecraft.report.AbuseReport;
 import com.mojang.authlib.minecraft.report.AbuseReportLimits;
 import com.mojang.datafixers.util.Either;
 import java.time.Instant;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 
 public abstract class Report {
    protected final UUID reportId;
@@ -76,34 +73,29 @@ public abstract class Report {
       public abstract Either<Report.Result, Report.CannotBuildReason> build(ReportingContext var1);
    }
 
-   public static record CannotBuildReason(Component message) {
-      public static final Report.CannotBuildReason NO_REASON = new Report.CannotBuildReason(Component.translatable("gui.abuseReport.send.no_reason"));
-      public static final Report.CannotBuildReason NO_REPORTED_MESSAGES = new Report.CannotBuildReason(
-         Component.translatable("gui.chatReport.send.no_reported_messages")
-      );
-      public static final Report.CannotBuildReason TOO_MANY_MESSAGES = new Report.CannotBuildReason(
-         Component.translatable("gui.chatReport.send.too_many_messages")
-      );
-      public static final Report.CannotBuildReason COMMENT_TOO_LONG = new Report.CannotBuildReason(
-         Component.translatable("gui.abuseReport.send.comment_too_long")
-      );
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public CannotBuildReason(Component message) {
-         super();
-         this.message = message;
-      }
-
-      public Tooltip tooltip() {
-         return Tooltip.create(this.message);
-      }
-   }
-
-   public static record Result(UUID id, ReportType reportType, AbuseReport report) {
-      public Result(UUID id, ReportType reportType, AbuseReport report) {
-         super();
-         this.id = id;
-         this.reportType = reportType;
-         this.report = report;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

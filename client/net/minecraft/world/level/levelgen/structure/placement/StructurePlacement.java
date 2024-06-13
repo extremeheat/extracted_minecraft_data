@@ -2,23 +2,18 @@ package net.minecraft.world.level.levelgen.structure.placement;
 
 import com.mojang.datafixers.Products.P5;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
-import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public abstract class StructurePlacement {
    public static final Codec<StructurePlacement> CODEC = BuiltInRegistries.STRUCTURE_PLACEMENT
@@ -125,28 +120,18 @@ public abstract class StructurePlacement {
       return var8.nextInt((int)(1.0F / var5)) == 0;
    }
 
-   @Deprecated
-   public static record ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
-      public static final Codec<StructurePlacement.ExclusionZone> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false)
-                     .fieldOf("other_set")
-                     .forGetter(StructurePlacement.ExclusionZone::otherSet),
-                  Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(StructurePlacement.ExclusionZone::chunkCount)
-               )
-               .apply(var0, StructurePlacement.ExclusionZone::new)
-      );
-
-      public ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
-         super();
-         this.otherSet = otherSet;
-         this.chunkCount = chunkCount;
-      }
-
-      boolean isPlacementForbidden(ChunkGeneratorStructureState var1, int var2, int var3) {
-         return var1.hasStructureChunkInRange(this.otherSet, var2, var3, this.chunkCount);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    @FunctionalInterface
    public interface FrequencyReducer {

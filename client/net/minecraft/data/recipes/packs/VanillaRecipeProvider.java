@@ -27,7 +27,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.ArmorDyeRecipe;
 import net.minecraft.world.item.crafting.BannerDuplicateRecipe;
@@ -2603,7 +2602,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       copySmithingTemplate(var1, Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
       copySmithingTemplate(var1, Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
       copySmithingTemplate(var1, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, Items.BREEZE_ROD);
-      copySmithingTemplate(var1, Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COPPER_BLOCK);
+      copySmithingTemplate(var1, Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Ingredient.of(Items.COPPER_BLOCK, Items.WAXED_COPPER_BLOCK));
       threeByThreePacker(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.BAMBOO_BLOCK, Items.BAMBOO);
       planksFromLogs(var1, Blocks.BAMBOO_PLANKS, ItemTags.BAMBOO_BLOCKS, 2);
       mosaicBuilder(var1, RecipeCategory.DECORATIONS, Blocks.BAMBOO_MOSAIC, Blocks.BAMBOO_SLAB);
@@ -2765,14 +2764,19 @@ public class VanillaRecipeProvider extends RecipeProvider {
             Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE,
             Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE
          )
-         .map(var0 -> new VanillaRecipeProvider.TrimTemplate(var0, new ResourceLocation(getItemName(var0) + "_smithing_trim")));
+         .map(var0 -> new VanillaRecipeProvider.TrimTemplate(var0, ResourceLocation.withDefaultNamespace(getItemName(var0) + "_smithing_trim")));
    }
 
-   public static record TrimTemplate(Item template, ResourceLocation id) {
-      public TrimTemplate(Item template, ResourceLocation id) {
-         super();
-         this.template = template;
-         this.id = id;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

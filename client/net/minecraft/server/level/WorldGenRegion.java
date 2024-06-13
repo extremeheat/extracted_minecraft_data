@@ -76,7 +76,7 @@ public class WorldGenRegion implements WorldGenLevel {
    @Nullable
    private Supplier<String> currentlyGenerating;
    private final AtomicLong subTickCount = new AtomicLong();
-   private static final ResourceLocation WORLDGEN_REGION_RANDOM = new ResourceLocation("worldgen_region_random");
+   private static final ResourceLocation WORLDGEN_REGION_RANDOM = ResourceLocation.withDefaultNamespace("worldgen_region_random");
 
    public WorldGenRegion(ServerLevel var1, StaticCache2D<GenerationChunkHolder> var2, ChunkStep var3, ChunkAccess var4) {
       super();

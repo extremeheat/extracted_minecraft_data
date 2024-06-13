@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
+import net.minecraft.ReportType;
 import net.minecraft.SystemReport;
 import net.minecraft.Util;
 import net.minecraft.commands.Commands;
@@ -200,7 +201,7 @@ public class GameTestServer extends MinecraftServer {
    @Override
    public void onServerCrash(CrashReport var1) {
       super.onServerCrash(var1);
-      LOGGER.error("Game test server crashed\n{}", var1.getFriendlyReport());
+      LOGGER.error("Game test server crashed\n{}", var1.getFriendlyReport(ReportType.CRASH));
       System.exit(1);
    }
 

@@ -93,7 +93,7 @@ public class Potions {
    }
 
    private static Holder<Potion> register(String var0, Potion var1) {
-      return Registry.registerForHolder(BuiltInRegistries.POTION, new ResourceLocation(var0), var1);
+      return Registry.registerForHolder(BuiltInRegistries.POTION, ResourceLocation.withDefaultNamespace(var0), var1);
    }
 
    public static Holder<Potion> bootstrap(Registry<Potion> var0) {

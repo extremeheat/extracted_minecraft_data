@@ -23,7 +23,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
 public class ItemModelGenerators {
-   public static final ResourceLocation TRIM_TYPE_PREDICATE_ID = new ResourceLocation("trim_type");
+   public static final ResourceLocation TRIM_TYPE_PREDICATE_ID = ResourceLocation.withDefaultNamespace("trim_type");
    private static final List<ItemModelGenerators.TrimModelData> GENERATED_TRIM_MODELS = List.of(
       new ItemModelGenerators.TrimModelData("quartz", 0.1F, Map.of()),
       new ItemModelGenerators.TrimModelData("iron", 0.2F, Map.of(ArmorMaterials.IRON, "iron_darker")),
@@ -121,7 +121,7 @@ public class ItemModelGenerators {
             String var7 = var6.name(var1.getMaterial());
             ResourceLocation var8 = this.getItemModelForTrimMaterial(var2, var7);
             String var9 = var1.getType().getName() + "_trim_" + var7;
-            ResourceLocation var10 = new ResourceLocation(var9).withPrefix("trims/items/");
+            ResourceLocation var10 = ResourceLocation.withDefaultNamespace(var9).withPrefix("trims/items/");
             if (var1.getMaterial().is(ArmorMaterials.LEATHER)) {
                this.generateLayeredItem(var8, var3, var4, var10);
             } else {
@@ -428,16 +428,16 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.OMINOUS_BOTTLE, ModelTemplates.FLAT_ITEM);
    }
 
-   static record TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
-      TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
-         super();
-         this.name = name;
-         this.itemModelIndex = itemModelIndex;
-         this.overrideArmorMaterials = overrideArmorMaterials;
-      }
-
-      public String name(Holder<ArmorMaterial> var1) {
-         return this.overrideArmorMaterials.getOrDefault(var1, this.name);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

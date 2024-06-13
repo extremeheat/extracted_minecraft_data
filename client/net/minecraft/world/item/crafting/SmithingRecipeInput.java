@@ -1,32 +1,13 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.world.item.ItemStack;
-
-public record SmithingRecipeInput(ItemStack template, ItemStack base, ItemStack addition) implements RecipeInput {
-   public SmithingRecipeInput(ItemStack template, ItemStack base, ItemStack addition) {
-      super();
-      this.template = template;
-      this.base = base;
-      this.addition = addition;
-   }
-
-   @Override
-   public ItemStack getItem(int var1) {
-      return switch (var1) {
-         case 0 -> this.template;
-         case 1 -> this.base;
-         case 2 -> this.addition;
-         default -> throw new IllegalArgumentException("Recipe does not contain slot " + var1);
-      };
-   }
-
-   @Override
-   public int size() {
-      return 3;
-   }
-
-   @Override
-   public boolean isEmpty() {
-      return this.template.isEmpty() && this.base.isEmpty() && this.addition.isEmpty();
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

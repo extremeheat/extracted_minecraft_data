@@ -137,7 +137,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    @Override
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
+   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
       return LivingEntity.resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
    }
 
@@ -248,7 +248,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       }
 
       this.checkBelowWorld();
-      this.handleNetherPortal();
+      this.handlePortal();
       if (this.level().isClientSide) {
          if (this.lerpSteps > 0) {
             this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);

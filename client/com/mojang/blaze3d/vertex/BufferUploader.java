@@ -22,7 +22,7 @@ public class BufferUploader {
       lastImmediateBuffer = null;
    }
 
-   public static void drawWithShader(BufferBuilder.RenderedBuffer var0) {
+   public static void drawWithShader(MeshData var0) {
       if (!RenderSystem.isOnRenderThreadOrInit()) {
          RenderSystem.recordRenderCall(() -> _drawWithShader(var0));
       } else {
@@ -30,31 +30,21 @@ public class BufferUploader {
       }
    }
 
-   private static void _drawWithShader(BufferBuilder.RenderedBuffer var0) {
+   private static void _drawWithShader(MeshData var0) {
       VertexBuffer var1 = upload(var0);
-      if (var1 != null) {
-         var1.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
-      }
+      var1.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
    }
 
-   public static void draw(BufferBuilder.RenderedBuffer var0) {
+   public static void draw(MeshData var0) {
       VertexBuffer var1 = upload(var0);
-      if (var1 != null) {
-         var1.draw();
-      }
+      var1.draw();
    }
 
-   @Nullable
-   private static VertexBuffer upload(BufferBuilder.RenderedBuffer var0) {
+   private static VertexBuffer upload(MeshData var0) {
       RenderSystem.assertOnRenderThread();
-      if (var0.isEmpty()) {
-         var0.release();
-         return null;
-      } else {
-         VertexBuffer var1 = bindImmediateBuffer(var0.drawState().format());
-         var1.upload(var0);
-         return var1;
-      }
+      VertexBuffer var1 = bindImmediateBuffer(var0.drawState().format());
+      var1.upload(var0);
+      return var1;
    }
 
    private static VertexBuffer bindImmediateBuffer(VertexFormat var0) {

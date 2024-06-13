@@ -1,11 +1,6 @@
 package net.minecraft.util.parsing.packrat.commands;
 
 import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.stream.Stream;
-import net.minecraft.util.parsing.packrat.Control;
-import net.minecraft.util.parsing.packrat.ParseState;
-import net.minecraft.util.parsing.packrat.Scope;
 import net.minecraft.util.parsing.packrat.Term;
 
 public interface StringReaderTerms {
@@ -17,43 +12,29 @@ public interface StringReaderTerms {
       return new StringReaderTerms.TerminalCharacter(var0);
    }
 
-   public static record TerminalCharacter(char value) implements Term<StringReader> {
-      public TerminalCharacter(char value) {
-         super();
-         this.value = value;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public boolean parse(ParseState<StringReader> var1, Scope var2, Control var3) {
-         ((StringReader)var1.input()).skipWhitespace();
-         int var4 = var1.mark();
-         if (((StringReader)var1.input()).canRead() && ((StringReader)var1.input()).read() == this.value) {
-            return true;
-         } else {
-            var1.errorCollector()
-               .store(var4, var1x -> Stream.of(String.valueOf(this.value)), CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect().create(this.value));
-            return false;
-         }
-      }
-   }
-
-   public static record TerminalWord(String value) implements Term<StringReader> {
-      public TerminalWord(String value) {
-         super();
-         this.value = value;
-      }
-
-      @Override
-      public boolean parse(ParseState<StringReader> var1, Scope var2, Control var3) {
-         ((StringReader)var1.input()).skipWhitespace();
-         int var4 = var1.mark();
-         String var5 = ((StringReader)var1.input()).readUnquotedString();
-         if (!var5.equals(this.value)) {
-            var1.errorCollector().store(var4, var1x -> Stream.of(this.value), CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect().create(this.value));
-            return false;
-         } else {
-            return true;
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

@@ -1,37 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-import net.minecraft.world.item.ItemStack;
-
-public record ServerboundSetCreativeModeSlotPacket(short slotNum, ItemStack itemStack) implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundSetCreativeModeSlotPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.SHORT,
-      ServerboundSetCreativeModeSlotPacket::slotNum,
-      ItemStack.validatedStreamCodec(ItemStack.OPTIONAL_STREAM_CODEC),
-      ServerboundSetCreativeModeSlotPacket::itemStack,
-      ServerboundSetCreativeModeSlotPacket::new
-   );
-
-   public ServerboundSetCreativeModeSlotPacket(int var1, ItemStack var2) {
-      this((short)var1, var2);
-   }
-
-   public ServerboundSetCreativeModeSlotPacket(short slotNum, ItemStack itemStack) {
-      super();
-      this.slotNum = slotNum;
-      this.itemStack = itemStack;
-   }
-
-   @Override
-   public PacketType<ServerboundSetCreativeModeSlotPacket> type() {
-      return GamePacketTypes.SERVERBOUND_SET_CREATIVE_MODE_SLOT;
-   }
-
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSetCreativeModeSlot(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -137,31 +137,18 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       }
    }
 
-   static record ResourceResult<T>(Holder.Reference<T> value) implements ResourceOrTagArgument.Result<T> {
-      ResourceResult(Holder.Reference<T> value) {
-         super();
-         this.value = value;
-      }
-
-      @Override
-      public Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap() {
-         return Either.left(this.value);
-      }
-
-      @Override
-      public <E> Optional<ResourceOrTagArgument.Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.value.key().isFor(var1) ? Optional.of((ResourceOrTagArgument.Result<E>)this) : Optional.empty();
-      }
-
-      public boolean test(Holder<T> var1) {
-         return var1.equals(this.value);
-      }
-
-      @Override
-      public String asPrintable() {
-         return this.value.key().location().toString();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface Result<T> extends Predicate<Holder<T>> {
       Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap();
@@ -171,29 +158,16 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       String asPrintable();
    }
 
-   static record TagResult<T>(HolderSet.Named<T> tag) implements ResourceOrTagArgument.Result<T> {
-      TagResult(HolderSet.Named<T> tag) {
-         super();
-         this.tag = tag;
-      }
-
-      @Override
-      public Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap() {
-         return Either.right(this.tag);
-      }
-
-      @Override
-      public <E> Optional<ResourceOrTagArgument.Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.tag.key().isFor(var1) ? Optional.of((ResourceOrTagArgument.Result<E>)this) : Optional.empty();
-      }
-
-      public boolean test(Holder<T> var1) {
-         return this.tag.contains(var1);
-      }
-
-      @Override
-      public String asPrintable() {
-         return "#" + this.tag.key().location();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

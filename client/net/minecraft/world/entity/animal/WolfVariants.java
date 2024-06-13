@@ -30,7 +30,7 @@ public class WolfVariants {
    }
 
    private static ResourceKey<WolfVariant> createKey(String var0) {
-      return ResourceKey.create(Registries.WOLF_VARIANT, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.WOLF_VARIANT, ResourceLocation.withDefaultNamespace(var0));
    }
 
    static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, ResourceKey<Biome> var3) {
@@ -42,9 +42,9 @@ public class WolfVariants {
    }
 
    static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, HolderSet<Biome> var3) {
-      ResourceLocation var4 = new ResourceLocation("entity/wolf/" + var2);
-      ResourceLocation var5 = new ResourceLocation("entity/wolf/" + var2 + "_tame");
-      ResourceLocation var6 = new ResourceLocation("entity/wolf/" + var2 + "_angry");
+      ResourceLocation var4 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2);
+      ResourceLocation var5 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_tame");
+      ResourceLocation var6 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_angry");
       var0.register(var1, new WolfVariant(var4, var5, var6, var3));
    }
 

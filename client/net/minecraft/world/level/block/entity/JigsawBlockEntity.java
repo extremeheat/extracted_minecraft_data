@@ -27,9 +27,9 @@ public class JigsawBlockEntity extends BlockEntity {
    public static final String SELECTION_PRIORITY = "selection_priority";
    public static final String NAME = "name";
    public static final String FINAL_STATE = "final_state";
-   private ResourceLocation name = new ResourceLocation("empty");
-   private ResourceLocation target = new ResourceLocation("empty");
-   private ResourceKey<StructureTemplatePool> pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation("empty"));
+   private ResourceLocation name = ResourceLocation.withDefaultNamespace("empty");
+   private ResourceLocation target = ResourceLocation.withDefaultNamespace("empty");
+   private ResourceKey<StructureTemplatePool> pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.withDefaultNamespace("empty"));
    private JigsawBlockEntity.JointType joint = JigsawBlockEntity.JointType.ROLLABLE;
    private String finalState = "minecraft:air";
    private int placementPriority;
@@ -110,9 +110,9 @@ public class JigsawBlockEntity extends BlockEntity {
    @Override
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.name = new ResourceLocation(var1.getString("name"));
-      this.target = new ResourceLocation(var1.getString("target"));
-      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var1.getString("pool")));
+      this.name = ResourceLocation.parse(var1.getString("name"));
+      this.target = ResourceLocation.parse(var1.getString("target"));
+      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.parse(var1.getString("pool")));
       this.finalState = var1.getString("final_state");
       this.joint = JigsawBlockEntity.JointType.byName(var1.getString("joint"))
          .orElseGet(

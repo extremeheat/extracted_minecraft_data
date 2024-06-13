@@ -10,8 +10,8 @@ import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 import org.joml.Matrix4f;
 
 public class TheEndPortalRenderer<T extends TheEndPortalBlockEntity> implements BlockEntityRenderer<T> {
-   public static final ResourceLocation END_SKY_LOCATION = new ResourceLocation("textures/environment/end_sky.png");
-   public static final ResourceLocation END_PORTAL_LOCATION = new ResourceLocation("textures/entity/end_portal.png");
+   public static final ResourceLocation END_SKY_LOCATION = ResourceLocation.withDefaultNamespace("textures/environment/end_sky.png");
+   public static final ResourceLocation END_PORTAL_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/end_portal.png");
 
    public TheEndPortalRenderer(BlockEntityRendererProvider.Context var1) {
       super();
@@ -48,10 +48,10 @@ public class TheEndPortalRenderer<T extends TheEndPortalBlockEntity> implements 
       Direction var12
    ) {
       if (var1.shouldRenderFace(var12)) {
-         var3.vertex(var2, var4, var6, var8).endVertex();
-         var3.vertex(var2, var5, var6, var9).endVertex();
-         var3.vertex(var2, var5, var7, var10).endVertex();
-         var3.vertex(var2, var4, var7, var11).endVertex();
+         var3.addVertex(var2, var4, var6, var8);
+         var3.addVertex(var2, var5, var6, var9);
+         var3.addVertex(var2, var5, var7, var10);
+         var3.addVertex(var2, var4, var7, var11);
       }
    }
 

@@ -21,4 +21,8 @@ public interface ClientCommonPacketListener extends ClientCookiePacketListener, 
    void handleStoreCookie(ClientboundStoreCookiePacket var1);
 
    void handleTransfer(ClientboundTransferPacket var1);
+
+   void handleCustomReportDetails(ClientboundCustomReportDetailsPacket var1);
+
+   void handleServerLinks(ClientboundServerLinksPacket var1);
 }

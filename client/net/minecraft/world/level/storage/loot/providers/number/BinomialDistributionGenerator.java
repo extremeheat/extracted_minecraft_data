@@ -1,60 +1,13 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
-import com.google.common.collect.Sets;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
-
-public record BinomialDistributionGenerator(NumberProvider n, NumberProvider p) implements NumberProvider {
-   public static final MapCodec<BinomialDistributionGenerator> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(
-               NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n),
-               NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)
-            )
-            .apply(var0, BinomialDistributionGenerator::new)
-   );
-
-   public BinomialDistributionGenerator(NumberProvider n, NumberProvider p) {
-      super();
-      this.n = n;
-      this.p = p;
-   }
-
-   @Override
-   public LootNumberProviderType getType() {
-      return NumberProviders.BINOMIAL;
-   }
-
-   @Override
-   public int getInt(LootContext var1) {
-      int var2 = this.n.getInt(var1);
-      float var3 = this.p.getFloat(var1);
-      RandomSource var4 = var1.getRandom();
-      int var5 = 0;
-
-      for (int var6 = 0; var6 < var2; var6++) {
-         if (var4.nextFloat() < var3) {
-            var5++;
-         }
-      }
-
-      return var5;
-   }
-
-   @Override
-   public float getFloat(LootContext var1) {
-      return (float)this.getInt(var1);
-   }
-
-   public static BinomialDistributionGenerator binomial(int var0, float var1) {
-      return new BinomialDistributionGenerator(ConstantValue.exactly((float)var0), ConstantValue.exactly(var1));
-   }
-
-   @Override
-   public Set<LootContextParam<?>> getReferencedContextParams() {
-      return Sets.union(this.n.getReferencedContextParams(), this.p.getReferencedContextParams());
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

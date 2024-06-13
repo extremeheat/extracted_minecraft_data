@@ -1,29 +1,13 @@
 package net.minecraft.util;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-
-public record Brightness(int block, int sky) {
-   public static final Codec<Integer> LIGHT_VALUE_CODEC = ExtraCodecs.intRange(0, 15);
-   public static final Codec<Brightness> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(LIGHT_VALUE_CODEC.fieldOf("block").forGetter(Brightness::block), LIGHT_VALUE_CODEC.fieldOf("sky").forGetter(Brightness::sky))
-            .apply(var0, Brightness::new)
-   );
-   public static Brightness FULL_BRIGHT = new Brightness(15, 15);
-
-   public Brightness(int block, int sky) {
-      super();
-      this.block = block;
-      this.sky = sky;
-   }
-
-   public int pack() {
-      return this.block << 4 | this.sky << 20;
-   }
-
-   public static Brightness unpack(int var0) {
-      int var1 = var0 >> 4 & 65535;
-      int var2 = var0 >> 20 & 65535;
-      return new Brightness(var1, var2);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

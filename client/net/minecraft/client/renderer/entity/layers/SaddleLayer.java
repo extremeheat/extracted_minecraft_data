@@ -28,7 +28,7 @@ public class SaddleLayer<T extends Entity & Saddleable, M extends EntityModel<T>
          this.model.prepareMobModel((T)var4, var5, var6, var7);
          this.model.setupAnim((T)var4, var5, var6, var8, var9, var10);
          VertexConsumer var11 = var2.getBuffer(RenderType.entityCutoutNoCull(this.textureLocation));
-         this.model.renderToBuffer(var1, var11, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+         this.model.renderToBuffer(var1, var11, var3, OverlayTexture.NO_OVERLAY);
       }
    }
 }

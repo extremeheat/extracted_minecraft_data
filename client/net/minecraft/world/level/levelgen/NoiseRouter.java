@@ -1,103 +1,13 @@
 package net.minecraft.world.level.levelgen;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.function.Function;
-
-public record NoiseRouter(
-   DensityFunction barrierNoise,
-   DensityFunction fluidLevelFloodednessNoise,
-   DensityFunction fluidLevelSpreadNoise,
-   DensityFunction lavaNoise,
-   DensityFunction temperature,
-   DensityFunction vegetation,
-   DensityFunction continents,
-   DensityFunction erosion,
-   DensityFunction depth,
-   DensityFunction ridges,
-   DensityFunction initialDensityWithoutJaggedness,
-   DensityFunction finalDensity,
-   DensityFunction veinToggle,
-   DensityFunction veinRidged,
-   DensityFunction veinGap
-) {
-   public static final Codec<NoiseRouter> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               field("barrier", NoiseRouter::barrierNoise),
-               field("fluid_level_floodedness", NoiseRouter::fluidLevelFloodednessNoise),
-               field("fluid_level_spread", NoiseRouter::fluidLevelSpreadNoise),
-               field("lava", NoiseRouter::lavaNoise),
-               field("temperature", NoiseRouter::temperature),
-               field("vegetation", NoiseRouter::vegetation),
-               field("continents", NoiseRouter::continents),
-               field("erosion", NoiseRouter::erosion),
-               field("depth", NoiseRouter::depth),
-               field("ridges", NoiseRouter::ridges),
-               field("initial_density_without_jaggedness", NoiseRouter::initialDensityWithoutJaggedness),
-               field("final_density", NoiseRouter::finalDensity),
-               field("vein_toggle", NoiseRouter::veinToggle),
-               field("vein_ridged", NoiseRouter::veinRidged),
-               field("vein_gap", NoiseRouter::veinGap)
-            )
-            .apply(var0, NoiseRouter::new)
-   );
-
-   public NoiseRouter(
-      DensityFunction barrierNoise,
-      DensityFunction fluidLevelFloodednessNoise,
-      DensityFunction fluidLevelSpreadNoise,
-      DensityFunction lavaNoise,
-      DensityFunction temperature,
-      DensityFunction vegetation,
-      DensityFunction continents,
-      DensityFunction erosion,
-      DensityFunction depth,
-      DensityFunction ridges,
-      DensityFunction initialDensityWithoutJaggedness,
-      DensityFunction finalDensity,
-      DensityFunction veinToggle,
-      DensityFunction veinRidged,
-      DensityFunction veinGap
-   ) {
-      super();
-      this.barrierNoise = barrierNoise;
-      this.fluidLevelFloodednessNoise = fluidLevelFloodednessNoise;
-      this.fluidLevelSpreadNoise = fluidLevelSpreadNoise;
-      this.lavaNoise = lavaNoise;
-      this.temperature = temperature;
-      this.vegetation = vegetation;
-      this.continents = continents;
-      this.erosion = erosion;
-      this.depth = depth;
-      this.ridges = ridges;
-      this.initialDensityWithoutJaggedness = initialDensityWithoutJaggedness;
-      this.finalDensity = finalDensity;
-      this.veinToggle = veinToggle;
-      this.veinRidged = veinRidged;
-      this.veinGap = veinGap;
-   }
-
-   private static RecordCodecBuilder<NoiseRouter, DensityFunction> field(String var0, Function<NoiseRouter, DensityFunction> var1) {
-      return DensityFunction.HOLDER_HELPER_CODEC.fieldOf(var0).forGetter(var1);
-   }
-
-   public NoiseRouter mapAll(DensityFunction.Visitor var1) {
-      return new NoiseRouter(
-         this.barrierNoise.mapAll(var1),
-         this.fluidLevelFloodednessNoise.mapAll(var1),
-         this.fluidLevelSpreadNoise.mapAll(var1),
-         this.lavaNoise.mapAll(var1),
-         this.temperature.mapAll(var1),
-         this.vegetation.mapAll(var1),
-         this.continents.mapAll(var1),
-         this.erosion.mapAll(var1),
-         this.depth.mapAll(var1),
-         this.ridges.mapAll(var1),
-         this.initialDensityWithoutJaggedness.mapAll(var1),
-         this.finalDensity.mapAll(var1),
-         this.veinToggle.mapAll(var1),
-         this.veinRidged.mapAll(var1),
-         this.veinGap.mapAll(var1)
-      );
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

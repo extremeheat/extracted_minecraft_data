@@ -1,79 +1,13 @@
 package net.minecraft.commands.functions;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import java.util.List;
-
-public record StringTemplate(List<String> segments, List<String> variables) {
-   public StringTemplate(List<String> segments, List<String> variables) {
-      super();
-      this.segments = segments;
-      this.variables = variables;
-   }
-
-   public static StringTemplate fromString(String var0, int var1) {
-      Builder var2 = ImmutableList.builder();
-      Builder var3 = ImmutableList.builder();
-      int var4 = var0.length();
-      int var5 = 0;
-      int var6 = var0.indexOf(36);
-
-      while (var6 != -1) {
-         if (var6 != var4 - 1 && var0.charAt(var6 + 1) == '(') {
-            var2.add(var0.substring(var5, var6));
-            int var7 = var0.indexOf(41, var6 + 1);
-            if (var7 == -1) {
-               throw new IllegalArgumentException("Unterminated macro variable in macro '" + var0 + "' on line " + var1);
-            }
-
-            String var8 = var0.substring(var6 + 2, var7);
-            if (!isValidVariableName(var8)) {
-               throw new IllegalArgumentException("Invalid macro variable name '" + var8 + "' on line " + var1);
-            }
-
-            var3.add(var8);
-            var5 = var7 + 1;
-            var6 = var0.indexOf(36, var5);
-         } else {
-            var6 = var0.indexOf(36, var6 + 1);
-         }
-      }
-
-      if (var5 == 0) {
-         throw new IllegalArgumentException("Macro without variables on line " + var1);
-      } else {
-         if (var5 != var4) {
-            var2.add(var0.substring(var5));
-         }
-
-         return new StringTemplate(var2.build(), var3.build());
-      }
-   }
-
-   private static boolean isValidVariableName(String var0) {
-      for (int var1 = 0; var1 < var0.length(); var1++) {
-         char var2 = var0.charAt(var1);
-         if (!Character.isLetterOrDigit(var2) && var2 != '_') {
-            return false;
-         }
-      }
-
-      return true;
-   }
-
-   public String substitute(List<String> var1) {
-      StringBuilder var2 = new StringBuilder();
-
-      for (int var3 = 0; var3 < this.variables.size(); var3++) {
-         var2.append(this.segments.get(var3)).append((String)var1.get(var3));
-         CommandFunction.checkCommandLineLength(var2);
-      }
-
-      if (this.segments.size() > this.variables.size()) {
-         var2.append(this.segments.get(this.segments.size() - 1));
-      }
-
-      CommandFunction.checkCommandLineLength(var2);
-      return var2.toString();
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

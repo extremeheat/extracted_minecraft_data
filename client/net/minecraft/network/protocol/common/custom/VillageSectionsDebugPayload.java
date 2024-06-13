@@ -1,34 +1,13 @@
 package net.minecraft.network.protocol.common.custom;
 
-import java.util.HashSet;
-import java.util.Set;
-import net.minecraft.core.SectionPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-
-public record VillageSectionsDebugPayload(Set<SectionPos> villageChunks, Set<SectionPos> notVillageChunks) implements CustomPacketPayload {
-   public static final StreamCodec<FriendlyByteBuf, VillageSectionsDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      VillageSectionsDebugPayload::write, VillageSectionsDebugPayload::new
-   );
-   public static final CustomPacketPayload.Type<VillageSectionsDebugPayload> TYPE = CustomPacketPayload.createType("debug/village_sections");
-
-   private VillageSectionsDebugPayload(FriendlyByteBuf var1) {
-      this(var1.readCollection(HashSet::new, FriendlyByteBuf::readSectionPos), var1.readCollection(HashSet::new, FriendlyByteBuf::readSectionPos));
-   }
-
-   public VillageSectionsDebugPayload(Set<SectionPos> villageChunks, Set<SectionPos> notVillageChunks) {
-      super();
-      this.villageChunks = villageChunks;
-      this.notVillageChunks = notVillageChunks;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.villageChunks, FriendlyByteBuf::writeSectionPos);
-      var1.writeCollection(this.notVillageChunks, FriendlyByteBuf::writeSectionPos);
-   }
-
-   @Override
-   public CustomPacketPayload.Type<VillageSectionsDebugPayload> type() {
-      return TYPE;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -19,12 +19,12 @@ public class DiggerItem extends TieredItem {
       return ItemAttributeModifiers.builder()
          .add(
             Attributes.ATTACK_DAMAGE,
-            new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Tool modifier", (double)(var1 + var0.getAttackDamageBonus()), AttributeModifier.Operation.ADD_VALUE),
+            new AttributeModifier(BASE_ATTACK_DAMAGE_ID, (double)(var1 + var0.getAttackDamageBonus()), AttributeModifier.Operation.ADD_VALUE),
             EquipmentSlotGroup.MAINHAND
          )
          .add(
             Attributes.ATTACK_SPEED,
-            new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Tool modifier", (double)var2, AttributeModifier.Operation.ADD_VALUE),
+            new AttributeModifier(BASE_ATTACK_SPEED_ID, (double)var2, AttributeModifier.Operation.ADD_VALUE),
             EquipmentSlotGroup.MAINHAND
          )
          .build();

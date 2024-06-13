@@ -26,14 +26,14 @@ import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class Sheets {
-   public static final ResourceLocation SHULKER_SHEET = new ResourceLocation("textures/atlas/shulker_boxes.png");
-   public static final ResourceLocation BED_SHEET = new ResourceLocation("textures/atlas/beds.png");
-   public static final ResourceLocation BANNER_SHEET = new ResourceLocation("textures/atlas/banner_patterns.png");
-   public static final ResourceLocation SHIELD_SHEET = new ResourceLocation("textures/atlas/shield_patterns.png");
-   public static final ResourceLocation SIGN_SHEET = new ResourceLocation("textures/atlas/signs.png");
-   public static final ResourceLocation CHEST_SHEET = new ResourceLocation("textures/atlas/chest.png");
-   public static final ResourceLocation ARMOR_TRIMS_SHEET = new ResourceLocation("textures/atlas/armor_trims.png");
-   public static final ResourceLocation DECORATED_POT_SHEET = new ResourceLocation("textures/atlas/decorated_pot.png");
+   public static final ResourceLocation SHULKER_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/shulker_boxes.png");
+   public static final ResourceLocation BED_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/beds.png");
+   public static final ResourceLocation BANNER_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/banner_patterns.png");
+   public static final ResourceLocation SHIELD_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/shield_patterns.png");
+   public static final ResourceLocation SIGN_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/signs.png");
+   public static final ResourceLocation CHEST_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/chest.png");
+   public static final ResourceLocation ARMOR_TRIMS_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/armor_trims.png");
+   public static final ResourceLocation DECORATED_POT_SHEET = ResourceLocation.withDefaultNamespace("textures/atlas/decorated_pot.png");
    private static final RenderType SHULKER_BOX_SHEET_TYPE = RenderType.entityCutoutNoCull(SHULKER_SHEET);
    private static final RenderType BED_SHEET_TYPE = RenderType.entitySolid(BED_SHEET);
    private static final RenderType BANNER_SHEET_TYPE = RenderType.entityNoOutline(BANNER_SHEET);
@@ -46,27 +46,27 @@ public class Sheets {
    private static final RenderType CUTOUT_BLOCK_SHEET = RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS);
    private static final RenderType TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
    private static final RenderType TRANSLUCENT_CULL_BLOCK_SHEET = RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
-   public static final Material DEFAULT_SHULKER_TEXTURE_LOCATION = new Material(SHULKER_SHEET, new ResourceLocation("entity/shulker/shulker"));
+   public static final Material DEFAULT_SHULKER_TEXTURE_LOCATION = new Material(SHULKER_SHEET, ResourceLocation.withDefaultNamespace("entity/shulker/shulker"));
    public static final List<Material> SHULKER_TEXTURE_LOCATION = Stream.of(
          "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black"
       )
-      .map(var0 -> new Material(SHULKER_SHEET, new ResourceLocation("entity/shulker/shulker_" + var0)))
+      .map(var0 -> new Material(SHULKER_SHEET, ResourceLocation.withDefaultNamespace("entity/shulker/shulker_" + var0)))
       .collect(ImmutableList.toImmutableList());
    public static final Map<WoodType, Material> SIGN_MATERIALS = WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createSignMaterial));
    public static final Map<WoodType, Material> HANGING_SIGN_MATERIALS = WoodType.values()
       .collect(Collectors.toMap(Function.identity(), Sheets::createHangingSignMaterial));
-   public static final Material BANNER_BASE = new Material(BANNER_SHEET, new ResourceLocation("entity/banner/base"));
-   public static final Material SHIELD_BASE = new Material(SHIELD_SHEET, new ResourceLocation("entity/shield/base"));
+   public static final Material BANNER_BASE = new Material(BANNER_SHEET, ResourceLocation.withDefaultNamespace("entity/banner/base"));
+   public static final Material SHIELD_BASE = new Material(SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield/base"));
    private static final Map<ResourceLocation, Material> BANNER_MATERIALS = new HashMap<>();
    private static final Map<ResourceLocation, Material> SHIELD_MATERIALS = new HashMap<>();
    public static final Map<ResourceKey<DecoratedPotPattern>, Material> DECORATED_POT_MATERIALS = BuiltInRegistries.DECORATED_POT_PATTERN
       .holders()
       .collect(Collectors.toMap(Holder.Reference::key, var0 -> createDecoratedPotMaterial(var0.value().assetId())));
-   public static final Material DECORATED_POT_BASE = createDecoratedPotMaterial(new ResourceLocation("decorated_pot_base"));
-   public static final Material DECORATED_POT_SIDE = createDecoratedPotMaterial(new ResourceLocation("decorated_pot_side"));
+   public static final Material DECORATED_POT_BASE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_base"));
+   public static final Material DECORATED_POT_SIDE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_side"));
    public static final Material[] BED_TEXTURES = Arrays.stream(DyeColor.values())
       .sorted(Comparator.comparingInt(DyeColor::getId))
-      .map(var0 -> new Material(BED_SHEET, new ResourceLocation("entity/bed/" + var0.getName())))
+      .map(var0 -> new Material(BED_SHEET, ResourceLocation.withDefaultNamespace("entity/bed/" + var0.getName())))
       .toArray(Material[]::new);
    public static final Material CHEST_TRAP_LOCATION = chestMaterial("trapped");
    public static final Material CHEST_TRAP_LOCATION_LEFT = chestMaterial("trapped_left");
@@ -132,11 +132,11 @@ public class Sheets {
    }
 
    private static Material createSignMaterial(WoodType var0) {
-      return new Material(SIGN_SHEET, new ResourceLocation("entity/signs/" + var0.name()));
+      return new Material(SIGN_SHEET, ResourceLocation.withDefaultNamespace("entity/signs/" + var0.name()));
    }
 
    private static Material createHangingSignMaterial(WoodType var0) {
-      return new Material(SIGN_SHEET, new ResourceLocation("entity/signs/hanging/" + var0.name()));
+      return new Material(SIGN_SHEET, ResourceLocation.withDefaultNamespace("entity/signs/hanging/" + var0.name()));
    }
 
    public static Material getSignMaterial(WoodType var0) {
@@ -162,7 +162,7 @@ public class Sheets {
    }
 
    private static Material chestMaterial(String var0) {
-      return new Material(CHEST_SHEET, new ResourceLocation("entity/chest/" + var0));
+      return new Material(CHEST_SHEET, ResourceLocation.withDefaultNamespace("entity/chest/" + var0));
    }
 
    private static Material createDecoratedPotMaterial(ResourceLocation var0) {

@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Giant;
 
 public class GiantMobRenderer extends MobRenderer<Giant, HumanoidModel<Giant>> {
-   private static final ResourceLocation ZOMBIE_LOCATION = new ResourceLocation("textures/entity/zombie/zombie.png");
+   private static final ResourceLocation ZOMBIE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/zombie.png");
    private final float scale;
 
    public GiantMobRenderer(EntityRendererProvider.Context var1, float var2) {

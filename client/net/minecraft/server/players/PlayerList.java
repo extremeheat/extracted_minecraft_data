@@ -429,7 +429,7 @@ public abstract class PlayerList {
       this.players.remove(var1);
       var1.serverLevel().removePlayerImmediately(var1, var3);
       DimensionTransition var4 = var1.findRespawnPositionAndUseSpawnBlock(var2);
-      ServerLevel var5 = var4.newDimension();
+      ServerLevel var5 = var4.newLevel();
       ServerPlayer var6 = new ServerPlayer(this.server, var5, var1.getGameProfile(), var1.clientInformation());
       var6.connection = var1.connection;
       var6.restoreFrom(var1, var2);

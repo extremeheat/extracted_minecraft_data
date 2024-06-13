@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 
 public class FaviconTexture implements AutoCloseable {
-   private static final ResourceLocation MISSING_LOCATION = new ResourceLocation("textures/misc/unknown_server.png");
+   private static final ResourceLocation MISSING_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/unknown_server.png");
    private static final int WIDTH = 64;
    private static final int HEIGHT = 64;
    private final TextureManager textureManager;
@@ -27,14 +27,14 @@ public class FaviconTexture implements AutoCloseable {
    public static FaviconTexture forWorld(TextureManager var0, String var1) {
       return new FaviconTexture(
          var0,
-         new ResourceLocation(
-            "minecraft", "worlds/" + Util.sanitizeName(var1, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var1) + "/icon"
+         ResourceLocation.withDefaultNamespace(
+            "worlds/" + Util.sanitizeName(var1, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var1) + "/icon"
          )
       );
    }
 
    public static FaviconTexture forServer(TextureManager var0, String var1) {
-      return new FaviconTexture(var0, new ResourceLocation("minecraft", "servers/" + Hashing.sha1().hashUnencodedChars(var1) + "/icon"));
+      return new FaviconTexture(var0, ResourceLocation.withDefaultNamespace("servers/" + Hashing.sha1().hashUnencodedChars(var1) + "/icon"));
    }
 
    public void upload(NativeImage var1) {

@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -411,7 +410,8 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final BlockBehaviour.StatePredicate isViewBlocking;
       private final BlockBehaviour.StatePredicate hasPostProcess;
       private final BlockBehaviour.StatePredicate emissiveRendering;
-      private final Optional<BlockBehaviour.OffsetFunction> offsetFunction;
+      @Nullable
+      private final BlockBehaviour.OffsetFunction offsetFunction;
       private final boolean spawnTerrainParticles;
       private final NoteBlockInstrument instrument;
       private final boolean replaceable;
@@ -652,11 +652,12 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Vec3 getOffset(BlockGetter var1, BlockPos var2) {
-         return this.offsetFunction.<Vec3>map(var3 -> var3.evaluate(this.asState(), var1, var2)).orElse(Vec3.ZERO);
+         BlockBehaviour.OffsetFunction var3 = this.offsetFunction;
+         return var3 != null ? var3.evaluate(this.asState(), var1, var2) : Vec3.ZERO;
       }
 
       public boolean hasOffsetFunction() {
-         return this.offsetFunction.isPresent();
+         return this.offsetFunction != null;
       }
 
       public boolean triggerEvent(Level var1, BlockPos var2, int var3, int var4) {
@@ -968,7 +969,8 @@ public abstract class BlockBehaviour implements FeatureElement {
       BlockBehaviour.StatePredicate emissiveRendering = (var0, var1, var2) -> false;
       boolean dynamicShape;
       FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
-      Optional<BlockBehaviour.OffsetFunction> offsetFunction = Optional.empty();
+      @Nullable
+      BlockBehaviour.OffsetFunction offsetFunction;
 
       private Properties() {
          super();
@@ -1183,32 +1185,26 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public BlockBehaviour.Properties offsetType(BlockBehaviour.OffsetType var1) {
-         switch (var1) {
-            case XZ:
-               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
-                  Block var3 = var0.getBlock();
-                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
-                  float var6 = var3.getMaxHorizontalOffset();
-                  double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-                  double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-                  return new Vec3(var7, 0.0, var9);
-               });
-               break;
-            case XYZ:
-               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
-                  Block var3 = var0.getBlock();
-                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
-                  double var6 = ((double)((float)(var4 >> 4 & 15L) / 15.0F) - 1.0) * (double)var3.getMaxVerticalOffset();
-                  float var8 = var3.getMaxHorizontalOffset();
-                  double var9 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
-                  double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
-                  return new Vec3(var9, var6, var11);
-               });
-               break;
-            default:
-               this.offsetFunction = Optional.empty();
-         }
-
+         this.offsetFunction = switch (var1) {
+            case NONE -> null;
+            case XZ -> (var0, var1x, var2) -> {
+            Block var3 = var0.getBlock();
+            long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
+            float var6 = var3.getMaxHorizontalOffset();
+            double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+            double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+            return new Vec3(var7, 0.0, var9);
+         };
+            case XYZ -> (var0, var1x, var2) -> {
+            Block var3 = var0.getBlock();
+            long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
+            double var6 = ((double)((float)(var4 >> 4 & 15L) / 15.0F) - 1.0) * (double)var3.getMaxVerticalOffset();
+            float var8 = var3.getMaxHorizontalOffset();
+            double var9 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
+            double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
+            return new Vec3(var9, var6, var11);
+         };
+         };
          return this;
       }
 

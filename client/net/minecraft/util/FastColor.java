@@ -45,6 +45,10 @@ public class FastColor {
       public static int color(int var0, int var1) {
          return var0 << 24 | var1 & 16777215;
       }
+
+      public static int fromArgb32(int var0) {
+         return var0 & -16711936 | (var0 & 0xFF0000) >> 16 | (var0 & 0xFF) << 16;
+      }
    }
 
    public static class ARGB32 {
@@ -98,6 +102,10 @@ public class FastColor {
 
       public static int colorFromFloat(float var0, float var1, float var2, float var3) {
          return color(FastColor.as8BitChannel(var0), FastColor.as8BitChannel(var1), FastColor.as8BitChannel(var2), FastColor.as8BitChannel(var3));
+      }
+
+      public static int average(int var0, int var1) {
+         return color((alpha(var0) + alpha(var1)) / 2, (red(var0) + red(var1)) / 2, (green(var0) + green(var1)) / 2, (blue(var0) + blue(var1)) / 2);
       }
    }
 }

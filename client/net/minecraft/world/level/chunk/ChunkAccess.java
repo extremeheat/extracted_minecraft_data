@@ -54,7 +54,6 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.lighting.ChunkSkyLightSources;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.ticks.SerializableTickContainer;
 import net.minecraft.world.ticks.TickContainerAccess;
 import org.slf4j.Logger;
 
@@ -262,6 +261,10 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       }
 
       return true;
+   }
+
+   public boolean isSectionEmpty(int var1) {
+      return this.getSection(this.getSectionIndexFromSectionY(var1)).hasOnlyAir();
    }
 
    public void setUnsaved(boolean var1) {
@@ -472,11 +475,16 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return this.skyLightSources;
    }
 
-   public static record TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
-      public TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
-         super();
-         this.blocks = blocks;
-         this.fluids = fluids;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

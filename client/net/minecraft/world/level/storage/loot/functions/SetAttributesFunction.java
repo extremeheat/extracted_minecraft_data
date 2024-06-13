@@ -2,21 +2,16 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -27,7 +22,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetAttributesFunction extends LootItemConditionalFunction {
    public static final MapCodec<SetAttributesFunction> CODEC = RecordCodecBuilder.mapCodec(
@@ -78,15 +72,16 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       RandomSource var3 = var1.getRandom();
 
       for (SetAttributesFunction.Modifier var5 : this.modifiers) {
-         UUID var6 = var5.id.orElseGet(UUID::randomUUID);
-         EquipmentSlotGroup var7 = Util.getRandom(var5.slots, var3);
-         var2 = var2.withModifierAdded(var5.attribute, new AttributeModifier(var6, var5.name, (double)var5.amount.getFloat(var1), var5.operation), var7);
+         EquipmentSlotGroup var6 = Util.getRandom(var5.slots, var3);
+         var2 = var2.withModifierAdded(var5.attribute, new AttributeModifier(var5.id, (double)var5.amount.getFloat(var1), var5.operation), var6);
       }
 
       return var2;
    }
 
-   public static SetAttributesFunction.ModifierBuilder modifier(String var0, Holder<Attribute> var1, AttributeModifier.Operation var2, NumberProvider var3) {
+   public static SetAttributesFunction.ModifierBuilder modifier(
+      ResourceLocation var0, Holder<Attribute> var1, AttributeModifier.Operation var2, NumberProvider var3
+   ) {
       return new SetAttributesFunction.ModifierBuilder(var0, var1, var2, var3);
    }
 
@@ -122,57 +117,29 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       }
    }
 
-   static record Modifier(
-      String name, Holder<Attribute> attribute, AttributeModifier.Operation operation, NumberProvider amount, List<EquipmentSlotGroup> slots, Optional<UUID> id
-   ) {
-      private static final Codec<List<EquipmentSlotGroup>> SLOTS_CODEC = ExtraCodecs.nonEmptyList(
-         Codec.either(EquipmentSlotGroup.CODEC, EquipmentSlotGroup.CODEC.listOf())
-            .xmap(
-               var0 -> (List)var0.map(List::of, Function.identity()),
-               var0 -> var0.size() == 1 ? Either.left((EquipmentSlotGroup)var0.getFirst()) : Either.right(var0)
-            )
-      );
-      public static final Codec<SetAttributesFunction.Modifier> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  Codec.STRING.fieldOf("name").forGetter(SetAttributesFunction.Modifier::name),
-                  Attribute.CODEC.fieldOf("attribute").forGetter(SetAttributesFunction.Modifier::attribute),
-                  AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(SetAttributesFunction.Modifier::operation),
-                  NumberProviders.CODEC.fieldOf("amount").forGetter(SetAttributesFunction.Modifier::amount),
-                  SLOTS_CODEC.fieldOf("slot").forGetter(SetAttributesFunction.Modifier::slots),
-                  UUIDUtil.STRING_CODEC.optionalFieldOf("id").forGetter(SetAttributesFunction.Modifier::id)
-               )
-               .apply(var0, SetAttributesFunction.Modifier::new)
-      );
-
-      Modifier(
-         String name,
-         Holder<Attribute> attribute,
-         AttributeModifier.Operation operation,
-         NumberProvider amount,
-         List<EquipmentSlotGroup> slots,
-         Optional<UUID> id
-      ) {
-         super();
-         this.name = name;
-         this.attribute = attribute;
-         this.operation = operation;
-         this.amount = amount;
-         this.slots = slots;
-         this.id = id;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class ModifierBuilder {
-      private final String name;
+      private final ResourceLocation id;
       private final Holder<Attribute> attribute;
       private final AttributeModifier.Operation operation;
       private final NumberProvider amount;
-      private Optional<UUID> id = Optional.empty();
       private final Set<EquipmentSlotGroup> slots = EnumSet.noneOf(EquipmentSlotGroup.class);
 
-      public ModifierBuilder(String var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4) {
+      public ModifierBuilder(ResourceLocation var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4) {
          super();
-         this.name = var1;
+         this.id = var1;
          this.attribute = var2;
          this.operation = var3;
          this.amount = var4;
@@ -183,13 +150,8 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public SetAttributesFunction.ModifierBuilder withUuid(UUID var1) {
-         this.id = Optional.of(var1);
-         return this;
-      }
-
       public SetAttributesFunction.Modifier build() {
-         return new SetAttributesFunction.Modifier(this.name, this.attribute, this.operation, this.amount, List.copyOf(this.slots), this.id);
+         return new SetAttributesFunction.Modifier(this.id, this.attribute, this.operation, this.amount, List.copyOf(this.slots));
       }
    }
 }

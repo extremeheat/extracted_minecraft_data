@@ -14,7 +14,7 @@ public interface RecipeType<T extends Recipe<?>> {
    RecipeType<SmithingRecipe> SMITHING = register("smithing");
 
    static <T extends Recipe<?>> RecipeType<T> register(final String var0) {
-      return Registry.register(BuiltInRegistries.RECIPE_TYPE, new ResourceLocation(var0), new RecipeType<T>() {
+      return Registry.register(BuiltInRegistries.RECIPE_TYPE, ResourceLocation.withDefaultNamespace(var0), new RecipeType<T>() {
          @Override
          public String toString() {
             return var0;

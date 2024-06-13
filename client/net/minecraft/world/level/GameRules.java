@@ -202,6 +202,9 @@ public class GameRules {
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       })
    );
+   public static final GameRules.Key<GameRules.BooleanValue> RULE_ENTITIES_WITH_PASSENGERS_CAN_USE_PORTALS = register(
+      "entitiesWithPassengersCanUsePortals", GameRules.Category.MOBS, GameRules.BooleanValue.create(false)
+   );
    private final Map<GameRules.Key<?>, GameRules.Value<?>> rules;
 
    private static <T extends GameRules.Value<T>> GameRules.Key<T> register(String var0, GameRules.Category var1, GameRules.Type<T> var2) {

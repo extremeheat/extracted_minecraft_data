@@ -1,15 +1,10 @@
 package net.minecraft.world.level;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.entity.EquipmentTable;
 
@@ -57,33 +52,16 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpaw
       return this.equipment;
    }
 
-   public static record CustomSpawnRules(InclusiveRange<Integer> blockLightLimit, InclusiveRange<Integer> skyLightLimit) {
-      private static final InclusiveRange<Integer> LIGHT_RANGE = new InclusiveRange<>(0, 15);
-      public static final Codec<SpawnData.CustomSpawnRules> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  lightLimit("block_light_limit").forGetter(var0x -> var0x.blockLightLimit),
-                  lightLimit("sky_light_limit").forGetter(var0x -> var0x.skyLightLimit)
-               )
-               .apply(var0, SpawnData.CustomSpawnRules::new)
-      );
-
-      public CustomSpawnRules(InclusiveRange<Integer> blockLightLimit, InclusiveRange<Integer> skyLightLimit) {
-         super();
-         this.blockLightLimit = blockLightLimit;
-         this.skyLightLimit = skyLightLimit;
-      }
-
-      private static DataResult<InclusiveRange<Integer>> checkLightBoundaries(InclusiveRange<Integer> var0) {
-         return !LIGHT_RANGE.contains(var0) ? DataResult.error(() -> "Light values must be withing range " + LIGHT_RANGE) : DataResult.success(var0);
-      }
-
-      private static MapCodec<InclusiveRange<Integer>> lightLimit(String var0) {
-         return InclusiveRange.INT.lenientOptionalFieldOf(var0, LIGHT_RANGE).validate(SpawnData.CustomSpawnRules::checkLightBoundaries);
-      }
-
-      public boolean isValidPosition(BlockPos var1, ServerLevel var2) {
-         return this.blockLightLimit.isValueInRange(var2.getBrightness(LightLayer.BLOCK, var1))
-            && this.skyLightLimit.isValueInRange(var2.getBrightness(LightLayer.SKY, var1));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

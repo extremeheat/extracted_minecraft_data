@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
@@ -53,6 +52,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -134,9 +134,10 @@ import org.slf4j.Logger;
 public abstract class LivingEntity extends Entity implements Attackable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_ACTIVE_EFFECTS = "active_effects";
-   private static final UUID SPEED_MODIFIER_POWDER_SNOW_UUID = UUID.fromString("1eaf83ff-7207-4596-b37a-d7a07b3ec4ce");
+   private static final ResourceLocation SPEED_MODIFIER_POWDER_SNOW_ID = ResourceLocation.withDefaultNamespace("powder_snow");
+   private static final ResourceLocation SPRINTING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("sprinting");
    private static final AttributeModifier SPEED_MODIFIER_SPRINTING = new AttributeModifier(
-      UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D"), "Sprinting speed boost", 0.30000001192092896, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+      SPRINTING_MODIFIER_ID, 0.30000001192092896, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
    );
    public static final int HAND_SLOTS = 2;
    public static final int ARMOR_SLOTS = 4;
@@ -173,6 +174,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
    private static final float ITEM_USE_EFFECT_START_FRACTION = 0.21875F;
+   public static final String ATTRIBUTES_FIELD = "attributes";
    private final AttributeMap attributes;
    private final CombatTracker combatTracker = new CombatTracker(this);
    private final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = Maps.newHashMap();
@@ -488,8 +490,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected void removeFrost() {
       AttributeInstance var1 = this.getAttribute(Attributes.MOVEMENT_SPEED);
       if (var1 != null) {
-         if (var1.getModifier(SPEED_MODIFIER_POWDER_SNOW_UUID) != null) {
-            var1.removeModifier(SPEED_MODIFIER_POWDER_SNOW_UUID);
+         if (var1.getModifier(SPEED_MODIFIER_POWDER_SNOW_ID) != null) {
+            var1.removeModifier(SPEED_MODIFIER_POWDER_SNOW_ID);
          }
       }
    }
@@ -504,9 +506,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
             }
 
             float var3 = -0.05F * this.getPercentFrozen();
-            var2.addTransientModifier(
-               new AttributeModifier(SPEED_MODIFIER_POWDER_SNOW_UUID, "Powder snow slow", (double)var3, AttributeModifier.Operation.ADD_VALUE)
-            );
+            var2.addTransientModifier(new AttributeModifier(SPEED_MODIFIER_POWDER_SNOW_ID, (double)var3, AttributeModifier.Operation.ADD_VALUE));
          }
       }
    }
@@ -663,15 +663,19 @@ public abstract class LivingEntity extends Entity implements Attackable {
    @Override
    public void remove(Entity.RemovalReason var1) {
       if (var1 == Entity.RemovalReason.KILLED || var1 == Entity.RemovalReason.DISCARDED) {
-         for (MobEffectInstance var3 : this.getActiveEffects()) {
-            var3.onMobRemoved(this, var1);
-         }
-
-         this.activeEffects.clear();
+         this.triggerOnDeathMobEffects(var1);
       }
 
       super.remove(var1);
       this.brain.clearMemories();
+   }
+
+   protected void triggerOnDeathMobEffects(Entity.RemovalReason var1) {
+      for (MobEffectInstance var3 : this.getActiveEffects()) {
+         var3.onMobRemoved(this, var1);
+      }
+
+      this.activeEffects.clear();
    }
 
    @Override
@@ -681,7 +685,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       var1.putInt("HurtByTimestamp", this.lastHurtByMobTimestamp);
       var1.putShort("DeathTime", (short)this.deathTime);
       var1.putFloat("AbsorptionAmount", this.getAbsorptionAmount());
-      var1.put("Attributes", this.getAttributes().save());
+      var1.put("attributes", this.getAttributes().save());
       if (!this.activeEffects.isEmpty()) {
          ListTag var2 = new ListTag();
 
@@ -705,8 +709,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       this.internalSetAbsorptionAmount(var1.getFloat("AbsorptionAmount"));
-      if (var1.contains("Attributes", 9) && this.level() != null && !this.level().isClientSide) {
-         this.getAttributes().load(var1.getList("Attributes", 10));
+      if (var1.contains("attributes", 9) && this.level() != null && !this.level().isClientSide) {
+         this.getAttributes().load(var1.getList("attributes", 10));
       }
 
       if (var1.contains("active_effects", 9)) {
@@ -2906,7 +2910,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    @Override
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
+   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
       return resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
    }
 
@@ -3509,11 +3513,16 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   public static record Fallsounds(SoundEvent small, SoundEvent big) {
-      public Fallsounds(SoundEvent small, SoundEvent big) {
-         super();
-         this.small = small;
-         this.big = big;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

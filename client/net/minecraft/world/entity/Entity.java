@@ -14,7 +14,6 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -59,7 +58,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SyncedDataHolder;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -99,18 +97,16 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.HoneyBlock;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityInLevelCallback;
 import net.minecraft.world.level.gameevent.DynamicGameEventListener;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.PushReaction;
@@ -223,10 +219,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    private final VecDeltaCodec packetPositionCodec = new VecDeltaCodec();
    public boolean noCulling;
    public boolean hasImpulse;
+   @Nullable
+   public PortalProcessor portalProcess;
    private int portalCooldown;
-   protected boolean isInsidePortal;
-   protected int portalTime;
-   protected BlockPos portalEntrancePos;
    private boolean invulnerable;
    protected UUID uuid = Mth.createInsecureUUID(this.random);
    protected String stringUUID = this.uuid.toString();
@@ -437,7 +432,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.walkDistO = this.walkDist;
       this.xRotO = this.getXRot();
       this.yRotO = this.getYRot();
-      this.handleNetherPortal();
+      this.handlePortal();
       if (this.canSpawnSprintParticle()) {
          this.spawnSprintParticle();
       }
@@ -513,10 +508,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       if (this.isOnPortalCooldown()) {
          this.portalCooldown--;
       }
-   }
-
-   public int getPortalWaitTime() {
-      return 0;
    }
 
    public void lavaHurt() {
@@ -917,7 +908,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          while (var8.hasNext()) {
             double var9 = (Double)var8.next();
             float var11 = (float)(var9 - var0.minY);
-            if (!(var11 < 0.0F) && !Mth.equal(var11, var3)) {
+            if (!(var11 < 0.0F) && var11 != var3) {
                if (var11 > var2) {
                   break;
                }
@@ -2104,51 +2095,46 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return Vec3.directionFromRotation(this.getRotationVector());
    }
 
-   public void handleInsidePortal(BlockPos var1) {
+   public void setAsInsidePortal(Portal var1, BlockPos var2) {
       if (this.isOnPortalCooldown()) {
          this.setPortalCooldown();
       } else {
-         if (!this.level().isClientSide && !var1.equals(this.portalEntrancePos)) {
-            this.portalEntrancePos = var1.immutable();
+         if (this.portalProcess != null && this.portalProcess.isSamePortal(var1)) {
+            this.portalProcess.updateEntryPosition(var2.immutable());
+            this.portalProcess.setAsInsidePortalThisTick(true);
+         } else {
+            this.portalProcess = new PortalProcessor(var1, var2.immutable());
          }
-
-         this.isInsidePortal = true;
       }
    }
 
-   protected void handleNetherPortal() {
-      if (this.level() instanceof ServerLevel) {
-         int var1 = this.getPortalWaitTime();
-         ServerLevel var2 = (ServerLevel)this.level();
-         if (this.isInsidePortal) {
-            MinecraftServer var3 = var2.getServer();
-            ResourceKey var4 = this.level().dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;
-            ServerLevel var5 = var3.getLevel(var4);
-            if (var5 != null && var3.isNetherEnabled() && !this.isPassenger() && this.portalTime++ >= var1) {
-               this.level().getProfiler().push("portal");
-               this.portalTime = var1;
+   protected void handlePortal() {
+      if (this.level() instanceof ServerLevel var1) {
+         this.processPortalCooldown();
+         if (this.portalProcess != null) {
+            if (this.portalProcess.processPortalTeleportation(var1, this, this.canChangeDimensions())) {
+               var1.getProfiler().push("portal");
                this.setPortalCooldown();
-               this.changeDimension(() -> this.findOrCreateDimensionEntryPoint(var5));
-               this.level().getProfiler().pop();
-            }
+               DimensionTransition var6 = this.portalProcess.getPortalDestination(var1, this);
+               if (var6 != null && var1.getServer().isLevelEnabled(var6.newLevel())) {
+                  Entity var3 = this.changeDimension(var6);
+                  if (var3 != null && var3.level() instanceof ServerLevel var4) {
+                     BlockPos var7 = BlockPos.containing(var3.position);
+                     var4.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(var7), 3, var7);
+                  }
+               }
 
-            this.isInsidePortal = false;
-         } else {
-            if (this.portalTime > 0) {
-               this.portalTime -= 4;
-            }
-
-            if (this.portalTime < 0) {
-               this.portalTime = 0;
+               var1.getProfiler().pop();
+            } else if (this.portalProcess.hasExpired()) {
+               this.portalProcess = null;
             }
          }
-
-         this.processPortalCooldown();
       }
    }
 
    public int getDimensionChangingDelay() {
-      return 300;
+      Entity var1 = this.getFirstPassenger();
+      return var1 instanceof ServerPlayer ? var1.getDimensionChangingDelay() : 300;
    }
 
    public void lerpMotion(double var1, double var3, double var5) {
@@ -2516,108 +2502,61 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       var2.remove("Dimension");
       this.load(var2);
       this.portalCooldown = var1.portalCooldown;
-      this.portalEntrancePos = var1.portalEntrancePos;
+      this.portalProcess = var1.portalProcess;
    }
 
    @Nullable
-   public Entity changeDimension(Entity.DimensionTransitionSupplier var1) {
-      if (this.level() instanceof ServerLevel && !this.isRemoved()) {
-         DimensionTransition var2 = var1.get();
-         if (var2 == null) {
-            return null;
-         } else {
-            ServerLevel var3 = var2.newDimension();
-            this.level().getProfiler().push("changeDimension");
-            this.unRide();
-            this.level().getProfiler().push("reposition");
-            this.level().getProfiler().popPush("reloading");
-            Entity var4 = this.getType().create(var3);
-            if (var4 != null) {
-               var4.restoreFrom(this);
-               var4.moveTo(var2.pos().x, var2.pos().y, var2.pos().z, var2.yRot(), var4.getXRot());
-               var4.setDeltaMovement(var2.speed());
-               var3.addDuringTeleport(var4);
-               if (var3.dimension() == Level.END) {
-                  ServerLevel.makeObsidianPlatform(var3);
-               }
+   public Entity changeDimension(DimensionTransition var1) {
+      if (this.level() instanceof ServerLevel var2 && !this.isRemoved()) {
+         ServerLevel var9 = var1.newLevel();
+         List var4 = this.getPassengers();
+         this.unRide();
+         ArrayList var5 = new ArrayList();
+
+         for (Entity var7 : var4) {
+            var5.add(var7.changeDimension(var1));
+         }
+
+         var2.getProfiler().push("changeDimension");
+         Entity var10 = var9.dimension() == var2.dimension() ? this : this.getType().create(var9);
+         if (var10 != null) {
+            if (this != var10) {
+               var10.restoreFrom(this);
+               this.removeAfterChangingDimensions();
             }
 
-            this.removeAfterChangingDimensions();
-            this.level().getProfiler().pop();
-            ((ServerLevel)this.level()).resetEmptyTime();
-            var3.resetEmptyTime();
-            this.level().getProfiler().pop();
-            return var4;
+            var10.moveTo(var1.pos().x, var1.pos().y, var1.pos().z, var1.yRot(), var10.getXRot());
+            var10.setDeltaMovement(var1.speed());
+            if (this != var10) {
+               var9.addDuringTeleport(var10);
+            }
+
+            for (Entity var8 : var5) {
+               var8.startRiding(var10, true);
+            }
          }
-      } else {
-         return null;
+
+         var2.resetEmptyTime();
+         var9.resetEmptyTime();
+         var2.getProfiler().pop();
+         return var10;
       }
+
+      return null;
    }
 
    protected void removeAfterChangingDimensions() {
       this.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
    }
 
-   @Nullable
-   public DimensionTransition findOrCreateDimensionEntryPoint(ServerLevel var1) {
-      boolean var2 = this.level().dimension() == Level.END && var1.dimension() == Level.OVERWORLD;
-      boolean var3 = var1.dimension() == Level.END;
-      if (!var2 && !var3) {
-         boolean var9 = var1.dimension() == Level.NETHER;
-         if (this.level().dimension() != Level.NETHER && !var9) {
-            return null;
-         } else {
-            WorldBorder var10 = var1.getWorldBorder();
-            double var6 = DimensionType.getTeleportationScale(this.level().dimensionType(), var1.dimensionType());
-            BlockPos var8 = var10.clampToBounds(this.getX() * var6, this.getY(), this.getZ() * var6);
-            return this.getExitPortal(var1, var8, var9, var10)
-               .map(
-                  var2x -> {
-                     BlockState var5x = this.level().getBlockState(this.portalEntrancePos);
-                     Direction.Axis var3x;
-                     Vec3 var4x;
-                     if (var5x.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
-                        var3x = var5x.getValue(BlockStateProperties.HORIZONTAL_AXIS);
-                        BlockUtil.FoundRectangle var6x = BlockUtil.getLargestRectangleAround(
-                           this.portalEntrancePos, var3x, 21, Direction.Axis.Y, 21, var2xx -> this.level().getBlockState(var2xx) == var5x
-                        );
-                        var4x = this.getRelativePortalPosition(var3x, var6x);
-                     } else {
-                        var3x = Direction.Axis.X;
-                        var4x = new Vec3(0.5, 0.0, 0.0);
-                     }
-
-                     return PortalShape.createDimensionTransition(var1, var2x, var3x, var4x, this, this.getDeltaMovement(), this.getYRot(), this.getXRot());
-                  }
-               )
-               .orElse(null);
-         }
-      } else {
-         BlockPos var4 = var3 ? ServerLevel.END_SPAWN_POINT : var1.getSharedSpawnPos();
-         var1.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(var4), 3, var4);
-         int var5;
-         if (var3) {
-            var5 = var4.getY();
-         } else {
-            var5 = var1.getChunkAt(var4).getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var4.getX(), var4.getZ()) + 1;
-         }
-
-         return new DimensionTransition(
-            var1, new Vec3((double)var4.getX() + 0.5, (double)var5, (double)var4.getZ() + 0.5), this.getDeltaMovement(), this.getYRot(), this.getXRot()
-         );
-      }
-   }
-
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
+   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
       return PortalShape.getRelativePosition(var2, var1, this.position(), this.getDimensions(this.getPose()));
    }
 
-   protected Optional<BlockUtil.FoundRectangle> getExitPortal(ServerLevel var1, BlockPos var2, boolean var3, WorldBorder var4) {
-      return var1.getPortalForcer().findPortalAround(var2, var3, var4);
-   }
-
    public boolean canChangeDimensions() {
-      return !this.isPassenger() && !this.isVehicle();
+      return !this.isPassenger()
+         && this.isAlive()
+         && (!this.isVehicle() || this.level.getGameRules().getRule(GameRules.RULE_ENTITIES_WITH_PASSENGERS_CAN_USE_PORTALS).get());
    }
 
    public float getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5, float var6) {
@@ -2712,15 +2651,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public boolean isCustomNameVisible() {
       return this.entityData.get(DATA_CUSTOM_NAME_VISIBLE);
-   }
-
-   public final void teleportToWithTicket(double var1, double var3, double var5) {
-      if (this.level() instanceof ServerLevel) {
-         ChunkPos var7 = new ChunkPos(BlockPos.containing(var1, var3, var5));
-         ((ServerLevel)this.level()).getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var7, 0, this.getId());
-         this.level().getChunk(var7.x, var7.z);
-         this.teleportTo(var1, var3, var5);
-      }
    }
 
    public boolean teleportTo(ServerLevel var1, double var2, double var4, double var6, Set<RelativeMovement> var8, float var9, float var10) {
@@ -2958,10 +2888,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public final List<Entity> getPassengers() {
       return this.passengers;
-   }
-
-   public Optional<Entity> getPassengerClosestTo(Vec3 var1) {
-      return this.getPassengers().stream().filter(var1x -> var1x != this).min(Comparator.comparingDouble(var1x -> var1.distanceToSqr(var1x.position())));
    }
 
    @Nullable
@@ -3500,13 +3426,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public Vec3 getKnownMovement() {
-      return this.getDeltaMovement();
-   }
+      if (this.getControllingPassenger() instanceof Player var1 && this.isAlive()) {
+         return var1.getKnownMovement();
+      }
 
-   @FunctionalInterface
-   public interface DimensionTransitionSupplier {
-      @Nullable
-      DimensionTransition get();
+      return this.getDeltaMovement();
    }
 
    @FunctionalInterface

@@ -1,44 +1,13 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
-
-public record InvertedLootItemCondition(LootItemCondition term) implements LootItemCondition {
-   public static final MapCodec<InvertedLootItemCondition> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(LootItemCondition.DIRECT_CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term)).apply(var0, InvertedLootItemCondition::new)
-   );
-
-   public InvertedLootItemCondition(LootItemCondition term) {
-      super();
-      this.term = term;
-   }
-
-   @Override
-   public LootItemConditionType getType() {
-      return LootItemConditions.INVERTED;
-   }
-
-   public boolean test(LootContext var1) {
-      return !this.term.test(var1);
-   }
-
-   @Override
-   public Set<LootContextParam<?>> getReferencedContextParams() {
-      return this.term.getReferencedContextParams();
-   }
-
-   @Override
-   public void validate(ValidationContext var1) {
-      LootItemCondition.super.validate(var1);
-      this.term.validate(var1);
-   }
-
-   public static LootItemCondition.Builder invert(LootItemCondition.Builder var0) {
-      InvertedLootItemCondition var1 = new InvertedLootItemCondition(var0.build());
-      return () -> var1;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

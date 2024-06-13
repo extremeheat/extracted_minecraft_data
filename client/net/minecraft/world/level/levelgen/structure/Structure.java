@@ -1,6 +1,5 @@
 package net.minecraft.world.level.levelgen.structure;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -15,12 +14,10 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -32,9 +29,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.RandomState;
-import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -183,110 +178,42 @@ public abstract class Structure {
 
    public abstract StructureType<?> type();
 
-   public static record GenerationContext(
-      RegistryAccess registryAccess,
-      ChunkGenerator chunkGenerator,
-      BiomeSource biomeSource,
-      RandomState randomState,
-      StructureTemplateManager structureTemplateManager,
-      WorldgenRandom random,
-      long seed,
-      ChunkPos chunkPos,
-      LevelHeightAccessor heightAccessor,
-      Predicate<Holder<Biome>> validBiome
-   ) {
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public GenerationContext(
-         RegistryAccess var1,
-         ChunkGenerator var2,
-         BiomeSource var3,
-         RandomState var4,
-         StructureTemplateManager var5,
-         long var6,
-         ChunkPos var8,
-         LevelHeightAccessor var9,
-         Predicate<Holder<Biome>> var10
-      ) {
-         this(var1, var2, var3, var4, var5, makeRandom(var6, var8), var6, var8, var9, var10);
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public GenerationContext(
-         RegistryAccess registryAccess,
-         ChunkGenerator chunkGenerator,
-         BiomeSource biomeSource,
-         RandomState randomState,
-         StructureTemplateManager structureTemplateManager,
-         WorldgenRandom random,
-         long seed,
-         ChunkPos chunkPos,
-         LevelHeightAccessor heightAccessor,
-         Predicate<Holder<Biome>> validBiome
-      ) {
-         super();
-         this.registryAccess = registryAccess;
-         this.chunkGenerator = chunkGenerator;
-         this.biomeSource = biomeSource;
-         this.randomState = randomState;
-         this.structureTemplateManager = structureTemplateManager;
-         this.random = random;
-         this.seed = seed;
-         this.chunkPos = chunkPos;
-         this.heightAccessor = heightAccessor;
-         this.validBiome = validBiome;
-      }
-
-      private static WorldgenRandom makeRandom(long var0, ChunkPos var2) {
-         WorldgenRandom var3 = new WorldgenRandom(new LegacyRandomSource(0L));
-         var3.setLargeFeatureSeed(var0, var2.x, var2.z);
-         return var3;
-      }
-   }
-
-   public static record GenerationStub(BlockPos position, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator) {
-      public GenerationStub(BlockPos var1, Consumer<StructurePiecesBuilder> var2) {
-         this(var1, Either.left(var2));
-      }
-
-      public GenerationStub(BlockPos position, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator) {
-         super();
-         this.position = position;
-         this.generator = generator;
-      }
-
-      public StructurePiecesBuilder getPiecesBuilder() {
-         return (StructurePiecesBuilder)this.generator.map(var0 -> {
-            StructurePiecesBuilder var1 = new StructurePiecesBuilder();
-            var0.accept(var1);
-            return var1;
-         }, var0 -> var0);
-      }
-   }
-
-   public static record StructureSettings(
-      HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation
-   ) {
-      public static final MapCodec<Structure.StructureSettings> CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(Structure.StructureSettings::biomes),
-                  Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values()))
-                     .fieldOf("spawn_overrides")
-                     .forGetter(Structure.StructureSettings::spawnOverrides),
-                  GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(Structure.StructureSettings::step),
-                  TerrainAdjustment.CODEC
-                     .optionalFieldOf("terrain_adaptation", TerrainAdjustment.NONE)
-                     .forGetter(Structure.StructureSettings::terrainAdaptation)
-               )
-               .apply(var0, Structure.StructureSettings::new)
-      );
-
-      public StructureSettings(
-         HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation
-      ) {
-         super();
-         this.biomes = biomes;
-         this.spawnOverrides = spawnOverrides;
-         this.step = step;
-         this.terrainAdaptation = terrainAdaptation;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

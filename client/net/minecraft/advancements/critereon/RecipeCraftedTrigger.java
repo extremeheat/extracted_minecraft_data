@@ -1,13 +1,7 @@
 package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
-import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.advancements.Criterion;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -26,62 +20,16 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTr
       this.trigger(var1, var2x -> var2x.matches(var2, var3));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, ResourceLocation recipeId, List<ItemPredicate> ingredients)
-      implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<RecipeCraftedTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(RecipeCraftedTrigger.TriggerInstance::player),
-                  ResourceLocation.CODEC.fieldOf("recipe_id").forGetter(RecipeCraftedTrigger.TriggerInstance::recipeId),
-                  ItemPredicate.CODEC.listOf().optionalFieldOf("ingredients", List.of()).forGetter(RecipeCraftedTrigger.TriggerInstance::ingredients)
-               )
-               .apply(var0, RecipeCraftedTrigger.TriggerInstance::new)
-      );
-
-      public TriggerInstance(Optional<ContextAwarePredicate> player, ResourceLocation recipeId, List<ItemPredicate> ingredients) {
-         super();
-         this.player = player;
-         this.recipeId = recipeId;
-         this.ingredients = ingredients;
-      }
-
-      public static Criterion<RecipeCraftedTrigger.TriggerInstance> craftedItem(ResourceLocation var0, List<ItemPredicate.Builder> var1) {
-         return CriteriaTriggers.RECIPE_CRAFTED
-            .createCriterion(new RecipeCraftedTrigger.TriggerInstance(Optional.empty(), var0, var1.stream().map(ItemPredicate.Builder::build).toList()));
-      }
-
-      public static Criterion<RecipeCraftedTrigger.TriggerInstance> craftedItem(ResourceLocation var0) {
-         return CriteriaTriggers.RECIPE_CRAFTED.createCriterion(new RecipeCraftedTrigger.TriggerInstance(Optional.empty(), var0, List.of()));
-      }
-
-      public static Criterion<RecipeCraftedTrigger.TriggerInstance> crafterCraftedItem(ResourceLocation var0) {
-         return CriteriaTriggers.CRAFTER_RECIPE_CRAFTED.createCriterion(new RecipeCraftedTrigger.TriggerInstance(Optional.empty(), var0, List.of()));
-      }
-
-      boolean matches(ResourceLocation var1, List<ItemStack> var2) {
-         if (!var1.equals(this.recipeId)) {
-            return false;
-         } else {
-            ArrayList var3 = new ArrayList(var2);
-
-            for (ItemPredicate var5 : this.ingredients) {
-               boolean var6 = false;
-               Iterator var7 = var3.iterator();
-
-               while (var7.hasNext()) {
-                  if (var5.test((ItemStack)var7.next())) {
-                     var7.remove();
-                     var6 = true;
-                     break;
-                  }
-               }
-
-               if (!var6) {
-                  return false;
-               }
-            }
-
-            return true;
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }
