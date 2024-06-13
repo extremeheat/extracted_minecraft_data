@@ -117,6 +117,8 @@ async function main () {
 
 // main()
 async function fix () {
+  exec('git config user.name "github-actions[bot]"')
+  exec('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"')
   await decomp('24w14a')
   await decomp('1.20.5')
   await decomp('1.20.6-rc1')
