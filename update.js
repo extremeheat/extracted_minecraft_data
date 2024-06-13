@@ -30,8 +30,9 @@ async function decomp (version) {
   await mcDecompiler.decompile(version, { path: join(__dirname, '/client_new'), force: true })
   console.log('Done decompiling!')
   exec('git checkout clientlatest')
+  exec('rm -fr client_old')
   exec('mv client client_old')
-  exec('mv client_new client')
+  exec('mv client_new/client client')
   exec('git add client/*.java client/version.json')
   exec('git status')
   exec(`git commit -m "Add '${version}' sources"`)
@@ -114,4 +115,16 @@ async function main () {
   }
 }
 
-main()
+// main()
+async function fix () {
+  await decomp('24w14a')
+  await decomp('1.20.5')
+  await decomp('1.20.6-rc1')
+  await decomp('1.20.6')
+  await decomp('24w18a')
+  await decomp('24w19b')
+  await decomp('24w20a')
+  await decomp('24w21b')
+  await decomp('1.21-rc1')
+}
+fix()
