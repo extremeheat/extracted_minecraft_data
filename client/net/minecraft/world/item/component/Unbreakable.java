@@ -8,6 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public record Unbreakable(boolean showInTooltip) implements TooltipProvider {
@@ -23,9 +24,9 @@ public record Unbreakable(boolean showInTooltip) implements TooltipProvider {
    }
 
    @Override
-   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
       if (this.showInTooltip) {
-         var1.accept(TOOLTIP);
+         var2.accept(TOOLTIP);
       }
    }
 

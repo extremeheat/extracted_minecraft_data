@@ -28,7 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -103,7 +102,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       return Util.sequence(var3)
          .thenCompose(
             var2x -> {
-               List var3x = var2x.stream().flatMap(FontManager.UnresolvedBuilderBundle::listBuilders).collect(Collectors.toCollection(ArrayList::new));
+               List var3x = var2x.stream().flatMap(FontManager.UnresolvedBuilderBundle::listBuilders).collect(Util.toMutableList());
                GlyphProvider.Conditional var4 = createFallbackProvider();
                var3x.add(CompletableFuture.completedFuture(Optional.of(var4.provider())));
                return Util.sequence(var3x)
@@ -180,6 +179,7 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    private void apply(FontManager.Preparation var1, ProfilerFiller var2) {
       var2.startTick();
       var2.push("closing");
+      this.lastFontSetCache = null;
       this.fontSets.values().forEach(FontSet::close);
       this.fontSets.clear();
       this.providersToClose.forEach(GlyphProvider::close);
@@ -192,7 +192,6 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
          this.fontSets.put(var2x, var4);
       });
       this.providersToClose.addAll(var1.allProviders);
-      this.lastFontSetCache = null;
       var2.pop();
       var2.endTick();
       if (!this.fontSets.containsKey(Minecraft.DEFAULT_FONT)) {

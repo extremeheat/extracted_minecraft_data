@@ -383,8 +383,8 @@ public class BlockModel implements UnbakedModel {
 
       private final String name;
 
-      private GuiLight(String var3) {
-         this.name = var3;
+      private GuiLight(final String nullxx) {
+         this.name = nullxx;
       }
 
       public static BlockModel.GuiLight getByName(String var0) {

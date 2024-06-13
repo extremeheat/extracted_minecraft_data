@@ -82,9 +82,9 @@ public class CreateBuffetWorldScreen extends Screen {
          Collator var2 = Collator.getInstance(Locale.getDefault());
          CreateBuffetWorldScreen.this.biomes
             .holders()
-            .map(var1x -> new CreateBuffetWorldScreen.BiomeList.Entry((Holder.Reference<Biome>)var1x))
+            .map(var1 -> new CreateBuffetWorldScreen.BiomeList.Entry((Holder.Reference<Biome>)var1))
             .sorted(Comparator.comparing(var0 -> var0.name.getString(), var2))
-            .forEach(var1x -> this.addEntry(var1x));
+            .forEach(var1 -> this.addEntry(var1));
       }
 
       public void setSelected(@Nullable CreateBuffetWorldScreen.BiomeList.Entry var1) {
@@ -100,10 +100,10 @@ public class CreateBuffetWorldScreen extends Screen {
          final Holder.Reference<Biome> biome;
          final Component name;
 
-         public Entry(Holder.Reference<Biome> var2) {
+         public Entry(final Holder.Reference<Biome> nullx) {
             super();
-            this.biome = var2;
-            ResourceLocation var3 = var2.key().location();
+            this.biome = nullx;
+            ResourceLocation var3 = nullx.key().location();
             String var4 = var3.toLanguageKey("biome");
             if (Language.getInstance().has(var4)) {
                this.name = Component.translatable(var4);

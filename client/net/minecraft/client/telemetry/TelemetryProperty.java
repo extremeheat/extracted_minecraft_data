@@ -143,9 +143,9 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
       private final String key;
       private final int id;
 
-      private GameMode(String var3, int var4) {
-         this.key = var3;
-         this.id = var4;
+      private GameMode(final String nullxx, final int nullxxx) {
+         this.key = nullxx;
+         this.id = nullxxx;
       }
 
       public int id() {
@@ -166,8 +166,8 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
       public static final Codec<TelemetryProperty.ServerType> CODEC = StringRepresentable.fromEnum(TelemetryProperty.ServerType::values);
       private final String key;
 
-      private ServerType(String var3) {
-         this.key = var3;
+      private ServerType(final String nullxx) {
+         this.key = nullxx;
       }
 
       @Override

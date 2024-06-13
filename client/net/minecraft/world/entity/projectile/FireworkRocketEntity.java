@@ -147,7 +147,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
       HitResult var10 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       if (!this.noPhysics) {
-         this.hitOrDeflect(var10);
+         this.hitTargetOrDeflectSelf(var10);
          this.hasImpulse = true;
       }
 

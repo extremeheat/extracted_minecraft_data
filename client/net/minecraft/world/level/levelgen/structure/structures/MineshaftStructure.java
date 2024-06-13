@@ -79,11 +79,11 @@ public class MineshaftStructure extends Structure {
       private final BlockState planksState;
       private final BlockState fenceState;
 
-      private Type(String var3, Block var4, Block var5, Block var6) {
-         this.name = var3;
-         this.woodState = var4.defaultBlockState();
-         this.planksState = var5.defaultBlockState();
-         this.fenceState = var6.defaultBlockState();
+      private Type(final String nullxx, final Block nullxxx, final Block nullxxxx, final Block nullxxxxx) {
+         this.name = nullxx;
+         this.woodState = nullxxx.defaultBlockState();
+         this.planksState = nullxxxx.defaultBlockState();
+         this.fenceState = nullxxxxx.defaultBlockState();
       }
 
       public String getName() {

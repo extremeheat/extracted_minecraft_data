@@ -173,7 +173,7 @@ public class BuiltInRegistries {
    public static final Registry<Schedule> SCHEDULE = registerSimple(Registries.SCHEDULE, var0 -> Schedule.EMPTY);
    public static final Registry<Activity> ACTIVITY = registerSimple(Registries.ACTIVITY, var0 -> Activity.IDLE);
    public static final Registry<LootPoolEntryType> LOOT_POOL_ENTRY_TYPE = registerSimple(Registries.LOOT_POOL_ENTRY_TYPE, var0 -> LootPoolEntries.EMPTY);
-   public static final Registry<LootItemFunctionType> LOOT_FUNCTION_TYPE = registerSimple(Registries.LOOT_FUNCTION_TYPE, var0 -> LootItemFunctions.SET_COUNT);
+   public static final Registry<LootItemFunctionType<?>> LOOT_FUNCTION_TYPE = registerSimple(Registries.LOOT_FUNCTION_TYPE, var0 -> LootItemFunctions.SET_COUNT);
    public static final Registry<LootItemConditionType> LOOT_CONDITION_TYPE = registerSimple(Registries.LOOT_CONDITION_TYPE, var0 -> LootItemConditions.INVERTED);
    public static final Registry<LootNumberProviderType> LOOT_NUMBER_PROVIDER_TYPE = registerSimple(
       Registries.LOOT_NUMBER_PROVIDER_TYPE, var0 -> NumberProviders.CONSTANT

@@ -11,8 +11,8 @@ public enum RandomSpreadType implements StringRepresentable {
    public static final Codec<RandomSpreadType> CODEC = StringRepresentable.fromEnum(RandomSpreadType::values);
    private final String id;
 
-   private RandomSpreadType(String var3) {
-      this.id = var3;
+   private RandomSpreadType(final String nullxx) {
+      this.id = nullxx;
    }
 
    @Override

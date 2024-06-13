@@ -121,9 +121,9 @@ public class MapColor {
       public final int id;
       public final int modifier;
 
-      private Brightness(int var3, int var4) {
-         this.id = var3;
-         this.modifier = var4;
+      private Brightness(final int nullxx, final int nullxxx) {
+         this.id = nullxx;
+         this.modifier = nullxxx;
       }
 
       public static MapColor.Brightness byId(int var0) {

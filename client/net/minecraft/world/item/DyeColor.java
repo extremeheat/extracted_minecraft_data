@@ -44,16 +44,16 @@ public enum DyeColor implements StringRepresentable {
    private final int fireworkColor;
    private final int textColor;
 
-   private DyeColor(int var3, String var4, int var5, MapColor var6, int var7, int var8) {
-      this.id = var3;
-      this.name = var4;
-      this.mapColor = var6;
-      this.textColor = var8;
-      int var9 = (var5 & 0xFF0000) >> 16;
-      int var10 = (var5 & 0xFF00) >> 8;
-      int var11 = (var5 & 0xFF) >> 0;
+   private DyeColor(final int nullxx, final String nullxxx, final int nullxxxx, final MapColor nullxxxxx, final int nullxxxxxx, final int nullxxxxxxx) {
+      this.id = nullxx;
+      this.name = nullxxx;
+      this.mapColor = nullxxxxx;
+      this.textColor = nullxxxxxxx;
+      int var9 = (nullxxxx & 0xFF0000) >> 16;
+      int var10 = (nullxxxx & 0xFF00) >> 8;
+      int var11 = (nullxxxx & 0xFF) >> 0;
       this.textureDiffuseColors = new float[]{(float)var9 / 255.0F, (float)var10 / 255.0F, (float)var11 / 255.0F};
-      this.fireworkColor = var7;
+      this.fireworkColor = nullxxxxxx;
    }
 
    public int getId() {

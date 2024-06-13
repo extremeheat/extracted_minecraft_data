@@ -80,8 +80,8 @@ public class ResourceLoadStateTracker {
 
       final String name;
 
-      private ReloadReason(String var3) {
-         this.name = var3;
+      private ReloadReason(final String nullxx) {
+         this.name = nullxx;
       }
    }
 

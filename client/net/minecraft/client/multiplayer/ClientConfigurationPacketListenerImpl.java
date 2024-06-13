@@ -130,7 +130,8 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
                   this.serverData,
                   this.postDisconnectScreen,
                   this.serverCookies,
-                  this.chatState
+                  this.chatState,
+                  this.strictErrorHandling
                )
             )
          );

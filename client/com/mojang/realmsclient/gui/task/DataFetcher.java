@@ -54,10 +54,10 @@ public class DataFetcher {
       private final Consumer<T> output;
       private long lastCheckTime = -1L;
 
-      SubscribedTask(DataFetcher.Task<T> var2, Consumer<T> var3) {
+      SubscribedTask(final DataFetcher.Task<T> nullx, final Consumer<T> nullxx) {
          super();
-         this.task = var2;
-         this.output = var3;
+         this.task = nullx;
+         this.output = nullxx;
       }
 
       void update(long var1) {
@@ -139,12 +139,12 @@ public class DataFetcher {
       DataFetcher.SuccessfulComputationResult<T> lastResult;
       private long nextUpdate = -1L;
 
-      Task(String var2, Callable<T> var3, long var4, RepeatedDelayStrategy var6) {
+      Task(final String nullx, final Callable<T> nullxx, final long nullxxx, final RepeatedDelayStrategy nullxxxx) {
          super();
-         this.id = var2;
-         this.updater = var3;
-         this.period = var4;
-         this.repeatStrategy = var6;
+         this.id = nullx;
+         this.updater = nullxx;
+         this.period = nullxxx;
+         this.repeatStrategy = nullxxxx;
       }
 
       void updateIfNeeded(long var1) {

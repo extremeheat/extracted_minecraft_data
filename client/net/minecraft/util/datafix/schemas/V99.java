@@ -175,18 +175,14 @@ public class V99 extends Schema {
                "Inventory",
                DSL.list(References.ITEM_STACK.in(var1)),
                "Offers",
-               DSL.optionalFields(
-                  "Recipes",
-                  DSL.list(
-                     DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1))
-                  )
-               ),
+               DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))),
                equipment(var1)
             )
       );
       var1.registerSimple(var2, "EnderCrystal");
-      var1.registerSimple(var2, "AreaEffectCloud");
+      var1.register(var2, "AreaEffectCloud", var1x -> DSL.optionalFields("Particle", References.PARTICLE.in(var1)));
       var1.registerSimple(var2, "ShulkerBullet");
+      var1.registerSimple(var2, "DragonFireball");
       registerMob(var1, var2, "Shulker");
       return var2;
    }
@@ -302,6 +298,12 @@ public class V99 extends Schema {
       var1.registerType(false, References.WORLD_GEN_SETTINGS, DSL::remainder);
       var1.registerType(false, References.ENTITY_CHUNK, () -> DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1))));
       var1.registerType(true, References.DATA_COMPONENTS, DSL::remainder);
+      var1.registerType(
+         true,
+         References.VILLAGER_TRADE,
+         () -> DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1))
+      );
+      var1.registerType(true, References.PARTICLE, () -> DSL.constType(DSL.string()));
    }
 
    protected static <T> T addNames(Dynamic<T> var0, Map<String, String> var1, Map<String, String> var2) {

@@ -118,8 +118,8 @@ public class ChatSelectionScreen extends Screen {
       @Nullable
       private ChatSelectionScreen.ChatSelectionList.Heading previousHeading;
 
-      public ChatSelectionList(Minecraft var2, int var3) {
-         super(var2, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - var3 - 80, 40, 16);
+      public ChatSelectionList(final Minecraft nullx, final int nullxx) {
+         super(nullx, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - nullxx - 80, 40, 16);
       }
 
       @Override
@@ -158,9 +158,9 @@ public class ChatSelectionScreen extends Screen {
 
       @Override
       public void acceptDivider(Component var1) {
-         this.addEntryToTop(new ChatSelectionScreen.ChatSelectionList.PaddingEntry(this));
+         this.addEntryToTop(new ChatSelectionScreen.ChatSelectionList.PaddingEntry());
          this.addEntryToTop(new ChatSelectionScreen.ChatSelectionList.DividerEntry(var1));
-         this.addEntryToTop(new ChatSelectionScreen.ChatSelectionList.PaddingEntry(this));
+         this.addEntryToTop(new ChatSelectionScreen.ChatSelectionList.PaddingEntry());
          this.previousHeading = null;
       }
 
@@ -223,9 +223,9 @@ public class ChatSelectionScreen extends Screen {
          private static final int COLOR = -6250336;
          private final Component text;
 
-         public DividerEntry(Component var2) {
-            super(ChatSelectionList.this);
-            this.text = var2;
+         public DividerEntry(final Component nullx) {
+            super();
+            this.text = nullx;
          }
 
          @Override
@@ -245,7 +245,7 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public abstract class Entry extends ObjectSelectionList.Entry<ChatSelectionScreen.ChatSelectionList.Entry> {
-         public Entry(ChatSelectionScreen.ChatSelectionList var1) {
+         public Entry() {
             super();
          }
 
@@ -296,26 +296,33 @@ public class ChatSelectionScreen extends Screen {
          private final boolean canReport;
          private final boolean playerMessage;
 
-         public MessageEntry(int var2, Component var3, Component var4, @Nullable GuiMessageTag var5, boolean var6, boolean var7) {
-            super(ChatSelectionList.this);
-            this.chatId = var2;
-            this.tagIcon = Optionull.map(var5, GuiMessageTag::icon);
-            this.tagHoverText = var5 != null && var5.text() != null
-               ? ChatSelectionScreen.this.font.split(var5.text(), ChatSelectionList.this.getRowWidth())
+         public MessageEntry(
+            final int nullx,
+            final Component nullxx,
+            final Component nullxxx,
+            @Nullable final GuiMessageTag nullxxxx,
+            final boolean nullxxxxx,
+            final boolean nullxxxxxx
+         ) {
+            super();
+            this.chatId = nullx;
+            this.tagIcon = Optionull.map(nullxxxx, GuiMessageTag::icon);
+            this.tagHoverText = nullxxxx != null && nullxxxx.text() != null
+               ? ChatSelectionScreen.this.font.split(nullxxxx.text(), ChatSelectionList.this.getRowWidth())
                : null;
-            this.canReport = var6;
-            this.playerMessage = var7;
+            this.canReport = nullxxxxx;
+            this.playerMessage = nullxxxxxx;
             FormattedText var8 = ChatSelectionScreen.this.font
-               .substrByWidth(var3, this.getMaximumTextWidth() - ChatSelectionScreen.this.font.width(CommonComponents.ELLIPSIS));
-            if (var3 != var8) {
+               .substrByWidth(nullxx, this.getMaximumTextWidth() - ChatSelectionScreen.this.font.width(CommonComponents.ELLIPSIS));
+            if (nullxx != var8) {
                this.text = FormattedText.composite(var8, CommonComponents.ELLIPSIS);
-               this.hoverText = ChatSelectionScreen.this.font.split(var3, ChatSelectionList.this.getRowWidth());
+               this.hoverText = ChatSelectionScreen.this.font.split(nullxx, ChatSelectionList.this.getRowWidth());
             } else {
-               this.text = var3;
+               this.text = nullxx;
                this.hoverText = null;
             }
 
-            this.narration = var4;
+            this.narration = nullxxx;
          }
 
          @Override
@@ -410,11 +417,11 @@ public class ChatSelectionScreen extends Screen {
          private final Supplier<PlayerSkin> skin;
          private final boolean canReport;
 
-         public MessageHeadingEntry(GameProfile var2, Component var3, boolean var4) {
-            super(ChatSelectionList.this);
-            this.heading = var3;
-            this.canReport = var4;
-            this.skin = ChatSelectionList.this.minecraft.getSkinManager().lookupInsecure(var2);
+         public MessageHeadingEntry(final GameProfile nullx, final Component nullxx, final boolean nullxxx) {
+            super();
+            this.heading = nullxx;
+            this.canReport = nullxxx;
+            this.skin = ChatSelectionList.this.minecraft.getSkinManager().lookupInsecure(nullx);
          }
 
          @Override
@@ -428,8 +435,8 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public class PaddingEntry extends ChatSelectionScreen.ChatSelectionList.Entry {
-         public PaddingEntry(ChatSelectionScreen.ChatSelectionList var1) {
-            super(var1);
+         public PaddingEntry() {
+            super();
          }
 
          @Override

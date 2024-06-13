@@ -9,8 +9,8 @@ public enum SlabType implements StringRepresentable {
 
    private final String name;
 
-   private SlabType(String var3) {
-      this.name = var3;
+   private SlabType(final String nullxx) {
+      this.name = nullxx;
    }
 
    @Override

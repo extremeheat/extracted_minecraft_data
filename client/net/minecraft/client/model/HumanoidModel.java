@@ -448,8 +448,8 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
 
       private final boolean twoHanded;
 
-      private ArmPose(boolean var3) {
-         this.twoHanded = var3;
+      private ArmPose(final boolean nullxx) {
+         this.twoHanded = nullxx;
       }
 
       public boolean isTwoHanded() {

@@ -192,7 +192,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    @Override
    protected void collectImplicitComponents(DataComponentMap.Builder var1) {
       super.collectImplicitComponents(var1);
-      var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(this.getItems()));
+      var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.getItems()));
    }
 
    @Override

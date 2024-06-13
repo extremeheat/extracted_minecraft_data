@@ -34,8 +34,8 @@ public record PlayerSkin(
 
       private final String id;
 
-      private Model(String var3) {
-         this.id = var3;
+      private Model(final String nullxx) {
+         this.id = nullxx;
       }
 
       public static PlayerSkin.Model byName(@Nullable String var0) {

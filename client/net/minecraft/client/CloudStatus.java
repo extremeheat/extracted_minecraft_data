@@ -14,10 +14,10 @@ public enum CloudStatus implements OptionEnum, StringRepresentable {
    private final String legacyName;
    private final String key;
 
-   private CloudStatus(int var3, String var4, String var5) {
-      this.id = var3;
-      this.legacyName = var4;
-      this.key = var5;
+   private CloudStatus(final int nullxx, final String nullxxx, final String nullxxxx) {
+      this.id = nullxx;
+      this.legacyName = nullxxx;
+      this.key = nullxxxx;
    }
 
    @Override

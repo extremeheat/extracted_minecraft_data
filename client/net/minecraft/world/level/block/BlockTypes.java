@@ -91,7 +91,7 @@ public class BlockTypes {
       Registry.register(var0, "dragon_egg", DragonEggBlock.CODEC);
       Registry.register(var0, "drop_experience", DropExperienceBlock.CODEC);
       Registry.register(var0, "dropper", DropperBlock.CODEC);
-      Registry.register(var0, "enchantment_table", EnchantmentTableBlock.CODEC);
+      Registry.register(var0, "enchantment_table", EnchantingTableBlock.CODEC);
       Registry.register(var0, "ender_chest", EnderChestBlock.CODEC);
       Registry.register(var0, "end_gateway", EndGatewayBlock.CODEC);
       Registry.register(var0, "end_portal", EndPortalBlock.CODEC);

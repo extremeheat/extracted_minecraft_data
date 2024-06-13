@@ -605,9 +605,9 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       final int id;
       private final String name;
 
-      private Variant(int var3, String var4) {
-         this.id = var3;
-         this.name = var4;
+      private Variant(final int nullxx, final String nullxxx) {
+         this.id = nullxx;
+         this.name = nullxxx;
       }
 
       @Override

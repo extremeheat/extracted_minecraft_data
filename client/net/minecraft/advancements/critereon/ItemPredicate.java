@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentHolder;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.ItemLike;
 
 public record ItemPredicate(
    Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentPredicate components, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates
-) {
+) implements Predicate<ItemStack> {
    public static final Codec<ItemPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items),
@@ -42,7 +43,7 @@ public record ItemPredicate(
       this.subPredicates = subPredicates;
    }
 
-   public boolean matches(ItemStack var1) {
+   public boolean test(ItemStack var1) {
       if (this.items.isPresent() && !var1.is(this.items.get())) {
          return false;
       } else if (!this.count.matches(var1.getCount())) {

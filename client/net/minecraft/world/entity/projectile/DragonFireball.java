@@ -60,11 +60,6 @@ public class DragonFireball extends AbstractHurtingProjectile {
    }
 
    @Override
-   public boolean isPickable() {
-      return false;
-   }
-
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       return false;
    }

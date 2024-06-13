@@ -14,8 +14,6 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.WorldDataConfiguration;
 import org.slf4j.Logger;
 
@@ -113,15 +111,10 @@ public class WorldLoader {
       }
 
       public Pair<WorldDataConfiguration, CloseableResourceManager> createResourceManager() {
-         FeatureFlagSet var1 = this.initMode ? FeatureFlags.REGISTRY.allFlags() : this.initialDataConfig.enabledFeatures();
-         WorldDataConfiguration var2 = MinecraftServer.configurePackRepository(this.packRepository, this.initialDataConfig.dataPacks(), this.safeMode, var1);
-         if (!this.initMode) {
-            var2 = var2.expandFeatures(this.initialDataConfig.enabledFeatures());
-         }
-
-         List var3 = this.packRepository.openAllSelected();
-         MultiPackResourceManager var4 = new MultiPackResourceManager(PackType.SERVER_DATA, var3);
-         return Pair.of(var2, var4);
+         WorldDataConfiguration var1 = MinecraftServer.configurePackRepository(this.packRepository, this.initialDataConfig, this.initMode, this.safeMode);
+         List var2 = this.packRepository.openAllSelected();
+         MultiPackResourceManager var3 = new MultiPackResourceManager(PackType.SERVER_DATA, var2);
+         return Pair.of(var1, var3);
       }
    }
 

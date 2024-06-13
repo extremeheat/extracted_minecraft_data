@@ -72,12 +72,14 @@ enum AdvancementTabType {
    private final int height;
    private final int max;
 
-   private AdvancementTabType(AdvancementTabType.Sprites var3, AdvancementTabType.Sprites var4, int var5, int var6, int var7) {
-      this.selectedSprites = var3;
-      this.unselectedSprites = var4;
-      this.width = var5;
-      this.height = var6;
-      this.max = var7;
+   private AdvancementTabType(
+      final AdvancementTabType.Sprites nullxx, final AdvancementTabType.Sprites nullxxx, final int nullxxxx, final int nullxxxxx, final int nullxxxxxx
+   ) {
+      this.selectedSprites = nullxx;
+      this.unselectedSprites = nullxxx;
+      this.width = nullxxxx;
+      this.height = nullxxxxx;
+      this.max = nullxxxxxx;
    }
 
    public int getMax() {

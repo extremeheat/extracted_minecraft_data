@@ -5,9 +5,9 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -18,24 +18,8 @@ import net.minecraft.util.ExtraCodecs;
 public class RegistryOps<T> extends DelegatingOps<T> {
    private final RegistryOps.RegistryInfoLookup lookupProvider;
 
-   private static RegistryOps.RegistryInfoLookup memoizeLookup(final RegistryOps.RegistryInfoLookup var0) {
-      return new RegistryOps.RegistryInfoLookup() {
-         private final Map<ResourceKey<? extends Registry<?>>, Optional<? extends RegistryOps.RegistryInfo<?>>> lookups = new HashMap<>();
-
-         @Override
-         public <T> Optional<RegistryOps.RegistryInfo<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-            return (Optional<RegistryOps.RegistryInfo<T>>)this.lookups.computeIfAbsent(var1, var0::lookup);
-         }
-      };
-   }
-
-   public static <T> RegistryOps<T> create(DynamicOps<T> var0, final HolderLookup.Provider var1) {
-      return create(var0, memoizeLookup(new RegistryOps.RegistryInfoLookup() {
-         @Override
-         public <E> Optional<RegistryOps.RegistryInfo<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1x) {
-            return var1.<T>lookup(var1x).map(RegistryOps.RegistryInfo::fromRegistryLookup);
-         }
-      }));
+   public static <T> RegistryOps<T> create(DynamicOps<T> var0, HolderLookup.Provider var1) {
+      return create(var0, new RegistryOps.HolderLookupAdapter(var1));
    }
 
    public static <T> RegistryOps<T> create(DynamicOps<T> var0, RegistryOps.RegistryInfoLookup var1) {
@@ -63,6 +47,23 @@ public class RegistryOps<T> extends DelegatingOps<T> {
       return this.lookupProvider.lookup(var1).map(RegistryOps.RegistryInfo::getter);
    }
 
+   @Override
+   public boolean equals(Object var1) {
+      if (this == var1) {
+         return true;
+      } else if (var1 != null && this.getClass() == var1.getClass()) {
+         RegistryOps var2 = (RegistryOps)var1;
+         return this.delegate.equals(var2.delegate) && this.lookupProvider.equals(var2.lookupProvider);
+      } else {
+         return false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return this.delegate.hashCode() * 31 + this.lookupProvider.hashCode();
+   }
+
    public static <E, O> RecordCodecBuilder<O, HolderGetter<E>> retrieveGetter(ResourceKey<? extends Registry<? extends E>> var0) {
       return ExtraCodecs.retrieveContext(
             var1 -> var1 instanceof RegistryOps var2
@@ -87,6 +88,43 @@ public class RegistryOps<T> extends DelegatingOps<T> {
                   : DataResult.error(() -> "Not a registry ops")
          )
          .forGetter(var0x -> null);
+   }
+
+   static final class HolderLookupAdapter implements RegistryOps.RegistryInfoLookup {
+      private final HolderLookup.Provider lookupProvider;
+      private final Map<ResourceKey<? extends Registry<?>>, Optional<? extends RegistryOps.RegistryInfo<?>>> lookups = new ConcurrentHashMap<>();
+
+      public HolderLookupAdapter(HolderLookup.Provider var1) {
+         super();
+         this.lookupProvider = var1;
+      }
+
+      @Override
+      public <E> Optional<RegistryOps.RegistryInfo<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1) {
+         return (Optional<RegistryOps.RegistryInfo<E>>)this.lookups.computeIfAbsent(var1, this::createLookup);
+      }
+
+      private Optional<RegistryOps.RegistryInfo<Object>> createLookup(ResourceKey<? extends Registry<?>> var1) {
+         return this.lookupProvider.lookup((ResourceKey<? extends Registry<?>>)var1).map(RegistryOps.RegistryInfo::fromRegistryLookup);
+      }
+
+      @Override
+      public boolean equals(Object var1) {
+         if (this == var1) {
+            return true;
+         } else {
+            if (var1 instanceof RegistryOps.HolderLookupAdapter var2 && this.lookupProvider.equals(var2.lookupProvider)) {
+               return true;
+            }
+
+            return false;
+         }
+      }
+
+      @Override
+      public int hashCode() {
+         return this.lookupProvider.hashCode();
+      }
    }
 
    public static record RegistryInfo<T>(HolderOwner<T> owner, HolderGetter<T> getter, Lifecycle elementsLifecycle) {

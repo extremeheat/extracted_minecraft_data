@@ -58,8 +58,8 @@ public interface Condition extends Supplier<JsonElement> {
 
       final String id;
 
-      private Operation(String var3) {
-         this.id = var3;
+      private Operation(final String nullxx) {
+         this.id = nullxx;
       }
    }
 

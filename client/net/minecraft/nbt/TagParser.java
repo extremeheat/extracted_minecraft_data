@@ -48,6 +48,7 @@ public class TagParser {
          return DataResult.error(var2::getMessage);
       }
    }, CompoundTag::toString);
+   public static final Codec<CompoundTag> LENIENT_CODEC = Codec.withAlternative(AS_CODEC, CompoundTag.CODEC);
    private final StringReader reader;
 
    public static CompoundTag parseTag(String var0) throws CommandSyntaxException {

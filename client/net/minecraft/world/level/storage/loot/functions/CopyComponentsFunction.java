@@ -51,7 +51,7 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<CopyComponentsFunction> getType() {
       return LootItemFunctions.COPY_COMPONENTS;
    }
 
@@ -120,8 +120,8 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       public static final Codec<CopyComponentsFunction.Source> CODEC = StringRepresentable.fromValues(CopyComponentsFunction.Source::values);
       private final String name;
 
-      private Source(String var3) {
-         this.name = var3;
+      private Source(final String nullxx) {
+         this.name = nullxx;
       }
 
       public DataComponentMap get(LootContext var1) {

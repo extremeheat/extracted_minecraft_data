@@ -255,11 +255,11 @@ public class WanderingTrader extends AbstractVillager {
       final double stopDistance;
       final double speedModifier;
 
-      WanderToPositionGoal(WanderingTrader var2, double var3, double var5) {
+      WanderToPositionGoal(final WanderingTrader nullx, final double nullxx, final double nullxxx) {
          super();
-         this.trader = var2;
-         this.stopDistance = var3;
-         this.speedModifier = var5;
+         this.trader = nullx;
+         this.stopDistance = nullxx;
+         this.speedModifier = nullxxx;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 

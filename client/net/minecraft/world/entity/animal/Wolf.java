@@ -320,7 +320,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    public float getWetShade(float var1) {
-      return Math.min(0.5F + Mth.lerp(var1, this.shakeAnimO, this.shakeAnim) / 2.0F * 0.5F, 1.0F);
+      return Math.min(0.75F + Mth.lerp(var1, this.shakeAnimO, this.shakeAnim) / 2.0F * 0.25F, 1.0F);
    }
 
    public float getBodyRollAngle(float var1, float var2) {
@@ -441,12 +441,15 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                   this.setBodyArmorItem(var3.copyWithCount(1));
                   var3.consume(1, var1);
                   return InteractionResult.SUCCESS;
-               } else if (var3.is(Items.SHEARS) && this.isOwnedBy(var1) && this.hasArmor() && !EnchantmentHelper.hasBindingCurse(this.getBodyArmorItem())) {
+               } else if (var3.is(Items.SHEARS)
+                  && this.isOwnedBy(var1)
+                  && this.hasArmor()
+                  && (!EnchantmentHelper.hasBindingCurse(this.getBodyArmorItem()) || var1.isCreative())) {
                   var3.hurtAndBreak(1, var1, getSlotForHand(var2));
                   this.playSound(SoundEvents.ARMOR_UNEQUIP_WOLF);
-                  ItemStack var10 = this.getBodyArmorItem();
+                  ItemStack var6 = this.getBodyArmorItem();
                   this.setBodyArmorItem(ItemStack.EMPTY);
-                  this.spawnAtLocation(var10);
+                  this.spawnAtLocation(var6);
                   return InteractionResult.SUCCESS;
                } else if (ArmorMaterials.ARMADILLO.value().repairIngredient().get().test(var3)
                   && this.isInSittingPose()
@@ -455,20 +458,20 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                   && this.getBodyArmorItem().isDamaged()) {
                   var3.shrink(1);
                   this.playSound(SoundEvents.WOLF_ARMOR_REPAIR);
-                  ItemStack var9 = this.getBodyArmorItem();
-                  int var7 = (int)((float)var9.getMaxDamage() * 0.125F);
-                  var9.setDamageValue(Math.max(0, var9.getDamageValue() - var7));
+                  ItemStack var10 = this.getBodyArmorItem();
+                  int var7 = (int)((float)var10.getMaxDamage() * 0.125F);
+                  var10.setDamageValue(Math.max(0, var10.getDamageValue() - var7));
                   return InteractionResult.SUCCESS;
                } else {
-                  InteractionResult var6 = super.mobInteract(var1, var2);
-                  if (!var6.consumesAction() && this.isOwnedBy(var1)) {
+                  InteractionResult var9 = super.mobInteract(var1, var2);
+                  if (!var9.consumesAction() && this.isOwnedBy(var1)) {
                      this.setOrderedToSit(!this.isOrderedToSit());
                      this.jumping = false;
                      this.navigation.stop();
                      this.setTarget(null);
-                     return InteractionResult.SUCCESS;
+                     return InteractionResult.SUCCESS_NO_ITEM_USED;
                   } else {
-                     return var6;
+                     return var9;
                   }
                }
             }
@@ -657,9 +660,9 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    class WolfAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
       private final Wolf wolf;
 
-      public WolfAvoidEntityGoal(Wolf var2, Class<T> var3, float var4, double var5, double var7) {
-         super(var2, var3, var4, var5, var7);
-         this.wolf = var2;
+      public WolfAvoidEntityGoal(final Wolf nullx, final Class<T> nullxx, final float nullxxx, final double nullxxxx, final double nullxxxxx) {
+         super(nullx, nullxx, nullxxx, nullxxxx, nullxxxxx);
+         this.wolf = nullx;
       }
 
       @Override
@@ -694,8 +697,8 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    class WolfPanicGoal extends PanicGoal {
-      public WolfPanicGoal(double var2) {
-         super(Wolf.this, var2);
+      public WolfPanicGoal(final double nullx) {
+         super(Wolf.this, nullx);
       }
 
       @Override

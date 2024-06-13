@@ -27,7 +27,7 @@ public final class ChargedProjectiles {
    }
 
    public static ChargedProjectiles of(List<ItemStack> var0) {
-      return new ChargedProjectiles(Lists.transform(var0, ItemStack::copy));
+      return new ChargedProjectiles(List.copyOf(Lists.transform(var0, ItemStack::copy)));
    }
 
    public boolean contains(Item var1) {

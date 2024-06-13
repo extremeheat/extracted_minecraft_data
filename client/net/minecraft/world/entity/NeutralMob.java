@@ -41,12 +41,14 @@ public interface NeutralMob {
             this.setPersistentAngerTarget(var3);
             Entity var4 = ((ServerLevel)var1).getEntity(var3);
             if (var4 != null) {
-               if (var4 instanceof Mob) {
-                  this.setLastHurtByMob((Mob)var4);
+               if (var4 instanceof Mob var5) {
+                  this.setTarget(var5);
+                  this.setLastHurtByMob(var5);
                }
 
-               if (var4.getType() == EntityType.PLAYER) {
-                  this.setLastHurtByPlayer((Player)var4);
+               if (var4 instanceof Player var6) {
+                  this.setTarget(var6);
+                  this.setLastHurtByPlayer(var6);
                }
             }
          }

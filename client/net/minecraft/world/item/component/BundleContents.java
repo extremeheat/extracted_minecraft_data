@@ -1,5 +1,6 @@
 package net.minecraft.world.item.component;
 
+import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +61,16 @@ public final class BundleContents implements TooltipComponent {
       return this.items.get(var1);
    }
 
-   public Stream<ItemStack> items() {
+   public Stream<ItemStack> itemCopyStream() {
       return this.items.stream().map(ItemStack::copy);
+   }
+
+   public Iterable<ItemStack> items() {
+      return this.items;
+   }
+
+   public Iterable<ItemStack> itemsCopy() {
+      return Lists.transform(this.items, ItemStack::copy);
    }
 
    public int size() {
@@ -103,6 +112,12 @@ public final class BundleContents implements TooltipComponent {
          super();
          this.items = new ArrayList<>(var1.items);
          this.weight = var1.weight;
+      }
+
+      public BundleContents.Mutable clearItems() {
+         this.items.clear();
+         this.weight = Fraction.ZERO;
+         return this;
       }
 
       private int findStackIndex(ItemStack var1) {

@@ -139,6 +139,11 @@ public abstract class Structure {
       };
    }
 
+   public static int getMeanFirstOccupiedHeight(Structure.GenerationContext var0, int var1, int var2, int var3, int var4) {
+      int[] var5 = getCornerHeights(var0, var1, var2, var3, var4);
+      return (var5[0] + var5[1] + var5[2] + var5[3]) / 4;
+   }
+
    protected static int getLowestY(Structure.GenerationContext var0, int var1, int var2) {
       ChunkPos var3 = var0.chunkPos();
       int var4 = var3.getMinBlockX();

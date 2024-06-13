@@ -11,14 +11,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.world.entity.EquipmentTable;
 
-public record SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpawnRules> customSpawnRules, Optional<ResourceLocation> equipmentLootTable) {
+public record SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpawnRules> customSpawnRules, Optional<EquipmentTable> equipment) {
    public static final String ENTITY_TAG = "entity";
    public static final Codec<SpawnData> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                CompoundTag.CODEC.fieldOf("entity").forGetter(var0x -> var0x.entityToSpawn),
                SpawnData.CustomSpawnRules.CODEC.optionalFieldOf("custom_spawn_rules").forGetter(var0x -> var0x.customSpawnRules),
-               ResourceLocation.CODEC.optionalFieldOf("equipment_loot_table").forGetter(var0x -> var0x.equipmentLootTable)
+               EquipmentTable.CODEC.optionalFieldOf("equipment").forGetter(var0x -> var0x.equipment)
             )
             .apply(var0, SpawnData::new)
    );
@@ -28,7 +29,7 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpaw
       this(new CompoundTag(), Optional.empty(), Optional.empty());
    }
 
-   public SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpawnRules> customSpawnRules, Optional<ResourceLocation> equipmentLootTable) {
+   public SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpawnRules> customSpawnRules, Optional<EquipmentTable> equipment) {
       super();
       if (entityToSpawn.contains("id")) {
          ResourceLocation var4 = ResourceLocation.tryParse(entityToSpawn.getString("id"));
@@ -41,7 +42,7 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpaw
 
       this.entityToSpawn = entityToSpawn;
       this.customSpawnRules = customSpawnRules;
-      this.equipmentLootTable = equipmentLootTable;
+      this.equipment = equipment;
    }
 
    public CompoundTag getEntityToSpawn() {
@@ -52,8 +53,8 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpaw
       return this.customSpawnRules;
    }
 
-   public Optional<ResourceLocation> getEquipmentLootTable() {
-      return this.equipmentLootTable;
+   public Optional<EquipmentTable> getEquipment() {
+      return this.equipment;
    }
 
    public static record CustomSpawnRules(InclusiveRange<Integer> blockLightLimit, InclusiveRange<Integer> skyLightLimit) {

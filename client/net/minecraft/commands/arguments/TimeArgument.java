@@ -106,9 +106,9 @@ public class TimeArgument implements ArgumentType<Integer> {
       public final class Template implements ArgumentTypeInfo.Template<TimeArgument> {
          final int min;
 
-         Template(int var2) {
+         Template(final int nullx) {
             super();
-            this.min = var2;
+            this.min = nullx;
          }
 
          public TimeArgument instantiate(CommandBuildContext var1) {

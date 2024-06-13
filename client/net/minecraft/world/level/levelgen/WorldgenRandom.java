@@ -76,8 +76,8 @@ public class WorldgenRandom extends LegacyRandomSource {
 
       private final LongFunction<RandomSource> constructor;
 
-      private Algorithm(LongFunction<RandomSource> var3) {
-         this.constructor = var3;
+      private Algorithm(final LongFunction<RandomSource> nullxx) {
+         this.constructor = nullxx;
       }
 
       public RandomSource newInstance(long var1) {

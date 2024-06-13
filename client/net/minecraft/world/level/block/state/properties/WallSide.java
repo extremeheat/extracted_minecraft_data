@@ -9,8 +9,8 @@ public enum WallSide implements StringRepresentable {
 
    private final String name;
 
-   private WallSide(String var3) {
-      this.name = var3;
+   private WallSide(final String nullxx) {
+      this.name = nullxx;
    }
 
    @Override

@@ -258,6 +258,10 @@ public class GameRenderer implements AutoCloseable {
       this.overlayTexture.close();
       this.shutdownEffect();
       this.shutdownShaders();
+      if (this.blurEffect != null) {
+         this.blurEffect.close();
+      }
+
       if (this.blitShader != null) {
          this.blitShader.close();
       }
@@ -324,18 +328,18 @@ public class GameRenderer implements AutoCloseable {
       }
    }
 
-   public void loadBlurEffect() {
+   private void loadBlurEffect(ResourceProvider var1) {
       if (this.blurEffect != null) {
          this.blurEffect.close();
       }
 
       try {
-         this.blurEffect = new PostChain(this.minecraft.getTextureManager(), this.resourceManager, this.minecraft.getMainRenderTarget(), BLUR_LOCATION);
+         this.blurEffect = new PostChain(this.minecraft.getTextureManager(), var1, this.minecraft.getMainRenderTarget(), BLUR_LOCATION);
          this.blurEffect.resize(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
-      } catch (IOException var2) {
-         LOGGER.warn("Failed to load shader: {}", BLUR_LOCATION, var2);
-      } catch (JsonSyntaxException var3) {
-         LOGGER.warn("Failed to parse shader: {}", BLUR_LOCATION, var3);
+      } catch (IOException var3) {
+         LOGGER.warn("Failed to load shader: {}", BLUR_LOCATION, var3);
+      } catch (JsonSyntaxException var4) {
+         LOGGER.warn("Failed to parse shader: {}", BLUR_LOCATION, var4);
       }
    }
 
@@ -753,7 +757,7 @@ public class GameRenderer implements AutoCloseable {
                (Consumer<ShaderInstance>)var0 -> rendertypeBreezeWindShader = var0
             )
          );
-         this.loadBlurEffect();
+         this.loadBlurEffect(var1);
       } catch (IOException var5) {
          var3.forEach(var0 -> ((ShaderInstance)var0.getFirst()).close());
          throw new RuntimeException("could not reload shaders", var5);

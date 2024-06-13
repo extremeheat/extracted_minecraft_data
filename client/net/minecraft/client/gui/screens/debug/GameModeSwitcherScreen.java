@@ -153,10 +153,10 @@ public class GameModeSwitcherScreen extends Screen {
       final String command;
       final ItemStack renderStack;
 
-      private GameModeIcon(Component var3, String var4, ItemStack var5) {
-         this.name = var3;
-         this.command = var4;
-         this.renderStack = var5;
+      private GameModeIcon(final Component nullxx, final String nullxxx, final ItemStack nullxxxx) {
+         this.name = nullxx;
+         this.command = nullxxx;
+         this.renderStack = nullxxxx;
       }
 
       void drawIcon(GuiGraphics var1, int var2, int var3) {
@@ -194,9 +194,9 @@ public class GameModeSwitcherScreen extends Screen {
       final GameModeSwitcherScreen.GameModeIcon icon;
       private boolean isSelected;
 
-      public GameModeSlot(GameModeSwitcherScreen.GameModeIcon var2, int var3, int var4) {
-         super(var3, var4, 26, 26, var2.getName());
-         this.icon = var2;
+      public GameModeSlot(final GameModeSwitcherScreen.GameModeIcon nullx, final int nullxx, final int nullxxx) {
+         super(nullxx, nullxxx, 26, 26, nullx.getName());
+         this.icon = nullx;
       }
 
       @Override

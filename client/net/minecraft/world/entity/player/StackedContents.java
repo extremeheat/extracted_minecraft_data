@@ -100,10 +100,10 @@ public class StackedContents {
       private final BitSet data;
       private final IntList path = new IntArrayList();
 
-      public RecipePicker(Recipe<?> var2) {
+      public RecipePicker(final Recipe<?> nullx) {
          super();
-         this.recipe = var2;
-         this.ingredients.addAll(var2.getIngredients());
+         this.recipe = nullx;
+         this.ingredients.addAll(nullx.getIngredients());
          this.ingredients.removeIf(Ingredient::isEmpty);
          this.ingredientCount = this.ingredients.size();
          this.items = this.getUniqueAvailableIngredientItems();

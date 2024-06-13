@@ -506,9 +506,9 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       final DensityFunction noiseFiller;
       final double[] values;
 
-      CacheAllInCell(DensityFunction var2) {
+      CacheAllInCell(final DensityFunction nullx) {
          super();
-         this.noiseFiller = var2;
+         this.noiseFiller = nullx;
          this.values = new double[NoiseChunk.this.cellWidth * NoiseChunk.this.cellWidth * NoiseChunk.this.cellHeight];
          NoiseChunk.this.cellCaches.add(this);
       }
@@ -558,9 +558,9 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       @Nullable
       private double[] lastArray;
 
-      CacheOnce(DensityFunction var2) {
+      CacheOnce(final DensityFunction nullx) {
          super();
-         this.function = var2;
+         this.function = nullx;
       }
 
       @Override
@@ -610,11 +610,11 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       private final DensityFunction noiseFiller;
       final double[][] values;
 
-      FlatCache(DensityFunction var2, boolean var3) {
+      FlatCache(final DensityFunction nullx, final boolean nullxx) {
          super();
-         this.noiseFiller = var2;
+         this.noiseFiller = nullx;
          this.values = new double[NoiseChunk.this.noiseSizeXZ + 1][NoiseChunk.this.noiseSizeXZ + 1];
-         if (var3) {
+         if (nullxx) {
             for (int var4 = 0; var4 <= NoiseChunk.this.noiseSizeXZ; var4++) {
                int var5 = NoiseChunk.this.firstNoiseX + var4;
                int var6 = QuartPos.toBlock(var5);
@@ -622,7 +622,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
                for (int var7 = 0; var7 <= NoiseChunk.this.noiseSizeXZ; var7++) {
                   int var8 = NoiseChunk.this.firstNoiseZ + var7;
                   int var9 = QuartPos.toBlock(var8);
-                  this.values[var4][var7] = var2.compute(new DensityFunction.SinglePointContext(var6, 0, var9));
+                  this.values[var4][var7] = nullx.compute(new DensityFunction.SinglePointContext(var6, 0, var9));
                }
             }
          }
@@ -688,9 +688,9 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       private double valueZ1;
       private double value;
 
-      NoiseInterpolator(DensityFunction var2) {
+      NoiseInterpolator(final DensityFunction nullx) {
          super();
-         this.noiseFiller = var2;
+         this.noiseFiller = nullx;
          this.slice0 = this.allocateSlice(NoiseChunk.this.cellCountY, NoiseChunk.this.cellCountXZ);
          this.slice1 = this.allocateSlice(NoiseChunk.this.cellCountY, NoiseChunk.this.cellCountXZ);
          NoiseChunk.this.interpolators.add(this);

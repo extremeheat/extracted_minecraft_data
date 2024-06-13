@@ -11,9 +11,9 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
+import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 
-public class EnchantTableRenderer implements BlockEntityRenderer<EnchantmentTableBlockEntity> {
+public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTableBlockEntity> {
    public static final Material BOOK_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/enchanting_table_book"));
    private final BookModel bookModel;
 
@@ -22,7 +22,7 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantmentTabl
       this.bookModel = new BookModel(var1.bakeLayer(ModelLayers.BOOK));
    }
 
-   public void render(EnchantmentTableBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
+   public void render(EnchantingTableBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       var3.pushPose();
       var3.translate(0.5F, 0.75F, 0.5F);
       float var7 = (float)var1.time + var2;

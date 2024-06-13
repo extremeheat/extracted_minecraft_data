@@ -161,7 +161,7 @@ public record EntityPredicate(
                   }
                }
 
-               return this.nbt.isPresent() && !this.nbt.get().matches(var3) ? false : !this.slots.isPresent() || this.slots.get().matches(var3);
+               return this.slots.isPresent() && !this.slots.get().matches(var3) ? false : !this.nbt.isPresent() || this.nbt.get().matches(var3);
             }
          }
       }

@@ -130,7 +130,7 @@ public class BundleItem extends Item {
       if (var2 != null && !var2.isEmpty()) {
          var0.set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
          if (var1 instanceof ServerPlayer) {
-            var2.items().forEach(var1x -> var1.drop(var1x, true));
+            var2.itemsCopy().forEach(var1x -> var1.drop(var1x, true));
          }
 
          return true;
@@ -160,7 +160,7 @@ public class BundleItem extends Item {
       BundleContents var2 = var1.getItem().get(DataComponents.BUNDLE_CONTENTS);
       if (var2 != null) {
          var1.getItem().set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-         ItemUtils.onContainerDestroyed(var1, var2.items());
+         ItemUtils.onContainerDestroyed(var1, var2.itemsCopy());
       }
    }
 

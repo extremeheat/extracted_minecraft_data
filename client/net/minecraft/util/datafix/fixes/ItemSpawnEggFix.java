@@ -48,8 +48,6 @@ public class ItemSpawnEggFix extends DataFix {
       var0[46] = "MinecartHopper";
       var0[47] = "MinecartSpawner";
       var0[40] = "MinecartCommandBlock";
-      var0[48] = "Mob";
-      var0[49] = "Monster";
       var0[50] = "Creeper";
       var0[51] = "Skeleton";
       var0[52] = "Spider";

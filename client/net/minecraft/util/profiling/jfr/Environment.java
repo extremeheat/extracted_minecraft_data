@@ -8,8 +8,8 @@ public enum Environment {
 
    private final String description;
 
-   private Environment(String var3) {
-      this.description = var3;
+   private Environment(final String nullxx) {
+      this.description = nullxx;
    }
 
    public static Environment from(MinecraftServer var0) {

@@ -17,6 +17,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public record FireworkExplosion(FireworkExplosion.Shape shape, IntList colors, IntList fadeColors, boolean hasTrail, boolean hasTwinkle)
@@ -61,9 +62,9 @@ public record FireworkExplosion(FireworkExplosion.Shape shape, IntList colors, I
    }
 
    @Override
-   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
-      this.addShapeNameTooltip(var1);
-      this.addAdditionalTooltip(var1);
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
+      this.addShapeNameTooltip(var2);
+      this.addAdditionalTooltip(var2);
    }
 
    public void addShapeNameTooltip(Consumer<Component> var1) {
@@ -128,9 +129,9 @@ public record FireworkExplosion(FireworkExplosion.Shape shape, IntList colors, I
       private final int id;
       private final String name;
 
-      private Shape(int var3, String var4) {
-         this.id = var3;
-         this.name = var4;
+      private Shape(final int nullxx, final String nullxxx) {
+         this.id = nullxx;
+         this.name = nullxxx;
       }
 
       public MutableComponent getName() {

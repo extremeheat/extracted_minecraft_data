@@ -335,10 +335,10 @@ public class TextFilterClient implements AutoCloseable {
       private final GameProfile profile;
       private final Executor streamExecutor;
 
-      PlayerContext(GameProfile var2) {
+      PlayerContext(final GameProfile nullx) {
          super();
-         this.profile = var2;
-         ProcessorMailbox var3 = ProcessorMailbox.create(TextFilterClient.this.workerPool, "chat stream for " + var2.getName());
+         this.profile = nullx;
+         ProcessorMailbox var3 = ProcessorMailbox.create(TextFilterClient.this.workerPool, "chat stream for " + nullx.getName());
          this.streamExecutor = var3::tell;
       }
 

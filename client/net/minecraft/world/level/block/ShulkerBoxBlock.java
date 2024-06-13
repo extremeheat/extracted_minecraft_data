@@ -191,7 +191,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       int var5 = 0;
       int var6 = 0;
 
-      for (ItemStack var8 : var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)) {
+      for (ItemStack var8 : var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).nonEmptyItems()) {
          var6++;
          if (var5 <= 4) {
             var5++;
@@ -217,6 +217,11 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       return var5 instanceof ShulkerBoxBlockEntity ? Shapes.create(((ShulkerBoxBlockEntity)var5).getBoundingBox(var1)) : Shapes.block();
+   }
+
+   @Override
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return false;
    }
 
    @Override

@@ -115,11 +115,11 @@ public class ToastComponent {
       private long visibleTime = -1L;
       private Toast.Visibility visibility = Toast.Visibility.SHOW;
 
-      ToastInstance(T var2, int var3, int var4) {
+      ToastInstance(final T nullx, final int nullxx, final int nullxxx) {
          super();
-         this.toast = (T)var2;
-         this.index = var3;
-         this.slotCount = var4;
+         this.toast = (T)nullx;
+         this.index = nullxx;
+         this.slotCount = nullxxx;
       }
 
       public T getToast() {

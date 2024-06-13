@@ -236,7 +236,7 @@ public class Options {
    private final OptionInstance<Double> menuBackgroundBlurriness = new OptionInstance<>(
       "options.accessibility.menu_background_blurriness",
       OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP),
-      Options::percentValueLabel,
+      Options::percentValueOrOffLabel,
       OptionInstance.UnitDouble.INSTANCE,
       0.5,
       var0 -> {
@@ -372,7 +372,7 @@ public class Options {
    private final OptionInstance<Integer> biomeBlendRadius = new OptionInstance<>("options.biomeBlendRadius", OptionInstance.noTooltip(), (var0, var1x) -> {
       int var2x = var1x * 2 + 1;
       return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2x));
-   }, new OptionInstance.IntRange(0, 7), 2, var0 -> Minecraft.getInstance().levelRenderer.allChanged());
+   }, new OptionInstance.IntRange(0, 7, false), 2, var0 -> Minecraft.getInstance().levelRenderer.allChanged());
    private final OptionInstance<Double> mouseWheelSensitivity = new OptionInstance<>(
       "options.mouseWheelSensitivity",
       OptionInstance.noTooltip(),
@@ -583,7 +583,7 @@ public class Options {
    private final OptionInstance<Double> screenEffectScale = new OptionInstance<>(
       "options.screenEffectScale",
       OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT),
-      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      Options::percentValueOrOffLabel,
       OptionInstance.UnitDouble.INSTANCE,
       1.0,
       var0 -> {
@@ -593,7 +593,7 @@ public class Options {
    private final OptionInstance<Double> fovEffectScale = new OptionInstance<>(
       "options.fovEffectScale",
       OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_FOV_EFFECT),
-      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      Options::percentValueOrOffLabel,
       OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt),
       Codec.doubleRange(0.0, 1.0),
       1.0,
@@ -604,7 +604,7 @@ public class Options {
    private final OptionInstance<Double> darknessEffectScale = new OptionInstance<>(
       "options.darknessEffectScale",
       OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARKNESS_EFFECT),
-      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      Options::percentValueOrOffLabel,
       OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt),
       1.0,
       var0 -> {
@@ -614,7 +614,7 @@ public class Options {
    private final OptionInstance<Double> glintSpeed = new OptionInstance<>(
       "options.glintSpeed",
       OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_SPEED),
-      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      Options::percentValueOrOffLabel,
       OptionInstance.UnitDouble.INSTANCE,
       0.5,
       var0 -> {
@@ -624,7 +624,7 @@ public class Options {
    private final OptionInstance<Double> glintStrength = new OptionInstance<>(
       "options.glintStrength",
       OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH),
-      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      Options::percentValueOrOffLabel,
       OptionInstance.UnitDouble.INSTANCE,
       0.75,
       RenderSystem::setShaderGlintAlpha
@@ -633,7 +633,7 @@ public class Options {
    private final OptionInstance<Double> damageTiltStrength = new OptionInstance<>(
       "options.damageTiltStrength",
       OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH),
-      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      Options::percentValueOrOffLabel,
       OptionInstance.UnitDouble.INSTANCE,
       1.0,
       var0 -> {
@@ -953,7 +953,7 @@ public class Options {
       return new OptionInstance<>(
          var1,
          OptionInstance.noTooltip(),
-         (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+         Options::percentValueOrOffLabel,
          OptionInstance.UnitDouble.INSTANCE,
          1.0,
          var1x -> Minecraft.getInstance().getSoundManager().updateSourceVolume(var2, var1x.floatValue())
@@ -1065,7 +1065,7 @@ public class Options {
          "options.renderDistance",
          OptionInstance.noTooltip(),
          (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)),
-         new OptionInstance.IntRange(2, var3 ? 32 : 16),
+         new OptionInstance.IntRange(2, var3 ? 32 : 16, false),
          12,
          var0 -> Minecraft.getInstance().levelRenderer.needsUpdate()
       );
@@ -1073,7 +1073,7 @@ public class Options {
          "options.simulationDistance",
          OptionInstance.noTooltip(),
          (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)),
-         new OptionInstance.IntRange(5, var3 ? 32 : 16),
+         new OptionInstance.IntRange(5, var3 ? 32 : 16, false),
          12,
          var0 -> {
          }
@@ -1544,6 +1544,10 @@ public class Options {
 
    public static Component genericValueLabel(Component var0, Component var1) {
       return Component.translatable("options.generic_value", var0, var1);
+   }
+
+   private static Component percentValueOrOffLabel(Component var0, double var1) {
+      return var1 == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1);
    }
 
    public static Component genericValueLabel(Component var0, int var1) {

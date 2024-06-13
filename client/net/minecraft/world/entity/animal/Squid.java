@@ -283,9 +283,9 @@ public class Squid extends WaterAnimal {
    class SquidRandomMovementGoal extends Goal {
       private final Squid squid;
 
-      public SquidRandomMovementGoal(Squid var2) {
+      public SquidRandomMovementGoal(final Squid nullx) {
          super();
-         this.squid = var2;
+         this.squid = nullx;
       }
 
       @Override

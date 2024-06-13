@@ -187,7 +187,8 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
                   this.serverData,
                   this.parent,
                   this.cookies,
-                  null
+                  null,
+                  var1.strictErrorHandling()
                )
             )
          );
@@ -254,9 +255,9 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       final Component message;
       final Set<ClientHandshakePacketListenerImpl.State> fromStates;
 
-      private State(Component var3, Set<ClientHandshakePacketListenerImpl.State> var4) {
-         this.message = var3;
-         this.fromStates = var4;
+      private State(final Component nullxx, final Set<ClientHandshakePacketListenerImpl.State> nullxxx) {
+         this.message = nullxx;
+         this.fromStates = nullxxx;
       }
    }
 }

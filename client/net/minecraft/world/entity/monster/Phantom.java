@@ -315,8 +315,8 @@ public class Phantom extends FlyingMob implements Enemy {
    }
 
    class PhantomBodyRotationControl extends BodyRotationControl {
-      public PhantomBodyRotationControl(Mob var2) {
-         super(var2);
+      public PhantomBodyRotationControl(final Mob nullx) {
+         super(nullx);
       }
 
       @Override
@@ -395,8 +395,8 @@ public class Phantom extends FlyingMob implements Enemy {
    }
 
    class PhantomLookControl extends LookControl {
-      public PhantomLookControl(Mob var2) {
-         super(var2);
+      public PhantomLookControl(final Mob nullx) {
+         super(nullx);
       }
 
       @Override
@@ -407,8 +407,8 @@ public class Phantom extends FlyingMob implements Enemy {
    class PhantomMoveControl extends MoveControl {
       private float speed = 0.1F;
 
-      public PhantomMoveControl(Mob var2) {
-         super(var2);
+      public PhantomMoveControl(final Mob nullx) {
+         super(nullx);
       }
 
       @Override

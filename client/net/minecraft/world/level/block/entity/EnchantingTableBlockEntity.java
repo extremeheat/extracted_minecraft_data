@@ -14,7 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable {
+public class EnchantingTableBlockEntity extends BlockEntity implements Nameable {
    public int time;
    public float flip;
    public float oFlip;
@@ -29,7 +29,7 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    @Nullable
    private Component name;
 
-   public EnchantmentTableBlockEntity(BlockPos var1, BlockState var2) {
+   public EnchantingTableBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.ENCHANTING_TABLE, var1, var2);
    }
 
@@ -49,7 +49,7 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
       }
    }
 
-   public static void bookAnimationTick(Level var0, BlockPos var1, BlockState var2, EnchantmentTableBlockEntity var3) {
+   public static void bookAnimationTick(Level var0, BlockPos var1, BlockState var2, EnchantingTableBlockEntity var3) {
       var3.oOpen = var3.open;
       var3.oRot = var3.rot;
       Player var4 = var0.getNearestPlayer((double)var1.getX() + 0.5, (double)var1.getY() + 0.5, (double)var1.getZ() + 0.5, 3.0, false);

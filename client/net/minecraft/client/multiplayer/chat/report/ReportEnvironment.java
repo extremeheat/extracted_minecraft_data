@@ -47,7 +47,7 @@ public record ReportEnvironment(String clientVersion, @Nullable ReportEnvironmen
 
    private static String getClientVersion() {
       StringBuilder var0 = new StringBuilder();
-      var0.append("24w14a");
+      var0.append("1.20.5");
       if (Minecraft.checkModStatus().shouldReportAsModified()) {
          var0.append(" (modded)");
       }

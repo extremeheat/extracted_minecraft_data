@@ -626,20 +626,20 @@ public class ModelBlockRenderer {
       });
 
       private AdjacencyInfo(
-         Direction[] var3,
-         float var4,
-         boolean var5,
-         ModelBlockRenderer.SizeInfo[] var6,
-         ModelBlockRenderer.SizeInfo[] var7,
-         ModelBlockRenderer.SizeInfo[] var8,
-         ModelBlockRenderer.SizeInfo[] var9
+         final Direction[] nullxx,
+         final float nullxxx,
+         final boolean nullxxxx,
+         final ModelBlockRenderer.SizeInfo[] nullxxxxx,
+         final ModelBlockRenderer.SizeInfo[] nullxxxxxx,
+         final ModelBlockRenderer.SizeInfo[] nullxxxxxxx,
+         final ModelBlockRenderer.SizeInfo[] nullxxxxxxxx
       ) {
-         this.corners = var3;
-         this.doNonCubicWeight = var5;
-         this.vert0Weights = var6;
-         this.vert1Weights = var7;
-         this.vert2Weights = var8;
-         this.vert3Weights = var9;
+         this.corners = nullxx;
+         this.doNonCubicWeight = nullxxxx;
+         this.vert0Weights = nullxxxxx;
+         this.vert1Weights = nullxxxxxx;
+         this.vert2Weights = nullxxxxxxx;
+         this.vert3Weights = nullxxxxxxxx;
       }
 
       public static ModelBlockRenderer.AdjacencyInfo fromFacing(Direction var0) {
@@ -845,11 +845,11 @@ public class ModelBlockRenderer {
          var0[Direction.EAST.get3DDataValue()] = EAST;
       });
 
-      private AmbientVertexRemap(int var3, int var4, int var5, int var6) {
-         this.vert0 = var3;
-         this.vert1 = var4;
-         this.vert2 = var5;
-         this.vert3 = var6;
+      private AmbientVertexRemap(final int nullxx, final int nullxxx, final int nullxxxx, final int nullxxxxx) {
+         this.vert0 = nullxx;
+         this.vert1 = nullxxx;
+         this.vert2 = nullxxxx;
+         this.vert3 = nullxxxxx;
       }
 
       public static ModelBlockRenderer.AmbientVertexRemap fromFacing(Direction var0) {
@@ -949,8 +949,8 @@ public class ModelBlockRenderer {
 
       final int shape;
 
-      private SizeInfo(Direction var3, boolean var4) {
-         this.shape = var3.get3DDataValue() + (var4 ? ModelBlockRenderer.DIRECTIONS.length : 0);
+      private SizeInfo(final Direction nullxx, final boolean nullxxx) {
+         this.shape = nullxx.get3DDataValue() + (nullxxx ? ModelBlockRenderer.DIRECTIONS.length : 0);
       }
    }
 }

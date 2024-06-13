@@ -427,16 +427,16 @@ public class UpgradeData {
 
       public static final Direction[] DIRECTIONS = Direction.values();
 
-      BlockFixers(Block... var3) {
-         this(false, var3);
+      BlockFixers(final Block... nullxx) {
+         this(false, nullxx);
       }
 
-      BlockFixers(boolean var3, Block... var4) {
-         for (Block var8 : var4) {
+      BlockFixers(final boolean nullxx, final Block... nullxxx) {
+         for (Block var8 : nullxxx) {
             UpgradeData.MAP.put(var8, this);
          }
 
-         if (var3) {
+         if (nullxx) {
             UpgradeData.CHUNKY_FIXERS.add(this);
          }
       }

@@ -22,10 +22,10 @@ public enum Rarity implements StringRepresentable {
    private final String name;
    private final ChatFormatting color;
 
-   private Rarity(int var3, String var4, ChatFormatting var5) {
-      this.id = var3;
-      this.name = var4;
-      this.color = var5;
+   private Rarity(final int nullxx, final String nullxxx, final ChatFormatting nullxxxx) {
+      this.id = nullxx;
+      this.name = nullxxx;
+      this.color = nullxxxx;
    }
 
    public ChatFormatting color() {

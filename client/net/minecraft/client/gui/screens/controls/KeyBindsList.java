@@ -69,9 +69,9 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       final Component name;
       private final int width;
 
-      public CategoryEntry(Component var2) {
+      public CategoryEntry(final Component nullx) {
          super();
-         this.name = var2;
+         this.name = nullx;
          this.width = KeyBindsList.this.minecraft.font.width(this.name);
       }
 
@@ -128,25 +128,25 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       private final Button resetButton;
       private boolean hasCollision = false;
 
-      KeyEntry(KeyMapping var2, Component var3) {
+      KeyEntry(final KeyMapping nullx, final Component nullxx) {
          super();
-         this.key = var2;
-         this.name = var3;
-         this.changeButton = Button.builder(var3, var2x -> {
-               KeyBindsList.this.keyBindsScreen.selectedKey = var2;
+         this.key = nullx;
+         this.name = nullxx;
+         this.changeButton = Button.builder(nullxx, var2 -> {
+               KeyBindsList.this.keyBindsScreen.selectedKey = nullx;
                KeyBindsList.this.resetMappingAndUpdateButtons();
             })
             .bounds(0, 0, 75, 20)
             .createNarration(
-               var2x -> var2.isUnbound()
-                     ? Component.translatable("narrator.controls.unbound", var3)
-                     : Component.translatable("narrator.controls.bound", var3, var2x.get())
+               var2 -> nullx.isUnbound()
+                     ? Component.translatable("narrator.controls.unbound", nullxx)
+                     : Component.translatable("narrator.controls.bound", nullxx, var2.get())
             )
             .build();
-         this.resetButton = Button.builder(RESET_BUTTON_TITLE, var2x -> {
-            KeyBindsList.this.minecraft.options.setKey(var2, var2.getDefaultKey());
+         this.resetButton = Button.builder(RESET_BUTTON_TITLE, var2 -> {
+            KeyBindsList.this.minecraft.options.setKey(nullx, nullx.getDefaultKey());
             KeyBindsList.this.resetMappingAndUpdateButtons();
-         }).bounds(0, 0, 50, 20).createNarration(var1x -> Component.translatable("narrator.controls.reset", var3)).build();
+         }).bounds(0, 0, 50, 20).createNarration(var1 -> Component.translatable("narrator.controls.reset", nullxx)).build();
          this.refreshEntry();
       }
 

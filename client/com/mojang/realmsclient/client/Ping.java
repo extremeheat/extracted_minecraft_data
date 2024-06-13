@@ -73,9 +73,9 @@ public class Ping {
       final String name;
       final String endpoint;
 
-      private Region(String var3, String var4) {
-         this.name = var3;
-         this.endpoint = var4;
+      private Region(final String nullxx, final String nullxxx) {
+         this.name = nullxx;
+         this.endpoint = nullxxx;
       }
    }
 }

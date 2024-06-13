@@ -51,7 +51,7 @@ public final class JigsawStructure extends Structure {
    private static DataResult<JigsawStructure> verifyRange(JigsawStructure var0) {
       byte var1 = switch (var0.terrainAdaptation()) {
          case NONE -> 0;
-         case BURY, BEARD_THIN, BEARD_BOX -> 12;
+         case BURY, BEARD_THIN, BEARD_BOX, ENCAPSULATE -> 12;
       };
       return var0.maxDistanceFromCenter + var1 > 128
          ? DataResult.error(() -> "Structure size including terrain adaptation must not exceed 128")

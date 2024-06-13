@@ -177,13 +177,13 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       private final boolean isCraftable;
       protected final List<OverlayRecipeComponent.OverlayRecipeButton.Pos> ingredientPos = Lists.newArrayList();
 
-      public OverlayRecipeButton(int var2, int var3, RecipeHolder<?> var4, boolean var5) {
-         super(var2, var3, 200, 20, CommonComponents.EMPTY);
+      public OverlayRecipeButton(final int nullx, final int nullxx, final RecipeHolder<?> nullxxx, final boolean nullxxxx) {
+         super(nullx, nullxx, 200, 20, CommonComponents.EMPTY);
          this.width = 24;
          this.height = 24;
-         this.recipe = var4;
-         this.isCraftable = var5;
-         this.calculateIngredientsPositions(var4);
+         this.recipe = nullxxx;
+         this.isCraftable = nullxxxx;
+         this.calculateIngredientsPositions(nullxxx);
       }
 
       protected void calculateIngredientsPositions(RecipeHolder<?> var1) {
@@ -199,7 +199,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       public void addItemToSlot(Iterator<Ingredient> var1, int var2, int var3, int var4, int var5) {
          ItemStack[] var6 = ((Ingredient)var1.next()).getItems();
          if (var6.length != 0) {
-            this.ingredientPos.add(new OverlayRecipeComponent.OverlayRecipeButton.Pos(this, 3 + var5 * 7, 3 + var4 * 7, var6));
+            this.ingredientPos.add(new OverlayRecipeComponent.OverlayRecipeButton.Pos(3 + var5 * 7, 3 + var4 * 7, var6));
          }
       }
 
@@ -246,25 +246,25 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          public final int x;
          public final int y;
 
-         public Pos(OverlayRecipeComponent.OverlayRecipeButton var1, int var2, int var3, ItemStack[] var4) {
+         public Pos(final int nullx, final int nullxx, final ItemStack[] nullxxx) {
             super();
-            this.x = var2;
-            this.y = var3;
-            this.ingredients = var4;
+            this.x = nullx;
+            this.y = nullxx;
+            this.ingredients = nullxxx;
          }
       }
    }
 
    class OverlaySmeltingRecipeButton extends OverlayRecipeComponent.OverlayRecipeButton {
-      public OverlaySmeltingRecipeButton(int var2, int var3, RecipeHolder<?> var4, boolean var5) {
-         super(var2, var3, var4, var5);
+      public OverlaySmeltingRecipeButton(final int nullx, final int nullxx, final RecipeHolder<?> nullxxx, final boolean nullxxxx) {
+         super(nullx, nullxx, nullxxx, nullxxxx);
       }
 
       @Override
       protected void calculateIngredientsPositions(RecipeHolder<?> var1) {
          Ingredient var2 = var1.value().getIngredients().get(0);
          ItemStack[] var3 = var2.getItems();
-         this.ingredientPos.add(new OverlayRecipeComponent.OverlayRecipeButton.Pos(this, 10, 10, var3));
+         this.ingredientPos.add(new OverlayRecipeComponent.OverlayRecipeButton.Pos(10, 10, var3));
       }
    }
 }

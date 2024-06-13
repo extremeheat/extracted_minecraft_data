@@ -31,7 +31,7 @@ public record SlotsPredicate(Map<SlotRange, ItemPredicate> slots) {
       for (int var3 = 0; var3 < var2.size(); var3++) {
          int var4 = var2.getInt(var3);
          SlotAccess var5 = var0.getSlot(var4);
-         if (var1.matches(var5.get())) {
+         if (var1.test(var5.get())) {
             return true;
          }
       }

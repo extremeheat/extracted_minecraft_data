@@ -469,7 +469,9 @@ public class ItemCommands {
          .create(LootContextParamSets.COMMAND);
       LootContext var5 = new LootContext.Builder(var4).create(Optional.empty());
       var5.pushVisitedElement(LootContext.createVisitedEntry((LootItemFunction)var1.value()));
-      return ((LootItemFunction)var1.value()).apply(var2, var5);
+      ItemStack var6 = ((LootItemFunction)var1.value()).apply(var2, var5);
+      var6.limitSize(var6.getMaxStackSize());
+      return var6;
    }
 
    private static ItemStack getEntityItem(Entity var0, int var1) throws CommandSyntaxException {

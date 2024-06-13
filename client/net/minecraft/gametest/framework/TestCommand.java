@@ -27,6 +27,7 @@ import net.minecraft.FileUtil;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.structures.NbtToSnbt;
@@ -34,6 +35,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -50,6 +52,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
 
 public class TestCommand {
@@ -139,46 +142,64 @@ public class TestCommand {
          var0x -> testFinder.allTestsInClass(var0x, TestClassNameArgument.getTestClassName(var0x, "testClassName"))
       );
       var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
-                                                                           "test"
-                                                                        )
-                                                                        .then(
-                                                                           Commands.literal("run")
-                                                                              .then(
-                                                                                 runWithRetryOptionsAndBuildInfo(
-                                                                                    Commands.argument("testName", TestFunctionArgument.testFunctionArgument()),
-                                                                                    var0x -> testFinder.byArgument(var0x, "testName")
+         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
+                                                                              "test"
+                                                                           )
+                                                                           .then(
+                                                                              Commands.literal("run")
+                                                                                 .then(
+                                                                                    runWithRetryOptionsAndBuildInfo(
+                                                                                       Commands.argument(
+                                                                                          "testName", TestFunctionArgument.testFunctionArgument()
+                                                                                       ),
+                                                                                       var0x -> testFinder.byArgument(var0x, "testName")
+                                                                                    )
                                                                                  )
+                                                                           ))
+                                                                        .then(
+                                                                           Commands.literal("runmultiple")
+                                                                              .then(
+                                                                                 ((RequiredArgumentBuilder)Commands.argument(
+                                                                                          "testName", TestFunctionArgument.testFunctionArgument()
+                                                                                       )
+                                                                                       .executes(var0x -> testFinder.byArgument(var0x, "testName").run()))
+                                                                                    .then(
+                                                                                       Commands.argument("amount", IntegerArgumentType.integer())
+                                                                                          .executes(
+                                                                                             var0x -> testFinder.createMultipleCopies(
+                                                                                                      IntegerArgumentType.getInteger(var0x, "amount")
+                                                                                                   )
+                                                                                                   .byArgument(var0x, "testName")
+                                                                                                   .run()
+                                                                                          )
+                                                                                    )
                                                                               )
                                                                         ))
                                                                      .then(
-                                                                        Commands.literal("runmultiple")
-                                                                           .then(
-                                                                              ((RequiredArgumentBuilder)Commands.argument(
-                                                                                       "testName", TestFunctionArgument.testFunctionArgument()
-                                                                                    )
-                                                                                    .executes(var0x -> testFinder.byArgument(var0x, "testName").run()))
-                                                                                 .then(
-                                                                                    Commands.argument("amount", IntegerArgumentType.integer())
-                                                                                       .executes(
-                                                                                          var0x -> testFinder.createMultipleCopies(
-                                                                                                   IntegerArgumentType.getInteger(var0x, "amount")
-                                                                                                )
-                                                                                                .byArgument(var0x, "testName")
-                                                                                                .run()
-                                                                                       )
-                                                                                 )
-                                                                           )
+                                                                        runWithRetryOptionsAndBuildInfo(
+                                                                           Commands.literal("runall").then(var2), testFinder::allTests
+                                                                        )
                                                                      ))
-                                                                  .then(
-                                                                     runWithRetryOptionsAndBuildInfo(
-                                                                        Commands.literal("runall").then(var2), testFinder::allTests
-                                                                     )
-                                                                  ))
-                                                               .then(runWithRetryOptions(Commands.literal("runthese"), testFinder::allNearby)))
-                                                            .then(runWithRetryOptions(Commands.literal("runclosest"), testFinder::nearest)))
-                                                         .then(runWithRetryOptions(Commands.literal("runthat"), testFinder::lookedAt)))
-                                                      .then(runWithRetryOptionsAndBuildInfo(Commands.literal("runfailed").then(var1), testFinder::failedTests)))
+                                                                  .then(runWithRetryOptions(Commands.literal("runthese"), testFinder::allNearby)))
+                                                               .then(runWithRetryOptions(Commands.literal("runclosest"), testFinder::nearest)))
+                                                            .then(runWithRetryOptions(Commands.literal("runthat"), testFinder::lookedAt)))
+                                                         .then(
+                                                            runWithRetryOptionsAndBuildInfo(Commands.literal("runfailed").then(var1), testFinder::failedTests)
+                                                         ))
+                                                      .then(
+                                                         Commands.literal("locate")
+                                                            .then(
+                                                               Commands.argument("testName", TestFunctionArgument.testFunctionArgument())
+                                                                  .executes(
+                                                                     var0x -> testFinder.locateByName(
+                                                                              var0x,
+                                                                              "minecraft:"
+                                                                                 + TestFunctionArgument.getTestFunction(var0x, "testName").structureName()
+                                                                           )
+                                                                           .locate()
+                                                                  )
+                                                            )
+                                                      ))
                                                    .then(Commands.literal("resetclosest").executes(var0x -> testFinder.nearest(var0x).reset())))
                                                 .then(Commands.literal("resetthese").executes(var0x -> testFinder.allNearby(var0x).reset())))
                                              .then(Commands.literal("resetthat").executes(var0x -> testFinder.lookedAt(var0x).reset())))
@@ -550,6 +571,47 @@ public class TestCommand {
 
       public int run() {
          return this.run(RetryOptions.noRetries());
+      }
+
+      public int locate() {
+         TestCommand.say(this.finder.source(), "Started locating test structures, this might take a while..");
+         MutableInt var1 = new MutableInt(0);
+         BlockPos var2 = BlockPos.containing(this.finder.source().getPosition());
+         this.finder
+            .findStructureBlockPos()
+            .forEach(
+               var3x -> {
+                  StructureBlockEntity var4 = (StructureBlockEntity)this.finder.source().getLevel().getBlockEntity(var3x);
+                  if (var4 != null) {
+                     Direction var5 = var4.getRotation().rotate(Direction.NORTH);
+                     BlockPos var6 = var4.getBlockPos().relative(var5, 2);
+                     int var7 = (int)var5.getOpposite().toYRot();
+                     String var8 = String.format("/tp @s %d %d %d %d 0", var6.getX(), var6.getY(), var6.getZ(), var7);
+                     int var9 = var2.getX() - var3x.getX();
+                     int var10 = var2.getZ() - var3x.getZ();
+                     int var11 = Mth.floor(Mth.sqrt((float)(var9 * var9 + var10 * var10)));
+                     MutableComponent var12 = ComponentUtils.wrapInSquareBrackets(
+                           Component.translatable("chat.coordinates", var3x.getX(), var3x.getY(), var3x.getZ())
+                        )
+                        .withStyle(
+                           var1xx -> var1xx.withColor(ChatFormatting.GREEN)
+                                 .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, var8))
+                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.coordinates.tooltip")))
+                        );
+                     MutableComponent var13 = Component.literal("Found structure at: ").append(var12).append(" (distance: " + var11 + ")");
+                     this.finder.source().sendSuccess(() -> var13, false);
+                     var1.increment();
+                  }
+               }
+            );
+         int var3 = var1.intValue();
+         if (var3 == 0) {
+            TestCommand.say(this.finder.source().getLevel(), "No such test structure found", ChatFormatting.RED);
+            return 0;
+         } else {
+            TestCommand.say(this.finder.source().getLevel(), "Finished locating, found " + var3 + " structure(s)", ChatFormatting.GREEN);
+            return 1;
+         }
       }
    }
 

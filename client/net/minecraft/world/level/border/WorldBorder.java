@@ -280,13 +280,13 @@ public class WorldBorder {
       private final long lerpBegin;
       private final double lerpDuration;
 
-      MovingBorderExtent(double var2, double var4, long var6) {
+      MovingBorderExtent(final double nullx, final double nullxx, final long nullxxx) {
          super();
-         this.from = var2;
-         this.to = var4;
-         this.lerpDuration = (double)var6;
+         this.from = nullx;
+         this.to = nullxx;
+         this.lerpDuration = (double)nullxxx;
          this.lerpBegin = Util.getMillis();
-         this.lerpEnd = this.lerpBegin + var6;
+         this.lerpEnd = this.lerpBegin + nullxxx;
       }
 
       @Override
@@ -473,9 +473,9 @@ public class WorldBorder {
       private double maxZ;
       private VoxelShape shape;
 
-      public StaticBorderExtent(double var2) {
+      public StaticBorderExtent(final double nullx) {
          super();
-         this.size = var2;
+         this.size = nullx;
          this.updateBox();
       }
 

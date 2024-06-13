@@ -112,36 +112,36 @@ public class RealmsPlayerScreen extends RealmsScreen {
       private final Button makeOpButton;
       private final Button removeOpButton;
 
-      public Entry(PlayerInfo var2) {
+      public Entry(final PlayerInfo nullx) {
          super();
-         this.playerInfo = var2;
+         this.playerInfo = nullx;
          int var3 = RealmsPlayerScreen.this.serverData.players.indexOf(this.playerInfo);
-         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, var2x -> this.op(var3), false)
+         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, var2 -> this.op(var3), false)
             .sprite(MAKE_OP_SPRITE, 8, 7)
             .width(16 + RealmsPlayerScreen.this.font.width(NORMAL_USER_TEXT))
             .narration(
-               var1x -> CommonComponents.joinForNarration(
-                     Component.translatable("mco.invited.player.narration", var2.getName()),
-                     var1x.get(),
+               var1 -> CommonComponents.joinForNarration(
+                     Component.translatable("mco.invited.player.narration", nullx.getName()),
+                     var1.get(),
                      Component.translatable("narration.cycle_button.usage.focused", OP_TEXT)
                   )
             )
             .build();
-         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, var2x -> this.deop(var3), false)
+         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, var2 -> this.deop(var3), false)
             .sprite(REMOVE_OP_SPRITE, 8, 7)
             .width(16 + RealmsPlayerScreen.this.font.width(OP_TEXT))
             .narration(
-               var1x -> CommonComponents.joinForNarration(
-                     Component.translatable("mco.invited.player.narration", var2.getName()),
-                     var1x.get(),
+               var1 -> CommonComponents.joinForNarration(
+                     Component.translatable("mco.invited.player.narration", nullx.getName()),
+                     var1.get(),
                      Component.translatable("narration.cycle_button.usage.focused", NORMAL_USER_TEXT)
                   )
             )
             .build();
-         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, var2x -> this.uninvite(var3), false)
+         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, var2 -> this.uninvite(var3), false)
             .sprite(REMOVE_PLAYER_SPRITE, 8, 7)
             .width(16 + RealmsPlayerScreen.this.font.width(REMOVE_TEXT))
-            .narration(var1x -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), var1x.get()))
+            .narration(var1 -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", nullx.getName()), var1.get()))
             .build();
          this.updateOpButtons();
       }

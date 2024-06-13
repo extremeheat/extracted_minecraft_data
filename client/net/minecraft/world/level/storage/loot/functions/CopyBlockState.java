@@ -46,7 +46,7 @@ public class CopyBlockState extends LootItemConditionalFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<CopyBlockState> getType() {
       return LootItemFunctions.COPY_STATE;
    }
 

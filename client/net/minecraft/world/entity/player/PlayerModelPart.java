@@ -16,11 +16,11 @@ public enum PlayerModelPart {
    private final String id;
    private final Component name;
 
-   private PlayerModelPart(int var3, String var4) {
-      this.bit = var3;
-      this.mask = 1 << var3;
-      this.id = var4;
-      this.name = Component.translatable("options.modelPart." + var4);
+   private PlayerModelPart(final int nullxx, final String nullxxx) {
+      this.bit = nullxx;
+      this.mask = 1 << nullxx;
+      this.id = nullxxx;
+      this.name = Component.translatable("options.modelPart." + nullxxx);
    }
 
    public int getMask() {

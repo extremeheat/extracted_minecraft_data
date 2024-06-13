@@ -73,12 +73,9 @@ public class MaceItem extends Item {
       var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
       if (var3 instanceof ServerPlayer var4 && canSmashAttack(var4)) {
          ServerLevel var5 = (ServerLevel)var3.level();
-         if (!var4.ignoreFallDamageFromCurrentImpulse || var4.currentImpulseImpactPos == null || var4.currentImpulseImpactPos.y() > var4.getY()) {
-            var4.currentImpulseImpactPos = var4.position();
-            var4.ignoreFallDamageFromCurrentImpulse = true;
-         }
-
-         var4.setDeltaMovement(var4.getDeltaMovement().with(Direction.Axis.Y, 0.0));
+         var4.currentImpulseImpactPos = var4.position();
+         var4.ignoreFallDamageFromCurrentImpulse = true;
+         var4.setDeltaMovement(var4.getDeltaMovement().with(Direction.Axis.Y, 0.009999999776482582));
          var4.connection.send(new ClientboundSetEntityMotionPacket(var4));
          if (var2.onGround()) {
             var4.setSpawnExtraParticlesOnFall(true);
@@ -89,9 +86,10 @@ public class MaceItem extends Item {
          }
 
          knockback(var5, var4, var2);
+         return true;
       }
 
-      return true;
+      return false;
    }
 
    @Override

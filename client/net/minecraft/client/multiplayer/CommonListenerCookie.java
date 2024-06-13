@@ -19,7 +19,8 @@ public record CommonListenerCookie(
    @Nullable ServerData serverData,
    @Nullable Screen postDisconnectScreen,
    Map<ResourceLocation, byte[]> serverCookies,
-   @Nullable ChatComponent.State chatState
+   @Nullable ChatComponent.State chatState,
+   @Deprecated(forRemoval = true) boolean strictErrorHandling
 ) {
    public CommonListenerCookie(
       GameProfile localGameProfile,
@@ -30,7 +31,8 @@ public record CommonListenerCookie(
       @Nullable ServerData serverData,
       @Nullable Screen postDisconnectScreen,
       Map<ResourceLocation, byte[]> serverCookies,
-      @Nullable ChatComponent.State chatState
+      @Nullable ChatComponent.State chatState,
+      @Deprecated(forRemoval = true) boolean strictErrorHandling
    ) {
       super();
       this.localGameProfile = localGameProfile;
@@ -42,5 +44,6 @@ public record CommonListenerCookie(
       this.postDisconnectScreen = postDisconnectScreen;
       this.serverCookies = serverCookies;
       this.chatState = chatState;
+      this.strictErrorHandling = strictErrorHandling;
    }
 }

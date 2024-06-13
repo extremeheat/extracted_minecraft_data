@@ -683,11 +683,11 @@ public final class DensityFunctions {
 
          private final String name;
          final KeyDispatchDataCodec<DensityFunctions.Mapped> codec = DensityFunctions.singleFunctionArgumentCodec(
-            var1x -> DensityFunctions.Mapped.create(this, var1x), DensityFunctions.Mapped::input
+            var1 -> DensityFunctions.Mapped.create(this, var1), DensityFunctions.Mapped::input
          );
 
-         private Type(String var3) {
-            this.name = var3;
+         private Type(final String nullxx) {
+            this.name = nullxx;
          }
 
          @Override
@@ -733,11 +733,11 @@ public final class DensityFunctions {
 
          private final String name;
          final KeyDispatchDataCodec<DensityFunctions.MarkerOrMarked> codec = DensityFunctions.singleFunctionArgumentCodec(
-            var1x -> new DensityFunctions.Marker(this, var1x), DensityFunctions.MarkerOrMarked::wrapped
+            var1 -> new DensityFunctions.Marker(this, var1), DensityFunctions.MarkerOrMarked::wrapped
          );
 
-         private Type(String var3) {
-            this.name = var3;
+         private Type(final String nullxx) {
+            this.name = nullxx;
          }
 
          @Override
@@ -1329,14 +1329,14 @@ public final class DensityFunctions {
          MAX("max");
 
          final KeyDispatchDataCodec<DensityFunctions.TwoArgumentSimpleFunction> codec = DensityFunctions.doubleFunctionArgumentCodec(
-            (var1x, var2x) -> DensityFunctions.TwoArgumentSimpleFunction.create(this, var1x, var2x),
+            (var1, var2) -> DensityFunctions.TwoArgumentSimpleFunction.create(this, var1, var2),
             DensityFunctions.TwoArgumentSimpleFunction::argument1,
             DensityFunctions.TwoArgumentSimpleFunction::argument2
          );
          private final String name;
 
-         private Type(String var3) {
-            this.name = var3;
+         private Type(final String nullxx) {
+            this.name = nullxx;
          }
 
          @Override
@@ -1407,10 +1407,10 @@ public final class DensityFunctions {
          final Double2DoubleFunction mapper;
          final double maxRarity;
 
-         private RarityValueMapper(String var3, Double2DoubleFunction var4, double var5) {
-            this.name = var3;
-            this.mapper = var4;
-            this.maxRarity = var5;
+         private RarityValueMapper(final String nullxx, final Double2DoubleFunction nullxxx, final double nullxxxx) {
+            this.name = nullxx;
+            this.mapper = nullxxx;
+            this.maxRarity = nullxxxx;
          }
 
          @Override

@@ -27,8 +27,8 @@ public class VillagerMetaDataSection {
          .collect(Collectors.toMap(VillagerMetaDataSection.Hat::getName, var0 -> (VillagerMetaDataSection.Hat)var0));
       private final String name;
 
-      private Hat(String var3) {
-         this.name = var3;
+      private Hat(final String nullxx) {
+         this.name = nullxx;
       }
 
       public String getName() {

@@ -15,6 +15,8 @@ import net.minecraft.util.StringRepresentable;
 import org.slf4j.Logger;
 
 public interface ListOperation {
+   MapCodec<ListOperation> UNLIMITED_CODEC = codec(2147483647);
+
    static MapCodec<ListOperation> codec(int var0) {
       return ListOperation.Type.CODEC.dispatchMap("mode", ListOperation::mode, var0x -> var0x.mapCodec).validate(var1 -> {
          if (var1 instanceof ListOperation.ReplaceSection var2 && var2.size().isPresent()) {
@@ -29,6 +31,10 @@ public interface ListOperation {
    }
 
    ListOperation.Type mode();
+
+   default <T> List<T> apply(List<T> var1, List<T> var2) {
+      return this.apply(var1, var2, 2147483647);
+   }
 
    <T> List<T> apply(List<T> var1, List<T> var2, int var3);
 
@@ -163,6 +169,28 @@ public interface ListOperation {
       }
    }
 
+   public static record StandAlone<T>(List<T> value, ListOperation operation) {
+      public StandAlone(List<T> value, ListOperation operation) {
+         super();
+         this.value = value;
+         this.operation = operation;
+      }
+
+      public static <T> Codec<ListOperation.StandAlone<T>> codec(Codec<T> var0, int var1) {
+         return RecordCodecBuilder.create(
+            var2 -> var2.group(
+                     var0.sizeLimitedListOf(var1).fieldOf("values").forGetter(var0xx -> var0xx.value),
+                     ListOperation.codec(var1).forGetter(var0xx -> var0xx.operation)
+                  )
+                  .apply(var2, ListOperation.StandAlone::new)
+         );
+      }
+
+      public List<T> apply(List<T> var1) {
+         return this.operation.apply(var1, this.value);
+      }
+   }
+
    public static enum Type implements StringRepresentable {
       REPLACE_ALL("replace_all", ListOperation.ReplaceAll.MAP_CODEC),
       REPLACE_SECTION("replace_section", ListOperation.ReplaceSection.MAP_CODEC),
@@ -173,9 +201,9 @@ public interface ListOperation {
       private final String id;
       final MapCodec<? extends ListOperation> mapCodec;
 
-      private Type(String var3, MapCodec<? extends ListOperation> var4) {
-         this.id = var3;
-         this.mapCodec = var4;
+      private Type(final String nullxx, final MapCodec<? extends ListOperation> nullxxx) {
+         this.id = nullxx;
+         this.mapCodec = nullxxx;
       }
 
       public MapCodec<? extends ListOperation> mapCodec() {

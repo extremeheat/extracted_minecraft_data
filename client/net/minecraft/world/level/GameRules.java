@@ -350,8 +350,8 @@ public class GameRules {
 
       private final String descriptionId;
 
-      private Category(String var3) {
-         this.descriptionId = var3;
+      private Category(final String nullxx) {
+         this.descriptionId = nullxx;
       }
 
       public String getDescriptionId() {

@@ -53,9 +53,9 @@ public enum VaultState implements StringRepresentable {
    private final String stateName;
    private final VaultState.LightLevel lightLevel;
 
-   VaultState(String var3, VaultState.LightLevel var4) {
-      this.stateName = var3;
-      this.lightLevel = var4;
+   VaultState(final String nullxx, final VaultState.LightLevel nullxxx) {
+      this.stateName = nullxx;
+      this.lightLevel = nullxxx;
    }
 
    @Override
@@ -123,8 +123,8 @@ public enum VaultState implements StringRepresentable {
 
       final int value;
 
-      private LightLevel(int var3) {
-         this.value = var3;
+      private LightLevel(final int nullxx) {
+         this.value = nullxx;
       }
    }
 }

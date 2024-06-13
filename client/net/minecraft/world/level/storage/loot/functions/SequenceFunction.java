@@ -41,7 +41,7 @@ public class SequenceFunction implements LootItemFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SequenceFunction> getType() {
       return LootItemFunctions.SEQUENCE;
    }
 }

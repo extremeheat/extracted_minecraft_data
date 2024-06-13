@@ -97,6 +97,10 @@ public abstract class ChunkGenerator {
       );
    }
 
+   public void validate() {
+      this.featuresPerStep.get();
+   }
+
    protected abstract MapCodec<? extends ChunkGenerator> codec();
 
    public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> var1, RandomState var2, long var3) {

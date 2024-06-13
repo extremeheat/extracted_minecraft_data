@@ -79,8 +79,8 @@ public class TutorialToast implements Toast {
 
       private final ResourceLocation sprite;
 
-      private Icons(ResourceLocation var3) {
-         this.sprite = var3;
+      private Icons(final ResourceLocation nullxx) {
+         this.sprite = nullxx;
       }
 
       public void render(GuiGraphics var1, int var2, int var3) {

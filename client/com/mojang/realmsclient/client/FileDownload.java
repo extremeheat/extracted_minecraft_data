@@ -349,12 +349,12 @@ public class FileDownload {
       private final LevelStorageSource levelStorageSource;
       private final RealmsDownloadLatestWorldScreen.DownloadStatus downloadStatus;
 
-      ProgressListener(String var2, File var3, LevelStorageSource var4, RealmsDownloadLatestWorldScreen.DownloadStatus var5) {
+      ProgressListener(final String nullx, final File nullxx, final LevelStorageSource nullxxx, final RealmsDownloadLatestWorldScreen.DownloadStatus nullxxxx) {
          super();
-         this.worldName = var2;
-         this.tempFile = var3;
-         this.levelStorageSource = var4;
-         this.downloadStatus = var5;
+         this.worldName = nullx;
+         this.tempFile = nullxx;
+         this.levelStorageSource = nullxxx;
+         this.downloadStatus = nullxxxx;
       }
 
       @Override
@@ -377,11 +377,11 @@ public class FileDownload {
       private final RealmsDownloadLatestWorldScreen.DownloadStatus downloadStatus;
       private final WorldDownload worldDownload;
 
-      ResourcePackProgressListener(File var2, RealmsDownloadLatestWorldScreen.DownloadStatus var3, WorldDownload var4) {
+      ResourcePackProgressListener(final File nullx, final RealmsDownloadLatestWorldScreen.DownloadStatus nullxx, final WorldDownload nullxxx) {
          super();
-         this.tempFile = var2;
-         this.downloadStatus = var3;
-         this.worldDownload = var4;
+         this.tempFile = nullx;
+         this.downloadStatus = nullxx;
+         this.worldDownload = nullxxx;
       }
 
       @Override

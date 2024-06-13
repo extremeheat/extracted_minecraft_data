@@ -128,9 +128,9 @@ public abstract class SpellcasterIllager extends AbstractIllager {
       final int id;
       final double[] spellColor;
 
-      private IllagerSpell(int var3, double var4, double var6, double var8) {
-         this.id = var3;
-         this.spellColor = new double[]{var4, var6, var8};
+      private IllagerSpell(final int nullxx, final double nullxxx, final double nullxxxx, final double nullxxxxx) {
+         this.id = nullxx;
+         this.spellColor = new double[]{nullxxx, nullxxxx, nullxxxxx};
       }
 
       public static SpellcasterIllager.IllagerSpell byId(int var0) {

@@ -154,13 +154,12 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
    }
 
-   protected ProjectileDeflection hitOrDeflect(HitResult var1) {
+   protected ProjectileDeflection hitTargetOrDeflectSelf(HitResult var1) {
       if (var1.getType() == HitResult.Type.ENTITY) {
          EntityHitResult var2 = (EntityHitResult)var1;
          ProjectileDeflection var3 = var2.getEntity().deflection(this);
          if (var3 != ProjectileDeflection.NONE) {
-            var3.deflect(this, var2.getEntity(), this.random);
-            this.markHurt();
+            this.deflect(var3, var2.getEntity(), this.getOwner(), false);
             return var3;
          }
       }
@@ -169,17 +168,33 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return ProjectileDeflection.NONE;
    }
 
+   public void deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {
+      if (!this.level().isClientSide) {
+         var1.deflect(this, var2, this.random);
+         this.setOwner(var3);
+         this.onDeflection(var2, var4);
+      }
+   }
+
+   protected void onDeflection(@Nullable Entity var1, boolean var2) {
+   }
+
    protected void onHit(HitResult var1) {
       HitResult.Type var2 = var1.getType();
       if (var2 == HitResult.Type.ENTITY) {
          EntityHitResult var3 = (EntityHitResult)var1;
+         Entity var4 = var3.getEntity();
+         if (var4.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var4 instanceof Projectile var5) {
+            var5.deflect(ProjectileDeflection.AIM_DEFLECT, this.getOwner(), this.getOwner(), true);
+         }
+
          this.onHitEntity(var3);
          this.level().gameEvent(GameEvent.PROJECTILE_LAND, var1.getLocation(), GameEvent.Context.of(this, null));
       } else if (var2 == HitResult.Type.BLOCK) {
-         BlockHitResult var5 = (BlockHitResult)var1;
-         this.onHitBlock(var5);
-         BlockPos var4 = var5.getBlockPos();
-         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var4, GameEvent.Context.of(this, this.level().getBlockState(var4)));
+         BlockHitResult var6 = (BlockHitResult)var1;
+         this.onHitBlock(var6);
+         BlockPos var7 = var6.getBlockPos();
+         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var7, GameEvent.Context.of(this, this.level().getBlockState(var7)));
       }
    }
 
@@ -257,6 +272,13 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && var1.getGameRules().getBoolean(GameRules.RULE_PROJECTILESCANBREAKBLOCKS);
    }
 
-   public void onDeflection() {
+   @Override
+   public boolean isPickable() {
+      return this.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE);
+   }
+
+   @Override
+   public float getPickRadius() {
+      return this.isPickable() ? 1.0F : 0.0F;
    }
 }

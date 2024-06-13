@@ -17,7 +17,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.Container;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -302,16 +301,6 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       return false;
    }
 
-   @Override
-   public void containerChanged(Container var1) {
-      DyeColor var2 = this.getSwag();
-      super.containerChanged(var1);
-      DyeColor var3 = this.getSwag();
-      if (this.tickCount > 20 && var3 != null && var3 != var2) {
-         this.playSound(SoundEvents.LLAMA_SWAG, 0.5F, 1.0F);
-      }
-   }
-
    @Nullable
    private static DyeColor getDyeColor(ItemStack var0) {
       Block var1 = Block.byItem(var0.getItem());
@@ -515,9 +504,9 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       final int id;
       private final String name;
 
-      private Variant(int var3, String var4) {
-         this.id = var3;
-         this.name = var4;
+      private Variant(final int nullxx, final String nullxxx) {
+         this.id = nullxx;
+         this.name = nullxxx;
       }
 
       public int getId() {

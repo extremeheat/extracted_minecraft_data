@@ -720,9 +720,9 @@ public class RealmsMainScreen extends RealmsScreen {
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
       private final RealmsServer parent;
 
-      public AvailableSnapshotEntry(RealmsServer var2) {
+      public AvailableSnapshotEntry(final RealmsServer nullx) {
          super();
-         this.parent = var2;
+         this.parent = nullx;
          this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.tooltip")));
       }
 
@@ -777,9 +777,9 @@ public class RealmsMainScreen extends RealmsScreen {
    class ButtonEntry extends RealmsMainScreen.Entry {
       private final Button button;
 
-      public ButtonEntry(Button var2) {
+      public ButtonEntry(final Button nullx) {
          super();
-         this.button = var2;
+         this.button = nullx;
       }
 
       @Override
@@ -995,26 +995,26 @@ public class RealmsMainScreen extends RealmsScreen {
       private final FrameLayout textFrame;
       private int lastEntryWidth = -1;
 
-      public NotificationMessageEntry(Component var2, int var3, RealmsNotification var4) {
+      public NotificationMessageEntry(final Component nullx, final int nullxx, final RealmsNotification nullxxx) {
          super();
-         this.text = var2;
-         this.frameItemHeight = var3;
+         this.text = nullx;
+         this.frameItemHeight = nullxx;
          this.gridLayout = new GridLayout();
          byte var5 = 7;
          this.gridLayout.addChild(ImageWidget.sprite(20, 20, RealmsMainScreen.INFO_SPRITE), 0, 0, this.gridLayout.newCellSettings().padding(7, 7, 0, 0));
          this.gridLayout.addChild(SpacerElement.width(40), 0, 0);
-         this.textFrame = this.gridLayout.addChild(new FrameLayout(0, 9 * 3 * (var3 - 1)), 0, 1, this.gridLayout.newCellSettings().paddingTop(7));
+         this.textFrame = this.gridLayout.addChild(new FrameLayout(0, 9 * 3 * (nullxx - 1)), 0, 1, this.gridLayout.newCellSettings().paddingTop(7));
          this.textWidget = this.textFrame
             .addChild(
-               new MultiLineTextWidget(var2, RealmsMainScreen.this.font).setCentered(true),
+               new MultiLineTextWidget(nullx, RealmsMainScreen.this.font).setCentered(true),
                this.textFrame.newChildLayoutSettings().alignHorizontallyCenter().alignVerticallyTop()
             );
          this.gridLayout.addChild(SpacerElement.width(40), 0, 2);
-         if (var4.dismissable()) {
+         if (nullxxx.dismissable()) {
             this.dismissButton = this.gridLayout
                .addChild(
                   new RealmsMainScreen.CrossButton(
-                     var2x -> RealmsMainScreen.this.dismissNotification(var4.uuid()), Component.translatable("mco.notification.dismiss")
+                     var2 -> RealmsMainScreen.this.dismissNotification(nullxxx.uuid()), Component.translatable("mco.notification.dismiss")
                   ),
                   0,
                   2,
@@ -1078,10 +1078,10 @@ public class RealmsMainScreen extends RealmsScreen {
       private final RealmsServer server;
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
-      public ParentEntry(RealmsServer var2) {
+      public ParentEntry(final RealmsServer nullx) {
          super();
-         this.server = var2;
-         if (!var2.expired) {
+         this.server = nullx;
+         if (!nullx.expired) {
             this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.parent.tooltip")));
          }
       }
@@ -1145,16 +1145,16 @@ public class RealmsMainScreen extends RealmsScreen {
       private final RealmsServer serverData;
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
-      public ServerEntry(RealmsServer var2) {
+      public ServerEntry(final RealmsServer nullx) {
          super();
-         this.serverData = var2;
-         boolean var3 = RealmsMainScreen.this.isSelfOwnedServer(var2);
-         if (RealmsMainScreen.isSnapshot() && var3 && var2.isSnapshotRealm()) {
-            this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.paired", var2.parentWorldName)));
-         } else if (!var3 && var2.needsUpgrade()) {
-            this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.friendsRealm.upgrade", var2.owner)));
-         } else if (!var3 && var2.needsDowngrade()) {
-            this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.friendsRealm.downgrade", var2.activeVersion)));
+         this.serverData = nullx;
+         boolean var3 = RealmsMainScreen.this.isSelfOwnedServer(nullx);
+         if (RealmsMainScreen.isSnapshot() && var3 && nullx.isSnapshotRealm()) {
+            this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.paired", nullx.parentWorldName)));
+         } else if (!var3 && nullx.needsUpgrade()) {
+            this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.friendsRealm.upgrade", nullx.owner)));
+         } else if (!var3 && nullx.needsDowngrade()) {
+            this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.friendsRealm.downgrade", nullx.activeVersion)));
          }
       }
 

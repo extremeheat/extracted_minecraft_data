@@ -13,9 +13,9 @@ public enum TutorialSteps {
    private final String name;
    private final Function<Tutorial, ? extends TutorialStepInstance> constructor;
 
-   private <T extends TutorialStepInstance> TutorialSteps(String var3, Function<Tutorial, T> var4) {
-      this.name = var3;
-      this.constructor = var4;
+   private <T extends TutorialStepInstance> TutorialSteps(final String nullxx, final Function<Tutorial, T> nullxxx) {
+      this.name = nullxx;
+      this.constructor = nullxxx;
    }
 
    public TutorialStepInstance create(Tutorial var1) {

@@ -216,8 +216,8 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
       final int id;
 
-      private Base(int var3) {
-         this.id = var3;
+      private Base(final int nullxx) {
+         this.id = nullxx;
       }
    }
 
@@ -242,10 +242,10 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       private final TropicalFish.Base base;
       private final int packedId;
 
-      private Pattern(String var3, TropicalFish.Base var4, int var5) {
-         this.name = var3;
-         this.base = var4;
-         this.packedId = var4.id | var5 << 8;
+      private Pattern(final String nullxx, final TropicalFish.Base nullxxx, final int nullxxxx) {
+         this.name = nullxx;
+         this.base = nullxxx;
+         this.packedId = nullxxx.id | nullxxxx << 8;
          this.displayName = Component.translatable("entity.minecraft.tropical_fish.type." + this.name);
       }
 

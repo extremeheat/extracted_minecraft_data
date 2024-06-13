@@ -282,7 +282,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
          .add(Attributes.MOVEMENT_SPEED, 0.30000001192092896)
          .add(Attributes.MAX_HEALTH, 10.0)
          .add(Attributes.FOLLOW_RANGE, 32.0)
-         .add(Attributes.ATTACK_DAMAGE, 2.0);
+         .add(Attributes.ATTACK_DAMAGE, 2.0)
+         .add(Attributes.SAFE_FALL_DISTANCE, 5.0);
    }
 
    @Nullable
@@ -601,11 +602,6 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       super.setTarget(var1);
    }
 
-   @Override
-   protected int calculateFallDamage(float var1, float var2) {
-      return Mth.ceil((var1 - 5.0F) * var2);
-   }
-
    void wakeUp() {
       this.setSleeping(false);
    }
@@ -709,8 +705,10 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       private LivingEntity trustedLastHurt;
       private int timestamp;
 
-      public DefendTrustedTargetGoal(Class<LivingEntity> var2, boolean var3, boolean var4, @Nullable Predicate<LivingEntity> var5) {
-         super(Fox.this, var2, 10, var3, var4, var5);
+      public DefendTrustedTargetGoal(
+         final Class<LivingEntity> nullx, final boolean nullxx, final boolean nullxxx, @Nullable final Predicate<LivingEntity> nullxxxx
+      ) {
+         super(Fox.this, nullx, 10, nullxx, nullxxx, nullxxxx);
       }
 
       @Override
@@ -823,8 +821,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    }
 
    class FoxBreedGoal extends BreedGoal {
-      public FoxBreedGoal(double var2) {
-         super(Fox.this, var2);
+      public FoxBreedGoal(final double nullx) {
+         super(Fox.this, nullx);
       }
 
       @Override
@@ -879,8 +877,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       private static final int WAIT_TICKS = 40;
       protected int ticksWaited;
 
-      public FoxEatBerriesGoal(double var2, int var4, int var5) {
-         super(Fox.this, var2, var4, var5);
+      public FoxEatBerriesGoal(final double nullx, final int nullxx, final int nullxxx) {
+         super(Fox.this, nullx, nullxx, nullxxx);
       }
 
       @Override
@@ -981,9 +979,9 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    class FoxFollowParentGoal extends FollowParentGoal {
       private final Fox fox;
 
-      public FoxFollowParentGoal(Fox var2, double var3) {
-         super(var2, var3);
-         this.fox = var2;
+      public FoxFollowParentGoal(final Fox nullx, final double nullxx) {
+         super(nullx, nullxx);
+         this.fox = nullx;
       }
 
       @Override
@@ -1013,8 +1011,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    }
 
    class FoxLookAtPlayerGoal extends LookAtPlayerGoal {
-      public FoxLookAtPlayerGoal(Mob var2, Class<? extends LivingEntity> var3, float var4) {
-         super(var2, var3, var4);
+      public FoxLookAtPlayerGoal(final Mob nullx, final Class<? extends LivingEntity> nullxx, final float nullxxx) {
+         super(nullx, nullxx, nullxxx);
       }
 
       @Override
@@ -1047,8 +1045,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    }
 
    class FoxMeleeAttackGoal extends MeleeAttackGoal {
-      public FoxMeleeAttackGoal(double var2, boolean var4) {
-         super(Fox.this, var2, var4);
+      public FoxMeleeAttackGoal(final double nullx, final boolean nullxx) {
+         super(Fox.this, nullx, nullxx);
       }
 
       @Override
@@ -1086,8 +1084,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    }
 
    class FoxPanicGoal extends PanicGoal {
-      public FoxPanicGoal(double var2) {
-         super(Fox.this, var2);
+      public FoxPanicGoal(final double nullx) {
+         super(Fox.this, nullx);
       }
 
       @Override
@@ -1238,8 +1236,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    }
 
    class FoxStrollThroughVillageGoal extends StrollThroughVillageGoal {
-      public FoxStrollThroughVillageGoal(int var2, int var3) {
-         super(Fox.this, var3);
+      public FoxStrollThroughVillageGoal(final int nullx, final int nullxx) {
+         super(Fox.this, nullxx);
       }
 
       @Override
@@ -1329,8 +1327,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    class SeekShelterGoal extends FleeSunGoal {
       private int interval = reducedTickDelay(100);
 
-      public SeekShelterGoal(double var2) {
-         super(Fox.this, var2);
+      public SeekShelterGoal(final double nullx) {
+         super(Fox.this, nullx);
       }
 
       @Override
@@ -1471,9 +1469,9 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       private final int id;
       private final String name;
 
-      private Type(int var3, String var4) {
-         this.id = var3;
-         this.name = var4;
+      private Type(final int nullxx, final String nullxxx) {
+         this.id = nullxx;
+         this.name = nullxxx;
       }
 
       @Override

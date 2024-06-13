@@ -282,7 +282,7 @@ public class Armadillo extends Animal {
    @Override
    protected void actuallyHurt(DamageSource var1, float var2) {
       super.actuallyHurt(var1, var2);
-      if (!this.isNoAi()) {
+      if (!this.isNoAi() && !this.isDeadOrDying()) {
          if (var1.getEntity() instanceof LivingEntity) {
             this.getBrain().setMemoryWithExpiry(MemoryModuleType.DANGER_DETECTED_RECENTLY, true, 80L);
             if (this.canStayRolledUp()) {
@@ -422,11 +422,11 @@ public class Armadillo extends Animal {
       private final int animationDuration;
       private final int id;
 
-      ArmadilloState(String var3, boolean var4, int var5, int var6) {
-         this.name = var3;
-         this.isThreatened = var4;
-         this.animationDuration = var5;
-         this.id = var6;
+      ArmadilloState(final String nullxx, final boolean nullxxx, final int nullxxxx, final int nullxxxxx) {
+         this.name = nullxx;
+         this.isThreatened = nullxxx;
+         this.animationDuration = nullxxxx;
+         this.id = nullxxxxx;
       }
 
       public static Armadillo.ArmadilloState fromName(String var0) {

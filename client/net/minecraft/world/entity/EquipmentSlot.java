@@ -17,11 +17,11 @@ public enum EquipmentSlot implements StringRepresentable {
    private final int filterFlag;
    private final String name;
 
-   private EquipmentSlot(EquipmentSlot.Type var3, int var4, int var5, String var6) {
-      this.type = var3;
-      this.index = var4;
-      this.filterFlag = var5;
-      this.name = var6;
+   private EquipmentSlot(final EquipmentSlot.Type nullxx, final int nullxxx, final int nullxxxx, final String nullxxxxx) {
+      this.type = nullxx;
+      this.index = nullxxx;
+      this.filterFlag = nullxxxx;
+      this.name = nullxxxxx;
    }
 
    public EquipmentSlot.Type getType() {

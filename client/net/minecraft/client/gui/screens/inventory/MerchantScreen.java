@@ -290,9 +290,9 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    class TradeOfferButton extends Button {
       final int index;
 
-      public TradeOfferButton(int var2, int var3, int var4, Button.OnPress var5) {
-         super(var2, var3, 88, 20, CommonComponents.EMPTY, var5, DEFAULT_NARRATION);
-         this.index = var4;
+      public TradeOfferButton(final int nullx, final int nullxx, final int nullxxx, final Button.OnPress nullxxxx) {
+         super(nullx, nullxx, 88, 20, CommonComponents.EMPTY, nullxxxx, DEFAULT_NARRATION);
+         this.index = nullxxx;
          this.visible = false;
       }
 

@@ -30,4 +30,8 @@ public class FoodConstants {
    public FoodConstants() {
       super();
    }
+
+   public static float saturationByModifier(int var0, float var1) {
+      return (float)var0 * var1 * 2.0F;
+   }
 }

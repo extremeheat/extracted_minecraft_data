@@ -76,10 +76,11 @@ public class SonicBoom extends Behavior<Warden> {
                }
 
                var2.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
-               var2x.hurt(var1.damageSources().sonicBoom(var2), 10.0F);
-               double var11 = 0.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-               double var9 = 2.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-               var2x.push(var5.x() * var9, var5.y() * var11, var5.z() * var9);
+               if (var2x.hurt(var1.damageSources().sonicBoom(var2), 10.0F)) {
+                  double var11 = 0.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+                  double var9 = 2.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+                  var2x.push(var5.x() * var9, var5.y() * var11, var5.z() * var9);
+               }
             });
       }
    }

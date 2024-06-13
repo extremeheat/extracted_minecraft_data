@@ -560,9 +560,9 @@ public class ItemInHandRenderer {
       final boolean renderMainHand;
       final boolean renderOffHand;
 
-      private HandRenderSelection(boolean var3, boolean var4) {
-         this.renderMainHand = var3;
-         this.renderOffHand = var4;
+      private HandRenderSelection(final boolean nullxx, final boolean nullxxx) {
+         this.renderMainHand = nullxx;
+         this.renderOffHand = nullxxx;
       }
 
       public static ItemInHandRenderer.HandRenderSelection onlyForHand(InteractionHand var0) {

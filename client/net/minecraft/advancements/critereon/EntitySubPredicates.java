@@ -160,6 +160,10 @@ public class EntitySubPredicates {
       return FROG.createPredicate(HolderSet.direct(var0));
    }
 
+   public static EntitySubPredicate wolfVariant(HolderSet<WolfVariant> var0) {
+      return WOLF.createPredicate(var0);
+   }
+
    public static class EntityHolderVariantPredicateType<V> {
       final MapCodec<EntitySubPredicates.EntityHolderVariantPredicateType<V>.Instance> codec;
       final Function<Entity, Optional<Holder<V>>> getter;
@@ -186,9 +190,9 @@ public class EntitySubPredicates {
       class Instance implements EntitySubPredicate {
          final HolderSet<V> variants;
 
-         Instance(HolderSet<V> var2) {
+         Instance(final HolderSet<V> nullx) {
             super();
-            this.variants = var2;
+            this.variants = nullx;
          }
 
          @Override
@@ -231,9 +235,9 @@ public class EntitySubPredicates {
       class Instance implements EntitySubPredicate {
          final V variant;
 
-         Instance(V var2) {
+         Instance(final V nullx) {
             super();
-            this.variant = (V)var2;
+            this.variant = (V)nullx;
          }
 
          @Override

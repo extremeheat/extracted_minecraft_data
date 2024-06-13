@@ -175,35 +175,36 @@ public class ForceLoadCommand {
                }
             }
 
-            ChunkPos var21 = var16;
-            if (var17 == 0) {
+            ChunkPos var22 = var16;
+            int var23 = var17;
+            if (var23 == 0) {
                throw (var3 ? ERROR_ALL_ADDED : ERROR_NONE_REMOVED).create();
             } else {
-               if (var17 == 1) {
+               if (var23 == 1) {
                   var0.sendSuccess(
                      () -> Component.translatable(
                            "commands.forceload." + (var3 ? "added" : "removed") + ".single",
-                           Component.translationArg(var21),
+                           Component.translationArg(var22),
                            Component.translationArg(var15.location())
                         ),
                      true
                   );
                } else {
-                  ChunkPos var22 = new ChunkPos(var8, var9);
-                  ChunkPos var23 = new ChunkPos(var10, var11);
+                  ChunkPos var24 = new ChunkPos(var8, var9);
+                  ChunkPos var21 = new ChunkPos(var10, var11);
                   var0.sendSuccess(
                      () -> Component.translatable(
                            "commands.forceload." + (var3 ? "added" : "removed") + ".multiple",
-                           Component.translationArg(var21),
+                           var23,
                            Component.translationArg(var15.location()),
-                           Component.translationArg(var22),
-                           Component.translationArg(var23)
+                           Component.translationArg(var24),
+                           Component.translationArg(var21)
                         ),
                      true
                   );
                }
 
-               return var17;
+               return var23;
             }
          }
       } else {

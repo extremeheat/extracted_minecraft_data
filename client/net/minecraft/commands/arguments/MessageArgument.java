@@ -4,12 +4,12 @@ import com.google.common.collect.Lists;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
@@ -24,6 +24,9 @@ import net.minecraft.server.network.FilteredText;
 
 public class MessageArgument implements SignedArgument<MessageArgument.Message> {
    private static final Collection<String> EXAMPLES = Arrays.asList("Hello world!", "foo", "@e", "Hello @p :)");
+   static final Dynamic2CommandExceptionType TOO_LONG = new Dynamic2CommandExceptionType(
+      (var0, var1) -> Component.translatableEscape("argument.message.too_long", var0, var1)
+   );
 
    public MessageArgument() {
       super();
@@ -82,22 +85,12 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
       return EXAMPLES;
    }
 
-   public static class Message {
-      final String text;
-      private final MessageArgument.Part[] parts;
+   public static record Message(String text, MessageArgument.Part[] parts) {
 
-      public Message(String var1, MessageArgument.Part[] var2) {
+      public Message(String text, MessageArgument.Part[] parts) {
          super();
-         this.text = var1;
-         this.parts = var2;
-      }
-
-      public String getText() {
-         return this.text;
-      }
-
-      public MessageArgument.Part[] getParts() {
-         return this.parts;
+         this.text = text;
+         this.parts = parts;
       }
 
       Component resolveComponent(CommandSourceStack var1) throws CommandSyntaxException {
@@ -106,20 +99,17 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
 
       public Component toComponent(CommandSourceStack var1, boolean var2) throws CommandSyntaxException {
          if (this.parts.length != 0 && var2) {
-            MutableComponent var3 = Component.literal(this.text.substring(0, this.parts[0].getStart()));
-            int var4 = this.parts[0].getStart();
+            MutableComponent var3 = Component.literal(this.text.substring(0, this.parts[0].start()));
+            int var4 = this.parts[0].start();
 
             for (MessageArgument.Part var8 : this.parts) {
                Component var9 = var8.toComponent(var1);
-               if (var4 < var8.getStart()) {
-                  var3.append(this.text.substring(var4, var8.getStart()));
+               if (var4 < var8.start()) {
+                  var3.append(this.text.substring(var4, var8.start()));
                }
 
-               if (var9 != null) {
-                  var3.append(var9);
-               }
-
-               var4 = var8.getEnd();
+               var3.append(var9);
+               var4 = var8.end();
             }
 
             if (var4 < this.text.length()) {
@@ -133,73 +123,60 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
       }
 
       public static MessageArgument.Message parseText(StringReader var0, boolean var1) throws CommandSyntaxException {
-         String var2 = var0.getString().substring(var0.getCursor(), var0.getTotalLength());
-         if (!var1) {
-            var0.setCursor(var0.getTotalLength());
-            return new MessageArgument.Message(var2, new MessageArgument.Part[0]);
+         if (var0.getRemainingLength() > 256) {
+            throw MessageArgument.TOO_LONG.create(var0.getRemainingLength(), 256);
          } else {
-            ArrayList var3 = Lists.newArrayList();
-            int var4 = var0.getCursor();
+            String var2 = var0.getRemaining();
+            if (!var1) {
+               var0.setCursor(var0.getTotalLength());
+               return new MessageArgument.Message(var2, new MessageArgument.Part[0]);
+            } else {
+               ArrayList var3 = Lists.newArrayList();
+               int var4 = var0.getCursor();
 
-            while (true) {
-               int var5;
-               EntitySelector var6;
                while (true) {
-                  if (!var0.canRead()) {
-                     return new MessageArgument.Message(var2, var3.toArray(new MessageArgument.Part[0]));
-                  }
-
-                  if (var0.peek() == '@') {
-                     var5 = var0.getCursor();
-
-                     try {
-                        EntitySelectorParser var7 = new EntitySelectorParser(var0);
-                        var6 = var7.parse();
-                        break;
-                     } catch (CommandSyntaxException var8) {
-                        if (var8.getType() != EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE
-                           && var8.getType() != EntitySelectorParser.ERROR_UNKNOWN_SELECTOR_TYPE) {
-                           throw var8;
-                        }
-
-                        var0.setCursor(var5 + 1);
+                  int var5;
+                  EntitySelector var6;
+                  while (true) {
+                     if (!var0.canRead()) {
+                        return new MessageArgument.Message(var2, var3.toArray(new MessageArgument.Part[0]));
                      }
-                  } else {
-                     var0.skip();
-                  }
-               }
 
-               var3.add(new MessageArgument.Part(var5 - var4, var0.getCursor() - var4, var6));
+                     if (var0.peek() == '@') {
+                        var5 = var0.getCursor();
+
+                        try {
+                           EntitySelectorParser var7 = new EntitySelectorParser(var0);
+                           var6 = var7.parse();
+                           break;
+                        } catch (CommandSyntaxException var8) {
+                           if (var8.getType() != EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE
+                              && var8.getType() != EntitySelectorParser.ERROR_UNKNOWN_SELECTOR_TYPE) {
+                              throw var8;
+                           }
+
+                           var0.setCursor(var5 + 1);
+                        }
+                     } else {
+                        var0.skip();
+                     }
+                  }
+
+                  var3.add(new MessageArgument.Part(var5 - var4, var0.getCursor() - var4, var6));
+               }
             }
          }
       }
    }
 
-   public static class Part {
-      private final int start;
-      private final int end;
-      private final EntitySelector selector;
-
-      public Part(int var1, int var2, EntitySelector var3) {
+   public static record Part(int start, int end, EntitySelector selector) {
+      public Part(int start, int end, EntitySelector selector) {
          super();
-         this.start = var1;
-         this.end = var2;
-         this.selector = var3;
+         this.start = start;
+         this.end = end;
+         this.selector = selector;
       }
 
-      public int getStart() {
-         return this.start;
-      }
-
-      public int getEnd() {
-         return this.end;
-      }
-
-      public EntitySelector getSelector() {
-         return this.selector;
-      }
-
-      @Nullable
       public Component toComponent(CommandSourceStack var1) throws CommandSyntaxException {
          return EntitySelector.joinNames(this.selector.findEntities(var1));
       }

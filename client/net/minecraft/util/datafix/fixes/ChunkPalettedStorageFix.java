@@ -569,9 +569,9 @@ public class ChunkPalettedStorageFix extends DataFix {
       private final ChunkPalettedStorageFix.Direction.Axis axis;
       private final ChunkPalettedStorageFix.Direction.AxisDirection axisDirection;
 
-      private Direction(ChunkPalettedStorageFix.Direction.AxisDirection var3, ChunkPalettedStorageFix.Direction.Axis var4) {
-         this.axis = var4;
-         this.axisDirection = var3;
+      private Direction(final ChunkPalettedStorageFix.Direction.AxisDirection nullxx, final ChunkPalettedStorageFix.Direction.Axis nullxxx) {
+         this.axis = nullxxx;
+         this.axisDirection = nullxx;
       }
 
       public ChunkPalettedStorageFix.Direction.AxisDirection getAxisDirection() {
@@ -597,8 +597,8 @@ public class ChunkPalettedStorageFix extends DataFix {
 
          private final int step;
 
-         private AxisDirection(int var3) {
-            this.step = var3;
+         private AxisDirection(final int nullxx) {
+            this.step = nullxx;
          }
 
          public int getStep() {

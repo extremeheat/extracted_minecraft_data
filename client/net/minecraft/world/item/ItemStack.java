@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.DataResult.Error;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
@@ -45,6 +46,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
@@ -52,7 +54,9 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
+import net.minecraft.util.NullOps;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -88,30 +92,30 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
-   private static final Codec<Holder<Item>> ITEM_NON_AIR_CODEC = BuiltInRegistries.ITEM
+   public static final Codec<Holder<Item>> ITEM_NON_AIR_CODEC = BuiltInRegistries.ITEM
       .holderByNameCodec()
       .validate(var0 -> var0.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
    public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(
       () -> RecordCodecBuilder.create(
-               var0 -> var0.group(
-                        ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-                        ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
-                        DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
-                     )
-                     .apply(var0, ItemStack::new)
-            )
-            .validate(ItemStack::validate)
+            var0 -> var0.group(
+                     ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                     ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
+                     DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
+                  )
+                  .apply(var0, ItemStack::new)
+         )
    );
    public static final Codec<ItemStack> SINGLE_ITEM_CODEC = Codec.lazyInitialized(
       () -> RecordCodecBuilder.create(
-               var0 -> var0.group(
-                        ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-                        DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
-                     )
-                     .apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))
-            )
-            .validate(ItemStack::validate)
+            var0 -> var0.group(
+                     ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                     DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
+                  )
+                  .apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))
+         )
    );
+   public static final Codec<ItemStack> STRICT_CODEC = CODEC.validate(ItemStack::validateStrict);
+   public static final Codec<ItemStack> STRICT_SINGLE_ITEM_CODEC = SINGLE_ITEM_CODEC.validate(ItemStack::validateStrict);
    public static final Codec<ItemStack> OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC)
       .xmap(var0 -> var0.orElse(ItemStack.EMPTY), var0 -> var0.isEmpty() ? Optional.empty() : Optional.of(var0));
    public static final Codec<ItemStack> SIMPLE_ITEM_CODEC = ITEM_NON_AIR_CODEC.xmap(ItemStack::new, ItemStack::getItemHolder);
@@ -175,11 +179,33 @@ public final class ItemStack implements DataComponentHolder {
    @Nullable
    private Entity entityRepresentation;
 
-   private static DataResult<ItemStack> validate(ItemStack var0) {
-      return var0.getCount() > var0.getMaxStackSize()
-         ? DataResult.error(() -> "Item stack with stack size of " + var0.getCount() + " was larger than maximum: " + var0.getMaxStackSize())
-            .setPartial(() -> var0.copyWithCount(var0.getMaxStackSize()))
-         : DataResult.success(var0);
+   private static DataResult<ItemStack> validateStrict(ItemStack var0) {
+      DataResult var1 = validateComponents(var0.getComponents());
+      if (var1.isError()) {
+         return var1.map(var1x -> var0);
+      } else {
+         return var0.getCount() > var0.getMaxStackSize()
+            ? DataResult.error(() -> "Item stack with stack size of " + var0.getCount() + " was larger than maximum: " + var0.getMaxStackSize())
+            : DataResult.success(var0);
+      }
+   }
+
+   public static StreamCodec<RegistryFriendlyByteBuf, ItemStack> validatedStreamCodec(final StreamCodec<RegistryFriendlyByteBuf, ItemStack> var0) {
+      return new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
+         public ItemStack decode(RegistryFriendlyByteBuf var1) {
+            ItemStack var2 = (ItemStack)var0.decode(var1);
+            if (!var2.isEmpty()) {
+               RegistryOps var3 = var1.registryAccess().createSerializationContext(NullOps.INSTANCE);
+               ItemStack.CODEC.encodeStart(var3, var2).getOrThrow(DecoderException::new);
+            }
+
+            return var2;
+         }
+
+         public void encode(RegistryFriendlyByteBuf var1, ItemStack var2) {
+            var0.encode(var1, var2);
+         }
+      };
    }
 
    public Optional<TooltipComponent> getTooltipImage() {
@@ -231,6 +257,12 @@ public final class ItemStack implements DataComponentHolder {
       super();
       this.item = null;
       this.components = new PatchedDataComponentMap(DataComponentMap.EMPTY);
+   }
+
+   public static DataResult<Unit> validateComponents(DataComponentMap var0) {
+      return var0.has(DataComponents.MAX_DAMAGE) && var0.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1
+         ? DataResult.error(() -> "Item cannot be both damageable and stackable")
+         : DataResult.success(Unit.INSTANCE);
    }
 
    public static Optional<ItemStack> parse(HolderLookup.Provider var0, Tag var1) {
@@ -307,7 +339,7 @@ public final class ItemStack implements DataComponentHolder {
       } else {
          Item var4 = this.getItem();
          InteractionResult var5 = var4.useOn(var1);
-         if (var2 != null && var5.shouldAwardStats()) {
+         if (var2 != null && var5.indicateItemUse()) {
             var2.awardStat(Stats.ITEM_USED.get(var4));
          }
 
@@ -446,8 +478,10 @@ public final class ItemStack implements DataComponentHolder {
 
    public void hurtEnemy(LivingEntity var1, Player var2) {
       Item var3 = this.getItem();
+      ItemEnchantments var4 = this.getEnchantments();
       if (var3.hurtEnemy(this, var1, var2)) {
          var2.awardStat(Stats.ITEM_USED.get(var3));
+         EnchantmentHelper.doPostItemStackHurtEffects(var2, var1, var4);
       }
    }
 
@@ -618,6 +652,18 @@ public final class ItemStack implements DataComponentHolder {
       return this.components.remove(var1);
    }
 
+   public void applyComponentsAndValidate(DataComponentPatch var1) {
+      DataComponentPatch var2 = this.components.asPatch();
+      this.components.applyPatch(var1);
+      Optional var3 = validateStrict(this).error();
+      if (var3.isPresent()) {
+         LOGGER.error("Failed to apply component patch '{}' to item: '{}'", var1, ((Error)var3.get()).message());
+         this.components.restorePatch(var2);
+      } else {
+         this.getItem().verifyComponentsAfterLoad(this);
+      }
+   }
+
    public void applyComponents(DataComponentPatch var1) {
       this.components.applyPatch(var1);
       this.getItem().verifyComponentsAfterLoad(this);
@@ -638,10 +684,10 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   private <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Consumer<Component> var2, TooltipFlag var3) {
-      TooltipProvider var4 = this.get(var1);
-      if (var4 != null) {
-         var4.addToTooltip(var2, var3);
+   private <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Item.TooltipContext var2, Consumer<Component> var3, TooltipFlag var4) {
+      TooltipProvider var5 = this.get(var1);
+      if (var5 != null) {
+         var5.addToTooltip(var2, var3, var4);
       }
    }
 
@@ -668,13 +714,13 @@ public final class ItemStack implements DataComponentHolder {
             this.getItem().appendHoverText(this, var1, var4, var3);
          }
 
-         this.addToTooltip(DataComponents.TRIM, var10, var3);
-         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var10, var3);
-         this.addToTooltip(DataComponents.ENCHANTMENTS, var10, var3);
-         this.addToTooltip(DataComponents.DYED_COLOR, var10, var3);
-         this.addToTooltip(DataComponents.LORE, var10, var3);
+         this.addToTooltip(DataComponents.TRIM, var1, var10, var3);
+         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var10, var3);
+         this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var10, var3);
+         this.addToTooltip(DataComponents.DYED_COLOR, var1, var10, var3);
+         this.addToTooltip(DataComponents.LORE, var1, var10, var3);
          this.addAttributeTooltips(var10, var2);
-         this.addToTooltip(DataComponents.UNBREAKABLE, var10, var3);
+         this.addToTooltip(DataComponents.UNBREAKABLE, var1, var10, var3);
          AdventureModePredicate var7 = this.get(DataComponents.CAN_BREAK);
          if (var7 != null && var7.showInTooltip()) {
             var10.accept(CommonComponents.EMPTY);

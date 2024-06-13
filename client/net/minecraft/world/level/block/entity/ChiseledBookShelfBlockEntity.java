@@ -149,7 +149,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
    @Override
    protected void collectImplicitComponents(DataComponentMap.Builder var1) {
       super.collectImplicitComponents(var1);
-      var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(this.items));
+      var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.items));
    }
 
    @Override

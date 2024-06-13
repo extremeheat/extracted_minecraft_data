@@ -70,7 +70,7 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       Fireworks var5 = var1.get(DataComponents.FIREWORKS);
       if (var5 != null) {
-         var5.addToTooltip(var3::add, var4);
+         var5.addToTooltip(var2, var3::add, var4);
       }
    }
 
@@ -83,8 +83,8 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
    public ProjectileItem.DispenseConfig createDispenseConfig() {
       return ProjectileItem.DispenseConfig.builder()
          .positionFunction(FireworkRocketItem::getEntityPokingOutOfBlockPos)
-         .uncertainty(0.5F)
-         .power(1.0F)
+         .uncertainty(1.0F)
+         .power(0.5F)
          .overrideDispenseEvent(1004)
          .build();
    }

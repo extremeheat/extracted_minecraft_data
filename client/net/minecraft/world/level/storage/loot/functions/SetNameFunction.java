@@ -49,7 +49,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetNameFunction> getType() {
       return LootItemFunctions.SET_NAME;
    }
 
@@ -98,8 +98,8 @@ public class SetNameFunction extends LootItemConditionalFunction {
       public static final Codec<SetNameFunction.Target> CODEC = StringRepresentable.fromEnum(SetNameFunction.Target::values);
       private final String name;
 
-      private Target(String var3) {
-         this.name = var3;
+      private Target(final String nullxx) {
+         this.name = nullxx;
       }
 
       @Override

@@ -68,6 +68,10 @@ public final class FeatureFlagSet {
       }
    }
 
+   public boolean intersects(FeatureFlagSet var1) {
+      return this.universe != null && var1.universe != null && this.universe == var1.universe ? (this.mask & var1.mask) != 0L : false;
+   }
+
    public FeatureFlagSet join(FeatureFlagSet var1) {
       if (this.universe == null) {
          return var1;
@@ -77,6 +81,17 @@ public final class FeatureFlagSet {
          throw new IllegalArgumentException("Mismatched set elements: '" + this.universe + "' != '" + var1.universe + "'");
       } else {
          return new FeatureFlagSet(this.universe, this.mask | var1.mask);
+      }
+   }
+
+   public FeatureFlagSet subtract(FeatureFlagSet var1) {
+      if (this.universe == null || var1.universe == null) {
+         return this;
+      } else if (this.universe != var1.universe) {
+         throw new IllegalArgumentException("Mismatched set elements: '" + this.universe + "' != '" + var1.universe + "'");
+      } else {
+         long var2 = this.mask & ~var1.mask;
+         return var2 == 0L ? EMPTY : new FeatureFlagSet(this.universe, var2);
       }
    }
 

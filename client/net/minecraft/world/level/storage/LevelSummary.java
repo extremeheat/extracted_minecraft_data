@@ -198,10 +198,10 @@ public class LevelSummary implements Comparable<LevelSummary> {
       private final boolean severe;
       private final String translationKey;
 
-      private BackupStatus(boolean var3, boolean var4, String var5) {
-         this.shouldBackup = var3;
-         this.severe = var4;
-         this.translationKey = var5;
+      private BackupStatus(final boolean nullxx, final boolean nullxxx, final String nullxxxx) {
+         this.shouldBackup = nullxx;
+         this.severe = nullxxx;
+         this.translationKey = nullxxxx;
       }
 
       public boolean shouldBackup() {

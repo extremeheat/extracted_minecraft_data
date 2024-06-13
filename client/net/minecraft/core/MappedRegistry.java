@@ -77,6 +77,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          return MappedRegistry.this.getTags().map(Pair::getSecond);
       }
    };
+   private final Object tagAdditionLock = new Object();
 
    public MappedRegistry(ResourceKey<? extends Registry<T>> var1, Lifecycle var2) {
       this(var1, var2, false);
@@ -270,14 +271,22 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    @Override
    public HolderSet.Named<T> getOrCreateTag(TagKey<T> var1) {
       HolderSet.Named var2 = this.tags.get(var1);
-      if (var2 == null) {
-         var2 = this.createTag(var1);
-         IdentityHashMap var3 = new IdentityHashMap<>(this.tags);
-         var3.put(var1, var2);
-         this.tags = var3;
+      if (var2 != null) {
+         return var2;
+      } else {
+         synchronized (this.tagAdditionLock) {
+            var2 = this.tags.get(var1);
+            if (var2 != null) {
+               return var2;
+            } else {
+               var2 = this.createTag(var1);
+               IdentityHashMap var4 = new IdentityHashMap<>(this.tags);
+               var4.put(var1, var2);
+               this.tags = var4;
+               return var2;
+            }
+         }
       }
-
-      return var2;
    }
 
    private HolderSet.Named<T> createTag(TagKey<T> var1) {
@@ -353,13 +362,13 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       IdentityHashMap var2 = new IdentityHashMap();
       this.byKey.values().forEach(var1x -> var2.put(var1x, new ArrayList()));
       var1.forEach((var2x, var3x) -> {
-         for (Holder var5 : var3x) {
-            if (!var5.canSerializeIn(this.asLookup())) {
-               throw new IllegalStateException("Can't create named set " + var2x + " containing value " + var5 + " from outside registry " + this);
+         for (Holder var5x : var3x) {
+            if (!var5x.canSerializeIn(this.asLookup())) {
+               throw new IllegalStateException("Can't create named set " + var2x + " containing value " + var5x + " from outside registry " + this);
             }
 
-            if (!(var5 instanceof Holder.Reference var6)) {
-               throw new IllegalStateException("Found direct holder " + var5 + " value in tag " + var2x);
+            if (!(var5x instanceof Holder.Reference var6)) {
+               throw new IllegalStateException("Found direct holder " + var5x + " value in tag " + var2x);
             }
 
             ((List)var2.get(var6)).add(var2x);
@@ -374,10 +383,12 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          );
       }
 
-      IdentityHashMap var4 = new IdentityHashMap<>(this.tags);
-      var1.forEach((var2x, var3x) -> var4.computeIfAbsent(var2x, this::createTag).bind((List<Holder<T>>)var3x));
-      var2.forEach(Holder.Reference::bindTags);
-      this.tags = var4;
+      synchronized (this.tagAdditionLock) {
+         IdentityHashMap var5 = new IdentityHashMap<>(this.tags);
+         var1.forEach((var2x, var3x) -> var5.computeIfAbsent(var2x, this::createTag).bind((List<Holder<T>>)var3x));
+         var2.forEach(Holder.Reference::bindTags);
+         this.tags = var5;
+      }
    }
 
    @Override

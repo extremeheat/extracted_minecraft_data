@@ -17,23 +17,20 @@ public class SetFireworksFunction extends LootItemConditionalFunction {
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  FireworkExplosion.CODEC.sizeLimitedListOf(256).optionalFieldOf("explosions", List.of()).forGetter(var0x -> var0x.explosions),
-                  ListOperation.codec(256).forGetter(var0x -> var0x.explosionsOperation),
+                  ListOperation.StandAlone.codec(FireworkExplosion.CODEC, 256).optionalFieldOf("explosions").forGetter(var0x -> var0x.explosions),
                   ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("flight_duration").forGetter(var0x -> var0x.flightDuration)
                )
             )
             .apply(var0, SetFireworksFunction::new)
    );
    public static final Fireworks DEFAULT_VALUE = new Fireworks(0, List.of());
-   private final List<FireworkExplosion> explosions;
-   private final ListOperation explosionsOperation;
+   private final Optional<ListOperation.StandAlone<FireworkExplosion>> explosions;
    private final Optional<Integer> flightDuration;
 
-   protected SetFireworksFunction(List<LootItemCondition> var1, List<FireworkExplosion> var2, ListOperation var3, Optional<Integer> var4) {
+   protected SetFireworksFunction(List<LootItemCondition> var1, Optional<ListOperation.StandAlone<FireworkExplosion>> var2, Optional<Integer> var3) {
       super(var1);
       this.explosions = var2;
-      this.explosionsOperation = var3;
-      this.flightDuration = var4;
+      this.flightDuration = var3;
    }
 
    @Override
@@ -43,12 +40,14 @@ public class SetFireworksFunction extends LootItemConditionalFunction {
    }
 
    private Fireworks apply(Fireworks var1) {
-      List var2 = this.explosionsOperation.apply(var1.explosions(), this.explosions, 256);
-      return new Fireworks(this.flightDuration.orElseGet(var1::flightDuration), var2);
+      return new Fireworks(
+         this.flightDuration.orElseGet(var1::flightDuration),
+         this.explosions.<List<FireworkExplosion>>map(var1x -> var1x.apply(var1.explosions())).orElse(var1.explosions())
+      );
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetFireworksFunction> getType() {
       return LootItemFunctions.SET_FIREWORKS;
    }
 }

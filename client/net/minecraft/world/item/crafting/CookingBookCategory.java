@@ -10,8 +10,8 @@ public enum CookingBookCategory implements StringRepresentable {
    public static final StringRepresentable.EnumCodec<CookingBookCategory> CODEC = StringRepresentable.fromEnum(CookingBookCategory::values);
    private final String name;
 
-   private CookingBookCategory(String var3) {
-      this.name = var3;
+   private CookingBookCategory(final String nullxx) {
+      this.name = nullxx;
    }
 
    @Override

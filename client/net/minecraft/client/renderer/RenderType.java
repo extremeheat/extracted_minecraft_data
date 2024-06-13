@@ -1413,8 +1413,8 @@ public abstract class RenderType extends RenderStateShard {
 
       private final String name;
 
-      private OutlineProperty(String var3) {
-         this.name = var3;
+      private OutlineProperty(final String nullxx) {
+         this.name = nullxx;
       }
 
       @Override

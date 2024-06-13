@@ -349,8 +349,8 @@ public class ServerPackManager {
       @Nullable
       final PackLoadFeedback.FinalResult serverResponse;
 
-      private RemovalReason(@Nullable PackLoadFeedback.FinalResult var3) {
-         this.serverResponse = var3;
+      private RemovalReason(@Nullable final PackLoadFeedback.FinalResult nullxx) {
+         this.serverResponse = nullxx;
       }
    }
 

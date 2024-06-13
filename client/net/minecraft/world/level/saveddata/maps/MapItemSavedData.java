@@ -473,9 +473,9 @@ public class MapItemSavedData extends SavedData {
       private int tick;
       public int step;
 
-      HoldingPlayer(Player var2) {
+      HoldingPlayer(final Player nullx) {
          super();
-         this.player = var2;
+         this.player = nullx;
       }
 
       private MapItemSavedData.MapPatch createPatch() {

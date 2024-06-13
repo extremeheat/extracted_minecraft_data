@@ -718,10 +718,10 @@ public class Panda extends Animal {
       private final String name;
       private final boolean isRecessive;
 
-      private Gene(int var3, String var4, boolean var5) {
-         this.id = var3;
-         this.name = var4;
-         this.isRecessive = var5;
+      private Gene(final int nullxx, final String nullxxx, final boolean nullxxxx) {
+         this.id = nullxx;
+         this.name = nullxxx;
+         this.isRecessive = nullxxxx;
       }
 
       public int getId() {

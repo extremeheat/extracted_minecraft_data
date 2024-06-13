@@ -276,6 +276,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
@@ -328,6 +329,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private Set<ResourceKey<Level>> levels;
    private final RegistryAccess.Frozen registryAccess;
    private final FeatureFlagSet enabledFeatures;
+   private final PotionBrewing potionBrewing;
    @Nullable
    private LocalChatSession chatSession;
    private SignedMessageChain.Encoder signedMessageEncoder = SignedMessageChain.Encoder.UNSIGNED;
@@ -356,6 +358,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       if (var3.chatState() != null) {
          var1.gui.getChat().restoreState(var3.chatState());
       }
+
+      this.potionBrewing = PotionBrewing.bootstrap(this.enabledFeatures);
    }
 
    public ClientSuggestionProvider getSuggestionsProvider() {
@@ -405,7 +409,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var6,
          var2.seed()
       );
-      this.minecraft.setLevel(this.level);
+      this.minecraft.setLevel(this.level, ReceivingLevelScreen.Reason.OTHER);
       if (this.minecraft.player == null) {
          this.minecraft.player = this.minecraft.gameMode.createPlayer(this.level, new StatsCounter(), new ClientRecipeBook());
          this.minecraft.player.setYRot(-180.0F);
@@ -421,7 +425,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.player.input = new KeyboardInput(this.minecraft.options);
       this.minecraft.gameMode.adjustPlayer(this.minecraft.player);
       this.minecraft.cameraEntity = this.minecraft.player;
-      this.startWaitingForNewLevel(this.minecraft.player, this.level);
+      this.startWaitingForNewLevel(this.minecraft.player, this.level, ReceivingLevelScreen.Reason.OTHER);
       this.minecraft.player.setReducedDebugInfo(var1.reducedDebugInfo());
       this.minecraft.player.setShowDeathScreen(var1.showDeathScreen());
       this.minecraft.player.setDoLimitedCrafting(var1.doLimitedCrafting());
@@ -799,7 +803,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   this.serverData,
                   this.postDisconnectScreen,
                   this.serverCookies,
-                  var2
+                  var2,
+                  this.strictErrorHandling
                )
             )
          );
@@ -1071,26 +1076,29 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       ResourceKey var3 = var2.dimension();
       Holder var4 = var2.dimensionType();
       LocalPlayer var5 = this.minecraft.player;
-      if (var3 != var5.level().dimension()) {
-         Map var6 = this.level.getAllMapData();
-         boolean var7 = var2.isDebug();
-         boolean var8 = var2.isFlat();
-         ClientLevel.ClientLevelData var9 = new ClientLevel.ClientLevelData(this.levelData.getDifficulty(), this.levelData.isHardcore(), var8);
-         this.levelData = var9;
+      ResourceKey var6 = var5.level().dimension();
+      boolean var7 = var3 != var6;
+      ReceivingLevelScreen.Reason var8 = this.determineLevelLoadingReason(var5.isDeadOrDying(), var3, var6);
+      if (var7) {
+         Map var9 = this.level.getAllMapData();
+         boolean var10 = var2.isDebug();
+         boolean var11 = var2.isFlat();
+         ClientLevel.ClientLevelData var12 = new ClientLevel.ClientLevelData(this.levelData.getDifficulty(), this.levelData.isHardcore(), var11);
+         this.levelData = var12;
          this.level = new ClientLevel(
             this,
-            var9,
+            var12,
             var3,
             var4,
             this.serverChunkRadius,
             this.serverSimulationDistance,
             this.minecraft::getProfiler,
             this.minecraft.levelRenderer,
-            var7,
+            var10,
             var2.seed()
          );
-         this.level.addMapData(var6);
-         this.minecraft.setLevel(this.level);
+         this.level.addMapData(var9);
+         this.minecraft.setLevel(this.level, var8);
       }
 
       this.minecraft.cameraEntity = null;
@@ -1098,48 +1106,61 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var5.closeContainer();
       }
 
-      LocalPlayer var10;
+      LocalPlayer var13;
       if (var1.shouldKeep((byte)2)) {
-         var10 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook(), var5.isShiftKeyDown(), var5.isSprinting());
+         var13 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook(), var5.isShiftKeyDown(), var5.isSprinting());
       } else {
-         var10 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook());
+         var13 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook());
       }
 
-      this.startWaitingForNewLevel(var10, this.level);
-      var10.setId(var5.getId());
-      this.minecraft.player = var10;
-      if (var3 != var5.level().dimension()) {
+      this.startWaitingForNewLevel(var13, this.level, var8);
+      var13.setId(var5.getId());
+      this.minecraft.player = var13;
+      if (var7) {
          this.minecraft.getMusicManager().stopPlaying();
       }
 
-      this.minecraft.cameraEntity = var10;
+      this.minecraft.cameraEntity = var13;
       if (var1.shouldKeep((byte)2)) {
-         List var11 = var5.getEntityData().getNonDefaultValues();
-         if (var11 != null) {
-            var10.getEntityData().assignValues(var11);
+         List var14 = var5.getEntityData().getNonDefaultValues();
+         if (var14 != null) {
+            var13.getEntityData().assignValues(var14);
          }
       }
 
       if (var1.shouldKeep((byte)1)) {
-         var10.getAttributes().assignValues(var5.getAttributes());
+         var13.getAttributes().assignValues(var5.getAttributes());
       }
 
-      var10.resetPos();
-      this.level.addEntity(var10);
-      var10.setYRot(-180.0F);
-      var10.input = new KeyboardInput(this.minecraft.options);
-      this.minecraft.gameMode.adjustPlayer(var10);
-      var10.setReducedDebugInfo(var5.isReducedDebugInfo());
-      var10.setShowDeathScreen(var5.shouldShowDeathScreen());
-      var10.setLastDeathLocation(var2.lastDeathLocation());
-      var10.setPortalCooldown(var2.portalCooldown());
-      var10.spinningEffectIntensity = var5.spinningEffectIntensity;
-      var10.oSpinningEffectIntensity = var5.oSpinningEffectIntensity;
+      var13.resetPos();
+      this.level.addEntity(var13);
+      var13.setYRot(-180.0F);
+      var13.input = new KeyboardInput(this.minecraft.options);
+      this.minecraft.gameMode.adjustPlayer(var13);
+      var13.setReducedDebugInfo(var5.isReducedDebugInfo());
+      var13.setShowDeathScreen(var5.shouldShowDeathScreen());
+      var13.setLastDeathLocation(var2.lastDeathLocation());
+      var13.setPortalCooldown(var2.portalCooldown());
+      var13.spinningEffectIntensity = var5.spinningEffectIntensity;
+      var13.oSpinningEffectIntensity = var5.oSpinningEffectIntensity;
       if (this.minecraft.screen instanceof DeathScreen || this.minecraft.screen instanceof DeathScreen.TitleConfirmScreen) {
          this.minecraft.setScreen(null);
       }
 
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
+   }
+
+   private ReceivingLevelScreen.Reason determineLevelLoadingReason(boolean var1, ResourceKey<Level> var2, ResourceKey<Level> var3) {
+      ReceivingLevelScreen.Reason var4 = ReceivingLevelScreen.Reason.OTHER;
+      if (!var1) {
+         if (var2 == Level.NETHER || var3 == Level.NETHER) {
+            var4 = ReceivingLevelScreen.Reason.NETHER_PORTAL;
+         } else if (var2 == Level.END || var3 == Level.END) {
+            var4 = ReceivingLevelScreen.Reason.END_PORTAL;
+         }
+      }
+
+      return var4;
    }
 
    @Override
@@ -1314,7 +1335,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else if (var3 == ClientboundGameEventPacket.WIN_GAME) {
          if (var5 == 0) {
             this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-            this.minecraft.setScreen(new ReceivingLevelScreen(() -> false));
+            this.minecraft.setScreen(new ReceivingLevelScreen(() -> false, ReceivingLevelScreen.Reason.END_PORTAL));
          } else if (var5 == 1) {
             this.minecraft.setScreen(new WinScreen(true, () -> {
                this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
@@ -1367,9 +1388,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
    }
 
-   private void startWaitingForNewLevel(LocalPlayer var1, ClientLevel var2) {
+   private void startWaitingForNewLevel(LocalPlayer var1, ClientLevel var2, ReceivingLevelScreen.Reason var3) {
       this.levelLoadStatusManager = new LevelLoadStatusManager(var1, var2, this.minecraft.levelRenderer);
-      this.minecraft.setScreen(new ReceivingLevelScreen(this.levelLoadStatusManager::levelReady));
+      this.minecraft.setScreen(new ReceivingLevelScreen(this.levelLoadStatusManager::levelReady, var3));
    }
 
    @Override
@@ -1438,7 +1459,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       this.recipeManager.replaceRecipes(var1.getRecipes());
       ClientRecipeBook var2 = this.minecraft.player.getRecipeBook();
-      var2.setupCollections(this.recipeManager.getRecipes(), this.minecraft.level.registryAccess());
+      var2.setupCollections(this.recipeManager.getOrderedRecipes(), this.minecraft.level.registryAccess());
       this.minecraft.populateSearchTree(SearchRegistry.RECIPE_COLLECTIONS, var2.getCollections());
    }
 
@@ -2364,5 +2385,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public Scoreboard scoreboard() {
       return this.scoreboard;
+   }
+
+   public PotionBrewing potionBrewing() {
+      return this.potionBrewing;
    }
 }

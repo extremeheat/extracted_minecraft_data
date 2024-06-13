@@ -125,9 +125,9 @@ public class ReportReasonSelectionScreen extends Screen {
    }
 
    public class ReasonSelectionList extends ObjectSelectionList<ReportReasonSelectionScreen.ReasonSelectionList.Entry> {
-      public ReasonSelectionList(Minecraft var2) {
+      public ReasonSelectionList(final Minecraft nullx) {
          super(
-            var2,
+            nullx,
             ReportReasonSelectionScreen.this.width,
             ReportReasonSelectionScreen.this.listHeight(),
             ReportReasonSelectionScreen.this.layout.getHeaderHeight(),
@@ -157,9 +157,9 @@ public class ReportReasonSelectionScreen extends Screen {
       public class Entry extends ObjectSelectionList.Entry<ReportReasonSelectionScreen.ReasonSelectionList.Entry> {
          final ReportReason reason;
 
-         public Entry(ReportReason var2) {
+         public Entry(final ReportReason nullx) {
             super();
-            this.reason = var2;
+            this.reason = nullx;
          }
 
          @Override

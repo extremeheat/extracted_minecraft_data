@@ -157,7 +157,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
          var1.set(DataComponents.LOCK, this.lockKey);
       }
 
-      var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(this.getItems()));
+      var1.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.getItems()));
    }
 
    @Override

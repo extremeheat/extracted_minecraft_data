@@ -98,8 +98,8 @@ public class GateBehavior<E extends LivingEntity> implements BehaviorControl<E> 
 
       private final Consumer<ShufflingList<?>> consumer;
 
-      private OrderPolicy(Consumer<ShufflingList<?>> var3) {
-         this.consumer = var3;
+      private OrderPolicy(final Consumer<ShufflingList<?>> nullxx) {
+         this.consumer = nullxx;
       }
 
       public void apply(ShufflingList<?> var1) {

@@ -265,7 +265,7 @@ public class Explosion {
                      var13.hurt(this.damageSource, this.damageCalculator.getEntityDamageAmount(this, var13));
                   }
 
-                  double var48 = (1.0 - var40) * (double)getSeenPercent(var11, var13) * (double)this.damageCalculator.getKnockbackMultiplier();
+                  double var48 = (1.0 - var40) * (double)getSeenPercent(var11, var13) * (double)this.damageCalculator.getKnockbackMultiplier(var13);
                   double var26;
                   if (var13 instanceof LivingEntity var28) {
                      var26 = ProtectionEnchantment.getExplosionKnockbackAfterDampener(var28, var48);

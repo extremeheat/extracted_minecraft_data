@@ -66,6 +66,20 @@ public class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry>
       return null;
    }
 
+   public void applyUnsavedChanges() {
+      for (OptionsList.Entry var2 : this.children()) {
+         if (var2 instanceof OptionsList.OptionEntry) {
+            OptionsList.OptionEntry var3 = (OptionsList.OptionEntry)var2;
+
+            for (AbstractWidget var5 : var3.options.values()) {
+               if (var5 instanceof OptionInstance.OptionInstanceSliderButton var6) {
+                  var6.applyUnsavedValue();
+               }
+            }
+         }
+      }
+   }
+
    public Optional<GuiEventListener> getMouseOver(double var1, double var3) {
       for (OptionsList.Entry var6 : this.children()) {
          for (GuiEventListener var8 : var6.children()) {

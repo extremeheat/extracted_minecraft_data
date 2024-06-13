@@ -46,7 +46,7 @@ public class EnchantedItemTrigger extends SimpleCriterionTrigger<EnchantedItemTr
       }
 
       public boolean matches(ItemStack var1, int var2) {
-         return this.item.isPresent() && !this.item.get().matches(var1) ? false : this.levels.matches(var2);
+         return this.item.isPresent() && !this.item.get().test(var1) ? false : this.levels.matches(var2);
       }
    }
 }

@@ -53,14 +53,22 @@ public enum Direction implements StringRepresentable {
       .sorted(Comparator.comparingInt(var0 -> var0.data2d))
       .toArray(Direction[]::new);
 
-   private Direction(int var3, int var4, int var5, String var6, Direction.AxisDirection var7, Direction.Axis var8, Vec3i var9) {
-      this.data3d = var3;
-      this.data2d = var5;
-      this.oppositeIndex = var4;
-      this.name = var6;
-      this.axis = var8;
-      this.axisDirection = var7;
-      this.normal = var9;
+   private Direction(
+      final int nullxx,
+      final int nullxxx,
+      final int nullxxxx,
+      final String nullxxxxx,
+      final Direction.AxisDirection nullxxxxxx,
+      final Direction.Axis nullxxxxxxx,
+      final Vec3i nullxxxxxxxx
+   ) {
+      this.data3d = nullxx;
+      this.data2d = nullxxxx;
+      this.oppositeIndex = nullxxx;
+      this.name = nullxxxxx;
+      this.axis = nullxxxxxxx;
+      this.axisDirection = nullxxxxxx;
+      this.normal = nullxxxxxxxx;
    }
 
    public static Direction[] orderedByNearest(Entity var0) {
@@ -406,8 +414,8 @@ public enum Direction implements StringRepresentable {
       public static final StringRepresentable.EnumCodec<Direction.Axis> CODEC = StringRepresentable.fromEnum(Direction.Axis::values);
       private final String name;
 
-      Axis(String var3) {
-         this.name = var3;
+      Axis(final String nullxx) {
+         this.name = nullxx;
       }
 
       @Nullable
@@ -464,9 +472,9 @@ public enum Direction implements StringRepresentable {
       private final int step;
       private final String name;
 
-      private AxisDirection(int var3, String var4) {
-         this.step = var3;
-         this.name = var4;
+      private AxisDirection(final int nullxx, final String nullxxx) {
+         this.step = nullxx;
+         this.name = nullxxx;
       }
 
       public int getStep() {
@@ -494,9 +502,9 @@ public enum Direction implements StringRepresentable {
       private final Direction[] faces;
       private final Direction.Axis[] axis;
 
-      private Plane(Direction[] var3, Direction.Axis[] var4) {
-         this.faces = var3;
-         this.axis = var4;
+      private Plane(final Direction[] nullxx, final Direction.Axis[] nullxxx) {
+         this.faces = nullxx;
+         this.axis = nullxxx;
       }
 
       public Direction getRandomDirection(RandomSource var1) {

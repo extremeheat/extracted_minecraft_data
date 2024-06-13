@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.commands.arguments.blocks.BlockInput;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 
 public class StructureUtils {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final int DEFAULT_Y_SEARCH_RADIUS = 10;
    public static final String DEFAULT_TEST_STRUCTURES_DIR = "gameteststructures";
    public static String testStructuresDir = "gameteststructures";
 
@@ -130,7 +132,7 @@ public class StructureUtils {
    }
 
    public static void encaseStructure(AABB var0, ServerLevel var1, boolean var2) {
-      BlockPos var3 = BlockPos.containing(var0.minX, var0.minY, var0.minZ).offset(-1, 1, -1);
+      BlockPos var3 = BlockPos.containing(var0.minX, var0.minY, var0.minZ).offset(-1, 0, -1);
       BlockPos var4 = BlockPos.containing(var0.maxX, var0.maxY, var0.maxZ);
       BlockPos.betweenClosedStream(var3, var4).forEach(var4x -> {
          boolean var5 = var4x.getX() == var3.getX() || var4x.getX() == var4.getX() || var4x.getZ() == var3.getZ() || var4x.getZ() == var4.getZ();
@@ -142,7 +144,7 @@ public class StructureUtils {
    }
 
    public static void removeBarriers(AABB var0, ServerLevel var1) {
-      BlockPos var2 = BlockPos.containing(var0.minX, var0.minY, var0.minZ).offset(-1, 1, -1);
+      BlockPos var2 = BlockPos.containing(var0.minX, var0.minY, var0.minZ).offset(-1, 0, -1);
       BlockPos var3 = BlockPos.containing(var0.maxX, var0.maxY, var0.maxZ);
       BlockPos.betweenClosedStream(var2, var3).forEach(var3x -> {
          boolean var4 = var3x.getX() == var2.getX() || var3x.getX() == var3.getX() || var3x.getZ() == var2.getZ() || var3x.getZ() == var3.getZ();
@@ -190,8 +192,17 @@ public class StructureUtils {
       return findStructureBlocks(var0, var1, var2).min(var3);
    }
 
+   public static Stream<BlockPos> findStructureByTestFunction(BlockPos var0, int var1, ServerLevel var2, String var3) {
+      return findStructureBlocks(var0, var1, var2)
+         .map(var1x -> (StructureBlockEntity)var2.getBlockEntity(var1x))
+         .filter(Objects::nonNull)
+         .filter(var1x -> Objects.equals(var1x.getStructureName(), var3))
+         .map(BlockEntity::getBlockPos)
+         .map(BlockPos::immutable);
+   }
+
    public static Stream<BlockPos> findStructureBlocks(BlockPos var0, int var1, ServerLevel var2) {
-      BoundingBox var3 = new BoundingBox(var0).inflatedBy(var1);
+      BoundingBox var3 = getBoundingBoxAtGround(var0, var1, var2);
       return BlockPos.betweenClosedStream(var3).filter(var1x -> var2.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK)).map(BlockPos::immutable);
    }
 
@@ -210,11 +221,9 @@ public class StructureUtils {
       }
    }
 
-   public static Stream<BlockPos> radiusStructureBlockPos(int var0, Vec3 var1, ServerLevel var2) {
-      BlockPos var3 = BlockPos.containing(var1.x, (double)var2.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, BlockPos.containing(var1)).getY(), var1.z);
-      BlockPos var4 = var3.offset(-var0, 0, -var0);
-      BlockPos var5 = var3.offset(var0, 0, var0);
-      return BlockPos.betweenClosedStream(var4, var5).filter(var1x -> var2.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK));
+   private static BoundingBox getBoundingBoxAtGround(BlockPos var0, int var1, ServerLevel var2) {
+      BlockPos var3 = BlockPos.containing((double)var0.getX(), (double)var2.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var0).getY(), (double)var0.getZ());
+      return new BoundingBox(var3).inflatedBy(var1, 10, var1);
    }
 
    public static Stream<BlockPos> lookedAtStructureBlockPos(BlockPos var0, Entity var1, ServerLevel var2) {

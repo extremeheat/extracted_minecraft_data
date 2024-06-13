@@ -95,7 +95,7 @@ public class ServerConnectionListener {
                                  var2.addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this.getServer()));
                               }
 
-                              Connection.configureSerialization(var2, PacketFlow.SERVERBOUND, null);
+                              Connection.configureSerialization(var2, PacketFlow.SERVERBOUND, false, null);
                               int var3 = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
                               Object var4 = var3 > 0 ? new RateKickingConnection(var3) : new Connection(PacketFlow.SERVERBOUND);
                               ServerConnectionListener.this.connections.add((Connection)var4);

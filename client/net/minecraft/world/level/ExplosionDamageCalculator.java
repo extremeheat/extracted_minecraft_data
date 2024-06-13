@@ -24,7 +24,7 @@ public class ExplosionDamageCalculator {
       return true;
    }
 
-   public float getKnockbackMultiplier() {
+   public float getKnockbackMultiplier(Entity var1) {
       return 1.0F;
    }
 

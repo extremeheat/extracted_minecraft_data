@@ -245,12 +245,12 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       @Nullable
       private Component statusIconTooltip;
 
-      protected OnlineServerEntry(JoinMultiplayerScreen var2, ServerData var3) {
+      protected OnlineServerEntry(final JoinMultiplayerScreen nullx, final ServerData nullxx) {
          super();
-         this.screen = var2;
-         this.serverData = var3;
+         this.screen = nullx;
+         this.serverData = nullxx;
          this.minecraft = Minecraft.getInstance();
-         this.icon = FaviconTexture.forServer(this.minecraft.getTextureManager(), var3.ip);
+         this.icon = FaviconTexture.forServer(this.minecraft.getTextureManager(), nullxx.ip);
          this.refreshStatus();
       }
 

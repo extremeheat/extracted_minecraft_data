@@ -22,11 +22,13 @@ public enum AdvancementWidgetType {
    private final ResourceLocation challengeFrameSprite;
    private final ResourceLocation goalFrameSprite;
 
-   private AdvancementWidgetType(ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, ResourceLocation var6) {
-      this.boxSprite = var3;
-      this.taskFrameSprite = var4;
-      this.challengeFrameSprite = var5;
-      this.goalFrameSprite = var6;
+   private AdvancementWidgetType(
+      final ResourceLocation nullxx, final ResourceLocation nullxxx, final ResourceLocation nullxxxx, final ResourceLocation nullxxxxx
+   ) {
+      this.boxSprite = nullxx;
+      this.taskFrameSprite = nullxxx;
+      this.challengeFrameSprite = nullxxxx;
+      this.goalFrameSprite = nullxxxxx;
    }
 
    public ResourceLocation boxSprite() {

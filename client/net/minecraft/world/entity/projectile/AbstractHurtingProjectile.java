@@ -19,7 +19,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractHurtingProjectile extends Projectile {
-   public static final double DEFLECTION_SCALE = 0.05;
+   public static final double ATTACK_DEFLECTION_SCALE = 0.1;
+   public static final double BOUNCE_DEFLECTION_SCALE = 0.05;
    public double xPower;
    public double yPower;
    public double zPower;
@@ -78,7 +79,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
          HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
          if (var2.getType() != HitResult.Type.MISS) {
-            this.hitOrDeflect(var2);
+            this.hitTargetOrDeflectSelf(var2);
          }
 
          this.checkInsideBlocks();
@@ -109,6 +110,11 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       } else {
          this.discard();
       }
+   }
+
+   @Override
+   public boolean hurt(DamageSource var1, float var2) {
+      return !this.isInvulnerableTo(var1);
    }
 
    @Override
@@ -148,40 +154,6 @@ public abstract class AbstractHurtingProjectile extends Projectile {
             this.xPower = var2.getDouble(0);
             this.yPower = var2.getDouble(1);
             this.zPower = var2.getDouble(2);
-         }
-      }
-   }
-
-   @Override
-   public boolean isPickable() {
-      return true;
-   }
-
-   @Override
-   public float getPickRadius() {
-      return 1.0F;
-   }
-
-   @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else {
-         this.markHurt();
-         Entity var3 = var1.getEntity();
-         if (var3 != null) {
-            if (!this.level().isClientSide) {
-               Vec3 var4 = var3.getLookAngle();
-               this.setDeltaMovement(var4);
-               this.xPower = var4.x * 0.1;
-               this.yPower = var4.y * 0.1;
-               this.zPower = var4.z * 0.1;
-               this.setOwner(var3);
-            }
-
-            return true;
-         } else {
-            return false;
          }
       }
    }
@@ -229,9 +201,16 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    }
 
    @Override
-   public void onDeflection() {
-      this.xPower = this.getDeltaMovement().x * 0.05;
-      this.yPower = this.getDeltaMovement().y * 0.05;
-      this.zPower = this.getDeltaMovement().z * 0.05;
+   protected void onDeflection(@Nullable Entity var1, boolean var2) {
+      super.onDeflection(var1, var2);
+      if (var2) {
+         this.xPower = this.getDeltaMovement().x * 0.1;
+         this.yPower = this.getDeltaMovement().y * 0.1;
+         this.zPower = this.getDeltaMovement().z * 0.1;
+      } else {
+         this.xPower = this.getDeltaMovement().x * 0.05;
+         this.yPower = this.getDeltaMovement().y * 0.05;
+         this.zPower = this.getDeltaMovement().z * 0.05;
+      }
    }
 }

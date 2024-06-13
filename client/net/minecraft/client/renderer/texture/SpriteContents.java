@@ -186,11 +186,11 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       private final int frameRowSize;
       private final boolean interpolateFrames;
 
-      AnimatedTexture(List<SpriteContents.FrameInfo> var2, int var3, boolean var4) {
+      AnimatedTexture(final List<SpriteContents.FrameInfo> nullx, final int nullxx, final boolean nullxxx) {
          super();
-         this.frames = var2;
-         this.frameRowSize = var3;
-         this.interpolateFrames = var4;
+         this.frames = nullx;
+         this.frameRowSize = nullxx;
+         this.interpolateFrames = nullxxx;
       }
 
       int getFrameX(int var1) {
@@ -296,10 +296,10 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       @Nullable
       private final SpriteContents.InterpolationData interpolationData;
 
-      Ticker(SpriteContents.AnimatedTexture var2, @Nullable SpriteContents.InterpolationData var3) {
+      Ticker(final SpriteContents.AnimatedTexture nullx, @Nullable final SpriteContents.InterpolationData nullxx) {
          super();
-         this.animationInfo = var2;
-         this.interpolationData = var3;
+         this.animationInfo = nullx;
+         this.interpolationData = nullxx;
       }
 
       @Override

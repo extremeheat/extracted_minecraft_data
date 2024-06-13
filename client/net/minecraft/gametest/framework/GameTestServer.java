@@ -59,6 +59,7 @@ public class GameTestServer extends MinecraftServer {
    private static final GameRules TEST_GAME_RULES = Util.make(new GameRules(), var0 -> {
       var0.getRule(GameRules.RULE_DOMOBSPAWNING).set(false, null);
       var0.getRule(GameRules.RULE_WEATHER_CYCLE).set(false, null);
+      var0.getRule(GameRules.RULE_RANDOMTICKING).set(0, null);
    });
    private static final WorldOptions WORLD_OPTIONS = new WorldOptions(0L, false, false);
    @Nullable

@@ -495,9 +495,9 @@ public class Commands {
       final boolean includeIntegrated;
       final boolean includeDedicated;
 
-      private CommandSelection(boolean var3, boolean var4) {
-         this.includeIntegrated = var3;
-         this.includeDedicated = var4;
+      private CommandSelection(final boolean nullxx, final boolean nullxxx) {
+         this.includeIntegrated = nullxx;
+         this.includeDedicated = nullxxx;
       }
    }
 

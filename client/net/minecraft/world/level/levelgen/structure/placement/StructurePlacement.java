@@ -165,9 +165,9 @@ public abstract class StructurePlacement {
       private final String name;
       private final StructurePlacement.FrequencyReducer reducer;
 
-      private FrequencyReductionMethod(String var3, StructurePlacement.FrequencyReducer var4) {
-         this.name = var3;
-         this.reducer = var4;
+      private FrequencyReductionMethod(final String nullxx, final StructurePlacement.FrequencyReducer nullxxx) {
+         this.name = nullxx;
+         this.reducer = nullxxx;
       }
 
       public boolean shouldGenerate(long var1, int var3, int var4, int var5, float var6) {

@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -2903,6 +2904,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return this.passengers;
    }
 
+   public Optional<Entity> getPassengerClosestTo(Vec3 var1) {
+      return this.getPassengers().stream().filter(var1x -> var1x != this).min(Comparator.comparingDouble(var1x -> var1.distanceToSqr(var1x.position())));
+   }
+
    @Nullable
    public Entity getFirstPassenger() {
       return this.passengers.isEmpty() ? null : (Entity)this.passengers.get(0);
@@ -3448,9 +3453,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       final boolean sounds;
       final boolean events;
 
-      private MovementEmission(boolean var3, boolean var4) {
-         this.sounds = var3;
-         this.events = var4;
+      private MovementEmission(final boolean nullxx, final boolean nullxxx) {
+         this.sounds = nullxx;
+         this.events = nullxxx;
       }
 
       public boolean emitsAnything() {
@@ -3476,9 +3481,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       private final boolean destroy;
       private final boolean save;
 
-      private RemovalReason(boolean var3, boolean var4) {
-         this.destroy = var3;
-         this.save = var4;
+      private RemovalReason(final boolean nullxx, final boolean nullxxx) {
+         this.destroy = nullxx;
+         this.save = nullxxx;
       }
 
       public boolean shouldDestroy() {

@@ -124,7 +124,7 @@ public class PeriodicNotificationManager
 
    public static record Notification(long delay, long period, String title, String message) {
 
-      public Notification(long delay, long period, String title, String message) {
+      public Notification(final long delay, final long period, final String title, final String message) {
          super();
          this.delay = delay != 0L ? delay : period;
          this.period = period;

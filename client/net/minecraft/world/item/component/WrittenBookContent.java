@@ -25,7 +25,6 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    implements BookContent<Component, WrittenBookContent> {
    public static final WrittenBookContent EMPTY = new WrittenBookContent(Filterable.passThrough(""), "", 0, List.of(), true);
    public static final int PAGE_LENGTH = 32767;
-   public static final int MAX_PAGES = 100;
    public static final int TITLE_LENGTH = 16;
    public static final int TITLE_MAX_LENGTH = 32;
    public static final int MAX_GENERATION = 3;
@@ -49,7 +48,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
       WrittenBookContent::author,
       ByteBufCodecs.VAR_INT,
       WrittenBookContent::generation,
-      Filterable.streamCodec(ComponentSerialization.STREAM_CODEC).apply(ByteBufCodecs.list(100)),
+      Filterable.streamCodec(ComponentSerialization.STREAM_CODEC).apply(ByteBufCodecs.list()),
       WrittenBookContent::pages,
       ByteBufCodecs.BOOL,
       WrittenBookContent::resolved,
@@ -58,11 +57,15 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
 
    public WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) {
       super();
-      this.title = title;
-      this.author = author;
-      this.generation = generation;
-      this.pages = pages;
-      this.resolved = resolved;
+      if (generation >= 0 && generation <= 3) {
+         this.title = title;
+         this.author = author;
+         this.generation = generation;
+         this.pages = pages;
+         this.resolved = resolved;
+      } else {
+         throw new IllegalArgumentException("Generation was " + generation + ", but must be between 0 and 3");
+      }
    }
 
    private static Codec<Filterable<Component>> pageCodec(Codec<Component> var0) {
@@ -70,7 +73,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    }
 
    public static Codec<List<Filterable<Component>>> pagesCodec(Codec<Component> var0) {
-      return pageCodec(var0).sizeLimitedListOf(100);
+      return pageCodec(var0).listOf();
    }
 
    @Nullable

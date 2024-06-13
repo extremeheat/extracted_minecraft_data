@@ -200,28 +200,28 @@ public class RealmsBackupScreen extends RealmsScreen {
       private Button restoreButton;
       private final List<AbstractWidget> children = new ArrayList<>();
 
-      public Entry(Backup var2) {
+      public Entry(final Backup nullx) {
          super();
-         this.backup = var2;
-         this.populateChangeList(var2);
-         if (!var2.changeList.isEmpty()) {
+         this.backup = nullx;
+         this.populateChangeList(nullx);
+         if (!nullx.changeList.isEmpty()) {
             this.restoreButton = Button.builder(
                   RealmsBackupScreen.HAS_CHANGES_TOOLTIP,
-                  var1x -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, this.backup))
+                  var1 -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, this.backup))
                )
                .width(8 + RealmsBackupScreen.this.font.width(RealmsBackupScreen.HAS_CHANGES_TOOLTIP))
                .createNarration(
-                  var1x -> CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", this.getShortBackupDate()), var1x.get())
+                  var1 -> CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", this.getShortBackupDate()), var1.get())
                )
                .build();
             this.children.add(this.restoreButton);
          }
 
          if (!RealmsBackupScreen.this.serverData.expired) {
-            this.changesButton = Button.builder(RealmsBackupScreen.RESTORE_TOOLTIP, var1x -> this.restoreClicked())
+            this.changesButton = Button.builder(RealmsBackupScreen.RESTORE_TOOLTIP, var1 -> this.restoreClicked())
                .width(8 + RealmsBackupScreen.this.font.width(RealmsBackupScreen.HAS_CHANGES_TOOLTIP))
                .createNarration(
-                  var1x -> CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", this.getShortBackupDate()), var1x.get())
+                  var1 -> CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", this.getShortBackupDate()), var1.get())
                )
                .build();
             this.children.add(this.changesButton);

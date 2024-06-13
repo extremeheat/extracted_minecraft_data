@@ -32,6 +32,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -366,7 +367,10 @@ public class ServerPlayer extends Player {
       }
 
       this.spawnExtraParticlesOnFall = var1.getBoolean("spawn_extra_particles_on_fall");
-      BlockPos.CODEC.parse(NbtOps.INSTANCE, var1.get("raid_omen_position")).resultOrPartial(LOGGER::error).ifPresent(var1x -> this.raidOmenPosition = var1x);
+      Tag var3 = var1.get("raid_omen_position");
+      if (var3 != null) {
+         BlockPos.CODEC.parse(NbtOps.INSTANCE, var3).resultOrPartial(LOGGER::error).ifPresent(var1x -> this.raidOmenPosition = var1x);
+      }
    }
 
    @Override
