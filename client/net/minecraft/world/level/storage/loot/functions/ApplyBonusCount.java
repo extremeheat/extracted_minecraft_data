@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
@@ -38,12 +37,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    );
    public static final MapCodec<ApplyBonusCount> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
-            .and(
-               var0.group(
-                  BuiltInRegistries.ENCHANTMENT.holderByNameCodec().fieldOf("enchantment").forGetter(var0x -> var0x.enchantment),
-                  FORMULA_CODEC.forGetter(var0x -> var0x.formula)
-               )
-            )
+            .and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter(var0x -> var0x.enchantment), FORMULA_CODEC.forGetter(var0x -> var0x.formula)))
             .apply(var0, ApplyBonusCount::new)
    );
    private final Holder<Enchantment> enchantment;
@@ -69,7 +63,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    public ItemStack run(ItemStack var1, LootContext var2) {
       ItemStack var3 = var2.getParamOrNull(LootContextParams.TOOL);
       if (var3 != null) {
-         int var4 = EnchantmentHelper.getItemEnchantmentLevel(this.enchantment.value(), var3);
+         int var4 = EnchantmentHelper.getItemEnchantmentLevel(this.enchantment, var3);
          int var5 = this.formula.calculateNewCount(var2.getRandom(), var1.getCount(), var4);
          var1.setCount(var5);
       }
@@ -77,54 +71,34 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       return var1;
    }
 
-   public static LootItemConditionalFunction.Builder<?> addBonusBinomialDistributionCount(Enchantment var0, float var1, int var2) {
-      return simpleBuilder(var3 -> new ApplyBonusCount(var3, var0.builtInRegistryHolder(), new ApplyBonusCount.BinomialWithBonusCount(var2, var1)));
+   public static LootItemConditionalFunction.Builder<?> addBonusBinomialDistributionCount(Holder<Enchantment> var0, float var1, int var2) {
+      return simpleBuilder(var3 -> new ApplyBonusCount(var3, var0, new ApplyBonusCount.BinomialWithBonusCount(var2, var1)));
    }
 
-   public static LootItemConditionalFunction.Builder<?> addOreBonusCount(Enchantment var0) {
-      return simpleBuilder(var1 -> new ApplyBonusCount(var1, var0.builtInRegistryHolder(), new ApplyBonusCount.OreDrops()));
+   public static LootItemConditionalFunction.Builder<?> addOreBonusCount(Holder<Enchantment> var0) {
+      return simpleBuilder(var1 -> new ApplyBonusCount(var1, var0, new ApplyBonusCount.OreDrops()));
    }
 
-   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Enchantment var0) {
-      return simpleBuilder(var1 -> new ApplyBonusCount(var1, var0.builtInRegistryHolder(), new ApplyBonusCount.UniformBonusCount(1)));
+   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0) {
+      return simpleBuilder(var1 -> new ApplyBonusCount(var1, var0, new ApplyBonusCount.UniformBonusCount(1)));
    }
 
-   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Enchantment var0, int var1) {
-      return simpleBuilder(var2 -> new ApplyBonusCount(var2, var0.builtInRegistryHolder(), new ApplyBonusCount.UniformBonusCount(var1)));
+   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0, int var1) {
+      return simpleBuilder(var2 -> new ApplyBonusCount(var2, var0, new ApplyBonusCount.UniformBonusCount(var1)));
    }
 
-   static record BinomialWithBonusCount(int extraRounds, float probability) implements ApplyBonusCount.Formula {
-      private static final Codec<ApplyBonusCount.BinomialWithBonusCount> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  Codec.INT.fieldOf("extra").forGetter(ApplyBonusCount.BinomialWithBonusCount::extraRounds),
-                  Codec.FLOAT.fieldOf("probability").forGetter(ApplyBonusCount.BinomialWithBonusCount::probability)
-               )
-               .apply(var0, ApplyBonusCount.BinomialWithBonusCount::new)
-      );
-      public static final ApplyBonusCount.FormulaType TYPE = new ApplyBonusCount.FormulaType(new ResourceLocation("binomial_with_bonus_count"), CODEC);
-
-      BinomialWithBonusCount(int extraRounds, float probability) {
-         super();
-         this.extraRounds = extraRounds;
-         this.probability = probability;
-      }
-
-      @Override
-      public int calculateNewCount(RandomSource var1, int var2, int var3) {
-         for (int var4 = 0; var4 < var3 + this.extraRounds; var4++) {
-            if (var1.nextFloat() < this.probability) {
-               var2++;
-            }
-         }
-
-         return var2;
-      }
-
-      @Override
-      public ApplyBonusCount.FormulaType getType() {
-         return TYPE;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface Formula {
       int calculateNewCount(RandomSource var1, int var2, int var3);
@@ -132,17 +106,22 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       ApplyBonusCount.FormulaType getType();
    }
 
-   static record FormulaType(ResourceLocation id, Codec<? extends ApplyBonusCount.Formula> codec) {
-      FormulaType(ResourceLocation id, Codec<? extends ApplyBonusCount.Formula> codec) {
-         super();
-         this.id = id;
-         this.codec = codec;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static record OreDrops() implements ApplyBonusCount.Formula {
       public static final Codec<ApplyBonusCount.OreDrops> CODEC = Codec.unit(ApplyBonusCount.OreDrops::new);
-      public static final ApplyBonusCount.FormulaType TYPE = new ApplyBonusCount.FormulaType(new ResourceLocation("ore_drops"), CODEC);
+      public static final ApplyBonusCount.FormulaType TYPE = new ApplyBonusCount.FormulaType(ResourceLocation.withDefaultNamespace("ore_drops"), CODEC);
 
       OreDrops() {
          super();
@@ -168,26 +147,16 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
    }
 
-   static record UniformBonusCount(int bonusMultiplier) implements ApplyBonusCount.Formula {
-      public static final Codec<ApplyBonusCount.UniformBonusCount> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(Codec.INT.fieldOf("bonusMultiplier").forGetter(ApplyBonusCount.UniformBonusCount::bonusMultiplier))
-               .apply(var0, ApplyBonusCount.UniformBonusCount::new)
-      );
-      public static final ApplyBonusCount.FormulaType TYPE = new ApplyBonusCount.FormulaType(new ResourceLocation("uniform_bonus_count"), CODEC);
-
-      UniformBonusCount(int bonusMultiplier) {
-         super();
-         this.bonusMultiplier = bonusMultiplier;
-      }
-
-      @Override
-      public int calculateNewCount(RandomSource var1, int var2, int var3) {
-         return var2 + var1.nextInt(this.bonusMultiplier * var3 + 1);
-      }
-
-      @Override
-      public ApplyBonusCount.FormulaType getType() {
-         return TYPE;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

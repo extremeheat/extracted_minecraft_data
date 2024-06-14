@@ -24,6 +24,7 @@ import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -31,9 +32,9 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class IglooPieces {
    public static final int GENERATION_HEIGHT = 90;
-   static final ResourceLocation STRUCTURE_LOCATION_IGLOO = new ResourceLocation("igloo/top");
-   private static final ResourceLocation STRUCTURE_LOCATION_LADDER = new ResourceLocation("igloo/middle");
-   private static final ResourceLocation STRUCTURE_LOCATION_LABORATORY = new ResourceLocation("igloo/bottom");
+   static final ResourceLocation STRUCTURE_LOCATION_IGLOO = ResourceLocation.withDefaultNamespace("igloo/top");
+   private static final ResourceLocation STRUCTURE_LOCATION_LADDER = ResourceLocation.withDefaultNamespace("igloo/middle");
+   private static final ResourceLocation STRUCTURE_LOCATION_LABORATORY = ResourceLocation.withDefaultNamespace("igloo/bottom");
    static final Map<ResourceLocation, BlockPos> PIVOTS = ImmutableMap.of(
       STRUCTURE_LOCATION_IGLOO, new BlockPos(3, 5, 5), STRUCTURE_LOCATION_LADDER, new BlockPos(1, 3, 1), STRUCTURE_LOCATION_LABORATORY, new BlockPos(3, 6, 7)
    );
@@ -72,7 +73,8 @@ public class IglooPieces {
             .setRotation(var0)
             .setMirror(Mirror.NONE)
             .setRotationPivot(IglooPieces.PIVOTS.get(var1))
-            .addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+            .addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK)
+            .setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
       }
 
       private static BlockPos makePosition(ResourceLocation var0, BlockPos var1, int var2) {
@@ -98,7 +100,7 @@ public class IglooPieces {
 
       @Override
       public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         ResourceLocation var8 = new ResourceLocation(this.templateName);
+         ResourceLocation var8 = ResourceLocation.parse(this.templateName);
          StructurePlaceSettings var9 = makeSettings(this.placeSettings.getRotation(), var8);
          BlockPos var10 = IglooPieces.OFFSETS.get(var8);
          BlockPos var11 = this.templatePosition.offset(StructureTemplate.calculateRelativePosition(var9, new BlockPos(3 - var10.getX(), 0, -var10.getZ())));

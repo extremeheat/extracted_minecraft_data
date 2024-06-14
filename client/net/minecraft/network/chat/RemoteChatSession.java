@@ -1,53 +1,13 @@
 package net.minecraft.network.chat;
 
-import com.mojang.authlib.GameProfile;
-import java.time.Duration;
-import java.util.UUID;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.util.SignatureValidator;
-import net.minecraft.world.entity.player.ProfilePublicKey;
-
-public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKey) {
-   public RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKey) {
-      super();
-      this.sessionId = sessionId;
-      this.profilePublicKey = profilePublicKey;
-   }
-
-   public SignedMessageValidator createMessageValidator(Duration var1) {
-      return new SignedMessageValidator.KeyBased(this.profilePublicKey.createSignatureValidator(), () -> this.profilePublicKey.data().hasExpired(var1));
-   }
-
-   public SignedMessageChain.Decoder createMessageDecoder(UUID var1) {
-      return new SignedMessageChain(var1, this.sessionId).decoder(this.profilePublicKey);
-   }
-
-   public RemoteChatSession.Data asData() {
-      return new RemoteChatSession.Data(this.sessionId, this.profilePublicKey.data());
-   }
-
-   public boolean hasExpired() {
-      return this.profilePublicKey.data().hasExpired();
-   }
-
-   public static record Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
-      public Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
-         super();
-         this.sessionId = sessionId;
-         this.profilePublicKey = profilePublicKey;
-      }
-
-      public static RemoteChatSession.Data read(FriendlyByteBuf var0) {
-         return new RemoteChatSession.Data(var0.readUUID(), new ProfilePublicKey.Data(var0));
-      }
-
-      public static void write(FriendlyByteBuf var0, RemoteChatSession.Data var1) {
-         var0.writeUUID(var1.sessionId);
-         var1.profilePublicKey.write(var0);
-      }
-
-      public RemoteChatSession validate(GameProfile var1, SignatureValidator var2) throws ProfilePublicKey.ValidationException {
-         return new RemoteChatSession(this.sessionId, ProfilePublicKey.createValidated(var2, var1.getId(), this.profilePublicKey));
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

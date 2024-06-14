@@ -1,49 +1,13 @@
 package net.minecraft.client.multiplayer;
 
-import com.mojang.authlib.GameProfile;
-import java.util.Map;
-import javax.annotation.Nullable;
-import net.minecraft.client.gui.components.ChatComponent;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.flag.FeatureFlagSet;
-
-public record CommonListenerCookie(
-   GameProfile localGameProfile,
-   WorldSessionTelemetryManager telemetryManager,
-   RegistryAccess.Frozen receivedRegistries,
-   FeatureFlagSet enabledFeatures,
-   @Nullable String serverBrand,
-   @Nullable ServerData serverData,
-   @Nullable Screen postDisconnectScreen,
-   Map<ResourceLocation, byte[]> serverCookies,
-   @Nullable ChatComponent.State chatState,
-   @Deprecated(forRemoval = true) boolean strictErrorHandling
-) {
-   public CommonListenerCookie(
-      GameProfile localGameProfile,
-      WorldSessionTelemetryManager telemetryManager,
-      RegistryAccess.Frozen receivedRegistries,
-      FeatureFlagSet enabledFeatures,
-      @Nullable String serverBrand,
-      @Nullable ServerData serverData,
-      @Nullable Screen postDisconnectScreen,
-      Map<ResourceLocation, byte[]> serverCookies,
-      @Nullable ChatComponent.State chatState,
-      @Deprecated(forRemoval = true) boolean strictErrorHandling
-   ) {
-      super();
-      this.localGameProfile = localGameProfile;
-      this.telemetryManager = telemetryManager;
-      this.receivedRegistries = receivedRegistries;
-      this.enabledFeatures = enabledFeatures;
-      this.serverBrand = serverBrand;
-      this.serverData = serverData;
-      this.postDisconnectScreen = postDisconnectScreen;
-      this.serverCookies = serverCookies;
-      this.chatState = chatState;
-      this.strictErrorHandling = strictErrorHandling;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

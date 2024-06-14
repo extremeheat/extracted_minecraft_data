@@ -1,28 +1,13 @@
 package net.minecraft.network.syncher;
 
-public record EntityDataAccessor<T>(int id, EntityDataSerializer<T> serializer) {
-   public EntityDataAccessor(int id, EntityDataSerializer<T> serializer) {
-      super();
-      this.id = id;
-      this.serializer = serializer;
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         EntityDataAccessor var2 = (EntityDataAccessor)var1;
-         return this.id == var2.id;
-      } else {
-         return false;
-      }
-   }
-
-   public int hashCode() {
-      return this.id;
-   }
-
-   public String toString() {
-      return "<entity data: " + this.id + ">";
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

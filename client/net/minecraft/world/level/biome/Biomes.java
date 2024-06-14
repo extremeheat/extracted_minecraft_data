@@ -75,6 +75,6 @@ public abstract class Biomes {
    }
 
    private static ResourceKey<Biome> register(String var0) {
-      return ResourceKey.create(Registries.BIOME, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.BIOME, ResourceLocation.withDefaultNamespace(var0));
    }
 }

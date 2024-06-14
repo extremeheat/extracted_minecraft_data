@@ -15,12 +15,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerModel<Shulker>> {
-   private static final ResourceLocation DEFAULT_TEXTURE_LOCATION = new ResourceLocation(
-      "textures/" + Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION.texture().getPath() + ".png"
-   );
+   private static final ResourceLocation DEFAULT_TEXTURE_LOCATION = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION
+      .texture()
+      .withPath(var0 -> "textures/" + var0 + ".png");
    private static final ResourceLocation[] TEXTURE_LOCATION = Sheets.SHULKER_TEXTURE_LOCATION
       .stream()
-      .map(var0 -> new ResourceLocation("textures/" + var0.texture().getPath() + ".png"))
+      .map(var0 -> var0.texture().withPath(var0x -> "textures/" + var0x + ".png"))
       .toArray(ResourceLocation[]::new);
 
    public ShulkerRenderer(EntityRendererProvider.Context var1) {

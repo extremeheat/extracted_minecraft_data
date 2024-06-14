@@ -1,16 +1,14 @@
 package com.mojang.blaze3d.vertex;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
 
 public class Tesselator {
    private static final int MAX_BYTES = 786432;
-   private final BufferBuilder builder;
+   private final ByteBufferBuilder buffer;
    @Nullable
    private static Tesselator instance;
 
    public static void init() {
-      RenderSystem.assertOnGameThreadOrInit();
       if (instance != null) {
          throw new IllegalStateException("Tesselator has already been initialized");
       } else {
@@ -19,7 +17,6 @@ public class Tesselator {
    }
 
    public static Tesselator getInstance() {
-      RenderSystem.assertOnGameThreadOrInit();
       if (instance == null) {
          throw new IllegalStateException("Tesselator has not been initialized");
       } else {
@@ -29,18 +26,18 @@ public class Tesselator {
 
    public Tesselator(int var1) {
       super();
-      this.builder = new BufferBuilder(var1);
+      this.buffer = new ByteBufferBuilder(var1);
    }
 
    public Tesselator() {
       this(786432);
    }
 
-   public void end() {
-      BufferUploader.drawWithShader(this.builder.end());
+   public BufferBuilder begin(VertexFormat.Mode var1, VertexFormat var2) {
+      return new BufferBuilder(this.buffer, var1, var2);
    }
 
-   public BufferBuilder getBuilder() {
-      return this.builder;
+   public void clear() {
+      this.buffer.clear();
    }
 }

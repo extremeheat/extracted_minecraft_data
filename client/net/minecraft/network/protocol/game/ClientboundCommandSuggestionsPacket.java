@@ -1,80 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import com.mojang.brigadier.context.StringRange;
-import com.mojang.brigadier.suggestion.Suggestion;
-import com.mojang.brigadier.suggestion.Suggestions;
-import java.util.List;
-import java.util.Optional;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-
-public record ClientboundCommandSuggestionsPacket(int id, int start, int length, List<ClientboundCommandSuggestionsPacket.Entry> suggestions)
-   implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandSuggestionsPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.VAR_INT,
-      ClientboundCommandSuggestionsPacket::id,
-      ByteBufCodecs.VAR_INT,
-      ClientboundCommandSuggestionsPacket::start,
-      ByteBufCodecs.VAR_INT,
-      ClientboundCommandSuggestionsPacket::length,
-      ClientboundCommandSuggestionsPacket.Entry.STREAM_CODEC.apply(ByteBufCodecs.list()),
-      ClientboundCommandSuggestionsPacket::suggestions,
-      ClientboundCommandSuggestionsPacket::new
-   );
-
-   public ClientboundCommandSuggestionsPacket(int var1, Suggestions var2) {
-      this(
-         var1,
-         var2.getRange().getStart(),
-         var2.getRange().getLength(),
-         var2.getList()
-            .stream()
-            .map(var0 -> new ClientboundCommandSuggestionsPacket.Entry(var0.getText(), Optional.ofNullable(var0.getTooltip()).map(ComponentUtils::fromMessage)))
-            .toList()
-      );
-   }
-
-   public ClientboundCommandSuggestionsPacket(int id, int start, int length, List<ClientboundCommandSuggestionsPacket.Entry> suggestions) {
-      super();
-      this.id = id;
-      this.start = start;
-      this.length = length;
-      this.suggestions = suggestions;
-   }
-
-   @Override
-   public PacketType<ClientboundCommandSuggestionsPacket> type() {
-      return GamePacketTypes.CLIENTBOUND_COMMAND_SUGGESTIONS;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleCommandSuggestions(this);
-   }
-
-   public Suggestions toSuggestions() {
-      StringRange var1 = StringRange.between(this.start, this.start + this.length);
-      return new Suggestions(var1, this.suggestions.stream().map(var1x -> new Suggestion(var1, var1x.text(), var1x.tooltip().orElse(null))).toList());
-   }
-
-   public static record Entry(String text, Optional<Component> tooltip) {
-      public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandSuggestionsPacket.Entry> STREAM_CODEC = StreamCodec.composite(
-         ByteBufCodecs.STRING_UTF8,
-         ClientboundCommandSuggestionsPacket.Entry::text,
-         ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC,
-         ClientboundCommandSuggestionsPacket.Entry::tooltip,
-         ClientboundCommandSuggestionsPacket.Entry::new
-      );
-
-      public Entry(String text, Optional<Component> tooltip) {
-         super();
-         this.text = text;
-         this.tooltip = tooltip;
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

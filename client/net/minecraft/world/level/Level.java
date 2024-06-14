@@ -33,6 +33,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
@@ -78,9 +79,9 @@ import net.minecraft.world.scores.Scoreboard;
 
 public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC = ResourceKey.codec(Registries.DIMENSION);
-   public static final ResourceKey<Level> OVERWORLD = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("overworld"));
-   public static final ResourceKey<Level> NETHER = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("the_nether"));
-   public static final ResourceKey<Level> END = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("the_end"));
+   public static final ResourceKey<Level> OVERWORLD = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("overworld"));
+   public static final ResourceKey<Level> NETHER = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_nether"));
+   public static final ResourceKey<Level> END = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_end"));
    public static final int MAX_LEVEL_SIZE = 30000000;
    public static final int LONG_PARTICLE_CLIP_RANGE = 512;
    public static final int SHORT_PARTICLE_CLIP_RANGE = 32;
@@ -396,6 +397,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
    }
 
+   public void playSound(@Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11) {
+      this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
+   }
+
    public void playSound(@Nullable Player var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
       this.playSeededSound(var1, var2, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var3), var4, var5, var6, this.threadSafeRandom.nextLong());
    }
@@ -594,7 +599,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          ? this.getDestroyType(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)
          : Explosion.BlockInteraction.KEEP;
          case TNT -> this.getDestroyType(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY);
-         case BLOW -> Explosion.BlockInteraction.TRIGGER_BLOCK;
+         case TRIGGER -> Explosion.BlockInteraction.TRIGGER_BLOCK;
       };
       Explosion var18 = new Explosion(this, var1, var2, var3, var4, var6, var8, var10, var11, var17, var14, var15, var16);
       var18.explode();
@@ -1000,14 +1005,23 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract PotionBrewing potionBrewing();
 
-   public static enum ExplosionInteraction {
-      NONE,
-      BLOCK,
-      MOB,
-      TNT,
-      BLOW;
+   public static enum ExplosionInteraction implements StringRepresentable {
+      NONE("none"),
+      BLOCK("block"),
+      MOB("mob"),
+      TNT("tnt"),
+      TRIGGER("trigger");
 
-      private ExplosionInteraction() {
+      public static final Codec<Level.ExplosionInteraction> CODEC = StringRepresentable.fromEnum(Level.ExplosionInteraction::values);
+      private final String id;
+
+      private ExplosionInteraction(String nullxx) {
+         this.id = nullxx;
+      }
+
+      @Override
+      public String getSerializedName() {
+         return this.id;
       }
    }
 }

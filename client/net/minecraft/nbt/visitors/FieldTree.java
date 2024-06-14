@@ -1,34 +1,13 @@
 package net.minecraft.nbt.visitors;
 
-import java.util.HashMap;
-import java.util.Map;
-import net.minecraft.nbt.TagType;
-
-public record FieldTree(int depth, Map<String, TagType<?>> selectedFields, Map<String, FieldTree> fieldsToRecurse) {
-   private FieldTree(int var1) {
-      this(var1, new HashMap<>(), new HashMap<>());
-   }
-
-   public FieldTree(int depth, Map<String, TagType<?>> selectedFields, Map<String, FieldTree> fieldsToRecurse) {
-      super();
-      this.depth = depth;
-      this.selectedFields = selectedFields;
-      this.fieldsToRecurse = fieldsToRecurse;
-   }
-
-   public static FieldTree createRoot() {
-      return new FieldTree(1);
-   }
-
-   public void addEntry(FieldSelector var1) {
-      if (this.depth <= var1.path().size()) {
-         this.fieldsToRecurse.computeIfAbsent(var1.path().get(this.depth - 1), var1x -> new FieldTree(this.depth + 1)).addEntry(var1);
-      } else {
-         this.selectedFields.put(var1.name(), var1.type());
-      }
-   }
-
-   public boolean isSelected(TagType<?> var1, String var2) {
-      return var1.equals(this.selectedFields().get(var2));
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

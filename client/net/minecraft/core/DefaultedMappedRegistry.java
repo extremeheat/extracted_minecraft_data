@@ -14,7 +14,7 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
 
    public DefaultedMappedRegistry(String var1, ResourceKey<? extends Registry<T>> var2, Lifecycle var3, boolean var4) {
       super(var2, var3, var4);
-      this.defaultKey = new ResourceLocation(var1);
+      this.defaultKey = ResourceLocation.parse(var1);
    }
 
    @Override
@@ -50,6 +50,11 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
    @Override
    public Optional<T> getOptional(@Nullable ResourceLocation var1) {
       return Optional.ofNullable(super.get(var1));
+   }
+
+   @Override
+   public Optional<Holder.Reference<T>> getAny() {
+      return Optional.ofNullable(this.defaultValue);
    }
 
    @Nonnull

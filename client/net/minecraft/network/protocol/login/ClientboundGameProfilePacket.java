@@ -1,39 +1,13 @@
 package net.minecraft.network.protocol.login;
 
-import com.mojang.authlib.GameProfile;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-
-public record ClientboundGameProfilePacket(GameProfile gameProfile, @Deprecated(forRemoval = true) boolean strictErrorHandling)
-   implements Packet<ClientLoginPacketListener> {
-   public static final StreamCodec<ByteBuf, ClientboundGameProfilePacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.GAME_PROFILE,
-      ClientboundGameProfilePacket::gameProfile,
-      ByteBufCodecs.BOOL,
-      ClientboundGameProfilePacket::strictErrorHandling,
-      ClientboundGameProfilePacket::new
-   );
-
-   public ClientboundGameProfilePacket(GameProfile gameProfile, @Deprecated(forRemoval = true) boolean strictErrorHandling) {
-      super();
-      this.gameProfile = gameProfile;
-      this.strictErrorHandling = strictErrorHandling;
-   }
-
-   @Override
-   public PacketType<ClientboundGameProfilePacket> type() {
-      return LoginPacketTypes.CLIENTBOUND_GAME_PROFILE;
-   }
-
-   public void handle(ClientLoginPacketListener var1) {
-      var1.handleGameProfile(this);
-   }
-
-   @Override
-   public boolean isTerminal() {
-      return true;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

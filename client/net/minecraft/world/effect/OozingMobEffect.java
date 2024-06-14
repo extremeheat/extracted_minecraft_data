@@ -24,8 +24,8 @@ class OozingMobEffect extends MobEffect {
    }
 
    @VisibleForTesting
-   protected static int numberOfSlimesToSpawn(int var0, int var1, int var2) {
-      return Mth.clamp(0, var0 - var1, var2);
+   protected static int numberOfSlimesToSpawn(int var0, OozingMobEffect.NearbySlimes var1, int var2) {
+      return var0 < 1 ? var2 : Mth.clamp(0, var0 - var1.count(var0), var2);
    }
 
    @Override
@@ -34,11 +34,9 @@ class OozingMobEffect extends MobEffect {
          int var4 = this.spawnedCount.applyAsInt(var1.getRandom());
          Level var5 = var1.level();
          int var6 = var5.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
-         ArrayList var7 = new ArrayList();
-         var5.getEntities(EntityType.SLIME, var1.getBoundingBox().inflate(2.0), var1x -> var1x != var1, var7, var6);
-         int var8 = numberOfSlimesToSpawn(var6, var7.size(), var4);
+         int var7 = numberOfSlimesToSpawn(var6, OozingMobEffect.NearbySlimes.closeTo(var1), var4);
 
-         for (int var9 = 0; var9 < var8; var9++) {
+         for (int var8 = 0; var8 < var7; var8++) {
             this.spawnSlimeOffspring(var1.level(), var1.getX(), var1.getY() + 0.5, var1.getZ());
          }
       }
@@ -50,6 +48,19 @@ class OozingMobEffect extends MobEffect {
          var8.setSize(2, true);
          var8.moveTo(var2, var4, var6, var1.getRandom().nextFloat() * 360.0F, 0.0F);
          var1.addFreshEntity(var8);
+      }
+   }
+
+   @FunctionalInterface
+   protected interface NearbySlimes {
+      int count(int var1);
+
+      static OozingMobEffect.NearbySlimes closeTo(LivingEntity var0) {
+         return var1 -> {
+            ArrayList var2 = new ArrayList();
+            var0.level().getEntities(EntityType.SLIME, var0.getBoundingBox().inflate(2.0), var1x -> var1x != var0, var2, var1);
+            return var2.size();
+         };
       }
    }
 }

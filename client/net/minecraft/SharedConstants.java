@@ -1,42 +1,37 @@
 package net.minecraft;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.DSL.TypeReference;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import java.time.Duration;
-import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.commands.BrigadierExceptions;
-import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 
 public class SharedConstants {
    @Deprecated
    public static final boolean SNAPSHOT = false;
    @Deprecated
-   public static final int WORLD_VERSION = 3839;
+   public static final int WORLD_VERSION = 3953;
    @Deprecated
    public static final String SERIES = "main";
    @Deprecated
-   public static final String VERSION_STRING = "1.20.6";
+   public static final String VERSION_STRING = "1.21";
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 766;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 767;
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 192;
-   public static final int SNBT_NAG_VERSION = 3798;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 203;
+   public static final int SNBT_NAG_VERSION = 3937;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = false;
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 32;
+   public static final int RESOURCE_PACK_FORMAT = 34;
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 41;
+   public static final int DATA_PACK_FORMAT = 48;
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
    public static final String DATA_VERSION_TAG = "DataVersion";
-   public static final boolean USE_NEW_RENDERSYSTEM = false;
-   public static final boolean MULTITHREADED_RENDERING = false;
    public static final boolean FIX_TNT_DUPE = false;
    public static final boolean FIX_SAND_DUPE = false;
    public static final boolean USE_DEBUG_FEATURES = false;
@@ -49,6 +44,7 @@ public class SharedConstants {
    public static final boolean DEBUG_WATER = false;
    public static final boolean DEBUG_HEIGHTMAP = false;
    public static final boolean DEBUG_COLLISION = false;
+   public static final boolean DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES = false;
    public static final boolean DEBUG_SUPPORT_BLOCKS = false;
    public static final boolean DEBUG_SHAPES = false;
    public static final boolean DEBUG_NEIGHBORSUPDATE = false;
@@ -113,7 +109,6 @@ public class SharedConstants {
    public static final boolean COMMAND_STACK_TRACES = false;
    public static final boolean DEBUG_WORLD_RECREATE = false;
    public static final boolean DEBUG_SHOW_SERVER_DEBUG_VALUES = false;
-   public static final boolean DEBUG_STORE_CHUNK_STACKTRACES = false;
    public static final boolean DEBUG_FEATURE_COUNT = false;
    public static final boolean DEBUG_RESOURCE_GENERATION_OVERRIDE = false;
    public static final boolean DEBUG_FORCE_TELEMETRY = false;
@@ -124,7 +119,6 @@ public class SharedConstants {
    public static final boolean USE_DEVONLY = false;
    public static boolean CHECK_DATA_FIXER_SCHEMA = true;
    public static boolean IS_RUNNING_IN_IDE;
-   public static Set<TypeReference> DATA_FIX_TYPES_TO_OPTIMIZE = Set.of();
    public static final int WORLD_RESOLUTION = 16;
    public static final int MAX_CHAT_LENGTH = 256;
    public static final int MAX_USER_INPUT_COMMAND_LENGTH = 32500;
@@ -171,17 +165,13 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 766;
+      return 767;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {
       int var1 = var0.getMinBlockX();
       int var2 = var0.getMinBlockZ();
       return !debugGenerateSquareTerrainWithoutNoise ? false : var1 > 8192 || var1 < 0 || var2 > 1024 || var2 < 0;
-   }
-
-   public static void enableDataFixerOptimizations() {
-      DATA_FIX_TYPES_TO_OPTIMIZE = DataFixTypes.TYPES_FOR_LEVEL_LIST;
    }
 
    static {

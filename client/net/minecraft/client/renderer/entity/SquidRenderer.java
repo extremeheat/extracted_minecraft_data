@@ -8,7 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Squid;
 
 public class SquidRenderer<T extends Squid> extends MobRenderer<T, SquidModel<T>> {
-   private static final ResourceLocation SQUID_LOCATION = new ResourceLocation("textures/entity/squid/squid.png");
+   private static final ResourceLocation SQUID_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/squid/squid.png");
 
    public SquidRenderer(EntityRendererProvider.Context var1, SquidModel<T> var2) {
       super(var1, var2, 0.7F);

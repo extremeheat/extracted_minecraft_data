@@ -14,7 +14,6 @@ import net.minecraft.tags.InstrumentTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.armortrim.TrimPatterns;
@@ -121,7 +120,7 @@ public class Items {
    public static final Item RAW_IRON_BLOCK = registerBlock(Blocks.RAW_IRON_BLOCK);
    public static final Item RAW_COPPER_BLOCK = registerBlock(Blocks.RAW_COPPER_BLOCK);
    public static final Item RAW_GOLD_BLOCK = registerBlock(Blocks.RAW_GOLD_BLOCK);
-   public static final Item HEAVY_CORE = registerBlock(Blocks.HEAVY_CORE);
+   public static final Item HEAVY_CORE = registerBlock(new BlockItem(Blocks.HEAVY_CORE, new Item.Properties().rarity(Rarity.EPIC)));
    public static final Item AMETHYST_BLOCK = registerBlock(Blocks.AMETHYST_BLOCK);
    public static final Item BUDDING_AMETHYST = registerBlock(Blocks.BUDDING_AMETHYST);
    public static final Item IRON_BLOCK = registerBlock(Blocks.IRON_BLOCK);
@@ -912,6 +911,7 @@ public class Items {
       )
    );
    public static final Item FLINT_AND_STEEL = registerItem("flint_and_steel", new FlintAndSteelItem(new Item.Properties().durability(64)));
+   public static final Item BOWL = registerItem("bowl", new Item(new Item.Properties()));
    public static final Item APPLE = registerItem("apple", new Item(new Item.Properties().food(Foods.APPLE)));
    public static final Item BOW = registerItem("bow", new BowItem(new Item.Properties().durability(384)));
    public static final Item ARROW = registerItem("arrow", new ArrowItem(new Item.Properties()));
@@ -1024,8 +1024,7 @@ public class Items {
       "netherite_hoe", new HoeItem(Tiers.NETHERITE, new Item.Properties().fireResistant().attributes(HoeItem.createAttributes(Tiers.NETHERITE, -4.0F, 0.0F)))
    );
    public static final Item STICK = registerItem("stick", new Item(new Item.Properties()));
-   public static final Item BOWL = registerItem("bowl", new Item(new Item.Properties()));
-   public static final Item MUSHROOM_STEW = registerItem("mushroom_stew", new BowlFoodItem(new Item.Properties().stacksTo(1).food(Foods.MUSHROOM_STEW)));
+   public static final Item MUSHROOM_STEW = registerItem("mushroom_stew", new Item(new Item.Properties().stacksTo(1).food(Foods.MUSHROOM_STEW)));
    public static final Item STRING = registerItem("string", new ItemNameBlockItem(Blocks.TRIPWIRE, new Item.Properties()));
    public static final Item FEATHER = registerItem("feather", new Item(new Item.Properties()));
    public static final Item GUNPOWDER = registerItem("gunpowder", new Item(new Item.Properties()));
@@ -1503,7 +1502,7 @@ public class Items {
       "experience_bottle", new ExperienceBottleItem(new Item.Properties().rarity(Rarity.UNCOMMON).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true))
    );
    public static final Item FIRE_CHARGE = registerItem("fire_charge", new FireChargeItem(new Item.Properties()));
-   public static final Item WIND_CHARGE = registerItem("wind_charge", new WindChargeItem(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_21)));
+   public static final Item WIND_CHARGE = registerItem("wind_charge", new WindChargeItem(new Item.Properties()));
    public static final Item WRITABLE_BOOK = registerItem(
       "writable_book", new WritableBookItem(new Item.Properties().stacksTo(1).component(DataComponents.WRITABLE_BOOK_CONTENT, WritableBookContent.EMPTY))
    );
@@ -1514,10 +1513,10 @@ public class Items {
       "mace",
       new MaceItem(
          new Item.Properties()
-            .durability(250)
+            .rarity(Rarity.EPIC)
+            .durability(500)
             .component(DataComponents.TOOL, MaceItem.createToolProperties())
             .attributes(MaceItem.createAttributes())
-            .requiredFeatures(FeatureFlags.UPDATE_1_21)
       )
    );
    public static final Item ITEM_FRAME = registerItem("item_frame", new ItemFrameItem(EntityType.ITEM_FRAME, new Item.Properties()));
@@ -1575,7 +1574,7 @@ public class Items {
    public static final Item PRISMARINE_CRYSTALS = registerItem("prismarine_crystals", new Item(new Item.Properties()));
    public static final Item RABBIT = registerItem("rabbit", new Item(new Item.Properties().food(Foods.RABBIT)));
    public static final Item COOKED_RABBIT = registerItem("cooked_rabbit", new Item(new Item.Properties().food(Foods.COOKED_RABBIT)));
-   public static final Item RABBIT_STEW = registerItem("rabbit_stew", new BowlFoodItem(new Item.Properties().stacksTo(1).food(Foods.RABBIT_STEW)));
+   public static final Item RABBIT_STEW = registerItem("rabbit_stew", new Item(new Item.Properties().stacksTo(1).food(Foods.RABBIT_STEW)));
    public static final Item RABBIT_FOOT = registerItem("rabbit_foot", new Item(new Item.Properties()));
    public static final Item RABBIT_HIDE = registerItem("rabbit_hide", new Item(new Item.Properties()));
    public static final Item ARMOR_STAND = registerItem("armor_stand", new ArmorStandItem(new Item.Properties().stacksTo(16)));
@@ -1715,7 +1714,7 @@ public class Items {
    public static final Item PITCHER_POD = registerItem("pitcher_pod", new ItemNameBlockItem(Blocks.PITCHER_CROP, new Item.Properties()));
    public static final Item BEETROOT = registerItem("beetroot", new Item(new Item.Properties().food(Foods.BEETROOT)));
    public static final Item BEETROOT_SEEDS = registerItem("beetroot_seeds", new ItemNameBlockItem(Blocks.BEETROOTS, new Item.Properties()));
-   public static final Item BEETROOT_SOUP = registerItem("beetroot_soup", new BowlFoodItem(new Item.Properties().stacksTo(1).food(Foods.BEETROOT_SOUP)));
+   public static final Item BEETROOT_SOUP = registerItem("beetroot_soup", new Item(new Item.Properties().stacksTo(1).food(Foods.BEETROOT_SOUP)));
    public static final Item DRAGON_BREATH = registerItem("dragon_breath", new Item(new Item.Properties().craftRemainder(GLASS_BOTTLE).rarity(Rarity.UNCOMMON)));
    public static final Item SPLASH_POTION = registerItem(
       "splash_potion", new SplashPotionItem(new Item.Properties().stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY))
@@ -1747,58 +1746,71 @@ public class Items {
       )
    );
    public static final Item MUSIC_DISC_13 = registerItem(
-      "music_disc_13", new RecordItem(1, SoundEvents.MUSIC_DISC_13, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 178)
+      "music_disc_13", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.THIRTEEN))
    );
    public static final Item MUSIC_DISC_CAT = registerItem(
-      "music_disc_cat", new RecordItem(2, SoundEvents.MUSIC_DISC_CAT, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 185)
+      "music_disc_cat", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CAT))
    );
    public static final Item MUSIC_DISC_BLOCKS = registerItem(
-      "music_disc_blocks", new RecordItem(3, SoundEvents.MUSIC_DISC_BLOCKS, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 345)
+      "music_disc_blocks", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.BLOCKS))
    );
    public static final Item MUSIC_DISC_CHIRP = registerItem(
-      "music_disc_chirp", new RecordItem(4, SoundEvents.MUSIC_DISC_CHIRP, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 185)
+      "music_disc_chirp", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CHIRP))
+   );
+   public static final Item MUSIC_DISC_CREATOR = registerItem(
+      "music_disc_creator", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CREATOR))
+   );
+   public static final Item MUSIC_DISC_CREATOR_MUSIC_BOX = registerItem(
+      "music_disc_creator_music_box", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CREATOR_MUSIC_BOX))
    );
    public static final Item MUSIC_DISC_FAR = registerItem(
-      "music_disc_far", new RecordItem(5, SoundEvents.MUSIC_DISC_FAR, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 174)
+      "music_disc_far", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.FAR))
    );
    public static final Item MUSIC_DISC_MALL = registerItem(
-      "music_disc_mall", new RecordItem(6, SoundEvents.MUSIC_DISC_MALL, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 197)
+      "music_disc_mall", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.MALL))
    );
    public static final Item MUSIC_DISC_MELLOHI = registerItem(
-      "music_disc_mellohi", new RecordItem(7, SoundEvents.MUSIC_DISC_MELLOHI, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 96)
+      "music_disc_mellohi", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.MELLOHI))
    );
    public static final Item MUSIC_DISC_STAL = registerItem(
-      "music_disc_stal", new RecordItem(8, SoundEvents.MUSIC_DISC_STAL, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 150)
+      "music_disc_stal", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.STAL))
    );
    public static final Item MUSIC_DISC_STRAD = registerItem(
-      "music_disc_strad", new RecordItem(9, SoundEvents.MUSIC_DISC_STRAD, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 188)
+      "music_disc_strad", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.STRAD))
    );
    public static final Item MUSIC_DISC_WARD = registerItem(
-      "music_disc_ward", new RecordItem(10, SoundEvents.MUSIC_DISC_WARD, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 251)
+      "music_disc_ward", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.WARD))
    );
    public static final Item MUSIC_DISC_11 = registerItem(
-      "music_disc_11", new RecordItem(11, SoundEvents.MUSIC_DISC_11, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 71)
+      "music_disc_11", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.ELEVEN))
    );
    public static final Item MUSIC_DISC_WAIT = registerItem(
-      "music_disc_wait", new RecordItem(12, SoundEvents.MUSIC_DISC_WAIT, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 238)
+      "music_disc_wait", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.WAIT))
    );
    public static final Item MUSIC_DISC_OTHERSIDE = registerItem(
-      "music_disc_otherside", new RecordItem(14, SoundEvents.MUSIC_DISC_OTHERSIDE, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 195)
+      "music_disc_otherside", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.OTHERSIDE))
    );
    public static final Item MUSIC_DISC_RELIC = registerItem(
-      "music_disc_relic", new RecordItem(14, SoundEvents.MUSIC_DISC_RELIC, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 218)
+      "music_disc_relic", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.RELIC))
    );
    public static final Item MUSIC_DISC_5 = registerItem(
-      "music_disc_5", new RecordItem(15, SoundEvents.MUSIC_DISC_5, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 178)
+      "music_disc_5", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.FIVE))
    );
    public static final Item MUSIC_DISC_PIGSTEP = registerItem(
-      "music_disc_pigstep", new RecordItem(13, SoundEvents.MUSIC_DISC_PIGSTEP, new Item.Properties().stacksTo(1).rarity(Rarity.RARE), 149)
+      "music_disc_pigstep", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.PIGSTEP))
+   );
+   public static final Item MUSIC_DISC_PRECIPICE = registerItem(
+      "music_disc_precipice", new Item(new Item.Properties().stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.PRECIPICE))
    );
    public static final Item DISC_FRAGMENT_5 = registerItem("disc_fragment_5", new DiscFragmentItem(new Item.Properties()));
    public static final Item TRIDENT = registerItem(
       "trident",
       new TridentItem(
-         new Item.Properties().durability(250).attributes(TridentItem.createAttributes()).component(DataComponents.TOOL, TridentItem.createToolProperties())
+         new Item.Properties()
+            .rarity(Rarity.EPIC)
+            .durability(250)
+            .attributes(TridentItem.createAttributes())
+            .component(DataComponents.TOOL, TridentItem.createToolProperties())
       )
    );
    public static final Item PHANTOM_MEMBRANE = registerItem("phantom_membrane", new Item(new Item.Properties()));
@@ -1830,15 +1842,13 @@ public class Items {
       "globe_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_GLOBE, new Item.Properties().stacksTo(1))
    );
    public static final Item PIGLIN_BANNER_PATTERN = registerItem(
-      "piglin_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_PIGLIN, new Item.Properties().stacksTo(1))
+      "piglin_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_PIGLIN, new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON))
    );
    public static final Item FLOW_BANNER_PATTERN = registerItem(
-      "flow_banner_pattern",
-      new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_FLOW, new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.UPDATE_1_21))
+      "flow_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_FLOW, new Item.Properties().stacksTo(1).rarity(Rarity.RARE))
    );
    public static final Item GUSTER_BANNER_PATTERN = registerItem(
-      "guster_banner_pattern",
-      new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_GUSTER, new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.UPDATE_1_21))
+      "guster_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_GUSTER, new Item.Properties().stacksTo(1).rarity(Rarity.RARE))
    );
    public static final Item GOAT_HORN = registerItem("goat_horn", new InstrumentItem(new Item.Properties().stacksTo(1), InstrumentTags.GOAT_HORNS));
    public static final Item COMPOSTER = registerBlock(Blocks.COMPOSTER);
@@ -1964,10 +1974,10 @@ public class Items {
       "host_armor_trim_smithing_template", SmithingTemplateItem.createArmorTrimTemplate(TrimPatterns.HOST)
    );
    public static final Item FLOW_ARMOR_TRIM_SMITHING_TEMPLATE = registerItem(
-      "flow_armor_trim_smithing_template", SmithingTemplateItem.createArmorTrimTemplate(TrimPatterns.FLOW, FeatureFlags.UPDATE_1_21)
+      "flow_armor_trim_smithing_template", SmithingTemplateItem.createArmorTrimTemplate(TrimPatterns.FLOW)
    );
    public static final Item BOLT_ARMOR_TRIM_SMITHING_TEMPLATE = registerItem(
-      "bolt_armor_trim_smithing_template", SmithingTemplateItem.createArmorTrimTemplate(TrimPatterns.BOLT, FeatureFlags.UPDATE_1_21)
+      "bolt_armor_trim_smithing_template", SmithingTemplateItem.createArmorTrimTemplate(TrimPatterns.BOLT)
    );
    public static final Item ANGLER_POTTERY_SHERD = registerItem("angler_pottery_sherd", new Item(new Item.Properties()));
    public static final Item ARCHER_POTTERY_SHERD = registerItem("archer_pottery_sherd", new Item(new Item.Properties()));
@@ -1977,11 +1987,9 @@ public class Items {
    public static final Item BURN_POTTERY_SHERD = registerItem("burn_pottery_sherd", new Item(new Item.Properties()));
    public static final Item DANGER_POTTERY_SHERD = registerItem("danger_pottery_sherd", new Item(new Item.Properties()));
    public static final Item EXPLORER_POTTERY_SHERD = registerItem("explorer_pottery_sherd", new Item(new Item.Properties()));
-   public static final Item FLOW_POTTERY_SHERD = registerItem("flow_pottery_sherd", new Item(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_21)));
+   public static final Item FLOW_POTTERY_SHERD = registerItem("flow_pottery_sherd", new Item(new Item.Properties()));
    public static final Item FRIEND_POTTERY_SHERD = registerItem("friend_pottery_sherd", new Item(new Item.Properties()));
-   public static final Item GUSTER_POTTERY_SHERD = registerItem(
-      "guster_pottery_sherd", new Item(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
+   public static final Item GUSTER_POTTERY_SHERD = registerItem("guster_pottery_sherd", new Item(new Item.Properties()));
    public static final Item HEART_POTTERY_SHERD = registerItem("heart_pottery_sherd", new Item(new Item.Properties()));
    public static final Item HEARTBREAK_POTTERY_SHERD = registerItem("heartbreak_pottery_sherd", new Item(new Item.Properties()));
    public static final Item HOWL_POTTERY_SHERD = registerItem("howl_pottery_sherd", new Item(new Item.Properties()));
@@ -1989,9 +1997,7 @@ public class Items {
    public static final Item MOURNER_POTTERY_SHERD = registerItem("mourner_pottery_sherd", new Item(new Item.Properties()));
    public static final Item PLENTY_POTTERY_SHERD = registerItem("plenty_pottery_sherd", new Item(new Item.Properties()));
    public static final Item PRIZE_POTTERY_SHERD = registerItem("prize_pottery_sherd", new Item(new Item.Properties()));
-   public static final Item SCRAPE_POTTERY_SHERD = registerItem(
-      "scrape_pottery_sherd", new Item(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
+   public static final Item SCRAPE_POTTERY_SHERD = registerItem("scrape_pottery_sherd", new Item(new Item.Properties()));
    public static final Item SHEAF_POTTERY_SHERD = registerItem("sheaf_pottery_sherd", new Item(new Item.Properties()));
    public static final Item SHELTER_POTTERY_SHERD = registerItem("shelter_pottery_sherd", new Item(new Item.Properties()));
    public static final Item SKULL_POTTERY_SHERD = registerItem("skull_pottery_sherd", new Item(new Item.Properties()));
@@ -2013,16 +2019,13 @@ public class Items {
    public static final Item WAXED_WEATHERED_COPPER_BULB = registerBlock(Blocks.WAXED_WEATHERED_COPPER_BULB);
    public static final Item WAXED_OXIDIZED_COPPER_BULB = registerBlock(Blocks.WAXED_OXIDIZED_COPPER_BULB);
    public static final Item TRIAL_SPAWNER = registerBlock(Blocks.TRIAL_SPAWNER);
-   public static final Item TRIAL_KEY = registerItem("trial_key", new Item(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_21)));
-   public static final Item OMINOUS_TRIAL_KEY = registerItem("ominous_trial_key", new Item(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_21)));
+   public static final Item TRIAL_KEY = registerItem("trial_key", new Item(new Item.Properties()));
+   public static final Item OMINOUS_TRIAL_KEY = registerItem("ominous_trial_key", new Item(new Item.Properties()));
    public static final Item VAULT = registerBlock(Blocks.VAULT);
    public static final Item OMINOUS_BOTTLE = registerItem(
-      "ominous_bottle",
-      new OminousBottleItem(
-         new Item.Properties().food(Foods.OMINOUS_BOTTLE).component(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, 0).requiredFeatures(FeatureFlags.UPDATE_1_21)
-      )
+      "ominous_bottle", new OminousBottleItem(new Item.Properties().food(Foods.OMINOUS_BOTTLE).component(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, 0))
    );
-   public static final Item BREEZE_ROD = registerItem("breeze_rod", new Item(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_21)));
+   public static final Item BREEZE_ROD = registerItem("breeze_rod", new Item(new Item.Properties()));
 
    public Items() {
       super();
@@ -2055,7 +2058,7 @@ public class Items {
    }
 
    public static Item registerItem(String var0, Item var1) {
-      return registerItem(new ResourceLocation(var0), var1);
+      return registerItem(ResourceLocation.withDefaultNamespace(var0), var1);
    }
 
    public static Item registerItem(ResourceLocation var0, Item var1) {

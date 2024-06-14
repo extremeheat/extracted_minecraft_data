@@ -23,14 +23,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.slf4j.Logger;
 
 public class RealmsBrokenWorldScreen extends RealmsScreen {
-   private static final ResourceLocation SLOT_FRAME_SPRITE = new ResourceLocation("widget/slot_frame");
+   private static final ResourceLocation SLOT_FRAME_SPRITE = ResourceLocation.withDefaultNamespace("widget/slot_frame");
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_BUTTON_WIDTH = 80;
    private final Screen lastScreen;
@@ -69,7 +68,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    private void addButtons() {
       for (Entry var2 : this.serverData.slots.entrySet()) {
          int var3 = (Integer)var2.getKey();
-         boolean var4 = var3 != this.serverData.activeSlot || this.serverData.worldType == RealmsServer.WorldType.MINIGAME;
+         boolean var4 = var3 != this.serverData.activeSlot || this.serverData.isMinigameActive();
          Button var5;
          if (var4) {
             var5 = Button.builder(
@@ -81,17 +80,17 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
                .build();
             var5.active = !this.serverData.slots.get(var3).empty;
          } else {
-            var5 = Button.builder(Component.translatable("mco.brokenworld.download"), var2x -> {
-               MutableComponent var3x = Component.translatable("mco.configure.world.restore.download.question.line1");
-               MutableComponent var4x = Component.translatable("mco.configure.world.restore.download.question.line2");
-               this.minecraft.setScreen(new RealmsLongConfirmationScreen(var2xx -> {
-                  if (var2xx) {
-                     this.downloadWorld(var3);
-                  } else {
-                     this.minecraft.setScreen(this);
-                  }
-               }, RealmsLongConfirmationScreen.Type.INFO, var3x, var4x, true));
-            }).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
+            var5 = Button.builder(
+                  Component.translatable("mco.brokenworld.download"),
+                  var2x -> this.minecraft
+                        .setScreen(
+                           RealmsPopups.infoPopupScreen(
+                              this, Component.translatable("mco.configure.world.restore.download.question.line1"), var2xx -> this.downloadWorld(var3)
+                           )
+                        )
+               )
+               .bounds(this.getFramePositionX(var3), row(8), 80, 20)
+               .build();
          }
 
          if (this.slotsThatHasBeenDownloaded.contains(var3)) {
@@ -221,7 +220,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    }
 
    private boolean isMinigame() {
-      return this.serverData != null && this.serverData.worldType == RealmsServer.WorldType.MINIGAME;
+      return this.serverData != null && this.serverData.isMinigameActive();
    }
 
    private void drawSlotFrame(

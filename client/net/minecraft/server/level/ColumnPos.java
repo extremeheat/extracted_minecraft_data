@@ -1,43 +1,13 @@
 package net.minecraft.server.level;
 
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.ChunkPos;
-
-public record ColumnPos(int x, int z) {
-   private static final long COORD_BITS = 32L;
-   private static final long COORD_MASK = 4294967295L;
-
-   public ColumnPos(int x, int z) {
-      super();
-      this.x = x;
-      this.z = z;
-   }
-
-   public ChunkPos toChunkPos() {
-      return new ChunkPos(SectionPos.blockToSectionCoord(this.x), SectionPos.blockToSectionCoord(this.z));
-   }
-
-   public long toLong() {
-      return asLong(this.x, this.z);
-   }
-
-   public static long asLong(int var0, int var1) {
-      return (long)var0 & 4294967295L | ((long)var1 & 4294967295L) << 32;
-   }
-
-   public static int getX(long var0) {
-      return (int)(var0 & 4294967295L);
-   }
-
-   public static int getZ(long var0) {
-      return (int)(var0 >>> 32 & 4294967295L);
-   }
-
-   public String toString() {
-      return "[" + this.x + ", " + this.z + "]";
-   }
-
-   public int hashCode() {
-      return ChunkPos.hash(this.x, this.z);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

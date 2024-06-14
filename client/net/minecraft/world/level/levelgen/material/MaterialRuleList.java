@@ -1,27 +1,13 @@
 package net.minecraft.world.level.levelgen.material;
 
-import java.util.List;
-import javax.annotation.Nullable;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.NoiseChunk;
-
-public record MaterialRuleList(List<NoiseChunk.BlockStateFiller> materialRuleList) implements NoiseChunk.BlockStateFiller {
-   public MaterialRuleList(List<NoiseChunk.BlockStateFiller> materialRuleList) {
-      super();
-      this.materialRuleList = materialRuleList;
-   }
-
-   @Nullable
-   @Override
-   public BlockState calculate(DensityFunction.FunctionContext var1) {
-      for (NoiseChunk.BlockStateFiller var3 : this.materialRuleList) {
-         BlockState var4 = var3.calculate(var1);
-         if (var4 != null) {
-            return var4;
-         }
-      }
-
-      return null;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

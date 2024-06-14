@@ -1,51 +1,13 @@
 package net.minecraft.network.protocol.common.custom;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-
-public record HiveDebugPayload(HiveDebugPayload.HiveInfo hiveInfo) implements CustomPacketPayload {
-   public static final StreamCodec<FriendlyByteBuf, HiveDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(HiveDebugPayload::write, HiveDebugPayload::new);
-   public static final CustomPacketPayload.Type<HiveDebugPayload> TYPE = CustomPacketPayload.createType("debug/hive");
-
-   private HiveDebugPayload(FriendlyByteBuf var1) {
-      this(new HiveDebugPayload.HiveInfo(var1));
-   }
-
-   public HiveDebugPayload(HiveDebugPayload.HiveInfo hiveInfo) {
-      super();
-      this.hiveInfo = hiveInfo;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      this.hiveInfo.write(var1);
-   }
-
-   @Override
-   public CustomPacketPayload.Type<HiveDebugPayload> type() {
-      return TYPE;
-   }
-
-   public static record HiveInfo(BlockPos pos, String hiveType, int occupantCount, int honeyLevel, boolean sedated) {
-      public HiveInfo(FriendlyByteBuf var1) {
-         this(var1.readBlockPos(), var1.readUtf(), var1.readInt(), var1.readInt(), var1.readBoolean());
-      }
-
-      public HiveInfo(BlockPos pos, String hiveType, int occupantCount, int honeyLevel, boolean sedated) {
-         super();
-         this.pos = pos;
-         this.hiveType = hiveType;
-         this.occupantCount = occupantCount;
-         this.honeyLevel = honeyLevel;
-         this.sedated = sedated;
-      }
-
-      public void write(FriendlyByteBuf var1) {
-         var1.writeBlockPos(this.pos);
-         var1.writeUtf(this.hiveType);
-         var1.writeInt(this.occupantCount);
-         var1.writeInt(this.honeyLevel);
-         var1.writeBoolean(this.sedated);
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -222,7 +222,7 @@ public class BellBlock extends BaseEntityBlock {
 
    @Override
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
-      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide()) {
+      if (var4.canTriggerBlocks()) {
          this.attemptToRing(var2, var3, null);
       }
 

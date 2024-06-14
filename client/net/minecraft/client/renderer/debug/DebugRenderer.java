@@ -202,7 +202,7 @@ public class DebugRenderer {
          var0.pushPose();
          var0.translate((float)(var3 - var17), (float)(var5 - var19) + 0.07F, (float)(var7 - var21));
          var0.mulPose(var15.rotation());
-         var0.scale(-var10, -var10, var10);
+         var0.scale(var10, -var10, var10);
          float var23 = var11 ? (float)(-var16.width(var2)) / 2.0F : 0.0F;
          var23 -= var12 / var10;
          var16.drawInBatch(

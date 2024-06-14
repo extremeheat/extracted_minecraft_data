@@ -11,7 +11,6 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,7 +25,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 
 public class AngerManagement {
    @VisibleForTesting
@@ -177,34 +175,16 @@ public class AngerManagement {
       return Optional.ofNullable(this.getTopSuspect()).filter(var0 -> var0 instanceof LivingEntity).map(var0 -> (LivingEntity)var0);
    }
 
-   @VisibleForTesting
-   protected static record Sorter(AngerManagement angerManagement) implements Comparator<Entity> {
-      protected Sorter(AngerManagement angerManagement) {
-         super();
-         this.angerManagement = angerManagement;
-      }
-
-      public int compare(Entity var1, Entity var2) {
-         if (var1.equals(var2)) {
-            return 0;
-         } else {
-            int var3 = this.angerManagement.angerBySuspect.getOrDefault(var1, 0);
-            int var4 = this.angerManagement.angerBySuspect.getOrDefault(var2, 0);
-            this.angerManagement.highestAnger = Math.max(this.angerManagement.highestAnger, Math.max(var3, var4));
-            boolean var5 = AngerLevel.byAnger(var3).isAngry();
-            boolean var6 = AngerLevel.byAnger(var4).isAngry();
-            if (var5 != var6) {
-               return var5 ? -1 : 1;
-            } else {
-               boolean var7 = var1 instanceof Player;
-               boolean var8 = var2 instanceof Player;
-               if (var7 != var8) {
-                  return var7 ? -1 : 1;
-               } else {
-                  return Integer.compare(var4, var3);
-               }
-            }
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

@@ -106,6 +106,11 @@ public class LootContext {
          return this;
       }
 
+      public LootContext.Builder withOptionalRandomSource(RandomSource var1) {
+         this.random = var1;
+         return this;
+      }
+
       public ServerLevel getLevel() {
          return this.params.getLevel();
       }
@@ -120,9 +125,9 @@ public class LootContext {
 
    public static enum EntityTarget implements StringRepresentable {
       THIS("this", LootContextParams.THIS_ENTITY),
-      KILLER("killer", LootContextParams.KILLER_ENTITY),
-      DIRECT_KILLER("direct_killer", LootContextParams.DIRECT_KILLER_ENTITY),
-      KILLER_PLAYER("killer_player", LootContextParams.LAST_DAMAGE_PLAYER);
+      ATTACKER("attacker", LootContextParams.ATTACKING_ENTITY),
+      DIRECT_ATTACKER("direct_attacker", LootContextParams.DIRECT_ATTACKING_ENTITY),
+      ATTACKING_PLAYER("attacking_player", LootContextParams.LAST_DAMAGE_PLAYER);
 
       public static final StringRepresentable.EnumCodec<LootContext.EntityTarget> CODEC = StringRepresentable.fromEnum(LootContext.EntityTarget::values);
       private final String name;
@@ -152,11 +157,16 @@ public class LootContext {
       }
    }
 
-   public static record VisitedEntry<T>(LootDataType<T> type, T value) {
-      public VisitedEntry(LootDataType<T> type, T value) {
-         super();
-         this.type = type;
-         this.value = (T)value;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

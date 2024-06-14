@@ -6,11 +6,14 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -25,20 +28,24 @@ import net.minecraft.world.item.enchantment.Enchantment;
 
 public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> {
    private static final ResourceLocation[] ENABLED_LEVEL_SPRITES = new ResourceLocation[]{
-      new ResourceLocation("container/enchanting_table/level_1"),
-      new ResourceLocation("container/enchanting_table/level_2"),
-      new ResourceLocation("container/enchanting_table/level_3")
+      ResourceLocation.withDefaultNamespace("container/enchanting_table/level_1"),
+      ResourceLocation.withDefaultNamespace("container/enchanting_table/level_2"),
+      ResourceLocation.withDefaultNamespace("container/enchanting_table/level_3")
    };
    private static final ResourceLocation[] DISABLED_LEVEL_SPRITES = new ResourceLocation[]{
-      new ResourceLocation("container/enchanting_table/level_1_disabled"),
-      new ResourceLocation("container/enchanting_table/level_2_disabled"),
-      new ResourceLocation("container/enchanting_table/level_3_disabled")
+      ResourceLocation.withDefaultNamespace("container/enchanting_table/level_1_disabled"),
+      ResourceLocation.withDefaultNamespace("container/enchanting_table/level_2_disabled"),
+      ResourceLocation.withDefaultNamespace("container/enchanting_table/level_3_disabled")
    };
-   private static final ResourceLocation ENCHANTMENT_SLOT_DISABLED_SPRITE = new ResourceLocation("container/enchanting_table/enchantment_slot_disabled");
-   private static final ResourceLocation ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE = new ResourceLocation("container/enchanting_table/enchantment_slot_highlighted");
-   private static final ResourceLocation ENCHANTMENT_SLOT_SPRITE = new ResourceLocation("container/enchanting_table/enchantment_slot");
-   private static final ResourceLocation ENCHANTING_TABLE_LOCATION = new ResourceLocation("textures/gui/container/enchanting_table.png");
-   private static final ResourceLocation ENCHANTING_BOOK_LOCATION = new ResourceLocation("textures/entity/enchanting_table_book.png");
+   private static final ResourceLocation ENCHANTMENT_SLOT_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace(
+      "container/enchanting_table/enchantment_slot_disabled"
+   );
+   private static final ResourceLocation ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace(
+      "container/enchanting_table/enchantment_slot_highlighted"
+   );
+   private static final ResourceLocation ENCHANTMENT_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/enchanting_table/enchantment_slot");
+   private static final ResourceLocation ENCHANTING_TABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/enchanting_table.png");
+   private static final ResourceLocation ENCHANTING_BOOK_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enchanting_table_book.png");
    private final RandomSource random = RandomSource.create();
    private BookModel bookModel;
    public int time;
@@ -151,7 +158,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       float var10 = Mth.clamp(Mth.frac(var6 + 0.75F) * 1.6F - 0.3F, 0.0F, 1.0F);
       this.bookModel.setupAnim(0.0F, var9, var10, var5);
       VertexConsumer var11 = var1.bufferSource().getBuffer(this.bookModel.renderType(ENCHANTING_BOOK_LOCATION));
-      this.bookModel.renderToBuffer(var1.pose(), var11, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.bookModel.renderToBuffer(var1.pose(), var11, 15728880, OverlayTexture.NO_OVERLAY);
       var1.flush();
       var1.pose().popPose();
       Lighting.setupFor3DItems();
@@ -159,7 +166,6 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      var4 = this.minecraft.getFrameTime();
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
       boolean var5 = this.minecraft.player.getAbilities().instabuild;
@@ -167,38 +173,43 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
 
       for (int var7 = 0; var7 < 3; var7++) {
          int var8 = this.menu.costs[var7];
-         Enchantment var9 = Enchantment.byId(this.menu.enchantClue[var7]);
-         int var10 = this.menu.levelClue[var7];
-         int var11 = var7 + 1;
-         if (this.isHovering(60, 14 + 19 * var7, 108, 17, (double)var2, (double)var3) && var8 > 0 && var10 >= 0 && var9 != null) {
-            ArrayList var12 = Lists.newArrayList();
-            var12.add(Component.translatable("container.enchant.clue", var9.getFullname(var10)).withStyle(ChatFormatting.WHITE));
-            if (!var5) {
-               var12.add(CommonComponents.EMPTY);
-               if (this.minecraft.player.experienceLevel < var8) {
-                  var12.add(Component.translatable("container.enchant.level.requirement", this.menu.costs[var7]).withStyle(ChatFormatting.RED));
-               } else {
-                  MutableComponent var13;
-                  if (var11 == 1) {
-                     var13 = Component.translatable("container.enchant.lapis.one");
+         Optional var9 = this.minecraft.level.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolder(this.menu.enchantClue[var7]);
+         if (!var9.isEmpty()) {
+            int var10 = this.menu.levelClue[var7];
+            int var11 = var7 + 1;
+            if (this.isHovering(60, 14 + 19 * var7, 108, 17, (double)var2, (double)var3) && var8 > 0 && var10 >= 0 && var9 != null) {
+               ArrayList var12 = Lists.newArrayList();
+               var12.add(
+                  Component.translatable("container.enchant.clue", Enchantment.getFullname((Holder<Enchantment>)var9.get(), var10))
+                     .withStyle(ChatFormatting.WHITE)
+               );
+               if (!var5) {
+                  var12.add(CommonComponents.EMPTY);
+                  if (this.minecraft.player.experienceLevel < var8) {
+                     var12.add(Component.translatable("container.enchant.level.requirement", this.menu.costs[var7]).withStyle(ChatFormatting.RED));
                   } else {
-                     var13 = Component.translatable("container.enchant.lapis.many", var11);
-                  }
+                     MutableComponent var13;
+                     if (var11 == 1) {
+                        var13 = Component.translatable("container.enchant.lapis.one");
+                     } else {
+                        var13 = Component.translatable("container.enchant.lapis.many", var11);
+                     }
 
-                  var12.add(var13.withStyle(var6 >= var11 ? ChatFormatting.GRAY : ChatFormatting.RED));
-                  MutableComponent var14;
-                  if (var11 == 1) {
-                     var14 = Component.translatable("container.enchant.level.one");
-                  } else {
-                     var14 = Component.translatable("container.enchant.level.many", var11);
-                  }
+                     var12.add(var13.withStyle(var6 >= var11 ? ChatFormatting.GRAY : ChatFormatting.RED));
+                     MutableComponent var14;
+                     if (var11 == 1) {
+                        var14 = Component.translatable("container.enchant.level.one");
+                     } else {
+                        var14 = Component.translatable("container.enchant.level.many", var11);
+                     }
 
-                  var12.add(var14.withStyle(ChatFormatting.GRAY));
+                     var12.add(var14.withStyle(ChatFormatting.GRAY));
+                  }
                }
-            }
 
-            var1.renderComponentTooltip(this.font, var12, var2, var3);
-            break;
+               var1.renderComponentTooltip(this.font, var12, var2, var3);
+               break;
+            }
          }
       }
    }

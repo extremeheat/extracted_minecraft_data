@@ -1,9 +1,7 @@
 package net.minecraft.util.eventlog;
 
 import com.mojang.logging.LogUtils;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -13,8 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +19,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -123,24 +118,18 @@ public class EventLogDirectory {
       return var5;
    }
 
-   public static record CompressedFile(Path path, EventLogDirectory.FileId id) implements EventLogDirectory.File {
-      public CompressedFile(Path path, EventLogDirectory.FileId id) {
-         super();
-         this.path = path;
-         this.id = id;
-      }
-
-      @Nullable
-      @Override
-      public Reader openReader() throws IOException {
-         return !Files.exists(this.path) ? null : new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(this.path))));
-      }
-
-      @Override
-      public EventLogDirectory.CompressedFile compress() {
-         return this;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface File {
       Path path();
@@ -153,40 +142,18 @@ public class EventLogDirectory {
       EventLogDirectory.CompressedFile compress() throws IOException;
    }
 
-   public static record FileId(LocalDate date, int index) {
-      private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
-
-      public FileId(LocalDate date, int index) {
-         super();
-         this.date = date;
-         this.index = index;
-      }
-
-      @Nullable
-      public static EventLogDirectory.FileId parse(String var0) {
-         int var1 = var0.indexOf("-");
-         if (var1 == -1) {
-            return null;
-         } else {
-            String var2 = var0.substring(0, var1);
-            String var3 = var0.substring(var1 + 1);
-
-            try {
-               return new EventLogDirectory.FileId(LocalDate.parse(var2, DATE_FORMATTER), Integer.parseInt(var3));
-            } catch (DateTimeParseException | NumberFormatException var5) {
-               return null;
-            }
-         }
-      }
-
-      public String toString() {
-         return DATE_FORMATTER.format(this.date) + "-" + this.index;
-      }
-
-      public String toFileName(String var1) {
-         return this + var1;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class FileList implements Iterable<EventLogDirectory.File> {
       private final List<EventLogDirectory.File> files;
@@ -244,28 +211,16 @@ public class EventLogDirectory {
       }
    }
 
-   public static record RawFile(Path path, EventLogDirectory.FileId id) implements EventLogDirectory.File {
-      public RawFile(Path path, EventLogDirectory.FileId id) {
-         super();
-         this.path = path;
-         this.id = id;
-      }
-
-      public FileChannel openChannel() throws IOException {
-         return FileChannel.open(this.path, StandardOpenOption.WRITE, StandardOpenOption.READ);
-      }
-
-      @Nullable
-      @Override
-      public Reader openReader() throws IOException {
-         return Files.exists(this.path) ? Files.newBufferedReader(this.path) : null;
-      }
-
-      @Override
-      public EventLogDirectory.CompressedFile compress() throws IOException {
-         Path var1 = this.path.resolveSibling(this.path.getFileName().toString() + ".gz");
-         EventLogDirectory.tryCompress(this.path, var1);
-         return new EventLogDirectory.CompressedFile(var1, this.id);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

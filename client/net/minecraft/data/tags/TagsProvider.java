@@ -1,7 +1,6 @@
 package net.minecraft.data.tags;
 
 import com.google.common.collect.Maps;
-import com.mojang.logging.LogUtils;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
@@ -23,11 +22,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
-import net.minecraft.tags.TagManager;
-import org.slf4j.Logger;
 
 public abstract class TagsProvider<T> implements DataProvider {
-   private static final Logger LOGGER = LogUtils.getLogger();
    protected final PackOutput.PathProvider pathProvider;
    private final CompletableFuture<HolderLookup.Provider> lookupProvider;
    private final CompletableFuture<Void> contentsDone = new CompletableFuture<>();
@@ -46,7 +42,7 @@ public abstract class TagsProvider<T> implements DataProvider {
       CompletableFuture<TagsProvider.TagLookup<T>> var4
    ) {
       super();
-      this.pathProvider = var1.createPathProvider(PackOutput.Target.DATA_PACK, TagManager.getTagDir(var2));
+      this.pathProvider = var1.createRegistryTagsPathProvider(var2);
       this.registryKey = var2;
       this.parentProvider = var4;
       this.lookupProvider = var3;
@@ -61,14 +57,19 @@ public abstract class TagsProvider<T> implements DataProvider {
 
    @Override
    public CompletableFuture<?> run(CachedOutput var1) {
-      record 1CombinedData<T>(HolderLookup.Provider contents, TagsProvider.TagLookup<T> parent) {
-
-         _CombinedData/* $VF was: 1CombinedData*/(HolderLookup.Provider contents, TagsProvider.TagLookup<T> parent) {
-            super();
-            this.contents = contents;
-            this.parent = parent;
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent.toJava(VarExprent.java:124)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.listToJava(ExprProcessor.java:895)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.BasicBlockStatement.toJava(BasicBlockStatement.java:90)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.RootStatement.toJava(RootStatement.java:36)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeMethod(ClassWriter.java:1283)
 
       return this.createContentsProvider()
          .thenApply(var1x -> {

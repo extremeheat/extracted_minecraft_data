@@ -9,9 +9,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.TickablePacketListener;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -117,7 +117,7 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
       );
       this.connection
          .setupInboundProtocol(
-            GameProtocols.CLIENTBOUND.bind(RegistryFriendlyByteBuf.decorator(var2)),
+            GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(var2)),
             new ClientPacketListener(
                this.minecraft,
                this.connection,
@@ -131,12 +131,14 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
                   this.postDisconnectScreen,
                   this.serverCookies,
                   this.chatState,
-                  this.strictErrorHandling
+                  this.strictErrorHandling,
+                  this.customReportDetails,
+                  this.serverLinks
                )
             )
          );
       this.connection.send(ServerboundFinishConfigurationPacket.INSTANCE);
-      this.connection.setupOutboundProtocol(GameProtocols.SERVERBOUND.bind(RegistryFriendlyByteBuf.decorator(var2)));
+      this.connection.setupOutboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(var2)));
    }
 
    @Override
@@ -145,7 +147,7 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    }
 
    @Override
-   public void onDisconnect(Component var1) {
+   public void onDisconnect(DisconnectionDetails var1) {
       super.onDisconnect(var1);
       this.minecraft.clearDownloadedResourcePacks();
    }

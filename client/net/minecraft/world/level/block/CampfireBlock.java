@@ -25,7 +25,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -93,10 +92,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          ItemStack var10 = var5.getItemInHand(var6);
          Optional var11 = var9.getCookableRecipe(var10);
          if (var11.isPresent()) {
-            if (!var3.isClientSide
-               && var9.placeFood(
-                  var5, var5.hasInfiniteMaterials() ? var10.copy() : var10, ((CampfireCookingRecipe)((RecipeHolder)var11.get()).value()).getCookingTime()
-               )) {
+            if (!var3.isClientSide && var9.placeFood(var5, var10, ((CampfireCookingRecipe)((RecipeHolder)var11.get()).value()).getCookingTime())) {
                var5.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
                return ItemInteractionResult.SUCCESS;
             }
@@ -110,8 +106,8 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
    @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var1.getValue(LIT) && var4 instanceof LivingEntity && !EnchantmentHelper.hasFrostWalker((LivingEntity)var4)) {
-         var4.hurt(var2.damageSources().inFire(), (float)this.fireDamage);
+      if (var1.getValue(LIT) && var4 instanceof LivingEntity) {
+         var4.hurt(var2.damageSources().campfire(), (float)this.fireDamage);
       }
 
       super.entityInside(var1, var2, var3, var4);

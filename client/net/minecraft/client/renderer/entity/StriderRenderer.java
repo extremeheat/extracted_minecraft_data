@@ -8,15 +8,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Strider;
 
 public class StriderRenderer extends MobRenderer<Strider, StriderModel<Strider>> {
-   private static final ResourceLocation STRIDER_LOCATION = new ResourceLocation("textures/entity/strider/strider.png");
-   private static final ResourceLocation COLD_LOCATION = new ResourceLocation("textures/entity/strider/strider_cold.png");
+   private static final ResourceLocation STRIDER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/strider/strider.png");
+   private static final ResourceLocation COLD_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/strider/strider_cold.png");
    private static final float SHADOW_RADIUS = 0.5F;
 
    public StriderRenderer(EntityRendererProvider.Context var1) {
       super(var1, new StriderModel<>(var1.bakeLayer(ModelLayers.STRIDER)), 0.5F);
       this.addLayer(
          new SaddleLayer<>(
-            this, new StriderModel<>(var1.bakeLayer(ModelLayers.STRIDER_SADDLE)), new ResourceLocation("textures/entity/strider/strider_saddle.png")
+            this,
+            new StriderModel<>(var1.bakeLayer(ModelLayers.STRIDER_SADDLE)),
+            ResourceLocation.withDefaultNamespace("textures/entity/strider/strider_saddle.png")
          )
       );
    }

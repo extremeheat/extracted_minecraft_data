@@ -73,6 +73,7 @@ public class OminousItemSpawner extends Entity {
          if (var2.getItem() instanceof ProjectileItem var4) {
             Direction var8 = Direction.DOWN;
             Projectile var6 = var4.asProjectile(var1, this.position(), var2, var8);
+            var6.setOwner(this);
             ProjectileItem.DispenseConfig var7 = var4.createDispenseConfig();
             var4.shoot(var6, (double)var8.getStepX(), (double)var8.getStepY(), (double)var8.getStepZ(), var7.power(), var7.uncertainty());
             var7.overrideDispenseEvent().ifPresent(var2x -> var1.levelEvent(var2x, this.blockPosition(), 0));
@@ -97,7 +98,7 @@ public class OminousItemSpawner extends Entity {
    protected void readAdditionalSaveData(CompoundTag var1) {
       ItemStack var2 = var1.contains("item", 10) ? ItemStack.parse(this.registryAccess(), var1.getCompound("item")).orElse(ItemStack.EMPTY) : ItemStack.EMPTY;
       this.setItem(var2);
-      var1.getLong("spawn_item_after_ticks");
+      this.spawnItemAfterTicks = var1.getLong("spawn_item_after_ticks");
    }
 
    @Override

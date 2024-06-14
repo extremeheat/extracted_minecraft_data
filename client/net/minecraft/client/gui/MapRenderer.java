@@ -116,10 +116,10 @@ public class MapRenderer implements AutoCloseable {
          float var7 = 0.0F;
          Matrix4f var8 = var1.last().pose();
          VertexConsumer var9 = var2.getBuffer(this.renderType);
-         var9.vertex(var8, 0.0F, 128.0F, -0.01F).color(255, 255, 255, 255).uv(0.0F, 1.0F).uv2(var4).endVertex();
-         var9.vertex(var8, 128.0F, 128.0F, -0.01F).color(255, 255, 255, 255).uv(1.0F, 1.0F).uv2(var4).endVertex();
-         var9.vertex(var8, 128.0F, 0.0F, -0.01F).color(255, 255, 255, 255).uv(1.0F, 0.0F).uv2(var4).endVertex();
-         var9.vertex(var8, 0.0F, 0.0F, -0.01F).color(255, 255, 255, 255).uv(0.0F, 0.0F).uv2(var4).endVertex();
+         var9.addVertex(var8, 0.0F, 128.0F, -0.01F).setColor(-1).setUv(0.0F, 1.0F).setLight(var4);
+         var9.addVertex(var8, 128.0F, 128.0F, -0.01F).setColor(-1).setUv(1.0F, 1.0F).setLight(var4);
+         var9.addVertex(var8, 128.0F, 0.0F, -0.01F).setColor(-1).setUv(1.0F, 0.0F).setLight(var4);
+         var9.addVertex(var8, 0.0F, 0.0F, -0.01F).setColor(-1).setUv(0.0F, 0.0F).setLight(var4);
          int var10 = 0;
 
          for (MapDecoration var12 : this.data.getDecorations()) {
@@ -137,10 +137,10 @@ public class MapRenderer implements AutoCloseable {
                float var18 = var15.getU1();
                float var19 = var15.getV1();
                VertexConsumer var20 = var2.getBuffer(RenderType.text(var15.atlasLocation()));
-               var20.vertex(var13, -1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var17).uv2(var4).endVertex();
-               var20.vertex(var13, 1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var18, var17).uv2(var4).endVertex();
-               var20.vertex(var13, 1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var18, var19).uv2(var4).endVertex();
-               var20.vertex(var13, -1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var19).uv2(var4).endVertex();
+               var20.addVertex(var13, -1.0F, 1.0F, (float)var10 * -0.001F).setColor(-1).setUv(var16, var17).setLight(var4);
+               var20.addVertex(var13, 1.0F, 1.0F, (float)var10 * -0.001F).setColor(-1).setUv(var18, var17).setLight(var4);
+               var20.addVertex(var13, 1.0F, -1.0F, (float)var10 * -0.001F).setColor(-1).setUv(var18, var19).setLight(var4);
+               var20.addVertex(var13, -1.0F, -1.0F, (float)var10 * -0.001F).setColor(-1).setUv(var16, var19).setLight(var4);
                var1.popPose();
                if (var12.name().isPresent()) {
                   Font var21 = Minecraft.getInstance().font;

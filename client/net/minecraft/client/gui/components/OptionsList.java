@@ -12,18 +12,18 @@ import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.gui.screens.OptionsSubScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 
 public class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry> {
    private static final int BIG_BUTTON_WIDTH = 310;
    private static final int DEFAULT_ITEM_HEIGHT = 25;
    private final OptionsSubScreen screen;
 
-   public OptionsList(Minecraft var1, int var2, int var3, OptionsSubScreen var4) {
-      super(var1, var2, var4.layout.getContentHeight(), var4.layout.getHeaderHeight(), 25);
+   public OptionsList(Minecraft var1, int var2, OptionsSubScreen var3) {
+      super(var1, var2, var3.layout.getContentHeight(), var3.layout.getHeaderHeight(), 25);
       this.centerListVertically = false;
-      this.screen = var4;
+      this.screen = var3;
    }
 
    public void addBig(OptionInstance<?> var1) {

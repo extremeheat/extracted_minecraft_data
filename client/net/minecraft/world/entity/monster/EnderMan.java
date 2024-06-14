@@ -15,6 +15,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -50,7 +51,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -66,9 +68,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class EnderMan extends Monster implements NeutralMob {
-   private static final UUID SPEED_MODIFIER_ATTACKING_UUID = UUID.fromString("020E0DFB-87AE-4653-9556-831010E291A0");
+   private static final ResourceLocation SPEED_MODIFIER_ATTACKING_ID = ResourceLocation.withDefaultNamespace("attacking");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING = new AttributeModifier(
-      SPEED_MODIFIER_ATTACKING_UUID, "Attacking speed boost", 0.15000000596046448, AttributeModifier.Operation.ADD_VALUE
+      SPEED_MODIFIER_ATTACKING_ID, 0.15000000596046448, AttributeModifier.Operation.ADD_VALUE
    );
    private static final int DELAY_BETWEEN_CREEPY_STARE_SOUND = 400;
    private static final int MIN_DEAGGRESSION_TIME = 600;
@@ -122,11 +124,11 @@ public class EnderMan extends Monster implements NeutralMob {
          this.targetChangeTime = 0;
          this.entityData.set(DATA_CREEPY, false);
          this.entityData.set(DATA_STARED_AT, false);
-         var2.removeModifier(SPEED_MODIFIER_ATTACKING.id());
+         var2.removeModifier(SPEED_MODIFIER_ATTACKING_ID);
       } else {
          this.targetChangeTime = this.tickCount;
          this.entityData.set(DATA_CREEPY, true);
-         if (!var2.hasModifier(SPEED_MODIFIER_ATTACKING)) {
+         if (!var2.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
             var2.addTransientModifier(SPEED_MODIFIER_ATTACKING);
          }
       }
@@ -331,12 +333,14 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    @Override
-   protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
       BlockState var4 = this.getCarriedBlock();
       if (var4 != null) {
          ItemStack var5 = new ItemStack(Items.DIAMOND_AXE);
-         var5.enchant(Enchantments.SILK_TOUCH, 1);
+         EnchantmentHelper.enchantItemFromProvider(
+            var5, var1.registryAccess(), VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, var1.getCurrentDifficultyAt(this.blockPosition()), this.getRandom()
+         );
          LootParams.Builder var6 = new LootParams.Builder((ServerLevel)this.level())
             .withParameter(LootContextParams.ORIGIN, this.position())
             .withParameter(LootContextParams.TOOL, var5)

@@ -1,18 +1,11 @@
 package com.mojang.blaze3d.font;
 
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
-import net.minecraft.client.gui.font.providers.GlyphProviderType;
-import net.minecraft.util.ExtraCodecs;
 
 public class SpaceProvider implements GlyphProvider {
    private final Int2ObjectMap<GlyphInfo.SpaceGlyphInfo> glyphs;
@@ -34,26 +27,16 @@ public class SpaceProvider implements GlyphProvider {
       return IntSets.unmodifiable(this.glyphs.keySet());
    }
 
-   public static record Definition(Map<Integer, Float> advances) implements GlyphProviderDefinition {
-      public static final MapCodec<SpaceProvider.Definition> CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(Codec.unboundedMap(ExtraCodecs.CODEPOINT, Codec.FLOAT).fieldOf("advances").forGetter(SpaceProvider.Definition::advances))
-               .apply(var0, SpaceProvider.Definition::new)
-      );
-
-      public Definition(Map<Integer, Float> advances) {
-         super();
-         this.advances = advances;
-      }
-
-      @Override
-      public GlyphProviderType type() {
-         return GlyphProviderType.SPACE;
-      }
-
-      @Override
-      public Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack() {
-         GlyphProviderDefinition.Loader var1 = var1x -> new SpaceProvider(this.advances);
-         return Either.left(var1);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

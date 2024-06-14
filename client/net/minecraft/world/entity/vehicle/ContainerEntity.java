@@ -73,7 +73,7 @@ public interface ContainerEntity extends Container, MenuProvider {
    default void readChestVehicleSaveData(CompoundTag var1, HolderLookup.Provider var2) {
       this.clearItemStacks();
       if (var1.contains("LootTable", 8)) {
-         this.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var1.getString("LootTable"))));
+         this.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("LootTable"))));
          this.setLootTableSeed(var1.getLong("LootTableSeed"));
       } else {
          ContainerHelper.loadAllItems(var1, this.getItemStacks(), var2);

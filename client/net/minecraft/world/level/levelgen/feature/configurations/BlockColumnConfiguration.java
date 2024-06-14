@@ -1,54 +1,13 @@
 package net.minecraft.world.level.levelgen.feature.configurations;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
-import net.minecraft.core.Direction;
-import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
-import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-
-public record BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> layers, Direction direction, BlockPredicate allowedPlacement, boolean prioritizeTip)
-   implements FeatureConfiguration {
-   public static final Codec<BlockColumnConfiguration> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               BlockColumnConfiguration.Layer.CODEC.listOf().fieldOf("layers").forGetter(BlockColumnConfiguration::layers),
-               Direction.CODEC.fieldOf("direction").forGetter(BlockColumnConfiguration::direction),
-               BlockPredicate.CODEC.fieldOf("allowed_placement").forGetter(BlockColumnConfiguration::allowedPlacement),
-               Codec.BOOL.fieldOf("prioritize_tip").forGetter(BlockColumnConfiguration::prioritizeTip)
-            )
-            .apply(var0, BlockColumnConfiguration::new)
-   );
-
-   public BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> layers, Direction direction, BlockPredicate allowedPlacement, boolean prioritizeTip) {
-      super();
-      this.layers = layers;
-      this.direction = direction;
-      this.allowedPlacement = allowedPlacement;
-      this.prioritizeTip = prioritizeTip;
-   }
-
-   public static BlockColumnConfiguration.Layer layer(IntProvider var0, BlockStateProvider var1) {
-      return new BlockColumnConfiguration.Layer(var0, var1);
-   }
-
-   public static BlockColumnConfiguration simple(IntProvider var0, BlockStateProvider var1) {
-      return new BlockColumnConfiguration(List.of(layer(var0, var1)), Direction.UP, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
-   }
-
-   public static record Layer(IntProvider height, BlockStateProvider state) {
-      public static final Codec<BlockColumnConfiguration.Layer> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  IntProvider.NON_NEGATIVE_CODEC.fieldOf("height").forGetter(BlockColumnConfiguration.Layer::height),
-                  BlockStateProvider.CODEC.fieldOf("provider").forGetter(BlockColumnConfiguration.Layer::state)
-               )
-               .apply(var0, BlockColumnConfiguration.Layer::new)
-      );
-
-      public Layer(IntProvider height, BlockStateProvider state) {
-         super();
-         this.height = height;
-         this.state = state;
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

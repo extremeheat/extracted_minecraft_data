@@ -17,12 +17,12 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.net.Proxy;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyPair;
@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -51,6 +50,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.FileUtil;
+import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
@@ -90,7 +92,6 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.players.GameProfileCache;
@@ -142,6 +143,8 @@ import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.storage.ChunkIOErrorReporter;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.PatrolSpawner;
@@ -161,7 +164,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements ServerInfo, CommandSource, AutoCloseable {
+public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements ServerInfo, ChunkIOErrorReporter, CommandSource, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String VANILLA_BRAND = "vanilla";
    private static final float AVERAGE_TICK_TIME_SMOOTHING = 0.8F;
@@ -254,6 +257,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    protected final WorldData worldData;
    private final PotionBrewing potionBrewing;
    private volatile boolean isSaving;
+   private static final AtomicReference<RuntimeException> fatalException = new AtomicReference<>();
 
    public static <S extends MinecraftServer> S spin(Function<Thread, S> var0) {
       AtomicReference var1 = new AtomicReference();
@@ -695,9 +699,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          LOGGER.error("Encountered an unexpected exception", var46);
          CrashReport var2 = constructOrExtractCrashReport(var46);
          this.fillSystemReport(var2.getSystemReport());
-         File var3 = new File(new File(this.getServerDirectory(), "crash-reports"), "crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
-         if (var2.saveToFile(var3)) {
-            LOGGER.error("This crash report has been saved to: {}", var3.getAbsolutePath());
+         Path var3 = this.getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
+         if (var2.saveToFile(var3, ReportType.CRASH)) {
+            LOGGER.error("This crash report has been saved to: {}", var3.toAbsolutePath());
          } else {
             LOGGER.error("We were unable to save this crash report to disk.");
          }
@@ -769,6 +773,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.runningTask() || Util.getNanos() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTimeNanos : this.nextTickTimeNanos);
    }
 
+   public static boolean throwIfFatalException() {
+      RuntimeException var0 = fatalException.get();
+      if (var0 != null) {
+         throw var0;
+      } else {
+         return true;
+      }
+   }
+
+   public static void setFatalException(RuntimeException var0) {
+      fatalException.compareAndSet(null, var0);
+   }
+
+   @Override
+   public void managedBlock(BooleanSupplier var1) {
+      super.managedBlock(() -> throwIfFatalException() && var1.getAsBoolean());
+   }
+
    protected void waitUntilNextTick() {
       this.runAllTasks();
       this.managedBlock(() -> !this.haveTime());
@@ -821,7 +843,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private Optional<ServerStatus.Favicon> loadStatusIcon() {
-      Optional var1 = Optional.of(this.getFile("server-icon.png").toPath())
+      Optional var1 = Optional.of(this.getFile("server-icon.png"))
          .filter(var0 -> Files.isRegularFile(var0))
          .or(() -> this.storageSource.getIconFile().filter(var0 -> Files.isRegularFile(var0)));
       return var1.flatMap(var0 -> {
@@ -843,8 +865,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.storageSource.getIconFile();
    }
 
-   public File getServerDirectory() {
-      return new File(".");
+   public Path getServerDirectory() {
+      return Path.of("");
    }
 
    public void onServerCrash(CrashReport var1) {
@@ -1018,7 +1040,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.profiler.pop();
    }
 
-   public boolean isNetherEnabled() {
+   public boolean isLevelEnabled(Level var1) {
       return true;
    }
 
@@ -1034,8 +1056,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return !this.serverThread.isAlive();
    }
 
-   public File getFile(String var1) {
-      return new File(this.getServerDirectory(), var1);
+   public Path getFile(String var1) {
+      return this.getServerDirectory().resolve(var1);
    }
 
    public final ServerLevel overworld() {
@@ -1886,40 +1908,78 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return false;
    }
 
-   public void reportChunkLoadFailure(ChunkPos var1) {
+   private void storeChunkIoError(CrashReport var1, ChunkPos var2, RegionStorageInfo var3) {
+      Util.ioPool().execute(() -> {
+         try {
+            Path var4 = this.getFile("debug");
+            FileUtil.createDirectoriesSafe(var4);
+            String var5 = FileUtil.sanitizeName(var3.level());
+            Path var6 = var4.resolve("chunk-" + var5 + "-" + Util.getFilenameFormattedDateTime() + "-server.txt");
+            FileStore var7 = Files.getFileStore(var4);
+            long var8 = var7.getUsableSpace();
+            if (var8 < 8192L) {
+               LOGGER.warn("Not storing chunk IO report due to low space on drive {}", var7.name());
+               return;
+            }
+
+            CrashReportCategory var10 = var1.addCategory("Chunk Info");
+            var10.setDetail("Level", var3::level);
+            var10.setDetail("Dimension", () -> var3.dimension().location().toString());
+            var10.setDetail("Storage", var3::type);
+            var10.setDetail("Position", var2::toString);
+            var1.saveToFile(var6, ReportType.CHUNK_IO_ERROR);
+            LOGGER.info("Saved details to {}", var1.getSaveFile());
+         } catch (Exception var11) {
+            LOGGER.warn("Failed to store chunk IO exception", var11);
+         }
+      });
    }
 
-   public void reportChunkSaveFailure(ChunkPos var1) {
+   @Override
+   public void reportChunkLoadFailure(Throwable var1, RegionStorageInfo var2, ChunkPos var3) {
+      LOGGER.error("Failed to load chunk {},{}", new Object[]{var3.x, var3.z, var1});
+      this.storeChunkIoError(CrashReport.forThrowable(var1, "Chunk load failure"), var3, var2);
+   }
+
+   @Override
+   public void reportChunkSaveFailure(Throwable var1, RegionStorageInfo var2, ChunkPos var3) {
+      LOGGER.error("Failed to save chunk {},{}", new Object[]{var3.x, var3.z, var1});
+      this.storeChunkIoError(CrashReport.forThrowable(var1, "Chunk save failure"), var3, var2);
    }
 
    public PotionBrewing potionBrewing() {
       return this.potionBrewing;
    }
 
-   static record ReloadableResources(CloseableResourceManager resourceManager, ReloadableServerResources managers) implements AutoCloseable {
-
-      ReloadableResources(CloseableResourceManager resourceManager, ReloadableServerResources managers) {
-         super();
-         this.resourceManager = resourceManager;
-         this.managers = managers;
-      }
-
-      @Override
-      public void close() {
-         this.resourceManager.close();
-      }
+   public ServerLinks serverLinks() {
+      return ServerLinks.EMPTY;
    }
 
-   public static record ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {
-      public ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {
-         super();
-         this.id = id;
-         this.url = url;
-         this.hash = hash;
-         this.isRequired = isRequired;
-         this.prompt = prompt;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class TimeProfiler {
       final long startNanos;

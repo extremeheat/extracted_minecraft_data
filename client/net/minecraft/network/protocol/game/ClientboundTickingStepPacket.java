@@ -1,39 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-import net.minecraft.world.TickRateManager;
-
-public record ClientboundTickingStepPacket(int tickSteps) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundTickingStepPacket> STREAM_CODEC = Packet.codec(
-      ClientboundTickingStepPacket::write, ClientboundTickingStepPacket::new
-   );
-
-   private ClientboundTickingStepPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt());
-   }
-
-   public ClientboundTickingStepPacket(int tickSteps) {
-      super();
-      this.tickSteps = tickSteps;
-   }
-
-   public static ClientboundTickingStepPacket from(TickRateManager var0) {
-      return new ClientboundTickingStepPacket(var0.frozenTicksToRun());
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.tickSteps);
-   }
-
-   @Override
-   public PacketType<ClientboundTickingStepPacket> type() {
-      return GamePacketTypes.CLIENTBOUND_TICKING_STEP;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleTickingStep(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

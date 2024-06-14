@@ -71,6 +71,11 @@ public class EmptyLevelChunk extends LevelChunk {
    }
 
    @Override
+   public boolean isSectionEmpty(int var1) {
+      return true;
+   }
+
+   @Override
    public FullChunkStatus getFullStatus() {
       return FullChunkStatus.FULL;
    }

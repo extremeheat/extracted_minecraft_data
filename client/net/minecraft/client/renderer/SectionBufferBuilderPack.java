@@ -1,33 +1,38 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import net.minecraft.Util;
 
 public class SectionBufferBuilderPack implements AutoCloseable {
-   public static final int TOTAL_BUFFERS_SIZE = RenderType.chunkBufferLayers().stream().mapToInt(RenderType::bufferSize).sum();
-   private final Map<RenderType, BufferBuilder> builders = RenderType.chunkBufferLayers()
-      .stream()
-      .collect(Collectors.toMap(var0 -> (RenderType)var0, var0 -> new BufferBuilder(var0.bufferSize())));
+   private static final List<RenderType> RENDER_TYPES = RenderType.chunkBufferLayers();
+   public static final int TOTAL_BUFFERS_SIZE = RENDER_TYPES.stream().mapToInt(RenderType::bufferSize).sum();
+   private final Map<RenderType, ByteBufferBuilder> buffers = Util.make(new Reference2ObjectArrayMap(RENDER_TYPES.size()), var0 -> {
+      for (RenderType var2 : RENDER_TYPES) {
+         var0.put(var2, new ByteBufferBuilder(var2.bufferSize()));
+      }
+   });
 
    public SectionBufferBuilderPack() {
       super();
    }
 
-   public BufferBuilder builder(RenderType var1) {
-      return this.builders.get(var1);
+   public ByteBufferBuilder buffer(RenderType var1) {
+      return this.buffers.get(var1);
    }
 
    public void clearAll() {
-      this.builders.values().forEach(BufferBuilder::clear);
+      this.buffers.values().forEach(ByteBufferBuilder::clear);
    }
 
    public void discardAll() {
-      this.builders.values().forEach(BufferBuilder::discard);
+      this.buffers.values().forEach(ByteBufferBuilder::discard);
    }
 
    @Override
    public void close() {
-      this.builders.values().forEach(BufferBuilder::release);
+      this.buffers.values().forEach(ByteBufferBuilder::close);
    }
 }

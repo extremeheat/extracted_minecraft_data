@@ -41,7 +41,7 @@ public class BlockElement {
    private void fillUvs() {
       for (Entry var2 : this.faces.entrySet()) {
          float[] var3 = this.uvsByFace((Direction)var2.getKey());
-         ((BlockElementFace)var2.getValue()).uv.setMissingUv(var3);
+         ((BlockElementFace)var2.getValue()).uv().setMissingUv(var3);
       }
    }
 

@@ -34,6 +34,7 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -97,9 +98,10 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
          ItemStack var2 = this.getItemBySlot(EquipmentSlot.HEAD);
          if (!var2.isEmpty()) {
             if (var2.isDamageableItem()) {
+               Item var3 = var2.getItem();
                var2.setDamageValue(var2.getDamageValue() + this.random.nextInt(2));
                if (var2.getDamageValue() >= var2.getMaxDamage()) {
-                  this.broadcastBreakEvent(EquipmentSlot.HEAD);
+                  this.onEquippedItemBroken(var3, EquipmentSlot.HEAD);
                   this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
                }
             }
@@ -108,7 +110,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
          }
 
          if (var1) {
-            this.igniteForSeconds(8);
+            this.igniteForSeconds(8.0F);
          }
       }
 
@@ -135,7 +137,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);
-      this.populateDefaultEquipmentEnchantments(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var1, var5, var2);
       this.reassessWeaponGoal();
       this.setCanPickUpLoot(var5.nextFloat() < 0.55F * var2.getSpecialMultiplier());
       if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -180,19 +182,20 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
 
    @Override
    public void performRangedAttack(LivingEntity var1, float var2) {
-      ItemStack var3 = this.getProjectile(this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW)));
-      AbstractArrow var4 = this.getArrow(var3, var2);
-      double var5 = var1.getX() - this.getX();
-      double var7 = var1.getY(0.3333333333333333) - var4.getY();
-      double var9 = var1.getZ() - this.getZ();
-      double var11 = Math.sqrt(var5 * var5 + var9 * var9);
-      var4.shoot(var5, var7 + var11 * 0.20000000298023224, var9, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
+      ItemStack var3 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
+      ItemStack var4 = this.getProjectile(var3);
+      AbstractArrow var5 = this.getArrow(var4, var2, var3);
+      double var6 = var1.getX() - this.getX();
+      double var8 = var1.getY(0.3333333333333333) - var5.getY();
+      double var10 = var1.getZ() - this.getZ();
+      double var12 = Math.sqrt(var6 * var6 + var10 * var10);
+      var5.shoot(var6, var8 + var12 * 0.20000000298023224, var10, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-      this.level().addFreshEntity(var4);
+      this.level().addFreshEntity(var5);
    }
 
-   protected AbstractArrow getArrow(ItemStack var1, float var2) {
-      return ProjectileUtil.getMobArrow(this, var1, var2);
+   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
+      return ProjectileUtil.getMobArrow(this, var1, var2, var3);
    }
 
    @Override

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -25,13 +26,13 @@ public class Arrow extends AbstractArrow {
       super(var1, var2);
    }
 
-   public Arrow(Level var1, double var2, double var4, double var6, ItemStack var8) {
-      super(EntityType.ARROW, var2, var4, var6, var1, var8);
+   public Arrow(Level var1, double var2, double var4, double var6, ItemStack var8, @Nullable ItemStack var9) {
+      super(EntityType.ARROW, var2, var4, var6, var1, var8, var9);
       this.updateColor();
    }
 
-   public Arrow(Level var1, LivingEntity var2, ItemStack var3) {
-      super(EntityType.ARROW, var2, var1, var3);
+   public Arrow(Level var1, LivingEntity var2, ItemStack var3, @Nullable ItemStack var4) {
+      super(EntityType.ARROW, var2, var1, var3, var4);
       this.updateColor();
    }
 

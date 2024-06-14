@@ -1,31 +1,13 @@
 package net.minecraft.network.protocol.common.custom;
 
-import java.util.List;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-
-public record RaidsDebugPayload(List<BlockPos> raidCenters) implements CustomPacketPayload {
-   public static final StreamCodec<FriendlyByteBuf, RaidsDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      RaidsDebugPayload::write, RaidsDebugPayload::new
-   );
-   public static final CustomPacketPayload.Type<RaidsDebugPayload> TYPE = CustomPacketPayload.createType("debug/raids");
-
-   private RaidsDebugPayload(FriendlyByteBuf var1) {
-      this(var1.readList(BlockPos.STREAM_CODEC));
-   }
-
-   public RaidsDebugPayload(List<BlockPos> raidCenters) {
-      super();
-      this.raidCenters = raidCenters;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.raidCenters, BlockPos.STREAM_CODEC);
-   }
-
-   @Override
-   public CustomPacketPayload.Type<RaidsDebugPayload> type() {
-      return TYPE;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

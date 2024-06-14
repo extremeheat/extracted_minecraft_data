@@ -23,12 +23,13 @@ public class NumberProviders {
    public static final LootNumberProviderType BINOMIAL = register("binomial", BinomialDistributionGenerator.CODEC);
    public static final LootNumberProviderType SCORE = register("score", ScoreboardValue.CODEC);
    public static final LootNumberProviderType STORAGE = register("storage", StorageValue.CODEC);
+   public static final LootNumberProviderType ENCHANTMENT_LEVEL = register("enchantment_level", EnchantmentLevelProvider.CODEC);
 
    public NumberProviders() {
       super();
    }
 
    private static LootNumberProviderType register(String var0, MapCodec<? extends NumberProvider> var1) {
-      return Registry.register(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE, new ResourceLocation(var0), new LootNumberProviderType(var1));
+      return Registry.register(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE, ResourceLocation.withDefaultNamespace(var0), new LootNumberProviderType(var1));
    }
 }

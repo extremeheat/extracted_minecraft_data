@@ -5,22 +5,16 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.doubles.Double2DoubleFunction;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.ToFloatFunction;
-import net.minecraft.util.VisibleForDebug;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.levelgen.synth.SimplexNoise;
@@ -250,71 +244,18 @@ public final class DensityFunctions {
       return add(mul(var0, add(var3, constant(-var1))), constant(var1));
    }
 
-   static record Ap2(
-      DensityFunctions.TwoArgumentSimpleFunction.Type type, DensityFunction argument1, DensityFunction argument2, double minValue, double maxValue
-   ) implements DensityFunctions.TwoArgumentSimpleFunction {
-      Ap2(DensityFunctions.TwoArgumentSimpleFunction.Type type, DensityFunction argument1, DensityFunction argument2, double minValue, double maxValue) {
-         super();
-         this.type = type;
-         this.argument1 = argument1;
-         this.argument2 = argument2;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         double var2 = this.argument1.compute(var1);
-
-         return switch (this.type) {
-            case ADD -> var2 + this.argument2.compute(var1);
-            case MUL -> var2 == 0.0 ? 0.0 : var2 * this.argument2.compute(var1);
-            case MIN -> var2 < this.argument2.minValue() ? var2 : Math.min(var2, this.argument2.compute(var1));
-            case MAX -> var2 > this.argument2.maxValue() ? var2 : Math.max(var2, this.argument2.compute(var1));
-         };
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         this.argument1.fillArray(var1, var2);
-         switch (this.type) {
-            case ADD:
-               double[] var10 = new double[var1.length];
-               this.argument2.fillArray(var10, var2);
-
-               for (int var11 = 0; var11 < var1.length; var11++) {
-                  var1[var11] += var10[var11];
-               }
-               break;
-            case MUL:
-               for (int var9 = 0; var9 < var1.length; var9++) {
-                  double var4 = var1[var9];
-                  var1[var9] = var4 == 0.0 ? 0.0 : var4 * this.argument2.compute(var2.forIndex(var9));
-               }
-               break;
-            case MIN:
-               double var8 = this.argument2.minValue();
-
-               for (int var12 = 0; var12 < var1.length; var12++) {
-                  double var13 = var1[var12];
-                  var1[var12] = var13 < var8 ? var13 : Math.min(var13, this.argument2.compute(var2.forIndex(var12)));
-               }
-               break;
-            case MAX:
-               double var3 = this.argument2.maxValue();
-
-               for (int var5 = 0; var5 < var1.length; var5++) {
-                  double var6 = var1[var5];
-                  var1[var5] = var6 > var3 ? var6 : Math.max(var6, this.argument2.compute(var2.forIndex(var5)));
-               }
-         }
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(DensityFunctions.TwoArgumentSimpleFunction.create(this.type, this.argument1.mapAll(var1), this.argument2.mapAll(var1)));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    protected static enum BeardifierMarker implements DensityFunctions.BeardifierOrMarker {
       INSTANCE;
@@ -386,41 +327,18 @@ public final class DensityFunctions {
       }
    }
 
-   static record BlendDensity(DensityFunction input) implements DensityFunctions.TransformerWithContext {
-      static final KeyDispatchDataCodec<DensityFunctions.BlendDensity> CODEC = DensityFunctions.singleFunctionArgumentCodec(
-         DensityFunctions.BlendDensity::new, DensityFunctions.BlendDensity::input
-      );
-
-      BlendDensity(DensityFunction input) {
-         super();
-         this.input = input;
-      }
-
-      @Override
-      public double transform(DensityFunction.FunctionContext var1, double var2) {
-         return var1.getBlender().blendDensity(var1, var2);
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(new DensityFunctions.BlendDensity(this.input.mapAll(var1)));
-      }
-
-      @Override
-      public double minValue() {
-         return -1.0 / 0.0;
-      }
-
-      @Override
-      public double maxValue() {
-         return 1.0 / 0.0;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    protected static enum BlendOffset implements DensityFunction.SimpleFunction {
       INSTANCE;
@@ -456,76 +374,31 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record Clamp(DensityFunction input, double minValue, double maxValue) implements DensityFunctions.PureTransformer {
-      private static final MapCodec<DensityFunctions.Clamp> DATA_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  DensityFunction.DIRECT_CODEC.fieldOf("input").forGetter(DensityFunctions.Clamp::input),
-                  DensityFunctions.NOISE_VALUE_CODEC.fieldOf("min").forGetter(DensityFunctions.Clamp::minValue),
-                  DensityFunctions.NOISE_VALUE_CODEC.fieldOf("max").forGetter(DensityFunctions.Clamp::maxValue)
-               )
-               .apply(var0, DensityFunctions.Clamp::new)
-      );
-      public static final KeyDispatchDataCodec<DensityFunctions.Clamp> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      protected Clamp(DensityFunction input, double minValue, double maxValue) {
-         super();
-         this.input = input;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
-      }
-
-      @Override
-      public double transform(double var1) {
-         return Mth.clamp(var1, this.minValue, this.maxValue);
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return new DensityFunctions.Clamp(this.input.mapAll(var1), this.minValue, this.maxValue);
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
-
-   static record Constant(double value) implements DensityFunction.SimpleFunction {
-      static final KeyDispatchDataCodec<DensityFunctions.Constant> CODEC = DensityFunctions.singleArgumentCodec(
-         DensityFunctions.NOISE_VALUE_CODEC, DensityFunctions.Constant::new, DensityFunctions.Constant::value
-      );
-      static final DensityFunctions.Constant ZERO = new DensityFunctions.Constant(0.0);
-
-      Constant(double value) {
-         super();
-         this.value = value;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return this.value;
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         Arrays.fill(var1, this.value);
-      }
-
-      @Override
-      public double minValue() {
-         return this.value;
-      }
-
-      @Override
-      public double maxValue() {
-         return this.value;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    protected static final class EndIslandDensityFunction implements DensityFunction.SimpleFunction {
       public static final KeyDispatchDataCodec<DensityFunctions.EndIslandDensityFunction> CODEC = KeyDispatchDataCodec.of(
@@ -588,164 +461,44 @@ public final class DensityFunctions {
       }
    }
 
-   @VisibleForDebug
-   public static record HolderHolder(Holder<DensityFunction> function) implements DensityFunction {
-      public HolderHolder(Holder<DensityFunction> function) {
-         super();
-         this.function = function;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return this.function.value().compute(var1);
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         this.function.value().fillArray(var1, var2);
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(new DensityFunctions.HolderHolder(new Holder.Direct<>(this.function.value().mapAll(var1))));
-      }
-
-      @Override
-      public double minValue() {
-         return this.function.isBound() ? this.function.value().minValue() : -1.0 / 0.0;
-      }
-
-      @Override
-      public double maxValue() {
-         return this.function.isBound() ? this.function.value().maxValue() : 1.0 / 0.0;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         throw new UnsupportedOperationException("Calling .codec() on HolderHolder");
-      }
-   }
-
-   protected static record Mapped(DensityFunctions.Mapped.Type type, DensityFunction input, double minValue, double maxValue)
-      implements DensityFunctions.PureTransformer {
-      protected Mapped(DensityFunctions.Mapped.Type type, DensityFunction input, double minValue, double maxValue) {
-         super();
-         this.type = type;
-         this.input = input;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
-      }
-
-      public static DensityFunctions.Mapped create(DensityFunctions.Mapped.Type var0, DensityFunction var1) {
-         double var2 = var1.minValue();
-         double var4 = transform(var0, var2);
-         double var6 = transform(var0, var1.maxValue());
-         return var0 != DensityFunctions.Mapped.Type.ABS && var0 != DensityFunctions.Mapped.Type.SQUARE
-            ? new DensityFunctions.Mapped(var0, var1, var4, var6)
-            : new DensityFunctions.Mapped(var0, var1, Math.max(0.0, var2), Math.max(var4, var6));
-      }
-
-      private static double transform(DensityFunctions.Mapped.Type var0, double var1) {
-         return switch (var0) {
-            case ABS -> Math.abs(var1);
-            case SQUARE -> var1 * var1;
-            case CUBE -> var1 * var1 * var1;
-            case HALF_NEGATIVE -> var1 > 0.0 ? var1 : var1 * 0.5;
-            case QUARTER_NEGATIVE -> var1 > 0.0 ? var1 : var1 * 0.25;
-            case SQUEEZE -> {
-               double var3 = Mth.clamp(var1, -1.0, 1.0);
-               yield var3 / 2.0 - var3 * var3 * var3 / 24.0;
-            }
-         };
-      }
-
-      @Override
-      public double transform(double var1) {
-         return transform(this.type, var1);
-      }
-
-      public DensityFunctions.Mapped mapAll(DensityFunction.Visitor var1) {
-         return create(this.type, this.input.mapAll(var1));
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return this.type.codec;
-      }
-
-      static enum Type implements StringRepresentable {
-         ABS("abs"),
-         SQUARE("square"),
-         CUBE("cube"),
-         HALF_NEGATIVE("half_negative"),
-         QUARTER_NEGATIVE("quarter_negative"),
-         SQUEEZE("squeeze");
-
-         private final String name;
-         final KeyDispatchDataCodec<DensityFunctions.Mapped> codec = DensityFunctions.singleFunctionArgumentCodec(
-            var1 -> DensityFunctions.Mapped.create(this, var1), DensityFunctions.Mapped::input
-         );
-
-         private Type(final String nullxx) {
-            this.name = nullxx;
-         }
-
-         @Override
-         public String getSerializedName() {
-            return this.name;
-         }
-      }
-   }
-
-   protected static record Marker(DensityFunctions.Marker.Type type, DensityFunction wrapped) implements DensityFunctions.MarkerOrMarked {
-      protected Marker(DensityFunctions.Marker.Type type, DensityFunction wrapped) {
-         super();
-         this.type = type;
-         this.wrapped = wrapped;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return this.wrapped.compute(var1);
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         this.wrapped.fillArray(var1, var2);
-      }
-
-      @Override
-      public double minValue() {
-         return this.wrapped.minValue();
-      }
-
-      @Override
-      public double maxValue() {
-         return this.wrapped.maxValue();
-      }
-
-      static enum Type implements StringRepresentable {
-         Interpolated("interpolated"),
-         FlatCache("flat_cache"),
-         Cache2D("cache_2d"),
-         CacheOnce("cache_once"),
-         CacheAllInCell("cache_all_in_cell");
-
-         private final String name;
-         final KeyDispatchDataCodec<DensityFunctions.MarkerOrMarked> codec = DensityFunctions.singleFunctionArgumentCodec(
-            var1 -> new DensityFunctions.Marker(this, var1), DensityFunctions.MarkerOrMarked::wrapped
-         );
-
-         private Type(final String nullxx) {
-            this.name = nullxx;
-         }
-
-         @Override
-         public String getSerializedName() {
-            return this.name;
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface MarkerOrMarked extends DensityFunction {
       DensityFunctions.Marker.Type type();
@@ -763,121 +516,31 @@ public final class DensityFunctions {
       }
    }
 
-   static record MulOrAdd(DensityFunctions.MulOrAdd.Type specificType, DensityFunction input, double minValue, double maxValue, double argument)
-      implements DensityFunctions.PureTransformer,
-      DensityFunctions.TwoArgumentSimpleFunction {
-      MulOrAdd(DensityFunctions.MulOrAdd.Type specificType, DensityFunction input, double minValue, double maxValue, double argument) {
-         super();
-         this.specificType = specificType;
-         this.input = input;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
-         this.argument = argument;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public DensityFunctions.TwoArgumentSimpleFunction.Type type() {
-         return this.specificType == DensityFunctions.MulOrAdd.Type.MUL
-            ? DensityFunctions.TwoArgumentSimpleFunction.Type.MUL
-            : DensityFunctions.TwoArgumentSimpleFunction.Type.ADD;
-      }
-
-      @Override
-      public DensityFunction argument1() {
-         return DensityFunctions.constant(this.argument);
-      }
-
-      @Override
-      public DensityFunction argument2() {
-         return this.input;
-      }
-
-      @Override
-      public double transform(double var1) {
-         return switch (this.specificType) {
-            case MUL -> var1 * this.argument;
-            case ADD -> var1 + this.argument;
-         };
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         DensityFunction var2 = this.input.mapAll(var1);
-         double var3 = var2.minValue();
-         double var5 = var2.maxValue();
-         double var7;
-         double var9;
-         if (this.specificType == DensityFunctions.MulOrAdd.Type.ADD) {
-            var7 = var3 + this.argument;
-            var9 = var5 + this.argument;
-         } else if (this.argument >= 0.0) {
-            var7 = var3 * this.argument;
-            var9 = var5 * this.argument;
-         } else {
-            var7 = var5 * this.argument;
-            var9 = var3 * this.argument;
-         }
-
-         return new DensityFunctions.MulOrAdd(this.specificType, var2, var7, var9, this.argument);
-      }
-
-      static enum Type {
-         MUL,
-         ADD;
-
-         private Type() {
-         }
-      }
-   }
-
-   protected static record Noise(DensityFunction.NoiseHolder noise, @Deprecated double xzScale, double yScale) implements DensityFunction {
-      public static final MapCodec<DensityFunctions.Noise> DATA_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  DensityFunction.NoiseHolder.CODEC.fieldOf("noise").forGetter(DensityFunctions.Noise::noise),
-                  Codec.DOUBLE.fieldOf("xz_scale").forGetter(DensityFunctions.Noise::xzScale),
-                  Codec.DOUBLE.fieldOf("y_scale").forGetter(DensityFunctions.Noise::yScale)
-               )
-               .apply(var0, DensityFunctions.Noise::new)
-      );
-      public static final KeyDispatchDataCodec<DensityFunctions.Noise> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
-
-      protected Noise(DensityFunction.NoiseHolder noise, @Deprecated double xzScale, double yScale) {
-         super();
-         this.noise = noise;
-         this.xzScale = xzScale;
-         this.yScale = yScale;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return this.noise.getValue((double)var1.blockX() * this.xzScale, (double)var1.blockY() * this.yScale, (double)var1.blockZ() * this.xzScale);
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         var2.fillAllDirectly(var1, this);
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(new DensityFunctions.Noise(var1.visitNoise(this.noise), this.xzScale, this.yScale));
-      }
-
-      @Override
-      public double minValue() {
-         return -this.maxValue();
-      }
-
-      @Override
-      public double maxValue() {
-         return this.noise.maxValue();
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface PureTransformer extends DensityFunction {
       DensityFunction input();
@@ -899,151 +562,57 @@ public final class DensityFunctions {
       double transform(double var1);
    }
 
-   static record RangeChoice(DensityFunction input, double minInclusive, double maxExclusive, DensityFunction whenInRange, DensityFunction whenOutOfRange)
-      implements DensityFunction {
-      public static final MapCodec<DensityFunctions.RangeChoice> DATA_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  DensityFunction.HOLDER_HELPER_CODEC.fieldOf("input").forGetter(DensityFunctions.RangeChoice::input),
-                  DensityFunctions.NOISE_VALUE_CODEC.fieldOf("min_inclusive").forGetter(DensityFunctions.RangeChoice::minInclusive),
-                  DensityFunctions.NOISE_VALUE_CODEC.fieldOf("max_exclusive").forGetter(DensityFunctions.RangeChoice::maxExclusive),
-                  DensityFunction.HOLDER_HELPER_CODEC.fieldOf("when_in_range").forGetter(DensityFunctions.RangeChoice::whenInRange),
-                  DensityFunction.HOLDER_HELPER_CODEC.fieldOf("when_out_of_range").forGetter(DensityFunctions.RangeChoice::whenOutOfRange)
-               )
-               .apply(var0, DensityFunctions.RangeChoice::new)
-      );
-      public static final KeyDispatchDataCodec<DensityFunctions.RangeChoice> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      RangeChoice(DensityFunction input, double minInclusive, double maxExclusive, DensityFunction whenInRange, DensityFunction whenOutOfRange) {
-         super();
-         this.input = input;
-         this.minInclusive = minInclusive;
-         this.maxExclusive = maxExclusive;
-         this.whenInRange = whenInRange;
-         this.whenOutOfRange = whenOutOfRange;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         double var2 = this.input.compute(var1);
-         return var2 >= this.minInclusive && var2 < this.maxExclusive ? this.whenInRange.compute(var1) : this.whenOutOfRange.compute(var1);
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         this.input.fillArray(var1, var2);
-
-         for (int var3 = 0; var3 < var1.length; var3++) {
-            double var4 = var1[var3];
-            if (var4 >= this.minInclusive && var4 < this.maxExclusive) {
-               var1[var3] = this.whenInRange.compute(var2.forIndex(var3));
-            } else {
-               var1[var3] = this.whenOutOfRange.compute(var2.forIndex(var3));
-            }
-         }
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(
-            new DensityFunctions.RangeChoice(
-               this.input.mapAll(var1), this.minInclusive, this.maxExclusive, this.whenInRange.mapAll(var1), this.whenOutOfRange.mapAll(var1)
-            )
-         );
-      }
-
-      @Override
-      public double minValue() {
-         return Math.min(this.whenInRange.minValue(), this.whenOutOfRange.minValue());
-      }
-
-      @Override
-      public double maxValue() {
-         return Math.max(this.whenInRange.maxValue(), this.whenOutOfRange.maxValue());
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
-
-   protected static record Shift(DensityFunction.NoiseHolder offsetNoise) implements DensityFunctions.ShiftNoise {
-      static final KeyDispatchDataCodec<DensityFunctions.Shift> CODEC = DensityFunctions.singleArgumentCodec(
-         DensityFunction.NoiseHolder.CODEC, DensityFunctions.Shift::new, DensityFunctions.Shift::offsetNoise
-      );
-
-      protected Shift(DensityFunction.NoiseHolder offsetNoise) {
-         super();
-         this.offsetNoise = offsetNoise;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return this.compute((double)var1.blockX(), (double)var1.blockY(), (double)var1.blockZ());
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(new DensityFunctions.Shift(var1.visitNoise(this.offsetNoise)));
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
-
-   protected static record ShiftA(DensityFunction.NoiseHolder offsetNoise) implements DensityFunctions.ShiftNoise {
-      static final KeyDispatchDataCodec<DensityFunctions.ShiftA> CODEC = DensityFunctions.singleArgumentCodec(
-         DensityFunction.NoiseHolder.CODEC, DensityFunctions.ShiftA::new, DensityFunctions.ShiftA::offsetNoise
-      );
-
-      protected ShiftA(DensityFunction.NoiseHolder offsetNoise) {
-         super();
-         this.offsetNoise = offsetNoise;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return this.compute((double)var1.blockX(), 0.0, (double)var1.blockZ());
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(new DensityFunctions.ShiftA(var1.visitNoise(this.offsetNoise)));
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
-
-   protected static record ShiftB(DensityFunction.NoiseHolder offsetNoise) implements DensityFunctions.ShiftNoise {
-      static final KeyDispatchDataCodec<DensityFunctions.ShiftB> CODEC = DensityFunctions.singleArgumentCodec(
-         DensityFunction.NoiseHolder.CODEC, DensityFunctions.ShiftB::new, DensityFunctions.ShiftB::offsetNoise
-      );
-
-      protected ShiftB(DensityFunction.NoiseHolder offsetNoise) {
-         super();
-         this.offsetNoise = offsetNoise;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return this.compute((double)var1.blockZ(), (double)var1.blockX(), 0.0);
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(new DensityFunctions.ShiftB(var1.visitNoise(this.offsetNoise)));
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface ShiftNoise extends DensityFunction {
       DensityFunction.NoiseHolder offsetNoise();
@@ -1068,175 +637,31 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record ShiftedNoise(
-      DensityFunction shiftX, DensityFunction shiftY, DensityFunction shiftZ, double xzScale, double yScale, DensityFunction.NoiseHolder noise
-   ) implements DensityFunction {
-      private static final MapCodec<DensityFunctions.ShiftedNoise> DATA_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  DensityFunction.HOLDER_HELPER_CODEC.fieldOf("shift_x").forGetter(DensityFunctions.ShiftedNoise::shiftX),
-                  DensityFunction.HOLDER_HELPER_CODEC.fieldOf("shift_y").forGetter(DensityFunctions.ShiftedNoise::shiftY),
-                  DensityFunction.HOLDER_HELPER_CODEC.fieldOf("shift_z").forGetter(DensityFunctions.ShiftedNoise::shiftZ),
-                  Codec.DOUBLE.fieldOf("xz_scale").forGetter(DensityFunctions.ShiftedNoise::xzScale),
-                  Codec.DOUBLE.fieldOf("y_scale").forGetter(DensityFunctions.ShiftedNoise::yScale),
-                  DensityFunction.NoiseHolder.CODEC.fieldOf("noise").forGetter(DensityFunctions.ShiftedNoise::noise)
-               )
-               .apply(var0, DensityFunctions.ShiftedNoise::new)
-      );
-      public static final KeyDispatchDataCodec<DensityFunctions.ShiftedNoise> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      protected ShiftedNoise(
-         DensityFunction shiftX, DensityFunction shiftY, DensityFunction shiftZ, double xzScale, double yScale, DensityFunction.NoiseHolder noise
-      ) {
-         super();
-         this.shiftX = shiftX;
-         this.shiftY = shiftY;
-         this.shiftZ = shiftZ;
-         this.xzScale = xzScale;
-         this.yScale = yScale;
-         this.noise = noise;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         double var2 = (double)var1.blockX() * this.xzScale + this.shiftX.compute(var1);
-         double var4 = (double)var1.blockY() * this.yScale + this.shiftY.compute(var1);
-         double var6 = (double)var1.blockZ() * this.xzScale + this.shiftZ.compute(var1);
-         return this.noise.getValue(var2, var4, var6);
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         var2.fillAllDirectly(var1, this);
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(
-            new DensityFunctions.ShiftedNoise(
-               this.shiftX.mapAll(var1), this.shiftY.mapAll(var1), this.shiftZ.mapAll(var1), this.xzScale, this.yScale, var1.visitNoise(this.noise)
-            )
-         );
-      }
-
-      @Override
-      public double minValue() {
-         return -this.maxValue();
-      }
-
-      @Override
-      public double maxValue() {
-         return this.noise.maxValue();
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
-
-   public static record Spline(CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate> spline) implements DensityFunction {
-      private static final Codec<CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate>> SPLINE_CODEC = CubicSpline.codec(
-         DensityFunctions.Spline.Coordinate.CODEC
-      );
-      private static final MapCodec<DensityFunctions.Spline> DATA_CODEC = SPLINE_CODEC.fieldOf("spline")
-         .xmap(DensityFunctions.Spline::new, DensityFunctions.Spline::spline);
-      public static final KeyDispatchDataCodec<DensityFunctions.Spline> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
-
-      public Spline(CubicSpline<DensityFunctions.Spline.Point, DensityFunctions.Spline.Coordinate> spline) {
-         super();
-         this.spline = spline;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return (double)this.spline.apply(new DensityFunctions.Spline.Point(var1));
-      }
-
-      @Override
-      public double minValue() {
-         return (double)this.spline.minValue();
-      }
-
-      @Override
-      public double maxValue() {
-         return (double)this.spline.maxValue();
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         var2.fillAllDirectly(var1, this);
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(new DensityFunctions.Spline(this.spline.mapAll(var1x -> var1x.mapAll(var1))));
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-
-      public static record Coordinate(Holder<DensityFunction> function) implements ToFloatFunction<DensityFunctions.Spline.Point> {
-         public static final Codec<DensityFunctions.Spline.Coordinate> CODEC = DensityFunction.CODEC
-            .xmap(DensityFunctions.Spline.Coordinate::new, DensityFunctions.Spline.Coordinate::function);
-
-         public Coordinate(Holder<DensityFunction> function) {
-            super();
-            this.function = function;
-         }
-
-         @Override
-         public String toString() {
-            Optional var1 = this.function.unwrapKey();
-            if (var1.isPresent()) {
-               ResourceKey var2 = (ResourceKey)var1.get();
-               if (var2 == NoiseRouterData.CONTINENTS) {
-                  return "continents";
-               }
-
-               if (var2 == NoiseRouterData.EROSION) {
-                  return "erosion";
-               }
-
-               if (var2 == NoiseRouterData.RIDGES) {
-                  return "weirdness";
-               }
-
-               if (var2 == NoiseRouterData.RIDGES_FOLDED) {
-                  return "ridges";
-               }
-            }
-
-            return "Coordinate[" + this.function + "]";
-         }
-
-         public float apply(DensityFunctions.Spline.Point var1) {
-            return (float)this.function.value().compute(var1.context());
-         }
-
-         @Override
-         public float minValue() {
-            return this.function.isBound() ? (float)this.function.value().minValue() : -1.0F / 0.0F;
-         }
-
-         @Override
-         public float maxValue() {
-            return this.function.isBound() ? (float)this.function.value().maxValue() : 1.0F / 0.0F;
-         }
-
-         public DensityFunctions.Spline.Coordinate mapAll(DensityFunction.Visitor var1) {
-            return new DensityFunctions.Spline.Coordinate(new Holder.Direct<>(this.function.value().mapAll(var1)));
-         }
-      }
-
-      public static record Point(DensityFunction.FunctionContext context) {
-         public Point(DensityFunction.FunctionContext context) {
-            super();
-            this.context = context;
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface TransformerWithContext extends DensityFunction {
       DensityFunction input();
@@ -1346,118 +771,29 @@ public final class DensityFunctions {
       }
    }
 
-   protected static record WeirdScaledSampler(
-      DensityFunction input, DensityFunction.NoiseHolder noise, DensityFunctions.WeirdScaledSampler.RarityValueMapper rarityValueMapper
-   ) implements DensityFunctions.TransformerWithContext {
-      private static final MapCodec<DensityFunctions.WeirdScaledSampler> DATA_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  DensityFunction.HOLDER_HELPER_CODEC.fieldOf("input").forGetter(DensityFunctions.WeirdScaledSampler::input),
-                  DensityFunction.NoiseHolder.CODEC.fieldOf("noise").forGetter(DensityFunctions.WeirdScaledSampler::noise),
-                  DensityFunctions.WeirdScaledSampler.RarityValueMapper.CODEC
-                     .fieldOf("rarity_value_mapper")
-                     .forGetter(DensityFunctions.WeirdScaledSampler::rarityValueMapper)
-               )
-               .apply(var0, DensityFunctions.WeirdScaledSampler::new)
-      );
-      public static final KeyDispatchDataCodec<DensityFunctions.WeirdScaledSampler> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      protected WeirdScaledSampler(
-         DensityFunction input, DensityFunction.NoiseHolder noise, DensityFunctions.WeirdScaledSampler.RarityValueMapper rarityValueMapper
-      ) {
-         super();
-         this.input = input;
-         this.noise = noise;
-         this.rarityValueMapper = rarityValueMapper;
-      }
-
-      @Override
-      public double transform(DensityFunction.FunctionContext var1, double var2) {
-         double var4 = this.rarityValueMapper.mapper.get(var2);
-         return var4 * Math.abs(this.noise.getValue((double)var1.blockX() / var4, (double)var1.blockY() / var4, (double)var1.blockZ() / var4));
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(new DensityFunctions.WeirdScaledSampler(this.input.mapAll(var1), var1.visitNoise(this.noise), this.rarityValueMapper));
-      }
-
-      @Override
-      public double minValue() {
-         return 0.0;
-      }
-
-      @Override
-      public double maxValue() {
-         return this.rarityValueMapper.maxRarity * this.noise.maxValue();
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-
-      public static enum RarityValueMapper implements StringRepresentable {
-         TYPE1("type_1", NoiseRouterData.QuantizedSpaghettiRarity::getSpaghettiRarity3D, 2.0),
-         TYPE2("type_2", NoiseRouterData.QuantizedSpaghettiRarity::getSphaghettiRarity2D, 3.0);
-
-         public static final Codec<DensityFunctions.WeirdScaledSampler.RarityValueMapper> CODEC = StringRepresentable.fromEnum(
-            DensityFunctions.WeirdScaledSampler.RarityValueMapper::values
-         );
-         private final String name;
-         final Double2DoubleFunction mapper;
-         final double maxRarity;
-
-         private RarityValueMapper(final String nullxx, final Double2DoubleFunction nullxxx, final double nullxxxx) {
-            this.name = nullxx;
-            this.mapper = nullxxx;
-            this.maxRarity = nullxxxx;
-         }
-
-         @Override
-         public String getSerializedName() {
-            return this.name;
-         }
-      }
-   }
-
-   static record YClampedGradient(int fromY, int toY, double fromValue, double toValue) implements DensityFunction.SimpleFunction {
-      private static final MapCodec<DensityFunctions.YClampedGradient> DATA_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  Codec.intRange(DimensionType.MIN_Y * 2, DimensionType.MAX_Y * 2).fieldOf("from_y").forGetter(DensityFunctions.YClampedGradient::fromY),
-                  Codec.intRange(DimensionType.MIN_Y * 2, DimensionType.MAX_Y * 2).fieldOf("to_y").forGetter(DensityFunctions.YClampedGradient::toY),
-                  DensityFunctions.NOISE_VALUE_CODEC.fieldOf("from_value").forGetter(DensityFunctions.YClampedGradient::fromValue),
-                  DensityFunctions.NOISE_VALUE_CODEC.fieldOf("to_value").forGetter(DensityFunctions.YClampedGradient::toValue)
-               )
-               .apply(var0, DensityFunctions.YClampedGradient::new)
-      );
-      public static final KeyDispatchDataCodec<DensityFunctions.YClampedGradient> CODEC = DensityFunctions.makeCodec(DATA_CODEC);
-
-      YClampedGradient(int fromY, int toY, double fromValue, double toValue) {
-         super();
-         this.fromY = fromY;
-         this.toY = toY;
-         this.fromValue = fromValue;
-         this.toValue = toValue;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return Mth.clampedMap((double)var1.blockY(), (double)this.fromY, (double)this.toY, this.fromValue, this.toValue);
-      }
-
-      @Override
-      public double minValue() {
-         return Math.min(this.fromValue, this.toValue);
-      }
-
-      @Override
-      public double maxValue() {
-         return Math.max(this.fromValue, this.toValue);
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return CODEC;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

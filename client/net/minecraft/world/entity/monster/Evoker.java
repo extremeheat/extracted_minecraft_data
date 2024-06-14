@@ -139,7 +139,7 @@ public class Evoker extends SpellcasterIllager {
    }
 
    @Override
-   public void applyRaidBuffs(int var1, boolean var2) {
+   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
    }
 
    class EvokerAttackSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {

@@ -39,7 +39,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
@@ -458,7 +457,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    @Override
    public String toString() {
-      return "Block{" + BuiltInRegistries.BLOCK.getKey(this) + "}";
+      return "Block{" + BuiltInRegistries.BLOCK.wrapAsHolder(this).getRegisteredName() + "}";
    }
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
@@ -479,11 +478,9 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    protected void tryDropExperience(ServerLevel var1, BlockPos var2, ItemStack var3, IntProvider var4) {
-      if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, var3) == 0) {
-         int var5 = var4.sample(var1.random);
-         if (var5 > 0) {
-            this.popExperience(var1, var2, var5);
-         }
+      int var5 = EnchantmentHelper.processBlockExperience(var1, var3, var4.sample(var1.getRandom()));
+      if (var5 > 0) {
+         this.popExperience(var1, var2, var5);
       }
    }
 

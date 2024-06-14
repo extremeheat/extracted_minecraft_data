@@ -102,20 +102,20 @@ public final class ModelPart {
    }
 
    public void render(PoseStack var1, VertexConsumer var2, int var3, int var4) {
-      this.render(var1, var2, var3, var4, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.render(var1, var2, var3, var4, -1);
    }
 
-   public void render(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
+   public void render(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
       if (this.visible) {
          if (!this.cubes.isEmpty() || !this.children.isEmpty()) {
             var1.pushPose();
             this.translateAndRotate(var1);
             if (!this.skipDraw) {
-               this.compile(var1.last(), var2, var3, var4, var5, var6, var7, var8);
+               this.compile(var1.last(), var2, var3, var4, var5);
             }
 
-            for (ModelPart var10 : this.children.values()) {
-               var10.render(var1, var2, var3, var4, var5, var6, var7, var8);
+            for (ModelPart var7 : this.children.values()) {
+               var7.render(var1, var2, var3, var4, var5);
             }
 
             var1.popPose();
@@ -154,9 +154,9 @@ public final class ModelPart {
       }
    }
 
-   private void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-      for (ModelPart.Cube var10 : this.cubes) {
-         var10.compile(var1, var2, var3, var4, var5, var6, var7, var8);
+   private void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5) {
+      for (ModelPart.Cube var7 : this.cubes) {
+         var7.compile(var1, var2, var3, var4, var5);
       }
    }
 
@@ -294,22 +294,22 @@ public final class ModelPart {
          }
       }
 
-      public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-         Matrix4f var9 = var1.pose();
-         Vector3f var10 = new Vector3f();
+      public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5) {
+         Matrix4f var6 = var1.pose();
+         Vector3f var7 = new Vector3f();
 
-         for (ModelPart.Polygon var14 : this.polygons) {
-            Vector3f var15 = var1.transformNormal(var14.normal, var10);
-            float var16 = var15.x();
-            float var17 = var15.y();
-            float var18 = var15.z();
+         for (ModelPart.Polygon var11 : this.polygons) {
+            Vector3f var12 = var1.transformNormal(var11.normal, var7);
+            float var13 = var12.x();
+            float var14 = var12.y();
+            float var15 = var12.z();
 
-            for (ModelPart.Vertex var22 : var14.vertices) {
-               float var23 = var22.pos.x() / 16.0F;
-               float var24 = var22.pos.y() / 16.0F;
-               float var25 = var22.pos.z() / 16.0F;
-               Vector3f var26 = var9.transformPosition(var23, var24, var25, var10);
-               var2.vertex(var26.x(), var26.y(), var26.z(), var5, var6, var7, var8, var22.u, var22.v, var4, var3, var16, var17, var18);
+            for (ModelPart.Vertex var19 : var11.vertices) {
+               float var20 = var19.pos.x() / 16.0F;
+               float var21 = var19.pos.y() / 16.0F;
+               float var22 = var19.pos.z() / 16.0F;
+               Vector3f var23 = var6.transformPosition(var20, var21, var22, var7);
+               var2.addVertex(var23.x(), var23.y(), var23.z(), var5, var19.u, var19.v, var4, var3, var13, var14, var15);
             }
          }
       }

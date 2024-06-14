@@ -8,8 +8,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.entity.player.StackedContents;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -52,22 +50,17 @@ public class ShapelessRecipe implements CraftingRecipe {
       return this.ingredients;
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
-      StackedContents var3 = new StackedContents();
-      int var4 = 0;
-
-      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            var4++;
-            var3.accountStack(var6, 1);
-         }
+   public boolean matches(CraftingInput var1, Level var2) {
+      if (var1.ingredientCount() != this.ingredients.size()) {
+         return false;
+      } else {
+         return var1.size() == 1 && this.ingredients.size() == 1
+            ? ((Ingredient)this.ingredients.getFirst()).test(var1.getItem(0))
+            : var1.stackedContents().canCraft(this, null);
       }
-
-      return var4 == this.ingredients.size() && var3.canCraft(this, null);
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
       return this.result.copy();
    }
 

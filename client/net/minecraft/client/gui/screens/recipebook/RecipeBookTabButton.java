@@ -15,7 +15,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeBookTabButton extends StateSwitchingButton {
-   private static final WidgetSprites SPRITES = new WidgetSprites(new ResourceLocation("recipe_book/tab"), new ResourceLocation("recipe_book/tab_selected"));
+   private static final WidgetSprites SPRITES = new WidgetSprites(
+      ResourceLocation.withDefaultNamespace("recipe_book/tab"), ResourceLocation.withDefaultNamespace("recipe_book/tab_selected")
+   );
    private final RecipeBookCategories category;
    private static final float ANIMATION_TIME = 15.0F;
    private float animationTime;
@@ -31,7 +33,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       List var3 = var2.getCollection(this.category);
       if (var1.player.containerMenu instanceof RecipeBookMenu) {
          for (RecipeCollection var5 : var3) {
-            for (RecipeHolder var7 : var5.getRecipes(var2.isFiltering((RecipeBookMenu<?>)var1.player.containerMenu))) {
+            for (RecipeHolder var7 : var5.getRecipes(var2.isFiltering((RecipeBookMenu<?, ?>)var1.player.containerMenu))) {
                if (var2.willHighlight(var7)) {
                   this.animationTime = 15.0F;
                   return;

@@ -119,7 +119,7 @@ public class DebugCommand {
             int var10 = 0;
 
             try {
-               Path var11 = var7.getFile("debug").toPath();
+               Path var11 = var7.getFile("debug");
                Files.createDirectories(var11);
                final PrintWriter var12 = new PrintWriter(Files.newBufferedWriter(var11.resolve(var8), StandardCharsets.UTF_8));
                DebugCommand.Tracer var13 = new DebugCommand.Tracer(var12);

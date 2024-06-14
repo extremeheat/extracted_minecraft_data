@@ -133,6 +133,11 @@ public class XoroshiroRandomSource implements RandomSource {
          return new XoroshiroRandomSource(var2.xor(this.seedLo, this.seedHi));
       }
 
+      @Override
+      public RandomSource fromSeed(long var1) {
+         return new XoroshiroRandomSource(var1 ^ this.seedLo, var1 ^ this.seedHi);
+      }
+
       @VisibleForTesting
       @Override
       public void parityConfigString(StringBuilder var1) {

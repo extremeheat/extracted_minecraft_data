@@ -8,9 +8,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.StructureTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
 import net.minecraft.world.item.context.UseOnContext;
@@ -64,7 +66,7 @@ public class EnderEyeItem extends Item {
    }
 
    @Override
-   public int getUseDuration(ItemStack var1) {
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
       return 0;
    }
 
@@ -84,21 +86,12 @@ public class EnderEyeItem extends Item {
                var8.signalTo(var7);
                var1.gameEvent(GameEvent.PROJECTILE_SHOOT, var8.position(), GameEvent.Context.of(var2));
                var1.addFreshEntity(var8);
-               if (var2 instanceof ServerPlayer) {
-                  CriteriaTriggers.USED_ENDER_EYE.trigger((ServerPlayer)var2, var7);
+               if (var2 instanceof ServerPlayer var9) {
+                  CriteriaTriggers.USED_ENDER_EYE.trigger(var9, var7);
                }
 
-               var1.playSound(
-                  null,
-                  var2.getX(),
-                  var2.getY(),
-                  var2.getZ(),
-                  SoundEvents.ENDER_EYE_LAUNCH,
-                  SoundSource.NEUTRAL,
-                  0.5F,
-                  0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
-               );
-               var1.levelEvent(null, 1003, var2.blockPosition(), 0);
+               float var10 = Mth.lerp(var1.random.nextFloat(), 0.33F, 0.5F);
+               var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, var10);
                var4.consume(1, var2);
                var2.awardStat(Stats.ITEM_USED.get(this));
                var2.swing(var3, true);

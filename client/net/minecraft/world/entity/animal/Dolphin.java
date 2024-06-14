@@ -167,14 +167,8 @@ public class Dolphin extends WaterAnimal {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(this.damageSources().mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
-      if (var2) {
-         this.doEnchantDamageEffects(this, var1);
-         this.playSound(SoundEvents.DOLPHIN_ATTACK, 1.0F, 1.0F);
-      }
-
-      return var2;
+   public void playAttackSound() {
+      this.playSound(SoundEvents.DOLPHIN_ATTACK, 1.0F, 1.0F);
    }
 
    @Override
@@ -204,7 +198,7 @@ public class Dolphin extends WaterAnimal {
 
    @Override
    public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       return !this.getItemBySlot(var2).isEmpty() ? false : var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
    }
 
@@ -360,7 +354,7 @@ public class Dolphin extends WaterAnimal {
    }
 
    @Override
-   public boolean canBeLeashed(Player var1) {
+   public boolean canBeLeashed() {
       return true;
    }
 

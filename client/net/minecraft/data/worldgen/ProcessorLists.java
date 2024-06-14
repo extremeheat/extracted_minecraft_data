@@ -11,6 +11,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.CopperBulbBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AxisAlignedLinearPosTest;
@@ -70,13 +71,14 @@ public class ProcessorLists {
    public static final ResourceKey<StructureProcessorList> TRAIL_RUINS_HOUSES_ARCHAEOLOGY = createKey("trail_ruins_houses_archaeology");
    public static final ResourceKey<StructureProcessorList> TRAIL_RUINS_ROADS_ARCHAEOLOGY = createKey("trail_ruins_roads_archaeology");
    public static final ResourceKey<StructureProcessorList> TRAIL_RUINS_TOWER_TOP_ARCHAEOLOGY = createKey("trail_ruins_tower_top_archaeology");
+   public static final ResourceKey<StructureProcessorList> TRIAL_CHAMBERS_COPPER_BULB_DEGRADATION = createKey("trial_chambers_copper_bulb_degradation");
 
    public ProcessorLists() {
       super();
    }
 
    private static ResourceKey<StructureProcessorList> createKey(String var0) {
-      return ResourceKey.create(Registries.PROCESSOR_LIST, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.PROCESSOR_LIST, ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static void register(BootstrapContext<StructureProcessorList> var0, ResourceKey<StructureProcessorList> var1, List<StructureProcessor> var2) {
@@ -791,6 +793,32 @@ public class ProcessorLists {
          )
       );
       register(var0, TRAIL_RUINS_TOWER_TOP_ARCHAEOLOGY, List.of(trailsArchyLootProcessor(BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_COMMON, 2)));
+      register(
+         var0,
+         TRIAL_CHAMBERS_COPPER_BULB_DEGRADATION,
+         List.of(
+            new RuleProcessor(
+               List.of(
+                  new ProcessorRule(
+                     new RandomBlockMatchTest(Blocks.WAXED_COPPER_BULB, 0.1F),
+                     AlwaysTrueTest.INSTANCE,
+                     Blocks.WAXED_OXIDIZED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
+                  ),
+                  new ProcessorRule(
+                     new RandomBlockMatchTest(Blocks.WAXED_COPPER_BULB, 0.33333334F),
+                     AlwaysTrueTest.INSTANCE,
+                     Blocks.WAXED_WEATHERED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
+                  ),
+                  new ProcessorRule(
+                     new RandomBlockMatchTest(Blocks.WAXED_COPPER_BULB, 0.5F),
+                     AlwaysTrueTest.INSTANCE,
+                     Blocks.WAXED_EXPOSED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
+                  )
+               )
+            ),
+            new ProtectedBlockProcessor(BlockTags.FEATURES_CANNOT_REPLACE)
+         )
+      );
    }
 
    private static CappedProcessor trailsArchyLootProcessor(ResourceKey<LootTable> var0, int var1) {

@@ -56,6 +56,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
@@ -272,7 +273,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    @Override
-   public boolean canBeLeashed(Player var1) {
+   public boolean canBeLeashed() {
       return true;
    }
 
@@ -304,14 +305,8 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(this.damageSources().mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
-      if (var2) {
-         this.doEnchantDamageEffects(this, var1);
-         this.playSound(SoundEvents.AXOLOTL_ATTACK, 1.0F, 1.0F);
-      }
-
-      return var2;
+   public void playAttackSound() {
+      this.playSound(SoundEvents.AXOLOTL_ATTACK, 1.0F, 1.0F);
    }
 
    @Override
@@ -482,7 +477,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    @Override
    protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
       if (var3.is(Items.TROPICAL_FISH_BUCKET)) {
-         var1.setItemInHand(var2, new ItemStack(Items.WATER_BUCKET));
+         var1.setItemInHand(var2, ItemUtils.createFilledResult(var3, var1, new ItemStack(Items.WATER_BUCKET)));
       } else {
          super.usePlayerItem(var1, var2, var3);
       }

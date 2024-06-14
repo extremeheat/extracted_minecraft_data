@@ -1,11 +1,10 @@
 package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -289,22 +288,6 @@ public abstract class RenderType extends RenderStateShard {
          .setWriteMaskState(DEPTH_WRITE)
          .createCompositeState(false)
    );
-   private static final RenderType ARMOR_GLINT = create(
-      "armor_glint",
-      DefaultVertexFormat.POSITION_TEX,
-      VertexFormat.Mode.QUADS,
-      1536,
-      RenderType.CompositeState.builder()
-         .setShaderState(RENDERTYPE_ARMOR_GLINT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false))
-         .setWriteMaskState(COLOR_WRITE)
-         .setCullState(NO_CULL)
-         .setDepthTestState(EQUAL_DEPTH_TEST)
-         .setTransparencyState(GLINT_TRANSPARENCY)
-         .setTexturingState(GLINT_TEXTURING)
-         .setLayeringState(VIEW_OFFSET_Z_LAYERING)
-         .createCompositeState(false)
-   );
    private static final RenderType ARMOR_ENTITY_GLINT = create(
       "armor_entity_glint",
       DefaultVertexFormat.POSITION_TEX,
@@ -344,21 +327,6 @@ public abstract class RenderType extends RenderStateShard {
       1536,
       RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_GLINT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, true, false))
-         .setWriteMaskState(COLOR_WRITE)
-         .setCullState(NO_CULL)
-         .setDepthTestState(EQUAL_DEPTH_TEST)
-         .setTransparencyState(GLINT_TRANSPARENCY)
-         .setTexturingState(GLINT_TEXTURING)
-         .createCompositeState(false)
-   );
-   private static final RenderType GLINT_DIRECT = create(
-      "glint_direct",
-      DefaultVertexFormat.POSITION_TEX,
-      VertexFormat.Mode.QUADS,
-      1536,
-      RenderType.CompositeState.builder()
-         .setShaderState(RENDERTYPE_GLINT_DIRECT_SHADER)
          .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, true, false))
          .setWriteMaskState(COLOR_WRITE)
          .setCullState(NO_CULL)
@@ -564,6 +532,28 @@ public abstract class RenderType extends RenderStateShard {
          .setOutputState(WEATHER_TARGET)
          .createCompositeState(false)
    );
+   private static final RenderType DRAGON_RAYS = create(
+      "dragon_rays",
+      DefaultVertexFormat.POSITION_COLOR,
+      VertexFormat.Mode.TRIANGLES,
+      1536,
+      false,
+      false,
+      RenderType.CompositeState.builder()
+         .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
+         .setWriteMaskState(COLOR_WRITE)
+         .setTransparencyState(LIGHTNING_TRANSPARENCY)
+         .createCompositeState(false)
+   );
+   private static final RenderType DRAGON_RAYS_DEPTH = create(
+      "dragon_rays_depth",
+      DefaultVertexFormat.POSITION,
+      VertexFormat.Mode.TRIANGLES,
+      1536,
+      false,
+      false,
+      RenderType.CompositeState.builder().setShaderState(RenderStateShard.POSITION_SHADER).setWriteMaskState(DEPTH_WRITE).createCompositeState(false)
+   );
    private static final RenderType TRIPWIRE = create("tripwire", DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 1536, true, true, tripwireState());
    private static final RenderType END_PORTAL = create(
       "end_portal",
@@ -671,6 +661,21 @@ public abstract class RenderType extends RenderStateShard {
          .setCullState(NO_CULL)
          .createCompositeState(false)
    );
+   private static final RenderType.CompositeRenderType DEBUG_STRUCTURE_QUADS = create(
+      "debug_structure_quads",
+      DefaultVertexFormat.POSITION_COLOR,
+      VertexFormat.Mode.QUADS,
+      1536,
+      false,
+      true,
+      RenderType.CompositeState.builder()
+         .setShaderState(POSITION_COLOR_SHADER)
+         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+         .setCullState(NO_CULL)
+         .setDepthTestState(LEQUAL_DEPTH_TEST)
+         .setWriteMaskState(COLOR_WRITE)
+         .createCompositeState(false)
+   );
    private static final RenderType.CompositeRenderType DEBUG_SECTION_QUADS = create(
       "debug_section_quads",
       DefaultVertexFormat.POSITION_COLOR,
@@ -738,7 +743,6 @@ public abstract class RenderType extends RenderStateShard {
    private final int bufferSize;
    private final boolean affectsCrumbling;
    private final boolean sortOnUpload;
-   private final Optional<RenderType> asOptional;
 
    public static RenderType solid() {
       return SOLID;
@@ -934,10 +938,6 @@ public abstract class RenderType extends RenderStateShard {
       return RenderType.CompositeRenderType.OUTLINE.apply(var0, NO_CULL);
    }
 
-   public static RenderType armorGlint() {
-      return ARMOR_GLINT;
-   }
-
    public static RenderType armorEntityGlint() {
       return ARMOR_ENTITY_GLINT;
    }
@@ -948,10 +948,6 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType glint() {
       return GLINT;
-   }
-
-   public static RenderType glintDirect() {
-      return GLINT_DIRECT;
    }
 
    public static RenderType entityGlint() {
@@ -1000,6 +996,14 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType lightning() {
       return LIGHTNING;
+   }
+
+   public static RenderType dragonRays() {
+      return DRAGON_RAYS;
+   }
+
+   public static RenderType dragonRaysDepth() {
+      return DRAGON_RAYS_DEPTH;
    }
 
    private static RenderType.CompositeState tripwireState() {
@@ -1071,6 +1075,10 @@ public abstract class RenderType extends RenderStateShard {
       return DEBUG_QUADS;
    }
 
+   public static RenderType debugStructureQuads() {
+      return DEBUG_STRUCTURE_QUADS;
+   }
+
    public static RenderType debugSectionQuads() {
       return DEBUG_SECTION_QUADS;
    }
@@ -1098,7 +1106,6 @@ public abstract class RenderType extends RenderStateShard {
       this.bufferSize = var4;
       this.affectsCrumbling = var5;
       this.sortOnUpload = var6;
-      this.asOptional = Optional.of(this);
    }
 
    static RenderType.CompositeRenderType create(String var0, VertexFormat var1, VertexFormat.Mode var2, int var3, RenderType.CompositeState var4) {
@@ -1111,17 +1118,10 @@ public abstract class RenderType extends RenderStateShard {
       return new RenderType.CompositeRenderType(var0, var1, var2, var3, var4, var5, var6);
    }
 
-   public void end(BufferBuilder var1, VertexSorting var2) {
-      if (var1.building()) {
-         if (this.sortOnUpload) {
-            var1.setQuadSorting(var2);
-         }
-
-         BufferBuilder.RenderedBuffer var3 = var1.end();
-         this.setupRenderState();
-         BufferUploader.drawWithShader(var3);
-         this.clearRenderState();
-      }
+   public void draw(MeshData var1) {
+      this.setupRenderState();
+      BufferUploader.drawWithShader(var1);
+      this.clearRenderState();
    }
 
    @Override
@@ -1161,15 +1161,15 @@ public abstract class RenderType extends RenderStateShard {
       return !this.mode.connectedPrimitives;
    }
 
-   public Optional<RenderType> asOptional() {
-      return this.asOptional;
+   public boolean sortOnUpload() {
+      return this.sortOnUpload;
    }
 
    static final class CompositeRenderType extends RenderType {
       static final BiFunction<ResourceLocation, RenderStateShard.CullStateShard, RenderType> OUTLINE = Util.memoize(
          (var0, var1) -> RenderType.create(
                "outline",
-               DefaultVertexFormat.POSITION_COLOR_TEX,
+               DefaultVertexFormat.POSITION_TEX_COLOR,
                VertexFormat.Mode.QUADS,
                1536,
                RenderType.CompositeState.builder()

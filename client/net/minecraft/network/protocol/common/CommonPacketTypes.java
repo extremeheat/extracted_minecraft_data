@@ -7,11 +7,13 @@ import net.minecraft.resources.ResourceLocation;
 
 public class CommonPacketTypes {
    public static final PacketType<ClientboundCustomPayloadPacket> CLIENTBOUND_CUSTOM_PAYLOAD = createClientbound("custom_payload");
+   public static final PacketType<ClientboundCustomReportDetailsPacket> CLIENTBOUND_CUSTOM_REPORT_DETAILS = createClientbound("custom_report_details");
    public static final PacketType<ClientboundDisconnectPacket> CLIENTBOUND_DISCONNECT = createClientbound("disconnect");
    public static final PacketType<ClientboundKeepAlivePacket> CLIENTBOUND_KEEP_ALIVE = createClientbound("keep_alive");
    public static final PacketType<ClientboundPingPacket> CLIENTBOUND_PING = createClientbound("ping");
    public static final PacketType<ClientboundResourcePackPopPacket> CLIENTBOUND_RESOURCE_PACK_POP = createClientbound("resource_pack_pop");
    public static final PacketType<ClientboundResourcePackPushPacket> CLIENTBOUND_RESOURCE_PACK_PUSH = createClientbound("resource_pack_push");
+   public static final PacketType<ClientboundServerLinksPacket> CLIENTBOUND_SERVER_LINKS = createClientbound("server_links");
    public static final PacketType<ClientboundStoreCookiePacket> CLIENTBOUND_STORE_COOKIE = createClientbound("store_cookie");
    public static final PacketType<ClientboundTransferPacket> CLIENTBOUND_TRANSFER = createClientbound("transfer");
    public static final PacketType<ClientboundUpdateTagsPacket> CLIENTBOUND_UPDATE_TAGS = createClientbound("update_tags");
@@ -26,10 +28,10 @@ public class CommonPacketTypes {
    }
 
    private static <T extends Packet<ClientCommonPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<>(PacketFlow.CLIENTBOUND, new ResourceLocation(var0));
+      return new PacketType<>(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static <T extends Packet<ServerCommonPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<>(PacketFlow.SERVERBOUND, new ResourceLocation(var0));
+      return new PacketType<>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 }

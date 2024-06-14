@@ -2,7 +2,6 @@ package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
@@ -198,30 +197,16 @@ public class StructuresBecomeConfiguredFix extends DataFix {
       return var3.object2IntEntrySet().stream().max(Comparator.comparingInt(Entry::getIntValue)).map(java.util.Map.Entry::getKey);
    }
 
-   static record Conversion(Map<String, String> biomeMapping, String fallback) {
-
-      private Conversion(Map<String, String> biomeMapping, String fallback) {
-         super();
-         this.biomeMapping = biomeMapping;
-         this.fallback = fallback;
-      }
-
-      public static StructuresBecomeConfiguredFix.Conversion trivial(String var0) {
-         return new StructuresBecomeConfiguredFix.Conversion(Map.of(), var0);
-      }
-
-      public static StructuresBecomeConfiguredFix.Conversion biomeMapped(Map<List<String>, String> var0, String var1) {
-         return new StructuresBecomeConfiguredFix.Conversion(unpack(var0), var1);
-      }
-
-      private static Map<String, String> unpack(Map<List<String>, String> var0) {
-         Builder var1 = ImmutableMap.builder();
-
-         for (java.util.Map.Entry var3 : var0.entrySet()) {
-            ((List)var3.getKey()).forEach(var2 -> var1.put(var2, (String)var3.getValue()));
-         }
-
-         return var1.build();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 
@@ -56,51 +55,18 @@ public class PathAllowList implements PathMatcher {
       return new PathAllowList(var0.lines().flatMap(var0x -> PathAllowList.ConfigEntry.parse(var0x).stream()).toList());
    }
 
-   public static record ConfigEntry(PathAllowList.EntryType type, String pattern) {
-      public ConfigEntry(PathAllowList.EntryType type, String pattern) {
-         super();
-         this.type = type;
-         this.pattern = pattern;
-      }
-
-      public PathMatcher compile(FileSystem var1) {
-         return this.type().compile(var1, this.pattern);
-      }
-
-      static Optional<PathAllowList.ConfigEntry> parse(String var0) {
-         if (var0.isBlank() || var0.startsWith("#")) {
-            return Optional.empty();
-         } else if (!var0.startsWith("[")) {
-            return Optional.of(new PathAllowList.ConfigEntry(PathAllowList.EntryType.PREFIX, var0));
-         } else {
-            int var1 = var0.indexOf(93, 1);
-            if (var1 == -1) {
-               throw new IllegalArgumentException("Unterminated type in line '" + var0 + "'");
-            } else {
-               String var2 = var0.substring(1, var1);
-               String var3 = var0.substring(var1 + 1);
-
-               return switch (var2) {
-                  case "glob", "regex" -> Optional.of(new PathAllowList.ConfigEntry(PathAllowList.EntryType.FILESYSTEM, var2 + ":" + var3));
-                  case "prefix" -> Optional.of(new PathAllowList.ConfigEntry(PathAllowList.EntryType.PREFIX, var3));
-                  default -> throw new IllegalArgumentException("Unsupported definition type in line '" + var0 + "'");
-               };
-            }
-         }
-      }
-
-      static PathAllowList.ConfigEntry glob(String var0) {
-         return new PathAllowList.ConfigEntry(PathAllowList.EntryType.FILESYSTEM, "glob:" + var0);
-      }
-
-      static PathAllowList.ConfigEntry regex(String var0) {
-         return new PathAllowList.ConfigEntry(PathAllowList.EntryType.FILESYSTEM, "regex:" + var0);
-      }
-
-      static PathAllowList.ConfigEntry prefix(String var0) {
-         return new PathAllowList.ConfigEntry(PathAllowList.EntryType.PREFIX, var0);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    @FunctionalInterface
    public interface EntryType {

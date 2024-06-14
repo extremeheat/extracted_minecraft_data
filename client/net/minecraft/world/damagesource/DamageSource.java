@@ -30,8 +30,8 @@ public class DamageSource {
       return this.type().exhaustion();
    }
 
-   public boolean isIndirect() {
-      return this.causingEntity != this.directEntity;
+   public boolean isDirect() {
+      return this.causingEntity == this.directEntity;
    }
 
    private DamageSource(Holder<DamageType> var1, @Nullable Entity var2, @Nullable Entity var3, @Nullable Vec3 var4) {
@@ -66,6 +66,11 @@ public class DamageSource {
    @Nullable
    public Entity getEntity() {
       return this.causingEntity;
+   }
+
+   @Nullable
+   public ItemStack getWeaponItem() {
+      return this.directEntity != null ? this.directEntity.getWeaponItem() : null;
    }
 
    public Component getLocalizedDeathMessage(LivingEntity var1) {

@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -57,9 +58,9 @@ public class WitherSkeleton extends AbstractSkeleton {
    }
 
    @Override
-   protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      if (var1.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
+      if (var2.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          var5.increaseDroppedSkulls();
          this.spawnAtLocation(Items.WITHER_SKELETON_SKULL);
       }
@@ -71,7 +72,7 @@ public class WitherSkeleton extends AbstractSkeleton {
    }
 
    @Override
-   protected void populateDefaultEquipmentEnchantments(RandomSource var1, DifficultyInstance var2) {
+   protected void populateDefaultEquipmentEnchantments(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
    }
 
    @Nullable
@@ -97,10 +98,10 @@ public class WitherSkeleton extends AbstractSkeleton {
    }
 
    @Override
-   protected AbstractArrow getArrow(ItemStack var1, float var2) {
-      AbstractArrow var3 = super.getArrow(var1, var2);
-      var3.igniteForSeconds(100);
-      return var3;
+   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
+      AbstractArrow var4 = super.getArrow(var1, var2, var3);
+      var4.igniteForSeconds(100.0F);
+      return var4;
    }
 
    @Override

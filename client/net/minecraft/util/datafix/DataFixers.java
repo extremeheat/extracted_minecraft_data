@@ -7,11 +7,13 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.DSL.TypeReference;
+import com.mojang.datafixers.DataFixerBuilder.Result;
 import com.mojang.datafixers.schemas.Schema;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
@@ -27,6 +29,7 @@ import net.minecraft.util.datafix.fixes.AddNewChoices;
 import net.minecraft.util.datafix.fixes.AdvancementsFix;
 import net.minecraft.util.datafix.fixes.AdvancementsRenameFix;
 import net.minecraft.util.datafix.fixes.AreaEffectCloudPotionFix;
+import net.minecraft.util.datafix.fixes.AttributeModifierIdFix;
 import net.minecraft.util.datafix.fixes.AttributesRename;
 import net.minecraft.util.datafix.fixes.BannerEntityCustomNameToOverrideComponentFix;
 import net.minecraft.util.datafix.fixes.BannerPatternFormatFix;
@@ -142,6 +145,7 @@ import net.minecraft.util.datafix.fixes.ItemWaterPotionFix;
 import net.minecraft.util.datafix.fixes.ItemWrittenBookPagesStrictJsonFix;
 import net.minecraft.util.datafix.fixes.JigsawPropertiesFix;
 import net.minecraft.util.datafix.fixes.JigsawRotationFix;
+import net.minecraft.util.datafix.fixes.JukeboxTicksSinceSongStartedFix;
 import net.minecraft.util.datafix.fixes.LeavesFix;
 import net.minecraft.util.datafix.fixes.LegacyDragonFightFix;
 import net.minecraft.util.datafix.fixes.LevelDataGeneratorOptionsFix;
@@ -169,6 +173,7 @@ import net.minecraft.util.datafix.fixes.OptionsForceVBOFix;
 import net.minecraft.util.datafix.fixes.OptionsKeyLwjgl3Fix;
 import net.minecraft.util.datafix.fixes.OptionsKeyTranslationFix;
 import net.minecraft.util.datafix.fixes.OptionsLowerCaseLanguageFix;
+import net.minecraft.util.datafix.fixes.OptionsMenuBlurrinessFix;
 import net.minecraft.util.datafix.fixes.OptionsProgrammerArtFix;
 import net.minecraft.util.datafix.fixes.OptionsRenameFieldFix;
 import net.minecraft.util.datafix.fixes.OverreachingTickFix;
@@ -178,6 +183,7 @@ import net.minecraft.util.datafix.fixes.PlayerUUIDFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRemoveFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRenameFix;
 import net.minecraft.util.datafix.fixes.PrimedTntBlockStateFixer;
+import net.minecraft.util.datafix.fixes.ProjectileStoredWeaponFix;
 import net.minecraft.util.datafix.fixes.RandomSequenceSettingsFix;
 import net.minecraft.util.datafix.fixes.RecipesFix;
 import net.minecraft.util.datafix.fixes.RecipesRenameningFix;
@@ -295,6 +301,7 @@ import net.minecraft.util.datafix.schemas.V3818_3;
 import net.minecraft.util.datafix.schemas.V3818_4;
 import net.minecraft.util.datafix.schemas.V3818_5;
 import net.minecraft.util.datafix.schemas.V3825;
+import net.minecraft.util.datafix.schemas.V3938;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -308,7 +315,7 @@ import net.minecraft.util.datafix.schemas.V99;
 public class DataFixers {
    private static final BiFunction<Integer, Schema, Schema> SAME = Schema::new;
    private static final BiFunction<Integer, Schema, Schema> SAME_NAMESPACED = NamespacedSchema::new;
-   private static final DataFixer dataFixer = createFixerUpper(SharedConstants.DATA_FIX_TYPES_TO_OPTIMIZE);
+   private static final Result DATA_FIXER = createFixerUpper();
    public static final int BLENDING_VERSION = 3441;
 
    private DataFixers() {
@@ -316,19 +323,23 @@ public class DataFixers {
    }
 
    public static DataFixer getDataFixer() {
-      return dataFixer;
+      return DATA_FIXER.fixer();
    }
 
-   private static synchronized DataFixer createFixerUpper(Set<TypeReference> var0) {
-      DataFixerBuilder var1 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-      addFixers(var1);
+   private static Result createFixerUpper() {
+      DataFixerBuilder var0 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+      addFixers(var0);
+      return var0.build();
+   }
+
+   public static CompletableFuture<?> optimize(Set<TypeReference> var0) {
       if (var0.isEmpty()) {
-         return var1.buildUnoptimized();
+         return CompletableFuture.completedFuture(null);
       } else {
-         ExecutorService var2 = Executors.newSingleThreadExecutor(
+         ExecutorService var1 = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder().setNameFormat("Datafixer Bootstrap").setDaemon(true).setPriority(1).build()
          );
-         return var1.buildOptimized(var0, var2);
+         return DATA_FIXER.optimize(var0, var1);
       }
    }
 
@@ -1309,6 +1320,15 @@ public class DataFixers {
       var0.addFixer(new EmptyItemInVillagerTradeFix(var229));
       Schema var230 = var0.addSchema(3833, SAME_NAMESPACED);
       var0.addFixer(new RemoveEmptyItemInBrushableBlockFix(var230));
+      Schema var231 = var0.addSchema(3938, V3938::new);
+      var0.addFixer(new ProjectileStoredWeaponFix(var231));
+      Schema var232 = var0.addSchema(3939, SAME_NAMESPACED);
+      var0.addFixer(new FeatureFlagRemoveFix(var232, "Remove 1.21 feature toggle", Set.of("minecraft:update_1_21")));
+      Schema var233 = var0.addSchema(3943, SAME_NAMESPACED);
+      var0.addFixer(new OptionsMenuBlurrinessFix(var233));
+      Schema var234 = var0.addSchema(3945, SAME_NAMESPACED);
+      var0.addFixer(new AttributeModifierIdFix(var234));
+      var0.addFixer(new JukeboxTicksSinceSongStartedFix(var234));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

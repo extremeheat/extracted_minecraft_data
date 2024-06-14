@@ -103,11 +103,7 @@ public class DoorBlock extends Block {
 
    @Override
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
-      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK
-         && var1.getValue(HALF) == DoubleBlockHalf.LOWER
-         && !var2.isClientSide()
-         && this.type.canOpenByWindCharge()
-         && !var1.getValue(POWERED)) {
+      if (var4.canTriggerBlocks() && var1.getValue(HALF) == DoubleBlockHalf.LOWER && this.type.canOpenByWindCharge() && !var1.getValue(POWERED)) {
          this.setOpen(null, var2, var1, var3, !this.isOpen(var1));
       }
 
@@ -173,8 +169,8 @@ public class DoorBlock extends Block {
          + (var10.isCollisionShapeFullBlock(var2, var9) ? -1 : 0)
          + (var13.isCollisionShapeFullBlock(var2, var12) ? 1 : 0)
          + (var15.isCollisionShapeFullBlock(var2, var14) ? 1 : 0);
-      boolean var17 = var8.is(this) && var8.getValue(HALF) == DoubleBlockHalf.LOWER;
-      boolean var18 = var13.is(this) && var13.getValue(HALF) == DoubleBlockHalf.LOWER;
+      boolean var17 = var8.getBlock() instanceof DoorBlock && var8.getValue(HALF) == DoubleBlockHalf.LOWER;
+      boolean var18 = var13.getBlock() instanceof DoorBlock && var13.getValue(HALF) == DoubleBlockHalf.LOWER;
       if ((!var17 || var18) && var16 <= 0) {
          if ((!var18 || var17) && var16 >= 0) {
             int var19 = var4.getStepX();

@@ -14,20 +14,20 @@ public interface ProjectileDeflection {
       var0.setDeltaMovement(var0.getDeltaMovement().scale(-0.5));
       var0.setYRot(var0.getYRot() + var3);
       var0.yRotO += var3;
-      var0.hurtMarked = true;
+      var0.hasImpulse = true;
    };
    ProjectileDeflection AIM_DEFLECT = (var0, var1, var2) -> {
       if (var1 != null) {
          Vec3 var3 = var1.getLookAngle().normalize();
          var0.setDeltaMovement(var3);
-         var0.hurtMarked = true;
+         var0.hasImpulse = true;
       }
    };
    ProjectileDeflection MOMENTUM_DEFLECT = (var0, var1, var2) -> {
       if (var1 != null) {
          Vec3 var3 = var1.getDeltaMovement().normalize();
          var0.setDeltaMovement(var3);
-         var0.hurtMarked = true;
+         var0.hasImpulse = true;
       }
    };
 

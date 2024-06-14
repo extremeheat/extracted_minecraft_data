@@ -28,7 +28,9 @@ public class LootItemFunctions {
    public static final LootItemFunctionType<SetCustomDataFunction> SET_CUSTOM_DATA = register("set_custom_data", SetCustomDataFunction.CODEC);
    public static final LootItemFunctionType<SetComponentsFunction> SET_COMPONENTS = register("set_components", SetComponentsFunction.CODEC);
    public static final LootItemFunctionType<SmeltItemFunction> FURNACE_SMELT = register("furnace_smelt", SmeltItemFunction.CODEC);
-   public static final LootItemFunctionType<LootingEnchantFunction> LOOTING_ENCHANT = register("looting_enchant", LootingEnchantFunction.CODEC);
+   public static final LootItemFunctionType<EnchantedCountIncreaseFunction> ENCHANTED_COUNT_INCREASE = register(
+      "enchanted_count_increase", EnchantedCountIncreaseFunction.CODEC
+   );
    public static final LootItemFunctionType<SetItemDamageFunction> SET_DAMAGE = register("set_damage", SetItemDamageFunction.CODEC);
    public static final LootItemFunctionType<SetAttributesFunction> SET_ATTRIBUTES = register("set_attributes", SetAttributesFunction.CODEC);
    public static final LootItemFunctionType<SetNameFunction> SET_NAME = register("set_name", SetNameFunction.CODEC);
@@ -76,7 +78,7 @@ public class LootItemFunctions {
    }
 
    private static <T extends LootItemFunction> LootItemFunctionType<T> register(String var0, MapCodec<T> var1) {
-      return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, new ResourceLocation(var0), new LootItemFunctionType<>(var1));
+      return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, ResourceLocation.withDefaultNamespace(var0), new LootItemFunctionType<>(var1));
    }
 
    public static BiFunction<ItemStack, LootContext, ItemStack> compose(List<? extends BiFunction<ItemStack, LootContext, ItemStack>> var0) {

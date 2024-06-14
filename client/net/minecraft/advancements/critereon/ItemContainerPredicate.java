@@ -1,31 +1,13 @@
 package net.minecraft.advancements.critereon;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
-
-public record ItemContainerPredicate(Optional<CollectionPredicate<ItemStack, ItemPredicate>> items)
-   implements SingleComponentItemPredicate<ItemContainerContents> {
-   public static final Codec<ItemContainerPredicate> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(CollectionPredicate.codec(ItemPredicate.CODEC).optionalFieldOf("items").forGetter(ItemContainerPredicate::items))
-            .apply(var0, ItemContainerPredicate::new)
-   );
-
-   public ItemContainerPredicate(Optional<CollectionPredicate<ItemStack, ItemPredicate>> items) {
-      super();
-      this.items = items;
-   }
-
-   @Override
-   public DataComponentType<ItemContainerContents> componentType() {
-      return DataComponents.CONTAINER;
-   }
-
-   public boolean matches(ItemStack var1, ItemContainerContents var2) {
-      return !this.items.isPresent() || this.items.get().test(var2.nonEmptyItems());
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

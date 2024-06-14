@@ -13,13 +13,11 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommonButtons;
 import net.minecraft.client.gui.components.LogoRenderer;
-import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.components.SplashRenderer;
 import net.minecraft.client.gui.components.SpriteIconButton;
@@ -28,6 +26,9 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.SafetyScreen;
+import net.minecraft.client.gui.screens.options.AccessibilityOptionsScreen;
+import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
+import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -55,8 +56,6 @@ public class TitleScreen extends Screen {
    private float panoramaFade = 1.0F;
    private boolean fading;
    private long fadeInStart;
-   @Nullable
-   private TitleScreen.WarningLabel warningLabel;
    private final LogoRenderer logoRenderer;
 
    public TitleScreen() {
@@ -283,10 +282,6 @@ public class TitleScreen extends Screen {
       if ((var9 & -67108864) != 0) {
          super.render(var1, var2, var3, var4);
          this.logoRenderer.renderLogo(var1, this.width, var5);
-         if (this.warningLabel != null) {
-            this.warningLabel.render(var1, var9);
-         }
-
          if (this.splash != null && !this.minecraft.options.hideSplashTexts().get()) {
             this.splash.render(var1, this.width, this.font, var9);
          }
@@ -324,7 +319,7 @@ public class TitleScreen extends Screen {
 
    @Override
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, this.advancePanoramaTime());
+      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, var2);
    }
 
    @Override
@@ -358,20 +353,5 @@ public class TitleScreen extends Screen {
       }
 
       this.minecraft.setScreen(this);
-   }
-
-   static record WarningLabel(Font font, MultiLineLabel label, int x, int y) {
-      private WarningLabel(Font font, MultiLineLabel label, int x, int y) {
-         super();
-         this.font = font;
-         this.label = label;
-         this.x = x;
-         this.y = y;
-      }
-
-      public void render(GuiGraphics var1, int var2) {
-         this.label.renderBackgroundCentered(var1, this.x, this.y, 9, 2, 2097152 | Math.min(var2, 1426063360));
-         this.label.renderCentered(var1, this.x, this.y, 9, 16777215 | var2);
-      }
    }
 }

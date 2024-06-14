@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Phantom;
 
 public class PhantomEyesLayer<T extends Phantom> extends EyesLayer<T, PhantomModel<T>> {
-   private static final RenderType PHANTOM_EYES = RenderType.eyes(new ResourceLocation("textures/entity/phantom_eyes.png"));
+   private static final RenderType PHANTOM_EYES = RenderType.eyes(ResourceLocation.withDefaultNamespace("textures/entity/phantom_eyes.png"));
 
    public PhantomEyesLayer(RenderLayerParent<T, PhantomModel<T>> var1) {
       super(var1);

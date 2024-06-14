@@ -1,16 +1,11 @@
 package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.storage.loot.LootContext;
 
 public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledLightningTrigger.TriggerInstance> {
    public ChanneledLightningTrigger() {
@@ -27,53 +22,16 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledL
       this.trigger(var1, var1x -> var1x.matches(var3));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims)
-      implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<ChanneledLightningTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(ChanneledLightningTrigger.TriggerInstance::player),
-                  EntityPredicate.ADVANCEMENT_CODEC
-                     .listOf()
-                     .optionalFieldOf("victims", List.of())
-                     .forGetter(ChanneledLightningTrigger.TriggerInstance::victims)
-               )
-               .apply(var0, ChanneledLightningTrigger.TriggerInstance::new)
-      );
-
-      public TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims) {
-         super();
-         this.player = player;
-         this.victims = victims;
-      }
-
-      public static Criterion<ChanneledLightningTrigger.TriggerInstance> channeledLightning(EntityPredicate.Builder... var0) {
-         return CriteriaTriggers.CHANNELED_LIGHTNING
-            .createCriterion(new ChanneledLightningTrigger.TriggerInstance(Optional.empty(), EntityPredicate.wrap(var0)));
-      }
-
-      public boolean matches(Collection<? extends LootContext> var1) {
-         for (ContextAwarePredicate var3 : this.victims) {
-            boolean var4 = false;
-
-            for (LootContext var6 : var1) {
-               if (var3.matches(var6)) {
-                  var4 = true;
-                  break;
-               }
-            }
-
-            if (!var4) {
-               return false;
-            }
-         }
-
-         return true;
-      }
-
-      @Override
-      public void validate(CriterionValidator var1) {
-         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntities(this.victims, ".victims");
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

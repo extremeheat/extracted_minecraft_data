@@ -68,7 +68,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       var0.put(Direction.DOWN, DOWN_OPEN_AABB);
    });
    public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
-   public static final ResourceLocation CONTENTS = new ResourceLocation("contents");
+   public static final ResourceLocation CONTENTS = ResourceLocation.withDefaultNamespace("contents");
    @Nullable
    private final DyeColor color;
 

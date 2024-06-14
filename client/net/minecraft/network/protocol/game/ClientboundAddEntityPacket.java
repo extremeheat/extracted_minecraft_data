@@ -8,6 +8,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -33,23 +34,23 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
    private final byte yHeadRot;
    private final int data;
 
-   public ClientboundAddEntityPacket(Entity var1) {
-      this(var1, 0);
+   public ClientboundAddEntityPacket(Entity var1, ServerEntity var2) {
+      this(var1, var2, 0);
    }
 
-   public ClientboundAddEntityPacket(Entity var1, int var2) {
+   public ClientboundAddEntityPacket(Entity var1, ServerEntity var2, int var3) {
       this(
          var1.getId(),
          var1.getUUID(),
-         var1.getX(),
-         var1.getY(),
-         var1.getZ(),
-         var1.getXRot(),
-         var1.getYRot(),
+         var2.getPositionBase().x(),
+         var2.getPositionBase().y(),
+         var2.getPositionBase().z(),
+         var2.getLastSentXRot(),
+         var2.getLastSentYRot(),
          var1.getType(),
-         var2,
-         var1.getDeltaMovement(),
-         (double)var1.getYHeadRot()
+         var3,
+         var2.getLastSentMovement(),
+         (double)var2.getLastSentYHeadRot()
       );
    }
 

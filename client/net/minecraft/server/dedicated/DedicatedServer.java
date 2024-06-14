@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Proxy;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +30,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.ConsoleInput;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerInterface;
+import net.minecraft.server.ServerLinks;
 import net.minecraft.server.Services;
 import net.minecraft.server.WorldStem;
 import net.minecraft.server.gui.MinecraftServerGui;
@@ -77,6 +79,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private RemoteSampleLogger tickTimeLogger;
    @Nullable
    private DebugSampleSubscriptionTracker debugSampleSubscriptionTracker;
+   private final ServerLinks serverLinks;
 
    public DedicatedServer(
       Thread var1,
@@ -92,6 +95,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       this.settings = var5;
       this.rconConsoleSource = new RconConsoleSource(this);
       this.textFilterClient = TextFilterClient.createFromConfig(var5.getProperties().textFilteringConfig);
+      this.serverLinks = createServerLinks(var5);
    }
 
    @Override
@@ -298,8 +302,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    @Override
-   public boolean isNetherEnabled() {
-      return this.getProperties().allowNether;
+   public boolean isLevelEnabled(Level var1) {
+      return var1.dimension() == Level.NETHER ? this.getProperties().allowNether : true;
    }
 
    public void handleConsoleInput(String var1, CommandSourceStack var2) {
@@ -607,5 +611,29 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    @Override
    public boolean acceptsTransfers() {
       return this.settings.getProperties().acceptsTransfers;
+   }
+
+   @Override
+   public ServerLinks serverLinks() {
+      return this.serverLinks;
+   }
+
+   private static ServerLinks createServerLinks(DedicatedServerSettings var0) {
+      Optional var1 = parseBugReportLink(var0.getProperties());
+      return var1.<ServerLinks>map(var0x -> new ServerLinks(List.of(ServerLinks.KnownLinkType.BUG_REPORT.create(var0x)))).orElse(ServerLinks.EMPTY);
+   }
+
+   private static Optional<URI> parseBugReportLink(DedicatedServerProperties var0) {
+      String var1 = var0.bugReportLink;
+      if (var1.isEmpty()) {
+         return Optional.empty();
+      } else {
+         try {
+            return Optional.of(Util.parseAndValidateUntrustedUri(var1));
+         } catch (Exception var3) {
+            LOGGER.warn("Failed to parse bug link {}", var1, var3);
+            return Optional.empty();
+         }
+      }
    }
 }

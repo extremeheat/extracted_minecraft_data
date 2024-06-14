@@ -73,7 +73,8 @@ public class BannerPatternFormatFix extends NamedEntityFix {
                var0x.asString().map(var0xx -> PATTERN_ID_MAP.getOrDefault(var0xx, var0xx)).map(var0x::createString).result(), var0x
             )
       );
-      return var0.renameAndFixField("Color", "color", var0x -> var0x.createString(fixColor(var0x.asInt(0))));
+      var0 = var0.set("color", var0.createString(fixColor(var0.get("Color").asInt(0))));
+      return var0.remove("Color");
    }
 
    public static String fixColor(int var0) {

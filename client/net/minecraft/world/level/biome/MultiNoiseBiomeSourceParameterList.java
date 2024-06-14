@@ -1,24 +1,15 @@
 package net.minecraft.world.level.biome;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 public class MultiNoiseBiomeSourceParameterList {
    public static final Codec<MultiNoiseBiomeSourceParameterList> DIRECT_CODEC = RecordCodecBuilder.create(
@@ -50,61 +41,16 @@ public class MultiNoiseBiomeSourceParameterList {
          .collect(Collectors.toMap(var0 -> (MultiNoiseBiomeSourceParameterList.Preset)var0, var0 -> var0.provider().apply(var0x -> var0x)));
    }
 
-   public static record Preset(ResourceLocation id, MultiNoiseBiomeSourceParameterList.Preset.SourceProvider provider) {
-      public static final MultiNoiseBiomeSourceParameterList.Preset NETHER = new MultiNoiseBiomeSourceParameterList.Preset(
-         new ResourceLocation("nether"),
-         new MultiNoiseBiomeSourceParameterList.Preset.SourceProvider() {
-            @Override
-            public <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1) {
-               return new Climate.ParameterList<>(
-                  List.of(
-                     Pair.of(Climate.parameters(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.NETHER_WASTES)),
-                     Pair.of(Climate.parameters(0.0F, -0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.SOUL_SAND_VALLEY)),
-                     Pair.of(Climate.parameters(0.4F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F), var1.apply(Biomes.CRIMSON_FOREST)),
-                     Pair.of(Climate.parameters(0.0F, 0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.375F), var1.apply(Biomes.WARPED_FOREST)),
-                     Pair.of(Climate.parameters(-0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.175F), var1.apply(Biomes.BASALT_DELTAS))
-                  )
-               );
-            }
-         }
-      );
-      public static final MultiNoiseBiomeSourceParameterList.Preset OVERWORLD = new MultiNoiseBiomeSourceParameterList.Preset(
-         new ResourceLocation("overworld"), new MultiNoiseBiomeSourceParameterList.Preset.SourceProvider() {
-            @Override
-            public <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1) {
-               return MultiNoiseBiomeSourceParameterList.Preset.generateOverworldBiomes(var1);
-            }
-         }
-      );
-      static final Map<ResourceLocation, MultiNoiseBiomeSourceParameterList.Preset> BY_NAME = Stream.of(NETHER, OVERWORLD)
-         .collect(Collectors.toMap(MultiNoiseBiomeSourceParameterList.Preset::id, var0 -> (MultiNoiseBiomeSourceParameterList.Preset)var0));
-      public static final Codec<MultiNoiseBiomeSourceParameterList.Preset> CODEC = ResourceLocation.CODEC
-         .flatXmap(
-            var0 -> Optional.ofNullable(BY_NAME.get(var0))
-                  .<DataResult>map(DataResult::success)
-                  .orElseGet(() -> DataResult.error(() -> "Unknown preset: " + var0)),
-            var0 -> DataResult.success(var0.id)
-         );
-
-      public Preset(ResourceLocation id, MultiNoiseBiomeSourceParameterList.Preset.SourceProvider provider) {
-         super();
-         this.id = id;
-         this.provider = provider;
-      }
-
-      static <T> Climate.ParameterList<T> generateOverworldBiomes(Function<ResourceKey<Biome>, T> var0) {
-         Builder var1 = ImmutableList.builder();
-         new OverworldBiomeBuilder().addBiomes(var2 -> var1.add(var2.mapSecond(var0)));
-         return new Climate.ParameterList<>(var1.build());
-      }
-
-      public Stream<ResourceKey<Biome>> usedBiomes() {
-         return this.provider.apply(var0 -> var0).values().stream().<ResourceKey<Biome>>map(Pair::getSecond).distinct();
-      }
-
-      @FunctionalInterface
-      interface SourceProvider {
-         <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

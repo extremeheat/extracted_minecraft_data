@@ -60,14 +60,14 @@ public class BreezeAi {
       super();
    }
 
-   protected static Brain<?> makeBrain(Brain<Breeze> var0) {
-      initCoreActivity(var0);
-      initIdleActivity(var0);
-      initFightActivity(var0);
-      var0.setCoreActivities(Set.of(Activity.CORE));
-      var0.setDefaultActivity(Activity.FIGHT);
-      var0.useDefaultActivity();
-      return var0;
+   protected static Brain<?> makeBrain(Breeze var0, Brain<Breeze> var1) {
+      initCoreActivity(var1);
+      initIdleActivity(var1);
+      initFightActivity(var0, var1);
+      var1.setCoreActivities(Set.of(Activity.CORE));
+      var1.setDefaultActivity(Activity.FIGHT);
+      var1.useDefaultActivity();
+      return var1;
    }
 
    private static void initCoreActivity(Brain<Breeze> var0) {
@@ -86,11 +86,11 @@ public class BreezeAi {
       );
    }
 
-   private static void initFightActivity(Brain<Breeze> var0) {
-      var0.addActivityWithConditions(
+   private static void initFightActivity(Breeze var0, Brain<Breeze> var1) {
+      var1.addActivityWithConditions(
          Activity.FIGHT,
          ImmutableList.of(
-            Pair.of(0, StopAttackingIfTargetInvalid.create()),
+            Pair.of(0, StopAttackingIfTargetInvalid.create(var1x -> !Sensor.isEntityAttackable(var0, var1x))),
             Pair.of(1, new Shoot()),
             Pair.of(2, new LongJump()),
             Pair.of(3, new ShootWhenStuck()),

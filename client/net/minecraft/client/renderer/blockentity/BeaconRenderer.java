@@ -8,12 +8,13 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
-   public static final ResourceLocation BEAM_LOCATION = new ResourceLocation("textures/entity/beacon_beam.png");
+   public static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/beacon_beam.png");
    public static final int MAX_RENDER_Y = 1024;
 
    public BeaconRenderer(BlockEntityRendererProvider.Context var1) {
@@ -32,22 +33,12 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
       }
    }
 
-   private static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, float var2, long var3, int var5, int var6, float[] var7) {
+   private static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, float var2, long var3, int var5, int var6, int var7) {
       renderBeaconBeam(var0, var1, BEAM_LOCATION, var2, 1.0F, var3, var5, var6, var7, 0.2F, 0.25F);
    }
 
    public static void renderBeaconBeam(
-      PoseStack var0,
-      MultiBufferSource var1,
-      ResourceLocation var2,
-      float var3,
-      float var4,
-      long var5,
-      int var7,
-      int var8,
-      float[] var9,
-      float var10,
-      float var11
+      PoseStack var0, MultiBufferSource var1, ResourceLocation var2, float var3, float var4, long var5, int var7, int var8, int var9, float var10, float var11
    ) {
       int var12 = var7 + var8;
       var0.pushPose();
@@ -55,73 +46,64 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
       float var13 = (float)Math.floorMod(var5, 40) + var3;
       float var14 = var8 < 0 ? var13 : -var13;
       float var15 = Mth.frac(var14 * 0.2F - (float)Mth.floor(var14 * 0.1F));
-      float var16 = var9[0];
-      float var17 = var9[1];
-      float var18 = var9[2];
       var0.pushPose();
       var0.mulPose(Axis.YP.rotationDegrees(var13 * 2.25F - 45.0F));
+      float var16 = 0.0F;
       float var19 = 0.0F;
+      float var20 = -var10;
+      float var21 = 0.0F;
       float var22 = 0.0F;
       float var23 = -var10;
       float var24 = 0.0F;
-      float var25 = 0.0F;
-      float var26 = -var10;
-      float var27 = 0.0F;
-      float var28 = 1.0F;
-      float var29 = -1.0F + var15;
-      float var30 = (float)var8 * var4 * (0.5F / var10) + var29;
+      float var25 = 1.0F;
+      float var26 = -1.0F + var15;
+      float var27 = (float)var8 * var4 * (0.5F / var10) + var26;
       renderPart(
          var0,
          var1.getBuffer(RenderType.beaconBeam(var2, false)),
-         var16,
-         var17,
-         var18,
-         1.0F,
+         var9,
          var7,
          var12,
          0.0F,
          var10,
          var10,
          0.0F,
+         var20,
+         0.0F,
+         0.0F,
          var23,
          0.0F,
-         0.0F,
-         var26,
-         0.0F,
          1.0F,
-         var30,
-         var29
+         var27,
+         var26
       );
       var0.popPose();
+      var16 = -var11;
+      float var17 = -var11;
       var19 = -var11;
-      float var20 = -var11;
-      var22 = -var11;
-      var23 = -var11;
-      var27 = 0.0F;
-      var28 = 1.0F;
-      var29 = -1.0F + var15;
-      var30 = (float)var8 * var4 + var29;
+      var20 = -var11;
+      var24 = 0.0F;
+      var25 = 1.0F;
+      var26 = -1.0F + var15;
+      var27 = (float)var8 * var4 + var26;
       renderPart(
          var0,
          var1.getBuffer(RenderType.beaconBeam(var2, true)),
-         var16,
-         var17,
-         var18,
-         0.125F,
+         FastColor.ARGB32.color(32, var9),
          var7,
          var12,
+         var16,
+         var17,
+         var11,
          var19,
          var20,
-         var11,
-         var22,
-         var23,
          var11,
          var11,
          var11,
          0.0F,
          1.0F,
-         var30,
-         var29
+         var27,
+         var26
       );
       var0.popPose();
    }
@@ -129,12 +111,12 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
    private static void renderPart(
       PoseStack var0,
       VertexConsumer var1,
-      float var2,
-      float var3,
-      float var4,
+      int var2,
+      int var3,
+      int var4,
       float var5,
-      int var6,
-      int var7,
+      float var6,
+      float var7,
       float var8,
       float var9,
       float var10,
@@ -143,52 +125,43 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
       float var13,
       float var14,
       float var15,
-      float var16,
-      float var17,
-      float var18,
-      float var19
+      float var16
    ) {
-      PoseStack.Pose var20 = var0.last();
-      renderQuad(var20, var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var16, var17, var18, var19);
-      renderQuad(var20, var1, var2, var3, var4, var5, var6, var7, var14, var15, var12, var13, var16, var17, var18, var19);
-      renderQuad(var20, var1, var2, var3, var4, var5, var6, var7, var10, var11, var14, var15, var16, var17, var18, var19);
-      renderQuad(var20, var1, var2, var3, var4, var5, var6, var7, var12, var13, var8, var9, var16, var17, var18, var19);
+      PoseStack.Pose var17 = var0.last();
+      renderQuad(var17, var1, var2, var3, var4, var5, var6, var7, var8, var13, var14, var15, var16);
+      renderQuad(var17, var1, var2, var3, var4, var11, var12, var9, var10, var13, var14, var15, var16);
+      renderQuad(var17, var1, var2, var3, var4, var7, var8, var11, var12, var13, var14, var15, var16);
+      renderQuad(var17, var1, var2, var3, var4, var9, var10, var5, var6, var13, var14, var15, var16);
    }
 
    private static void renderQuad(
       PoseStack.Pose var0,
       VertexConsumer var1,
-      float var2,
-      float var3,
-      float var4,
+      int var2,
+      int var3,
+      int var4,
       float var5,
-      int var6,
-      int var7,
+      float var6,
+      float var7,
       float var8,
       float var9,
       float var10,
       float var11,
-      float var12,
-      float var13,
-      float var14,
-      float var15
+      float var12
    ) {
-      addVertex(var0, var1, var2, var3, var4, var5, var7, var8, var9, var13, var14);
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var8, var9, var13, var15);
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var10, var11, var12, var15);
-      addVertex(var0, var1, var2, var3, var4, var5, var7, var10, var11, var12, var14);
+      addVertex(var0, var1, var2, var4, var5, var6, var10, var11);
+      addVertex(var0, var1, var2, var3, var5, var6, var10, var12);
+      addVertex(var0, var1, var2, var3, var7, var8, var9, var12);
+      addVertex(var0, var1, var2, var4, var7, var8, var9, var11);
    }
 
-   private static void addVertex(
-      PoseStack.Pose var0, VertexConsumer var1, float var2, float var3, float var4, float var5, int var6, float var7, float var8, float var9, float var10
-   ) {
-      var1.vertex(var0, var7, (float)var6, var8)
-         .color(var2, var3, var4, var5)
-         .uv(var9, var10)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(15728880)
-         .normal(var0, 0.0F, 1.0F, 0.0F)
-         .endVertex();
+   private static void addVertex(PoseStack.Pose var0, VertexConsumer var1, int var2, int var3, float var4, float var5, float var6, float var7) {
+      var1.addVertex(var0, var4, (float)var3, var5)
+         .setColor(var2)
+         .setUv(var6, var7)
+         .setOverlay(OverlayTexture.NO_OVERLAY)
+         .setLight(15728880)
+         .setNormal(var0, 0.0F, 1.0F, 0.0F);
    }
 
    public boolean shouldRenderOffScreen(BeaconBlockEntity var1) {

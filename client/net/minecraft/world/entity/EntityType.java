@@ -214,21 +214,10 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       "boat", EntityType.Builder.<Boat>of(Boat::new, MobCategory.MISC).sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10)
    );
    public static final EntityType<Bogged> BOGGED = register(
-      "bogged",
-      EntityType.Builder.of(Bogged::new, MobCategory.MONSTER)
-         .sized(0.6F, 1.99F)
-         .eyeHeight(1.74F)
-         .ridingOffset(-0.7F)
-         .clientTrackingRange(8)
-         .requiredFeatures(FeatureFlags.UPDATE_1_21)
+      "bogged", EntityType.Builder.of(Bogged::new, MobCategory.MONSTER).sized(0.6F, 1.99F).eyeHeight(1.74F).ridingOffset(-0.7F).clientTrackingRange(8)
    );
    public static final EntityType<Breeze> BREEZE = register(
-      "breeze",
-      EntityType.Builder.of(Breeze::new, MobCategory.MONSTER)
-         .sized(0.6F, 1.77F)
-         .eyeHeight(1.3452F)
-         .clientTrackingRange(10)
-         .requiredFeatures(FeatureFlags.UPDATE_1_21)
+      "breeze", EntityType.Builder.of(Breeze::new, MobCategory.MONSTER).sized(0.6F, 1.77F).eyeHeight(1.3452F).clientTrackingRange(10)
    );
    public static final EntityType<BreezeWindCharge> BREEZE_WIND_CHARGE = register(
       "breeze_wind_charge",
@@ -237,7 +226,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          .eyeHeight(0.0F)
          .clientTrackingRange(4)
          .updateInterval(10)
-         .requiredFeatures(FeatureFlags.UPDATE_1_21)
    );
    public static final EntityType<Camel> CAMEL = register(
       "camel", EntityType.Builder.of(Camel::new, MobCategory.CREATURE).sized(1.7F, 2.375F).eyeHeight(2.275F).clientTrackingRange(10)
@@ -311,7 +299,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          .clientTrackingRange(10)
    );
    public static final EntityType<EndCrystal> END_CRYSTAL = register(
-      "end_crystal", EntityType.Builder.<EndCrystal>of(EndCrystal::new, MobCategory.MISC).sized(2.0F, 2.0F).clientTrackingRange(16).updateInterval(2147483647)
+      "end_crystal",
+      EntityType.Builder.<EndCrystal>of(EndCrystal::new, MobCategory.MISC).fireImmune().sized(2.0F, 2.0F).clientTrackingRange(16).updateInterval(2147483647)
    );
    public static final EntityType<EnderDragon> ENDER_DRAGON = register(
       "ender_dragon",
@@ -447,8 +436,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       EntityType.Builder.<ItemFrame>of(ItemFrame::new, MobCategory.MISC).sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647)
    );
    public static final EntityType<OminousItemSpawner> OMINOUS_ITEM_SPAWNER = register(
-      "ominous_item_spawner",
-      EntityType.Builder.of(OminousItemSpawner::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(8).requiredFeatures(FeatureFlags.UPDATE_1_21)
+      "ominous_item_spawner", EntityType.Builder.of(OminousItemSpawner::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(8)
    );
    public static final EntityType<LargeFireball> FIREBALL = register(
       "fireball", EntityType.Builder.<LargeFireball>of(LargeFireball::new, MobCategory.MISC).sized(1.0F, 1.0F).clientTrackingRange(4).updateInterval(10)
@@ -647,11 +635,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       "strider", EntityType.Builder.of(Strider::new, MobCategory.CREATURE).fireImmune().sized(0.9F, 1.7F).clientTrackingRange(10)
    );
    public static final EntityType<Tadpole> TADPOLE = register(
-      "tadpole",
-      EntityType.Builder.of(Tadpole::new, MobCategory.CREATURE)
-         .sized(Tadpole.HITBOX_WIDTH, Tadpole.HITBOX_HEIGHT)
-         .eyeHeight(Tadpole.HITBOX_HEIGHT * 0.65F)
-         .clientTrackingRange(10)
+      "tadpole", EntityType.Builder.of(Tadpole::new, MobCategory.CREATURE).sized(0.4F, 0.3F).eyeHeight(0.19500001F).clientTrackingRange(10)
    );
    public static final EntityType<Display.TextDisplay> TEXT_DISPLAY = register(
       "text_display", EntityType.Builder.of(Display.TextDisplay::new, MobCategory.MISC).sized(0.0F, 0.0F).clientTrackingRange(10).updateInterval(1)
@@ -719,12 +703,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    );
    public static final EntityType<WindCharge> WIND_CHARGE = register(
       "wind_charge",
-      EntityType.Builder.<WindCharge>of(WindCharge::new, MobCategory.MISC)
-         .sized(0.3125F, 0.3125F)
-         .eyeHeight(0.0F)
-         .clientTrackingRange(4)
-         .updateInterval(10)
-         .requiredFeatures(FeatureFlags.UPDATE_1_21)
+      EntityType.Builder.<WindCharge>of(WindCharge::new, MobCategory.MISC).sized(0.3125F, 0.3125F).eyeHeight(0.0F).clientTrackingRange(4).updateInterval(10)
    );
    public static final EntityType<Witch> WITCH = register(
       "witch", EntityType.Builder.of(Witch::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.62F).passengerAttachments(2.2625F).clientTrackingRange(8)
@@ -1064,7 +1043,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static Optional<EntityType<?>> by(CompoundTag var0) {
-      return BuiltInRegistries.ENTITY_TYPE.getOptional(new ResourceLocation(var0.getString("id")));
+      return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.parse(var0.getString("id")));
    }
 
    @Nullable

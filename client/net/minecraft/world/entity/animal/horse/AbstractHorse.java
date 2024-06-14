@@ -36,6 +36,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -66,6 +67,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -218,10 +220,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Override
-   protected void onLeashDistance(float var1) {
-      if (var1 > 6.0F && this.isEating()) {
+   public boolean handleLeashAtDistance(Entity var1, float var2) {
+      if (var2 > 6.0F && this.isEating()) {
          this.setEating(false);
       }
+
+      return true;
    }
 
    public boolean isEating() {
@@ -246,8 +250,8 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Override
-   public void equipSaddle(@Nullable SoundSource var1) {
-      this.inventory.setItem(0, new ItemStack(Items.SADDLE));
+   public void equipSaddle(ItemStack var1, @Nullable SoundSource var2) {
+      this.inventory.setItem(0, var1);
    }
 
    public void equipBodyArmor(Player var1, ItemStack var2) {
@@ -323,8 +327,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
    }
 
-   protected int getInventorySize() {
-      return 1;
+   public final int getInventorySize() {
+      return getInventorySize(this.getInventoryColumns());
+   }
+
+   public static int getInventorySize(int var0) {
+      return var0 * 3 + 1;
    }
 
    protected void createInventory() {
@@ -564,7 +572,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (this.inventory != null) {
          for (int var1 = 0; var1 < this.inventory.getContainerSize(); var1++) {
             ItemStack var2 = this.inventory.getItem(var1);
-            if (!var2.isEmpty() && !EnchantmentHelper.hasVanishingCurse(var2)) {
+            if (!var2.isEmpty() && !EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
                this.spawnAtLocation(var2);
             }
          }
@@ -697,7 +705,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
                return var4;
             }
 
-            if (this.canWearBodyArmor() && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
+            if (this.canUseSlot(EquipmentSlot.BODY) && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
                this.equipBodyArmor(var1, var3);
                return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
@@ -1129,5 +1137,9 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    public final Container getBodyArmorAccess() {
       return this.bodyArmorAccess;
+   }
+
+   public int getInventoryColumns() {
+      return 0;
    }
 }

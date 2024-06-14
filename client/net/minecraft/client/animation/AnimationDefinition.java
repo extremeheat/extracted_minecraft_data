@@ -1,44 +1,13 @@
 package net.minecraft.client.animation;
 
-import com.google.common.collect.Maps;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<String, List<AnimationChannel>> boneAnimations) {
-   public AnimationDefinition(float lengthInSeconds, boolean looping, Map<String, List<AnimationChannel>> boneAnimations) {
-      super();
-      this.lengthInSeconds = lengthInSeconds;
-      this.looping = looping;
-      this.boneAnimations = boneAnimations;
-   }
-
-   public static class Builder {
-      private final float length;
-      private final Map<String, List<AnimationChannel>> animationByBone = Maps.newHashMap();
-      private boolean looping;
-
-      public static AnimationDefinition.Builder withLength(float var0) {
-         return new AnimationDefinition.Builder(var0);
-      }
-
-      private Builder(float var1) {
-         super();
-         this.length = var1;
-      }
-
-      public AnimationDefinition.Builder looping() {
-         this.looping = true;
-         return this;
-      }
-
-      public AnimationDefinition.Builder addAnimation(String var1, AnimationChannel var2) {
-         this.animationByBone.computeIfAbsent(var1, var0 -> new ArrayList<>()).add(var2);
-         return this;
-      }
-
-      public AnimationDefinition build() {
-         return new AnimationDefinition(this.length, this.looping, this.animationByBone);
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -14,16 +14,10 @@ public class MainTarget extends RenderTarget {
 
    public MainTarget(int var1, int var2) {
       super(true);
-      RenderSystem.assertOnRenderThreadOrInit();
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> this.createFrameBuffer(var1, var2));
-      } else {
-         this.createFrameBuffer(var1, var2);
-      }
+      this.createFrameBuffer(var1, var2);
    }
 
    private void createFrameBuffer(int var1, int var2) {
-      RenderSystem.assertOnRenderThreadOrInit();
       MainTarget.Dimension var3 = this.allocateAttachments(var1, var2);
       this.frameBufferId = GlStateManager.glGenFramebuffers();
       GlStateManager._glBindFramebuffer(36160, this.frameBufferId);

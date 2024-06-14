@@ -3,6 +3,7 @@ package net.minecraft.world.item.component;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapDecoder;
 import com.mojang.serialization.MapEncoder;
 import com.mojang.serialization.MapLike;
@@ -16,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.Entity;
@@ -26,7 +28,7 @@ import org.slf4j.Logger;
 public final class CustomData {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final CustomData EMPTY = new CustomData(new CompoundTag());
-   public static final Codec<CustomData> CODEC = CompoundTag.CODEC.xmap(CustomData::new, var0 -> var0.tag);
+   public static final Codec<CustomData> CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(CustomData::new, var0 -> var0.tag);
    public static final Codec<CustomData> CODEC_WITH_ID = CODEC.validate(
       var0 -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + var0)
    );
@@ -102,21 +104,23 @@ public final class CustomData {
             } catch (Exception var7) {
                LOGGER.warn("Failed to rollback block entity at {} after failure", var1.getBlockPos(), var7);
             }
-
-            return false;
          }
-      } else {
-         return false;
       }
+
+      return false;
    }
 
-   public <T> DataResult<CustomData> update(MapEncoder<T> var1, T var2) {
-      return var1.encode(var2, NbtOps.INSTANCE, NbtOps.INSTANCE.mapBuilder()).build(this.tag).map(var0 -> new CustomData((CompoundTag)var0));
+   public <T> DataResult<CustomData> update(DynamicOps<Tag> var1, MapEncoder<T> var2, T var3) {
+      return var2.encode(var3, var1, var1.mapBuilder()).build(this.tag).map(var0 -> new CustomData((CompoundTag)var0));
    }
 
    public <T> DataResult<T> read(MapDecoder<T> var1) {
-      MapLike var2 = (MapLike)NbtOps.INSTANCE.getMap((Tag)this.tag).getOrThrow();
-      return var1.decode(NbtOps.INSTANCE, var2);
+      return this.read(NbtOps.INSTANCE, var1);
+   }
+
+   public <T> DataResult<T> read(DynamicOps<Tag> var1, MapDecoder<T> var2) {
+      MapLike var3 = (MapLike)var1.getMap(this.tag).getOrThrow();
+      return var2.decode(var1, var3);
    }
 
    public int size() {

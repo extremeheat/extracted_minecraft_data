@@ -61,12 +61,11 @@ public abstract class ArrowRenderer<T extends AbstractArrow> extends EntityRende
    }
 
    public void vertex(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5, float var6, float var7, int var8, int var9, int var10, int var11) {
-      var2.vertex(var1, (float)var3, (float)var4, (float)var5)
-         .color(255, 255, 255, 255)
-         .uv(var6, var7)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var11)
-         .normal(var1, (float)var8, (float)var10, (float)var9)
-         .endVertex();
+      var2.addVertex(var1, (float)var3, (float)var4, (float)var5)
+         .setColor(-1)
+         .setUv(var6, var7)
+         .setOverlay(OverlayTexture.NO_OVERLAY)
+         .setLight(var11)
+         .setNormal(var1, (float)var8, (float)var10, (float)var9);
    }
 }

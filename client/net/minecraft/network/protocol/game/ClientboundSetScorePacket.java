@@ -1,47 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import java.util.Optional;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.network.chat.numbers.NumberFormat;
-import net.minecraft.network.chat.numbers.NumberFormatTypes;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-
-public record ClientboundSetScorePacket(String owner, String objectiveName, int score, Optional<Component> display, Optional<NumberFormat> numberFormat)
-   implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetScorePacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.STRING_UTF8,
-      ClientboundSetScorePacket::owner,
-      ByteBufCodecs.STRING_UTF8,
-      ClientboundSetScorePacket::objectiveName,
-      ByteBufCodecs.VAR_INT,
-      ClientboundSetScorePacket::score,
-      ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC,
-      ClientboundSetScorePacket::display,
-      NumberFormatTypes.OPTIONAL_STREAM_CODEC,
-      ClientboundSetScorePacket::numberFormat,
-      ClientboundSetScorePacket::new
-   );
-
-   public ClientboundSetScorePacket(String owner, String objectiveName, int score, Optional<Component> display, Optional<NumberFormat> numberFormat) {
-      super();
-      this.owner = owner;
-      this.objectiveName = objectiveName;
-      this.score = score;
-      this.display = display;
-      this.numberFormat = numberFormat;
-   }
-
-   @Override
-   public PacketType<ClientboundSetScorePacket> type() {
-      return GamePacketTypes.CLIENTBOUND_SET_SCORE;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetScore(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

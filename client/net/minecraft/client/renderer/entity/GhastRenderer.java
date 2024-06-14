@@ -7,8 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Ghast;
 
 public class GhastRenderer extends MobRenderer<Ghast, GhastModel<Ghast>> {
-   private static final ResourceLocation GHAST_LOCATION = new ResourceLocation("textures/entity/ghast/ghast.png");
-   private static final ResourceLocation GHAST_SHOOTING_LOCATION = new ResourceLocation("textures/entity/ghast/ghast_shooting.png");
+   private static final ResourceLocation GHAST_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/ghast.png");
+   private static final ResourceLocation GHAST_SHOOTING_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/ghast_shooting.png");
 
    public GhastRenderer(EntityRendererProvider.Context var1) {
       super(var1, new GhastModel<>(var1.bakeLayer(ModelLayers.GHAST)), 1.5F);

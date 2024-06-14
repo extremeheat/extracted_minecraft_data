@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.client.resources.metadata.language.LanguageMetadataSection;
@@ -23,10 +24,12 @@ public class LanguageManager implements ResourceManagerReloadListener {
    private static final LanguageInfo DEFAULT_LANGUAGE = new LanguageInfo("US", "English", false);
    private Map<String, LanguageInfo> languages = ImmutableMap.of("en_us", DEFAULT_LANGUAGE);
    private String currentCode;
+   private final Consumer<ClientLanguage> reloadCallback;
 
-   public LanguageManager(String var1) {
+   public LanguageManager(String var1, Consumer<ClientLanguage> var2) {
       super();
       this.currentCode = var1;
+      this.reloadCallback = var2;
    }
 
    private static Map<String, LanguageInfo> extractLanguages(Stream<PackResources> var0) {
@@ -61,6 +64,7 @@ public class LanguageManager implements ResourceManagerReloadListener {
       ClientLanguage var5 = ClientLanguage.loadFrom(var1, var2, var3);
       I18n.setLanguage(var5);
       Language.inject(var5);
+      this.reloadCallback.accept(var5);
    }
 
    public void setSelected(String var1) {

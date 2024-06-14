@@ -113,7 +113,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var5);
+         var4.onTake(var1, var3);
       }
 
       return var3;

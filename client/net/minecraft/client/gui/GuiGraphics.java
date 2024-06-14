@@ -203,20 +203,16 @@ public class GuiGraphics {
       }
 
       if (var3 < var5) {
-         int var14 = var3;
+         int var10 = var3;
          var3 = var5;
-         var5 = var14;
+         var5 = var10;
       }
 
-      float var15 = (float)FastColor.ARGB32.alpha(var7) / 255.0F;
-      float var10 = (float)FastColor.ARGB32.red(var7) / 255.0F;
-      float var11 = (float)FastColor.ARGB32.green(var7) / 255.0F;
-      float var12 = (float)FastColor.ARGB32.blue(var7) / 255.0F;
-      VertexConsumer var13 = this.bufferSource.getBuffer(var1);
-      var13.vertex(var8, (float)var2, (float)var3, (float)var6).color(var10, var11, var12, var15).endVertex();
-      var13.vertex(var8, (float)var2, (float)var5, (float)var6).color(var10, var11, var12, var15).endVertex();
-      var13.vertex(var8, (float)var4, (float)var5, (float)var6).color(var10, var11, var12, var15).endVertex();
-      var13.vertex(var8, (float)var4, (float)var3, (float)var6).color(var10, var11, var12, var15).endVertex();
+      VertexConsumer var11 = this.bufferSource.getBuffer(var1);
+      var11.addVertex(var8, (float)var2, (float)var3, (float)var6).setColor(var7);
+      var11.addVertex(var8, (float)var2, (float)var5, (float)var6).setColor(var7);
+      var11.addVertex(var8, (float)var4, (float)var5, (float)var6).setColor(var7);
+      var11.addVertex(var8, (float)var4, (float)var3, (float)var6).setColor(var7);
       this.flushIfUnmanaged();
    }
 
@@ -235,28 +231,20 @@ public class GuiGraphics {
    }
 
    private void fillGradient(VertexConsumer var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      float var9 = (float)FastColor.ARGB32.alpha(var7) / 255.0F;
-      float var10 = (float)FastColor.ARGB32.red(var7) / 255.0F;
-      float var11 = (float)FastColor.ARGB32.green(var7) / 255.0F;
-      float var12 = (float)FastColor.ARGB32.blue(var7) / 255.0F;
-      float var13 = (float)FastColor.ARGB32.alpha(var8) / 255.0F;
-      float var14 = (float)FastColor.ARGB32.red(var8) / 255.0F;
-      float var15 = (float)FastColor.ARGB32.green(var8) / 255.0F;
-      float var16 = (float)FastColor.ARGB32.blue(var8) / 255.0F;
-      Matrix4f var17 = this.pose.last().pose();
-      var1.vertex(var17, (float)var2, (float)var3, (float)var6).color(var10, var11, var12, var9).endVertex();
-      var1.vertex(var17, (float)var2, (float)var5, (float)var6).color(var14, var15, var16, var13).endVertex();
-      var1.vertex(var17, (float)var4, (float)var5, (float)var6).color(var14, var15, var16, var13).endVertex();
-      var1.vertex(var17, (float)var4, (float)var3, (float)var6).color(var10, var11, var12, var9).endVertex();
+      Matrix4f var9 = this.pose.last().pose();
+      var1.addVertex(var9, (float)var2, (float)var3, (float)var6).setColor(var7);
+      var1.addVertex(var9, (float)var2, (float)var5, (float)var6).setColor(var8);
+      var1.addVertex(var9, (float)var4, (float)var5, (float)var6).setColor(var8);
+      var1.addVertex(var9, (float)var4, (float)var3, (float)var6).setColor(var7);
    }
 
    public void fillRenderType(RenderType var1, int var2, int var3, int var4, int var5, int var6) {
       Matrix4f var7 = this.pose.last().pose();
       VertexConsumer var8 = this.bufferSource.getBuffer(var1);
-      var8.vertex(var7, (float)var2, (float)var3, (float)var6).endVertex();
-      var8.vertex(var7, (float)var2, (float)var5, (float)var6).endVertex();
-      var8.vertex(var7, (float)var4, (float)var5, (float)var6).endVertex();
-      var8.vertex(var7, (float)var4, (float)var3, (float)var6).endVertex();
+      var8.addVertex(var7, (float)var2, (float)var3, (float)var6);
+      var8.addVertex(var7, (float)var2, (float)var5, (float)var6);
+      var8.addVertex(var7, (float)var4, (float)var5, (float)var6);
+      var8.addVertex(var7, (float)var4, (float)var3, (float)var6);
       this.flushIfUnmanaged();
    }
 
@@ -322,6 +310,16 @@ public class GuiGraphics {
          this.drawString(var1, var8, var3, var4, var6, false);
          var4 += 9;
       }
+   }
+
+   public int drawStringWithBackdrop(Font var1, Component var2, int var3, int var4, int var5, int var6) {
+      int var7 = this.minecraft.options.getBackgroundColor(0.0F);
+      if (var7 != 0) {
+         byte var8 = 2;
+         this.fill(var3 - 2, var4 - 2, var3 + var5 + 2, var4 + 9 + 2, FastColor.ARGB32.multiply(var7, var6));
+      }
+
+      return this.drawString(var1, var2, var3, var4, var6, true);
    }
 
    public void blit(int var1, int var2, int var3, int var4, int var5, TextureAtlasSprite var6) {
@@ -429,13 +427,12 @@ public class GuiGraphics {
       RenderSystem.setShaderTexture(0, var1);
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
       Matrix4f var11 = this.pose.last().pose();
-      BufferBuilder var12 = Tesselator.getInstance().getBuilder();
-      var12.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-      var12.vertex(var11, (float)var2, (float)var4, (float)var6).uv(var7, var9).endVertex();
-      var12.vertex(var11, (float)var2, (float)var5, (float)var6).uv(var7, var10).endVertex();
-      var12.vertex(var11, (float)var3, (float)var5, (float)var6).uv(var8, var10).endVertex();
-      var12.vertex(var11, (float)var3, (float)var4, (float)var6).uv(var8, var9).endVertex();
-      BufferUploader.drawWithShader(var12.end());
+      BufferBuilder var12 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+      var12.addVertex(var11, (float)var2, (float)var4, (float)var6).setUv(var7, var9);
+      var12.addVertex(var11, (float)var2, (float)var5, (float)var6).setUv(var7, var10);
+      var12.addVertex(var11, (float)var3, (float)var5, (float)var6).setUv(var8, var10);
+      var12.addVertex(var11, (float)var3, (float)var4, (float)var6).setUv(var8, var9);
+      BufferUploader.drawWithShader(var12.buildOrThrow());
    }
 
    void innerBlit(
@@ -455,16 +452,15 @@ public class GuiGraphics {
       float var14
    ) {
       RenderSystem.setShaderTexture(0, var1);
-      RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
+      RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
       RenderSystem.enableBlend();
       Matrix4f var15 = this.pose.last().pose();
-      BufferBuilder var16 = Tesselator.getInstance().getBuilder();
-      var16.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
-      var16.vertex(var15, (float)var2, (float)var4, (float)var6).color(var11, var12, var13, var14).uv(var7, var9).endVertex();
-      var16.vertex(var15, (float)var2, (float)var5, (float)var6).color(var11, var12, var13, var14).uv(var7, var10).endVertex();
-      var16.vertex(var15, (float)var3, (float)var5, (float)var6).color(var11, var12, var13, var14).uv(var8, var10).endVertex();
-      var16.vertex(var15, (float)var3, (float)var4, (float)var6).color(var11, var12, var13, var14).uv(var8, var9).endVertex();
-      BufferUploader.drawWithShader(var16.end());
+      BufferBuilder var16 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var16.addVertex(var15, (float)var2, (float)var4, (float)var6).setUv(var7, var9).setColor(var11, var12, var13, var14);
+      var16.addVertex(var15, (float)var2, (float)var5, (float)var6).setUv(var7, var10).setColor(var11, var12, var13, var14);
+      var16.addVertex(var15, (float)var3, (float)var5, (float)var6).setUv(var8, var10).setColor(var11, var12, var13, var14);
+      var16.addVertex(var15, (float)var3, (float)var4, (float)var6).setUv(var8, var9).setColor(var11, var12, var13, var14);
+      BufferUploader.drawWithShader(var16.buildOrThrow());
       RenderSystem.disableBlend();
    }
 
@@ -649,7 +645,9 @@ public class GuiGraphics {
          }
 
          LocalPlayer var11 = this.minecraft.player;
-         float var12 = var11 == null ? 0.0F : var11.getCooldowns().getCooldownPercent(var2.getItem(), this.minecraft.getFrameTime());
+         float var12 = var11 == null
+            ? 0.0F
+            : var11.getCooldowns().getCooldownPercent(var2.getItem(), this.minecraft.getTimer().getGameTimeDeltaPartialTick(true));
          if (var12 > 0.0F) {
             int var13 = var4 + Mth.floor(16.0F * (1.0F - var12));
             int var14 = var13 + Mth.ceil(16.0F * var12);

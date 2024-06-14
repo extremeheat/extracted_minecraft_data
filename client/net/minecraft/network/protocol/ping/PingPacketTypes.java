@@ -14,10 +14,10 @@ public class PingPacketTypes {
    }
 
    private static <T extends Packet<ClientPongPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<>(PacketFlow.CLIENTBOUND, new ResourceLocation(var0));
+      return new PacketType<>(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static <T extends Packet<ServerPingPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<>(PacketFlow.SERVERBOUND, new ResourceLocation(var0));
+      return new PacketType<>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 }

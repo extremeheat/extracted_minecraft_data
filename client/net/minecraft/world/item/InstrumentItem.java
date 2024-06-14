@@ -18,6 +18,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -68,9 +69,9 @@ public class InstrumentItem extends Item {
    }
 
    @Override
-   public int getUseDuration(ItemStack var1) {
-      Optional var2 = this.getInstrument(var1);
-      return var2.<Integer>map(var0 -> ((Instrument)var0.value()).useDuration()).orElse(0);
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+      Optional var3 = this.getInstrument(var1);
+      return var3.<Integer>map(var0 -> ((Instrument)var0.value()).useDuration()).orElse(0);
    }
 
    private Optional<Holder<Instrument>> getInstrument(ItemStack var1) {

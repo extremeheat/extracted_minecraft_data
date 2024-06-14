@@ -20,10 +20,8 @@ public abstract class BiomeData {
       var0.register(Biomes.SNOWY_PLAINS, OverworldBiomes.plains(var1, var2, false, true, false));
       var0.register(Biomes.ICE_SPIKES, OverworldBiomes.plains(var1, var2, false, true, true));
       var0.register(Biomes.DESERT, OverworldBiomes.desert(var1, var2));
-      var0.register(Biomes.SWAMP, OverworldBiomes.swamp(var1, var2, var0x -> {
-      }));
-      var0.register(Biomes.MANGROVE_SWAMP, OverworldBiomes.mangroveSwamp(var1, var2, var0x -> {
-      }));
+      var0.register(Biomes.SWAMP, OverworldBiomes.swamp(var1, var2));
+      var0.register(Biomes.MANGROVE_SWAMP, OverworldBiomes.mangroveSwamp(var1, var2));
       var0.register(Biomes.FOREST, OverworldBiomes.forest(var1, var2, false, false, false));
       var0.register(Biomes.FLOWER_FOREST, OverworldBiomes.forest(var1, var2, false, false, true));
       var0.register(Biomes.BIRCH_FOREST, OverworldBiomes.forest(var1, var2, true, false, false));

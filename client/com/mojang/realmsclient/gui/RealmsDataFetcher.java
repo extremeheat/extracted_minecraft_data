@@ -4,7 +4,7 @@ import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.dto.RealmsNotification;
-import com.mojang.realmsclient.dto.RealmsServer;
+import com.mojang.realmsclient.dto.RealmsServerPlayerLists;
 import com.mojang.realmsclient.gui.task.DataFetcher;
 import com.mojang.realmsclient.gui.task.RepeatedDelayStrategy;
 import com.mojang.realmsclient.util.RealmsPersistence;
@@ -21,6 +21,7 @@ public class RealmsDataFetcher {
    public final DataFetcher.Task<Integer> pendingInvitesTask;
    public final DataFetcher.Task<Boolean> trialAvailabilityTask;
    public final DataFetcher.Task<RealmsNews> newsTask;
+   public final DataFetcher.Task<RealmsServerPlayerLists> onlinePlayersTask;
    public final RealmsNewsManager newsManager = new RealmsNewsManager(new RealmsPersistence());
 
    public RealmsDataFetcher(RealmsClient var1) {
@@ -43,18 +44,26 @@ public class RealmsDataFetcher {
          .createTask("trial availablity", var1::trialAvailable, Duration.ofSeconds(60L), RepeatedDelayStrategy.exponentialBackoff(60));
       this.newsTask = this.dataFetcher.createTask("unread news", var1::getNews, Duration.ofMinutes(5L), RepeatedDelayStrategy.CONSTANT);
       this.notificationsTask = this.dataFetcher.createTask("notifications", var1::getNotifications, Duration.ofMinutes(5L), RepeatedDelayStrategy.CONSTANT);
-      this.tasks = List.of(this.notificationsTask, this.serverListUpdateTask, this.pendingInvitesTask, this.trialAvailabilityTask, this.newsTask);
+      this.onlinePlayersTask = this.dataFetcher.createTask("online players", var1::getLiveStats, Duration.ofSeconds(10L), RepeatedDelayStrategy.CONSTANT);
+      this.tasks = List.of(
+         this.notificationsTask, this.serverListUpdateTask, this.pendingInvitesTask, this.trialAvailabilityTask, this.newsTask, this.onlinePlayersTask
+      );
    }
 
    public List<DataFetcher.Task<?>> getTasks() {
       return this.tasks;
    }
 
-   public static record ServerListData(List<RealmsServer> serverList, List<RealmsServer> availableSnapshotServers) {
-      public ServerListData(List<RealmsServer> serverList, List<RealmsServer> availableSnapshotServers) {
-         super();
-         this.serverList = serverList;
-         this.availableSnapshotServers = availableSnapshotServers;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

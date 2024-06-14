@@ -15,6 +15,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
@@ -115,7 +116,7 @@ public class Panda extends Animal {
 
    @Override
    public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       return !this.getItemBySlot(var2).isEmpty() ? false : var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
    }
 
@@ -318,18 +319,22 @@ public class Panda extends Animal {
    }
 
    @Override
-   public boolean canBeLeashed(Player var1) {
+   public boolean canBeLeashed() {
       return false;
    }
 
    @Override
    public boolean doHurtTarget(Entity var1) {
-      this.playSound(SoundEvents.PANDA_BITE, 1.0F, 1.0F);
       if (!this.isAggressive()) {
          this.didBite = true;
       }
 
       return super.doHurtTarget(var1);
+   }
+
+   @Override
+   public void playAttackSound() {
+      this.playSound(SoundEvents.PANDA_BITE, 1.0F, 1.0F);
    }
 
    @Override
@@ -987,13 +992,8 @@ public class Panda extends Animal {
       private final Panda panda;
 
       public PandaPanicGoal(Panda var1, double var2) {
-         super(var1, var2);
+         super(var1, var2, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES);
          this.panda = var1;
-      }
-
-      @Override
-      protected boolean shouldPanic() {
-         return this.mob.isFreezing() || this.mob.isOnFire();
       }
 
       @Override

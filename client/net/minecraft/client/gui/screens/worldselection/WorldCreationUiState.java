@@ -22,7 +22,6 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
-import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
 public class WorldCreationUiState {
    private static final Component DEFAULT_WORLD_NAME = Component.translatable("selectWorld.newWorld");
@@ -281,23 +280,16 @@ public class WorldCreationUiState {
       }
    }
 
-   public static record WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
-      private static final Component CUSTOM_WORLD_DESCRIPTION = Component.translatable("generator.custom");
-
-      public WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
-         super();
-         this.preset = preset;
-      }
-
-      public Component describePreset() {
-         return Optional.ofNullable(this.preset)
-            .flatMap(Holder::unwrapKey)
-            .map(var0 -> Component.translatable(var0.location().toLanguageKey("generator")))
-            .orElse(CUSTOM_WORLD_DESCRIPTION);
-      }
-
-      public boolean isAmplified() {
-         return Optional.ofNullable(this.preset).flatMap(Holder::unwrapKey).filter(var0 -> var0.equals(WorldPresets.AMPLIFIED)).isPresent();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

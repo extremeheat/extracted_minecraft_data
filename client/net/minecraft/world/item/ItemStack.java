@@ -47,6 +47,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
@@ -55,7 +56,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NullOps;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -63,6 +63,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -76,12 +77,11 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.enchantment.DigDurabilityEnchantment;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -99,7 +99,7 @@ public final class ItemStack implements DataComponentHolder {
       () -> RecordCodecBuilder.create(
             var0 -> var0.group(
                      ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-                     ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
+                     ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
                      DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
                   )
                   .apply(var0, ItemStack::new)
@@ -260,9 +260,21 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public static DataResult<Unit> validateComponents(DataComponentMap var0) {
-      return var0.has(DataComponents.MAX_DAMAGE) && var0.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1
-         ? DataResult.error(() -> "Item cannot be both damageable and stackable")
-         : DataResult.success(Unit.INSTANCE);
+      if (var0.has(DataComponents.MAX_DAMAGE) && var0.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
+         return DataResult.error(() -> "Item cannot be both damageable and stackable");
+      } else {
+         ItemContainerContents var1 = var0.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+
+         for (ItemStack var3 : var1.nonEmptyItems()) {
+            int var4 = var3.getCount();
+            int var5 = var3.getMaxStackSize();
+            if (var4 > var5) {
+               return DataResult.error(() -> "Item stack with count of " + var4 + " was larger than maximum: " + var5);
+            }
+         }
+
+         return DataResult.success(Unit.INSTANCE);
+      }
    }
 
    public static Optional<ItemStack> parse(HolderLookup.Provider var0, Tag var1) {
@@ -407,52 +419,48 @@ public final class ItemStack implements DataComponentHolder {
       return this.getOrDefault(DataComponents.MAX_DAMAGE, Integer.valueOf(0));
    }
 
-   public void hurtAndBreak(int var1, RandomSource var2, @Nullable ServerPlayer var3, Runnable var4) {
+   public void hurtAndBreak(int var1, ServerLevel var2, @Nullable ServerPlayer var3, Consumer<Item> var4) {
       if (this.isDamageableItem()) {
-         if (var1 > 0) {
-            int var5 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.UNBREAKING, this);
-            int var6 = 0;
-
-            for (int var7 = 0; var5 > 0 && var7 < var1; var7++) {
-               if (DigDurabilityEnchantment.shouldIgnoreDurabilityDrop(this, var5, var2)) {
-                  var6++;
+         if (var3 == null || !var3.hasInfiniteMaterials()) {
+            if (var1 > 0) {
+               var1 = EnchantmentHelper.processDurabilityChange(var2, this, var1);
+               if (var1 <= 0) {
+                  return;
                }
             }
 
-            var1 -= var6;
-            if (var1 <= 0) {
-               return;
+            if (var3 != null && var1 != 0) {
+               CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(var3, this, this.getDamageValue() + var1);
             }
-         }
 
-         if (var3 != null && var1 != 0) {
-            CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(var3, this, this.getDamageValue() + var1);
-         }
-
-         int var8 = this.getDamageValue() + var1;
-         this.setDamageValue(var8);
-         if (var8 >= this.getMaxDamage()) {
-            var4.run();
+            int var5 = this.getDamageValue() + var1;
+            this.setDamageValue(var5);
+            if (var5 >= this.getMaxDamage()) {
+               Item var6 = this.getItem();
+               this.shrink(1);
+               var4.accept(var6);
+            }
          }
       }
    }
 
    public void hurtAndBreak(int var1, LivingEntity var2, EquipmentSlot var3) {
-      if (!var2.level().isClientSide) {
-         if (var2 instanceof Player var4 && var4.hasInfiniteMaterials()) {
-            return;
+      if (var2.level() instanceof ServerLevel var4) {
+         this.hurtAndBreak(var1, var4, var2 instanceof ServerPlayer var6 ? var6 : null, var2x -> var2.onEquippedItemBroken(var2x, var3));
+      }
+   }
+
+   public ItemStack hurtAndConvertOnBreak(int var1, ItemLike var2, LivingEntity var3, EquipmentSlot var4) {
+      this.hurtAndBreak(var1, var3, var4);
+      if (this.isEmpty()) {
+         ItemStack var5 = this.transmuteCopyIgnoreEmpty(var2, 1);
+         if (var5.isDamageableItem()) {
+            var5.setDamageValue(0);
          }
 
-         this.hurtAndBreak(var1, var2.getRandom(), var2 instanceof ServerPlayer var5 ? var5 : null, () -> {
-            var2.broadcastBreakEvent(var3);
-            Item var3x = this.getItem();
-            this.shrink(1);
-            if (var2 instanceof Player) {
-               ((Player)var2).awardStat(Stats.ITEM_BROKEN.get(var3x));
-            }
-
-            this.setDamageValue(0);
-         });
+         return var5;
+      } else {
+         return this;
       }
    }
 
@@ -476,13 +484,18 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().overrideOtherStackedOnMe(this, var1, var2, var3, var4, var5);
    }
 
-   public void hurtEnemy(LivingEntity var1, Player var2) {
+   public boolean hurtEnemy(LivingEntity var1, Player var2) {
       Item var3 = this.getItem();
-      ItemEnchantments var4 = this.getEnchantments();
       if (var3.hurtEnemy(this, var1, var2)) {
          var2.awardStat(Stats.ITEM_USED.get(var3));
-         EnchantmentHelper.doPostItemStackHurtEffects(var2, var1, var4);
+         return true;
+      } else {
+         return false;
       }
+   }
+
+   public void postHurtEnemy(LivingEntity var1, Player var2) {
+      this.getItem().postHurtEnemy(this, var1, var2);
    }
 
    public void mineBlock(Level var1, BlockState var2, BlockPos var3, Player var4) {
@@ -520,11 +533,15 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
+   public ItemStack transmuteCopy(ItemLike var1) {
+      return this.transmuteCopy(var1, this.getCount());
+   }
+
    public ItemStack transmuteCopy(ItemLike var1, int var2) {
       return this.isEmpty() ? EMPTY : this.transmuteCopyIgnoreEmpty(var1, var2);
    }
 
-   public ItemStack transmuteCopyIgnoreEmpty(ItemLike var1, int var2) {
+   private ItemStack transmuteCopyIgnoreEmpty(ItemLike var1, int var2) {
       return new ItemStack(var1.asItem().builtInRegistryHolder(), var2, this.components.asPatch());
    }
 
@@ -615,8 +632,8 @@ public final class ItemStack implements DataComponentHolder {
       this.getItem().onCraftedPostProcess(this, var1);
    }
 
-   public int getUseDuration() {
-      return this.getItem().getUseDuration(this);
+   public int getUseDuration(LivingEntity var1) {
+      return this.getItem().getUseDuration(this, var1);
    }
 
    public UseAnim getUseAnimation() {
@@ -714,6 +731,7 @@ public final class ItemStack implements DataComponentHolder {
             this.getItem().appendHoverText(this, var1, var4, var3);
          }
 
+         this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var10, var3);
          this.addToTooltip(DataComponents.TRIM, var1, var10, var3);
          this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var10, var3);
          this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var10, var3);
@@ -758,12 +776,12 @@ public final class ItemStack implements DataComponentHolder {
    private void addAttributeTooltips(Consumer<Component> var1, @Nullable Player var2) {
       ItemAttributeModifiers var3 = this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
       if (var3.showInTooltip()) {
-         for (EquipmentSlot var7 : EquipmentSlot.values()) {
+         for (EquipmentSlotGroup var7 : EquipmentSlotGroup.values()) {
             MutableBoolean var8 = new MutableBoolean(true);
             this.forEachModifier(var7, (var5, var6) -> {
                if (var8.isTrue()) {
                   var1.accept(CommonComponents.EMPTY);
-                  var1.accept(Component.translatable("item.modifiers." + var7.getName()).withStyle(ChatFormatting.GRAY));
+                  var1.accept(Component.translatable("item.modifiers." + var7.getSerializedName()).withStyle(ChatFormatting.GRAY));
                   var8.setFalse();
                }
 
@@ -777,11 +795,10 @@ public final class ItemStack implements DataComponentHolder {
       double var5 = var4.amount();
       boolean var7 = false;
       if (var2 != null) {
-         if (var4.id() == Item.BASE_ATTACK_DAMAGE_UUID) {
+         if (var4.is(Item.BASE_ATTACK_DAMAGE_ID)) {
             var5 += var2.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-            var5 += (double)EnchantmentHelper.getDamageBonus(this, null);
             var7 = true;
-         } else if (var4.id() == Item.BASE_ATTACK_SPEED_UUID) {
+         } else if (var4.is(Item.BASE_ATTACK_SPEED_ID)) {
             var5 += var2.getAttributeBaseValue(Attributes.ATTACK_SPEED);
             var7 = true;
          }
@@ -815,7 +832,7 @@ public final class ItemStack implements DataComponentHolder {
                   ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var8),
                   Component.translatable(((Attribute)var3.value()).getDescriptionId())
                )
-               .withStyle(ChatFormatting.BLUE)
+               .withStyle(((Attribute)var3.value()).getStyle(true))
          );
       } else if (var5 < 0.0) {
          var1.accept(
@@ -824,7 +841,7 @@ public final class ItemStack implements DataComponentHolder {
                   ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(-var8),
                   Component.translatable(((Attribute)var3.value()).getDescriptionId())
                )
-               .withStyle(ChatFormatting.RED)
+               .withStyle(((Attribute)var3.value()).getStyle(false))
          );
       }
    }
@@ -856,7 +873,7 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public void enchant(Enchantment var1, int var2) {
+   public void enchant(Holder<Enchantment> var1, int var2) {
       EnchantmentHelper.updateEnchantments(this, var2x -> var2x.upgrade(var1, var2));
    }
 
@@ -888,6 +905,17 @@ public final class ItemStack implements DataComponentHolder {
       return !this.isEmpty() ? this.entityRepresentation : null;
    }
 
+   public void forEachModifier(EquipmentSlotGroup var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
+      ItemAttributeModifiers var3 = this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+      if (!var3.modifiers().isEmpty()) {
+         var3.forEach(var1, var2);
+      } else {
+         this.getItem().getDefaultAttributeModifiers().forEach(var1, var2);
+      }
+
+      EnchantmentHelper.forEachModifier(this, var1, var2);
+   }
+
    public void forEachModifier(EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
       ItemAttributeModifiers var3 = this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
       if (!var3.modifiers().isEmpty()) {
@@ -895,6 +923,8 @@ public final class ItemStack implements DataComponentHolder {
       } else {
          this.getItem().getDefaultAttributeModifiers().forEach(var1, var2);
       }
+
+      EnchantmentHelper.forEachModifier(this, var1, var2);
    }
 
    public Component getDisplayName() {
@@ -956,6 +986,12 @@ public final class ItemStack implements DataComponentHolder {
       if (var2 == null || !var2.hasInfiniteMaterials()) {
          this.shrink(var1);
       }
+   }
+
+   public ItemStack consumeAndReturn(int var1, @Nullable LivingEntity var2) {
+      ItemStack var3 = this.copyWithCount(var1);
+      this.consume(var1, var2);
+      return var3;
    }
 
    public void onUseTick(Level var1, LivingEntity var2, int var3) {

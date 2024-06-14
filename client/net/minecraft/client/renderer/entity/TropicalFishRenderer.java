@@ -15,8 +15,8 @@ import net.minecraft.world.entity.animal.TropicalFish;
 public class TropicalFishRenderer extends MobRenderer<TropicalFish, ColorableHierarchicalModel<TropicalFish>> {
    private final ColorableHierarchicalModel<TropicalFish> modelA = this.getModel();
    private final ColorableHierarchicalModel<TropicalFish> modelB;
-   private static final ResourceLocation MODEL_A_TEXTURE = new ResourceLocation("textures/entity/fish/tropical_a.png");
-   private static final ResourceLocation MODEL_B_TEXTURE = new ResourceLocation("textures/entity/fish/tropical_b.png");
+   private static final ResourceLocation MODEL_A_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/fish/tropical_a.png");
+   private static final ResourceLocation MODEL_B_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/fish/tropical_b.png");
 
    public TropicalFishRenderer(EntityRendererProvider.Context var1) {
       super(var1, new TropicalFishModelA<>(var1.bakeLayer(ModelLayers.TROPICAL_FISH_SMALL)), 0.15F);
@@ -37,10 +37,9 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, ColorableHie
          case LARGE -> this.modelB;
       };
       this.model = var7;
-      float[] var8 = var1.getBaseColor().getTextureDiffuseColors();
-      var7.setColor(var8[0], var8[1], var8[2]);
+      var7.setColor(var1.getBaseColor().getTextureDiffuseColor());
       super.render(var1, var2, var3, var4, var5, var6);
-      var7.setColor(1.0F, 1.0F, 1.0F);
+      var7.setColor(-1);
    }
 
    protected void setupRotations(TropicalFish var1, PoseStack var2, float var3, float var4, float var5, float var6) {

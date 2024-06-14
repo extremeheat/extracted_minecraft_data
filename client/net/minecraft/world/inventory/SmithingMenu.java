@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmithingRecipe;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -55,7 +56,7 @@ public class SmithingMenu extends ItemCombinerMenu {
 
    @Override
    protected boolean mayPickup(Player var1, boolean var2) {
-      return this.selectedRecipe != null && this.selectedRecipe.value().matches(this.inputSlots, this.level);
+      return this.selectedRecipe != null && this.selectedRecipe.value().matches(this.createRecipeInput(), this.level);
    }
 
    @Override
@@ -72,6 +73,10 @@ public class SmithingMenu extends ItemCombinerMenu {
       return List.of(this.inputSlots.getItem(0), this.inputSlots.getItem(1), this.inputSlots.getItem(2));
    }
 
+   private SmithingRecipeInput createRecipeInput() {
+      return new SmithingRecipeInput(this.inputSlots.getItem(0), this.inputSlots.getItem(1), this.inputSlots.getItem(2));
+   }
+
    private void shrinkStackInSlot(int var1) {
       ItemStack var2 = this.inputSlots.getItem(var1);
       if (!var2.isEmpty()) {
@@ -82,16 +87,17 @@ public class SmithingMenu extends ItemCombinerMenu {
 
    @Override
    public void createResult() {
-      List var1 = this.level.getRecipeManager().getRecipesFor(RecipeType.SMITHING, this.inputSlots, this.level);
-      if (var1.isEmpty()) {
+      SmithingRecipeInput var1 = this.createRecipeInput();
+      List var2 = this.level.getRecipeManager().getRecipesFor(RecipeType.SMITHING, var1, this.level);
+      if (var2.isEmpty()) {
          this.resultSlots.setItem(0, ItemStack.EMPTY);
       } else {
-         RecipeHolder var2 = (RecipeHolder)var1.get(0);
-         ItemStack var3 = ((SmithingRecipe)var2.value()).assemble(this.inputSlots, this.level.registryAccess());
-         if (var3.isItemEnabled(this.level.enabledFeatures())) {
-            this.selectedRecipe = var2;
-            this.resultSlots.setRecipeUsed(var2);
-            this.resultSlots.setItem(0, var3);
+         RecipeHolder var3 = (RecipeHolder)var2.get(0);
+         ItemStack var4 = ((SmithingRecipe)var3.value()).assemble(var1, this.level.registryAccess());
+         if (var4.isItemEnabled(this.level.enabledFeatures())) {
+            this.selectedRecipe = var3;
+            this.resultSlots.setRecipeUsed(var3);
+            this.resultSlots.setItem(0, var4);
          }
       }
    }

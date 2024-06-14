@@ -414,8 +414,12 @@ public class BiomeDefaultFeatures {
    }
 
    public static void commonSpawns(MobSpawnSettings.Builder var0) {
+      commonSpawns(var0, 100);
+   }
+
+   public static void commonSpawns(MobSpawnSettings.Builder var0, int var1) {
       caveSpawns(var0);
-      monsters(var0, 95, 5, 100, false);
+      monsters(var0, 95, 5, var1, false);
    }
 
    public static void oceanSpawns(MobSpawnSettings.Builder var0, int var1, int var2, int var3) {

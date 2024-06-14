@@ -26,6 +26,7 @@ public class ItemSubPredicates {
       "attribute_modifiers", ItemAttributeModifiersPredicate.CODEC
    );
    public static final ItemSubPredicate.Type<ItemTrimPredicate> ARMOR_TRIM = register("trim", ItemTrimPredicate.CODEC);
+   public static final ItemSubPredicate.Type<ItemJukeboxPlayablePredicate> JUKEBOX_PLAYABLE = register("jukebox_playable", ItemJukeboxPlayablePredicate.CODEC);
 
    public ItemSubPredicates() {
       super();

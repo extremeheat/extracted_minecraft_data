@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
@@ -12,8 +11,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -22,9 +19,11 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabOrderedElement;
 import net.minecraft.client.gui.components.Tooltip;
@@ -55,16 +54,15 @@ import org.slf4j.Logger;
 
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Set<String> ALLOWED_PROTOCOLS = Sets.newHashSet(new String[]{"http", "https"});
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   protected static final CubeMap CUBE_MAP = new CubeMap(new ResourceLocation("textures/gui/title/background/panorama"));
+   protected static final CubeMap CUBE_MAP = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
    protected static final PanoramaRenderer PANORAMA = new PanoramaRenderer(CUBE_MAP);
-   public static final ResourceLocation MENU_BACKGROUND = new ResourceLocation("textures/gui/menu_background.png");
-   public static final ResourceLocation HEADER_SEPARATOR = new ResourceLocation("textures/gui/header_separator.png");
-   public static final ResourceLocation FOOTER_SEPARATOR = new ResourceLocation("textures/gui/footer_separator.png");
-   private static final ResourceLocation INWORLD_MENU_BACKGROUND = new ResourceLocation("textures/gui/inworld_menu_background.png");
-   public static final ResourceLocation INWORLD_HEADER_SEPARATOR = new ResourceLocation("textures/gui/inworld_header_separator.png");
-   public static final ResourceLocation INWORLD_FOOTER_SEPARATOR = new ResourceLocation("textures/gui/inworld_footer_separator.png");
+   public static final ResourceLocation MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_background.png");
+   public static final ResourceLocation HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/header_separator.png");
+   public static final ResourceLocation FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/footer_separator.png");
+   private static final ResourceLocation INWORLD_MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_background.png");
+   public static final ResourceLocation INWORLD_HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_header_separator.png");
+   public static final ResourceLocation INWORLD_FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
    protected final Component title;
    private final List<GuiEventListener> children = Lists.newArrayList();
    private final List<NarratableEntry> narratables = Lists.newArrayList();
@@ -74,10 +72,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public int width;
    public int height;
    private final List<Renderable> renderables = Lists.newArrayList();
-   private long lastPanoramaRenderTime = Util.getMillis();
    protected Font font;
-   @Nullable
-   private URI clickedLink;
    private static final long NARRATE_SUPPRESS_AFTER_INIT_TIME = TimeUnit.SECONDS.toMillis(2L);
    private static final long NARRATE_DELAY_NARRATOR_ENABLED = NARRATE_SUPPRESS_AFTER_INIT_TIME;
    private static final long NARRATE_DELAY_MOUSE_MOVE = 750L;
@@ -86,6 +81,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private final ScreenNarrationCollector narrationState = new ScreenNarrationCollector();
    private long narrationSuppressTime = -9223372036854775808L;
    private long nextNarrationTime = 9223372036854775807L;
+   @Nullable
+   protected CycleButton<NarratorStatus> narratorButton;
    @Nullable
    private NarratableEntry lastNarratable;
    @Nullable
@@ -264,38 +261,33 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                }
 
                try {
-                  URI var3 = new URI(var2.getValue());
-                  String var4 = var3.getScheme();
-                  if (var4 == null) {
-                     throw new URISyntaxException(var2.getValue(), "Missing protocol");
-                  }
-
-                  if (!ALLOWED_PROTOCOLS.contains(var4.toLowerCase(Locale.ROOT))) {
-                     throw new URISyntaxException(var2.getValue(), "Unsupported protocol: " + var4.toLowerCase(Locale.ROOT));
-                  }
-
+                  URI var3 = Util.parseAndValidateUntrustedUri(var2.getValue());
                   if (this.minecraft.options.chatLinksPrompt().get()) {
-                     this.clickedLink = var3;
-                     this.minecraft.setScreen(new ConfirmLinkScreen(this::confirmLink, var2.getValue(), false));
+                     this.minecraft.setScreen(new ConfirmLinkScreen(var2x -> {
+                        if (var2x) {
+                           Util.getPlatform().openUri(var3);
+                        }
+
+                        this.minecraft.setScreen(this);
+                     }, var2.getValue(), false));
                   } else {
-                     this.openLink(var3);
+                     Util.getPlatform().openUri(var3);
                   }
-               } catch (URISyntaxException var5) {
-                  LOGGER.error("Can't open url for {}", var2, var5);
+               } catch (URISyntaxException var4) {
+                  LOGGER.error("Can't open url for {}", var2, var4);
                }
             } else if (var2.getAction() == ClickEvent.Action.OPEN_FILE) {
-               URI var6 = new File(var2.getValue()).toURI();
-               this.openLink(var6);
+               Util.getPlatform().openFile(new File(var2.getValue()));
             } else if (var2.getAction() == ClickEvent.Action.SUGGEST_COMMAND) {
                this.insertText(StringUtil.filterText(var2.getValue()), true);
             } else if (var2.getAction() == ClickEvent.Action.RUN_COMMAND) {
-               String var7 = StringUtil.filterText(var2.getValue());
-               if (var7.startsWith("/")) {
-                  if (!this.minecraft.player.connection.sendUnsignedCommand(var7.substring(1))) {
-                     LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var7);
+               String var5 = StringUtil.filterText(var2.getValue());
+               if (var5.startsWith("/")) {
+                  if (!this.minecraft.player.connection.sendUnsignedCommand(var5.substring(1))) {
+                     LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var5);
                   }
                } else {
-                  LOGGER.error("Failed to run command without '/' prefix from click event: '{}'", var7);
+                  LOGGER.error("Failed to run command without '/' prefix from click event: '{}'", var5);
                }
             } else if (var2.getAction() == ClickEvent.Action.COPY_TO_CLIPBOARD) {
                this.minecraft.keyboardHandler.setClipboard(var2.getValue());
@@ -365,16 +357,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.minecraft.getMainRenderTarget().bindWrite(false);
    }
 
-   protected float advancePanoramaTime() {
-      long var1 = Util.getMillis();
-      long var3 = 50L;
-      float var5 = (float)(var1 - this.lastPanoramaRenderTime) / 50.0F;
-      this.lastPanoramaRenderTime = var1;
-      return var5 > 7.0F ? 0.5F : var5;
-   }
-
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, 1.0F, this.advancePanoramaTime());
+      PANORAMA.render(var1, this.width, this.height, 1.0F, var2);
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {
@@ -398,19 +382,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public boolean isPauseScreen() {
       return true;
-   }
-
-   private void confirmLink(boolean var1) {
-      if (var1) {
-         this.openLink(this.clickedLink);
-      }
-
-      this.clickedLink = null;
-      this.minecraft.setScreen(this);
-   }
-
-   private void openLink(URI var1) {
-      Util.getPlatform().openUri(var1);
    }
 
    public static boolean hasControlDown() {
@@ -596,8 +567,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return var2 != null ? var2 : var3;
    }
 
-   public void narrationEnabled() {
-      this.scheduleNarration(NARRATE_DELAY_NARRATOR_ENABLED, false);
+   public void updateNarratorStatus(boolean var1) {
+      if (var1) {
+         this.scheduleNarration(NARRATE_DELAY_NARRATOR_ENABLED, false);
+      }
+
+      if (this.narratorButton != null) {
+         this.narratorButton.setValue(this.minecraft.options.narrator().get());
+      }
    }
 
    protected void clearTooltipForNextRenderPass() {
@@ -632,13 +609,18 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return null;
    }
 
-   static record DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
-      DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
-         super();
-         this.tooltip = tooltip;
-         this.positioner = positioner;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class NarratableSearchResult {
       public final NarratableEntry entry;

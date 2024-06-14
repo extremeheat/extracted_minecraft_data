@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -142,49 +143,70 @@ public class TestCommand {
          var0x -> testFinder.allTestsInClass(var0x, TestClassNameArgument.getTestClassName(var0x, "testClassName"))
       );
       var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
-                                                                              "test"
-                                                                           )
-                                                                           .then(
-                                                                              Commands.literal("run")
-                                                                                 .then(
-                                                                                    runWithRetryOptionsAndBuildInfo(
-                                                                                       Commands.argument(
-                                                                                          "testName", TestFunctionArgument.testFunctionArgument()
-                                                                                       ),
-                                                                                       var0x -> testFinder.byArgument(var0x, "testName")
-                                                                                    )
+         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
+                                                                                    "test"
                                                                                  )
-                                                                           ))
-                                                                        .then(
-                                                                           Commands.literal("runmultiple")
-                                                                              .then(
-                                                                                 ((RequiredArgumentBuilder)Commands.argument(
-                                                                                          "testName", TestFunctionArgument.testFunctionArgument()
+                                                                                 .then(
+                                                                                    Commands.literal("run")
+                                                                                       .then(
+                                                                                          runWithRetryOptionsAndBuildInfo(
+                                                                                             Commands.argument(
+                                                                                                "testName", TestFunctionArgument.testFunctionArgument()
+                                                                                             ),
+                                                                                             var0x -> testFinder.byArgument(var0x, "testName")
+                                                                                          )
                                                                                        )
-                                                                                       .executes(var0x -> testFinder.byArgument(var0x, "testName").run()))
+                                                                                 ))
+                                                                              .then(
+                                                                                 Commands.literal("runmultiple")
                                                                                     .then(
-                                                                                       Commands.argument("amount", IntegerArgumentType.integer())
-                                                                                          .executes(
-                                                                                             var0x -> testFinder.createMultipleCopies(
-                                                                                                      IntegerArgumentType.getInteger(var0x, "amount")
-                                                                                                   )
-                                                                                                   .byArgument(var0x, "testName")
-                                                                                                   .run()
+                                                                                       ((RequiredArgumentBuilder)Commands.argument(
+                                                                                                "testName", TestFunctionArgument.testFunctionArgument()
+                                                                                             )
+                                                                                             .executes(var0x -> testFinder.byArgument(var0x, "testName").run()))
+                                                                                          .then(
+                                                                                             Commands.argument("amount", IntegerArgumentType.integer())
+                                                                                                .executes(
+                                                                                                   var0x -> testFinder.createMultipleCopies(
+                                                                                                            IntegerArgumentType.getInteger(var0x, "amount")
+                                                                                                         )
+                                                                                                         .byArgument(var0x, "testName")
+                                                                                                         .run()
+                                                                                                )
                                                                                           )
                                                                                     )
+                                                                              ))
+                                                                           .then(
+                                                                              runWithRetryOptionsAndBuildInfo(
+                                                                                 Commands.literal("runall").then(var2), testFinder::allTests
                                                                               )
-                                                                        ))
-                                                                     .then(
-                                                                        runWithRetryOptionsAndBuildInfo(
-                                                                           Commands.literal("runall").then(var2), testFinder::allTests
-                                                                        )
-                                                                     ))
-                                                                  .then(runWithRetryOptions(Commands.literal("runthese"), testFinder::allNearby)))
-                                                               .then(runWithRetryOptions(Commands.literal("runclosest"), testFinder::nearest)))
-                                                            .then(runWithRetryOptions(Commands.literal("runthat"), testFinder::lookedAt)))
+                                                                           ))
+                                                                        .then(runWithRetryOptions(Commands.literal("runthese"), testFinder::allNearby)))
+                                                                     .then(runWithRetryOptions(Commands.literal("runclosest"), testFinder::nearest)))
+                                                                  .then(runWithRetryOptions(Commands.literal("runthat"), testFinder::lookedAt)))
+                                                               .then(
+                                                                  runWithRetryOptionsAndBuildInfo(
+                                                                     Commands.literal("runfailed").then(var1), testFinder::failedTests
+                                                                  )
+                                                               ))
+                                                            .then(
+                                                               Commands.literal("verify")
+                                                                  .then(
+                                                                     Commands.argument("testName", TestFunctionArgument.testFunctionArgument())
+                                                                        .executes(var0x -> testFinder.byArgument(var0x, "testName").verify())
+                                                                  )
+                                                            ))
                                                          .then(
-                                                            runWithRetryOptionsAndBuildInfo(Commands.literal("runfailed").then(var1), testFinder::failedTests)
+                                                            Commands.literal("verifyclass")
+                                                               .then(
+                                                                  Commands.argument("testClassName", TestClassNameArgument.testClassName())
+                                                                     .executes(
+                                                                        var0x -> testFinder.allTestsInClass(
+                                                                                 var0x, TestClassNameArgument.getTestClassName(var0x, "testClassName")
+                                                                              )
+                                                                              .verify()
+                                                                     )
+                                                               )
                                                          ))
                                                       .then(
                                                          Commands.literal("locate")
@@ -396,8 +418,8 @@ public class TestCommand {
 
    private static int exportTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir);
-      ResourceLocation var3 = new ResourceLocation(var1);
-      Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
+      ResourceLocation var3 = ResourceLocation.parse(var1);
+      Path var4 = var0.getLevel().getStructureManager().createAndValidatePathToGeneratedStructure(var3, ".nbt");
       Path var5 = NbtToSnbt.convertStructure(CachedOutput.NO_CACHE, var4, var3.getPath(), var2);
       if (var5 == null) {
          say(var0, "Failed to export " + var4);
@@ -417,7 +439,7 @@ public class TestCommand {
    }
 
    private static boolean verifyStructureExists(ServerLevel var0, String var1) {
-      if (var0.getStructureManager().get(new ResourceLocation(var1)).isEmpty()) {
+      if (var0.getStructureManager().get(ResourceLocation.parse(var1)).isEmpty()) {
          say(var0, "Test structure " + var1 + " could not be found", ChatFormatting.RED);
          return false;
       } else {
@@ -437,8 +459,8 @@ public class TestCommand {
 
    private static int importTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir, var1 + ".snbt");
-      ResourceLocation var3 = new ResourceLocation("minecraft", var1);
-      Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
+      ResourceLocation var3 = ResourceLocation.withDefaultNamespace(var1);
+      Path var4 = var0.getLevel().getStructureManager().createAndValidatePathToGeneratedStructure(var3, ".nbt");
 
       try {
          BufferedReader var5 = Files.newBufferedReader(var2);
@@ -535,6 +557,45 @@ public class TestCommand {
          return var1.getValue() ? 0 : 1;
       }
 
+      int verify() {
+         TestCommand.stopTests();
+         CommandSourceStack var1 = this.finder.source();
+         ServerLevel var2 = var1.getLevel();
+         BlockPos var3 = TestCommand.createTestPositionAround(var1);
+         List var4 = Stream.concat(
+               TestCommand.toGameTestInfos(var1, RetryOptions.noRetries(), this.finder),
+               TestCommand.toGameTestInfo(var1, RetryOptions.noRetries(), this.finder, 0)
+            )
+            .toList();
+         byte var5 = 10;
+         GameTestRunner.clearMarkers(var2);
+         GameTestRegistry.forgetFailedTests();
+         ArrayList var6 = new ArrayList();
+
+         for (GameTestInfo var8 : var4) {
+            for (Rotation var12 : Rotation.values()) {
+               ArrayList var13 = new ArrayList();
+
+               for (int var14 = 0; var14 < 100; var14++) {
+                  GameTestInfo var15 = new GameTestInfo(var8.getTestFunction(), var12, var2, new RetryOptions(1, true));
+                  var13.add(var15);
+               }
+
+               GameTestBatch var18 = GameTestBatchFactory.toGameTestBatch(var13, var8.getTestFunction().batchName(), (long)var12.ordinal());
+               var6.add(var18);
+            }
+         }
+
+         StructureGridSpawner var16 = new StructureGridSpawner(var3, 10, true);
+         GameTestRunner var17 = GameTestRunner.Builder.fromBatches(var6, var2)
+            .batcher(GameTestBatchFactory.fromGameTestInfo(100))
+            .newStructureSpawner(var16)
+            .existingStructureSpawner(var16)
+            .haltOnError(true)
+            .build();
+         return TestCommand.trackAndStartRunner(var1, var2, var17);
+      }
+
       public int run(RetryOptions var1, int var2, int var3) {
          TestCommand.stopTests();
          CommandSourceStack var4 = this.finder.source();
@@ -548,7 +609,7 @@ public class TestCommand {
             GameTestRunner.clearMarkers(var5);
             GameTestRegistry.forgetFailedTests();
             TestCommand.say(var4, "Running " + var7.size() + " tests...");
-            GameTestRunner var8 = GameTestRunner.Builder.fromInfo(var7, var5).newStructureSpawner(new StructureGridSpawner(var6, var3)).build();
+            GameTestRunner var8 = GameTestRunner.Builder.fromInfo(var7, var5).newStructureSpawner(new StructureGridSpawner(var6, var3, false)).build();
             return TestCommand.trackAndStartRunner(var4, var5, var8);
          }
       }
@@ -615,61 +676,29 @@ public class TestCommand {
       }
    }
 
-   static record TestBatchSummaryDisplayer(CommandSourceStack source) implements GameTestBatchListener {
-      TestBatchSummaryDisplayer(CommandSourceStack source) {
-         super();
-         this.source = source;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public void testBatchStarting(GameTestBatch var1) {
-         TestCommand.say(this.source, "Starting batch: " + var1.name());
-      }
-
-      @Override
-      public void testBatchFinished(GameTestBatch var1) {
-      }
-   }
-
-   public static record TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) implements GameTestListener {
-      public TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) {
-         super();
-         this.level = level;
-         this.tracker = tracker;
-      }
-
-      @Override
-      public void testStructureLoaded(GameTestInfo var1) {
-      }
-
-      @Override
-      public void testPassed(GameTestInfo var1, GameTestRunner var2) {
-         showTestSummaryIfAllDone(this.level, this.tracker);
-      }
-
-      @Override
-      public void testFailed(GameTestInfo var1, GameTestRunner var2) {
-         showTestSummaryIfAllDone(this.level, this.tracker);
-      }
-
-      @Override
-      public void testAddedForRerun(GameTestInfo var1, GameTestInfo var2, GameTestRunner var3) {
-         this.tracker.addTestToTrack(var2);
-      }
-
-      private static void showTestSummaryIfAllDone(ServerLevel var0, MultipleTestTracker var1) {
-         if (var1.isDone()) {
-            TestCommand.say(var0, "GameTest done! " + var1.getTotalCount() + " tests were run", ChatFormatting.WHITE);
-            if (var1.hasFailedRequired()) {
-               TestCommand.say(var0, var1.getFailedRequiredCount() + " required tests failed :(", ChatFormatting.RED);
-            } else {
-               TestCommand.say(var0, "All required tests passed :)", ChatFormatting.GREEN);
-            }
-
-            if (var1.hasFailedOptional()) {
-               TestCommand.say(var0, var1.getFailedOptionalCount() + " optional tests failed", ChatFormatting.GRAY);
-            }
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

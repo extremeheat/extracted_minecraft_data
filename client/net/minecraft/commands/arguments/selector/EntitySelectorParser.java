@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +43,7 @@ public class EntitySelectorParser {
    private static final char SELECTOR_RANDOM_PLAYERS = 'r';
    private static final char SELECTOR_CURRENT_ENTITY = 's';
    private static final char SELECTOR_ALL_ENTITIES = 'e';
+   private static final char SELECTOR_NEAREST_ENTITY = 'n';
    public static final SimpleCommandExceptionType ERROR_INVALID_NAME_OR_UUID = new SimpleCommandExceptionType(Component.translatable("argument.entity.invalid"));
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_SELECTOR_TYPE = new DynamicCommandExceptionType(
       var0 -> Component.translatableEscape("argument.entity.selector.unknown", var0)
@@ -87,7 +89,7 @@ public class EntitySelectorParser {
    private Double deltaZ;
    private WrappedMinMaxBounds rotX = WrappedMinMaxBounds.ANY;
    private WrappedMinMaxBounds rotY = WrappedMinMaxBounds.ANY;
-   private Predicate<Entity> predicate = var0 -> true;
+   private final List<Predicate<Entity>> predicates = new ArrayList<>();
    private BiConsumer<Vec3, List<? extends Entity>> order = EntitySelector.ORDER_ARBITRARY;
    private boolean currentEntity;
    @Nullable
@@ -145,7 +147,7 @@ public class EntitySelectorParser {
          this.maxResults,
          this.includesEntities,
          this.worldLimited,
-         this.predicate,
+         List.copyOf(this.predicates),
          this.distance,
          var4,
          var1,
@@ -173,15 +175,15 @@ public class EntitySelectorParser {
 
    private void finalizePredicates() {
       if (this.rotX != WrappedMinMaxBounds.ANY) {
-         this.predicate = this.predicate.and(this.createRotationPredicate(this.rotX, Entity::getXRot));
+         this.predicates.add(this.createRotationPredicate(this.rotX, Entity::getXRot));
       }
 
       if (this.rotY != WrappedMinMaxBounds.ANY) {
-         this.predicate = this.predicate.and(this.createRotationPredicate(this.rotY, Entity::getYRot));
+         this.predicates.add(this.createRotationPredicate(this.rotY, Entity::getYRot));
       }
 
       if (!this.level.isAny()) {
-         this.predicate = this.predicate.and(var1 -> !(var1 instanceof ServerPlayer) ? false : this.level.matches(((ServerPlayer)var1).experienceLevel));
+         this.predicates.add(var1 -> !(var1 instanceof ServerPlayer) ? false : this.level.matches(((ServerPlayer)var1).experienceLevel));
       }
    }
 
@@ -202,35 +204,53 @@ public class EntitySelectorParser {
       } else {
          int var1 = this.reader.getCursor();
          char var2 = this.reader.read();
-         if (var2 == 'p') {
-            this.maxResults = 1;
-            this.includesEntities = false;
-            this.order = ORDER_NEAREST;
-            this.limitToType(EntityType.PLAYER);
-         } else if (var2 == 'a') {
-            this.maxResults = 2147483647;
-            this.includesEntities = false;
-            this.order = EntitySelector.ORDER_ARBITRARY;
-            this.limitToType(EntityType.PLAYER);
-         } else if (var2 == 'r') {
-            this.maxResults = 1;
-            this.includesEntities = false;
-            this.order = ORDER_RANDOM;
-            this.limitToType(EntityType.PLAYER);
-         } else if (var2 == 's') {
-            this.maxResults = 1;
-            this.includesEntities = true;
-            this.currentEntity = true;
-         } else {
-            if (var2 != 'e') {
+
+         if (switch (var2) {
+            case 'a' -> {
+               this.maxResults = 2147483647;
+               this.includesEntities = false;
+               this.order = EntitySelector.ORDER_ARBITRARY;
+               this.limitToType(EntityType.PLAYER);
+               yield false;
+            }
+            default -> {
                this.reader.setCursor(var1);
                throw ERROR_UNKNOWN_SELECTOR_TYPE.createWithContext(this.reader, "@" + var2);
             }
-
-            this.maxResults = 2147483647;
-            this.includesEntities = true;
-            this.order = EntitySelector.ORDER_ARBITRARY;
-            this.predicate = Entity::isAlive;
+            case 'e' -> {
+               this.maxResults = 2147483647;
+               this.includesEntities = true;
+               this.order = EntitySelector.ORDER_ARBITRARY;
+               yield true;
+            }
+            case 'n' -> {
+               this.maxResults = 1;
+               this.includesEntities = true;
+               this.order = ORDER_NEAREST;
+               yield true;
+            }
+            case 'p' -> {
+               this.maxResults = 1;
+               this.includesEntities = false;
+               this.order = ORDER_NEAREST;
+               this.limitToType(EntityType.PLAYER);
+               yield false;
+            }
+            case 'r' -> {
+               this.maxResults = 1;
+               this.includesEntities = false;
+               this.order = ORDER_RANDOM;
+               this.limitToType(EntityType.PLAYER);
+               yield false;
+            }
+            case 's' -> {
+               this.maxResults = 1;
+               this.includesEntities = true;
+               this.currentEntity = true;
+               yield false;
+            }
+         }) {
+            this.predicates.add(Entity::isAlive);
          }
 
          this.suggestions = this::suggestOpenOptions;
@@ -335,7 +355,7 @@ public class EntitySelectorParser {
    }
 
    public void addPredicate(Predicate<Entity> var1) {
-      this.predicate = this.predicate.and(var1);
+      this.predicates.add(var1);
    }
 
    public void setWorldLimited() {
@@ -468,6 +488,7 @@ public class EntitySelectorParser {
       var0.suggest("@r", Component.translatable("argument.entity.selector.randomPlayer"));
       var0.suggest("@s", Component.translatable("argument.entity.selector.self"));
       var0.suggest("@e", Component.translatable("argument.entity.selector.allEntities"));
+      var0.suggest("@n", Component.translatable("argument.entity.selector.nearestEntity"));
    }
 
    private CompletableFuture<Suggestions> suggestNameOrSelector(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {

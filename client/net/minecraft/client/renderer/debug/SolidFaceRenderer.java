@@ -41,56 +41,53 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
                float var22 = (float)(var18.maxX - var3);
                float var23 = (float)(var18.maxY - var5);
                float var24 = (float)(var18.maxZ - var7);
-               float var25 = 1.0F;
-               float var26 = 0.0F;
-               float var27 = 0.0F;
-               float var28 = 0.5F;
+               int var25 = -2130771968;
                if (var14.isFaceSturdy(var10, var13, Direction.WEST)) {
-                  VertexConsumer var29 = var2.getBuffer(RenderType.debugFilledBox());
-                  var29.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var29.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var29.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var29.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  VertexConsumer var26 = var2.getBuffer(RenderType.debugFilledBox());
+                  var26.addVertex(var9, var19, var20, var21).setColor(-2130771968);
+                  var26.addVertex(var9, var19, var20, var24).setColor(-2130771968);
+                  var26.addVertex(var9, var19, var23, var21).setColor(-2130771968);
+                  var26.addVertex(var9, var19, var23, var24).setColor(-2130771968);
                }
 
                if (var14.isFaceSturdy(var10, var13, Direction.SOUTH)) {
-                  VertexConsumer var30 = var2.getBuffer(RenderType.debugFilledBox());
-                  var30.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var30.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var30.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var30.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  VertexConsumer var27 = var2.getBuffer(RenderType.debugFilledBox());
+                  var27.addVertex(var9, var19, var23, var24).setColor(-2130771968);
+                  var27.addVertex(var9, var19, var20, var24).setColor(-2130771968);
+                  var27.addVertex(var9, var22, var23, var24).setColor(-2130771968);
+                  var27.addVertex(var9, var22, var20, var24).setColor(-2130771968);
                }
 
                if (var14.isFaceSturdy(var10, var13, Direction.EAST)) {
-                  VertexConsumer var31 = var2.getBuffer(RenderType.debugFilledBox());
-                  var31.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var31.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var31.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var31.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  VertexConsumer var28 = var2.getBuffer(RenderType.debugFilledBox());
+                  var28.addVertex(var9, var22, var20, var24).setColor(-2130771968);
+                  var28.addVertex(var9, var22, var20, var21).setColor(-2130771968);
+                  var28.addVertex(var9, var22, var23, var24).setColor(-2130771968);
+                  var28.addVertex(var9, var22, var23, var21).setColor(-2130771968);
                }
 
                if (var14.isFaceSturdy(var10, var13, Direction.NORTH)) {
-                  VertexConsumer var32 = var2.getBuffer(RenderType.debugFilledBox());
-                  var32.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var32.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var32.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var32.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  VertexConsumer var29 = var2.getBuffer(RenderType.debugFilledBox());
+                  var29.addVertex(var9, var22, var23, var21).setColor(-2130771968);
+                  var29.addVertex(var9, var22, var20, var21).setColor(-2130771968);
+                  var29.addVertex(var9, var19, var23, var21).setColor(-2130771968);
+                  var29.addVertex(var9, var19, var20, var21).setColor(-2130771968);
                }
 
                if (var14.isFaceSturdy(var10, var13, Direction.DOWN)) {
-                  VertexConsumer var33 = var2.getBuffer(RenderType.debugFilledBox());
-                  var33.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var33.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var33.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var33.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  VertexConsumer var30 = var2.getBuffer(RenderType.debugFilledBox());
+                  var30.addVertex(var9, var19, var20, var21).setColor(-2130771968);
+                  var30.addVertex(var9, var22, var20, var21).setColor(-2130771968);
+                  var30.addVertex(var9, var19, var20, var24).setColor(-2130771968);
+                  var30.addVertex(var9, var22, var20, var24).setColor(-2130771968);
                }
 
                if (var14.isFaceSturdy(var10, var13, Direction.UP)) {
-                  VertexConsumer var34 = var2.getBuffer(RenderType.debugFilledBox());
-                  var34.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var34.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var34.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var34.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  VertexConsumer var31 = var2.getBuffer(RenderType.debugFilledBox());
+                  var31.addVertex(var9, var19, var23, var21).setColor(-2130771968);
+                  var31.addVertex(var9, var19, var23, var24).setColor(-2130771968);
+                  var31.addVertex(var9, var22, var23, var21).setColor(-2130771968);
+                  var31.addVertex(var9, var22, var23, var24).setColor(-2130771968);
                }
             }
          }

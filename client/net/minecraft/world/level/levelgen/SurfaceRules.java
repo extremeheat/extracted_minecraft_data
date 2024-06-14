@@ -1,11 +1,8 @@
 package net.minecraft.world.level.levelgen;
 
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +19,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -88,7 +84,7 @@ public class SurfaceRules {
    }
 
    public static SurfaceRules.ConditionSource verticalGradient(String var0, VerticalAnchor var1, VerticalAnchor var2) {
-      return new SurfaceRules.VerticalGradientConditionSource(new ResourceLocation(var0), var1, var2);
+      return new SurfaceRules.VerticalGradientConditionSource(ResourceLocation.parse(var0), var1, var2);
    }
 
    public static SurfaceRules.ConditionSource steep() {
@@ -220,30 +216,18 @@ public class SurfaceRules {
       }
    }
 
-   static record BlockRuleSource(BlockState resultState, SurfaceRules.StateRule rule) implements SurfaceRules.RuleSource {
-      static final KeyDispatchDataCodec<SurfaceRules.BlockRuleSource> CODEC = KeyDispatchDataCodec.of(
-         BlockState.CODEC.xmap(SurfaceRules.BlockRuleSource::new, SurfaceRules.BlockRuleSource::resultState).fieldOf("result_state")
-      );
-
-      BlockRuleSource(BlockState var1) {
-         this(var1, new SurfaceRules.StateRule(var1));
-      }
-
-      private BlockRuleSource(BlockState resultState, SurfaceRules.StateRule rule) {
-         super();
-         this.resultState = resultState;
-         this.rule = rule;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.RuleSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.SurfaceRule apply(SurfaceRules.Context var1) {
-         return this.rule;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface Condition {
       boolean test();
@@ -519,81 +503,44 @@ public class SurfaceRules {
       }
    }
 
-   static record NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> noise, double minThreshold, double maxThreshold)
-      implements SurfaceRules.ConditionSource {
-      static final KeyDispatchDataCodec<SurfaceRules.NoiseThresholdConditionSource> CODEC = KeyDispatchDataCodec.of(
-         RecordCodecBuilder.mapCodec(
-            var0 -> var0.group(
-                     ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(SurfaceRules.NoiseThresholdConditionSource::noise),
-                     Codec.DOUBLE.fieldOf("min_threshold").forGetter(SurfaceRules.NoiseThresholdConditionSource::minThreshold),
-                     Codec.DOUBLE.fieldOf("max_threshold").forGetter(SurfaceRules.NoiseThresholdConditionSource::maxThreshold)
-                  )
-                  .apply(var0, SurfaceRules.NoiseThresholdConditionSource::new)
-         )
-      );
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> noise, double minThreshold, double maxThreshold) {
-         super();
-         this.noise = noise;
-         this.minThreshold = minThreshold;
-         this.maxThreshold = maxThreshold;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.Condition apply(final SurfaceRules.Context var1) {
-         final NormalNoise var2 = var1.randomState.getOrCreateNoise(this.noise);
-
-         class 1NoiseThresholdCondition extends SurfaceRules.LazyXZCondition {
-            _NoiseThresholdCondition/* $VF was: 1NoiseThresholdCondition*/() {
-               super(var1);
-            }
-
-            @Override
-            protected boolean compute() {
-               double var1x = var2.getValue((double)this.context.blockX, 0.0, (double)this.context.blockZ);
-               return var1x >= NoiseThresholdConditionSource.this.minThreshold && var1x <= NoiseThresholdConditionSource.this.maxThreshold;
-            }
-         }
-
-         return new 1NoiseThresholdCondition();
-      }
-   }
-
-   static record NotCondition(SurfaceRules.Condition target) implements SurfaceRules.Condition {
-      NotCondition(SurfaceRules.Condition target) {
-         super();
-         this.target = target;
-      }
-
-      @Override
-      public boolean test() {
-         return !this.target.test();
-      }
-   }
-
-   static record NotConditionSource(SurfaceRules.ConditionSource target) implements SurfaceRules.ConditionSource {
-      static final KeyDispatchDataCodec<SurfaceRules.NotConditionSource> CODEC = KeyDispatchDataCodec.of(
-         SurfaceRules.ConditionSource.CODEC.xmap(SurfaceRules.NotConditionSource::new, SurfaceRules.NotConditionSource::target).fieldOf("invert")
-      );
-
-      NotConditionSource(SurfaceRules.ConditionSource target) {
-         super();
-         this.target = target;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.Condition apply(SurfaceRules.Context var1) {
-         return new SurfaceRules.NotCondition(this.target.apply(var1));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface RuleSource extends Function<SurfaceRules.Context, SurfaceRules.SurfaceRule> {
       Codec<SurfaceRules.RuleSource> CODEC = BuiltInRegistries.MATERIAL_RULE.byNameCodec().dispatch(var0 -> var0.codec().codec(), Function.identity());
@@ -608,67 +555,44 @@ public class SurfaceRules {
       KeyDispatchDataCodec<? extends SurfaceRules.RuleSource> codec();
    }
 
-   static record SequenceRule(List<SurfaceRules.SurfaceRule> rules) implements SurfaceRules.SurfaceRule {
-      SequenceRule(List<SurfaceRules.SurfaceRule> rules) {
-         super();
-         this.rules = rules;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Nullable
-      @Override
-      public BlockState tryApply(int var1, int var2, int var3) {
-         for (SurfaceRules.SurfaceRule var5 : this.rules) {
-            BlockState var6 = var5.tryApply(var1, var2, var3);
-            if (var6 != null) {
-               return var6;
-            }
-         }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-         return null;
-      }
-   }
-
-   static record SequenceRuleSource(List<SurfaceRules.RuleSource> sequence) implements SurfaceRules.RuleSource {
-      static final KeyDispatchDataCodec<SurfaceRules.SequenceRuleSource> CODEC = KeyDispatchDataCodec.of(
-         SurfaceRules.RuleSource.CODEC.listOf().xmap(SurfaceRules.SequenceRuleSource::new, SurfaceRules.SequenceRuleSource::sequence).fieldOf("sequence")
-      );
-
-      SequenceRuleSource(List<SurfaceRules.RuleSource> sequence) {
-         super();
-         this.sequence = sequence;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.RuleSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.SurfaceRule apply(SurfaceRules.Context var1) {
-         if (this.sequence.size() == 1) {
-            return this.sequence.get(0).apply(var1);
-         } else {
-            Builder var2 = ImmutableList.builder();
-
-            for (SurfaceRules.RuleSource var4 : this.sequence) {
-               var2.add(var4.apply(var1));
-            }
-
-            return new SurfaceRules.SequenceRule(var2.build());
-         }
-      }
-   }
-
-   static record StateRule(BlockState state) implements SurfaceRules.SurfaceRule {
-      StateRule(BlockState state) {
-         super();
-         this.state = state;
-      }
-
-      @Override
-      public BlockState tryApply(int var1, int var2, int var3) {
-         return this.state;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static enum Steep implements SurfaceRules.ConditionSource {
       INSTANCE;
@@ -688,54 +612,18 @@ public class SurfaceRules {
       }
    }
 
-   static record StoneDepthCheck(int offset, boolean addSurfaceDepth, int secondaryDepthRange, CaveSurface surfaceType) implements SurfaceRules.ConditionSource {
-      static final KeyDispatchDataCodec<SurfaceRules.StoneDepthCheck> CODEC = KeyDispatchDataCodec.of(
-         RecordCodecBuilder.mapCodec(
-            var0 -> var0.group(
-                     Codec.INT.fieldOf("offset").forGetter(SurfaceRules.StoneDepthCheck::offset),
-                     Codec.BOOL.fieldOf("add_surface_depth").forGetter(SurfaceRules.StoneDepthCheck::addSurfaceDepth),
-                     Codec.INT.fieldOf("secondary_depth_range").forGetter(SurfaceRules.StoneDepthCheck::secondaryDepthRange),
-                     CaveSurface.CODEC.fieldOf("surface_type").forGetter(SurfaceRules.StoneDepthCheck::surfaceType)
-                  )
-                  .apply(var0, SurfaceRules.StoneDepthCheck::new)
-         )
-      );
-
-      StoneDepthCheck(int offset, boolean addSurfaceDepth, int secondaryDepthRange, CaveSurface surfaceType) {
-         super();
-         this.offset = offset;
-         this.addSurfaceDepth = addSurfaceDepth;
-         this.secondaryDepthRange = secondaryDepthRange;
-         this.surfaceType = surfaceType;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.Condition apply(final SurfaceRules.Context var1) {
-         final boolean var2 = this.surfaceType == CaveSurface.CEILING;
-
-         class 1StoneDepthCondition extends SurfaceRules.LazyYCondition {
-            _StoneDepthCondition/* $VF was: 1StoneDepthCondition*/() {
-               super(var1);
-            }
-
-            @Override
-            protected boolean compute() {
-               int var1x = var2 ? this.context.stoneDepthBelow : this.context.stoneDepthAbove;
-               int var2x = StoneDepthCheck.this.addSurfaceDepth ? this.context.surfaceDepth : 0;
-               int var3 = StoneDepthCheck.this.secondaryDepthRange == 0
-                  ? 0
-                  : (int)Mth.map(this.context.getSurfaceSecondary(), -1.0, 1.0, 0.0, (double)StoneDepthCheck.this.secondaryDepthRange);
-               return var1x <= 1 + StoneDepthCheck.this.offset + var2x + var3;
-            }
-         }
-
-         return new 1StoneDepthCondition();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    protected interface SurfaceRule {
       @Nullable
@@ -760,183 +648,68 @@ public class SurfaceRules {
       }
    }
 
-   static record TestRule(SurfaceRules.Condition condition, SurfaceRules.SurfaceRule followup) implements SurfaceRules.SurfaceRule {
-      TestRule(SurfaceRules.Condition condition, SurfaceRules.SurfaceRule followup) {
-         super();
-         this.condition = condition;
-         this.followup = followup;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Nullable
-      @Override
-      public BlockState tryApply(int var1, int var2, int var3) {
-         return !this.condition.test() ? null : this.followup.tryApply(var1, var2, var3);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-   static record TestRuleSource(SurfaceRules.ConditionSource ifTrue, SurfaceRules.RuleSource thenRun) implements SurfaceRules.RuleSource {
-      static final KeyDispatchDataCodec<SurfaceRules.TestRuleSource> CODEC = KeyDispatchDataCodec.of(
-         RecordCodecBuilder.mapCodec(
-            var0 -> var0.group(
-                     SurfaceRules.ConditionSource.CODEC.fieldOf("if_true").forGetter(SurfaceRules.TestRuleSource::ifTrue),
-                     SurfaceRules.RuleSource.CODEC.fieldOf("then_run").forGetter(SurfaceRules.TestRuleSource::thenRun)
-                  )
-                  .apply(var0, SurfaceRules.TestRuleSource::new)
-         )
-      );
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      TestRuleSource(SurfaceRules.ConditionSource ifTrue, SurfaceRules.RuleSource thenRun) {
-         super();
-         this.ifTrue = ifTrue;
-         this.thenRun = thenRun;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.RuleSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.SurfaceRule apply(SurfaceRules.Context var1) {
-         return new SurfaceRules.TestRule(this.ifTrue.apply(var1), this.thenRun.apply(var1));
-      }
-   }
-
-   static record VerticalGradientConditionSource(ResourceLocation randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove)
-      implements SurfaceRules.ConditionSource {
-      static final KeyDispatchDataCodec<SurfaceRules.VerticalGradientConditionSource> CODEC = KeyDispatchDataCodec.of(
-         RecordCodecBuilder.mapCodec(
-            var0 -> var0.group(
-                     ResourceLocation.CODEC.fieldOf("random_name").forGetter(SurfaceRules.VerticalGradientConditionSource::randomName),
-                     VerticalAnchor.CODEC.fieldOf("true_at_and_below").forGetter(SurfaceRules.VerticalGradientConditionSource::trueAtAndBelow),
-                     VerticalAnchor.CODEC.fieldOf("false_at_and_above").forGetter(SurfaceRules.VerticalGradientConditionSource::falseAtAndAbove)
-                  )
-                  .apply(var0, SurfaceRules.VerticalGradientConditionSource::new)
-         )
-      );
-
-      VerticalGradientConditionSource(ResourceLocation randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove) {
-         super();
-         this.randomName = randomName;
-         this.trueAtAndBelow = trueAtAndBelow;
-         this.falseAtAndAbove = falseAtAndAbove;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.Condition apply(final SurfaceRules.Context var1) {
-         final int var2 = this.trueAtAndBelow().resolveY(var1.context);
-         final int var3 = this.falseAtAndAbove().resolveY(var1.context);
-         final PositionalRandomFactory var4 = var1.randomState.getOrCreateRandomFactory(this.randomName());
-
-         class 1VerticalGradientCondition extends SurfaceRules.LazyYCondition {
-            _VerticalGradientCondition/* $VF was: 1VerticalGradientCondition*/() {
-               super(var1);
-            }
-
-            @Override
-            protected boolean compute() {
-               int var1x = this.context.blockY;
-               if (var1x <= var2) {
-                  return true;
-               } else if (var1x >= var3) {
-                  return false;
-               } else {
-                  double var2x = Mth.map((double)var1x, (double)var2, (double)var3, 1.0, 0.0);
-                  RandomSource var4x = var4.at(this.context.blockX, var1x, this.context.blockZ);
-                  return (double)var4x.nextFloat() < var2x;
-               }
-            }
-         }
-
-         return new 1VerticalGradientCondition();
-      }
-   }
-
-   static record WaterConditionSource(int offset, int surfaceDepthMultiplier, boolean addStoneDepth) implements SurfaceRules.ConditionSource {
-      static final KeyDispatchDataCodec<SurfaceRules.WaterConditionSource> CODEC = KeyDispatchDataCodec.of(
-         RecordCodecBuilder.mapCodec(
-            var0 -> var0.group(
-                     Codec.INT.fieldOf("offset").forGetter(SurfaceRules.WaterConditionSource::offset),
-                     Codec.intRange(-20, 20).fieldOf("surface_depth_multiplier").forGetter(SurfaceRules.WaterConditionSource::surfaceDepthMultiplier),
-                     Codec.BOOL.fieldOf("add_stone_depth").forGetter(SurfaceRules.WaterConditionSource::addStoneDepth)
-                  )
-                  .apply(var0, SurfaceRules.WaterConditionSource::new)
-         )
-      );
-
-      WaterConditionSource(int offset, int surfaceDepthMultiplier, boolean addStoneDepth) {
-         super();
-         this.offset = offset;
-         this.surfaceDepthMultiplier = surfaceDepthMultiplier;
-         this.addStoneDepth = addStoneDepth;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.Condition apply(final SurfaceRules.Context var1) {
-         class 1WaterCondition extends SurfaceRules.LazyYCondition {
-            _WaterCondition/* $VF was: 1WaterCondition*/() {
-               super(var1);
-            }
-
-            @Override
-            protected boolean compute() {
-               return this.context.waterHeight == -2147483648
-                  || this.context.blockY + (WaterConditionSource.this.addStoneDepth ? this.context.stoneDepthAbove : 0)
-                     >= this.context.waterHeight
-                        + WaterConditionSource.this.offset
-                        + this.context.surfaceDepth * WaterConditionSource.this.surfaceDepthMultiplier;
-            }
-         }
-
-         return new 1WaterCondition();
-      }
-   }
-
-   static record YConditionSource(VerticalAnchor anchor, int surfaceDepthMultiplier, boolean addStoneDepth) implements SurfaceRules.ConditionSource {
-      static final KeyDispatchDataCodec<SurfaceRules.YConditionSource> CODEC = KeyDispatchDataCodec.of(
-         RecordCodecBuilder.mapCodec(
-            var0 -> var0.group(
-                     VerticalAnchor.CODEC.fieldOf("anchor").forGetter(SurfaceRules.YConditionSource::anchor),
-                     Codec.intRange(-20, 20).fieldOf("surface_depth_multiplier").forGetter(SurfaceRules.YConditionSource::surfaceDepthMultiplier),
-                     Codec.BOOL.fieldOf("add_stone_depth").forGetter(SurfaceRules.YConditionSource::addStoneDepth)
-                  )
-                  .apply(var0, SurfaceRules.YConditionSource::new)
-         )
-      );
-
-      YConditionSource(VerticalAnchor anchor, int surfaceDepthMultiplier, boolean addStoneDepth) {
-         super();
-         this.anchor = anchor;
-         this.surfaceDepthMultiplier = surfaceDepthMultiplier;
-         this.addStoneDepth = addStoneDepth;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends SurfaceRules.ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRules.Condition apply(final SurfaceRules.Context var1) {
-         class 1YCondition extends SurfaceRules.LazyYCondition {
-            _YCondition/* $VF was: 1YCondition*/() {
-               super(var1);
-            }
-
-            @Override
-            protected boolean compute() {
-               return this.context.blockY + (YConditionSource.this.addStoneDepth ? this.context.stoneDepthAbove : 0)
-                  >= YConditionSource.this.anchor.resolveY(this.context.context) + this.context.surfaceDepth * YConditionSource.this.surfaceDepthMultiplier;
-            }
-         }
-
-         return new 1YCondition();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

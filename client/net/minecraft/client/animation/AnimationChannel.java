@@ -1,55 +1,13 @@
 package net.minecraft.client.animation;
 
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.util.Mth;
-import org.joml.Vector3f;
-
-public record AnimationChannel(AnimationChannel.Target target, Keyframe... keyframes) {
-   public AnimationChannel(AnimationChannel.Target target, Keyframe... keyframes) {
-      super();
-      this.target = target;
-      this.keyframes = keyframes;
-   }
-
-   public interface Interpolation {
-      Vector3f apply(Vector3f var1, float var2, Keyframe[] var3, int var4, int var5, float var6);
-   }
-
-   public static class Interpolations {
-      public static final AnimationChannel.Interpolation LINEAR = (var0, var1, var2, var3, var4, var5) -> {
-         Vector3f var6 = var2[var3].target();
-         Vector3f var7 = var2[var4].target();
-         return var6.lerp(var7, var1, var0).mul(var5);
-      };
-      public static final AnimationChannel.Interpolation CATMULLROM = (var0, var1, var2, var3, var4, var5) -> {
-         Vector3f var6 = var2[Math.max(0, var3 - 1)].target();
-         Vector3f var7 = var2[var3].target();
-         Vector3f var8 = var2[var4].target();
-         Vector3f var9 = var2[Math.min(var2.length - 1, var4 + 1)].target();
-         var0.set(
-            Mth.catmullrom(var1, var6.x(), var7.x(), var8.x(), var9.x()) * var5,
-            Mth.catmullrom(var1, var6.y(), var7.y(), var8.y(), var9.y()) * var5,
-            Mth.catmullrom(var1, var6.z(), var7.z(), var8.z(), var9.z()) * var5
-         );
-         return var0;
-      };
-
-      public Interpolations() {
-         super();
-      }
-   }
-
-   public interface Target {
-      void apply(ModelPart var1, Vector3f var2);
-   }
-
-   public static class Targets {
-      public static final AnimationChannel.Target POSITION = ModelPart::offsetPos;
-      public static final AnimationChannel.Target ROTATION = ModelPart::offsetRotation;
-      public static final AnimationChannel.Target SCALE = ModelPart::offsetScale;
-
-      public Targets() {
-         super();
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

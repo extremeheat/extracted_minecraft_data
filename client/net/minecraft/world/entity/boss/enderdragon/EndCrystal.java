@@ -51,6 +51,8 @@ public class EndCrystal extends Entity {
    @Override
    public void tick() {
       this.time++;
+      this.checkInsideBlocks();
+      this.handlePortal();
       if (this.level() instanceof ServerLevel) {
          BlockPos var1 = this.blockPosition();
          if (((ServerLevel)this.level()).getDragonFight() != null && this.level().getBlockState(var1).isAir()) {

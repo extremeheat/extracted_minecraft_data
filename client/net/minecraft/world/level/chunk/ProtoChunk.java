@@ -134,7 +134,7 @@ public class ProtoChunk extends ChunkAccess {
                }
             }
 
-            EnumSet var19 = this.getStatus().heightmapsAfter();
+            EnumSet var19 = this.getPersistedStatus().heightmapsAfter();
             EnumSet var15 = null;
 
             for (Heightmap.Types var17 : var19) {
@@ -210,11 +210,11 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    @Override
-   public ChunkStatus getStatus() {
+   public ChunkStatus getPersistedStatus() {
       return this.status;
    }
 
-   public void setStatus(ChunkStatus var1) {
+   public void setPersistedStatus(ChunkStatus var1) {
       this.status = var1;
       if (this.belowZeroRetrogen != null && var1.isOrAfter(this.belowZeroRetrogen.targetStatus())) {
          this.setBelowZeroRetrogen(null);

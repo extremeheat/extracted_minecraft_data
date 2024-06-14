@@ -3,7 +3,6 @@ package net.minecraft.world.item.crafting;
 import java.util.ArrayList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -19,11 +18,11 @@ public class FireworkRocketRecipe extends CustomRecipe {
       super(var1);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
+   public boolean matches(CraftingInput var1, Level var2) {
       boolean var3 = false;
       int var4 = 0;
 
-      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
+      for (int var5 = 0; var5 < var1.size(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (PAPER_INGREDIENT.test(var6)) {
@@ -45,11 +44,11 @@ public class FireworkRocketRecipe extends CustomRecipe {
       return var3 && var4 >= 1;
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
       ArrayList var3 = new ArrayList();
       int var4 = 0;
 
-      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
+      for (int var5 = 0; var5 < var1.size(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (GUNPOWDER_INGREDIENT.test(var6)) {

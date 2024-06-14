@@ -20,6 +20,6 @@ public class BannerPatternTags {
    }
 
    private static TagKey<BannerPattern> create(String var0) {
-      return TagKey.create(Registries.BANNER_PATTERN, new ResourceLocation(var0));
+      return TagKey.create(Registries.BANNER_PATTERN, ResourceLocation.withDefaultNamespace(var0));
    }
 }

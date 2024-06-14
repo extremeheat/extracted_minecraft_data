@@ -1,36 +1,13 @@
 package net.minecraft.network.chat.contents;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.stream.Stream;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-
-public record StorageDataSource(ResourceLocation id) implements DataSource {
-   public static final MapCodec<StorageDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(var0, StorageDataSource::new)
-   );
-   public static final DataSource.Type<StorageDataSource> TYPE = new DataSource.Type<>(SUB_CODEC, "storage");
-
-   public StorageDataSource(ResourceLocation id) {
-      super();
-      this.id = id;
-   }
-
-   @Override
-   public Stream<CompoundTag> getData(CommandSourceStack var1) {
-      CompoundTag var2 = var1.getServer().getCommandStorage().get(this.id);
-      return Stream.of(var2);
-   }
-
-   @Override
-   public DataSource.Type<?> type() {
-      return TYPE;
-   }
-
-   @Override
-   public String toString() {
-      return "storage=" + this.id;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

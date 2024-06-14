@@ -2,6 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.Maps;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -17,6 +18,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -42,13 +44,11 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -80,24 +80,29 @@ public class Sheep extends Animal implements Shearable {
       var0.put(DyeColor.RED, Blocks.RED_WOOL);
       var0.put(DyeColor.BLACK, Blocks.BLACK_WOOL);
    });
-   private static final Map<DyeColor, float[]> COLORARRAY_BY_COLOR = Maps.newEnumMap(
+   private static final Map<DyeColor, Integer> COLOR_BY_DYE = Maps.newEnumMap(
       Arrays.stream(DyeColor.values()).collect(Collectors.toMap(var0 -> (DyeColor)var0, Sheep::createSheepColor))
    );
    private int eatAnimationTick;
    private EatBlockGoal eatBlockGoal;
 
-   private static float[] createSheepColor(DyeColor var0) {
+   private static int createSheepColor(DyeColor var0) {
       if (var0 == DyeColor.WHITE) {
-         return new float[]{0.9019608F, 0.9019608F, 0.9019608F};
+         return -1644826;
       } else {
-         float[] var1 = var0.getTextureDiffuseColors();
+         int var1 = var0.getTextureDiffuseColor();
          float var2 = 0.75F;
-         return new float[]{var1[0] * 0.75F, var1[1] * 0.75F, var1[2] * 0.75F};
+         return FastColor.ARGB32.color(
+            255,
+            Mth.floor((float)FastColor.ARGB32.red(var1) * 0.75F),
+            Mth.floor((float)FastColor.ARGB32.green(var1) * 0.75F),
+            Mth.floor((float)FastColor.ARGB32.blue(var1) * 0.75F)
+         );
       }
    }
 
-   public static float[] getColorArray(DyeColor var0) {
-      return COLORARRAY_BY_COLOR.get(var0);
+   public static int getColor(DyeColor var0) {
+      return COLOR_BY_DYE.get(var0);
    }
 
    public Sheep(EntityType<? extends Sheep> var1, Level var2) {
@@ -345,7 +350,7 @@ public class Sheep extends Animal implements Shearable {
    private DyeColor getOffspringColor(Animal var1, Animal var2) {
       DyeColor var3 = ((Sheep)var1).getColor();
       DyeColor var4 = ((Sheep)var2).getColor();
-      CraftingContainer var5 = makeContainer(var3, var4);
+      CraftingInput var5 = makeCraftInput(var3, var4);
       return this.level()
          .getRecipeManager()
          .getRecipeFor(RecipeType.CRAFTING, var5, this.level())
@@ -357,20 +362,7 @@ public class Sheep extends Animal implements Shearable {
          .orElseGet(() -> this.level().random.nextBoolean() ? var3 : var4);
    }
 
-   private static CraftingContainer makeContainer(DyeColor var0, DyeColor var1) {
-      TransientCraftingContainer var2 = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
-         @Override
-         public ItemStack quickMoveStack(Player var1, int var2) {
-            return ItemStack.EMPTY;
-         }
-
-         @Override
-         public boolean stillValid(Player var1) {
-            return false;
-         }
-      }, 2, 1);
-      var2.setItem(0, new ItemStack(DyeItem.byColor(var0)));
-      var2.setItem(1, new ItemStack(DyeItem.byColor(var1)));
-      return var2;
+   private static CraftingInput makeCraftInput(DyeColor var0, DyeColor var1) {
+      return CraftingInput.of(2, 1, List.of(new ItemStack(DyeItem.byColor(var0)), new ItemStack(DyeItem.byColor(var1))));
    }
 }

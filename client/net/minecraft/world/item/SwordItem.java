@@ -29,14 +29,12 @@ public class SwordItem extends TieredItem {
       return ItemAttributeModifiers.builder()
          .add(
             Attributes.ATTACK_DAMAGE,
-            new AttributeModifier(
-               BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", (double)((float)var1 + var0.getAttackDamageBonus()), AttributeModifier.Operation.ADD_VALUE
-            ),
+            new AttributeModifier(BASE_ATTACK_DAMAGE_ID, (double)((float)var1 + var0.getAttackDamageBonus()), AttributeModifier.Operation.ADD_VALUE),
             EquipmentSlotGroup.MAINHAND
          )
          .add(
             Attributes.ATTACK_SPEED,
-            new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (double)var2, AttributeModifier.Operation.ADD_VALUE),
+            new AttributeModifier(BASE_ATTACK_SPEED_ID, (double)var2, AttributeModifier.Operation.ADD_VALUE),
             EquipmentSlotGroup.MAINHAND
          )
          .build();
@@ -49,7 +47,11 @@ public class SwordItem extends TieredItem {
 
    @Override
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
       return true;
+   }
+
+   @Override
+   public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
+      var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
    }
 }

@@ -78,9 +78,13 @@ public class GameTestHelper {
       return this.getLevel().getBlockState(this.absolutePos(var1));
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
-      return this.getLevel().getBlockEntity(this.absolutePos(var1));
+   public <T extends BlockEntity> T getBlockEntity(BlockPos var1) {
+      BlockEntity var2 = this.getLevel().getBlockEntity(this.absolutePos(var1));
+      if (var2 == null) {
+         throw new GameTestAssertPosException("Missing block entity", this.absolutePos(var1), var1, this.testInfo.getTick());
+      } else {
+         return (T)var2;
+      }
    }
 
    public void killAllEntities() {
@@ -215,7 +219,7 @@ public class GameTestHelper {
       BlockPos var2 = this.absolutePos(var1);
       BlockState var3 = this.getLevel().getBlockState(var2);
       ButtonBlock var4 = (ButtonBlock)var3.getBlock();
-      var4.press(var3, this.getLevel(), var2);
+      var4.press(var3, this.getLevel(), var2, null);
    }
 
    public void useBlock(BlockPos var1) {
@@ -301,7 +305,7 @@ public class GameTestHelper {
       BlockPos var2 = this.absolutePos(var1);
       BlockState var3 = this.getLevel().getBlockState(var2);
       LeverBlock var4 = (LeverBlock)var3.getBlock();
-      var4.pull(var3, this.getLevel(), var2);
+      var4.pull(var3, this.getLevel(), var2, null);
    }
 
    public void pulseRedstone(BlockPos var1, long var2) {
@@ -393,6 +397,13 @@ public class GameTestHelper {
 
    public void assertBlockState(BlockPos var1, Predicate<BlockState> var2, Supplier<String> var3) {
       BlockState var4 = this.getBlockState(var1);
+      if (!var2.test(var4)) {
+         throw new GameTestAssertPosException((String)var3.get(), this.absolutePos(var1), var1, this.testInfo.getTick());
+      }
+   }
+
+   public <T extends BlockEntity> void assertBlockEntityData(BlockPos var1, Predicate<T> var2, Supplier<String> var3) {
+      BlockEntity var4 = this.getBlockEntity(var1);
       if (!var2.test(var4)) {
          throw new GameTestAssertPosException((String)var3.get(), this.absolutePos(var1), var1, this.testInfo.getTick());
       }
@@ -693,6 +704,12 @@ public class GameTestHelper {
       this.succeedWhen(() -> this.assertEntityData(var1, var2, var3, var4));
    }
 
+   public void assertEntityPosition(Entity var1, AABB var2, String var3) {
+      if (!var2.contains(this.relativeVec(var1.position()))) {
+         this.fail(var3);
+      }
+   }
+
    public <E extends Entity> void assertEntityProperty(E var1, Predicate<E> var2, String var3) {
       if (!var2.test(var1)) {
          throw new GameTestAssertException("Entity " + var1 + " failed " + var3 + " test");
@@ -840,6 +857,10 @@ public class GameTestHelper {
    public Vec3 relativeVec(Vec3 var1) {
       Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getStructureBlockPos());
       return StructureTemplate.transform(var1.subtract(var2), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getStructureBlockPos());
+   }
+
+   public Rotation getTestRotation() {
+      return this.testInfo.getRotation();
    }
 
    public void assertTrue(boolean var1, String var2) {

@@ -232,13 +232,13 @@ public class Options {
       }
    );
    private static final Component MENU_BACKGROUND_BLURRINESS_TOOLTIP = Component.translatable("options.accessibility.menu_background_blurriness.tooltip");
-   private static final double BLURRINESS_DEFAULT_VALUE = 0.5;
-   private final OptionInstance<Double> menuBackgroundBlurriness = new OptionInstance<>(
+   private static final int BLURRINESS_DEFAULT_VALUE = 5;
+   private final OptionInstance<Integer> menuBackgroundBlurriness = new OptionInstance<>(
       "options.accessibility.menu_background_blurriness",
       OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP),
-      Options::percentValueOrOffLabel,
-      OptionInstance.UnitDouble.INSTANCE,
-      0.5,
+      Options::genericValueOrOffLabel,
+      new OptionInstance.IntRange(0, 10),
+      5,
       var0 -> {
       }
    );
@@ -411,7 +411,10 @@ public class Options {
    );
    private final OptionInstance<Boolean> invertYMouse = OptionInstance.createBoolean("options.invertMouse", false);
    private final OptionInstance<Boolean> discreteMouseScroll = OptionInstance.createBoolean("options.discrete_mouse_scroll", false);
-   private final OptionInstance<Boolean> realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications", true);
+   private static final Component REALMS_NOTIFICATIONS_TOOLTIP = Component.translatable("options.realmsNotifications.tooltip");
+   private final OptionInstance<Boolean> realmsNotifications = OptionInstance.createBoolean(
+      "options.realmsNotifications", OptionInstance.cachedConstantTooltip(REALMS_NOTIFICATIONS_TOOLTIP), true
+   );
    private static final Component ALLOW_SERVER_LISTING_TOOLTIP = Component.translatable("options.allowServerListing.tooltip");
    private final OptionInstance<Boolean> allowServerListing = OptionInstance.createBoolean(
       "options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, var1x -> this.broadcastOptions()
@@ -789,11 +792,11 @@ public class Options {
       return this.chatLineSpacing;
    }
 
-   public OptionInstance<Double> menuBackgroundBlurriness() {
+   public OptionInstance<Integer> menuBackgroundBlurriness() {
       return this.menuBackgroundBlurriness;
    }
 
-   public double getMenuBackgroundBlurriness() {
+   public int getMenuBackgroundBlurriness() {
       return this.menuBackgroundBlurriness().get();
    }
 
@@ -1056,6 +1059,11 @@ public class Options {
       return this.soundDevice;
    }
 
+   public void onboardingAccessibilityFinished() {
+      this.onboardAccessibility = false;
+      this.save();
+   }
+
    public Options(Minecraft var1, File var2) {
       super();
       this.minecraft = var1;
@@ -1245,7 +1253,7 @@ public class Options {
          this.processOptions(new Options.FieldAccess() {
             @Nullable
             private String getValueOrNull(String var1) {
-               return var8.contains(var1) ? var8.getString(var1) : null;
+               return var8.contains(var1) ? var8.get(var1).getAsString() : null;
             }
 
             @Override
@@ -1546,12 +1554,16 @@ public class Options {
       return Component.translatable("options.generic_value", var0, var1);
    }
 
-   private static Component percentValueOrOffLabel(Component var0, double var1) {
-      return var1 == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1);
-   }
-
    public static Component genericValueLabel(Component var0, int var1) {
       return genericValueLabel(var0, Component.literal(Integer.toString(var1)));
+   }
+
+   public static Component genericValueOrOffLabel(Component var0, int var1) {
+      return var1 == 0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : genericValueLabel(var0, var1);
+   }
+
+   private static Component percentValueOrOffLabel(Component var0, double var1) {
+      return var1 == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1);
    }
 
    interface FieldAccess extends Options.OptionAccess {

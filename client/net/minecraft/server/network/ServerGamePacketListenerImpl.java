@@ -43,6 +43,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -392,7 +393,7 @@ public class ServerGamePacketListenerImpl
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (containsInvalidValues(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_vehicle_movement"));
-      } else {
+      } else if (!this.updateAwaitingTeleport()) {
          Entity var2 = this.player.getRootVehicle();
          if (var2 != this.player && var2.getControllingPassenger() == this.player && var2 == this.lastVehicle) {
             ServerLevel var3 = this.player.serverLevel();
@@ -453,7 +454,9 @@ public class ServerGamePacketListenerImpl
             }
 
             this.player.serverLevel().getChunkSource().move(this.player);
-            this.player.checkMovementStatistics(this.player.getX() - var4, this.player.getY() - var6, this.player.getZ() - var8);
+            Vec3 var34 = new Vec3(var2.getX() - var4, var2.getY() - var6, var2.getZ() - var8);
+            this.player.setKnownMovement(var34);
+            this.player.checkMovementStatistics(var34.x, var34.y, var34.z);
             this.clientVehicleIsFloating = var20 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isNoGravity() && this.noBlocksAround(var2);
             this.vehicleLastGoodX = var2.getX();
             this.vehicleLastGoodY = var2.getY();
@@ -775,7 +778,7 @@ public class ServerGamePacketListenerImpl
    private void signBook(FilteredText var1, List<FilteredText> var2, int var3) {
       ItemStack var4 = this.player.getInventory().getItem(var3);
       if (var4.is(Items.WRITABLE_BOOK)) {
-         ItemStack var5 = var4.transmuteCopy(Items.WRITTEN_BOOK, 1);
+         ItemStack var5 = var4.transmuteCopy(Items.WRITTEN_BOOK);
          var5.remove(DataComponents.WRITABLE_BOOK_CONTENT);
          List var6 = var2.stream().map(var1x -> this.filterableFromOutgoing(var1x).map(Component::literal)).toList();
          var5.set(
@@ -833,19 +836,7 @@ public class ServerGamePacketListenerImpl
                this.resetPosition();
             }
 
-            if (this.awaitingPositionFromClient != null) {
-               if (this.tickCount - this.awaitingTeleportTime > 20) {
-                  this.awaitingTeleportTime = this.tickCount;
-                  this.teleport(
-                     this.awaitingPositionFromClient.x,
-                     this.awaitingPositionFromClient.y,
-                     this.awaitingPositionFromClient.z,
-                     this.player.getYRot(),
-                     this.player.getXRot()
-                  );
-               }
-            } else {
-               this.awaitingTeleportTime = this.tickCount;
+            if (!this.updateAwaitingTeleport()) {
                double var3 = clampHorizontal(var1.getX(this.player.getX()));
                double var5 = clampVertical(var1.getY(this.player.getY()));
                double var7 = clampHorizontal(var1.getZ(this.player.getZ()));
@@ -888,12 +879,12 @@ public class ServerGamePacketListenerImpl
                         }
                      }
 
-                     AABB var42 = this.player.getBoundingBox();
+                     AABB var43 = this.player.getBoundingBox();
                      var17 = var3 - this.lastGoodX;
                      var19 = var5 - this.lastGoodY;
                      var21 = var7 - this.lastGoodZ;
-                     boolean var43 = var19 > 0.0;
-                     if (this.player.onGround() && !var1.isOnGround() && var43) {
+                     boolean var44 = var19 > 0.0;
+                     if (this.player.onGround() && !var1.isOnGround() && var44) {
                         this.player.jumpFromGround();
                      }
 
@@ -919,7 +910,7 @@ public class ServerGamePacketListenerImpl
 
                      if (this.player.noPhysics
                         || this.player.isSleeping()
-                        || (!var33 || !var2.noCollision(this.player, var42)) && !this.isPlayerCollidingWithAnythingNew(var2, var42, var3, var5, var7)) {
+                        || (!var33 || !var2.noCollision(this.player, var43)) && !this.isPlayerCollidingWithAnythingNew(var2, var43, var3, var5, var7)) {
                         this.player.absMoveTo(var3, var5, var7, var9, var10);
                         boolean var34 = this.player.isAutoSpinAttack();
                         this.clientIsFloating = var19 >= -0.03125
@@ -932,17 +923,16 @@ public class ServerGamePacketListenerImpl
                            && !var34
                            && this.noBlocksAround(this.player);
                         this.player.serverLevel().getChunkSource().move(this.player);
+                        Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
+                        this.player.setOnGroundWithMovement(var1.isOnGround(), var35);
                         this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
-                        this.player
-                           .setOnGroundWithKnownMovement(
-                              var1.isOnGround(), new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15)
-                           );
-                        if (var43) {
+                        this.player.setKnownMovement(var35);
+                        if (var44) {
                            this.player.resetFallDistance();
                         }
 
-                        if (var1.isOnGround() || this.player.isInLiquid() || this.player.onClimbable() || this.player.isSpectator() || var27 || var34) {
-                           this.player.resetCurrentImpulseContext();
+                        if (var1.isOnGround() || this.player.hasLandedInLiquid() || this.player.onClimbable() || this.player.isSpectator() || var27 || var34) {
+                           this.player.tryResetCurrentImpulseContext();
                         }
 
                         this.player.checkMovementStatistics(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
@@ -957,6 +947,26 @@ public class ServerGamePacketListenerImpl
                }
             }
          }
+      }
+   }
+
+   private boolean updateAwaitingTeleport() {
+      if (this.awaitingPositionFromClient != null) {
+         if (this.tickCount - this.awaitingTeleportTime > 20) {
+            this.awaitingTeleportTime = this.tickCount;
+            this.teleport(
+               this.awaitingPositionFromClient.x,
+               this.awaitingPositionFromClient.y,
+               this.awaitingPositionFromClient.z,
+               this.player.getYRot(),
+               this.player.getXRot()
+            );
+         }
+
+         return true;
+      } else {
+         this.awaitingTeleportTime = this.tickCount;
+         return false;
       }
    }
 
@@ -990,7 +1000,6 @@ public class ServerGamePacketListenerImpl
       }
 
       this.awaitingTeleportTime = this.tickCount;
-      this.player.resetCurrentImpulseContext();
       this.player.absMoveTo(var1, var3, var5, var7, var8);
       this.player
          .connection
@@ -1106,8 +1115,14 @@ public class ServerGamePacketListenerImpl
       ItemStack var4 = this.player.getItemInHand(var3);
       this.player.resetLastActionTime();
       if (!var4.isEmpty() && var4.isItemEnabled(var2.enabledFeatures())) {
-         InteractionResult var5 = this.player.gameMode.useItem(this.player, var2, var4, var3);
-         if (var5.shouldSwing()) {
+         float var5 = Mth.wrapDegrees(var1.getYRot());
+         float var6 = Mth.wrapDegrees(var1.getXRot());
+         if (var6 != this.player.getXRot() || var5 != this.player.getYRot()) {
+            this.player.absRotateTo(var5, var6);
+         }
+
+         InteractionResult var7 = this.player.gameMode.useItem(this.player, var2, var4, var3);
+         if (var7.shouldSwing()) {
             this.player.swing(var3, true);
          }
       }
@@ -1136,8 +1151,8 @@ public class ServerGamePacketListenerImpl
    }
 
    @Override
-   public void onDisconnect(Component var1) {
-      LOGGER.info("{} lost connection: {}", this.player.getName().getString(), var1.getString());
+   public void onDisconnect(DisconnectionDetails var1) {
+      LOGGER.info("{} lost connection: {}", this.player.getName().getString(), var1.reason().getString());
       this.removePlayerFromWorld();
       super.onDisconnect(var1);
    }
@@ -1348,7 +1363,9 @@ public class ServerGamePacketListenerImpl
 
    private void detectRateSpam() {
       this.chatSpamTickCount += 20;
-      if (this.chatSpamTickCount > 200 && !this.server.getPlayerList().isOp(this.player.getGameProfile())) {
+      if (this.chatSpamTickCount > 200
+         && !this.server.getPlayerList().isOp(this.player.getGameProfile())
+         && !this.server.isSingleplayerOwner(this.player.getGameProfile())) {
          this.disconnect(Component.translatable("disconnect.spam"));
       }
    }
@@ -1549,14 +1566,14 @@ public class ServerGamePacketListenerImpl
          case PERFORM_RESPAWN:
             if (this.player.wonGame) {
                this.player.wonGame = false;
-               this.player = this.server.getPlayerList().respawn(this.player, true);
+               this.player = this.server.getPlayerList().respawn(this.player, true, Entity.RemovalReason.CHANGED_DIMENSION);
                CriteriaTriggers.CHANGED_DIMENSION.trigger(this.player, Level.END, Level.OVERWORLD);
             } else {
                if (this.player.getHealth() > 0.0F) {
                   return;
                }
 
-               this.player = this.server.getPlayerList().respawn(this.player, false);
+               this.player = this.server.getPlayerList().respawn(this.player, false, Entity.RemovalReason.KILLED);
                if (this.server.isHardcore()) {
                   this.player.setGameMode(GameType.SPECTATOR);
                   this.player.level().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(false, this.server);
