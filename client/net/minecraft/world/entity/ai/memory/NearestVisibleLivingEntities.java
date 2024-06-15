@@ -33,7 +33,7 @@ public class NearestVisibleLivingEntities {
    }
 
    public Optional<LivingEntity> findClosest(Predicate<LivingEntity> var1) {
-      for(LivingEntity var3 : this.nearbyEntities) {
+      for (LivingEntity var3 : this.nearbyEntities) {
          if (var1.test(var3) && this.lineOfSightTest.test(var3)) {
             return Optional.of(var3);
          }
@@ -55,7 +55,7 @@ public class NearestVisibleLivingEntities {
    }
 
    public boolean contains(Predicate<LivingEntity> var1) {
-      for(LivingEntity var3 : this.nearbyEntities) {
+      for (LivingEntity var3 : this.nearbyEntities) {
          if (var1.test(var3) && this.lineOfSightTest.test(var3)) {
             return true;
          }

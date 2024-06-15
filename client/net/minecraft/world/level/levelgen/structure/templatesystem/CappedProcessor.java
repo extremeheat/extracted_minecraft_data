@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import java.util.List;
@@ -14,7 +13,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class CappedProcessor extends StructureProcessor {
-   public static final Codec<CappedProcessor> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter(var0x -> var0x.delegate),
                IntProvider.POSITIVE_CODEC.fieldOf("limit").forGetter(var0x -> var0x.limit)
@@ -63,13 +62,13 @@ public class CappedProcessor extends StructureProcessor {
                IntIterator var10 = var9.intIterator();
                int var11 = 0;
 
-               while(var10.hasNext() && var11 < var8) {
+               while (var10.hasNext() && var11 < var8) {
                   int var12 = var10.nextInt();
                   StructureTemplate.StructureBlockInfo var13 = (StructureTemplate.StructureBlockInfo)var4.get(var12);
                   StructureTemplate.StructureBlockInfo var14 = (StructureTemplate.StructureBlockInfo)var5.get(var12);
                   StructureTemplate.StructureBlockInfo var15 = this.delegate.processBlock(var1, var2, var3, var13, var14, var6);
                   if (var15 != null && !var14.equals(var15)) {
-                     ++var11;
+                     var11++;
                      var5.set(var12, var15);
                   }
                }

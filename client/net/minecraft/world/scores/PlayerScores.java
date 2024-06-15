@@ -22,9 +22,9 @@ class PlayerScores {
 
    public Score getOrCreate(Objective var1, Consumer<Score> var2) {
       return (Score)this.scores.computeIfAbsent(var1, var1x -> {
-         Score var2xx = new Score();
-         var2.accept(var2xx);
-         return var2xx;
+         Score var2x = new Score();
+         var2.accept(var2x);
+         return var2x;
       });
    }
 

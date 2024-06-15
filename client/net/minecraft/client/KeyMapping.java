@@ -3,7 +3,6 @@ package net.minecraft.client;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -41,7 +40,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    public static void click(InputConstants.Key var0) {
       KeyMapping var1 = MAP.get(var0);
       if (var1 != null) {
-         ++var1.clickCount;
+         var1.clickCount++;
       }
    }
 
@@ -53,7 +52,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public static void setAll() {
-      for(KeyMapping var1 : ALL.values()) {
+      for (KeyMapping var1 : ALL.values()) {
          if (var1.key.getType() == InputConstants.Type.KEYSYM && var1.key.getValue() != InputConstants.UNKNOWN.getValue()) {
             var1.setDown(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), var1.key.getValue()));
          }
@@ -61,15 +60,13 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public static void releaseAll() {
-      for(KeyMapping var1 : ALL.values()) {
+      for (KeyMapping var1 : ALL.values()) {
          var1.release();
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static void resetToggleKeys() {
-      for(KeyMapping var1 : ALL.values()) {
+      for (KeyMapping var1 : ALL.values()) {
          if (var1 instanceof ToggleKeyMapping var2) {
             var2.reset();
          }
@@ -79,7 +76,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    public static void resetMapping() {
       MAP.clear();
 
-      for(KeyMapping var1 : ALL.values()) {
+      for (KeyMapping var1 : ALL.values()) {
          MAP.put(var1.key, var1);
       }
    }
@@ -111,7 +108,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
       if (this.clickCount == 0) {
          return false;
       } else {
-         --this.clickCount;
+         this.clickCount--;
          return true;
       }
    }
@@ -153,11 +150,9 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public boolean matches(int var1, int var2) {
-      if (var1 == InputConstants.UNKNOWN.getValue()) {
-         return this.key.getType() == InputConstants.Type.SCANCODE && this.key.getValue() == var2;
-      } else {
-         return this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() == var1;
-      }
+      return var1 == InputConstants.UNKNOWN.getValue()
+         ? this.key.getType() == InputConstants.Type.SCANCODE && this.key.getValue() == var2
+         : this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() == var1;
    }
 
    public boolean matchesMouse(int var1) {

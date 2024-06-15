@@ -56,7 +56,7 @@ public class ChunkProtoTickListFix extends DataFix {
                            var0.get("LiquidTicks").result().map(var1xxx -> var0.set("fluid_ticks", var1xxx).remove("LiquidTicks")), var0
                         )
                   );
-                  Dynamic var8xxx = (Dynamic)var7xx.get(DSL.remainderFinder());
+                  Dynamic var8xx = (Dynamic)var7xx.get(DSL.remainderFinder());
                   MutableInt var9 = new MutableInt();
                   Int2ObjectArrayMap var10 = new Int2ObjectArrayMap();
                   var7xx.getOptionalTyped(var3)
@@ -64,20 +64,20 @@ public class ChunkProtoTickListFix extends DataFix {
                         var6xxx -> var6xxx.getAllTyped(var4)
                               .forEach(
                                  var5xxxx -> {
-                                    Dynamic var6xxxxx = (Dynamic)var5xxxx.get(DSL.remainderFinder());
-                                    int var7xxxx = var6xxxxx.get("Y").asInt(2147483647);
-                                    if (var7xxxx != 2147483647) {
+                                    Dynamic var6xxxx = (Dynamic)var5xxxx.get(DSL.remainderFinder());
+                                    int var7xxx = var6xxxx.get("Y").asInt(2147483647);
+                                    if (var7xxx != 2147483647) {
                                        if (var5xxxx.getOptionalTyped(var6).isPresent()) {
-                                          var9.setValue(Math.min(var7xxxx, var9.getValue()));
+                                          var9.setValue(Math.min(var7xxx, var9.getValue()));
                                        }
-                  
+
                                        var5xxxx.getOptionalTyped(var5)
                                           .ifPresent(
                                              var3xxxxx -> var10.put(
                                                    var7xxx,
                                                    Suppliers.memoize(
                                                       () -> {
-                                                         List var2xxxxxxx = var3xxxxx.getOptionalTyped(var7)
+                                                         List var2xxxxxx = var3xxxxx.getOptionalTyped(var7)
                                                             .map(
                                                                var0xxxx -> var0xxxx.write()
                                                                      .result()
@@ -85,11 +85,11 @@ public class ChunkProtoTickListFix extends DataFix {
                                                                      .orElse(Collections.emptyList())
                                                             )
                                                             .orElse(Collections.emptyList());
-                                                         long[] var3xxxxxxx = ((Dynamic)var3xxxxx.get(DSL.remainderFinder()))
+                                                         long[] var3xxxxxx = ((Dynamic)var3xxxxx.get(DSL.remainderFinder()))
                                                             .get("data")
                                                             .asLongStream()
                                                             .toArray();
-                                                         return new ChunkProtoTickListFix.PoorMansPalettedContainer(var2xxxxxxx, var3xxxxxxx);
+                                                         return new ChunkProtoTickListFix.PoorMansPalettedContainer(var2xxxxxx, var3xxxxxx);
                                                       }
                                                    )
                                                 )
@@ -100,16 +100,16 @@ public class ChunkProtoTickListFix extends DataFix {
                      );
                   byte var11 = var9.getValue().byteValue();
                   var7xx = var7xx.update(DSL.remainderFinder(), var1xxx -> var1xxx.update("yPos", var1xxxx -> var1xxxx.createByte(var11)));
-                  if (!var7xx.getOptionalTyped(var8).isPresent() && !var8xxx.get("fluid_ticks").result().isPresent()) {
-                     int var12 = var8xxx.get("xPos").asInt(0);
-                     int var13 = var8xxx.get("zPos").asInt(0);
-                     Dynamic var14 = this.makeTickList(var8xxx, var10, var11, var12, var13, "LiquidsToBeTicked", ChunkProtoTickListFix::getLiquid);
-                     Dynamic var15 = this.makeTickList(var8xxx, var10, var11, var12, var13, "ToBeTicked", ChunkProtoTickListFix::getBlock);
+                  if (!var7xx.getOptionalTyped(var8).isPresent() && !var8xx.get("fluid_ticks").result().isPresent()) {
+                     int var12 = var8xx.get("xPos").asInt(0);
+                     int var13 = var8xx.get("zPos").asInt(0);
+                     Dynamic var14 = this.makeTickList(var8xx, var10, var11, var12, var13, "LiquidsToBeTicked", ChunkProtoTickListFix::getLiquid);
+                     Dynamic var15 = this.makeTickList(var8xx, var10, var11, var12, var13, "ToBeTicked", ChunkProtoTickListFix::getBlock);
                      Optional var16 = var8.type().readTyped(var15).result();
                      if (var16.isPresent()) {
                         var7xx = var7xx.set(var8, (Typed)((Pair)var16.get()).getFirst());
                      }
-      
+
                      return var7xx.update(DSL.remainderFinder(), var1xxx -> var1xxx.remove("ToBeTicked").remove("LiquidsToBeTicked").set("fluid_ticks", var14));
                   } else {
                      return var7xx;
@@ -131,7 +131,7 @@ public class ChunkProtoTickListFix extends DataFix {
       Stream var8 = Stream.empty();
       List var9 = var1.get(var6).asList(Function.identity());
 
-      for(int var10 = 0; var10 < var9.size(); ++var10) {
+      for (int var10 = 0; var10 < var9.size(); var10++) {
          int var11 = var10 + var3;
          Supplier var12 = (Supplier)var2.get(var11);
          Stream var13 = ((Dynamic)var9.get(var10))
@@ -220,7 +220,7 @@ public class ChunkProtoTickListFix extends DataFix {
                long var7 = this.data[var6];
                int var9 = (var5 - var6 * this.valuesPerLong) * this.bits;
                int var10 = (int)(var7 >> var9 & this.mask);
-               return var10 >= 0 && var10 < var4 ? (Dynamic)this.palette.get(var10) : null;
+               return (Dynamic<?>)(var10 >= 0 && var10 < var4 ? this.palette.get(var10) : null);
             } else {
                return null;
             }

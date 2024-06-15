@@ -104,7 +104,7 @@ public class RealmsPopupScreen extends RealmsScreen {
    }
 
    public static void renderDiamond(GuiGraphics var0, Button var1) {
-      boolean var2 = true;
+      byte var2 = 8;
       var0.pose().pushPose();
       var0.pose().translate(0.0F, 0.0F, 110.0F);
       var0.blitSprite(TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
@@ -116,6 +116,7 @@ public class RealmsPopupScreen extends RealmsScreen {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.flush();
       RenderSystem.clear(256, Minecraft.ON_OSX);
+      this.clearTooltipForNextRenderPass();
       this.renderTransparentBackground(var1);
       var1.blitSprite(BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {

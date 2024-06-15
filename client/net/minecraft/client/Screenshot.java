@@ -16,7 +16,6 @@ import net.minecraft.Util;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import org.slf4j.Logger;
 
 public class Screenshot {
@@ -57,10 +56,10 @@ public class Screenshot {
             () -> {
                try {
                   var4.writeToFile(var6);
-                  MutableComponent var3xx = Component.literal(var6.getName())
+                  MutableComponent var3x = Component.literal(var6.getName())
                      .withStyle(ChatFormatting.UNDERLINE)
                      .withStyle(var1xx -> var1xx.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.getAbsolutePath())));
-                  var3.accept(Component.translatable("screenshot.success", var3xx));
+                  var3.accept(Component.translatable("screenshot.success", var3x));
                } catch (Exception var7) {
                   LOGGER.warn("Couldn't save screenshot", var7);
                   var3.accept(Component.translatable("screenshot.failure", var7.getMessage()));
@@ -85,13 +84,13 @@ public class Screenshot {
       String var1 = Util.getFilenameFormattedDateTime();
       int var2 = 1;
 
-      while(true) {
+      while (true) {
          File var3 = new File(var0, var1 + (var2 == 1 ? "" : "_" + var2) + ".png");
          if (!var3.exists()) {
             return var3;
          }
 
-         ++var2;
+         var2++;
       }
    }
 
@@ -105,8 +104,8 @@ public class Screenshot {
       String var6 = "huge_" + Util.getFilenameFormattedDateTime();
       int var7 = 1;
 
-      while((this.file = new File(var5, var6 + (var7 == 1 ? "" : "_" + var7) + ".tga")).exists()) {
-         ++var7;
+      while ((this.file = new File(var5, var6 + (var7 == 1 ? "" : "_" + var7) + ".tga")).exists()) {
+         var7++;
       }
 
       byte[] var8 = new byte[18];
@@ -134,7 +133,7 @@ public class Screenshot {
 
       this.rowHeight = var7;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
+      for (int var8 = 0; var8 < var7; var8++) {
          var1.position((var5 - var7) * var4 * 3 + var8 * var4 * 3);
          int var9 = (var2 + var8 * this.width) * 3;
          var1.get(this.bytes, var9, var6 * 3);

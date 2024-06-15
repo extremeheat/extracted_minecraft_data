@@ -67,13 +67,13 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       return this.mayPlaceOn(var2.getBlockState(var4), var2, var4);
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (!var1.canSurvive(var4, var5)) {
          return Blocks.AIR.defaultBlockState();
       } else {
@@ -86,13 +86,13 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       return !var2.isSecondaryUseActive() && var2.getItemInHand().is(this.asItem()) && var1.getValue(PICKLES) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch(var1.getValue(PICKLES)) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+      switch (var1.getValue(PICKLES)) {
          case 1:
          default:
             return ONE_AABB;
@@ -106,7 +106,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
@@ -128,18 +128,18 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       if (!isDead(var4) && var1.getBlockState(var3.below()).is(BlockTags.CORAL_BLOCKS)) {
-         boolean var5 = true;
-         int var6 = 1;
-         boolean var7 = true;
+         byte var5 = 5;
+         byte var6 = 1;
+         byte var7 = 2;
          int var8 = 0;
          int var9 = var3.getX() - 2;
          int var10 = 0;
 
-         for(int var11 = 0; var11 < 5; ++var11) {
-            for(int var12 = 0; var12 < var6; ++var12) {
+         for (int var11 = 0; var11 < 5; var11++) {
+            for (int var12 = 0; var12 < var6; var12++) {
                int var13 = 2 + var3.getY() - 1;
 
-               for(int var14 = var13 - 2; var14 < var13; ++var14) {
+               for (int var14 = var13 - 2; var14 < var13; var14++) {
                   BlockPos var15 = new BlockPos(var9 + var11, var14, var3.getZ() - var10 + var12);
                   if (var15 != var3 && var2.nextInt(6) == 0 && var1.getBlockState(var15).is(Blocks.WATER)) {
                      BlockState var16 = var1.getBlockState(var15.below());
@@ -152,13 +152,13 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
 
             if (var8 < 2) {
                var6 += 2;
-               ++var10;
+               var10++;
             } else {
                var6 -= 2;
-               --var10;
+               var10--;
             }
 
-            ++var8;
+            var8++;
          }
 
          var1.setBlock(var3, var4.setValue(PICKLES, Integer.valueOf(4)), 2);
@@ -166,7 +166,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

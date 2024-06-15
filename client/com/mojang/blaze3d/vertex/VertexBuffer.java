@@ -115,7 +115,7 @@ public class VertexBuffer implements AutoCloseable {
    }
 
    private void _drawWithShader(Matrix4f var1, Matrix4f var2, ShaderInstance var3) {
-      for(int var4 = 0; var4 < 12; ++var4) {
+      for (int var4 = 0; var4 < 12; var4++) {
          int var5 = RenderSystem.getShaderTexture(var4);
          var3.setSampler("Sampler" + var4, var5);
       }
@@ -126,10 +126,6 @@ public class VertexBuffer implements AutoCloseable {
 
       if (var3.PROJECTION_MATRIX != null) {
          var3.PROJECTION_MATRIX.set(var2);
-      }
-
-      if (var3.INVERSE_VIEW_ROTATION_MATRIX != null) {
-         var3.INVERSE_VIEW_ROTATION_MATRIX.set(RenderSystem.getInverseViewRotationMatrix());
       }
 
       if (var3.COLOR_MODULATOR != null) {
@@ -211,8 +207,8 @@ public class VertexBuffer implements AutoCloseable {
 
       final int id;
 
-      private Usage(int var3) {
-         this.id = var3;
+      private Usage(final int nullxx) {
+         this.id = nullxx;
       }
    }
 }

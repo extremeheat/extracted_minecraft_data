@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -57,8 +58,8 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.putString("name", this.getStructureName());
       var1.putString("author", this.author);
       var1.putString("metadata", this.metaData);
@@ -80,35 +81,35 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.setStructureName(var1.getString("name"));
       this.author = var1.getString("author");
       this.metaData = var1.getString("metadata");
-      int var2 = Mth.clamp(var1.getInt("posX"), -48, 48);
-      int var3 = Mth.clamp(var1.getInt("posY"), -48, 48);
-      int var4 = Mth.clamp(var1.getInt("posZ"), -48, 48);
-      this.structurePos = new BlockPos(var2, var3, var4);
-      int var5 = Mth.clamp(var1.getInt("sizeX"), 0, 48);
-      int var6 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
-      int var7 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
-      this.structureSize = new Vec3i(var5, var6, var7);
+      int var3 = Mth.clamp(var1.getInt("posX"), -48, 48);
+      int var4 = Mth.clamp(var1.getInt("posY"), -48, 48);
+      int var5 = Mth.clamp(var1.getInt("posZ"), -48, 48);
+      this.structurePos = new BlockPos(var3, var4, var5);
+      int var6 = Mth.clamp(var1.getInt("sizeX"), 0, 48);
+      int var7 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
+      int var8 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
+      this.structureSize = new Vec3i(var6, var7, var8);
 
       try {
          this.rotation = Rotation.valueOf(var1.getString("rotation"));
-      } catch (IllegalArgumentException var11) {
+      } catch (IllegalArgumentException var12) {
          this.rotation = Rotation.NONE;
       }
 
       try {
          this.mirror = Mirror.valueOf(var1.getString("mirror"));
-      } catch (IllegalArgumentException var10) {
+      } catch (IllegalArgumentException var11) {
          this.mirror = Mirror.NONE;
       }
 
       try {
          this.mode = StructureMode.valueOf(var1.getString("mode"));
-      } catch (IllegalArgumentException var9) {
+      } catch (IllegalArgumentException var10) {
          this.mode = StructureMode.DATA;
       }
 
@@ -141,8 +142,8 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      return this.saveWithoutMetadata();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      return this.saveCustomOnly(var1);
    }
 
    public boolean usedBy(Player var1) {
@@ -258,17 +259,17 @@ public class StructureBlockEntity extends BlockEntity {
          return false;
       } else {
          BlockPos var1 = this.getBlockPos();
-         boolean var2 = true;
+         byte var2 = 80;
          BlockPos var3 = new BlockPos(var1.getX() - 80, this.level.getMinBuildHeight(), var1.getZ() - 80);
          BlockPos var4 = new BlockPos(var1.getX() + 80, this.level.getMaxBuildHeight() - 1, var1.getZ() + 80);
          Stream var5 = this.getRelatedCorners(var3, var4);
          return calculateEnclosingBoundingBox(var1, var5).filter(var2x -> {
-            int var3xx = var2x.maxX() - var2x.minX();
-            int var4xx = var2x.maxY() - var2x.minY();
-            int var5xx = var2x.maxZ() - var2x.minZ();
-            if (var3xx > 1 && var4xx > 1 && var5xx > 1) {
+            int var3x = var2x.maxX() - var2x.minX();
+            int var4x = var2x.maxY() - var2x.minY();
+            int var5x = var2x.maxZ() - var2x.minZ();
+            if (var3x > 1 && var4x > 1 && var5x > 1) {
                this.structurePos = new BlockPos(var2x.minX() - var1.getX() + 1, var2x.minY() - var1.getY() + 1, var2x.minZ() - var1.getZ() + 1);
-               this.structureSize = new Vec3i(var3xx - 1, var4xx - 1, var5xx - 1);
+               this.structureSize = new Vec3i(var3x - 1, var4x - 1, var5x - 1);
                this.setChanged();
                BlockState var6 = this.level.getBlockState(var1);
                this.level.sendBlockUpdated(var1, var6, var6, 3);

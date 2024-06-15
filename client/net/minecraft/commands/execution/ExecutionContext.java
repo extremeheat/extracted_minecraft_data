@@ -75,7 +75,7 @@ public class ExecutionContext<T> implements AutoCloseable {
    }
 
    public void discardAtDepthOrHigher(int var1) {
-      while(!this.commandQueue.isEmpty() && this.commandQueue.peek().frame().depth() >= var1) {
+      while (!this.commandQueue.isEmpty() && this.commandQueue.peek().frame().depth() >= var1) {
          this.commandQueue.removeFirst();
       }
    }
@@ -87,7 +87,7 @@ public class ExecutionContext<T> implements AutoCloseable {
    public void runCommandQueue() {
       this.pushNewCommands();
 
-      while(true) {
+      while (true) {
          if (this.commandQuota <= 0) {
             LOGGER.info("Command execution stopped due to limit (executed {} commands)", this.commandLimit);
             break;
@@ -112,7 +112,7 @@ public class ExecutionContext<T> implements AutoCloseable {
    }
 
    private void pushNewCommands() {
-      for(int var1 = this.newTopCommands.size() - 1; var1 >= 0; --var1) {
+      for (int var1 = this.newTopCommands.size() - 1; var1 >= 0; var1--) {
          this.commandQueue.addFirst(this.newTopCommands.get(var1));
       }
 
@@ -137,7 +137,7 @@ public class ExecutionContext<T> implements AutoCloseable {
    }
 
    public void incrementCost() {
-      --this.commandQuota;
+      this.commandQuota--;
    }
 
    @Override

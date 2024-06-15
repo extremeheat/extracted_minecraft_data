@@ -2,16 +2,12 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedBlockStateProvider;
 
-public record DiskConfiguration(RuleBasedBlockStateProvider b, BlockPredicate c, IntProvider d, int e) implements FeatureConfiguration {
-   private final RuleBasedBlockStateProvider stateProvider;
-   private final BlockPredicate target;
-   private final IntProvider radius;
-   private final int halfHeight;
+public record DiskConfiguration(RuleBasedBlockStateProvider stateProvider, BlockPredicate target, IntProvider radius, int halfHeight)
+   implements FeatureConfiguration {
    public static final Codec<DiskConfiguration> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                RuleBasedBlockStateProvider.CODEC.fieldOf("state_provider").forGetter(DiskConfiguration::stateProvider),
@@ -22,11 +18,11 @@ public record DiskConfiguration(RuleBasedBlockStateProvider b, BlockPredicate c,
             .apply(var0, DiskConfiguration::new)
    );
 
-   public DiskConfiguration(RuleBasedBlockStateProvider var1, BlockPredicate var2, IntProvider var3, int var4) {
+   public DiskConfiguration(RuleBasedBlockStateProvider stateProvider, BlockPredicate target, IntProvider radius, int halfHeight) {
       super();
-      this.stateProvider = var1;
-      this.target = var2;
-      this.radius = var3;
-      this.halfHeight = var4;
+      this.stateProvider = stateProvider;
+      this.target = target;
+      this.radius = radius;
+      this.halfHeight = halfHeight;
    }
 }

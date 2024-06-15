@@ -79,7 +79,7 @@ public class DataLayer {
    private static byte packFilled(int var0) {
       byte var1 = (byte)var0;
 
-      for(int var2 = 4; var2 < 8; var2 += 4) {
+      for (byte var2 = 4; var2 < 8; var2 += 4) {
          var1 = (byte)(var1 | var0 << var2);
       }
 
@@ -105,7 +105,7 @@ public class DataLayer {
    public String toString() {
       StringBuilder var1 = new StringBuilder();
 
-      for(int var2 = 0; var2 < 4096; ++var2) {
+      for (int var2 = 0; var2 < 4096; var2++) {
          var1.append(Integer.toHexString(this.get(var2)));
          if ((var2 & 15) == 15) {
             var1.append("\n");
@@ -123,7 +123,7 @@ public class DataLayer {
    public String layerToString(int var1) {
       StringBuilder var2 = new StringBuilder();
 
-      for(int var3 = 0; var3 < 256; ++var3) {
+      for (int var3 = 0; var3 < 256; var3++) {
          var2.append(Integer.toHexString(this.get(var3)));
          if ((var3 & 15) == 15) {
             var2.append("\n");

@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
@@ -48,16 +49,16 @@ public class BeaconMenu extends AbstractContainerMenu {
       this.paymentSlot = new BeaconMenu.PaymentSlot(this.beacon, 0, 136, 110);
       this.addSlot(this.paymentSlot);
       this.addDataSlots(var3);
-      boolean var5 = true;
-      boolean var6 = true;
+      byte var5 = 36;
+      short var6 = 137;
 
-      for(int var7 = 0; var7 < 3; ++var7) {
-         for(int var8 = 0; var8 < 9; ++var8) {
+      for (int var7 = 0; var7 < 3; var7++) {
+         for (int var8 = 0; var8 < 9; var8++) {
             this.addSlot(new Slot(var2, var8 + var7 * 9 + 9, 36 + var8 * 18, 137 + var7 * 18));
          }
       }
 
-      for(int var9 = 0; var9 < 9; ++var9) {
+      for (int var9 = 0; var9 < 9; var9++) {
          this.addSlot(new Slot(var2, var9, 36 + var9 * 18, 195));
       }
    }
@@ -133,29 +134,29 @@ public class BeaconMenu extends AbstractContainerMenu {
       return this.beaconData.get(0);
    }
 
-   public static int encodeEffect(@Nullable MobEffect var0) {
-      return var0 == null ? 0 : BuiltInRegistries.MOB_EFFECT.getId(var0) + 1;
+   public static int encodeEffect(@Nullable Holder<MobEffect> var0) {
+      return var0 == null ? 0 : BuiltInRegistries.MOB_EFFECT.asHolderIdMap().getId(var0) + 1;
    }
 
    @Nullable
-   public static MobEffect decodeEffect(int var0) {
-      return var0 == 0 ? null : BuiltInRegistries.MOB_EFFECT.byId(var0 - 1);
+   public static Holder<MobEffect> decodeEffect(int var0) {
+      return var0 == 0 ? null : BuiltInRegistries.MOB_EFFECT.asHolderIdMap().byId(var0 - 1);
    }
 
    @Nullable
-   public MobEffect getPrimaryEffect() {
+   public Holder<MobEffect> getPrimaryEffect() {
       return decodeEffect(this.beaconData.get(1));
    }
 
    @Nullable
-   public MobEffect getSecondaryEffect() {
+   public Holder<MobEffect> getSecondaryEffect() {
       return decodeEffect(this.beaconData.get(2));
    }
 
-   public void updateEffects(Optional<MobEffect> var1, Optional<MobEffect> var2) {
+   public void updateEffects(Optional<Holder<MobEffect>> var1, Optional<Holder<MobEffect>> var2) {
       if (this.paymentSlot.hasItem()) {
-         this.beaconData.set(1, encodeEffect((MobEffect)var1.orElse(null)));
-         this.beaconData.set(2, encodeEffect((MobEffect)var2.orElse(null)));
+         this.beaconData.set(1, encodeEffect((Holder<MobEffect>)var1.orElse(null)));
+         this.beaconData.set(2, encodeEffect((Holder<MobEffect>)var2.orElse(null)));
          this.paymentSlot.remove(1);
          this.access.execute(Level::blockEntityChanged);
       }
@@ -166,8 +167,8 @@ public class BeaconMenu extends AbstractContainerMenu {
    }
 
    class PaymentSlot extends Slot {
-      public PaymentSlot(Container var2, int var3, int var4, int var5) {
-         super(var2, var3, var4, var5);
+      public PaymentSlot(final Container nullx, final int nullxx, final int nullxxx, final int nullxxxx) {
+         super(nullx, nullxx, nullxxx, nullxxxx);
       }
 
       @Override

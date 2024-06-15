@@ -2,13 +2,10 @@ package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -24,6 +21,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -37,12 +35,10 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -60,18 +56,15 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot.Variant>, FlyingAnimal {
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID = SynchedEntityData.defineId(Parrot.class, EntityDataSerializers.INT);
@@ -80,12 +73,9 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
          return var1 != null && Parrot.MOB_SOUND_MAP.containsKey(var1.getType());
       }
    };
-   private static final Item POISONOUS_FOOD = Items.COOKIE;
-   private static final Set<Item> TAME_FOOD = Sets.newHashSet(
-      new Item[]{Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD}
-   );
    static final Map<EntityType<?>, SoundEvent> MOB_SOUND_MAP = Util.make(Maps.newHashMap(), var0 -> {
       var0.put(EntityType.BLAZE, SoundEvents.PARROT_IMITATE_BLAZE);
+      var0.put(EntityType.BOGGED, SoundEvents.PARROT_IMITATE_BOGGED);
       var0.put(EntityType.BREEZE, SoundEvents.PARROT_IMITATE_BREEZE);
       var0.put(EntityType.CAVE_SPIDER, SoundEvents.PARROT_IMITATE_SPIDER);
       var0.put(EntityType.CREEPER, SoundEvents.PARROT_IMITATE_CREEPER);
@@ -134,22 +124,20 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    public Parrot(EntityType<? extends Parrot> var1, Level var2) {
       super(var1, var2);
       this.moveControl = new FlyingMoveControl(this, 10, false);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.COCOA, -1.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.COCOA, -1.0F);
    }
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.setVariant(Util.getRandom(Parrot.Variant.values(), var1.getRandom()));
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    @Override
@@ -186,11 +174,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.6F;
-   }
-
-   @Override
    public void aiStep() {
       if (this.jukebox == null || !this.jukebox.closerToCenterThan(this.position(), 3.46) || !this.level().getBlockState(this.jukebox).is(Blocks.JUKEBOX)) {
          this.partyParrot = false;
@@ -218,7 +201,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    private void calculateFlapping() {
       this.oFlap = this.flap;
       this.oFlapSpeed = this.flapSpeed;
-      this.flapSpeed += (float)(!this.onGround() && !this.isPassenger() ? 4 : -1) * 0.3F;
+      this.flapSpeed = this.flapSpeed + (float)(!this.onGround() && !this.isPassenger() ? 4 : -1) * 0.3F;
       this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
       if (!this.onGround() && this.flapping < 1.0F) {
          this.flapping = 1.0F;
@@ -230,7 +213,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
          this.setDeltaMovement(var1.multiply(1.0, 0.6, 1.0));
       }
 
-      this.flap += this.flapping * 2.0F;
+      this.flap = this.flap + this.flapping * 2.0F;
    }
 
    public static boolean imitateNearbyMobs(Level var0, Entity var1) {
@@ -254,11 +237,8 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (!this.isTame() && TAME_FOOD.contains(var3.getItem())) {
-         if (!var1.getAbilities().instabuild) {
-            var3.shrink(1);
-         }
-
+      if (!this.isTame() && var3.is(ItemTags.PARROT_FOOD)) {
+         var3.consume(1, var1);
          if (!this.isSilent()) {
             this.level()
                .playSound(
@@ -283,25 +263,24 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
          }
 
          return InteractionResult.sidedSuccess(this.level().isClientSide);
-      } else if (var3.is(POISONOUS_FOOD)) {
-         if (!var1.getAbilities().instabuild) {
-            var3.shrink(1);
-         }
+      } else if (!var3.is(ItemTags.PARROT_POISONOUS_FOOD)) {
+         if (!this.isFlying() && this.isTame() && this.isOwnedBy(var1)) {
+            if (!this.level().isClientSide) {
+               this.setOrderedToSit(!this.isOrderedToSit());
+            }
 
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+         } else {
+            return super.mobInteract(var1, var2);
+         }
+      } else {
+         var3.consume(1, var1);
          this.addEffect(new MobEffectInstance(MobEffects.POISON, 900));
          if (var1.isCreative() || !this.isInvulnerable()) {
             this.hurt(this.damageSources().playerAttack(var1), 3.4028235E38F);
          }
 
          return InteractionResult.sidedSuccess(this.level().isClientSide);
-      } else if (!this.isFlying() && this.isTame() && this.isOwnedBy(var1)) {
-         if (!this.level().isClientSide) {
-            this.setOrderedToSit(!this.isOrderedToSit());
-         }
-
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
-      } else {
-         return super.mobInteract(var1, var2);
       }
    }
 
@@ -427,9 +406,9 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_VARIANT_ID, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_VARIANT_ID, 0);
    }
 
    @Override
@@ -452,11 +431,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.5F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.4375F * var3, 0.0F);
    }
 
    static class ParrotWanderGoal extends WaterAvoidingRandomFlyingGoal {
@@ -485,7 +459,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
          BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
 
-         for(BlockPos var6 : BlockPos.betweenClosed(
+         for (BlockPos var6 : BlockPos.betweenClosed(
             Mth.floor(this.mob.getX() - 3.0),
             Mth.floor(this.mob.getY() - 6.0),
             Mth.floor(this.mob.getZ() - 3.0),
@@ -518,9 +492,9 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       final int id;
       private final String name;
 
-      private Variant(int var3, String var4) {
-         this.id = var3;
-         this.name = var4;
+      private Variant(final int nullxx, final String nullxxx) {
+         this.id = nullxx;
+         this.name = nullxxx;
       }
 
       public int getId() {

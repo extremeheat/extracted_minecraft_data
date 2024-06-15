@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
@@ -83,11 +82,7 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
          return false;
       } else {
          int var5 = this.getAlternateSignal(var1, var2, var3);
-         if (var4 > var5) {
-            return true;
-         } else {
-            return var4 == var5 && var3.getValue(MODE) == ComparatorMode.COMPARE;
-         }
+         return var4 > var5 ? true : var4 == var5 && var3.getValue(MODE) == ComparatorMode.COMPARE;
       }
    }
 
@@ -127,13 +122,13 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!var4.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
          var1 = var1.cycle(MODE);
-         float var7 = var1.getValue(MODE) == ComparatorMode.SUBTRACT ? 0.55F : 0.5F;
-         var2.playSound(var4, var3, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, var7);
+         float var6 = var1.getValue(MODE) == ComparatorMode.SUBTRACT ? 0.55F : 0.5F;
+         var2.playSound(var4, var3, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, var6);
          var2.setBlock(var3, var1, 2);
          this.refreshOutputState(var2, var3, var1);
          return InteractionResult.sidedSuccess(var2.isClientSide);
@@ -153,8 +148,6 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void refreshOutputState(Level var1, BlockPos var2, BlockState var3) {
       int var4 = this.calculateOutputSignal(var1, var2, var3);
       BlockEntity var5 = var1.getBlockEntity(var2);
@@ -178,12 +171,12 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       this.refreshOutputState(var2, var3, var1);
    }
 
    @Override
-   public boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
+   protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       super.triggerEvent(var1, var2, var3, var4, var5);
       BlockEntity var6 = var2.getBlockEntity(var3);
       return var6 != null && var6.triggerEvent(var4, var5);

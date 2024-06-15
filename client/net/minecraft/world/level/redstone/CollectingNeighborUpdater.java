@@ -49,7 +49,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    private void addAndRun(BlockPos var1, CollectingNeighborUpdater.NeighborUpdates var2) {
       boolean var3 = this.count > 0;
       boolean var4 = this.maxChainedNeighborUpdates >= 0 && this.count >= this.maxChainedNeighborUpdates;
-      ++this.count;
+      this.count++;
       if (!var4) {
          if (var3) {
             this.addedThisLayer.add(var2);
@@ -67,15 +67,15 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
 
    private void runUpdates() {
       try {
-         while(!this.stack.isEmpty() || !this.addedThisLayer.isEmpty()) {
-            for(int var1 = this.addedThisLayer.size() - 1; var1 >= 0; --var1) {
+         while (!this.stack.isEmpty() || !this.addedThisLayer.isEmpty()) {
+            for (int var1 = this.addedThisLayer.size() - 1; var1 >= 0; var1--) {
                this.stack.push(this.addedThisLayer.get(var1));
             }
 
             this.addedThisLayer.clear();
             CollectingNeighborUpdater.NeighborUpdates var5 = this.stack.peek();
 
-            while(this.addedThisLayer.isEmpty()) {
+            while (this.addedThisLayer.isEmpty()) {
                if (!var5.runNext(this.level)) {
                   this.stack.pop();
                   break;
@@ -89,20 +89,15 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       }
    }
 
-   static record FullNeighborUpdate(BlockState a, BlockPos b, Block c, BlockPos d, boolean e) implements CollectingNeighborUpdater.NeighborUpdates {
-      private final BlockState state;
-      private final BlockPos pos;
-      private final Block block;
-      private final BlockPos neighborPos;
-      private final boolean movedByPiston;
-
-      FullNeighborUpdate(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
+   static record FullNeighborUpdate(BlockState state, BlockPos pos, Block block, BlockPos neighborPos, boolean movedByPiston)
+      implements CollectingNeighborUpdater.NeighborUpdates {
+      FullNeighborUpdate(BlockState state, BlockPos pos, Block block, BlockPos neighborPos, boolean movedByPiston) {
          super();
-         this.state = var1;
-         this.pos = var2;
-         this.block = var3;
-         this.neighborPos = var4;
-         this.movedByPiston = var5;
+         this.state = state;
+         this.pos = pos;
+         this.block = block;
+         this.neighborPos = neighborPos;
+         this.movedByPiston = movedByPiston;
       }
 
       @Override
@@ -125,7 +120,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
          this.sourceBlock = var2;
          this.skipDirection = var3;
          if (NeighborUpdater.UPDATE_ORDER[this.idx] == var3) {
-            ++this.idx;
+            this.idx++;
          }
       }
 
@@ -135,7 +130,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
          BlockState var3 = var1.getBlockState(var2);
          NeighborUpdater.executeUpdate(var1, var3, var2, this.sourceBlock, this.sourcePos, false);
          if (this.idx < NeighborUpdater.UPDATE_ORDER.length && NeighborUpdater.UPDATE_ORDER[this.idx] == this.skipDirection) {
-            ++this.idx;
+            this.idx++;
          }
 
          return this.idx < NeighborUpdater.UPDATE_ORDER.length;
@@ -146,22 +141,16 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       boolean runNext(Level var1);
    }
 
-   static record ShapeUpdate(Direction a, BlockState b, BlockPos c, BlockPos d, int e, int f) implements CollectingNeighborUpdater.NeighborUpdates {
-      private final Direction direction;
-      private final BlockState state;
-      private final BlockPos pos;
-      private final BlockPos neighborPos;
-      private final int updateFlags;
-      private final int updateLimit;
-
-      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
+   static record ShapeUpdate(Direction direction, BlockState state, BlockPos pos, BlockPos neighborPos, int updateFlags, int updateLimit)
+      implements CollectingNeighborUpdater.NeighborUpdates {
+      ShapeUpdate(Direction direction, BlockState state, BlockPos pos, BlockPos neighborPos, int updateFlags, int updateLimit) {
          super();
-         this.direction = var1;
-         this.state = var2;
-         this.pos = var3;
-         this.neighborPos = var4;
-         this.updateFlags = var5;
-         this.updateLimit = var6;
+         this.direction = direction;
+         this.state = state;
+         this.pos = pos;
+         this.neighborPos = neighborPos;
+         this.updateFlags = updateFlags;
+         this.updateLimit = updateLimit;
       }
 
       @Override
@@ -171,16 +160,12 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       }
    }
 
-   static record SimpleNeighborUpdate(BlockPos a, Block b, BlockPos c) implements CollectingNeighborUpdater.NeighborUpdates {
-      private final BlockPos pos;
-      private final Block block;
-      private final BlockPos neighborPos;
-
-      SimpleNeighborUpdate(BlockPos var1, Block var2, BlockPos var3) {
+   static record SimpleNeighborUpdate(BlockPos pos, Block block, BlockPos neighborPos) implements CollectingNeighborUpdater.NeighborUpdates {
+      SimpleNeighborUpdate(BlockPos pos, Block block, BlockPos neighborPos) {
          super();
-         this.pos = var1;
-         this.block = var2;
-         this.neighborPos = var3;
+         this.pos = pos;
+         this.block = block;
+         this.neighborPos = neighborPos;
       }
 
       @Override

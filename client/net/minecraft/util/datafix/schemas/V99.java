@@ -6,6 +6,7 @@ import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -53,9 +54,10 @@ public class V99 extends Schema {
       var0.put("minecraft:end_gateway", "EndGateway");
       var0.put("minecraft:shield", "Banner");
    });
+   public static final Map<String, String> ITEM_TO_ENTITY = Map.of("minecraft:armor_stand", "ArmorStand", "minecraft:painting", "Painting");
    protected static final HookFunction ADD_NAMES = new HookFunction() {
       public <T> T apply(DynamicOps<T> var1, T var2) {
-         return V99.addNames(new Dynamic(var1, var2), V99.ITEM_TO_BLOCKENTITY, "ArmorStand");
+         return V99.addNames(new Dynamic(var1, var2), V99.ITEM_TO_BLOCKENTITY, V99.ITEM_TO_ENTITY);
       }
    };
 
@@ -173,18 +175,14 @@ public class V99 extends Schema {
                "Inventory",
                DSL.list(References.ITEM_STACK.in(var1)),
                "Offers",
-               DSL.optionalFields(
-                  "Recipes",
-                  DSL.list(
-                     DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1))
-                  )
-               ),
+               DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))),
                equipment(var1)
             )
       );
       var1.registerSimple(var2, "EnderCrystal");
-      var1.registerSimple(var2, "AreaEffectCloud");
+      var1.register(var2, "AreaEffectCloud", var1x -> DSL.optionalFields("Particle", References.PARTICLE.in(var1)));
       var1.registerSimple(var2, "ShulkerBullet");
+      var1.registerSimple(var2, "DragonFireball");
       registerMob(var1, var2, "Shulker");
       return var2;
    }
@@ -239,7 +237,11 @@ public class V99 extends Schema {
                )
             )
       );
-      var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.taggedChoiceLazy("id", DSL.string(), var3));
+      var1.registerType(
+         true,
+         References.BLOCK_ENTITY,
+         () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", DSL.string(), var3))
+      );
       var1.registerType(true, References.ENTITY_TREE, () -> DSL.optionalFields("Riding", References.ENTITY_TREE.in(var1), References.ENTITY.in(var1)));
       var1.registerType(false, References.ENTITY_NAME, () -> DSL.constType(NamespacedSchema.namespacedString()));
       var1.registerType(true, References.ENTITY, () -> DSL.taggedChoiceLazy("id", DSL.string(), var2));
@@ -252,16 +254,14 @@ public class V99 extends Schema {
                   DSL.or(DSL.constType(DSL.intType()), References.ITEM_NAME.in(var1)),
                   "tag",
                   DSL.optionalFields(
-                     "EntityTag",
-                     References.ENTITY_TREE.in(var1),
-                     "BlockEntityTag",
-                     References.BLOCK_ENTITY.in(var1),
-                     "CanDestroy",
-                     DSL.list(References.BLOCK_NAME.in(var1)),
-                     "CanPlaceOn",
-                     DSL.list(References.BLOCK_NAME.in(var1)),
-                     "Items",
-                     DSL.list(References.ITEM_STACK.in(var1))
+                     new Pair[]{
+                        Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
+                        Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
+                        Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
+                        Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
+                        Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
+                        Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
+                     }
                   )
                ),
                ADD_NAMES,
@@ -297,24 +297,32 @@ public class V99 extends Schema {
       var1.registerType(false, References.POI_CHUNK, DSL::remainder);
       var1.registerType(false, References.WORLD_GEN_SETTINGS, DSL::remainder);
       var1.registerType(false, References.ENTITY_CHUNK, () -> DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1))));
+      var1.registerType(true, References.DATA_COMPONENTS, DSL::remainder);
+      var1.registerType(
+         true,
+         References.VILLAGER_TRADE,
+         () -> DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1))
+      );
+      var1.registerType(true, References.PARTICLE, () -> DSL.constType(DSL.string()));
    }
 
-   protected static <T> T addNames(Dynamic<T> var0, Map<String, String> var1, String var2) {
+   protected static <T> T addNames(Dynamic<T> var0, Map<String, String> var1, Map<String, String> var2) {
       return (T)var0.update("tag", var3 -> var3.update("BlockEntityTag", var2xx -> {
-            String var3xx = var0.get("id").asString().result().map(NamespacedSchema::ensureNamespaced).orElse("minecraft:air");
-            if (!"minecraft:air".equals(var3xx)) {
-               String var4 = (String)var1.get(var3xx);
+            String var3x = var0.get("id").asString().result().map(NamespacedSchema::ensureNamespaced).orElse("minecraft:air");
+            if (!"minecraft:air".equals(var3x)) {
+               String var4 = (String)var1.get(var3x);
                if (var4 != null) {
                   return var2xx.set("id", var0.createString(var4));
                }
 
-               LOGGER.warn("Unable to resolve BlockEntity for ItemStack: {}", var3xx);
+               LOGGER.warn("Unable to resolve BlockEntity for ItemStack: {}", var3x);
             }
 
             return var2xx;
          }).update("EntityTag", var2xx -> {
-            String var3xx = var0.get("id").asString("");
-            return "minecraft:armor_stand".equals(NamespacedSchema.ensureNamespaced(var3xx)) ? var2xx.set("id", var0.createString(var2)) : var2xx;
+            String var3x = NamespacedSchema.ensureNamespaced(var0.get("id").asString(""));
+            String var4 = (String)var2.get(var3x);
+            return var4 != null ? var2xx.set("id", var0.createString(var4)) : var2xx;
          })).getValue();
    }
 }

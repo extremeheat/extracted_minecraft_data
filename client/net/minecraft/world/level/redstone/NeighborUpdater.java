@@ -23,7 +23,7 @@ public interface NeighborUpdater {
    void neighborChanged(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5);
 
    default void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3) {
-      for(Direction var7 : UPDATE_ORDER) {
+      for (Direction var7 : UPDATE_ORDER) {
          if (var7 != var3) {
             this.neighborChanged(var1.relative(var7), var2, var1);
          }
@@ -38,7 +38,7 @@ public interface NeighborUpdater {
 
    static void executeUpdate(Level var0, BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
       try {
-         var1.neighborChanged(var0, var2, var3, var4, var5);
+         var1.handleNeighborChanged(var0, var2, var3, var4, var5);
       } catch (Throwable var9) {
          CrashReport var7 = CrashReport.forThrowable(var9, "Exception while updating neighbours");
          CrashReportCategory var8 = var7.addCategory("Block being updated");
@@ -49,7 +49,7 @@ public interface NeighborUpdater {
                   return String.format(
                      Locale.ROOT, "ID #%s (%s // %s)", BuiltInRegistries.BLOCK.getKey(var3), var3.getDescriptionId(), var3.getClass().getCanonicalName()
                   );
-               } catch (Throwable var2xx) {
+               } catch (Throwable var2x) {
                   return "ID #" + BuiltInRegistries.BLOCK.getKey(var3);
                }
             }

@@ -37,19 +37,17 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
    protected LightEngine(LightChunkGetter var1, S var2) {
       super();
       this.chunkSource = var1;
-      this.storage = var2;
+      this.storage = (S)var2;
       this.clearChunkCache();
    }
 
    public static boolean hasDifferentLightProperties(BlockGetter var0, BlockPos var1, BlockState var2, BlockState var3) {
-      if (var3 == var2) {
-         return false;
-      } else {
-         return var3.getLightBlock(var0, var1) != var2.getLightBlock(var0, var1)
+      return var3 == var2
+         ? false
+         : var3.getLightBlock(var0, var1) != var2.getLightBlock(var0, var1)
             || var3.getLightEmission() != var2.getLightEmission()
             || var3.useShapeForLightOcclusion()
             || var2.useShapeForLightOcclusion();
-      }
    }
 
    public static int getLightBlockInto(BlockGetter var0, BlockState var1, BlockPos var2, BlockState var3, BlockPos var4, Direction var5, int var6) {
@@ -97,7 +95,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
    protected LightChunk getChunk(int var1, int var2) {
       long var3 = ChunkPos.asLong(var1, var2);
 
-      for(int var5 = 0; var5 < 2; ++var5) {
+      for (int var5 = 0; var5 < 2; var5++) {
          if (var3 == this.lastChunkPos[var5]) {
             return this.lastChunk[var5];
          }
@@ -105,7 +103,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
 
       LightChunk var7 = this.chunkSource.getChunkForLighting(var1, var2);
 
-      for(int var6 = 1; var6 > 0; --var6) {
+      for (int var6 = 1; var6 > 0; var6--) {
          this.lastChunkPos[var6] = this.lastChunkPos[var6 - 1];
          this.lastChunk[var6] = this.lastChunk[var6 - 1];
       }
@@ -147,7 +145,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
    public int runLightUpdates() {
       LongIterator var1 = this.blockNodesToCheck.iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          this.checkNode(var1.nextLong());
       }
 
@@ -164,7 +162,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
 
    private int propagateIncreases() {
       int var1;
-      for(var1 = 0; !this.increaseQueue.isEmpty(); ++var1) {
+      for (var1 = 0; !this.increaseQueue.isEmpty(); var1++) {
          long var2 = this.increaseQueue.dequeueLong();
          long var4 = this.increaseQueue.dequeueLong();
          int var6 = this.storage.getStoredLevel(var2);
@@ -184,7 +182,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
 
    private int propagateDecreases() {
       int var1;
-      for(var1 = 0; !this.decreaseQueue.isEmpty(); ++var1) {
+      for (var1 = 0; !this.decreaseQueue.isEmpty(); var1++) {
          long var2 = this.decreaseQueue.dequeueLong();
          long var4 = this.decreaseQueue.dequeueLong();
          this.propagateDecrease(var2, var4);

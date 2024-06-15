@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -10,12 +9,10 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -25,12 +22,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 
 public class WitherSkeleton extends AbstractSkeleton {
    public WitherSkeleton(EntityType<? extends WitherSkeleton> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.LAVA, 8.0F);
+      this.setPathfindingMalus(PathType.LAVA, 8.0F);
    }
 
    @Override
@@ -59,13 +56,10 @@ public class WitherSkeleton extends AbstractSkeleton {
       return SoundEvents.WITHER_SKELETON_STEP;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var1.getEntity();
-      if (var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
+      if (var1.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          var5.increaseDroppedSkulls();
          this.spawnAtLocation(Items.WITHER_SKELETON_SKULL);
       }
@@ -82,23 +76,11 @@ public class WitherSkeleton extends AbstractSkeleton {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      SpawnGroupData var6 = super.finalizeSpawn(var1, var2, var3, var4, var5);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
       this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4.0);
       this.reassessWeaponGoal();
-      return var6;
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 2.1F;
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return -0.875F;
+      return var5;
    }
 
    @Override
@@ -117,12 +99,12 @@ public class WitherSkeleton extends AbstractSkeleton {
    @Override
    protected AbstractArrow getArrow(ItemStack var1, float var2) {
       AbstractArrow var3 = super.getArrow(var1, var2);
-      var3.setSecondsOnFire(100);
+      var3.igniteForSeconds(100);
       return var3;
    }
 
    @Override
    public boolean canBeAffected(MobEffectInstance var1) {
-      return var1.getEffect() == MobEffects.WITHER ? false : super.canBeAffected(var1);
+      return var1.is(MobEffects.WITHER) ? false : super.canBeAffected(var1);
    }
 }

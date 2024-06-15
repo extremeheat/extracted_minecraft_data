@@ -12,7 +12,7 @@ public class SuspendedParticle extends TextureSheetParticle {
       super(var1, var3, var5 - 0.125, var7);
       this.setSize(0.01F, 0.01F);
       this.pickSprite(var2);
-      this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
+      this.quadSize = this.quadSize * (this.random.nextFloat() * 0.6F + 0.2F);
       this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
       this.hasPhysics = false;
       this.friction = 1.0F;
@@ -23,7 +23,7 @@ public class SuspendedParticle extends TextureSheetParticle {
       super(var1, var3, var5 - 0.125, var7, var9, var11, var13);
       this.setSize(0.01F, 0.01F);
       this.pickSprite(var2);
-      this.quadSize *= this.random.nextFloat() * 0.6F + 0.6F;
+      this.quadSize = this.quadSize * (this.random.nextFloat() * 0.6F + 0.6F);
       this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
       this.hasPhysics = false;
       this.friction = 1.0F;

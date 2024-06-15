@@ -43,13 +43,13 @@ public class WorkAtComposter extends WorkAtPoi {
       }
 
       int var6 = 20;
-      boolean var7 = true;
+      byte var7 = 10;
       int[] var8 = new int[COMPOSTABLE_ITEMS.size()];
       SimpleContainer var9 = var2.getInventory();
       int var10 = var9.getContainerSize();
       BlockState var11 = var4;
 
-      for(int var12 = var10 - 1; var12 >= 0 && var6 > 0; --var12) {
+      for (int var12 = var10 - 1; var12 >= 0 && var6 > 0; var12--) {
          ItemStack var13 = var9.getItem(var12);
          int var14 = COMPOSTABLE_ITEMS.indexOf(var13.getItem());
          if (var14 != -1) {
@@ -60,7 +60,7 @@ public class WorkAtComposter extends WorkAtPoi {
             if (var17 > 0) {
                var6 -= var17;
 
-               for(int var18 = 0; var18 < var17; ++var18) {
+               for (int var18 = 0; var18 < var17; var18++) {
                   var11 = ComposterBlock.insertItem(var2, var11, var1, var13, var5);
                   if (var11.getValue(ComposterBlock.LEVEL) == 7) {
                      this.spawnComposterFillEffects(var1, var4, var5, var11);
@@ -82,8 +82,8 @@ public class WorkAtComposter extends WorkAtPoi {
       SimpleContainer var2 = var1.getInventory();
       if (var2.countItem(Items.BREAD) <= 36) {
          int var3 = var2.countItem(Items.WHEAT);
-         boolean var4 = true;
-         boolean var5 = true;
+         byte var4 = 3;
+         byte var5 = 3;
          int var6 = Math.min(3, var3 / 3);
          if (var6 != 0) {
             int var7 = var6 * 3;

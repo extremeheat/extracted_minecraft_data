@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -16,36 +15,40 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 
-public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Optional<ServerStatus.Version> d, Optional<ServerStatus.Favicon> e, boolean f) {
-   private final Component description;
-   private final Optional<ServerStatus.Players> players;
-   private final Optional<ServerStatus.Version> version;
-   private final Optional<ServerStatus.Favicon> favicon;
-   private final boolean enforcesSecureChat;
+public record ServerStatus(
+   Component description,
+   Optional<ServerStatus.Players> players,
+   Optional<ServerStatus.Version> version,
+   Optional<ServerStatus.Favicon> favicon,
+   boolean enforcesSecureChat
+) {
    public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ComponentSerialization.CODEC.optionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
-               ServerStatus.Players.CODEC.optionalFieldOf("players").forGetter(ServerStatus::players),
-               ServerStatus.Version.CODEC.optionalFieldOf("version").forGetter(ServerStatus::version),
-               ServerStatus.Favicon.CODEC.optionalFieldOf("favicon").forGetter(ServerStatus::favicon),
-               Codec.BOOL.optionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)
+               ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
+               ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players),
+               ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version),
+               ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon),
+               Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)
             )
             .apply(var0, ServerStatus::new)
    );
 
    public ServerStatus(
-      Component var1, Optional<ServerStatus.Players> var2, Optional<ServerStatus.Version> var3, Optional<ServerStatus.Favicon> var4, boolean var5
+      Component description,
+      Optional<ServerStatus.Players> players,
+      Optional<ServerStatus.Version> version,
+      Optional<ServerStatus.Favicon> favicon,
+      boolean enforcesSecureChat
    ) {
       super();
-      this.description = var1;
-      this.players = var2;
-      this.version = var3;
-      this.favicon = var4;
-      this.enforcesSecureChat = var5;
+      this.description = description;
+      this.players = players;
+      this.version = version;
+      this.favicon = favicon;
+      this.enforcesSecureChat = enforcesSecureChat;
    }
 
-   public static record Favicon(byte[] b) {
-      private final byte[] iconBytes;
+   public static record Favicon(byte[] iconBytes) {
       private static final String PREFIX = "data:image/png;base64,";
       public static final Codec<ServerStatus.Favicon> CODEC = Codec.STRING.comapFlatMap(var0 -> {
          if (!var0.startsWith("data:image/png;base64,")) {
@@ -61,16 +64,13 @@ public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Option
          }
       }, var0 -> "data:image/png;base64," + new String(Base64.getEncoder().encode(var0.iconBytes), StandardCharsets.UTF_8));
 
-      public Favicon(byte[] var1) {
+      public Favicon(byte[] iconBytes) {
          super();
-         this.iconBytes = var1;
+         this.iconBytes = iconBytes;
       }
    }
 
-   public static record Players(int b, int c, List<GameProfile> d) {
-      private final int max;
-      private final int online;
-      private final List<GameProfile> sample;
+   public static record Players(int max, int online, List<GameProfile> sample) {
       private static final Codec<GameProfile> PROFILE_CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(GameProfile::getId), Codec.STRING.fieldOf("name").forGetter(GameProfile::getName))
                .apply(var0, GameProfile::new)
@@ -79,22 +79,20 @@ public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Option
          var0 -> var0.group(
                   Codec.INT.fieldOf("max").forGetter(ServerStatus.Players::max),
                   Codec.INT.fieldOf("online").forGetter(ServerStatus.Players::online),
-                  PROFILE_CODEC.listOf().optionalFieldOf("sample", List.of()).forGetter(ServerStatus.Players::sample)
+                  PROFILE_CODEC.listOf().lenientOptionalFieldOf("sample", List.of()).forGetter(ServerStatus.Players::sample)
                )
                .apply(var0, ServerStatus.Players::new)
       );
 
-      public Players(int var1, int var2, List<GameProfile> var3) {
+      public Players(int max, int online, List<GameProfile> sample) {
          super();
-         this.max = var1;
-         this.online = var2;
-         this.sample = var3;
+         this.max = max;
+         this.online = online;
+         this.sample = sample;
       }
    }
 
-   public static record Version(String b, int c) {
-      private final String name;
-      private final int protocol;
+   public static record Version(String name, int protocol) {
       public static final Codec<ServerStatus.Version> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Codec.STRING.fieldOf("name").forGetter(ServerStatus.Version::name), Codec.INT.fieldOf("protocol").forGetter(ServerStatus.Version::protocol)
@@ -102,10 +100,10 @@ public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Option
                .apply(var0, ServerStatus.Version::new)
       );
 
-      public Version(String var1, int var2) {
+      public Version(String name, int protocol) {
          super();
-         this.name = var1;
-         this.protocol = var2;
+         this.name = name;
+         this.protocol = protocol;
       }
 
       public static ServerStatus.Version current() {

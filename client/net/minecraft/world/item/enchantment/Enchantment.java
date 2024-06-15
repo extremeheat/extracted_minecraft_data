@@ -3,6 +3,7 @@ package net.minecraft.world.item.enchantment;
 import com.google.common.collect.Maps;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -11,37 +12,64 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
+import net.minecraft.world.flag.FeatureElement;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-public abstract class Enchantment {
-   private final EquipmentSlot[] slots;
-   private final Enchantment.Rarity rarity;
-   public final EnchantmentCategory category;
+public class Enchantment implements FeatureElement {
+   private final Enchantment.EnchantmentDefinition definition;
    @Nullable
    protected String descriptionId;
    private final Holder.Reference<Enchantment> builtInRegistryHolder = BuiltInRegistries.ENCHANTMENT.createIntrusiveHolder(this);
+
+   public static Enchantment.Cost constantCost(int var0) {
+      return new Enchantment.Cost(var0, 0);
+   }
+
+   public static Enchantment.Cost dynamicCost(int var0, int var1) {
+      return new Enchantment.Cost(var0, var1);
+   }
+
+   public static Enchantment.EnchantmentDefinition definition(
+      TagKey<Item> var0, TagKey<Item> var1, int var2, int var3, Enchantment.Cost var4, Enchantment.Cost var5, int var6, EquipmentSlot... var7
+   ) {
+      return new Enchantment.EnchantmentDefinition(var0, Optional.of(var1), var2, var3, var4, var5, var6, FeatureFlags.DEFAULT_FLAGS, var7);
+   }
+
+   public static Enchantment.EnchantmentDefinition definition(
+      TagKey<Item> var0, int var1, int var2, Enchantment.Cost var3, Enchantment.Cost var4, int var5, EquipmentSlot... var6
+   ) {
+      return new Enchantment.EnchantmentDefinition(var0, Optional.empty(), var1, var2, var3, var4, var5, FeatureFlags.DEFAULT_FLAGS, var6);
+   }
+
+   public static Enchantment.EnchantmentDefinition definition(
+      TagKey<Item> var0, int var1, int var2, Enchantment.Cost var3, Enchantment.Cost var4, int var5, FeatureFlagSet var6, EquipmentSlot... var7
+   ) {
+      return new Enchantment.EnchantmentDefinition(var0, Optional.empty(), var1, var2, var3, var4, var5, var6, var7);
+   }
 
    @Nullable
    public static Enchantment byId(int var0) {
       return BuiltInRegistries.ENCHANTMENT.byId(var0);
    }
 
-   protected Enchantment(Enchantment.Rarity var1, EnchantmentCategory var2, EquipmentSlot[] var3) {
+   public Enchantment(Enchantment.EnchantmentDefinition var1) {
       super();
-      this.rarity = var1;
-      this.category = var2;
-      this.slots = var3;
+      this.definition = var1;
    }
 
    public Map<EquipmentSlot, ItemStack> getSlotItems(LivingEntity var1) {
       EnumMap var2 = Maps.newEnumMap(EquipmentSlot.class);
 
-      for(EquipmentSlot var6 : this.slots) {
+      for (EquipmentSlot var6 : this.definition.slots()) {
          ItemStack var7 = var1.getItemBySlot(var6);
          if (!var7.isEmpty()) {
             var2.put(var6, var7);
@@ -51,31 +79,43 @@ public abstract class Enchantment {
       return var2;
    }
 
-   public Enchantment.Rarity getRarity() {
-      return this.rarity;
+   public final TagKey<Item> getSupportedItems() {
+      return this.definition.supportedItems();
    }
 
-   public int getMinLevel() {
+   public final boolean isPrimaryItem(ItemStack var1) {
+      return this.definition.primaryItems.isEmpty() || var1.is(this.definition.primaryItems.get());
+   }
+
+   public final int getWeight() {
+      return this.definition.weight();
+   }
+
+   public final int getAnvilCost() {
+      return this.definition.anvilCost();
+   }
+
+   public final int getMinLevel() {
       return 1;
    }
 
-   public int getMaxLevel() {
-      return 1;
+   public final int getMaxLevel() {
+      return this.definition.maxLevel();
    }
 
-   public int getMinCost(int var1) {
-      return 1 + var1 * 10;
+   public final int getMinCost(int var1) {
+      return this.definition.minCost().calculate(var1);
    }
 
-   public int getMaxCost(int var1) {
-      return this.getMinCost(var1) + 5;
+   public final int getMaxCost(int var1) {
+      return this.definition.maxCost().calculate(var1);
    }
 
    public int getDamageProtection(int var1, DamageSource var2) {
       return 0;
    }
 
-   public float getDamageBonus(int var1, MobType var2) {
+   public float getDamageBonus(int var1, @Nullable EntityType<?> var2) {
       return 0.0F;
    }
 
@@ -115,13 +155,16 @@ public abstract class Enchantment {
    }
 
    public boolean canEnchant(ItemStack var1) {
-      return this.category.canEnchant(var1.getItem());
+      return var1.getItem().builtInRegistryHolder().is(this.definition.supportedItems());
    }
 
    public void doPostAttack(LivingEntity var1, Entity var2, int var3) {
    }
 
    public void doPostHurt(LivingEntity var1, Entity var2, int var3) {
+   }
+
+   public void doPostItemStackHurt(LivingEntity var1, Entity var2, int var3) {
    }
 
    public boolean isTreasureOnly() {
@@ -145,20 +188,56 @@ public abstract class Enchantment {
       return this.builtInRegistryHolder;
    }
 
-   public static enum Rarity {
-      COMMON(10),
-      UNCOMMON(5),
-      RARE(2),
-      VERY_RARE(1);
+   @Override
+   public FeatureFlagSet requiredFeatures() {
+      return this.definition.requiredFeatures();
+   }
 
-      private final int weight;
-
-      private Rarity(int var3) {
-         this.weight = var3;
+   public static record Cost(int base, int perLevel) {
+      public Cost(int base, int perLevel) {
+         super();
+         this.base = base;
+         this.perLevel = perLevel;
       }
 
-      public int getWeight() {
-         return this.weight;
+      public int calculate(int var1) {
+         return this.base + this.perLevel * (var1 - 1);
+      }
+   }
+
+   public static record EnchantmentDefinition(
+      TagKey<Item> supportedItems,
+      Optional<TagKey<Item>> primaryItems,
+      int weight,
+      int maxLevel,
+      Enchantment.Cost minCost,
+      Enchantment.Cost maxCost,
+      int anvilCost,
+      FeatureFlagSet requiredFeatures,
+      EquipmentSlot[] slots
+   ) {
+
+      public EnchantmentDefinition(
+         TagKey<Item> supportedItems,
+         Optional<TagKey<Item>> primaryItems,
+         int weight,
+         int maxLevel,
+         Enchantment.Cost minCost,
+         Enchantment.Cost maxCost,
+         int anvilCost,
+         FeatureFlagSet requiredFeatures,
+         EquipmentSlot[] slots
+      ) {
+         super();
+         this.supportedItems = supportedItems;
+         this.primaryItems = primaryItems;
+         this.weight = weight;
+         this.maxLevel = maxLevel;
+         this.minCost = minCost;
+         this.maxCost = maxCost;
+         this.anvilCost = anvilCost;
+         this.requiredFeatures = requiredFeatures;
+         this.slots = slots;
       }
    }
 }

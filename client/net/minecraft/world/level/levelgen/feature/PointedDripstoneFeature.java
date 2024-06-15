@@ -49,7 +49,7 @@ public class PointedDripstoneFeature extends Feature<PointedDripstoneConfigurati
    private static void createPatchOfDripstoneBlocks(LevelAccessor var0, RandomSource var1, BlockPos var2, PointedDripstoneConfiguration var3) {
       DripstoneUtils.placeDripstoneBlockIfPossible(var0, var2);
 
-      for(Direction var5 : Direction.Plane.HORIZONTAL) {
+      for (Direction var5 : Direction.Plane.HORIZONTAL) {
          if (!(var1.nextFloat() > var3.chanceOfDirectionalSpread)) {
             BlockPos var6 = var2.relative(var5);
             DripstoneUtils.placeDripstoneBlockIfPossible(var0, var6);

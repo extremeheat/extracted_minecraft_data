@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -41,7 +41,7 @@ public class TntBlock extends Block {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock())) {
          if (var2.hasNeighborSignal(var3)) {
             explode(var2, var3);
@@ -51,7 +51,7 @@ public class TntBlock extends Block {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var2.hasNeighborSignal(var3)) {
          explode(var2, var3);
          var2.removeBlock(var3, false);
@@ -91,29 +91,28 @@ public class TntBlock extends Block {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      ItemStack var7 = var4.getItemInHand(var5);
-      if (!var7.is(Items.FLINT_AND_STEEL) && !var7.is(Items.FIRE_CHARGE)) {
-         return super.use(var1, var2, var3, var4, var5, var6);
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      if (!var1.is(Items.FLINT_AND_STEEL) && !var1.is(Items.FIRE_CHARGE)) {
+         return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       } else {
-         explode(var2, var3, var4);
-         var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
-         Item var8 = var7.getItem();
-         if (!var4.isCreative()) {
-            if (var7.is(Items.FLINT_AND_STEEL)) {
-               var7.hurtAndBreak(1, var4, var1x -> var1x.broadcastBreakEvent(var5));
+         explode(var3, var4, var5);
+         var3.setBlock(var4, Blocks.AIR.defaultBlockState(), 11);
+         Item var8 = var1.getItem();
+         if (!var5.isCreative()) {
+            if (var1.is(Items.FLINT_AND_STEEL)) {
+               var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var6));
             } else {
-               var7.shrink(1);
+               var1.shrink(1);
             }
          }
 
-         var4.awardStat(Stats.ITEM_USED.get(var8));
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         var5.awardStat(Stats.ITEM_USED.get(var8));
+         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
       }
    }
 
    @Override
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       if (!var1.isClientSide) {
          BlockPos var5 = var3.getBlockPos();
          Entity var6 = var4.getOwner();

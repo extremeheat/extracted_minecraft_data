@@ -2,7 +2,6 @@ package net.minecraft.world.level.biome;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
@@ -243,8 +242,8 @@ public class BiomeSpecialEffects {
 
       public abstract int modifyColor(double var1, double var3, int var5);
 
-      GrassColorModifier(String var3) {
-         this.name = var3;
+      GrassColorModifier(final String nullxx) {
+         this.name = nullxx;
       }
 
       public String getName() {

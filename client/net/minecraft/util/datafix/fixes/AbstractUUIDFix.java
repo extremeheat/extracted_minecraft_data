@@ -56,7 +56,7 @@ public abstract class AbstractUUIDFix extends DataFix {
    }
 
    protected static Optional<Dynamic<?>> createUUIDFromML(Dynamic<?> var0) {
-      return createUUIDFromLongs(var0, "M", "L");
+      return createUUIDFromLongs((Dynamic<?>)var0, "M", "L");
    }
 
    protected static Optional<Dynamic<?>> createUUIDFromLongs(Dynamic<?> var0, String var1, String var2) {

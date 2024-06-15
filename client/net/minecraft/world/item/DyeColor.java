@@ -1,10 +1,13 @@
 package net.minecraft.world.item;
 
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.material.MapColor;
@@ -30,9 +33,10 @@ public enum DyeColor implements StringRepresentable {
 
    private static final IntFunction<DyeColor> BY_ID = ByIdMap.continuous(DyeColor::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap(
-      Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.fireworkColor, var0 -> var0))
+      Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.fireworkColor, var0 -> (DyeColor)var0))
    );
    public static final StringRepresentable.EnumCodec<DyeColor> CODEC = StringRepresentable.fromEnum(DyeColor::values);
+   public static final StreamCodec<ByteBuf, DyeColor> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, DyeColor::getId);
    private final int id;
    private final String name;
    private final MapColor mapColor;
@@ -40,16 +44,16 @@ public enum DyeColor implements StringRepresentable {
    private final int fireworkColor;
    private final int textColor;
 
-   private DyeColor(int var3, String var4, int var5, MapColor var6, int var7, int var8) {
-      this.id = var3;
-      this.name = var4;
-      this.mapColor = var6;
-      this.textColor = var8;
-      int var9 = (var5 & 0xFF0000) >> 16;
-      int var10 = (var5 & 0xFF00) >> 8;
-      int var11 = (var5 & 0xFF) >> 0;
+   private DyeColor(final int nullxx, final String nullxxx, final int nullxxxx, final MapColor nullxxxxx, final int nullxxxxxx, final int nullxxxxxxx) {
+      this.id = nullxx;
+      this.name = nullxxx;
+      this.mapColor = nullxxxxx;
+      this.textColor = nullxxxxxxx;
+      int var9 = (nullxxxx & 0xFF0000) >> 16;
+      int var10 = (nullxxxx & 0xFF00) >> 8;
+      int var11 = (nullxxxx & 0xFF) >> 0;
       this.textureDiffuseColors = new float[]{(float)var9 / 255.0F, (float)var10 / 255.0F, (float)var11 / 255.0F};
-      this.fireworkColor = var7;
+      this.fireworkColor = nullxxxxxx;
    }
 
    public int getId() {

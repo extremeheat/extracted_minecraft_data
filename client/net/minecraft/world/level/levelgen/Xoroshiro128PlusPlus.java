@@ -8,9 +8,7 @@ public class Xoroshiro128PlusPlus {
    private long seedLo;
    private long seedHi;
    public static final Codec<Xoroshiro128PlusPlus> CODEC = Codec.LONG_STREAM
-      .comapFlatMap(
-         var0 -> Util.fixedSize(var0, 2).map(var0x -> new Xoroshiro128PlusPlus(var0x[0], var0x[1])), var0 -> LongStream.of(var0.seedLo, var0.seedHi)
-      );
+      .comapFlatMap(var0 -> Util.fixedSize(var0, 2).map(var0x -> new Xoroshiro128PlusPlus(var0x[0], var0x[1])), var0 -> LongStream.of(var0.seedLo, var0.seedHi));
 
    public Xoroshiro128PlusPlus(RandomSupport.Seed128bit var1) {
       this(var1.seedLo(), var1.seedHi());

@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
@@ -37,7 +36,7 @@ import net.minecraft.util.Mth;
 public class ChatSelectionScreen extends Screen {
    static final ResourceLocation CHECKMARK_SPRITE = new ResourceLocation("icon/checkmark");
    private static final Component TITLE = Component.translatable("gui.chatSelection.title");
-   private static final Component CONTEXT_INFO = Component.translatable("gui.chatSelection.context").withStyle(ChatFormatting.GRAY);
+   private static final Component CONTEXT_INFO = Component.translatable("gui.chatSelection.context");
    @Nullable
    private final Screen lastScreen;
    private final ReportingContext reportingContext;
@@ -96,18 +95,13 @@ public class ChatSelectionScreen extends Screen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 16, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 10, 16777215);
       AbuseReportLimits var5 = this.reportingContext.sender().reportLimits();
       int var6 = this.report.reportedMessages().size();
       int var7 = var5.maxReportedMessageCount();
       MutableComponent var8 = Component.translatable("gui.chatSelection.selected", var6, var7);
-      var1.drawCenteredString(this.font, var8, this.width / 2, 16 + 9 * 3 / 2, 10526880);
+      var1.drawCenteredString(this.font, var8, this.width / 2, 16 + 9 * 3 / 2, -1);
       this.contextInfoLabel.renderCentered(var1, this.width / 2, this.chatSelectionList.getFooterTop());
-   }
-
-   @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(var1);
    }
 
    @Override
@@ -124,8 +118,8 @@ public class ChatSelectionScreen extends Screen {
       @Nullable
       private ChatSelectionScreen.ChatSelectionList.Heading previousHeading;
 
-      public ChatSelectionList(Minecraft var2, int var3) {
-         super(var2, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - var3 - 80, 40, 16);
+      public ChatSelectionList(final Minecraft nullx, final int nullxx) {
+         super(nullx, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - nullxx - 80, 40, 16);
       }
 
       @Override
@@ -168,11 +162,6 @@ public class ChatSelectionScreen extends Screen {
          this.addEntryToTop(new ChatSelectionScreen.ChatSelectionList.DividerEntry(var1));
          this.addEntryToTop(new ChatSelectionScreen.ChatSelectionList.PaddingEntry());
          this.previousHeading = null;
-      }
-
-      @Override
-      protected int getScrollbarPosition() {
-         return (this.width + this.getRowWidth()) / 2;
       }
 
       @Override
@@ -234,9 +223,9 @@ public class ChatSelectionScreen extends Screen {
          private static final int COLOR = -6250336;
          private final Component text;
 
-         public DividerEntry(Component var2) {
+         public DividerEntry(final Component nullx) {
             super();
-            this.text = var2;
+            this.text = nullx;
          }
 
          @Override
@@ -278,14 +267,11 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
-      static record Heading(UUID a, ChatSelectionScreen.ChatSelectionList.Entry b) {
-         private final UUID sender;
-         private final ChatSelectionScreen.ChatSelectionList.Entry entry;
-
-         Heading(UUID var1, ChatSelectionScreen.ChatSelectionList.Entry var2) {
+      static record Heading(UUID sender, ChatSelectionScreen.ChatSelectionList.Entry entry) {
+         Heading(UUID sender, ChatSelectionScreen.ChatSelectionList.Entry entry) {
             super();
-            this.sender = var1;
-            this.entry = var2;
+            this.sender = sender;
+            this.entry = entry;
          }
 
          public boolean canCombine(ChatSelectionScreen.ChatSelectionList.Heading var1) {
@@ -310,26 +296,33 @@ public class ChatSelectionScreen extends Screen {
          private final boolean canReport;
          private final boolean playerMessage;
 
-         public MessageEntry(int var2, Component var3, Component var4, @Nullable GuiMessageTag var5, boolean var6, boolean var7) {
+         public MessageEntry(
+            final int nullx,
+            final Component nullxx,
+            final Component nullxxx,
+            @Nullable final GuiMessageTag nullxxxx,
+            final boolean nullxxxxx,
+            final boolean nullxxxxxx
+         ) {
             super();
-            this.chatId = var2;
-            this.tagIcon = Optionull.map(var5, GuiMessageTag::icon);
-            this.tagHoverText = var5 != null && var5.text() != null
-               ? ChatSelectionScreen.this.font.split(var5.text(), ChatSelectionList.this.getRowWidth())
+            this.chatId = nullx;
+            this.tagIcon = Optionull.map(nullxxxx, GuiMessageTag::icon);
+            this.tagHoverText = nullxxxx != null && nullxxxx.text() != null
+               ? ChatSelectionScreen.this.font.split(nullxxxx.text(), ChatSelectionList.this.getRowWidth())
                : null;
-            this.canReport = var6;
-            this.playerMessage = var7;
+            this.canReport = nullxxxxx;
+            this.playerMessage = nullxxxxxx;
             FormattedText var8 = ChatSelectionScreen.this.font
-               .substrByWidth(var3, this.getMaximumTextWidth() - ChatSelectionScreen.this.font.width(CommonComponents.ELLIPSIS));
-            if (var3 != var8) {
+               .substrByWidth(nullxx, this.getMaximumTextWidth() - ChatSelectionScreen.this.font.width(CommonComponents.ELLIPSIS));
+            if (nullxx != var8) {
                this.text = FormattedText.composite(var8, CommonComponents.ELLIPSIS);
-               this.hoverText = ChatSelectionScreen.this.font.split(var3, ChatSelectionList.this.getRowWidth());
+               this.hoverText = ChatSelectionScreen.this.font.split(nullxx, ChatSelectionList.this.getRowWidth());
             } else {
-               this.text = var3;
+               this.text = nullxx;
                this.hoverText = null;
             }
 
-            this.narration = var4;
+            this.narration = nullxxx;
          }
 
          @Override
@@ -419,24 +412,25 @@ public class ChatSelectionScreen extends Screen {
 
       public class MessageHeadingEntry extends ChatSelectionScreen.ChatSelectionList.Entry {
          private static final int FACE_SIZE = 12;
+         private static final int PADDING = 4;
          private final Component heading;
          private final Supplier<PlayerSkin> skin;
          private final boolean canReport;
 
-         public MessageHeadingEntry(GameProfile var2, Component var3, boolean var4) {
+         public MessageHeadingEntry(final GameProfile nullx, final Component nullxx, final boolean nullxxx) {
             super();
-            this.heading = var3;
-            this.canReport = var4;
-            this.skin = ChatSelectionList.this.minecraft.getSkinManager().lookupInsecure(var2);
+            this.heading = nullxx;
+            this.canReport = nullxxx;
+            this.skin = ChatSelectionList.this.minecraft.getSkinManager().lookupInsecure(nullx);
          }
 
          @Override
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            int var11 = var4 - 12 - 4;
+            int var11 = var4 - 12 + 4;
             int var12 = var3 + (var6 - 12) / 2;
             PlayerFaceRenderer.draw(var1, this.skin.get(), var11, var12, 12);
             int var13 = var3 + 1 + (var6 - 9) / 2;
-            var1.drawString(ChatSelectionScreen.this.font, this.heading, var4, var13, this.canReport ? -1 : -1593835521);
+            var1.drawString(ChatSelectionScreen.this.font, this.heading, var11 + 12 + 4, var13, this.canReport ? -1 : -1593835521);
          }
       }
 

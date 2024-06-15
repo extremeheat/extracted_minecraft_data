@@ -17,21 +17,17 @@ interface PathContents {
       }
    };
 
-   public static record DirectoryContents(Map<String, LinkFSPath> c) implements PathContents {
-      private final Map<String, LinkFSPath> children;
-
-      public DirectoryContents(Map<String, LinkFSPath> var1) {
+   public static record DirectoryContents(Map<String, LinkFSPath> children) implements PathContents {
+      public DirectoryContents(Map<String, LinkFSPath> children) {
          super();
-         this.children = var1;
+         this.children = children;
       }
    }
 
-   public static record FileContents(Path c) implements PathContents {
-      private final Path contents;
-
-      public FileContents(Path var1) {
+   public static record FileContents(Path contents) implements PathContents {
+      public FileContents(Path contents) {
          super();
-         this.contents = var1;
+         this.contents = contents;
       }
    }
 }

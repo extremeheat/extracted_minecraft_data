@@ -77,10 +77,10 @@ public class BinaryHeap {
 
    private void upHeap(int var1) {
       Node var2 = this.heap[var1];
+      float var3 = var2.f;
 
-      int var4;
-      for(float var3 = var2.f; var1 > 0; var1 = var4) {
-         var4 = var1 - 1 >> 1;
+      while (var1 > 0) {
+         int var4 = var1 - 1 >> 1;
          Node var5 = this.heap[var4];
          if (!(var3 < var5.f)) {
             break;
@@ -88,6 +88,7 @@ public class BinaryHeap {
 
          this.heap[var1] = var5;
          var5.heapIdx = var1;
+         var1 = var4;
       }
 
       this.heap[var1] = var2;
@@ -98,7 +99,7 @@ public class BinaryHeap {
       Node var2 = this.heap[var1];
       float var3 = var2.f;
 
-      while(true) {
+      while (true) {
          int var4 = 1 + (var1 << 1);
          int var5 = var4 + 1;
          if (var4 >= this.size) {

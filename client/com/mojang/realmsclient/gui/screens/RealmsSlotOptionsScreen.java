@@ -118,13 +118,12 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
          this.addLabel(new RealmsLabel(var2, this.width / 2, 26, 16711680));
       }
 
-      this.nameEdit = new EditBox(
-         this.minecraft.font, this.column1X, row(1), this.columnWidth, 20, null, Component.translatable("mco.configure.world.edit.slot.name")
+      this.nameEdit = this.addWidget(
+         new EditBox(this.minecraft.font, this.column1X, row(1), this.columnWidth, 20, null, Component.translatable("mco.configure.world.edit.slot.name"))
       );
       this.nameEdit.setMaxLength(10);
       this.nameEdit.setValue(this.worldName);
       this.nameEdit.setResponder(this::setWorldName);
-      this.magicalSpecialHackyFocus(this.nameEdit);
       CycleButton var9 = this.addRenderableWidget(
          CycleButton.onOffBuilder(this.pvp)
             .create(var1, row(1), this.columnWidth, 20, Component.translatable("mco.configure.world.pvp"), (var1x, var2x) -> this.pvp = var2x)
@@ -163,9 +162,9 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
             .create(this.column1X, row(5), this.columnWidth, 20, Component.translatable("options.difficulty"), (var2x, var3x) -> {
                this.difficulty = var3x;
                if (this.worldType == RealmsServer.WorldType.NORMAL) {
-                  boolean var4xx = this.difficulty != Difficulty.PEACEFUL;
-                  var5.active = var4xx;
-                  var5.setValue(var4xx && this.spawnMonsters);
+                  boolean var4x = this.difficulty != Difficulty.PEACEFUL;
+                  var5.active = var4x;
+                  var5.setValue(var4x && this.spawnMonsters);
                }
             })
       );
@@ -223,7 +222,6 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       this.addRenderableWidget(
          Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.minecraft.setScreen(this.parent)).bounds(var1, row(13), this.columnWidth, 20).build()
       );
-      this.addWidget(this.nameEdit);
    }
 
    private CycleButton.OnValueChange<Boolean> confirmDangerousOption(Component var1, Consumer<Boolean> var2) {
@@ -312,11 +310,11 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       private final double minValue;
       private final double maxValue;
 
-      public SettingsSlider(int var2, int var3, int var4, int var5, float var6, float var7) {
-         super(var2, var3, var4, 20, CommonComponents.EMPTY, 0.0);
-         this.minValue = (double)var6;
-         this.maxValue = (double)var7;
-         this.value = (double)((Mth.clamp((float)var5, var6, var7) - var6) / (var7 - var6));
+      public SettingsSlider(final int nullx, final int nullxx, final int nullxxx, final int nullxxxx, final float nullxxxxx, final float nullxxxxxx) {
+         super(nullx, nullxx, nullxxx, 20, CommonComponents.EMPTY, 0.0);
+         this.minValue = (double)nullxxxxx;
+         this.maxValue = (double)nullxxxxxx;
+         this.value = (double)((Mth.clamp((float)nullxxxx, nullxxxxx, nullxxxxxx) - nullxxxxx) / (nullxxxxxx - nullxxxxx));
          this.updateMessage();
       }
 

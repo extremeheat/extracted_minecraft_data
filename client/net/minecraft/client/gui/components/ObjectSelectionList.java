@@ -16,8 +16,6 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
       super(var1, var2, var3, var4, var5);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
@@ -63,6 +61,11 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
       }
 
       public abstract Component getNarration();
+
+      @Override
+      public boolean mouseClicked(double var1, double var3, int var5) {
+         return true;
+      }
 
       @Override
       public void updateNarration(NarrationElementOutput var1) {

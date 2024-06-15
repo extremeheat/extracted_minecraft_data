@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameModeArgument;
@@ -32,9 +31,9 @@ public class DefaultGameModeCommands {
       var3.setDefaultGameType(var1);
       GameType var4 = var3.getForcedGameType();
       if (var4 != null) {
-         for(ServerPlayer var6 : var3.getPlayerList().getPlayers()) {
+         for (ServerPlayer var6 : var3.getPlayerList().getPlayers()) {
             if (var6.setGameMode(var4)) {
-               ++var2;
+               var2++;
             }
          }
       }

@@ -1,11 +1,10 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult.PartialResult;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
@@ -25,13 +24,19 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
 
    public TrialSpawnerBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.TRIAL_SPAWNER, var1, var2);
-      PlayerDetector var3 = PlayerDetector.PLAYERS;
-      this.trialSpawner = new TrialSpawner(this, var3);
+      PlayerDetector var3 = PlayerDetector.NO_CREATIVE_PLAYERS;
+      PlayerDetector.EntitySelector var4 = PlayerDetector.EntitySelector.SELECT_FROM_LEVEL;
+      this.trialSpawner = new TrialSpawner(this, var3, var4);
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
+      if (var1.contains("normal_config")) {
+         CompoundTag var3 = var1.getCompound("normal_config").copy();
+         var1.put("ominous_config", var3.merge(var1.getCompound("ominous_config")));
+      }
+
       this.trialSpawner.codec().parse(NbtOps.INSTANCE, var1).resultOrPartial(LOGGER::error).ifPresent(var1x -> this.trialSpawner = var1x);
       if (this.level != null) {
          this.markUpdated();
@@ -39,14 +44,13 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       this.trialSpawner
          .codec()
          .encodeStart(NbtOps.INSTANCE, this.trialSpawner)
-         .get()
-         .ifLeft(var1x -> var1.merge((CompoundTag)var1x))
-         .ifRight(var0 -> LOGGER.warn("Failed to encode TrialSpawner {}", var0.message()));
+         .ifSuccess(var1x -> var1.merge((CompoundTag)var1x))
+         .ifError(var0 -> LOGGER.warn("Failed to encode TrialSpawner {}", var0.message()));
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -54,7 +58,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
       return this.trialSpawner.getData().getUpdateTag(this.getBlockState().getValue(TrialSpawnerBlock.STATE));
    }
 

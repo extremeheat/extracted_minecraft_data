@@ -16,7 +16,7 @@ import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 
 public interface StructureSets {
-   static void bootstrap(BootstapContext<StructureSet> var0) {
+   static void bootstrap(BootstrapContext<StructureSet> var0) {
       HolderGetter var1 = var0.lookup(Registries.STRUCTURE);
       HolderGetter var2 = var0.lookup(Registries.BIOME);
       Holder.Reference var3 = var0.register(

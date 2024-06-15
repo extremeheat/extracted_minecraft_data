@@ -21,6 +21,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.util.FastBufferedInputStream;
 import org.slf4j.Logger;
 
 public class NbtToSnbt implements DataProvider {
@@ -39,20 +40,20 @@ public class NbtToSnbt implements DataProvider {
       Path var2 = this.output.getOutputFolder();
       ArrayList var3 = new ArrayList();
 
-      for(Path var5 : this.inputFolders) {
+      for (Path var5 : this.inputFolders) {
          var3.add(
             CompletableFuture.<CompletableFuture>supplyAsync(
                   () -> {
                      try {
                         CompletableFuture var4;
-                        try (Stream var3xx = Files.walk(var5)) {
+                        try (Stream var3x = Files.walk(var5)) {
                            var4 = CompletableFuture.allOf(
-                              var3xx.filter(var0x -> var0x.toString().endsWith(".nbt"))
+                              var3x.filter(var0x -> var0x.toString().endsWith(".nbt"))
                                  .map(var3xx -> CompletableFuture.runAsync(() -> convertStructure(var1, var3xx, getName(var5, var3xx), var2), Util.ioPool()))
-                                 .toArray(var0x -> new CompletableFuture[var0x])
+                                 .toArray(CompletableFuture[]::new)
                            );
                         }
-         
+
                         return var4;
                      } catch (IOException var8) {
                         LOGGER.error("Failed to read structure input directory", var8);
@@ -65,7 +66,7 @@ public class NbtToSnbt implements DataProvider {
          );
       }
 
-      return CompletableFuture.allOf(var3.toArray(var0 -> new CompletableFuture[var0]));
+      return CompletableFuture.allOf(var3.toArray(CompletableFuture[]::new));
    }
 
    @Override
@@ -81,17 +82,20 @@ public class NbtToSnbt implements DataProvider {
    @Nullable
    public static Path convertStructure(CachedOutput var0, Path var1, String var2, Path var3) {
       try {
-         Path var6;
-         try (InputStream var4 = Files.newInputStream(var1)) {
-            Path var5 = var3.resolve(var2 + ".snbt");
-            writeSnbt(var0, var5, NbtUtils.structureToSnbt(NbtIo.readCompressed(var4, NbtAccounter.unlimitedHeap())));
+         Path var7;
+         try (
+            InputStream var4 = Files.newInputStream(var1);
+            FastBufferedInputStream var5 = new FastBufferedInputStream(var4);
+         ) {
+            Path var6 = var3.resolve(var2 + ".snbt");
+            writeSnbt(var0, var6, NbtUtils.structureToSnbt(NbtIo.readCompressed(var5, NbtAccounter.unlimitedHeap())));
             LOGGER.info("Converted {} from NBT to SNBT", var2);
-            var6 = var5;
+            var7 = var6;
          }
 
-         return var6;
-      } catch (IOException var9) {
-         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", new Object[]{var2, var1, var9});
+         return var7;
+      } catch (IOException var12) {
+         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", new Object[]{var2, var1, var12});
          return null;
       }
    }

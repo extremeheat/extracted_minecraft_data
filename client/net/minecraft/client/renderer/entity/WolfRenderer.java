@@ -4,17 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.WolfModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.layers.WolfArmorLayer;
 import net.minecraft.client.renderer.entity.layers.WolfCollarLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Wolf;
 
 public class WolfRenderer extends MobRenderer<Wolf, WolfModel<Wolf>> {
-   private static final ResourceLocation WOLF_LOCATION = new ResourceLocation("textures/entity/wolf/wolf.png");
-   private static final ResourceLocation WOLF_TAME_LOCATION = new ResourceLocation("textures/entity/wolf/wolf_tame.png");
-   private static final ResourceLocation WOLF_ANGRY_LOCATION = new ResourceLocation("textures/entity/wolf/wolf_angry.png");
-
    public WolfRenderer(EntityRendererProvider.Context var1) {
       super(var1, new WolfModel<>(var1.bakeLayer(ModelLayers.WOLF)), 0.5F);
+      this.addLayer(new WolfArmorLayer(this, var1.getModelSet()));
       this.addLayer(new WolfCollarLayer(this));
    }
 
@@ -35,10 +33,6 @@ public class WolfRenderer extends MobRenderer<Wolf, WolfModel<Wolf>> {
    }
 
    public ResourceLocation getTextureLocation(Wolf var1) {
-      if (var1.isTame()) {
-         return WOLF_TAME_LOCATION;
-      } else {
-         return var1.isAngry() ? WOLF_ANGRY_LOCATION : WOLF_LOCATION;
-      }
+      return var1.getTexture();
    }
 }

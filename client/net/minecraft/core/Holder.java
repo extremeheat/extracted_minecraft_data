@@ -24,6 +24,9 @@ public interface Holder<T> {
 
    boolean is(TagKey<T> var1);
 
+   @Deprecated
+   boolean is(Holder<T> var1);
+
    Stream<TagKey<T>> tags();
 
    Either<ResourceKey<T>, T> unwrap();
@@ -34,16 +37,18 @@ public interface Holder<T> {
 
    boolean canSerializeIn(HolderOwner<T> var1);
 
+   default String getRegisteredName() {
+      return this.unwrapKey().map(var0 -> var0.location().toString()).orElse("[unregistered]");
+   }
+
    static <T> Holder<T> direct(T var0) {
       return new Holder.Direct<>((T)var0);
    }
 
-   public static record Direct<T>(T a) implements Holder<T> {
-      private final T value;
-
-      public Direct(T var1) {
+   public static record Direct<T>(T value) implements Holder<T> {
+      public Direct(T value) {
          super();
-         this.value = (T)var1;
+         this.value = (T)value;
       }
 
       @Override
@@ -64,6 +69,11 @@ public interface Holder<T> {
       @Override
       public boolean is(TagKey<T> var1) {
          return false;
+      }
+
+      @Override
+      public boolean is(Holder<T> var1) {
+         return this.value.equals(var1.value());
       }
 
       @Override
@@ -128,7 +138,7 @@ public interface Holder<T> {
       }
 
       public static <T> Holder.Reference<T> createStandAlone(HolderOwner<T> var0, ResourceKey<T> var1) {
-         return new Holder.Reference<>(Holder.Reference.Type.STAND_ALONE, var0, var1, (T)null);
+         return new Holder.Reference<>(Holder.Reference.Type.STAND_ALONE, var0, var1, null);
       }
 
       @Deprecated
@@ -166,6 +176,11 @@ public interface Holder<T> {
       @Override
       public boolean is(TagKey<T> var1) {
          return this.tags.contains(var1);
+      }
+
+      @Override
+      public boolean is(Holder<T> var1) {
+         return var1.is(this.key());
       }
 
       @Override

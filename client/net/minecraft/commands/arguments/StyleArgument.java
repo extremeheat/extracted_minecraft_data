@@ -7,8 +7,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import java.util.Collection;
 import java.util.List;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.ParserUtils;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 
@@ -17,22 +19,24 @@ public class StyleArgument implements ArgumentType<Style> {
    public static final DynamicCommandExceptionType ERROR_INVALID_JSON = new DynamicCommandExceptionType(
       var0 -> Component.translatableEscape("argument.style.invalid", var0)
    );
+   private final HolderLookup.Provider registries;
 
-   private StyleArgument() {
+   private StyleArgument(HolderLookup.Provider var1) {
       super();
+      this.registries = var1;
    }
 
    public static Style getStyle(CommandContext<CommandSourceStack> var0, String var1) {
       return (Style)var0.getArgument(var1, Style.class);
    }
 
-   public static StyleArgument style() {
-      return new StyleArgument();
+   public static StyleArgument style(CommandBuildContext var0) {
+      return new StyleArgument(var0);
    }
 
    public Style parse(StringReader var1) throws CommandSyntaxException {
       try {
-         return ParserUtils.parseJson(var1, Style.Serializer.CODEC);
+         return ParserUtils.parseJson(this.registries, var1, Style.Serializer.CODEC);
       } catch (Exception var4) {
          String var3 = var4.getCause() != null ? var4.getCause().getMessage() : var4.getMessage();
          throw ERROR_INVALID_JSON.createWithContext(var1, var3);

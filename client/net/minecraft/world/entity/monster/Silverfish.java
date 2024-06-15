@@ -10,11 +10,8 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.ClimbOnTopOfPowderSnowGoal;
@@ -32,7 +29,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.InfestedBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Vector3f;
 
 public class Silverfish extends Monster {
    @Nullable
@@ -52,11 +48,6 @@ public class Silverfish extends Monster {
       this.goalSelector.addGoal(5, new Silverfish.SilverfishMergeWithStoneGoal(this));
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.13F;
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -125,16 +116,6 @@ public class Silverfish extends Monster {
       } else {
          return false;
       }
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.ARTHROPOD;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 
    static class SilverfishMergeWithStoneGoal extends RandomStrollGoal {
@@ -214,15 +195,15 @@ public class Silverfish extends Monster {
 
       @Override
       public void tick() {
-         --this.lookForFriends;
+         this.lookForFriends--;
          if (this.lookForFriends <= 0) {
             Level var1 = this.silverfish.level();
             RandomSource var2 = this.silverfish.getRandom();
             BlockPos var3 = this.silverfish.blockPosition();
 
-            for(int var4 = 0; var4 <= 5 && var4 >= -5; var4 = (var4 <= 0 ? 1 : 0) - var4) {
-               for(int var5 = 0; var5 <= 10 && var5 >= -10; var5 = (var5 <= 0 ? 1 : 0) - var5) {
-                  for(int var6 = 0; var6 <= 10 && var6 >= -10; var6 = (var6 <= 0 ? 1 : 0) - var6) {
+            for (int var4 = 0; var4 <= 5 && var4 >= -5; var4 = (var4 <= 0 ? 1 : 0) - var4) {
+               for (int var5 = 0; var5 <= 10 && var5 >= -10; var5 = (var5 <= 0 ? 1 : 0) - var5) {
+                  for (int var6 = 0; var6 <= 10 && var6 >= -10; var6 = (var6 <= 0 ? 1 : 0) - var6) {
                      BlockPos var7 = var3.offset(var5, var4, var6);
                      BlockState var8 = var1.getBlockState(var7);
                      Block var9 = var8.getBlock();

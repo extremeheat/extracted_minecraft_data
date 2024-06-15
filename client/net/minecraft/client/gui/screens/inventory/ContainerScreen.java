@@ -12,8 +12,8 @@ public class ContainerScreen extends AbstractContainerScreen<ChestMenu> implemen
 
    public ContainerScreen(ChestMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);
-      boolean var4 = true;
-      boolean var5 = true;
+      short var4 = 222;
+      byte var5 = 114;
       this.containerRows = var1.getRowCount();
       this.imageHeight = 114 + this.containerRows * 18;
       this.inventoryLabelY = this.imageHeight - 94;

@@ -3,8 +3,8 @@ package net.minecraft.client.renderer.texture.atlas.sources;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 
 public class Unstitcher implements SpriteSource {
    static final Logger LOGGER = LogUtils.getLogger();
-   public static final Codec<Unstitcher> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<Unstitcher> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                ResourceLocation.CODEC.fieldOf("resource").forGetter(var0x -> var0x.resource),
                ExtraCodecs.nonEmptyList(Unstitcher.Region.CODEC.listOf()).fieldOf("regions").forGetter(var0x -> var0x.regions),
@@ -53,7 +53,7 @@ public class Unstitcher implements SpriteSource {
       if (var4.isPresent()) {
          LazyLoadedImage var5 = new LazyLoadedImage(var3, (Resource)var4.get(), this.regions.size());
 
-         for(Unstitcher.Region var7 : this.regions) {
+         for (Unstitcher.Region var7 : this.regions) {
             var2.add(var7.sprite, new Unstitcher.RegionInstance(var5, var7, this.xDivisor, this.yDivisor));
          }
       } else {
@@ -66,12 +66,7 @@ public class Unstitcher implements SpriteSource {
       return SpriteSources.UNSTITCHER;
    }
 
-   static record Region(ResourceLocation b, double c, double d, double e, double f) {
-      final ResourceLocation sprite;
-      final double x;
-      final double y;
-      final double width;
-      final double height;
+   static record Region(ResourceLocation sprite, double x, double y, double width, double height) {
       public static final Codec<Unstitcher.Region> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   ResourceLocation.CODEC.fieldOf("sprite").forGetter(Unstitcher.Region::sprite),
@@ -83,13 +78,13 @@ public class Unstitcher implements SpriteSource {
                .apply(var0, Unstitcher.Region::new)
       );
 
-      private Region(ResourceLocation var1, double var2, double var4, double var6, double var8) {
+      private Region(ResourceLocation sprite, double x, double y, double width, double height) {
          super();
-         this.sprite = var1;
-         this.x = var2;
-         this.y = var4;
-         this.width = var6;
-         this.height = var8;
+         this.sprite = sprite;
+         this.x = x;
+         this.y = y;
+         this.width = width;
+         this.height = height;
       }
    }
 

@@ -19,9 +19,9 @@ public class AtlasSet implements AutoCloseable {
    public AtlasSet(Map<ResourceLocation, ResourceLocation> var1, TextureManager var2) {
       super();
       this.atlases = var1.entrySet().stream().collect(Collectors.toMap(Entry::getKey, var1x -> {
-         TextureAtlas var2xx = new TextureAtlas((ResourceLocation)var1x.getKey());
-         var2.register((ResourceLocation)var1x.getKey(), var2xx);
-         return new AtlasSet.AtlasEntry(var2xx, (ResourceLocation)var1x.getValue());
+         TextureAtlas var2x = new TextureAtlas((ResourceLocation)var1x.getKey());
+         var2.register((ResourceLocation)var1x.getKey(), var2x);
+         return new AtlasSet.AtlasEntry(var2x, (ResourceLocation)var1x.getValue());
       }));
    }
 
@@ -43,7 +43,7 @@ public class AtlasSet implements AutoCloseable {
             Collectors.toMap(
                Entry::getKey,
                var3x -> {
-                  AtlasSet.AtlasEntry var4 = (AtlasSet.AtlasEntry)var3x.getValue();
+                  AtlasSet.AtlasEntry var4 = var3x.getValue();
                   return SpriteLoader.create(var4.atlas)
                      .loadAndStitch(var1, var4.atlasInfoLocation, var2, var3)
                      .thenApply(var1xx -> new AtlasSet.StitchResult(var4.atlas, var1xx));
@@ -52,14 +52,12 @@ public class AtlasSet implements AutoCloseable {
          );
    }
 
-   static record AtlasEntry(TextureAtlas a, ResourceLocation b) implements AutoCloseable {
-      final TextureAtlas atlas;
-      final ResourceLocation atlasInfoLocation;
+   static record AtlasEntry(TextureAtlas atlas, ResourceLocation atlasInfoLocation) implements AutoCloseable {
 
-      AtlasEntry(TextureAtlas var1, ResourceLocation var2) {
+      AtlasEntry(TextureAtlas atlas, ResourceLocation atlasInfoLocation) {
          super();
-         this.atlas = var1;
-         this.atlasInfoLocation = var2;
+         this.atlas = atlas;
+         this.atlasInfoLocation = atlasInfoLocation;
       }
 
       @Override

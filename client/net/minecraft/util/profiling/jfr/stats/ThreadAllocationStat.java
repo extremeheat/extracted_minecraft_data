@@ -10,17 +10,14 @@ import java.util.stream.Collectors;
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordedThread;
 
-public record ThreadAllocationStat(Instant a, String b, long c) {
-   private final Instant timestamp;
-   private final String threadName;
-   private final long totalBytes;
+public record ThreadAllocationStat(Instant timestamp, String threadName, long totalBytes) {
    private static final String UNKNOWN_THREAD = "unknown";
 
-   public ThreadAllocationStat(Instant var1, String var2, long var3) {
+   public ThreadAllocationStat(Instant timestamp, String threadName, long totalBytes) {
       super();
-      this.timestamp = var1;
-      this.threadName = var2;
-      this.totalBytes = var3;
+      this.timestamp = timestamp;
+      this.threadName = threadName;
+      this.totalBytes = totalBytes;
    }
 
    public static ThreadAllocationStat from(RecordedEvent var0) {
@@ -44,12 +41,10 @@ public record ThreadAllocationStat(Instant a, String b, long c) {
       return new ThreadAllocationStat.Summary(var1);
    }
 
-   public static record Summary(Map<String, Double> a) {
-      private final Map<String, Double> allocationsPerSecondByThread;
-
-      public Summary(Map<String, Double> var1) {
+   public static record Summary(Map<String, Double> allocationsPerSecondByThread) {
+      public Summary(Map<String, Double> allocationsPerSecondByThread) {
          super();
-         this.allocationsPerSecondByThread = var1;
+         this.allocationsPerSecondByThread = allocationsPerSecondByThread;
       }
    }
 }

@@ -86,7 +86,7 @@ public class BlockFaceUV {
             } else {
                float[] var3 = new float[4];
 
-               for(int var4 = 0; var4 < var3.length; ++var4) {
+               for (int var4 = 0; var4 < var3.length; var4++) {
                   var3[var4] = GsonHelper.convertToFloat(var2.get(var4), "uv[" + var4 + "]");
                }
 

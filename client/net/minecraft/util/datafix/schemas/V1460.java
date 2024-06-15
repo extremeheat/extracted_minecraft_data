@@ -5,6 +5,7 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
+import com.mojang.datafixers.util.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -25,7 +26,7 @@ public class V1460 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       HashMap var2 = Maps.newHashMap();
-      var1.registerSimple(var2, "minecraft:area_effect_cloud");
+      var1.register(var2, "minecraft:area_effect_cloud", var1x -> DSL.optionalFields("Particle", References.PARTICLE.in(var1)));
       registerMob(var1, var2, "minecraft:armor_stand");
       var1.register(var2, "minecraft:arrow", var1x -> DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(var1)));
       registerMob(var1, var2, "minecraft:bat");
@@ -123,9 +124,7 @@ public class V1460 extends NamespacedSchema {
       var1.registerSimple(var2, "minecraft:snowball");
       registerMob(var1, var2, "minecraft:snowman");
       var1.register(
-         var2,
-         "minecraft:spawner_minecart",
-         var1x -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1), References.UNTAGGED_SPAWNER.in(var1))
+         var2, "minecraft:spawner_minecart", var1x -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1), References.UNTAGGED_SPAWNER.in(var1))
       );
       var1.register(var2, "minecraft:spectral_arrow", var1x -> DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(var1)));
       registerMob(var1, var2, "minecraft:spider");
@@ -141,12 +140,7 @@ public class V1460 extends NamespacedSchema {
                "Inventory",
                DSL.list(References.ITEM_STACK.in(var1)),
                "Offers",
-               DSL.optionalFields(
-                  "Recipes",
-                  DSL.list(
-                     DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1))
-                  )
-               ),
+               DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))),
                V100.equipment(var1)
             )
       );
@@ -162,7 +156,11 @@ public class V1460 extends NamespacedSchema {
       registerMob(var1, var2, "minecraft:zombie");
       var1.register(var2, "minecraft:zombie_horse", var1x -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
       registerMob(var1, var2, "minecraft:zombie_pigman");
-      registerMob(var1, var2, "minecraft:zombie_villager");
+      var1.register(
+         var2,
+         "minecraft:zombie_villager",
+         var1x -> DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), V100.equipment(var1))
+      );
       return var2;
    }
 
@@ -202,20 +200,16 @@ public class V1460 extends NamespacedSchema {
          false,
          References.PLAYER,
          () -> DSL.optionalFields(
-               "RootVehicle",
-               DSL.optionalFields("Entity", References.ENTITY_TREE.in(var1)),
-               "Inventory",
-               DSL.list(References.ITEM_STACK.in(var1)),
-               "EnderItems",
-               DSL.list(References.ITEM_STACK.in(var1)),
-               DSL.optionalFields(
-                  "ShoulderEntityLeft",
-                  References.ENTITY_TREE.in(var1),
-                  "ShoulderEntityRight",
-                  References.ENTITY_TREE.in(var1),
-                  "recipeBook",
-                  DSL.optionalFields("recipes", DSL.list(References.RECIPE.in(var1)), "toBeDisplayed", DSL.list(References.RECIPE.in(var1)))
-               )
+               new Pair[]{
+                  Pair.of("RootVehicle", DSL.optionalFields("Entity", References.ENTITY_TREE.in(var1))),
+                  Pair.of("Inventory", DSL.list(References.ITEM_STACK.in(var1))),
+                  Pair.of("EnderItems", DSL.list(References.ITEM_STACK.in(var1))),
+                  Pair.of("ShoulderEntityLeft", References.ENTITY_TREE.in(var1)),
+                  Pair.of("ShoulderEntityRight", References.ENTITY_TREE.in(var1)),
+                  Pair.of(
+                     "recipeBook", DSL.optionalFields("recipes", DSL.list(References.RECIPE.in(var1)), "toBeDisplayed", DSL.list(References.RECIPE.in(var1)))
+                  )
+               }
             )
       );
       var1.registerType(
@@ -235,7 +229,11 @@ public class V1460 extends NamespacedSchema {
                )
             )
       );
-      var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.taggedChoiceLazy("id", namespacedString(), var3));
+      var1.registerType(
+         true,
+         References.BLOCK_ENTITY,
+         () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", namespacedString(), var3))
+      );
       var1.registerType(
          true, References.ENTITY_TREE, () -> DSL.optionalFields("Passengers", DSL.list(References.ENTITY_TREE.in(var1)), References.ENTITY.in(var1))
       );
@@ -249,16 +247,14 @@ public class V1460 extends NamespacedSchema {
                   References.ITEM_NAME.in(var1),
                   "tag",
                   DSL.optionalFields(
-                     "EntityTag",
-                     References.ENTITY_TREE.in(var1),
-                     "BlockEntityTag",
-                     References.BLOCK_ENTITY.in(var1),
-                     "CanDestroy",
-                     DSL.list(References.BLOCK_NAME.in(var1)),
-                     "CanPlaceOn",
-                     DSL.list(References.BLOCK_NAME.in(var1)),
-                     "Items",
-                     DSL.list(References.ITEM_STACK.in(var1))
+                     new Pair[]{
+                        Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
+                        Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
+                        Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
+                        Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
+                        Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
+                        Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
+                     }
                   )
                ),
                V705.ADD_NAMES,
@@ -282,6 +278,7 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(false, References.BLOCK_NAME, () -> DSL.constType(namespacedString()));
       var1.registerType(false, References.ITEM_NAME, () -> DSL.constType(namespacedString()));
       var1.registerType(false, References.BLOCK_STATE, DSL::remainder);
+      var1.registerType(false, References.FLAT_BLOCK_STATE, DSL::remainder);
       Supplier var4 = () -> DSL.compoundList(References.ITEM_NAME.in(var1), DSL.constType(DSL.intType()));
       var1.registerType(
          false,
@@ -289,26 +286,17 @@ public class V1460 extends NamespacedSchema {
          () -> DSL.optionalFields(
                "stats",
                DSL.optionalFields(
-                  "minecraft:mined",
-                  DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType())),
-                  "minecraft:crafted",
-                  (TypeTemplate)var4.get(),
-                  "minecraft:used",
-                  (TypeTemplate)var4.get(),
-                  "minecraft:broken",
-                  (TypeTemplate)var4.get(),
-                  "minecraft:picked_up",
-                  (TypeTemplate)var4.get(),
-                  DSL.optionalFields(
-                     "minecraft:dropped",
-                     (TypeTemplate)var4.get(),
-                     "minecraft:killed",
-                     DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType())),
-                     "minecraft:killed_by",
-                     DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType())),
-                     "minecraft:custom",
-                     DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType()))
-                  )
+                  new Pair[]{
+                     Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))),
+                     Pair.of("minecraft:crafted", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:used", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:broken", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:dropped", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
+                     Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
+                     Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))
+                  }
                )
             )
       );
@@ -366,5 +354,12 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(false, References.POI_CHUNK, DSL::remainder);
       var1.registerType(false, References.WORLD_GEN_SETTINGS, DSL::remainder);
       var1.registerType(false, References.ENTITY_CHUNK, () -> DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1))));
+      var1.registerType(true, References.DATA_COMPONENTS, DSL::remainder);
+      var1.registerType(
+         true,
+         References.VILLAGER_TRADE,
+         () -> DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1))
+      );
+      var1.registerType(true, References.PARTICLE, () -> DSL.constType(DSL.string()));
    }
 }

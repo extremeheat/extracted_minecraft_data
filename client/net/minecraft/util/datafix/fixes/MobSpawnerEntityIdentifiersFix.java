@@ -38,13 +38,13 @@ public class MobSpawnerEntityIdentifiersFix extends DataFix {
                   ((Stream)var6.get())
                      .map(
                         var0 -> {
-                           Optional var1xx = var0.get("Type").asString().result();
-                           if (var1xx.isPresent()) {
-                              Dynamic var2xx = ((Dynamic)DataFixUtils.orElse(var0.get("Properties").result(), var0.emptyMap()))
-                                 .set("id", var0.createString((String)var1xx.get()));
-                              return var0.set("Entity", var2xx).remove("Type").remove("Properties");
+                           Optional var1x = var0.get("Type").asString().result();
+                           if (var1x.isPresent()) {
+                              Dynamic var2x = ((Dynamic)DataFixUtils.orElse(var0.get("Properties").result(), var0.emptyMap()))
+                                 .set("id", var0.createString((String)var1x.get()));
+                              return var0.set("Entity", var2x).remove("Type").remove("Properties");
                            } else {
-                              return var0;
+                              return (Dynamic)var0;
                            }
                         }
                      )

@@ -6,7 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.ProcessorLists;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
@@ -120,7 +120,7 @@ public class CaveFeatures {
       );
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
       HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
       HolderGetter var2 = var0.lookup(Registries.PROCESSOR_LIST);
       FeatureUtils.register(var0, MONSTER_ROOM, Feature.MONSTER_ROOM);
@@ -145,9 +145,7 @@ public class CaveFeatures {
          new ResourceLocation("fossil/skull_4_coal")
       );
       Holder.Reference var5 = var2.getOrThrow(ProcessorLists.FOSSIL_ROT);
-      FeatureUtils.register(
-         var0, FOSSIL_COAL, Feature.FOSSIL, new FossilFeatureConfiguration(var3, var4, var5, var2.getOrThrow(ProcessorLists.FOSSIL_COAL), 4)
-      );
+      FeatureUtils.register(var0, FOSSIL_COAL, Feature.FOSSIL, new FossilFeatureConfiguration(var3, var4, var5, var2.getOrThrow(ProcessorLists.FOSSIL_COAL), 4));
       FeatureUtils.register(
          var0, FOSSIL_DIAMONDS, Feature.FOSSIL, new FossilFeatureConfiguration(var3, var4, var5, var2.getOrThrow(ProcessorLists.FOSSIL_DIAMONDS), 4)
       );

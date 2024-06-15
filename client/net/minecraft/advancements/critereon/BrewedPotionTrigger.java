@@ -2,14 +2,12 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.alchemy.Potion;
 
 public class BrewedPotionTrigger extends SimpleCriterionTrigger<BrewedPotionTrigger.TriggerInstance> {
@@ -26,22 +24,20 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<BrewedPotionTrig
       this.trigger(var1, var1x -> var1x.matches(var2));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<Holder<Potion>> c) implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<Holder<Potion>> potion;
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Potion>> potion)
+      implements SimpleCriterionTrigger.SimpleInstance {
       public static final Codec<BrewedPotionTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(BrewedPotionTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(BuiltInRegistries.POTION.holderByNameCodec(), "potion")
-                     .forGetter(BrewedPotionTrigger.TriggerInstance::potion)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(BrewedPotionTrigger.TriggerInstance::player),
+                  BuiltInRegistries.POTION.holderByNameCodec().optionalFieldOf("potion").forGetter(BrewedPotionTrigger.TriggerInstance::potion)
                )
                .apply(var0, BrewedPotionTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Potion>> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Potion>> potion) {
          super();
-         this.player = var1;
-         this.potion = var2;
+         this.player = player;
+         this.potion = potion;
       }
 
       public static Criterion<BrewedPotionTrigger.TriggerInstance> brewedPotion() {

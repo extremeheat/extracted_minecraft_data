@@ -74,7 +74,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       this.placeSettings.setBoundingBox(var5);
       this.boundingBox = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
       if (this.template.placeInWorld(var1, this.templatePosition, var7, this.placeSettings, var4, 2)) {
-         for(StructureTemplate.StructureBlockInfo var10 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.STRUCTURE_BLOCK)) {
+         for (StructureTemplate.StructureBlockInfo var10 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.STRUCTURE_BLOCK)) {
             if (var10.nbt() != null) {
                StructureMode var11 = StructureMode.valueOf(var10.nbt().getString("mode"));
                if (var11 == StructureMode.DATA) {
@@ -83,7 +83,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
             }
          }
 
-         for(StructureTemplate.StructureBlockInfo var18 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.JIGSAW)) {
+         for (StructureTemplate.StructureBlockInfo var18 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.JIGSAW)) {
             if (var18.nbt() != null) {
                String var12 = var18.nbt().getString("final_state");
                BlockState var13 = Blocks.AIR.defaultBlockState();

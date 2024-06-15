@@ -1,19 +1,22 @@
 package net.minecraft.world.level.gameevent;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class BlockPositionSource implements PositionSource {
-   public static final Codec<BlockPositionSource> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<BlockPositionSource> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(var0x -> var0x.pos)).apply(var0, BlockPositionSource::new)
    );
-   final BlockPos pos;
+   public static final StreamCodec<ByteBuf, BlockPositionSource> STREAM_CODEC = StreamCodec.composite(
+      BlockPos.STREAM_CODEC, var0 -> var0.pos, BlockPositionSource::new
+   );
+   private final BlockPos pos;
 
    public BlockPositionSource(BlockPos var1) {
       super();
@@ -26,7 +29,7 @@ public class BlockPositionSource implements PositionSource {
    }
 
    @Override
-   public PositionSourceType<?> getType() {
+   public PositionSourceType<BlockPositionSource> getType() {
       return PositionSourceType.BLOCK;
    }
 
@@ -35,17 +38,14 @@ public class BlockPositionSource implements PositionSource {
          super();
       }
 
-      public BlockPositionSource read(FriendlyByteBuf var1) {
-         return new BlockPositionSource(var1.readBlockPos());
-      }
-
-      public void write(FriendlyByteBuf var1, BlockPositionSource var2) {
-         var1.writeBlockPos(var2.pos);
+      @Override
+      public MapCodec<BlockPositionSource> codec() {
+         return BlockPositionSource.CODEC;
       }
 
       @Override
-      public Codec<BlockPositionSource> codec() {
-         return BlockPositionSource.CODEC;
+      public StreamCodec<ByteBuf, BlockPositionSource> streamCodec() {
+         return BlockPositionSource.STREAM_CODEC;
       }
    }
 }

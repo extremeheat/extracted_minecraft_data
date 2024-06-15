@@ -57,7 +57,7 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
    private static byte[] toArray(List<Byte> var0) {
       byte[] var1 = new byte[var0.size()];
 
-      for(int var2 = 0; var2 < var0.size(); ++var2) {
+      for (int var2 = 0; var2 < var0.size(); var2++) {
          Byte var3 = (Byte)var0.get(var2);
          var1[var2] = var3 == null ? 0 : var3;
       }
@@ -100,11 +100,7 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
 
    @Override
    public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return var1 instanceof ByteArrayTag && Arrays.equals(this.data, ((ByteArrayTag)var1).data);
-      }
+      return this == var1 ? true : var1 instanceof ByteArrayTag && Arrays.equals(this.data, ((ByteArrayTag)var1).data);
    }
 
    @Override

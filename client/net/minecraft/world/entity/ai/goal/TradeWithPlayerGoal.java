@@ -27,10 +27,8 @@ public class TradeWithPlayerGoal extends Goal {
          Player var1 = this.mob.getTradingPlayer();
          if (var1 == null) {
             return false;
-         } else if (this.mob.distanceToSqr(var1) > 16.0) {
-            return false;
          } else {
-            return var1.containerMenu != null;
+            return this.mob.distanceToSqr(var1) > 16.0 ? false : var1.containerMenu != null;
          }
       }
    }

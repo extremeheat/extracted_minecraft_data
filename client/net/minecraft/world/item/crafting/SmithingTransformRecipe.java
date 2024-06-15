@@ -1,12 +1,11 @@
 package net.minecraft.world.item.crafting;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -31,18 +30,14 @@ public class SmithingTransformRecipe implements SmithingRecipe {
    }
 
    @Override
-   public ItemStack assemble(Container var1, RegistryAccess var2) {
-      ItemStack var3 = this.result.copy();
-      CompoundTag var4 = var1.getItem(1).getTag();
-      if (var4 != null) {
-         var3.setTag(var4.copy());
-      }
-
+   public ItemStack assemble(Container var1, HolderLookup.Provider var2) {
+      ItemStack var3 = var1.getItem(1).transmuteCopy(this.result.getItem(), this.result.getCount());
+      var3.applyComponents(this.result.getComponentsPatch());
       return var3;
    }
 
    @Override
-   public ItemStack getResultItem(RegistryAccess var1) {
+   public ItemStack getResultItem(HolderLookup.Provider var1) {
       return this.result;
    }
 
@@ -72,14 +67,17 @@ public class SmithingTransformRecipe implements SmithingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<SmithingTransformRecipe> {
-      private static final Codec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.create(
+      private static final MapCodec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   Ingredient.CODEC.fieldOf("template").forGetter(var0x -> var0x.template),
                   Ingredient.CODEC.fieldOf("base").forGetter(var0x -> var0x.base),
                   Ingredient.CODEC.fieldOf("addition").forGetter(var0x -> var0x.addition),
-                  ItemStack.ITEM_WITH_COUNT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
+                  ItemStack.STRICT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
                )
                .apply(var0, SmithingTransformRecipe::new)
+      );
+      public static final StreamCodec<RegistryFriendlyByteBuf, SmithingTransformRecipe> STREAM_CODEC = StreamCodec.of(
+         SmithingTransformRecipe.Serializer::toNetwork, SmithingTransformRecipe.Serializer::fromNetwork
       );
 
       public Serializer() {
@@ -87,23 +85,28 @@ public class SmithingTransformRecipe implements SmithingRecipe {
       }
 
       @Override
-      public Codec<SmithingTransformRecipe> codec() {
+      public MapCodec<SmithingTransformRecipe> codec() {
          return CODEC;
       }
 
-      public SmithingTransformRecipe fromNetwork(FriendlyByteBuf var1) {
-         Ingredient var2 = Ingredient.fromNetwork(var1);
-         Ingredient var3 = Ingredient.fromNetwork(var1);
-         Ingredient var4 = Ingredient.fromNetwork(var1);
-         ItemStack var5 = var1.readItem();
-         return new SmithingTransformRecipe(var2, var3, var4, var5);
+      @Override
+      public StreamCodec<RegistryFriendlyByteBuf, SmithingTransformRecipe> streamCodec() {
+         return STREAM_CODEC;
       }
 
-      public void toNetwork(FriendlyByteBuf var1, SmithingTransformRecipe var2) {
-         var2.template.toNetwork(var1);
-         var2.base.toNetwork(var1);
-         var2.addition.toNetwork(var1);
-         var1.writeItem(var2.result);
+      private static SmithingTransformRecipe fromNetwork(RegistryFriendlyByteBuf var0) {
+         Ingredient var1 = Ingredient.CONTENTS_STREAM_CODEC.decode(var0);
+         Ingredient var2 = Ingredient.CONTENTS_STREAM_CODEC.decode(var0);
+         Ingredient var3 = Ingredient.CONTENTS_STREAM_CODEC.decode(var0);
+         ItemStack var4 = ItemStack.STREAM_CODEC.decode(var0);
+         return new SmithingTransformRecipe(var1, var2, var3, var4);
+      }
+
+      private static void toNetwork(RegistryFriendlyByteBuf var0, SmithingTransformRecipe var1) {
+         Ingredient.CONTENTS_STREAM_CODEC.encode(var0, var1.template);
+         Ingredient.CONTENTS_STREAM_CODEC.encode(var0, var1.base);
+         Ingredient.CONTENTS_STREAM_CODEC.encode(var0, var1.addition);
+         ItemStack.STREAM_CODEC.encode(var0, var1.result);
       }
    }
 }

@@ -24,8 +24,8 @@ public class RenderRegionCache {
       int var8 = SectionPos.blockToSectionCoord(var3.getZ() + var4);
       RenderRegionCache.ChunkInfo[][] var9 = new RenderRegionCache.ChunkInfo[var7 - var5 + 1][var8 - var6 + 1];
 
-      for(int var10 = var5; var10 <= var7; ++var10) {
-         for(int var11 = var6; var11 <= var8; ++var11) {
+      for (int var10 = var5; var10 <= var7; var10++) {
+         for (int var11 = var6; var11 <= var8; var11++) {
             var9[var10 - var5][var11 - var6] = (RenderRegionCache.ChunkInfo)this.chunkInfoCache
                .computeIfAbsent(
                   ChunkPos.asLong(var10, var11), var1x -> new RenderRegionCache.ChunkInfo(var1.getChunk(ChunkPos.getX(var1x), ChunkPos.getZ(var1x)))
@@ -38,8 +38,8 @@ public class RenderRegionCache {
       } else {
          RenderChunk[][] var13 = new RenderChunk[var7 - var5 + 1][var8 - var6 + 1];
 
-         for(int var14 = var5; var14 <= var7; ++var14) {
-            for(int var12 = var6; var12 <= var8; ++var12) {
+         for (int var14 = var5; var14 <= var7; var14++) {
+            for (int var12 = var6; var12 <= var8; var12++) {
                var13[var14 - var5][var12 - var6] = var9[var14 - var5][var12 - var6].renderChunk();
             }
          }
@@ -54,8 +54,8 @@ public class RenderRegionCache {
       int var7 = SectionPos.blockToSectionCoord(var1.getX());
       int var8 = SectionPos.blockToSectionCoord(var1.getZ());
 
-      for(int var9 = var5; var9 <= var7; ++var9) {
-         for(int var10 = var6; var10 <= var8; ++var10) {
+      for (int var9 = var5; var9 <= var7; var9++) {
+         for (int var10 = var6; var10 <= var8; var10++) {
             LevelChunk var11 = var4[var9 - var2][var10 - var3].chunk();
             if (!var11.isYSpaceEmpty(var0.getY(), var1.getY())) {
                return false;

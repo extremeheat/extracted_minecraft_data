@@ -26,7 +26,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
          var1.accountBytes(8L, (long)var2);
          long[] var3 = new long[var2];
 
-         for(int var4 = 0; var4 < var2; ++var4) {
+         for (int var4 = 0; var4 < var2; var4++) {
             var3[var4] = var0.readLong();
          }
 
@@ -67,7 +67,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
    private static long[] toArray(List<Long> var0) {
       long[] var1 = new long[var0.size()];
 
-      for(int var2 = 0; var2 < var0.size(); ++var2) {
+      for (int var2 = 0; var2 < var0.size(); var2++) {
          Long var3 = (Long)var0.get(var2);
          var1[var2] = var3 == null ? 0L : var3;
       }
@@ -79,7 +79,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
    public void write(DataOutput var1) throws IOException {
       var1.writeInt(this.data.length);
 
-      for(long var5 : this.data) {
+      for (long var5 : this.data) {
          var1.writeLong(var5);
       }
    }
@@ -112,11 +112,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 
    @Override
    public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return var1 instanceof LongArrayTag && Arrays.equals(this.data, ((LongArrayTag)var1).data);
-      }
+      return this == var1 ? true : var1 instanceof LongArrayTag && Arrays.equals(this.data, ((LongArrayTag)var1).data);
    }
 
    @Override

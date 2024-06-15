@@ -2,15 +2,14 @@ package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -21,19 +20,22 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class CherryTrunkPlacer extends TrunkPlacer {
-   private static final Codec<UniformInt> BRANCH_START_CODEC = ExtraCodecs.validate(
-      UniformInt.CODEC,
-      var0 -> var0.getMaxValue() - var0.getMinValue() < 1
-            ? DataResult.error(() -> "Need at least 2 blocks variation for the branch starts to fit both branches")
-            : DataResult.success(var0)
-   );
-   public static final Codec<CherryTrunkPlacer> CODEC = RecordCodecBuilder.create(
+   private static final Codec<UniformInt> BRANCH_START_CODEC = UniformInt.CODEC
+      .codec()
+      .validate(
+         var0 -> var0.getMaxValue() - var0.getMinValue() < 1
+               ? DataResult.error(() -> "Need at least 2 blocks variation for the branch starts to fit both branches")
+               : DataResult.success(var0)
+      );
+   public static final MapCodec<CherryTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> trunkPlacerParts(var0)
             .and(
                var0.group(
                   IntProvider.codec(1, 3).fieldOf("branch_count").forGetter(var0x -> var0x.branchCount),
                   IntProvider.codec(2, 16).fieldOf("branch_horizontal_length").forGetter(var0x -> var0x.branchHorizontalLength),
-                  IntProvider.codec(-16, 0, BRANCH_START_CODEC).fieldOf("branch_start_offset_from_top").forGetter(var0x -> var0x.branchStartOffsetFromTop),
+                  IntProvider.validateCodec(-16, 0, BRANCH_START_CODEC)
+                     .fieldOf("branch_start_offset_from_top")
+                     .forGetter(var0x -> var0x.branchStartOffsetFromTop),
                   IntProvider.codec(-16, 16).fieldOf("branch_end_offset_from_top").forGetter(var0x -> var0x.branchEndOffsetFromTop)
                )
             )
@@ -67,7 +69,7 @@ public class CherryTrunkPlacer extends TrunkPlacer {
       int var7 = Math.max(0, var4 - 1 + this.branchStartOffsetFromTop.sample(var3));
       int var8 = Math.max(0, var4 - 1 + this.secondBranchStartOffsetFromTop.sample(var3));
       if (var8 >= var7) {
-         ++var8;
+         var8++;
       }
 
       int var9 = this.branchCount.sample(var3);
@@ -82,7 +84,7 @@ public class CherryTrunkPlacer extends TrunkPlacer {
          var12 = var7 + 1;
       }
 
-      for(int var13 = 0; var13 < var12; ++var13) {
+      for (int var13 = 0; var13 < var12; var13++) {
          this.placeLog(var1, var2, var3, var5.above(var13), var6);
       }
 
@@ -122,13 +124,13 @@ public class CherryTrunkPlacer extends TrunkPlacer {
       BlockPos var15 = var5.relative(var8, var14).above(var12);
       int var16 = var13 ? 2 : 1;
 
-      for(int var17 = 0; var17 < var16; ++var17) {
+      for (int var17 = 0; var17 < var16; var17++) {
          this.placeLog(var1, var2, var3, var11.move(var8), var6, var7);
       }
 
       Direction var21 = var15.getY() > var11.getY() ? Direction.UP : Direction.DOWN;
 
-      while(true) {
+      while (true) {
          int var18 = var11.distManhattan(var15);
          if (var18 == 0) {
             return new FoliagePlacer.FoliageAttachment(var15.above(), 0, false);

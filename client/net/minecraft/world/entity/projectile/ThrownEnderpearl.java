@@ -37,13 +37,11 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       var1.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0.0F);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
 
-      for(int var2 = 0; var2 < 32; ++var2) {
+      for (int var2 = 0; var2 < 32; var2++) {
          this.level()
             .addParticle(
                ParticleTypes.PORTAL,

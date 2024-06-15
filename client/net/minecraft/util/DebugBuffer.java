@@ -24,7 +24,7 @@ public class DebugBuffer<T> {
       do {
          var3 = this.index.get();
          var4 = (var3 + 1) % var2;
-      } while(!this.index.compareAndSet(var3, var4));
+      } while (!this.index.compareAndSet(var3, var4));
 
       this.data.set(var4, (T)var1);
    }
@@ -33,7 +33,7 @@ public class DebugBuffer<T> {
       int var1 = this.index.get();
       Builder var2 = ImmutableList.builder();
 
-      for(int var3 = 0; var3 < this.data.length(); ++var3) {
+      for (int var3 = 0; var3 < this.data.length(); var3++) {
          int var4 = Math.floorMod(var1 - var3, this.data.length());
          Object var5 = this.data.get(var4);
          if (var5 != null) {

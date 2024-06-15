@@ -32,7 +32,7 @@ public class IndexedAssetSource {
          JsonObject var6 = GsonHelper.parse(var5);
          JsonObject var7 = GsonHelper.getAsJsonObject(var6, "objects", null);
          if (var7 != null) {
-            for(Entry var9 : var7.entrySet()) {
+            for (Entry var9 : var7.entrySet()) {
                JsonObject var10 = (JsonObject)var9.getValue();
                String var11 = (String)var9.getKey();
                List var12 = PATH_SPLITTER.splitToList(var11);

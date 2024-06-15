@@ -7,7 +7,6 @@ import com.mojang.serialization.Dynamic;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ public class CompoundTag implements Tag {
          HashMap var2 = Maps.newHashMap();
 
          byte var3;
-         while((var3 = var0.readByte()) != false) {
+         while ((var3 = var0.readByte()) != 0) {
             String var4 = readString(var0, var1);
             Tag var5 = CompoundTag.readNamedTagData(TagTypes.getType(var3), var4, var0, var1);
             if (var2.put(var4, var5) == null) {
@@ -82,9 +81,9 @@ public class CompoundTag implements Tag {
 
          byte var3;
          label35:
-         while((var3 = var0.readByte()) != 0) {
+         while ((var3 = var0.readByte()) != 0) {
             TagType var4 = TagTypes.getType(var3);
-            switch(var1.visitEntry(var4)) {
+            switch (var1.visitEntry(var4)) {
                case HALT:
                   return StreamTagVisitor.ValueResult.HALT;
                case BREAK:
@@ -97,7 +96,7 @@ public class CompoundTag implements Tag {
                   break;
                default:
                   String var5 = readString(var0, var2);
-                  switch(var1.visitEntry(var4, var5)) {
+                  switch (var1.visitEntry(var4, var5)) {
                      case HALT:
                         return StreamTagVisitor.ValueResult.HALT;
                      case BREAK:
@@ -108,7 +107,7 @@ public class CompoundTag implements Tag {
                         break;
                      default:
                         var2.accountBytes(36L);
-                        switch(var4.parse(var0, var1, var2)) {
+                        switch (var4.parse(var0, var1, var2)) {
                            case HALT:
                               return StreamTagVisitor.ValueResult.HALT;
                            case BREAK:
@@ -118,7 +117,7 @@ public class CompoundTag implements Tag {
          }
 
          if (var3 != 0) {
-            while((var3 = var0.readByte()) != false) {
+            while ((var3 = var0.readByte()) != 0) {
                StringTag.skipString(var0);
                TagTypes.getType(var3).skip(var0, var2);
             }
@@ -140,7 +139,7 @@ public class CompoundTag implements Tag {
 
          byte var3;
          try {
-            while((var3 = var1.readByte()) != false) {
+            while ((var3 = var1.readByte()) != 0) {
                StringTag.skipString(var1);
                TagTypes.getType(var3).skip(var1, var2);
             }
@@ -172,7 +171,7 @@ public class CompoundTag implements Tag {
 
    @Override
    public void write(DataOutput var1) throws IOException {
-      for(String var3 : this.tags.keySet()) {
+      for (String var3 : this.tags.keySet()) {
          Tag var4 = this.tags.get(var3);
          writeNamedTag(var3, var4, var1);
       }
@@ -184,7 +183,7 @@ public class CompoundTag implements Tag {
    public int sizeInBytes() {
       int var1 = 48;
 
-      for(Entry var3 : this.tags.entrySet()) {
+      for (Entry var3 : this.tags.entrySet()) {
          var1 += 28 + 2 * ((String)var3.getKey()).length();
          var1 += 36;
          var1 += ((Tag)var3.getValue()).sizeInBytes();
@@ -303,10 +302,8 @@ public class CompoundTag implements Tag {
       byte var3 = this.getTagType(var1);
       if (var3 == var2) {
          return true;
-      } else if (var2 != 99) {
-         return false;
       } else {
-         return var3 == 1 || var3 == 2 || var3 == 3 || var3 == 4 || var3 == 5 || var3 == 6;
+         return var2 != 99 ? false : var3 == 1 || var3 == 2 || var3 == 3 || var3 == 4 || var3 == 5 || var3 == 6;
       }
    }
 
@@ -478,6 +475,10 @@ public class CompoundTag implements Tag {
       return var4;
    }
 
+   protected CompoundTag shallowCopy() {
+      return new CompoundTag(new HashMap<>(this.tags));
+   }
+
    public CompoundTag copy() {
       HashMap var1 = Maps.newHashMap(Maps.transformValues(this.tags, Tag::copy));
       return new CompoundTag(var1);
@@ -485,11 +486,7 @@ public class CompoundTag implements Tag {
 
    @Override
    public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return var1 instanceof CompoundTag && Objects.equals(this.tags, ((CompoundTag)var1).tags);
-      }
+      return this == var1 ? true : var1 instanceof CompoundTag && Objects.equals(this.tags, ((CompoundTag)var1).tags);
    }
 
    @Override
@@ -518,7 +515,7 @@ public class CompoundTag implements Tag {
    }
 
    public CompoundTag merge(CompoundTag var1) {
-      for(String var3 : var1.tags.keySet()) {
+      for (String var3 : var1.tags.keySet()) {
          Tag var4 = var1.tags.get(var3);
          if (var4.getId() == 10) {
             if (this.contains(var3, 10)) {
@@ -540,17 +537,17 @@ public class CompoundTag implements Tag {
       var1.visitCompound(this);
    }
 
-   protected Map<String, Tag> entries() {
-      return Collections.unmodifiableMap(this.tags);
+   protected Set<Entry<String, Tag>> entrySet() {
+      return this.tags.entrySet();
    }
 
    @Override
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      for(Entry var3 : this.tags.entrySet()) {
+      for (Entry var3 : this.tags.entrySet()) {
          Tag var4 = (Tag)var3.getValue();
          TagType var5 = var4.getType();
          StreamTagVisitor.EntryResult var6 = var1.visitEntry(var5);
-         switch(var6) {
+         switch (var6) {
             case HALT:
                return StreamTagVisitor.ValueResult.HALT;
             case BREAK:
@@ -559,7 +556,7 @@ public class CompoundTag implements Tag {
                break;
             default:
                var6 = var1.visitEntry(var5, (String)var3.getKey());
-               switch(var6) {
+               switch (var6) {
                   case HALT:
                      return StreamTagVisitor.ValueResult.HALT;
                   case BREAK:
@@ -568,7 +565,7 @@ public class CompoundTag implements Tag {
                      break;
                   default:
                      StreamTagVisitor.ValueResult var7 = var4.accept(var1);
-                     switch(var7) {
+                     switch (var7) {
                         case HALT:
                            return StreamTagVisitor.ValueResult.HALT;
                         case BREAK:

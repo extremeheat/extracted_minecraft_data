@@ -13,9 +13,9 @@ public enum GraphicsStatus implements OptionEnum {
    private final int id;
    private final String key;
 
-   private GraphicsStatus(int var3, String var4) {
-      this.id = var3;
-      this.key = var4;
+   private GraphicsStatus(final int nullxx, final String nullxxx) {
+      this.id = nullxx;
+      this.key = nullxxx;
    }
 
    @Override
@@ -30,7 +30,7 @@ public enum GraphicsStatus implements OptionEnum {
 
    @Override
    public String toString() {
-      return switch(this) {
+      return switch (this) {
          case FAST -> "fast";
          case FANCY -> "fancy";
          case FABULOUS -> "fabulous";

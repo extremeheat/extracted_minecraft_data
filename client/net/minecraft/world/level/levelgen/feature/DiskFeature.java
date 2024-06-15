@@ -25,7 +25,7 @@ public class DiskFeature extends Feature<DiskConfiguration> {
       int var10 = var2.radius().sample(var5);
       BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
 
-      for(BlockPos var13 : BlockPos.betweenClosed(var3.offset(-var10, 0, -var10), var3.offset(var10, 0, var10))) {
+      for (BlockPos var13 : BlockPos.betweenClosed(var3.offset(-var10, 0, -var10), var3.offset(var10, 0, var10))) {
          int var14 = var13.getX() - var3.getX();
          int var15 = var13.getZ() - var3.getZ();
          if (var14 * var14 + var15 * var15 <= var10 * var10) {
@@ -39,7 +39,7 @@ public class DiskFeature extends Feature<DiskConfiguration> {
    protected boolean placeColumn(DiskConfiguration var1, WorldGenLevel var2, RandomSource var3, int var4, int var5, BlockPos.MutableBlockPos var6) {
       boolean var7 = false;
 
-      for(int var8 = var4; var8 > var5; --var8) {
+      for (int var8 = var4; var8 > var5; var8--) {
          var6.setY(var8);
          if (var1.target().test(var2, var6)) {
             BlockState var9 = var1.stateProvider().getState(var2, var3, var6);

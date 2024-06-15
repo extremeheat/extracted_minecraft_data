@@ -35,7 +35,7 @@ public class SleepInBed extends Behavior<LivingEntity> {
          } else {
             Optional var5 = var3.getMemory(MemoryModuleType.LAST_WOKEN);
             if (var5.isPresent()) {
-               long var6 = var1.getGameTime() - var5.get();
+               long var6 = var1.getGameTime() - (Long)var5.get();
                if (var6 > 0L && var6 < 100L) {
                   return false;
                }

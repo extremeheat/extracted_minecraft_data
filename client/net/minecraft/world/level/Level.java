@@ -22,7 +22,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -44,6 +43,8 @@ import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionBrewing;
+import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -55,8 +56,8 @@ import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.entity.LevelEntityGetter;
@@ -67,6 +68,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.redstone.CollectingNeighborUpdater;
 import net.minecraft.world.level.redstone.NeighborUpdater;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.WritableLevelData;
@@ -102,7 +104,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public final RandomSource random = RandomSource.create();
    @Deprecated
    private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
-   private final ResourceKey<DimensionType> dimensionTypeId;
    private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
    private final Supplier<ProfilerFiller> profiler;
@@ -129,7 +130,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.profiler = var5;
       this.levelData = var1;
       this.dimensionTypeRegistration = var4;
-      this.dimensionTypeId = (ResourceKey)var4.unwrapKey().orElseThrow(() -> new IllegalArgumentException("Dimension must be registered, got " + var4));
       final DimensionType var11 = (DimensionType)var4.value();
       this.dimension = var2;
       this.isClientSide = var6;
@@ -444,7 +444,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       Iterator var2 = this.blockEntityTickers.iterator();
       boolean var3 = this.tickRateManager().runsNormally();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          TickingBlockEntity var4 = (TickingBlockEntity)var2.next();
          if (var4.isRemoved()) {
             var2.remove();
@@ -567,7 +567,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       Level.ExplosionInteraction var12,
       ParticleOptions var13,
       ParticleOptions var14,
-      SoundEvent var15
+      Holder<SoundEvent> var15
    ) {
       return this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, true, var13, var14, var15);
    }
@@ -585,9 +585,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       boolean var13,
       ParticleOptions var14,
       ParticleOptions var15,
-      SoundEvent var16
+      Holder<SoundEvent> var16
    ) {
-      Explosion.BlockInteraction var17 = switch(var12) {
+      Explosion.BlockInteraction var17 = switch (var12) {
          case NONE -> Explosion.BlockInteraction.KEEP;
          case BLOCK -> this.getDestroyType(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY);
          case MOB -> this.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
@@ -664,7 +664,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public BlockPos getSharedSpawnPos() {
-      BlockPos var1 = new BlockPos(this.levelData.getXSpawn(), this.levelData.getYSpawn(), this.levelData.getZSpawn());
+      BlockPos var1 = this.levelData.getSpawnPos();
       if (!this.getWorldBorder().isWithinBounds(var1)) {
          var1 = this.getHeightmapPos(
             Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(this.getWorldBorder().getCenterX(), 0.0, this.getWorldBorder().getCenterZ())
@@ -708,7 +708,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          }
 
          if (var3x instanceof EnderDragon) {
-            for(EnderDragonPart var7 : ((EnderDragon)var3x).getSubEntities()) {
+            for (EnderDragonPart var7 : ((EnderDragon)var3x).getSubEntities()) {
                if (var3x != var1 && var3.test(var7)) {
                   var4.add(var7);
                }
@@ -739,8 +739,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
             }
          }
 
-         if (var4x instanceof EnderDragon var5xx) {
-            for(EnderDragonPart var9 : var5xx.getSubEntities()) {
+         if (var4x instanceof EnderDragon var5x) {
+            for (EnderDragonPart var9 : var5x.getSubEntities()) {
                Entity var10 = (Entity)var1.tryCast(var9);
                if (var10 != null && var3.test(var10)) {
                   var4.add(var10);
@@ -826,11 +826,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public boolean isThundering() {
-      if (this.dimensionType().hasSkyLight() && !this.dimensionType().hasCeiling()) {
-         return (double)this.getThunderLevel(1.0F) > 0.9;
-      } else {
-         return false;
-      }
+      return this.dimensionType().hasSkyLight() && !this.dimensionType().hasCeiling() ? (double)this.getThunderLevel(1.0F) > 0.9 : false;
    }
 
    public boolean isRaining() {
@@ -851,11 +847,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    @Nullable
-   public abstract MapItemSavedData getMapData(String var1);
+   public abstract MapItemSavedData getMapData(MapId var1);
 
-   public abstract void setMapData(String var1, MapItemSavedData var2);
+   public abstract void setMapData(MapId var1, MapItemSavedData var2);
 
-   public abstract int getFreeMapId();
+   public abstract MapId getFreeMapId();
 
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
    }
@@ -877,13 +873,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract void destroyBlockProgress(int var1, BlockPos var2, int var3);
 
-   public void createFireworks(double var1, double var3, double var5, double var7, double var9, double var11, @Nullable CompoundTag var13) {
+   public void createFireworks(double var1, double var3, double var5, double var7, double var9, double var11, List<FireworkExplosion> var13) {
    }
 
    public abstract Scoreboard getScoreboard();
 
    public void updateNeighbourForOutputSignal(BlockPos var1, Block var2) {
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
+      for (Direction var4 : Direction.Plane.HORIZONTAL) {
          BlockPos var5 = var1.relative(var4);
          if (this.hasChunkAt(var5)) {
             BlockState var6 = this.getBlockState(var5);
@@ -932,10 +928,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    @Override
    public DimensionType dimensionType() {
       return this.dimensionTypeRegistration.value();
-   }
-
-   public ResourceKey<DimensionType> dimensionTypeId() {
-      return this.dimensionTypeId;
    }
 
    public Holder<DimensionType> dimensionTypeRegistration() {
@@ -994,7 +986,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    @Override
    public long nextSubTickCount() {
-      return (long)(this.subTickCount++);
+      return this.subTickCount++;
    }
 
    @Override
@@ -1005,6 +997,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public DamageSources damageSources() {
       return this.damageSources;
    }
+
+   public abstract PotionBrewing potionBrewing();
 
    public static enum ExplosionInteraction {
       NONE,

@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
@@ -150,9 +149,9 @@ public class ParticleCommand {
    ) throws CommandSyntaxException {
       int var8 = 0;
 
-      for(ServerPlayer var10 : var7) {
+      for (ServerPlayer var10 : var7) {
          if (var0.getLevel().sendParticles(var10, var1, var6, var2.x, var2.y, var2.z, var5, var3.x, var3.y, var3.z, (double)var4)) {
-            ++var8;
+            var8++;
          }
       }
 

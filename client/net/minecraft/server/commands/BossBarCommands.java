@@ -10,9 +10,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import java.util.Collections;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -68,7 +68,7 @@ public class BossBarCommands {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
                               "bossbar"
@@ -79,7 +79,7 @@ public class BossBarCommands {
                               .then(
                                  Commands.argument("id", ResourceLocationArgument.id())
                                     .then(
-                                       Commands.argument("name", ComponentArgument.textComponent())
+                                       Commands.argument("name", ComponentArgument.textComponent(var1))
                                           .executes(
                                              var0x -> createBar(
                                                    (CommandSourceStack)var0x.getSource(),
@@ -109,7 +109,7 @@ public class BossBarCommands {
                                              .then(
                                                 Commands.literal("name")
                                                    .then(
-                                                      Commands.argument("name", ComponentArgument.textComponent())
+                                                      Commands.argument("name", ComponentArgument.textComponent(var1))
                                                          .executes(
                                                             var0x -> setName(
                                                                   (CommandSourceStack)var0x.getSource(),
@@ -147,9 +147,7 @@ public class BossBarCommands {
                                                                Commands.literal("red")
                                                                   .executes(
                                                                      var0x -> setColor(
-                                                                           (CommandSourceStack)var0x.getSource(),
-                                                                           getBossBar(var0x),
-                                                                           BossEvent.BossBarColor.RED
+                                                                           (CommandSourceStack)var0x.getSource(), getBossBar(var0x), BossEvent.BossBarColor.RED
                                                                         )
                                                                   )
                                                             ))
@@ -214,9 +212,7 @@ public class BossBarCommands {
                                                       Commands.literal("notched_10")
                                                          .executes(
                                                             var0x -> setStyle(
-                                                                  (CommandSourceStack)var0x.getSource(),
-                                                                  getBossBar(var0x),
-                                                                  BossEvent.BossBarOverlay.NOTCHED_10
+                                                                  (CommandSourceStack)var0x.getSource(), getBossBar(var0x), BossEvent.BossBarOverlay.NOTCHED_10
                                                                )
                                                          )
                                                    ))

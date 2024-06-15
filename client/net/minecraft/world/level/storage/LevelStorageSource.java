@@ -20,9 +20,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.SignStyle;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,23 +76,12 @@ import org.slf4j.Logger;
 
 public class LevelStorageSource {
    static final Logger LOGGER = LogUtils.getLogger();
-   static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
-      .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
-      .appendLiteral('-')
-      .appendValue(ChronoField.MONTH_OF_YEAR, 2)
-      .appendLiteral('-')
-      .appendValue(ChronoField.DAY_OF_MONTH, 2)
-      .appendLiteral('_')
-      .appendValue(ChronoField.HOUR_OF_DAY, 2)
-      .appendLiteral('-')
-      .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
-      .appendLiteral('-')
-      .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
-      .toFormatter();
+   static final DateTimeFormatter FORMATTER = FileNameDateFormatter.create();
    private static final String TAG_DATA = "Data";
    private static final PathMatcher NO_SYMLINKS_ALLOWED = var0 -> false;
    public static final String ALLOWED_SYMLINKS_CONFIG_NAME = "allowed_symlinks.txt";
    private static final int UNCOMPRESSED_NBT_QUOTA = 104857600;
+   private static final int DISK_SPACE_WARNING_THRESHOLD = 67108864;
    private final Path baseDir;
    private final Path backupDir;
    final DataFixer fixerUpper;
@@ -149,19 +135,14 @@ public class LevelStorageSource {
    public static LevelDataAndDimensions getLevelDataAndDimensions(
       Dynamic<?> var0, WorldDataConfiguration var1, Registry<LevelStem> var2, RegistryAccess.Frozen var3
    ) {
-      Dynamic var4 = wrapWithRegistryOps(var0, var3);
+      Dynamic var4 = RegistryOps.injectRegistryContext(var0, var3);
       Dynamic var5 = var4.get("WorldGenSettings").orElseEmptyMap();
-      WorldGenSettings var6 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var5).getOrThrow(false, Util.prefix("WorldGenSettings: ", LOGGER::error));
+      WorldGenSettings var6 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var5).getOrThrow();
       LevelSettings var7 = LevelSettings.parse(var4, var1);
       WorldDimensions.Complete var8 = var6.dimensions().bake(var2);
       Lifecycle var9 = var8.lifecycle().add(var3.allRegistriesLifecycle());
       PrimaryLevelData var10 = PrimaryLevelData.parse(var4, var7, var8.specialWorldProperty(), var6.options(), var9);
       return new LevelDataAndDimensions(var10, var8);
-   }
-
-   private static <T> Dynamic<T> wrapWithRegistryOps(Dynamic<T> var0, RegistryAccess.Frozen var1) {
-      RegistryOps var2 = RegistryOps.create(var0.getOps(), var1);
-      return new Dynamic(var2, var0.getValue());
    }
 
    public String getName() {
@@ -192,7 +173,7 @@ public class LevelStorageSource {
    public CompletableFuture<List<LevelSummary>> loadLevelSummaries(LevelStorageSource.LevelCandidates var1) {
       ArrayList var2 = new ArrayList(var1.levels.size());
 
-      for(LevelStorageSource.LevelDirectory var4 : var1.levels) {
+      for (LevelStorageSource.LevelDirectory var4 : var1.levels) {
          var2.add(CompletableFuture.supplyAsync(() -> {
             boolean var2x;
             try {
@@ -207,11 +188,11 @@ public class LevelStorageSource {
             } catch (OutOfMemoryError var12) {
                MemoryReserve.release();
                System.gc();
-               String var4xx = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
-               LOGGER.error(LogUtils.FATAL_MARKER, var4xx);
+               String var4x = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
+               LOGGER.error(LogUtils.FATAL_MARKER, var4x);
                OutOfMemoryError var5 = new OutOfMemoryError("Ran out of memory reading level data");
                var5.initCause(var12);
-               CrashReport var6 = CrashReport.forThrowable(var5, var4xx);
+               CrashReport var6 = CrashReport.forThrowable(var5, var4x);
                CrashReportCategory var7 = var6.addCategory("World details");
                var7.setDetail("Folder Name", var4.directoryName());
 
@@ -243,16 +224,10 @@ public class LevelStorageSource {
       CompoundTag var3 = var2.getCompound("Data");
       int var4 = NbtUtils.getDataVersion(var3, -1);
       Dynamic var5 = DataFixTypes.LEVEL.updateToCurrentVersion(var1, new Dynamic(NbtOps.INSTANCE, var3), var4);
-      Dynamic var6 = var5.get("Player").orElseEmptyMap();
-      Dynamic var7 = DataFixTypes.PLAYER.updateToCurrentVersion(var1, var6, var4);
-      var5 = var5.set("Player", var7);
-      Dynamic var8 = var5.get("WorldGenSettings").orElseEmptyMap();
-      Dynamic var9 = DataFixTypes.WORLD_GEN_SETTINGS.updateToCurrentVersion(var1, var8, var4);
-      return var5.set("WorldGenSettings", var9);
+      var5 = var5.update("Player", var2x -> DataFixTypes.PLAYER.updateToCurrentVersion(var1, var2x, var4));
+      return var5.update("WorldGenSettings", var2x -> DataFixTypes.WORLD_GEN_SETTINGS.updateToCurrentVersion(var1, var2x, var4));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private LevelSummary readLevelSummary(LevelStorageSource.LevelDirectory var1, boolean var2) {
       Path var3 = var1.dataFile();
       if (Files.exists(var3)) {
@@ -265,8 +240,7 @@ public class LevelStorageSource {
                }
             }
 
-            Tag var10 = readLightweightData(var3);
-            if (var10 instanceof CompoundTag var5) {
+            if (readLightweightData(var3) instanceof CompoundTag var5) {
                CompoundTag var6 = var5.getCompound("Data");
                int var7 = NbtUtils.getDataVersion(var6, -1);
                Dynamic var8 = DataFixTypes.LEVEL.updateToCurrentVersion(this.fixerUpper, new Dynamic(NbtOps.INSTANCE, var6), var7);
@@ -382,12 +356,11 @@ public class LevelStorageSource {
       return this.worldDirValidator;
    }
 
-   public static record LevelCandidates(List<LevelStorageSource.LevelDirectory> a) implements Iterable<LevelStorageSource.LevelDirectory> {
-      final List<LevelStorageSource.LevelDirectory> levels;
+   public static record LevelCandidates(List<LevelStorageSource.LevelDirectory> levels) implements Iterable<LevelStorageSource.LevelDirectory> {
 
-      public LevelCandidates(List<LevelStorageSource.LevelDirectory> var1) {
+      public LevelCandidates(List<LevelStorageSource.LevelDirectory> levels) {
          super();
-         this.levels = var1;
+         this.levels = levels;
       }
 
       public boolean isEmpty() {
@@ -400,12 +373,11 @@ public class LevelStorageSource {
       }
    }
 
-   public static record LevelDirectory(Path a) {
-      private final Path path;
+   public static record LevelDirectory(Path path) {
 
-      public LevelDirectory(Path var1) {
+      public LevelDirectory(Path path) {
          super();
-         this.path = var1;
+         this.path = path;
       }
 
       public String directoryName() {
@@ -447,11 +419,23 @@ public class LevelStorageSource {
       private final String levelId;
       private final Map<LevelResource, Path> resources = Maps.newHashMap();
 
-      LevelStorageAccess(String var2, Path var3) throws IOException {
+      LevelStorageAccess(final String nullx, final Path nullxx) throws IOException {
          super();
-         this.levelId = var2;
-         this.levelDirectory = new LevelStorageSource.LevelDirectory(var3);
-         this.lock = DirectoryLock.create(var3);
+         this.levelId = nullx;
+         this.levelDirectory = new LevelStorageSource.LevelDirectory(nullxx);
+         this.lock = DirectoryLock.create(nullxx);
+      }
+
+      public long estimateDiskSpace() {
+         try {
+            return Files.getFileStore(this.levelDirectory.path).getUsableSpace();
+         } catch (Exception var2) {
+            return 9223372036854775807L;
+         }
+      }
+
+      public boolean checkForLowDiskSpace() {
+         return this.estimateDiskSpace() < 67108864L;
       }
 
       public void safeClose() {
@@ -547,7 +531,7 @@ public class LevelStorageSource {
          final Path var1 = this.levelDirectory.lockFile();
          LevelStorageSource.LOGGER.info("Deleting level {}", this.levelId);
 
-         for(int var2 = 1; var2 <= 5; ++var2) {
+         for (int var2 = 1; var2 <= 5; var2++) {
             LevelStorageSource.LOGGER.info("Attempt {}...", var2);
 
             try {

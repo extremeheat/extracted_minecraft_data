@@ -46,7 +46,7 @@ public class FeatureFlagRegistry {
    public FeatureFlagSet fromNames(Iterable<ResourceLocation> var1, Consumer<ResourceLocation> var2) {
       Set var3 = Sets.newIdentityHashSet();
 
-      for(ResourceLocation var5 : var1) {
+      for (ResourceLocation var5 : var1) {
          FeatureFlag var6 = this.names.get(var5);
          if (var6 == null) {
             var2.accept(var5);

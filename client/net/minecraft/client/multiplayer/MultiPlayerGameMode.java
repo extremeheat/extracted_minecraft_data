@@ -34,6 +34,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.player.Player;
@@ -189,7 +190,7 @@ public class MultiPlayerGameMode {
    public boolean continueDestroyBlock(BlockPos var1, Direction var2) {
       this.ensureHasSentCarriedItem();
       if (this.destroyDelay > 0) {
-         --this.destroyDelay;
+         this.destroyDelay--;
          return true;
       } else if (this.localPlayerMode.isCreative() && this.minecraft.level.getWorldBorder().isWithinBounds(var1)) {
          this.destroyDelay = 5;
@@ -206,7 +207,7 @@ public class MultiPlayerGameMode {
             this.isDestroying = false;
             return false;
          } else {
-            this.destroyProgress += var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1);
+            this.destroyProgress = this.destroyProgress + var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1);
             if (this.destroyTicks % 4.0F == 0.0F) {
                SoundType var4 = var3.getSoundType();
                this.minecraft
@@ -223,7 +224,7 @@ public class MultiPlayerGameMode {
                   );
             }
 
-            ++this.destroyTicks;
+            this.destroyTicks++;
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, Mth.clamp(this.destroyProgress, 0.0F, 1.0F));
             if (this.destroyProgress >= 1.0F) {
                this.isDestroying = false;
@@ -252,10 +253,6 @@ public class MultiPlayerGameMode {
       }
    }
 
-   public float getPickRange() {
-      return Player.getPickRange(this.localPlayerMode.isCreative());
-   }
-
    public void tick() {
       this.ensureHasSentCarriedItem();
       if (this.connection.getConnection().isConnected()) {
@@ -267,7 +264,7 @@ public class MultiPlayerGameMode {
 
    private boolean sameDestroyTarget(BlockPos var1) {
       ItemStack var2 = this.minecraft.player.getMainHandItem();
-      return var1.equals(this.destroyBlockPos) && ItemStack.isSameItemSameTags(var2, this.destroyingItem);
+      return var1.equals(this.destroyBlockPos) && ItemStack.isSameItemSameComponents(var2, this.destroyingItem);
    }
 
    private void ensureHasSentCarriedItem() {
@@ -306,9 +303,16 @@ public class MultiPlayerGameMode {
                return InteractionResult.FAIL;
             }
 
-            InteractionResult var9 = var8.use(this.minecraft.level, var1, var2, var3);
+            ItemInteractionResult var9 = var8.useItemOn(var1.getItemInHand(var2), this.minecraft.level, var1, var2, var3);
             if (var9.consumesAction()) {
-               return var9;
+               return var9.result();
+            }
+
+            if (var9 == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && var2 == InteractionHand.MAIN_HAND) {
+               InteractionResult var10 = var8.useWithoutItem(this.minecraft.level, var1, var3);
+               if (var10.consumesAction()) {
+                  return var10;
+               }
             }
          }
 
@@ -316,9 +320,9 @@ public class MultiPlayerGameMode {
             UseOnContext var12 = new UseOnContext(var1, var2, var3);
             InteractionResult var11;
             if (this.localPlayerMode.isCreative()) {
-               int var10 = var5.getCount();
+               int var13 = var5.getCount();
                var11 = var5.useOn(var12);
-               var5.setCount(var10);
+               var5.setCount(var13);
             } else {
                var11 = var5.useOn(var12);
             }
@@ -397,14 +401,14 @@ public class MultiPlayerGameMode {
          int var8 = var7.size();
          ArrayList var9 = Lists.newArrayListWithCapacity(var8);
 
-         for(Slot var11 : var7) {
+         for (Slot var11 : var7) {
             var9.add(var11.getItem().copy());
          }
 
          var6.clicked(var2, var3, var4, var5);
          Int2ObjectOpenHashMap var14 = new Int2ObjectOpenHashMap();
 
-         for(int var15 = 0; var15 < var8; ++var15) {
+         for (int var15 = 0; var15 < var8; var15++) {
             ItemStack var12 = (ItemStack)var9.get(var15);
             ItemStack var13 = ((Slot)var7.get(var15)).getItem();
             if (!ItemStack.matches(var12, var13)) {
@@ -451,10 +455,6 @@ public class MultiPlayerGameMode {
    }
 
    public boolean hasInfiniteItems() {
-      return this.localPlayerMode.isCreative();
-   }
-
-   public boolean hasFarPickRange() {
       return this.localPlayerMode.isCreative();
    }
 

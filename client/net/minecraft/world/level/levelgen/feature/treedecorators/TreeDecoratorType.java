@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature.treedecorators;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -11,18 +11,18 @@ public class TreeDecoratorType<P extends TreeDecorator> {
    public static final TreeDecoratorType<BeehiveDecorator> BEEHIVE = register("beehive", BeehiveDecorator.CODEC);
    public static final TreeDecoratorType<AlterGroundDecorator> ALTER_GROUND = register("alter_ground", AlterGroundDecorator.CODEC);
    public static final TreeDecoratorType<AttachedToLeavesDecorator> ATTACHED_TO_LEAVES = register("attached_to_leaves", AttachedToLeavesDecorator.CODEC);
-   private final Codec<P> codec;
+   private final MapCodec<P> codec;
 
-   private static <P extends TreeDecorator> TreeDecoratorType<P> register(String var0, Codec<P> var1) {
+   private static <P extends TreeDecorator> TreeDecoratorType<P> register(String var0, MapCodec<P> var1) {
       return Registry.register(BuiltInRegistries.TREE_DECORATOR_TYPE, var0, new TreeDecoratorType<>(var1));
    }
 
-   private TreeDecoratorType(Codec<P> var1) {
+   private TreeDecoratorType(MapCodec<P> var1) {
       super();
       this.codec = var1;
    }
 
-   public Codec<P> codec() {
+   public MapCodec<P> codec() {
       return this.codec;
    }
 }

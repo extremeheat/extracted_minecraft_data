@@ -72,36 +72,40 @@ public enum OctahedralGroup implements StringRepresentable {
    private final boolean invertY;
    private final boolean invertZ;
    private final SymmetricGroup3 permutation;
-   private static final OctahedralGroup[][] cayleyTable = Util.make(new OctahedralGroup[values().length][values().length], var0 -> {
-      Map var1 = Arrays.stream(values()).collect(Collectors.toMap(var0x -> Pair.of(var0x.permutation, var0x.packInversions()), var0x -> var0x));
+   private static final OctahedralGroup[][] cayleyTable = Util.make(
+      new OctahedralGroup[values().length][values().length],
+      var0 -> {
+         Map var1 = Arrays.stream(values())
+            .collect(Collectors.toMap(var0x -> Pair.of(var0x.permutation, var0x.packInversions()), var0x -> (OctahedralGroup)var0x));
 
-      for(OctahedralGroup var5 : values()) {
-         for(OctahedralGroup var9 : values()) {
-            BooleanList var10 = var5.packInversions();
-            BooleanList var11 = var9.packInversions();
-            SymmetricGroup3 var12 = var9.permutation.compose(var5.permutation);
-            BooleanArrayList var13 = new BooleanArrayList(3);
+         for (OctahedralGroup var5 : values()) {
+            for (OctahedralGroup var9 : values()) {
+               BooleanList var10 = var5.packInversions();
+               BooleanList var11 = var9.packInversions();
+               SymmetricGroup3 var12 = var9.permutation.compose(var5.permutation);
+               BooleanArrayList var13 = new BooleanArrayList(3);
 
-            for(int var14 = 0; var14 < 3; ++var14) {
-               var13.add(var10.getBoolean(var14) ^ var11.getBoolean(var5.permutation.permutation(var14)));
+               for (int var14 = 0; var14 < 3; var14++) {
+                  var13.add(var10.getBoolean(var14) ^ var11.getBoolean(var5.permutation.permutation(var14)));
+               }
+
+               var0[var5.ordinal()][var9.ordinal()] = (OctahedralGroup)var1.get(Pair.of(var12, var13));
             }
-
-            var0[var5.ordinal()][var9.ordinal()] = (OctahedralGroup)var1.get(Pair.of(var12, var13));
          }
       }
-   });
+   );
    private static final OctahedralGroup[] inverseTable = Arrays.stream(values())
       .map(var0 -> Arrays.stream(values()).filter(var1 -> var0.compose(var1) == IDENTITY).findAny().get())
-      .toArray(var0 -> new OctahedralGroup[var0]);
+      .toArray(OctahedralGroup[]::new);
 
-   private OctahedralGroup(String var3, SymmetricGroup3 var4, boolean var5, boolean var6, boolean var7) {
-      this.name = var3;
-      this.invertX = var5;
-      this.invertY = var6;
-      this.invertZ = var7;
-      this.permutation = var4;
-      this.transformation = new Matrix3f().scaling(var5 ? -1.0F : 1.0F, var6 ? -1.0F : 1.0F, var7 ? -1.0F : 1.0F);
-      this.transformation.mul(var4.transformation());
+   private OctahedralGroup(final String nullxx, final SymmetricGroup3 nullxxx, final boolean nullxxxx, final boolean nullxxxxx, final boolean nullxxxxxx) {
+      this.name = nullxx;
+      this.invertX = nullxxxx;
+      this.invertY = nullxxxxx;
+      this.invertZ = nullxxxxxx;
+      this.permutation = nullxxx;
+      this.transformation = new Matrix3f().scaling(nullxxxx ? -1.0F : 1.0F, nullxxxxx ? -1.0F : 1.0F, nullxxxxxx ? -1.0F : 1.0F);
+      this.transformation.mul(nullxxx.transformation());
    }
 
    private BooleanList packInversions() {
@@ -135,7 +139,7 @@ public enum OctahedralGroup implements StringRepresentable {
          this.rotatedDirections = Maps.newEnumMap(Direction.class);
          Direction.Axis[] var2 = Direction.Axis.values();
 
-         for(Direction var6 : Direction.values()) {
+         for (Direction var6 : Direction.values()) {
             Direction.Axis var7 = var6.getAxis();
             Direction.AxisDirection var8 = var6.getAxisDirection();
             Direction.Axis var9 = var2[this.permutation.permutation(var7.ordinal())];
@@ -149,7 +153,7 @@ public enum OctahedralGroup implements StringRepresentable {
    }
 
    public boolean inverts(Direction.Axis var1) {
-      switch(var1) {
+      switch (var1) {
          case X:
             return this.invertX;
          case Y:

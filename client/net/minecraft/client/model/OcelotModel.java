@@ -145,9 +145,9 @@ public class OcelotModel<T extends Entity> extends AgeableListModel<T> {
       this.rightHindLeg.z = 5.0F;
       this.tail1.xRot = 0.9F;
       if (var1.isCrouching()) {
-         ++this.body.y;
+         this.body.y++;
          this.head.y += 2.0F;
-         ++this.tail1.y;
+         this.tail1.y++;
          this.tail2.y += -4.0F;
          this.tail2.z += 2.0F;
          this.tail1.xRot = 1.5707964F;

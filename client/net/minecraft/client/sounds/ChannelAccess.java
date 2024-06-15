@@ -46,7 +46,7 @@ public class ChannelAccess {
       this.executor.execute(() -> {
          Iterator var1 = this.channels.iterator();
 
-         while(var1.hasNext()) {
+         while (var1.hasNext()) {
             ChannelAccess.ChannelHandle var2 = (ChannelAccess.ChannelHandle)var1.next();
             var2.channel.updateStream();
             if (var2.channel.stopped()) {
@@ -71,9 +71,9 @@ public class ChannelAccess {
          return this.stopped;
       }
 
-      public ChannelHandle(Channel var2) {
+      public ChannelHandle(final Channel nullx) {
          super();
-         this.channel = var2;
+         this.channel = nullx;
       }
 
       public void execute(Consumer<Channel> var1) {

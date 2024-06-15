@@ -4,20 +4,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SuspiciousStewItem;
-import net.minecraft.world.level.block.SuspiciousEffectHolder;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -25,22 +24,20 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetStewEffectFunction extends LootItemConditionalFunction {
-   private static final Codec<List<SetStewEffectFunction.EffectEntry>> EFFECTS_LIST = ExtraCodecs.validate(
-      SetStewEffectFunction.EffectEntry.CODEC.listOf(), var0 -> {
-         ObjectOpenHashSet var1 = new ObjectOpenHashSet();
-   
-         for(SetStewEffectFunction.EffectEntry var3 : var0) {
-            if (!var1.add(var3.effect())) {
-               return DataResult.error(() -> "Encountered duplicate mob effect: '" + var3.effect() + "'");
-            }
+   private static final Codec<List<SetStewEffectFunction.EffectEntry>> EFFECTS_LIST = SetStewEffectFunction.EffectEntry.CODEC.listOf().validate(var0 -> {
+      ObjectOpenHashSet var1 = new ObjectOpenHashSet();
+
+      for (SetStewEffectFunction.EffectEntry var3 : var0) {
+         if (!var1.add(var3.effect())) {
+            return DataResult.error(() -> "Encountered duplicate mob effect: '" + var3.effect() + "'");
          }
-   
-         return DataResult.success(var0);
       }
-   );
-   public static final Codec<SetStewEffectFunction> CODEC = RecordCodecBuilder.create(
+
+      return DataResult.success(var0);
+   });
+   public static final MapCodec<SetStewEffectFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
-            .and(ExtraCodecs.strictOptionalField(EFFECTS_LIST, "effects", List.of()).forGetter(var0x -> var0x.effects))
+            .and(EFFECTS_LIST.optionalFieldOf("effects", List.of()).forGetter(var0x -> var0x.effects))
             .apply(var0, SetStewEffectFunction::new)
    );
    private final List<SetStewEffectFunction.EffectEntry> effects;
@@ -51,7 +48,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetStewEffectFunction> getType() {
       return LootItemFunctions.SET_STEW_EFFECT;
    }
 
@@ -64,13 +61,14 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    public ItemStack run(ItemStack var1, LootContext var2) {
       if (var1.is(Items.SUSPICIOUS_STEW) && !this.effects.isEmpty()) {
          SetStewEffectFunction.EffectEntry var3 = Util.getRandom(this.effects, var2.getRandom());
-         MobEffect var4 = var3.effect().value();
+         Holder var4 = var3.effect();
          int var5 = var3.duration().getInt(var2);
-         if (!var4.isInstantenous()) {
+         if (!((MobEffect)var4.value()).isInstantenous()) {
             var5 *= 20;
          }
 
-         SuspiciousStewItem.appendMobEffects(var1, List.of(new SuspiciousEffectHolder.EffectEntry(var4, var5)));
+         SuspiciousStewEffects.Entry var6 = new SuspiciousStewEffects.Entry(var4, var5);
+         var1.update(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY, var6, SuspiciousStewEffects::withEffectAdded);
          return var1;
       } else {
          return var1;
@@ -92,8 +90,8 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public SetStewEffectFunction.Builder withEffect(MobEffect var1, NumberProvider var2) {
-         this.effects.add(new SetStewEffectFunction.EffectEntry(var1.builtInRegistryHolder(), var2));
+      public SetStewEffectFunction.Builder withEffect(Holder<MobEffect> var1, NumberProvider var2) {
+         this.effects.add(new SetStewEffectFunction.EffectEntry(var1, var2));
          return this;
       }
 
@@ -103,9 +101,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
       }
    }
 
-   static record EffectEntry(Holder<MobEffect> b, NumberProvider c) {
-      private final Holder<MobEffect> effect;
-      private final NumberProvider duration;
+   static record EffectEntry(Holder<MobEffect> effect, NumberProvider duration) {
       public static final Codec<SetStewEffectFunction.EffectEntry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("type").forGetter(SetStewEffectFunction.EffectEntry::effect),
@@ -114,10 +110,10 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
                .apply(var0, SetStewEffectFunction.EffectEntry::new)
       );
 
-      EffectEntry(Holder<MobEffect> var1, NumberProvider var2) {
+      EffectEntry(Holder<MobEffect> effect, NumberProvider duration) {
          super();
-         this.effect = var1;
-         this.duration = var2;
+         this.effect = effect;
+         this.duration = duration;
       }
    }
 }

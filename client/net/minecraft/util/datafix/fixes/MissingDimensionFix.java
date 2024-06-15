@@ -83,9 +83,9 @@ public class MissingDimensionFix extends DataFix {
                   if (!(var3xxx.getValue() instanceof List)) {
                      throw new IllegalStateException("List exptected");
                   } else if (((List)var3xxx.getValue()).isEmpty()) {
-                     Dynamic var4xxxx = (Dynamic)var4x.get(DSL.remainderFinder());
-                     Dynamic var5xx = this.recreateSettings(var4xxxx);
-                     return (Typed)DataFixUtils.orElse(var3.readTyped(var5xx).result().map(Pair::getFirst), var3xxx);
+                     Dynamic var4xxx = (Dynamic)var4x.get(DSL.remainderFinder());
+                     Dynamic var5x = this.recreateSettings(var4xxx);
+                     return (Typed)DataFixUtils.orElse(var3.readTyped(var5x).result().map(Pair::getFirst), var3xxx);
                   } else {
                      return var3xxx;
                   }

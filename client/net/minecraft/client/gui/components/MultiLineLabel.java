@@ -97,7 +97,7 @@ public interface MultiLineLabel {
          public int renderCentered(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
             int var6 = var3;
 
-            for(MultiLineLabel.TextWithWidth var8 : var1) {
+            for (MultiLineLabel.TextWithWidth var8 : var1) {
                var1x.drawString(var0, var8.text, var2 - var8.width / 2, var6, var5);
                var6 += var4;
             }
@@ -109,7 +109,7 @@ public interface MultiLineLabel {
          public int renderLeftAligned(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
             int var6 = var3;
 
-            for(MultiLineLabel.TextWithWidth var8 : var1) {
+            for (MultiLineLabel.TextWithWidth var8 : var1) {
                var1x.drawString(var0, var8.text, var2, var6, var5);
                var6 += var4;
             }
@@ -121,7 +121,7 @@ public interface MultiLineLabel {
          public int renderLeftAlignedNoShadow(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
             int var6 = var3;
 
-            for(MultiLineLabel.TextWithWidth var8 : var1) {
+            for (MultiLineLabel.TextWithWidth var8 : var1) {
                var1x.drawString(var0, var8.text, var2, var6, var5, false);
                var6 += var4;
             }

@@ -3,6 +3,7 @@ package net.minecraft.core;
 import com.google.common.collect.AbstractIterator;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -14,6 +15,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.concurrent.Immutable;
 import net.minecraft.Util;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Rotation;
@@ -31,6 +34,15 @@ public class BlockPos extends Vec3i {
          var0 -> Util.fixedSize(var0, 3).map(var0x -> new BlockPos(var0x[0], var0x[1], var0x[2])), var0 -> IntStream.of(var0.getX(), var0.getY(), var0.getZ())
       )
       .stable();
+   public static final StreamCodec<ByteBuf, BlockPos> STREAM_CODEC = new StreamCodec<ByteBuf, BlockPos>() {
+      public BlockPos decode(ByteBuf var1) {
+         return FriendlyByteBuf.readBlockPos(var1);
+      }
+
+      public void encode(ByteBuf var1, BlockPos var2) {
+         FriendlyByteBuf.writeBlockPos(var1, var2);
+      }
+   };
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final BlockPos ZERO = new BlockPos(0, 0, 0);
    private static final int PACKED_X_LENGTH = 1 + Mth.log2(Mth.smallestEncompassingPowerOfTwo(30000000));
@@ -81,6 +93,14 @@ public class BlockPos extends Vec3i {
 
    public static BlockPos containing(Position var0) {
       return containing(var0.x(), var0.y(), var0.z());
+   }
+
+   public static BlockPos min(BlockPos var0, BlockPos var1) {
+      return new BlockPos(Math.min(var0.getX(), var1.getX()), Math.min(var0.getY(), var1.getY()), Math.min(var0.getZ(), var1.getZ()));
+   }
+
+   public static BlockPos max(BlockPos var0, BlockPos var1) {
+      return new BlockPos(Math.max(var0.getX(), var1.getX()), Math.max(var0.getY(), var1.getY()), Math.max(var0.getZ(), var1.getZ()));
    }
 
    public long asLong() {
@@ -190,7 +210,7 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos rotate(Rotation var1) {
-      switch(var1) {
+      switch (var1) {
          case NONE:
          default:
             return this;
@@ -247,7 +267,7 @@ public class BlockPos extends Vec3i {
                   return (BlockPos)this.endOfData();
                } else {
                   BlockPos.MutableBlockPos var1x = this.nextPos.set(var2 + var0.nextInt(var8), var3 + var0.nextInt(var9), var4 + var0.nextInt(var10));
-                  --this.counter;
+                  this.counter--;
                   return var1x;
                }
             }
@@ -275,11 +295,11 @@ public class BlockPos extends Vec3i {
                   return this.cursor;
                } else {
                   BlockPos.MutableBlockPos var1x;
-                  for(var1x = null; var1x == null; ++this.y) {
+                  for (var1x = null; var1x == null; this.y++) {
                      if (this.y > this.maxY) {
-                        ++this.x;
+                        this.x++;
                         if (this.x > this.maxX) {
-                           ++this.currentDepth;
+                           this.currentDepth++;
                            if (this.currentDepth > var4) {
                               return (BlockPos)this.endOfData();
                            }
@@ -308,7 +328,7 @@ public class BlockPos extends Vec3i {
    }
 
    public static Optional<BlockPos> findClosestMatch(BlockPos var0, int var1, int var2, Predicate<BlockPos> var3) {
-      for(BlockPos var5 : withinManhattan(var0, var1, var2, var1)) {
+      for (BlockPos var5 : withinManhattan(var0, var1, var2, var1)) {
          if (var3.test(var5)) {
             return Optional.of(var5);
          }
@@ -374,7 +394,7 @@ public class BlockPos extends Vec3i {
                   int var2x = this.index / var6;
                   int var3 = var2x % var7;
                   int var4 = var2x / var7;
-                  ++this.index;
+                  this.index++;
                   return this.cursor.set(var0 + var1x, var1 + var3, var2 + var4);
                }
             }
@@ -404,12 +424,12 @@ public class BlockPos extends Vec3i {
                      return (BlockPos.MutableBlockPos)this.endOfData();
                   }
 
-                  ++this.leg;
+                  this.leg++;
                   this.legIndex = 0;
                   this.legSize = this.leg / 2 + 1;
                }
 
-               ++this.legIndex;
+               this.legIndex++;
                return this.cursor;
             }
          };
@@ -421,10 +441,10 @@ public class BlockPos extends Vec3i {
       var5.add(Pair.of(var0, 0));
       int var7 = 0;
 
-      while(!var5.isEmpty()) {
+      while (!var5.isEmpty()) {
          Pair var8 = (Pair)var5.poll();
          BlockPos var9 = (BlockPos)var8.getLeft();
-         int var10 = var8.getRight();
+         int var10 = (Integer)var8.getRight();
          long var11 = var9.asLong();
          if (var6.add(var11) && var4.test(var9)) {
             if (++var7 >= var2) {
@@ -532,7 +552,7 @@ public class BlockPos extends Vec3i {
       }
 
       public BlockPos.MutableBlockPos clamp(Direction.Axis var1, int var2, int var3) {
-         switch(var1) {
+         switch (var1) {
             case X:
                return this.set(Mth.clamp(this.getX(), var2, var3), this.getY(), this.getZ());
             case Y:

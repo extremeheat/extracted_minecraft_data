@@ -34,18 +34,18 @@ public class FrostedIceBlock extends IceBlock {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       this.tick(var1, var2, var3, var4);
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if ((var4.nextInt(3) == 0 || this.fewerNeigboursThan(var2, var3, 4))
          && var2.getMaxLocalRawBrightness(var3) > 11 - var1.getValue(AGE) - var1.getLightBlock(var2, var3)
          && this.slightlyMelt(var1, var2, var3)) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-         for(Direction var9 : Direction.values()) {
+         for (Direction var9 : Direction.values()) {
             var5.setWithOffset(var3, var9);
             BlockState var10 = var2.getBlockState(var5);
             if (var10.is(this) && !this.slightlyMelt(var10, var2, var5)) {
@@ -69,7 +69,7 @@ public class FrostedIceBlock extends IceBlock {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var4.defaultBlockState().is(this) && this.fewerNeigboursThan(var2, var3, 2)) {
          this.melt(var1, var2, var3);
       }
@@ -81,7 +81,7 @@ public class FrostedIceBlock extends IceBlock {
       int var4 = 0;
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-      for(Direction var9 : Direction.values()) {
+      for (Direction var9 : Direction.values()) {
          var5.setWithOffset(var2, var9);
          if (var1.getBlockState(var5).is(this)) {
             if (++var4 >= var3) {

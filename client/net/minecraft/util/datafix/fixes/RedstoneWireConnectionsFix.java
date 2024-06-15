@@ -3,7 +3,6 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
@@ -26,14 +25,14 @@ public class RedstoneWireConnectionsFix extends DataFix {
          : var1.update(
             "Properties",
             var0 -> {
-               String var1xx = var0.get("east").asString("none");
-               String var2xx = var0.get("west").asString("none");
+               String var1x = var0.get("east").asString("none");
+               String var2x = var0.get("west").asString("none");
                String var3 = var0.get("north").asString("none");
                String var4 = var0.get("south").asString("none");
-               boolean var5 = isConnected(var1xx) || isConnected(var2xx);
+               boolean var5 = isConnected(var1x) || isConnected(var2x);
                boolean var6 = isConnected(var3) || isConnected(var4);
-               String var7 = !isConnected(var1xx) && !var6 ? "side" : var1xx;
-               String var8 = !isConnected(var2xx) && !var6 ? "side" : var2xx;
+               String var7 = !isConnected(var1x) && !var6 ? "side" : var1x;
+               String var8 = !isConnected(var2x) && !var6 ? "side" : var2x;
                String var9 = !isConnected(var3) && !var5 ? "side" : var3;
                String var10 = !isConnected(var4) && !var5 ? "side" : var4;
                return var0.update("east", var1xx -> var1xx.createString(var7))

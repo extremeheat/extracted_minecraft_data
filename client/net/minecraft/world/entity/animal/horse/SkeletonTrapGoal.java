@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.animal.horse;
 
 import javax.annotation.Nullable;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
@@ -9,9 +10,11 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 public class SkeletonTrapGoal extends Goal {
    private final SkeletonHorse horse;
@@ -43,7 +46,7 @@ public class SkeletonTrapGoal extends Goal {
             var4.startRiding(this.horse);
             var1.addFreshEntityWithPassengers(var4);
 
-            for(int var5 = 0; var5 < 3; ++var5) {
+            for (int var5 = 0; var5 < 3; var5++) {
                AbstractHorse var6 = this.createHorse(var2);
                if (var6 != null) {
                   Skeleton var7 = this.createSkeleton(var2, var6);
@@ -62,7 +65,7 @@ public class SkeletonTrapGoal extends Goal {
    private AbstractHorse createHorse(DifficultyInstance var1) {
       SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level());
       if (var2 != null) {
-         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, MobSpawnType.TRIGGERED, null, null);
+         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, MobSpawnType.TRIGGERED, null);
          var2.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var2.invulnerableTime = 60;
          var2.setPersistenceRequired();
@@ -77,7 +80,7 @@ public class SkeletonTrapGoal extends Goal {
    private Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
       Skeleton var3 = EntityType.SKELETON.create(var2.level());
       if (var3 != null) {
-         var3.finalizeSpawn((ServerLevel)var2.level(), var1, MobSpawnType.TRIGGERED, null, null);
+         var3.finalizeSpawn((ServerLevel)var2.level(), var1, MobSpawnType.TRIGGERED, null);
          var3.setPos(var2.getX(), var2.getY(), var2.getZ());
          var3.invulnerableTime = 60;
          var3.setPersistenceRequired();
@@ -85,9 +88,11 @@ public class SkeletonTrapGoal extends Goal {
             var3.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
          }
 
+         FeatureFlagSet var4 = var2.level().enabledFeatures();
          var3.setItemSlot(
             EquipmentSlot.MAINHAND,
             EnchantmentHelper.enchantItem(
+               var4,
                var3.getRandom(),
                this.disenchant(var3.getMainHandItem()),
                (int)(5.0F + var1.getSpecialMultiplier() * (float)var3.getRandom().nextInt(18)),
@@ -97,6 +102,7 @@ public class SkeletonTrapGoal extends Goal {
          var3.setItemSlot(
             EquipmentSlot.HEAD,
             EnchantmentHelper.enchantItem(
+               var4,
                var3.getRandom(),
                this.disenchant(var3.getItemBySlot(EquipmentSlot.HEAD)),
                (int)(5.0F + var1.getSpecialMultiplier() * (float)var3.getRandom().nextInt(18)),
@@ -109,7 +115,7 @@ public class SkeletonTrapGoal extends Goal {
    }
 
    private ItemStack disenchant(ItemStack var1) {
-      var1.removeTagKey("Enchantments");
+      var1.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
       return var1;
    }
 }

@@ -2,20 +2,16 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 
-public record TagPredicate<T>(TagKey<T> a, boolean b) {
-   private final TagKey<T> tag;
-   private final boolean expected;
-
-   public TagPredicate(TagKey<T> var1, boolean var2) {
+public record TagPredicate<T>(TagKey<T> tag, boolean expected) {
+   public TagPredicate(TagKey<T> tag, boolean expected) {
       super();
-      this.tag = var1;
-      this.expected = var2;
+      this.tag = tag;
+      this.expected = expected;
    }
 
    public static <T> Codec<TagPredicate<T>> codec(ResourceKey<? extends Registry<T>> var0) {

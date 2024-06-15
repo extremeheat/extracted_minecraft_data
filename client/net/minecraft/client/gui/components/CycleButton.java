@@ -151,11 +151,11 @@ public class CycleButton<T> extends AbstractButton {
    }
 
    public static CycleButton.Builder<Boolean> booleanBuilder(Component var0, Component var1) {
-      return new CycleButton.Builder<>(var2 -> var2 ? var0 : var1).withValues(BOOLEAN_OPTIONS);
+      return new CycleButton.Builder<Boolean>(var2 -> var2 ? var0 : var1).withValues(BOOLEAN_OPTIONS);
    }
 
    public static CycleButton.Builder<Boolean> onOffBuilder() {
-      return new CycleButton.Builder<>(var0 -> var0 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).withValues(BOOLEAN_OPTIONS);
+      return new CycleButton.Builder<Boolean>(var0 -> var0 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF).withValues(BOOLEAN_OPTIONS);
    }
 
    public static CycleButton.Builder<Boolean> onOffBuilder(boolean var0) {
@@ -222,6 +222,10 @@ public class CycleButton<T> extends AbstractButton {
       public CycleButton.Builder<T> displayOnlyValue() {
          this.displayOnlyValue = true;
          return this;
+      }
+
+      public CycleButton<T> create(Component var1, CycleButton.OnValueChange<T> var2) {
+         return this.create(0, 0, 150, 20, var1, var2);
       }
 
       public CycleButton<T> create(int var1, int var2, int var3, int var4, Component var5) {

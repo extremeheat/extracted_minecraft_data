@@ -5,6 +5,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -39,7 +40,6 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    public static final int OPENING_TICK_LENGTH = 10;
    public static final float MAX_LID_HEIGHT = 0.5F;
    public static final float MAX_LID_ROTATION = 270.0F;
-   public static final String ITEMS_TAG = "Items";
    private static final int[] SLOTS = IntStream.range(0, 27).toArray();
    private NonNullList<ItemStack> itemStacks = NonNullList.withSize(27, ItemStack.EMPTY);
    private int openCount;
@@ -65,7 +65,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
    private void updateAnimation(Level var1, BlockPos var2, BlockState var3) {
       this.progressOld = this.progress;
-      switch(this.animationStatus) {
+      switch (this.animationStatus) {
          case CLOSED:
             this.progress = 0.0F;
             break;
@@ -83,6 +83,9 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
             this.moveCollidedEntities(var1, var2, var3);
             break;
+         case OPENED:
+            this.progress = 1.0F;
+            break;
          case CLOSING:
             this.progress -= 0.1F;
             if (this.progressOld == 1.0F) {
@@ -94,9 +97,6 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
                this.progress = 0.0F;
                doNeighborUpdates(var1, var2, var3);
             }
-            break;
-         case OPENED:
-            this.progress = 1.0F;
       }
    }
 
@@ -105,16 +105,16 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    }
 
    public AABB getBoundingBox(BlockState var1) {
-      return Shulker.getProgressAabb(var1.getValue(ShulkerBoxBlock.FACING), 0.5F * this.getProgress(1.0F));
+      return Shulker.getProgressAabb(1.0F, var1.getValue(ShulkerBoxBlock.FACING), 0.5F * this.getProgress(1.0F));
    }
 
    private void moveCollidedEntities(Level var1, BlockPos var2, BlockState var3) {
       if (var3.getBlock() instanceof ShulkerBoxBlock) {
          Direction var4 = var3.getValue(ShulkerBoxBlock.FACING);
-         AABB var5 = Shulker.getProgressDeltaAabb(var4, this.progressOld, this.progress).move(var2);
+         AABB var5 = Shulker.getProgressDeltaAabb(1.0F, var4, this.progressOld, this.progress).move(var2);
          List var6 = var1.getEntities(null, var5);
          if (!var6.isEmpty()) {
-            for(Entity var8 : var6) {
+            for (Entity var8 : var6) {
                if (var8.getPistonPushReaction() != PushReaction.IGNORE) {
                   var8.move(
                      MoverType.SHULKER_BOX,
@@ -165,12 +165,11 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
             this.openCount = 0;
          }
 
-         ++this.openCount;
+         this.openCount++;
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount == 1) {
             this.level.gameEvent(var1, GameEvent.CONTAINER_OPEN, this.worldPosition);
-            this.level
-               .playSound(null, this.worldPosition, SoundEvents.SHULKER_BOX_OPEN, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
+            this.level.playSound(null, this.worldPosition, SoundEvents.SHULKER_BOX_OPEN, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
          }
       }
    }
@@ -178,7 +177,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    @Override
    public void stopOpen(Player var1) {
       if (!this.remove && !var1.isSpectator()) {
-         --this.openCount;
+         this.openCount--;
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount <= 0) {
             this.level.gameEvent(var1, GameEvent.CONTAINER_CLOSE, this.worldPosition);
@@ -194,23 +193,23 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
-      this.loadFromTag(var1);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
+      this.loadFromTag(var1, var2);
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.itemStacks, false);
+         ContainerHelper.saveAllItems(var1, this.itemStacks, false, var2);
       }
    }
 
-   public void loadFromTag(CompoundTag var1) {
+   public void loadFromTag(CompoundTag var1, HolderLookup.Provider var2) {
       this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1) && var1.contains("Items", 9)) {
-         ContainerHelper.loadAllItems(var1, this.itemStacks);
+         ContainerHelper.loadAllItems(var1, this.itemStacks, var2);
       }
    }
 

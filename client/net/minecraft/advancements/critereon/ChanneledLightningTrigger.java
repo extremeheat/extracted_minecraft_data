@@ -2,7 +2,6 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +9,6 @@ import java.util.stream.Collectors;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 
@@ -29,22 +27,23 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledL
       this.trigger(var1, var1x -> var1x.matches(var3));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, List<ContextAwarePredicate> c) implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final List<ContextAwarePredicate> victims;
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims)
+      implements SimpleCriterionTrigger.SimpleInstance {
       public static final Codec<ChanneledLightningTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(ChanneledLightningTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC.listOf(), "victims", List.of())
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(ChanneledLightningTrigger.TriggerInstance::player),
+                  EntityPredicate.ADVANCEMENT_CODEC
+                     .listOf()
+                     .optionalFieldOf("victims", List.of())
                      .forGetter(ChanneledLightningTrigger.TriggerInstance::victims)
                )
                .apply(var0, ChanneledLightningTrigger.TriggerInstance::new)
       );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, List<ContextAwarePredicate> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims) {
          super();
-         this.player = var1;
-         this.victims = var2;
+         this.player = player;
+         this.victims = victims;
       }
 
       public static Criterion<ChanneledLightningTrigger.TriggerInstance> channeledLightning(EntityPredicate.Builder... var0) {
@@ -53,10 +52,10 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledL
       }
 
       public boolean matches(Collection<? extends LootContext> var1) {
-         for(ContextAwarePredicate var3 : this.victims) {
+         for (ContextAwarePredicate var3 : this.victims) {
             boolean var4 = false;
 
-            for(LootContext var6 : var1) {
+            for (LootContext var6 : var1) {
                if (var3.matches(var6)) {
                   var4 = true;
                   break;

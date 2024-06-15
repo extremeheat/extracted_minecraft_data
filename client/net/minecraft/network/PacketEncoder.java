@@ -4,59 +4,42 @@ import com.mojang.logging.LogUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
-import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
-import java.io.IOException;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import org.slf4j.Logger;
 
-public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
+public class PacketEncoder<T extends PacketListener> extends MessageToByteEncoder<Packet<T>> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final AttributeKey<ConnectionProtocol.CodecData<?>> codecKey;
+   private final ProtocolInfo<T> protocolInfo;
 
-   public PacketEncoder(AttributeKey<ConnectionProtocol.CodecData<?>> var1) {
+   public PacketEncoder(ProtocolInfo<T> var1) {
       super();
-      this.codecKey = var1;
+      this.protocolInfo = var1;
    }
 
-   protected void encode(ChannelHandlerContext var1, Packet<?> var2, ByteBuf var3) throws Exception {
-      Attribute var4 = var1.channel().attr(this.codecKey);
-      ConnectionProtocol.CodecData var5 = (ConnectionProtocol.CodecData)var4.get();
-      if (var5 == null) {
-         throw new RuntimeException("ConnectionProtocol unknown: " + var2);
-      } else {
-         int var6 = var5.packetId(var2);
+   protected void encode(ChannelHandlerContext var1, Packet<T> var2, ByteBuf var3) throws Exception {
+      PacketType var4 = var2.type();
+
+      try {
+         this.protocolInfo.codec().encode(var3, var2);
+         int var5 = var3.readableBytes();
          if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(Connection.PACKET_SENT_MARKER, "OUT: [{}:{}] {}", new Object[]{var5.protocol().id(), var6, var2.getClass().getName()});
+            LOGGER.debug(
+               Connection.PACKET_SENT_MARKER, "OUT: [{}:{}] {} -> {} bytes", new Object[]{this.protocolInfo.id().id(), var4, var2.getClass().getName(), var5}
+            );
          }
 
-         if (var6 == -1) {
-            throw new IOException("Can't serialize unregistered packet");
-         } else {
-            FriendlyByteBuf var7 = new FriendlyByteBuf(var3);
-            var7.writeVarInt(var6);
-
-            try {
-               int var8 = var7.writerIndex();
-               var2.write(var7);
-               int var9 = var7.writerIndex() - var8;
-               if (var9 > 8388608) {
-                  throw new IllegalArgumentException("Packet too big (is " + var9 + ", should be less than 8388608): " + var2);
-               }
-
-               JvmProfiler.INSTANCE.onPacketSent(var5.protocol(), var6, var1.channel().remoteAddress(), var9);
-            } catch (Throwable var13) {
-               LOGGER.error("Error receiving packet {}", var6, var13);
-               if (var2.isSkippable()) {
-                  throw new SkipPacketException(var13);
-               }
-
-               throw var13;
-            } finally {
-               ProtocolSwapHandler.swapProtocolIfNeeded(var4, var2);
-            }
+         JvmProfiler.INSTANCE.onPacketSent(this.protocolInfo.id(), var4, var1.channel().remoteAddress(), var5);
+      } catch (Throwable var9) {
+         LOGGER.error("Error sending packet {}", var4, var9);
+         if (var2.isSkippable()) {
+            throw new SkipPacketException(var9);
          }
+
+         throw var9;
+      } finally {
+         ProtocolSwapHandler.handleOutboundTerminalPacket(var1, var2);
       }
    }
 }

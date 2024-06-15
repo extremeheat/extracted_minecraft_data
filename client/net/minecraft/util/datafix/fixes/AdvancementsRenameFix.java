@@ -3,9 +3,7 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.function.Function;
 
@@ -21,9 +19,7 @@ public class AdvancementsRenameFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       return this.fixTypeEverywhereTyped(
-         this.name,
-         this.getInputSchema().getType(References.ADVANCEMENTS),
-         var1 -> var1.update(DSL.remainderFinder(), var1x -> var1x.updateMapValues(var2 -> {
+         this.name, this.getInputSchema().getType(References.ADVANCEMENTS), var1 -> var1.update(DSL.remainderFinder(), var1x -> var1x.updateMapValues(var2 -> {
                   String var3 = ((Dynamic)var2.getFirst()).asString("");
                   return var2.mapFirst(var3x -> var1x.createString(this.renamer.apply(var3)));
                }))

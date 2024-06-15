@@ -6,13 +6,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
-import net.minecraft.world.level.block.entity.SignText;
 
 public class DyeItem extends Item implements SignApplicator {
    private static final Map<DyeColor, DyeItem> ITEM_BY_COLOR = Maps.newEnumMap(DyeColor.class);
@@ -26,10 +24,10 @@ public class DyeItem extends Item implements SignApplicator {
 
    @Override
    public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
-      if (var3 instanceof Sheep var5 && ((Sheep)var5).isAlive() && !((Sheep)var5).isSheared() && ((Sheep)var5).getColor() != this.dyeColor) {
-         ((Sheep)var5).level().playSound(var2, (Entity)var5, SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+      if (var3 instanceof Sheep var5 && var5.isAlive() && !var5.isSheared() && var5.getColor() != this.dyeColor) {
+         var5.level().playSound(var2, var5, SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
          if (!var2.level().isClientSide) {
-            ((Sheep)var5).setColor(this.dyeColor);
+            var5.setColor(this.dyeColor);
             var1.shrink(1);
          }
 

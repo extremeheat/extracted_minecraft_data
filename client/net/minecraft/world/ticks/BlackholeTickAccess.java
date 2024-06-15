@@ -44,10 +44,10 @@ public class BlackholeTickAccess {
    }
 
    public static <T> TickContainerAccess<T> emptyContainer() {
-      return CONTAINER_BLACKHOLE;
+      return (TickContainerAccess<T>)CONTAINER_BLACKHOLE;
    }
 
    public static <T> LevelTickAccess<T> emptyLevelList() {
-      return LEVEL_BLACKHOLE;
+      return (LevelTickAccess<T>)LEVEL_BLACKHOLE;
    }
 }

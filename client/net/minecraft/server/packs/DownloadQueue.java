@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.io.IOException;
 import java.net.Proxy;
 import java.net.URL;
@@ -51,7 +50,7 @@ public class DownloadQueue implements AutoCloseable {
          (var3x, var4) -> {
             Path var5 = this.cacheDir.resolve(var3x.toString());
             Path var6 = null;
-   
+
             try {
                var6 = HttpUtil.downloadFile(var5, var4.url, var1.headers, var1.hashFunction, var4.hash, var1.maxSize, var1.proxy, var1.listener);
                var3.downloaded.put(var3x, var6);
@@ -59,7 +58,7 @@ public class DownloadQueue implements AutoCloseable {
                LOGGER.error("Failed to download {}", var4.url, var9);
                var3.failed.add(var3x);
             }
-   
+
             try {
                this.eventLog
                   .write(
@@ -100,53 +99,43 @@ public class DownloadQueue implements AutoCloseable {
       this.eventLog.close();
    }
 
-   public static record BatchConfig(HashFunction a, int b, Map<String, String> c, Proxy d, HttpUtil.DownloadProgressListener e) {
-      final HashFunction hashFunction;
-      final int maxSize;
-      final Map<String, String> headers;
-      final Proxy proxy;
-      final HttpUtil.DownloadProgressListener listener;
+   public static record BatchConfig(
+      HashFunction hashFunction, int maxSize, Map<String, String> headers, Proxy proxy, HttpUtil.DownloadProgressListener listener
+   ) {
 
-      public BatchConfig(HashFunction var1, int var2, Map<String, String> var3, Proxy var4, HttpUtil.DownloadProgressListener var5) {
+      public BatchConfig(HashFunction hashFunction, int maxSize, Map<String, String> headers, Proxy proxy, HttpUtil.DownloadProgressListener listener) {
          super();
-         this.hashFunction = var1;
-         this.maxSize = var2;
-         this.headers = var3;
-         this.proxy = var4;
-         this.listener = var5;
+         this.hashFunction = hashFunction;
+         this.maxSize = maxSize;
+         this.headers = headers;
+         this.proxy = proxy;
+         this.listener = listener;
       }
    }
 
-   public static record BatchResult(Map<UUID, Path> a, Set<UUID> b) {
-      final Map<UUID, Path> downloaded;
-      final Set<UUID> failed;
+   public static record BatchResult(Map<UUID, Path> downloaded, Set<UUID> failed) {
 
       public BatchResult() {
          this(new HashMap<>(), new HashSet<>());
       }
 
-      public BatchResult(Map<UUID, Path> var1, Set<UUID> var2) {
+      public BatchResult(Map<UUID, Path> downloaded, Set<UUID> failed) {
          super();
-         this.downloaded = var1;
-         this.failed = var2;
+         this.downloaded = downloaded;
+         this.failed = failed;
       }
    }
 
-   public static record DownloadRequest(URL a, @Nullable HashCode b) {
-      final URL url;
-      @Nullable
-      final HashCode hash;
+   public static record DownloadRequest(URL url, @Nullable HashCode hash) {
 
-      public DownloadRequest(URL var1, @Nullable HashCode var2) {
+      public DownloadRequest(URL url, @Nullable HashCode hash) {
          super();
-         this.url = var1;
-         this.hash = var2;
+         this.url = url;
+         this.hash = hash;
       }
    }
 
-   static record FileInfoEntry(String b, long c) {
-      private final String name;
-      private final long size;
+   static record FileInfoEntry(String name, long size) {
       public static final Codec<DownloadQueue.FileInfoEntry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Codec.STRING.fieldOf("name").forGetter(DownloadQueue.FileInfoEntry::name),
@@ -155,19 +144,14 @@ public class DownloadQueue implements AutoCloseable {
                .apply(var0, DownloadQueue.FileInfoEntry::new)
       );
 
-      FileInfoEntry(String var1, long var2) {
+      FileInfoEntry(String name, long size) {
          super();
-         this.name = var1;
-         this.size = (long)var2;
+         this.name = name;
+         this.size = size;
       }
    }
 
-   static record LogEntry(UUID b, String c, Instant d, Optional<String> e, Either<String, DownloadQueue.FileInfoEntry> f) {
-      private final UUID id;
-      private final String url;
-      private final Instant time;
-      private final Optional<String> hash;
-      private final Either<String, DownloadQueue.FileInfoEntry> errorOrFileInfo;
+   static record LogEntry(UUID id, String url, Instant time, Optional<String> hash, Either<String, DownloadQueue.FileInfoEntry> errorOrFileInfo) {
       public static final Codec<DownloadQueue.LogEntry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(DownloadQueue.LogEntry::id),
@@ -180,13 +164,13 @@ public class DownloadQueue implements AutoCloseable {
                .apply(var0, DownloadQueue.LogEntry::new)
       );
 
-      LogEntry(UUID var1, String var2, Instant var3, Optional<String> var4, Either<String, DownloadQueue.FileInfoEntry> var5) {
+      LogEntry(UUID id, String url, Instant time, Optional<String> hash, Either<String, DownloadQueue.FileInfoEntry> errorOrFileInfo) {
          super();
-         this.id = var1;
-         this.url = var2;
-         this.time = var3;
-         this.hash = var4;
-         this.errorOrFileInfo = var5;
+         this.id = id;
+         this.url = url;
+         this.time = time;
+         this.hash = hash;
+         this.errorOrFileInfo = errorOrFileInfo;
       }
    }
 }

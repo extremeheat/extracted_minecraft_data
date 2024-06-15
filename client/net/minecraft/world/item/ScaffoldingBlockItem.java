@@ -38,7 +38,7 @@ public class ScaffoldingBlockItem extends BlockItem {
          int var7 = 0;
          BlockPos.MutableBlockPos var8 = var2.mutable().move(var6);
 
-         while(var7 < 7) {
+         while (var7 < 7) {
             if (!var3.isClientSide && !var3.isInWorldBounds(var8)) {
                Player var9 = var1.getPlayer();
                int var10 = var3.getMaxBuildHeight();
@@ -58,7 +58,7 @@ public class ScaffoldingBlockItem extends BlockItem {
 
             var8.move(var6);
             if (var6.getAxis().isHorizontal()) {
-               ++var7;
+               var7++;
             }
          }
 

@@ -9,10 +9,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
 
@@ -49,7 +49,7 @@ public class GroundPathNavigation extends PathNavigation {
          if (var3.getBlockState(var1).isAir()) {
             BlockPos var4 = var1.below();
 
-            while(var4.getY() > this.level.getMinBuildHeight() && var3.getBlockState(var4).isAir()) {
+            while (var4.getY() > this.level.getMinBuildHeight() && var3.getBlockState(var4).isAir()) {
                var4 = var4.below();
             }
 
@@ -57,7 +57,7 @@ public class GroundPathNavigation extends PathNavigation {
                return super.createPath(var4.above(), var2);
             }
 
-            while(var4.getY() < this.level.getMaxBuildHeight() && var3.getBlockState(var4).isAir()) {
+            while (var4.getY() < this.level.getMaxBuildHeight() && var3.getBlockState(var4).isAir()) {
                var4 = var4.above();
             }
 
@@ -69,7 +69,7 @@ public class GroundPathNavigation extends PathNavigation {
          } else {
             BlockPos var5 = var1.above();
 
-            while(var5.getY() < this.level.getMaxBuildHeight() && var3.getBlockState(var5).isSolid()) {
+            while (var5.getY() < this.level.getMaxBuildHeight() && var3.getBlockState(var5).isSolid()) {
                var5 = var5.above();
             }
 
@@ -89,7 +89,7 @@ public class GroundPathNavigation extends PathNavigation {
          BlockState var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ()));
          int var3 = 0;
 
-         while(var2.is(Blocks.WATER)) {
+         while (var2.is(Blocks.WATER)) {
             var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)(++var1), this.mob.getZ()));
             if (++var3 > 16) {
                return this.mob.getBlockY();
@@ -110,7 +110,7 @@ public class GroundPathNavigation extends PathNavigation {
             return;
          }
 
-         for(int var1 = 0; var1 < this.path.getNodeCount(); ++var1) {
+         for (int var1 = 0; var1 < this.path.getNodeCount(); var1++) {
             Node var2 = this.path.getNode(var1);
             if (this.level.canSeeSky(new BlockPos(var2.x, var2.y, var2.z))) {
                this.path.truncateNodes(var1);
@@ -120,13 +120,11 @@ public class GroundPathNavigation extends PathNavigation {
       }
    }
 
-   protected boolean hasValidPathType(BlockPathTypes var1) {
-      if (var1 == BlockPathTypes.WATER) {
-         return false;
-      } else if (var1 == BlockPathTypes.LAVA) {
+   protected boolean hasValidPathType(PathType var1) {
+      if (var1 == PathType.WATER) {
          return false;
       } else {
-         return var1 != BlockPathTypes.OPEN;
+         return var1 == PathType.LAVA ? false : var1 != PathType.OPEN;
       }
    }
 

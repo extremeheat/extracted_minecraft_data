@@ -38,11 +38,11 @@ public class TimerQueue<T> {
       this.events.clear();
       this.sequentialId = UnsignedLong.ZERO;
       var2.forEach(var1x -> {
-         Tag var2xx = (Tag)var1x.convert(NbtOps.INSTANCE).getValue();
-         if (var2xx instanceof CompoundTag var3) {
-            this.loadEvent((CompoundTag)var3);
+         Tag var2x = (Tag)var1x.convert(NbtOps.INSTANCE).getValue();
+         if (var2x instanceof CompoundTag var3) {
+            this.loadEvent(var3);
          } else {
-            LOGGER.warn("Invalid format of events: {}", var2xx);
+            LOGGER.warn("Invalid format of events: {}", var2x);
          }
       });
    }
@@ -53,7 +53,7 @@ public class TimerQueue<T> {
    }
 
    public void tick(T var1, long var2) {
-      while(true) {
+      while (true) {
          TimerQueue.Event var4 = this.queue.peek();
          if (var4 == null || var4.triggerTime > var2) {
             return;

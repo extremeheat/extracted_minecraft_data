@@ -3,7 +3,6 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
@@ -21,6 +20,6 @@ public class OptionsProgrammerArtFix extends DataFix {
    }
 
    private <T> Dynamic<T> fixList(Dynamic<T> var1) {
-      return (Dynamic<T>)var1.asString().result().map(var1x -> var1.createString(var1x.replace("\"programer_art\"", "\"programmer_art\""))).orElse((T)var1);
+      return var1.asString().result().map(var1x -> var1.createString(var1x.replace("\"programer_art\"", "\"programmer_art\""))).orElse(var1);
    }
 }

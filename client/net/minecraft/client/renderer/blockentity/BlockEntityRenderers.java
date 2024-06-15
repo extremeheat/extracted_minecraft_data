@@ -25,7 +25,7 @@ public class BlockEntityRenderers {
          try {
             var1.put(var2, var3.create(var0));
          } catch (Exception var5) {
-            throw new IllegalStateException("Failed to create model for " + BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var2), var5);
+            throw new IllegalStateException("Failed to create model for " + BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey((BlockEntityType<?>)var2), var5);
          }
       });
       return var1.build();
@@ -55,5 +55,6 @@ public class BlockEntityRenderers {
       register(BlockEntityType.BRUSHABLE_BLOCK, BrushableBlockRenderer::new);
       register(BlockEntityType.DECORATED_POT, DecoratedPotRenderer::new);
       register(BlockEntityType.TRIAL_SPAWNER, TrialSpawnerRenderer::new);
+      register(BlockEntityType.VAULT, VaultRenderer::new);
    }
 }

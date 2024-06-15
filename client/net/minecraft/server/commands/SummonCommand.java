@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandBuildContext;
@@ -94,7 +93,7 @@ public class SummonCommand {
             throw ERROR_FAILED.create();
          } else {
             if (var4 && var8 instanceof Mob) {
-               ((Mob)var8).finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(var8.blockPosition()), MobSpawnType.COMMAND, null, null);
+               ((Mob)var8).finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(var8.blockPosition()), MobSpawnType.COMMAND, null);
             }
 
             if (!var7.tryAddFreshEntityWithPassengers(var8)) {

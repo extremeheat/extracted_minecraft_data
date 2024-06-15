@@ -1,11 +1,9 @@
 package net.minecraft.world.entity.monster.piglin;
 
 import java.util.Optional;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 public class StopAdmiringIfTiredOfTryingToReachItem {
@@ -29,7 +27,7 @@ public class StopAdmiringIfTiredOfTryingToReachItem {
                         if (var10.isEmpty()) {
                            var5.set(0);
                         } else {
-                           int var11 = var10.get();
+                           int var11 = (Integer)var10.get();
                            if (var11 > var0) {
                               var3.erase();
                               var5.erase();
@@ -38,7 +36,7 @@ public class StopAdmiringIfTiredOfTryingToReachItem {
                               var5.set(var11 + 1);
                            }
                         }
-      
+
                         return true;
                      }
                   })

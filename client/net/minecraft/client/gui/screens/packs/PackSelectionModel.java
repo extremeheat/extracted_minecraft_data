@@ -108,9 +108,9 @@ public class PackSelectionModel {
    abstract class EntryBase implements PackSelectionModel.Entry {
       private final Pack pack;
 
-      public EntryBase(Pack var2) {
+      public EntryBase(final Pack nullx) {
          super();
-         this.pack = var2;
+         this.pack = nullx;
       }
 
       protected abstract List<Pack> getSelfList();
@@ -159,7 +159,7 @@ public class PackSelectionModel {
 
       protected void toggleSelection() {
          this.getSelfList().remove(this.pack);
-         this.pack.getDefaultPosition().insert(this.getOtherList(), this.pack, Function.identity(), true);
+         this.pack.getDefaultPosition().insert(this.getOtherList(), this.pack, Pack::selectionConfig, true);
          PackSelectionModel.this.onListChanged.run();
          PackSelectionModel.this.updateRepoSelectedList();
          this.updateHighContrastOptionInstance();
@@ -168,7 +168,7 @@ public class PackSelectionModel {
       private void updateHighContrastOptionInstance() {
          if (this.pack.getId().equals("high_contrast")) {
             OptionInstance var1 = Minecraft.getInstance().options.highContrast();
-            var1.set(!var1.get());
+            var1.set(!(Boolean)var1.get());
          }
       }
 
@@ -206,8 +206,8 @@ public class PackSelectionModel {
    }
 
    class SelectedPackEntry extends PackSelectionModel.EntryBase {
-      public SelectedPackEntry(Pack var2) {
-         super(var2);
+      public SelectedPackEntry(final Pack nullx) {
+         super(nullx);
       }
 
       @Override
@@ -236,8 +236,8 @@ public class PackSelectionModel {
    }
 
    class UnselectedPackEntry extends PackSelectionModel.EntryBase {
-      public UnselectedPackEntry(Pack var2) {
-         super(var2);
+      public UnselectedPackEntry(final Pack nullx) {
+         super(nullx);
       }
 
       @Override

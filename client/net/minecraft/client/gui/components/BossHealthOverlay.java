@@ -55,10 +55,11 @@ public class BossHealthOverlay {
 
    public void render(GuiGraphics var1) {
       if (!this.events.isEmpty()) {
+         this.minecraft.getProfiler().push("bossHealth");
          int var2 = var1.guiWidth();
          int var3 = 12;
 
-         for(LerpingBossEvent var5 : this.events.values()) {
+         for (LerpingBossEvent var5 : this.events.values()) {
             int var6 = var2 / 2 - 91;
             this.drawBar(var1, var6, var3, var5);
             Component var8 = var5.getName();
@@ -71,6 +72,8 @@ public class BossHealthOverlay {
                break;
             }
          }
+
+         this.minecraft.getProfiler().pop();
       }
    }
 
@@ -83,12 +86,13 @@ public class BossHealthOverlay {
    }
 
    private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4, int var5, ResourceLocation[] var6, ResourceLocation[] var7) {
+      RenderSystem.enableBlend();
       var1.blitSprite(var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
       if (var4.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
-         RenderSystem.enableBlend();
          var1.blitSprite(var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
-         RenderSystem.disableBlend();
       }
+
+      RenderSystem.disableBlend();
    }
 
    public void update(ClientboundBossEventPacket var1) {
@@ -100,29 +104,29 @@ public class BossHealthOverlay {
             ) {
                BossHealthOverlay.this.events.put(var1, new LerpingBossEvent(var1, var2, var3, var4, var5, var6, var7, var8));
             }
-   
+
             @Override
             public void remove(UUID var1) {
                BossHealthOverlay.this.events.remove(var1);
             }
-   
+
             @Override
             public void updateProgress(UUID var1, float var2) {
                BossHealthOverlay.this.events.get(var1).setProgress(var2);
             }
-   
+
             @Override
             public void updateName(UUID var1, Component var2) {
                BossHealthOverlay.this.events.get(var1).setName(var2);
             }
-   
+
             @Override
             public void updateStyle(UUID var1, BossEvent.BossBarColor var2, BossEvent.BossBarOverlay var3) {
                LerpingBossEvent var4 = BossHealthOverlay.this.events.get(var1);
                var4.setColor(var2);
                var4.setOverlay(var3);
             }
-   
+
             @Override
             public void updateProperties(UUID var1, boolean var2, boolean var3, boolean var4) {
                LerpingBossEvent var5 = BossHealthOverlay.this.events.get(var1);
@@ -140,7 +144,7 @@ public class BossHealthOverlay {
 
    public boolean shouldPlayMusic() {
       if (!this.events.isEmpty()) {
-         for(BossEvent var2 : this.events.values()) {
+         for (BossEvent var2 : this.events.values()) {
             if (var2.shouldPlayBossMusic()) {
                return true;
             }
@@ -152,7 +156,7 @@ public class BossHealthOverlay {
 
    public boolean shouldDarkenScreen() {
       if (!this.events.isEmpty()) {
-         for(BossEvent var2 : this.events.values()) {
+         for (BossEvent var2 : this.events.values()) {
             if (var2.shouldDarkenScreen()) {
                return true;
             }
@@ -164,7 +168,7 @@ public class BossHealthOverlay {
 
    public boolean shouldCreateWorldFog() {
       if (!this.events.isEmpty()) {
-         for(BossEvent var2 : this.events.values()) {
+         for (BossEvent var2 : this.events.values()) {
             if (var2.shouldCreateWorldFog()) {
                return true;
             }

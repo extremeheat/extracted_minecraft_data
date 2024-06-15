@@ -17,6 +17,7 @@ import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.advancements.critereon.TagPredicate;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -256,7 +257,12 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("in_stronghold", PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inStructure(BuiltinStructures.STRONGHOLD)))
+         .addCriterion(
+            "in_stronghold",
+            PlayerTrigger.TriggerInstance.located(
+               LocationPredicate.Builder.inStructure(var1.lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.STRONGHOLD))
+            )
+         )
          .save(var2, "story/follow_ender_eye");
       Advancement.Builder.advancement()
          .parent(var13)

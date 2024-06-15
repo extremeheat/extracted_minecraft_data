@@ -19,7 +19,7 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
 
    public PathfindToRaidGoal(T var1) {
       super();
-      this.mob = var1;
+      this.mob = (T)var1;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
@@ -66,7 +66,7 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
             .getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), var1x -> !var1x.hasActiveRaid() && Raids.canJoinRaid(var1x, var1));
          var2.addAll(var3);
 
-         for(Raider var5 : var2) {
+         for (Raider var5 : var2) {
             var1.joinRaid(var1.getGroupsSpawned(), var5, null, true);
          }
       }

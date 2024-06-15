@@ -28,7 +28,7 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
       int var9 = 11 - var4.nextInt(5);
       int var10 = 3 + var4.nextInt(3);
       boolean var11 = var4.nextDouble() > 0.7;
-      boolean var12 = true;
+      byte var12 = 11;
       int var13 = var11 ? var4.nextInt(6) + 6 : var4.nextInt(15) + 3;
       if (!var11 && var4.nextDouble() > 0.9) {
          var13 += var4.nextInt(19) + 7;
@@ -38,9 +38,9 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
       int var15 = Math.min(var13 + var4.nextInt(7) - var4.nextInt(5), 11);
       int var16 = var11 ? var9 : 11;
 
-      for(int var17 = -var16; var17 < var16; ++var17) {
-         for(int var18 = -var16; var18 < var16; ++var18) {
-            for(int var19 = 0; var19 < var13; ++var19) {
+      for (int var17 = -var16; var17 < var16; var17++) {
+         for (int var18 = -var16; var18 < var16; var18++) {
+            for (int var19 = 0; var19 < var13; var19++) {
                int var20 = var11 ? this.heightDependentRadiusEllipse(var19, var13, var15) : this.heightDependentRadiusRound(var4, var19, var13, var15);
                if (var11 || var17 < var20) {
                   this.generateIcebergBlock(var3, var4, var2, var13, var17, var19, var18, var20, var16, var11, var10, var7, var5, var6);
@@ -51,9 +51,9 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
 
       this.smooth(var3, var2, var15, var13, var11, var9);
 
-      for(int var23 = -var16; var23 < var16; ++var23) {
-         for(int var25 = -var16; var25 < var16; ++var25) {
-            for(int var26 = -1; var26 > -var14; --var26) {
+      for (int var23 = -var16; var23 < var16; var23++) {
+         for (int var25 = -var16; var25 < var16; var25++) {
+            for (int var26 = -1; var26 > -var14; var26--) {
                int var27 = var11 ? Mth.ceil((float)var16 * (1.0F - (float)Math.pow((double)var26, 2.0) / ((float)var14 * 8.0F))) : var16;
                int var21 = this.heightDependentRadiusSteep(var4, -var26, var14, var15);
                if (var23 < var21) {
@@ -91,12 +91,12 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
       BlockPos var15 = new BlockPos(var11 * var13, 0, var12 * var14);
       double var16 = var6 ? var8 + 1.5707963267948966 : var1.nextDouble() * 2.0 * 3.141592653589793;
 
-      for(int var18 = 0; var18 < var4 - 3; ++var18) {
+      for (int var18 = 0; var18 < var4 - 3; var18++) {
          int var19 = this.heightDependentRadiusRound(var1, var18, var4, var3);
          this.carve(var19, var18, var5, var2, false, var16, var15, var7, var10);
       }
 
-      for(int var20 = -1; var20 > -var4 + var1.nextInt(5); --var20) {
+      for (int var20 = -1; var20 > -var4 + var1.nextInt(5); var20--) {
          int var21 = this.heightDependentRadiusSteep(var1, -var20, var4, var3);
          this.carve(var21, var20, var5, var2, true, var16, var15, var7, var10);
       }
@@ -106,8 +106,8 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
       int var11 = var1 + 1 + var9 / 3;
       int var12 = Math.min(var1 - 3, 3) + var10 / 2 - 1;
 
-      for(int var13 = -var11; var13 < var11; ++var13) {
-         for(int var14 = -var11; var14 < var11; ++var14) {
+      for (int var13 = -var11; var13 < var11; var13++) {
+         for (int var14 = -var11; var14 < var11; var14++) {
             double var15 = this.signedDistanceEllipse(var13, var14, var8, var11, var12, var6);
             if (var15 < 0.0) {
                BlockPos var17 = var3.offset(var13, var2, var14);
@@ -228,9 +228,9 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
    private void smooth(LevelAccessor var1, BlockPos var2, int var3, int var4, boolean var5, int var6) {
       int var7 = var5 ? var6 : var3 / 2;
 
-      for(int var8 = -var7; var8 <= var7; ++var8) {
-         for(int var9 = -var7; var9 <= var7; ++var9) {
-            for(int var10 = 0; var10 <= var4; ++var10) {
+      for (int var8 = -var7; var8 <= var7; var8++) {
+         for (int var9 = -var7; var9 <= var7; var9++) {
+            for (int var10 = 0; var10 <= var4; var10++) {
                BlockPos var11 = var2.offset(var8, var10, var9);
                BlockState var12 = var1.getBlockState(var11);
                if (isIcebergState(var12) || var12.is(Blocks.SNOW)) {
@@ -246,9 +246,9 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
                      };
                      int var14 = 0;
 
-                     for(BlockState var18 : var13) {
+                     for (BlockState var18 : var13) {
                         if (!isIcebergState(var18)) {
-                           ++var14;
+                           var14++;
                         }
                      }
 

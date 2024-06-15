@@ -9,7 +9,7 @@ public interface FunctionUserBuilder<T extends FunctionUserBuilder<T>> {
    default <E> T apply(Iterable<E> var1, Function<E, LootItemFunction.Builder> var2) {
       FunctionUserBuilder var3 = this.unwrap();
 
-      for(Object var5 : var1) {
+      for (Object var5 : var1) {
          var3 = var3.apply((LootItemFunction.Builder)var2.apply(var5));
       }
 

@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
@@ -30,10 +29,15 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public class ClientboundCommandsPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCommandsPacket> STREAM_CODEC = Packet.codec(
+      ClientboundCommandsPacket::write, ClientboundCommandsPacket::new
+   );
    private static final byte MASK_TYPE = 3;
    private static final byte FLAG_EXECUTABLE = 4;
    private static final byte FLAG_REDIRECT = 8;
@@ -51,15 +55,14 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       this.rootIndex = var2.getInt(var1);
    }
 
-   public ClientboundCommandsPacket(FriendlyByteBuf var1) {
+   private ClientboundCommandsPacket(FriendlyByteBuf var1) {
       super();
       this.entries = var1.readList(ClientboundCommandsPacket::readNode);
       this.rootIndex = var1.readVarInt();
       validateEntries(this.entries);
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeCollection(this.entries, (var0, var1x) -> var1x.write(var0));
       var1.writeVarInt(this.rootIndex);
    }
@@ -67,7 +70,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
    private static void validateEntries(List<ClientboundCommandsPacket.Entry> var0, BiPredicate<ClientboundCommandsPacket.Entry, IntSet> var1) {
       IntOpenHashSet var2 = new IntOpenHashSet(IntSets.fromTo(0, var0.size()));
 
-      while(!var2.isEmpty()) {
+      while (!var2.isEmpty()) {
          boolean var3 = var2.removeIf(var3x -> var1.test((ClientboundCommandsPacket.Entry)var0.get(var3x), var2));
          if (!var3) {
             throw new IllegalStateException("Server sent an impossible command tree");
@@ -86,7 +89,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       var2.add(var0);
 
       CommandNode var3;
-      while((var3 = (CommandNode)var2.poll()) != null) {
+      while ((var3 = (CommandNode)var2.poll()) != null) {
          if (!var1.containsKey(var3)) {
             int var4 = var1.size();
             var1.put(var3, var4);
@@ -105,7 +108,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       var1.size(var0.size());
       ObjectIterator var2 = Object2IntMaps.fastIterable(var0).iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          it.unimi.dsi.fastutil.objects.Object2IntMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry)var2.next();
          var1.set(var3.getIntValue(), createEntry((CommandNode<SharedSuggestionProvider>)var3.getKey(), var0));
       }
@@ -164,23 +167,27 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
          var2 |= 0;
          var4 = null;
       } else if (var0 instanceof ArgumentCommandNode var6) {
-         var4 = new ClientboundCommandsPacket.ArgumentNodeStub((ArgumentCommandNode<SharedSuggestionProvider, ?>)var6);
+         var4 = new ClientboundCommandsPacket.ArgumentNodeStub(var6);
          var2 |= 2;
          if (var6.getCustomSuggestions() != null) {
             var2 |= 16;
          }
       } else {
-         if (!(var0 instanceof LiteralCommandNode)) {
+         if (!(var0 instanceof LiteralCommandNode var5)) {
             throw new UnsupportedOperationException("Unknown node type " + var0);
          }
 
-         LiteralCommandNode var5 = (LiteralCommandNode)var0;
          var4 = new ClientboundCommandsPacket.LiteralNodeStub(var5.getLiteral());
          var2 |= 1;
       }
 
       int[] var8 = var0.getChildren().stream().mapToInt(var1::getInt).toArray();
       return new ClientboundCommandsPacket.Entry((ClientboundCommandsPacket.NodeStub)var4, var2, var3, var8);
+   }
+
+   @Override
+   public PacketType<ClientboundCommandsPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_COMMANDS;
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -273,15 +280,11 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       }
 
       public boolean canBuild(IntSet var1) {
-         if ((this.flags & 8) != 0) {
-            return !var1.contains(this.redirect);
-         } else {
-            return true;
-         }
+         return (this.flags & 8) != 0 ? !var1.contains(this.redirect) : true;
       }
 
       public boolean canResolve(IntSet var1) {
-         for(int var5 : this.children) {
+         for (int var5 : this.children) {
             if (var1.contains(var5)) {
                return false;
             }
@@ -325,7 +328,7 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       }
 
       public CommandNode<SharedSuggestionProvider> resolve(int var1) {
-         CommandNode var2 = (CommandNode)this.nodes.get(var1);
+         CommandNode var2 = this.nodes.get(var1);
          if (var2 != null) {
             return var2;
          } else {
@@ -346,9 +349,9 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
                var4 = var5.build();
             }
 
-            this.nodes.set(var1, var4);
+            this.nodes.set(var1, (CommandNode<SharedSuggestionProvider>)var4);
 
-            for(int var8 : var3.children) {
+            for (int var8 : var3.children) {
                CommandNode var9 = this.resolve(var8);
                if (!(var9 instanceof RootCommandNode)) {
                   var4.addChild(var9);

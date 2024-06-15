@@ -7,7 +7,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class Containers {
@@ -24,7 +23,7 @@ public class Containers {
    }
 
    private static void dropContents(Level var0, double var1, double var3, double var5, Container var7) {
-      for(int var8 = 0; var8 < var7.getContainerSize(); ++var8) {
+      for (int var8 = 0; var8 < var7.getContainerSize(); var8++) {
          dropItemStack(var0, var1, var3, var5, var7.getItem(var8));
       }
    }
@@ -41,7 +40,7 @@ public class Containers {
       double var16 = Math.floor(var3) + var0.random.nextDouble() * var10;
       double var18 = Math.floor(var5) + var0.random.nextDouble() * var10 + var12;
 
-      while(!var7.isEmpty()) {
+      while (!var7.isEmpty()) {
          ItemEntity var20 = new ItemEntity(var0, var14, var16, var18, var7.split(var0.random.nextInt(21) + 10));
          float var21 = 0.05F;
          var20.setDeltaMovement(
@@ -53,9 +52,8 @@ public class Containers {
 
    public static void dropContentsOnDestroy(BlockState var0, BlockState var1, Level var2, BlockPos var3) {
       if (!var0.is(var1.getBlock())) {
-         BlockEntity var4 = var2.getBlockEntity(var3);
-         if (var4 instanceof Container var5) {
-            dropContents(var2, var3, (Container)var5);
+         if (var2.getBlockEntity(var3) instanceof Container var5) {
+            dropContents(var2, var3, var5);
             var2.updateNeighbourForOutputSignal(var3, var0.getBlock());
          }
       }

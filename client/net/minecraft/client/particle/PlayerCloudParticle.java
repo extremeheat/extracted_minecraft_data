@@ -49,8 +49,8 @@ public class PlayerCloudParticle extends TextureSheetParticle {
          if (var1 != null) {
             double var2 = var1.getY();
             if (this.y > var2) {
-               this.y += (var2 - this.y) * 0.2;
-               this.yd += (var1.getDeltaMovement().y - this.yd) * 0.2;
+               this.y = this.y + (var2 - this.y) * 0.2;
+               this.yd = this.yd + (var1.getDeltaMovement().y - this.yd) * 0.2;
                this.setPos(this.x, this.y, this.z);
             }
          }

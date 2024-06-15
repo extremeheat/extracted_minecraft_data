@@ -11,12 +11,10 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
@@ -39,11 +37,6 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       this.moveControl = new AbstractFish.FishMoveControl(this);
    }
 
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.65F;
-   }
-
    public static AttributeSupplier.Builder createAttributes() {
       return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 3.0);
    }
@@ -64,9 +57,9 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(FROM_BUCKET, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(FROM_BUCKET, false);
    }
 
    @Override
@@ -127,7 +120,7 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
          );
          this.setOnGround(false);
          this.hasImpulse = true;
-         this.playSound(this.getFlopSound(), this.getSoundVolume(), this.getVoicePitch());
+         this.makeSound(this.getFlopSound());
       }
 
       super.aiStep();

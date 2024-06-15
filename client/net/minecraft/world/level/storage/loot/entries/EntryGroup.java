@@ -1,14 +1,12 @@
 package net.minecraft.world.level.storage.loot.entries;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
-import java.util.function.Consumer;
-import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class EntryGroup extends CompositeEntryBase {
-   public static final Codec<EntryGroup> CODEC = createCodec(EntryGroup::new);
+   public static final MapCodec<EntryGroup> CODEC = createCodec(EntryGroup::new);
 
    EntryGroup(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2) {
       super(var1, var2);
@@ -21,7 +19,7 @@ public class EntryGroup extends CompositeEntryBase {
 
    @Override
    protected ComposableEntryContainer compose(List<? extends ComposableEntryContainer> var1) {
-      return switch(var1.size()) {
+      return switch (var1.size()) {
          case 0 -> ALWAYS_TRUE;
          case 1 -> (ComposableEntryContainer)var1.get(0);
          case 2 -> {
@@ -34,7 +32,7 @@ public class EntryGroup extends CompositeEntryBase {
             };
          }
          default -> (var1x, var2x) -> {
-         for(ComposableEntryContainer var4 : var1) {
+         for (ComposableEntryContainer var4 : var1) {
             var4.expand(var1x, var2x);
          }
 
@@ -53,7 +51,7 @@ public class EntryGroup extends CompositeEntryBase {
       public Builder(LootPoolEntryContainer.Builder<?>... var1) {
          super();
 
-         for(LootPoolEntryContainer.Builder var5 : var1) {
+         for (LootPoolEntryContainer.Builder var5 : var1) {
             this.entries.add(var5.build());
          }
       }

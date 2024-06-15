@@ -18,13 +18,13 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
    }
 
    @Override
-   public Holder.Reference<T> registerMapping(int var1, ResourceKey<T> var2, T var3, Lifecycle var4) {
-      Holder.Reference var5 = super.registerMapping(var1, var2, (T)var3, var4);
-      if (this.defaultKey.equals(var2.location())) {
-         this.defaultValue = var5;
+   public Holder.Reference<T> register(ResourceKey<T> var1, T var2, RegistrationInfo var3) {
+      Holder.Reference var4 = super.register(var1, (T)var2, var3);
+      if (this.defaultKey.equals(var1.location())) {
+         this.defaultValue = var4;
       }
 
-      return var5;
+      return var4;
    }
 
    @Override

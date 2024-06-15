@@ -77,8 +77,6 @@ public final class LevelSettings {
    }
 
    public LevelSettings copy() {
-      return new LevelSettings(
-         this.levelName, this.gameType, this.hardcore, this.difficulty, this.allowCommands, this.gameRules.copy(), this.dataConfiguration
-      );
+      return new LevelSettings(this.levelName, this.gameType, this.hardcore, this.difficulty, this.allowCommands, this.gameRules.copy(), this.dataConfiguration);
    }
 }

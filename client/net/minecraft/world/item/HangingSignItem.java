@@ -14,8 +14,7 @@ public class HangingSignItem extends SignItem {
 
    @Override
    protected boolean canPlace(LevelReader var1, BlockState var2, BlockPos var3) {
-      Block var5 = var2.getBlock();
-      if (var5 instanceof WallHangingSignBlock var4 && !var4.canPlace(var2, var1, var3)) {
+      if (var2.getBlock() instanceof WallHangingSignBlock var4 && !var4.canPlace(var2, var1, var3)) {
          return false;
       }
 

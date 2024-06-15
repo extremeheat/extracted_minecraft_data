@@ -6,14 +6,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -199,7 +197,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    @Override
    public Brain<Villager> getBrain() {
-      return super.getBrain();
+      return (Brain<Villager>)super.getBrain();
    }
 
    @Override
@@ -275,7 +273,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
 
       if (!this.isTrading() && this.updateMerchantTimer > 0) {
-         --this.updateMerchantTimer;
+         this.updateMerchantTimer--;
          if (this.updateMerchantTimer <= 0) {
             if (this.increaseProfessionLevelOnUpdate) {
                this.increaseMerchantCareer();
@@ -349,7 +347,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void setUnhappy() {
       this.setUnhappyCounter(40);
       if (!this.level().isClientSide()) {
-         this.playSound(SoundEvents.VILLAGER_NO, this.getSoundVolume(), this.getVoicePitch());
+         this.makeSound(SoundEvents.VILLAGER_NO);
       }
    }
 
@@ -375,7 +373,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void resetSpecialPrices() {
-      for(MerchantOffer var2 : this.getOffers()) {
+      for (MerchantOffer var2 : this.getOffers()) {
          var2.resetSpecialPriceDiff();
       }
    }
@@ -393,13 +391,13 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void restock() {
       this.updateDemand();
 
-      for(MerchantOffer var2 : this.getOffers()) {
+      for (MerchantOffer var2 : this.getOffers()) {
          var2.resetUses();
       }
 
       this.resendOffersToTradingPlayer();
       this.lastRestockGameTime = this.level().getGameTime();
-      ++this.numberOfRestocksToday;
+      this.numberOfRestocksToday++;
    }
 
    private void resendOffersToTradingPlayer() {
@@ -413,7 +411,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private boolean needsToRestock() {
-      for(MerchantOffer var2 : this.getOffers()) {
+      for (MerchantOffer var2 : this.getOffers()) {
          if (var2.needsRestock()) {
             return true;
          }
@@ -449,12 +447,12 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void catchUpDemand() {
       int var1 = 2 - this.numberOfRestocksToday;
       if (var1 > 0) {
-         for(MerchantOffer var3 : this.getOffers()) {
+         for (MerchantOffer var3 : this.getOffers()) {
             var3.resetUses();
          }
       }
 
-      for(int var4 = 0; var4 < var1; ++var4) {
+      for (int var4 = 0; var4 < var1; var4++) {
          this.updateDemand();
       }
 
@@ -462,7 +460,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void updateDemand() {
-      for(MerchantOffer var2 : this.getOffers()) {
+      for (MerchantOffer var2 : this.getOffers()) {
          var2.updateDemand();
       }
    }
@@ -470,7 +468,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void updateSpecialPrices(Player var1) {
       int var2 = this.getPlayerReputation(var1);
       if (var2 != 0) {
-         for(MerchantOffer var4 : this.getOffers()) {
+         for (MerchantOffer var4 : this.getOffers()) {
             var4.addToSpecialPriceDiff(-Mth.floor((float)var2 * var4.getPriceMultiplier()));
          }
       }
@@ -479,7 +477,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          MobEffectInstance var10 = var1.getEffect(MobEffects.HERO_OF_THE_VILLAGE);
          int var11 = var10.getAmplifier();
 
-         for(MerchantOffer var6 : this.getOffers()) {
+         for (MerchantOffer var6 : this.getOffers()) {
             double var7 = 0.3 + 0.0625 * (double)var11;
             int var9 = (int)Math.floor(var7 * (double)var6.getBaseCostA().getCount());
             var6.addToSpecialPriceDiff(-Math.max(var9, 1));
@@ -488,9 +486,9 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_VILLAGER_DATA, new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1));
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_VILLAGER_DATA, new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1));
    }
 
    @Override
@@ -515,20 +513,18 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("VillagerData", 10)) {
-         DataResult var2 = VillagerData.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("VillagerData")));
-         var2.resultOrPartial(LOGGER::error).ifPresent(this::setVillagerData);
-      }
-
-      if (var1.contains("Offers", 10)) {
-         this.offers = new MerchantOffers(var1.getCompound("Offers"));
+         VillagerData.CODEC
+            .parse(NbtOps.INSTANCE, var1.get("VillagerData"))
+            .resultOrPartial(LOGGER::error)
+            .ifPresent(var1x -> this.entityData.set(DATA_VILLAGER_DATA, var1x));
       }
 
       if (var1.contains("FoodLevel", 1)) {
          this.foodLevel = var1.getByte("FoodLevel");
       }
 
-      ListTag var3 = var1.getList("Gossips", 10);
-      this.gossips.update(new Dynamic(NbtOps.INSTANCE, var3));
+      ListTag var2 = var1.getList("Gossips", 10);
+      this.gossips.update(new Dynamic(NbtOps.INSTANCE, var2));
       if (var1.contains("Xp", 3)) {
          this.villagerXp = var1.getInt("Xp");
       }
@@ -572,10 +568,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    public void playWorkSound() {
-      SoundEvent var1 = this.getVillagerData().getProfession().workSound();
-      if (var1 != null) {
-         this.playSound(var1, this.getSoundVolume(), this.getVoicePitch());
-      }
+      this.makeSound(this.getVillagerData().getProfession().workSound());
    }
 
    @Override
@@ -596,7 +589,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    @Override
    protected void rewardTradeXp(MerchantOffer var1) {
       int var2 = 3 + this.random.nextInt(4);
-      this.villagerXp += var1.getXp();
+      this.villagerXp = this.villagerXp + var1.getXp();
       this.lastTradedPlayer = this.getTradingPlayer();
       if (this.shouldIncreaseLevel()) {
          this.updateMerchantTimer = 40;
@@ -649,8 +642,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void tellWitnessesThatIWasMurdered(Entity var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+      if (this.level() instanceof ServerLevel var2) {
          Optional var4 = this.brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
          if (!var4.isEmpty()) {
             ((NearestVisibleLivingEntities)var4.get())
@@ -689,15 +681,15 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private void eatUntilFull() {
       if (this.hungry() && this.countFoodPointsInInventory() != 0) {
-         for(int var1 = 0; var1 < this.getInventory().getContainerSize(); ++var1) {
+         for (int var1 = 0; var1 < this.getInventory().getContainerSize(); var1++) {
             ItemStack var2 = this.getInventory().getItem(var1);
             if (!var2.isEmpty()) {
                Integer var3 = FOOD_POINTS.get(var2.getItem());
                if (var3 != null) {
                   int var4 = var2.getCount();
 
-                  for(int var5 = var4; var5 > 0; --var5) {
-                     this.foodLevel += var3;
+                  for (int var5 = var4; var5 > 0; var5--) {
+                     this.foodLevel = this.foodLevel + var3;
                      this.getInventory().removeItem(var1, 1);
                      if (!this.hungry()) {
                         return;
@@ -760,9 +752,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var3 == MobSpawnType.BREEDING) {
          this.setVillagerData(this.getVillagerData().setProfession(VillagerProfession.NONE));
       }
@@ -775,7 +765,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          this.assignProfessionWhenSpawned = true;
       }
 
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Nullable
@@ -791,7 +781,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
 
       Villager var6 = new Villager(EntityType.VILLAGER, var1, var3);
-      var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var6.blockPosition()), MobSpawnType.BREEDING, null, null);
+      var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var6.blockPosition()), MobSpawnType.BREEDING, null);
       return var6;
    }
 
@@ -802,7 +792,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          Witch var3 = EntityType.WITCH.create(var1);
          if (var3 != null) {
             var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null, null);
+            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null);
             var3.setNoAi(this.isNoAi());
             if (this.hasCustomName()) {
                var3.setCustomName(this.getCustomName());
@@ -854,10 +844,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       VillagerData var1 = this.getVillagerData();
       Int2ObjectMap var2;
       if (this.level().enabledFeatures().contains(FeatureFlags.TRADE_REBALANCE)) {
-         Int2ObjectMap var3 = (Int2ObjectMap)VillagerTrades.EXPERIMENTAL_TRADES.get(var1.getProfession());
-         var2 = var3 != null ? var3 : (Int2ObjectMap)VillagerTrades.TRADES.get(var1.getProfession());
+         Int2ObjectMap var3 = VillagerTrades.EXPERIMENTAL_TRADES.get(var1.getProfession());
+         var2 = var3 != null ? var3 : VillagerTrades.TRADES.get(var1.getProfession());
       } else {
-         var2 = (Int2ObjectMap)VillagerTrades.TRADES.get(var1.getProfession());
+         var2 = VillagerTrades.TRADES.get(var1.getProfession());
       }
 
       if (var2 != null && !var2.isEmpty()) {
@@ -905,11 +895,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    public boolean wantsToSpawnGolem(long var1) {
-      if (!this.golemSpawnConditionsMet(this.level().getGameTime())) {
-         return false;
-      } else {
-         return !this.brain.hasMemoryValue(MemoryModuleType.GOLEM_DETECTED_RECENTLY);
-      }
+      return !this.golemSpawnConditionsMet(this.level().getGameTime()) ? false : !this.brain.hasMemoryValue(MemoryModuleType.GOLEM_DETECTED_RECENTLY);
    }
 
    @Override
@@ -970,10 +956,6 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private boolean golemSpawnConditionsMet(long var1) {
       Optional var3 = this.brain.getMemory(MemoryModuleType.LAST_SLEPT);
-      if (var3.isPresent()) {
-         return var1 - var3.get() < 24000L;
-      } else {
-         return false;
-      }
+      return var3.isPresent() ? var1 - (Long)var3.get() < 24000L : false;
    }
 }

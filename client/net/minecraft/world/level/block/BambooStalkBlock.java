@@ -62,30 +62,30 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return true;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       VoxelShape var5 = var1.getValue(LEAVES) == BambooLeaves.LARGE ? LARGE_SHAPE : SMALL_SHAPE;
       Vec3 var6 = var1.getOffset(var2, var3);
       return var5.move(var6.x, var6.y, var6.z);
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       Vec3 var5 = var1.getOffset(var2, var3);
       return COLLISION_SHAPE.move(var5.x, var5.y, var5.z);
    }
 
    @Override
-   public boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       return false;
    }
 
@@ -114,19 +114,19 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
       }
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getValue(STAGE) == 0;
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(STAGE) == 0) {
          if (var4.nextInt(3) == 0 && var2.isEmptyBlock(var3.above()) && var2.getRawBrightness(var3.above(), 0) >= 9) {
             int var5 = this.getHeightBelowUpToMax(var2, var3) + 1;
@@ -138,12 +138,12 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return var2.getBlockState(var3.below()).is(BlockTags.BAMBOO_PLANTABLE_ON);
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (!var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -174,7 +174,7 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       int var7 = var5 + var6 + 1;
       int var8 = 1 + var2.nextInt(2);
 
-      for(int var9 = 0; var9 < var8; ++var9) {
+      for (int var9 = 0; var9 < var8; var9++) {
          BlockPos var10 = var3.above(var5);
          BlockState var11 = var1.getBlockState(var10);
          if (var7 >= 16 || var11.getValue(STAGE) == 1 || !var1.isEmptyBlock(var10.above())) {
@@ -182,13 +182,13 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
          }
 
          this.growBamboo(var11, var1, var10, var2, var7);
-         ++var5;
-         ++var7;
+         var5++;
+         var7++;
       }
    }
 
    @Override
-   public float getDestroyProgress(BlockState var1, Player var2, BlockGetter var3, BlockPos var4) {
+   protected float getDestroyProgress(BlockState var1, Player var2, BlockGetter var3, BlockPos var4) {
       return var2.getMainHandItem().getItem() instanceof SwordItem ? 1.0F : super.getDestroyProgress(var1, var2, var3, var4);
    }
 
@@ -219,8 +219,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    protected int getHeightAboveUpToMax(BlockGetter var1, BlockPos var2) {
       int var3 = 0;
 
-      while(var3 < 16 && var1.getBlockState(var2.above(var3 + 1)).is(Blocks.BAMBOO)) {
-         ++var3;
+      while (var3 < 16 && var1.getBlockState(var2.above(var3 + 1)).is(Blocks.BAMBOO)) {
+         var3++;
       }
 
       return var3;
@@ -229,8 +229,8 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    protected int getHeightBelowUpToMax(BlockGetter var1, BlockPos var2) {
       int var3 = 0;
 
-      while(var3 < 16 && var1.getBlockState(var2.below(var3 + 1)).is(Blocks.BAMBOO)) {
-         ++var3;
+      while (var3 < 16 && var1.getBlockState(var2.below(var3 + 1)).is(Blocks.BAMBOO)) {
+         var3++;
       }
 
       return var3;

@@ -70,11 +70,11 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
       BlockState var8 = var3.stemState;
       int var9 = var6 ? 1 : 0;
 
-      for(int var10 = -var9; var10 <= var9; ++var10) {
-         for(int var11 = -var9; var11 <= var9; ++var11) {
+      for (int var10 = -var9; var10 <= var9; var10++) {
+         for (int var11 = -var9; var11 <= var9; var11++) {
             boolean var12 = var6 && Mth.abs(var10) == var9 && Mth.abs(var11) == var9;
 
-            for(int var13 = 0; var13 < var5; ++var13) {
+            for (int var13 = 0; var13 < var5; var13++) {
                var7.setWithOffset(var4, var10, var13, var11);
                if (isReplaceable(var1, var7, var3, true)) {
                   if (var3.planted) {
@@ -102,18 +102,18 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
       int var9 = Math.min(var2.nextInt(1 + var5 / 3) + 5, var5);
       int var10 = var5 - var9;
 
-      for(int var11 = var10; var11 <= var5; ++var11) {
+      for (int var11 = var10; var11 <= var5; var11++) {
          int var12 = var11 < var5 - var2.nextInt(3) ? 2 : 1;
          if (var9 > 8 && var11 < var10 + 4) {
             var12 = 3;
          }
 
          if (var6) {
-            ++var12;
+            var12++;
          }
 
-         for(int var13 = -var12; var13 <= var12; ++var13) {
-            for(int var14 = -var12; var14 <= var12; ++var14) {
+         for (int var13 = -var12; var13 <= var12; var13++) {
+            for (int var14 = -var12; var14 <= var12; var14++) {
                boolean var15 = var13 == -var12 || var13 == var12;
                boolean var16 = var14 == -var12 || var14 == var12;
                boolean var17 = !var15 && !var16 && var11 != var5;
@@ -174,8 +174,8 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
             var4 *= 2;
          }
 
-         boolean var5 = true;
-         boolean var6 = true;
+         byte var5 = 23;
+         byte var6 = 25;
          WeepingVinesFeature.placeWeepingVinesColumn(var1, var2, var3, var4, 23, 25);
       }
    }

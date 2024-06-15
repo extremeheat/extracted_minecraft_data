@@ -2,8 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.CaveFeatures;
 import net.minecraft.server.level.ServerLevel;
@@ -41,5 +39,10 @@ public class MossBlock extends Block implements BonemealableBlock {
          .registry(Registries.CONFIGURED_FEATURE)
          .flatMap(var0 -> var0.getHolder(CaveFeatures.MOSS_PATCH_BONEMEAL))
          .ifPresent(var3x -> var3x.value().place(var1, var1.getChunkSource().getGenerator(), var2, var3.above()));
+   }
+
+   @Override
+   public BonemealableBlock.Type getType() {
+      return BonemealableBlock.Type.NEIGHBOR_SPREADER;
    }
 }

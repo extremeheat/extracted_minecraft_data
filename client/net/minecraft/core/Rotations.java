@@ -1,10 +1,23 @@
 package net.minecraft.core;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 
 public class Rotations {
+   public static final StreamCodec<ByteBuf, Rotations> STREAM_CODEC = new StreamCodec<ByteBuf, Rotations>() {
+      public Rotations decode(ByteBuf var1) {
+         return new Rotations(var1.readFloat(), var1.readFloat(), var1.readFloat());
+      }
+
+      public void encode(ByteBuf var1, Rotations var2) {
+         var1.writeFloat(var2.x);
+         var1.writeFloat(var2.y);
+         var1.writeFloat(var2.z);
+      }
+   };
    protected final float x;
    protected final float y;
    protected final float z;
@@ -30,12 +43,7 @@ public class Rotations {
 
    @Override
    public boolean equals(Object var1) {
-      if (!(var1 instanceof Rotations)) {
-         return false;
-      } else {
-         Rotations var2 = (Rotations)var1;
-         return this.x == var2.x && this.y == var2.y && this.z == var2.z;
-      }
+      return !(var1 instanceof Rotations var2) ? false : this.x == var2.x && this.y == var2.y && this.z == var2.z;
    }
 
    public float getX() {

@@ -16,20 +16,20 @@ public enum Mirror implements StringRepresentable {
    private final Component symbol;
    private final OctahedralGroup rotation;
 
-   private Mirror(String var3, OctahedralGroup var4) {
-      this.id = var3;
-      this.symbol = Component.translatable("mirror." + var3);
-      this.rotation = var4;
+   private Mirror(final String nullxx, final OctahedralGroup nullxxx) {
+      this.id = nullxx;
+      this.symbol = Component.translatable("mirror." + nullxx);
+      this.rotation = nullxxx;
    }
 
    public int mirror(int var1, int var2) {
       int var3 = var2 / 2;
       int var4 = var1 > var3 ? var1 - var2 : var1;
-      switch(this) {
-         case FRONT_BACK:
-            return (var2 - var4) % var2;
+      switch (this) {
          case LEFT_RIGHT:
             return (var3 - var4 + var2) % var2;
+         case FRONT_BACK:
+            return (var2 - var4) % var2;
          default:
             return var1;
       }

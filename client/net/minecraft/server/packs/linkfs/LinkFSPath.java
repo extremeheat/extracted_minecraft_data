@@ -79,12 +79,9 @@ class LinkFSPath implements Path {
       return this.pathContents != PathContents.RELATIVE;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public File toFile() {
-      PathContents var2 = this.pathContents;
-      if (var2 instanceof PathContents.FileContents var1) {
+      if (this.pathContents instanceof PathContents.FileContents var1) {
          return var1.contents().toFile();
       } else {
          throw new UnsupportedOperationException("Path " + this.pathToString() + " does not represent file");
@@ -142,7 +139,7 @@ class LinkFSPath implements Path {
       if (var1 >= 0 && var2 <= var3.size() && var1 < var2) {
          LinkFSPath var4 = null;
 
-         for(int var5 = var1; var5 < var2; ++var5) {
+         for (int var5 = var1; var5 < var2; var5++) {
             var4 = this.createRelativePath(var4, (String)var3.get(var5));
          }
 
@@ -152,8 +149,6 @@ class LinkFSPath implements Path {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean startsWith(Path var1) {
       if (var1.isAbsolute() != this.isAbsolute()) {
@@ -168,7 +163,7 @@ class LinkFSPath implements Path {
             if (var5 > var3.size()) {
                return false;
             } else {
-               for(int var6 = 0; var6 < var5; ++var6) {
+               for (int var6 = 0; var6 < var5; var6++) {
                   if (!((String)var4.get(var6)).equals(var3.get(var6))) {
                      return false;
                   }
@@ -182,8 +177,6 @@ class LinkFSPath implements Path {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean endsWith(Path var1) {
       if (var1.isAbsolute() && !this.isAbsolute()) {
@@ -199,7 +192,7 @@ class LinkFSPath implements Path {
             if (var6 < 0) {
                return false;
             } else {
-               for(int var7 = var5 - 1; var7 >= 0; --var7) {
+               for (int var7 = var5 - 1; var7 >= 0; var7--) {
                   if (!((String)var4.get(var7)).equals(var3.get(var6 + var7))) {
                      return false;
                   }
@@ -225,28 +218,23 @@ class LinkFSPath implements Path {
    private LinkFSPath resolve(List<String> var1) {
       LinkFSPath var2 = this;
 
-      for(String var4 : var1) {
+      for (String var4 : var1) {
          var2 = var2.resolveName(var4);
       }
 
       return var2;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    LinkFSPath resolveName(String var1) {
       if (isRelativeOrMissing(this.pathContents)) {
          return new LinkFSPath(this.fileSystem, var1, this, this.pathContents);
+      } else if (this.pathContents instanceof PathContents.DirectoryContents var2) {
+         LinkFSPath var4 = var2.children().get(var1);
+         return var4 != null ? var4 : new LinkFSPath(this.fileSystem, var1, this, PathContents.MISSING);
+      } else if (this.pathContents instanceof PathContents.FileContents) {
+         return new LinkFSPath(this.fileSystem, var1, this, PathContents.MISSING);
       } else {
-         PathContents var3 = this.pathContents;
-         if (var3 instanceof PathContents.DirectoryContents var2) {
-            LinkFSPath var4 = var2.children().get(var1);
-            return var4 != null ? var4 : new LinkFSPath(this.fileSystem, var1, this, PathContents.MISSING);
-         } else if (this.pathContents instanceof PathContents.FileContents) {
-            return new LinkFSPath(this.fileSystem, var1, this, PathContents.MISSING);
-         } else {
-            throw new AssertionError("All content types should be already handled");
-         }
+         throw new AssertionError("All content types should be already handled");
       }
    }
 
@@ -264,7 +252,7 @@ class LinkFSPath implements Path {
          if (var3.size() >= var4.size()) {
             throw new IllegalArgumentException();
          } else {
-            for(int var5 = 0; var5 < var3.size(); ++var5) {
+            for (int var5 = 0; var5 < var3.size(); var5++) {
                if (!((String)var3.get(var5)).equals(var4.get(var5))) {
                   throw new IllegalArgumentException();
                }
@@ -303,8 +291,6 @@ class LinkFSPath implements Path {
       return PATH_COMPARATOR.compare(this, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean equals(Object var1) {
       if (var1 == this) {
@@ -316,10 +302,8 @@ class LinkFSPath implements Path {
             boolean var3 = this.hasRealContents();
             if (var3 != var2.hasRealContents()) {
                return false;
-            } else if (var3) {
-               return this.pathContents == var2.pathContents;
             } else {
-               return Objects.equals(this.parent, var2.parent) && Objects.equals(this.name, var2.name);
+               return var3 ? this.pathContents == var2.pathContents : Objects.equals(this.parent, var2.parent) && Objects.equals(this.name, var2.name);
             }
          }
       } else {
@@ -359,8 +343,8 @@ class LinkFSPath implements Path {
       if (var1 == null) {
          throw new NullPointerException();
       } else {
-         if (var1 instanceof LinkFSPath var2 && ((LinkFSPath)var2).fileSystem == this.fileSystem) {
-            return (LinkFSPath)var2;
+         if (var1 instanceof LinkFSPath var2 && var2.fileSystem == this.fileSystem) {
+            return var2;
          }
 
          throw new ProviderMismatchException();
@@ -373,14 +357,12 @@ class LinkFSPath implements Path {
 
    @Nullable
    public Path getTargetPath() {
-      PathContents var2 = this.pathContents;
-      return var2 instanceof PathContents.FileContents var1 ? var1.contents() : null;
+      return this.pathContents instanceof PathContents.FileContents var1 ? var1.contents() : null;
    }
 
    @Nullable
    public PathContents.DirectoryContents getDirectoryContents() {
-      PathContents var2 = this.pathContents;
-      return var2 instanceof PathContents.DirectoryContents var1 ? var1 : null;
+      return this.pathContents instanceof PathContents.DirectoryContents var1 ? var1 : null;
    }
 
    public BasicFileAttributeView getBasicAttributeView() {

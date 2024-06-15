@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.SampleLogger;
+import net.minecraft.util.debugchart.SampleStorage;
 
 public class FpsDebugChart extends AbstractDebugChart {
    private static final int RED = -65536;
@@ -14,7 +14,7 @@ public class FpsDebugChart extends AbstractDebugChart {
    private static final int CHART_TOP_FPS = 30;
    private static final double CHART_TOP_VALUE = 33.333333333333336;
 
-   public FpsDebugChart(Font var1, SampleLogger var2) {
+   public FpsDebugChart(Font var1, SampleStorage var2) {
       super(var1, var2);
    }
 

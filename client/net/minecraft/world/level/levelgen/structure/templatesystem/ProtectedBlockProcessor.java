@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -11,8 +11,9 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 
 public class ProtectedBlockProcessor extends StructureProcessor {
    public final TagKey<Block> cannotReplace;
-   public static final Codec<ProtectedBlockProcessor> CODEC = TagKey.hashedCodec(Registries.BLOCK)
-      .xmap(ProtectedBlockProcessor::new, var0 -> var0.cannotReplace);
+   public static final MapCodec<ProtectedBlockProcessor> CODEC = TagKey.hashedCodec(Registries.BLOCK)
+      .xmap(ProtectedBlockProcessor::new, var0 -> var0.cannotReplace)
+      .fieldOf("value");
 
    public ProtectedBlockProcessor(TagKey<Block> var1) {
       super();

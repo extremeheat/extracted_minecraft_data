@@ -26,9 +26,9 @@ public class VariantProperty<T> {
    public class Value {
       private final T value;
 
-      public Value(T var2) {
+      public Value(final T nullx) {
          super();
-         this.value = (T)var2;
+         this.value = (T)nullx;
       }
 
       public VariantProperty<T> getKey() {
@@ -36,7 +36,7 @@ public class VariantProperty<T> {
       }
 
       public void addToVariant(JsonObject var1) {
-         var1.add(VariantProperty.this.key, (JsonElement)VariantProperty.this.serializer.apply(this.value));
+         var1.add(VariantProperty.this.key, VariantProperty.this.serializer.apply(this.value));
       }
 
       @Override

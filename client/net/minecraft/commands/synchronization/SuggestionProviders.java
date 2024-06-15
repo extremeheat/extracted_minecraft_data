@@ -56,7 +56,7 @@ public class SuggestionProviders {
    }
 
    public static SuggestionProvider<SharedSuggestionProvider> getProvider(ResourceLocation var0) {
-      return (SuggestionProvider<SharedSuggestionProvider>)PROVIDERS_BY_NAME.getOrDefault(var0, ASK_SERVER);
+      return PROVIDERS_BY_NAME.getOrDefault(var0, ASK_SERVER);
    }
 
    public static ResourceLocation getName(SuggestionProvider<SharedSuggestionProvider> var0) {

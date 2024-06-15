@@ -35,7 +35,7 @@ public class LanServerPinger extends Thread {
       String var1 = createPingString(this.motd, this.serverAddress);
       byte[] var2 = var1.getBytes(StandardCharsets.UTF_8);
 
-      while(!this.isInterrupted() && this.isRunning) {
+      while (!this.isInterrupted() && this.isRunning) {
          try {
             InetAddress var3 = InetAddress.getByName("224.0.2.60");
             DatagramPacket var4 = new DatagramPacket(var2, var2.length, var3, 4445);

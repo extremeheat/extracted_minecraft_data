@@ -110,13 +110,7 @@ public class SoundType {
       SoundEvents.SCAFFOLDING_FALL
    );
    public static final SoundType SWEET_BERRY_BUSH = new SoundType(
-      1.0F,
-      1.0F,
-      SoundEvents.SWEET_BERRY_BUSH_BREAK,
-      SoundEvents.GRASS_STEP,
-      SoundEvents.SWEET_BERRY_BUSH_PLACE,
-      SoundEvents.GRASS_HIT,
-      SoundEvents.GRASS_FALL
+      1.0F, 1.0F, SoundEvents.SWEET_BERRY_BUSH_BREAK, SoundEvents.GRASS_STEP, SoundEvents.SWEET_BERRY_BUSH_PLACE, SoundEvents.GRASS_HIT, SoundEvents.GRASS_FALL
    );
    public static final SoundType CROP = new SoundType(
       1.0F, 1.0F, SoundEvents.CROP_BREAK, SoundEvents.GRASS_STEP, SoundEvents.CROP_PLANTED, SoundEvents.GRASS_HIT, SoundEvents.GRASS_FALL
@@ -753,6 +747,21 @@ public class SoundType {
       SoundEvents.WET_SPONGE_PLACE,
       SoundEvents.WET_SPONGE_HIT,
       SoundEvents.WET_SPONGE_FALL
+   );
+   public static final SoundType VAULT = new SoundType(
+      1.0F, 1.0F, SoundEvents.VAULT_BREAK, SoundEvents.VAULT_STEP, SoundEvents.VAULT_PLACE, SoundEvents.VAULT_HIT, SoundEvents.VAULT_FALL
+   );
+   public static final SoundType HEAVY_CORE = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.HEAVY_CORE_BREAK,
+      SoundEvents.HEAVY_CORE_STEP,
+      SoundEvents.HEAVY_CORE_PLACE,
+      SoundEvents.HEAVY_CORE_HIT,
+      SoundEvents.HEAVY_CORE_FALL
+   );
+   public static final SoundType COBWEB = new SoundType(
+      1.0F, 1.0F, SoundEvents.COBWEB_BREAK, SoundEvents.COBWEB_STEP, SoundEvents.COBWEB_PLACE, SoundEvents.COBWEB_HIT, SoundEvents.COBWEB_FALL
    );
    public final float volume;
    public final float pitch;

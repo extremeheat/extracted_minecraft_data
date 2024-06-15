@@ -28,7 +28,7 @@ public class EqualSpacingLayout extends AbstractLayout {
          int var1 = 0;
          int var2 = this.orientation.getSecondaryLength(this);
 
-         for(EqualSpacingLayout.ChildContainer var4 : this.children) {
+         for (EqualSpacingLayout.ChildContainer var4 : this.children) {
             var1 += this.orientation.getPrimaryLength(var4);
             var2 = Math.max(var2, this.orientation.getSecondaryLength(var4));
          }
@@ -39,22 +39,24 @@ public class EqualSpacingLayout extends AbstractLayout {
          EqualSpacingLayout.ChildContainer var6 = (EqualSpacingLayout.ChildContainer)var5.next();
          this.orientation.setPrimaryPosition(var6, var11);
          var11 += this.orientation.getPrimaryLength(var6);
-         EqualSpacingLayout.ChildContainer var8;
          if (this.children.size() >= 2) {
-            for(Divisor var7 = new Divisor(var10, this.children.size() - 1); var7.hasNext(); var11 += this.orientation.getPrimaryLength(var8)) {
+            Divisor var7 = new Divisor(var10, this.children.size() - 1);
+
+            while (var7.hasNext()) {
                var11 += var7.nextInt();
-               var8 = (EqualSpacingLayout.ChildContainer)var5.next();
+               EqualSpacingLayout.ChildContainer var8 = (EqualSpacingLayout.ChildContainer)var5.next();
                this.orientation.setPrimaryPosition(var8, var11);
+               var11 += this.orientation.getPrimaryLength(var8);
             }
          }
 
          int var14 = this.orientation.getSecondaryPosition(this);
 
-         for(EqualSpacingLayout.ChildContainer var9 : this.children) {
+         for (EqualSpacingLayout.ChildContainer var9 : this.children) {
             this.orientation.setSecondaryPosition(var9, var14, var2);
          }
 
-         switch(this.orientation) {
+         switch (this.orientation) {
             case HORIZONTAL:
                this.height = var2;
                break;
@@ -104,35 +106,35 @@ public class EqualSpacingLayout extends AbstractLayout {
       }
 
       int getPrimaryLength(LayoutElement var1) {
-         return switch(this) {
+         return switch (this) {
             case HORIZONTAL -> var1.getWidth();
             case VERTICAL -> var1.getHeight();
          };
       }
 
       int getPrimaryLength(EqualSpacingLayout.ChildContainer var1) {
-         return switch(this) {
+         return switch (this) {
             case HORIZONTAL -> var1.getWidth();
             case VERTICAL -> var1.getHeight();
          };
       }
 
       int getSecondaryLength(LayoutElement var1) {
-         return switch(this) {
+         return switch (this) {
             case HORIZONTAL -> var1.getHeight();
             case VERTICAL -> var1.getWidth();
          };
       }
 
       int getSecondaryLength(EqualSpacingLayout.ChildContainer var1) {
-         return switch(this) {
+         return switch (this) {
             case HORIZONTAL -> var1.getHeight();
             case VERTICAL -> var1.getWidth();
          };
       }
 
       void setPrimaryPosition(EqualSpacingLayout.ChildContainer var1, int var2) {
-         switch(this) {
+         switch (this) {
             case HORIZONTAL:
                var1.setX(var2, var1.getWidth());
                break;
@@ -142,7 +144,7 @@ public class EqualSpacingLayout extends AbstractLayout {
       }
 
       void setSecondaryPosition(EqualSpacingLayout.ChildContainer var1, int var2, int var3) {
-         switch(this) {
+         switch (this) {
             case HORIZONTAL:
                var1.setY(var2, var3);
                break;
@@ -152,14 +154,14 @@ public class EqualSpacingLayout extends AbstractLayout {
       }
 
       int getPrimaryPosition(LayoutElement var1) {
-         return switch(this) {
+         return switch (this) {
             case HORIZONTAL -> var1.getX();
             case VERTICAL -> var1.getY();
          };
       }
 
       int getSecondaryPosition(LayoutElement var1) {
-         return switch(this) {
+         return switch (this) {
             case HORIZONTAL -> var1.getY();
             case VERTICAL -> var1.getX();
          };

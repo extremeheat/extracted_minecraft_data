@@ -1,9 +1,9 @@
 package net.minecraft.world.food;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 
@@ -19,15 +19,19 @@ public class FoodData {
       this.saturationLevel = 5.0F;
    }
 
-   public void eat(int var1, float var2) {
+   private void add(int var1, float var2) {
       this.foodLevel = Math.min(var1 + this.foodLevel, 20);
-      this.saturationLevel = Math.min(this.saturationLevel + (float)var1 * var2 * 2.0F, (float)this.foodLevel);
+      this.saturationLevel = Math.min(var2 + this.saturationLevel, (float)this.foodLevel);
    }
 
-   public void eat(Item var1, ItemStack var2) {
-      if (var1.isEdible()) {
-         FoodProperties var3 = var1.getFoodProperties();
-         this.eat(var3.getNutrition(), var3.getSaturationModifier());
+   public void eat(int var1, float var2) {
+      this.add(var1, FoodConstants.saturationByModifier(var1, var2));
+   }
+
+   public void eat(ItemStack var1) {
+      FoodProperties var2 = var1.get(DataComponents.FOOD);
+      if (var2 != null) {
+         this.add(var2.nutrition(), var2.saturation());
       }
    }
 
@@ -45,7 +49,7 @@ public class FoodData {
 
       boolean var3 = var1.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
       if (var3 && this.saturationLevel > 0.0F && var1.isHurt() && this.foodLevel >= 20) {
-         ++this.tickTimer;
+         this.tickTimer++;
          if (this.tickTimer >= 10) {
             float var4 = Math.min(this.saturationLevel, 6.0F);
             var1.heal(var4 / 6.0F);
@@ -53,14 +57,14 @@ public class FoodData {
             this.tickTimer = 0;
          }
       } else if (var3 && this.foodLevel >= 18 && var1.isHurt()) {
-         ++this.tickTimer;
+         this.tickTimer++;
          if (this.tickTimer >= 80) {
             var1.heal(1.0F);
             this.addExhaustion(6.0F);
             this.tickTimer = 0;
          }
       } else if (this.foodLevel <= 0) {
-         ++this.tickTimer;
+         this.tickTimer++;
          if (this.tickTimer >= 80) {
             if (var1.getHealth() > 10.0F || var2 == Difficulty.HARD || var1.getHealth() > 1.0F && var2 == Difficulty.NORMAL) {
                var1.hurt(var1.damageSources().starve(), 1.0F);

@@ -124,7 +124,7 @@ public class ModelTemplates {
    public static final ModelTemplate ANVIL = create("template_anvil", TextureSlot.TOP);
    public static final ModelTemplate[] STEMS = IntStream.range(0, 8)
       .mapToObj(var0 -> create("stem_growth" + var0, "_stage" + var0, TextureSlot.STEM))
-      .toArray(var0 -> new ModelTemplate[var0]);
+      .toArray(ModelTemplate[]::new);
    public static final ModelTemplate ATTACHED_STEM = create("stem_fruit", TextureSlot.STEM, TextureSlot.UPPER_STEM);
    public static final ModelTemplate CROP = create("crop", TextureSlot.CROP);
    public static final ModelTemplate FARMLAND = create("template_farmland", TextureSlot.DIRT, TextureSlot.TOP);
@@ -182,6 +182,8 @@ public class ModelTemplates {
    public static final ModelTemplate SCULK_SHRIEKER = create(
       "template_sculk_shrieker", TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.TOP, TextureSlot.PARTICLE, TextureSlot.INNER_TOP
    );
+   public static final ModelTemplate VAULT = create("template_vault", TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.FRONT);
+   public static final ModelTemplate FLAT_HANDHELD_MACE_ITEM = createItem("handheld_mace", TextureSlot.LAYER0);
 
    public ModelTemplates() {
       super();

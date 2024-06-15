@@ -60,7 +60,7 @@ public class IronBarsBlock extends CrossCollisionBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -71,12 +71,12 @@ public class IronBarsBlock extends CrossCollisionBlock {
    }
 
    @Override
-   public VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.empty();
    }
 
    @Override
-   public boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
+   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
       if (var2.is(this)) {
          if (!var3.getAxis().isHorizontal()) {
             return true;

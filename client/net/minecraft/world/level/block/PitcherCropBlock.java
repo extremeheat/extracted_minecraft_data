@@ -194,14 +194,12 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       }
    }
 
-   static record PosAndState(BlockPos a, BlockState b) {
-      final BlockPos pos;
-      final BlockState state;
+   static record PosAndState(BlockPos pos, BlockState state) {
 
-      PosAndState(BlockPos var1, BlockState var2) {
+      PosAndState(BlockPos pos, BlockState state) {
          super();
-         this.pos = var1;
-         this.state = var2;
+         this.pos = pos;
+         this.state = state;
       }
    }
 }

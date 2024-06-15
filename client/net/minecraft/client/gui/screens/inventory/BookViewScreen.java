@@ -1,48 +1,31 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.IntFunction;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.WrittenBookItem;
+import net.minecraft.world.item.component.WritableBookContent;
+import net.minecraft.world.item.component.WrittenBookContent;
 
 public class BookViewScreen extends Screen {
    public static final int PAGE_INDICATOR_TEXT_Y_OFFSET = 16;
    public static final int PAGE_TEXT_X_OFFSET = 36;
    public static final int PAGE_TEXT_Y_OFFSET = 30;
-   public static final BookViewScreen.BookAccess EMPTY_ACCESS = new BookViewScreen.BookAccess() {
-      @Override
-      public int getPageCount() {
-         return 0;
-      }
-
-      @Override
-      public FormattedText getPageRaw(int var1) {
-         return FormattedText.EMPTY;
-      }
-   };
+   public static final BookViewScreen.BookAccess EMPTY_ACCESS = new BookViewScreen.BookAccess(List.of());
    public static final ResourceLocation BOOK_LOCATION = new ResourceLocation("textures/gui/book.png");
    protected static final int TEXT_WIDTH = 114;
    protected static final int TEXT_HEIGHT = 128;
@@ -106,7 +89,7 @@ public class BookViewScreen extends Screen {
 
    protected void createPageControlButtons() {
       int var1 = (this.width - 192) / 2;
-      boolean var2 = true;
+      byte var2 = 2;
       this.forwardButton = this.addRenderableWidget(new PageButton(var1 + 116, 159, true, var1x -> this.pageForward(), this.playTurnSound));
       this.backButton = this.addRenderableWidget(new PageButton(var1 + 43, 159, false, var1x -> this.pageBack(), this.playTurnSound));
       this.updateButtonVisibility();
@@ -118,7 +101,7 @@ public class BookViewScreen extends Screen {
 
    protected void pageBack() {
       if (this.currentPage > 0) {
-         --this.currentPage;
+         this.currentPage--;
       }
 
       this.updateButtonVisibility();
@@ -126,7 +109,7 @@ public class BookViewScreen extends Screen {
 
    protected void pageForward() {
       if (this.currentPage < this.getNumPages() - 1) {
-         ++this.currentPage;
+         this.currentPage++;
       }
 
       this.updateButtonVisibility();
@@ -142,7 +125,7 @@ public class BookViewScreen extends Screen {
       if (super.keyPressed(var1, var2, var3)) {
          return true;
       } else {
-         switch(var1) {
+         switch (var1) {
             case 266:
                this.backButton.onPress();
                return true;
@@ -159,7 +142,7 @@ public class BookViewScreen extends Screen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       int var5 = (this.width - 192) / 2;
-      boolean var6 = true;
+      byte var6 = 2;
       if (this.cachedPage != this.currentPage) {
          FormattedText var7 = this.bookAccess.getPage(this.currentPage);
          this.cachedPageComponents = this.font.split(var7, 114);
@@ -171,7 +154,7 @@ public class BookViewScreen extends Screen {
       var1.drawString(this.font, this.pageMsg, var5 - var11 + 192 - 44, 18, 0, false);
       int var8 = Math.min(128 / 9, this.cachedPageComponents.size());
 
-      for(int var9 = 0; var9 < var8; ++var9) {
+      for (int var9 = 0; var9 < var8; var9++) {
          FormattedCharSequence var10 = this.cachedPageComponents.get(var9);
          var1.drawString(this.font, var10, var5 + 36, 32 + var9 * 9, 0, false);
       }
@@ -184,7 +167,7 @@ public class BookViewScreen extends Screen {
 
    @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      super.renderBackground(var1, var2, var3, var4);
+      this.renderTransparentBackground(var1);
       var1.blit(BOOK_LOCATION, (this.width - 192) / 2, 2, 0, 0, 192, 192);
    }
 
@@ -254,105 +237,30 @@ public class BookViewScreen extends Screen {
       }
    }
 
-   static List<String> loadPages(CompoundTag var0) {
-      Builder var1 = ImmutableList.builder();
-      loadPages(var0, var1::add);
-      return var1.build();
-   }
-
-   public static void loadPages(CompoundTag var0, Consumer<String> var1) {
-      ListTag var3 = var0.getList("pages", 8).copy();
-      IntFunction var2;
-      if (Minecraft.getInstance().isTextFilteringEnabled() && var0.contains("filtered_pages", 10)) {
-         CompoundTag var4 = var0.getCompound("filtered_pages");
-         var2 = var2x -> {
-            String var3xx = String.valueOf(var2x);
-            return var4.contains(var3xx) ? var4.getString(var3xx) : var3.getString(var2x);
-         };
-      } else {
-         var2 = var3::getString;
+   public static record BookAccess(List<Component> pages) {
+      public BookAccess(List<Component> pages) {
+         super();
+         this.pages = pages;
       }
 
-      for(int var5 = 0; var5 < var3.size(); ++var5) {
-         var1.accept((String)var2.apply(var5));
-      }
-   }
-
-   public interface BookAccess {
-      int getPageCount();
-
-      FormattedText getPageRaw(int var1);
-
-      default FormattedText getPage(int var1) {
-         return var1 >= 0 && var1 < this.getPageCount() ? this.getPageRaw(var1) : FormattedText.EMPTY;
+      public int getPageCount() {
+         return this.pages.size();
       }
 
-      static BookViewScreen.BookAccess fromItem(ItemStack var0) {
-         if (var0.is(Items.WRITTEN_BOOK)) {
-            return new BookViewScreen.WrittenBookAccess(var0);
+      public FormattedText getPage(int var1) {
+         return var1 >= 0 && var1 < this.getPageCount() ? this.pages.get(var1) : FormattedText.EMPTY;
+      }
+
+      @Nullable
+      public static BookViewScreen.BookAccess fromItem(ItemStack var0) {
+         boolean var1 = Minecraft.getInstance().isTextFilteringEnabled();
+         WrittenBookContent var2 = var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
+         if (var2 != null) {
+            return new BookViewScreen.BookAccess(var2.getPages(var1));
          } else {
-            return (BookViewScreen.BookAccess)(var0.is(Items.WRITABLE_BOOK) ? new BookViewScreen.WritableBookAccess(var0) : BookViewScreen.EMPTY_ACCESS);
+            WritableBookContent var3 = var0.get(DataComponents.WRITABLE_BOOK_CONTENT);
+            return var3 != null ? new BookViewScreen.BookAccess(var3.getPages(var1).map(Component::literal).toList()) : null;
          }
-      }
-   }
-
-   public static class WritableBookAccess implements BookViewScreen.BookAccess {
-      private final List<String> pages;
-
-      public WritableBookAccess(ItemStack var1) {
-         super();
-         this.pages = readPages(var1);
-      }
-
-      private static List<String> readPages(ItemStack var0) {
-         CompoundTag var1 = var0.getTag();
-         return (List<String>)(var1 != null ? BookViewScreen.loadPages(var1) : ImmutableList.of());
-      }
-
-      @Override
-      public int getPageCount() {
-         return this.pages.size();
-      }
-
-      @Override
-      public FormattedText getPageRaw(int var1) {
-         return FormattedText.of(this.pages.get(var1));
-      }
-   }
-
-   public static class WrittenBookAccess implements BookViewScreen.BookAccess {
-      private final List<String> pages;
-
-      public WrittenBookAccess(ItemStack var1) {
-         super();
-         this.pages = readPages(var1);
-      }
-
-      private static List<String> readPages(ItemStack var0) {
-         CompoundTag var1 = var0.getTag();
-         return (List<String>)(var1 != null && WrittenBookItem.makeSureTagIsValid(var1)
-            ? BookViewScreen.loadPages(var1)
-            : ImmutableList.of(Component.Serializer.toJson(Component.translatable("book.invalid.tag").withStyle(ChatFormatting.DARK_RED))));
-      }
-
-      @Override
-      public int getPageCount() {
-         return this.pages.size();
-      }
-
-      @Override
-      public FormattedText getPageRaw(int var1) {
-         String var2 = this.pages.get(var1);
-
-         try {
-            MutableComponent var3 = Component.Serializer.fromJson(var2);
-            if (var3 != null) {
-               return var3;
-            }
-         } catch (Exception var4) {
-         }
-
-         return FormattedText.of(var2);
       }
    }
 }

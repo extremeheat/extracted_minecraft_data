@@ -8,7 +8,7 @@ public class SectionBufferBuilderPack implements AutoCloseable {
    public static final int TOTAL_BUFFERS_SIZE = RenderType.chunkBufferLayers().stream().mapToInt(RenderType::bufferSize).sum();
    private final Map<RenderType, BufferBuilder> builders = RenderType.chunkBufferLayers()
       .stream()
-      .collect(Collectors.toMap(var0 -> var0, var0 -> new BufferBuilder(var0.bufferSize())));
+      .collect(Collectors.toMap(var0 -> (RenderType)var0, var0 -> new BufferBuilder(var0.bufferSize())));
 
    public SectionBufferBuilderPack() {
       super();

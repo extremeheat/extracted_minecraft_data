@@ -80,11 +80,7 @@ public class DoubleTag extends NumericTag {
 
    @Override
    public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return var1 instanceof DoubleTag && this.data == ((DoubleTag)var1).data;
-      }
+      return this == var1 ? true : var1 instanceof DoubleTag && this.data == ((DoubleTag)var1).data;
    }
 
    @Override

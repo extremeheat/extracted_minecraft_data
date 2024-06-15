@@ -4,31 +4,31 @@ import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
 
-public record VillageSectionsDebugPayload(Set<SectionPos> b, Set<SectionPos> c) implements CustomPacketPayload {
-   private final Set<SectionPos> villageChunks;
-   private final Set<SectionPos> notVillageChunks;
-   public static final ResourceLocation ID = new ResourceLocation("debug/village_sections");
+public record VillageSectionsDebugPayload(Set<SectionPos> villageChunks, Set<SectionPos> notVillageChunks) implements CustomPacketPayload {
+   public static final StreamCodec<FriendlyByteBuf, VillageSectionsDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
+      VillageSectionsDebugPayload::write, VillageSectionsDebugPayload::new
+   );
+   public static final CustomPacketPayload.Type<VillageSectionsDebugPayload> TYPE = CustomPacketPayload.createType("debug/village_sections");
 
-   public VillageSectionsDebugPayload(FriendlyByteBuf var1) {
+   private VillageSectionsDebugPayload(FriendlyByteBuf var1) {
       this(var1.readCollection(HashSet::new, FriendlyByteBuf::readSectionPos), var1.readCollection(HashSet::new, FriendlyByteBuf::readSectionPos));
    }
 
-   public VillageSectionsDebugPayload(Set<SectionPos> var1, Set<SectionPos> var2) {
+   public VillageSectionsDebugPayload(Set<SectionPos> villageChunks, Set<SectionPos> notVillageChunks) {
       super();
-      this.villageChunks = var1;
-      this.notVillageChunks = var2;
+      this.villageChunks = villageChunks;
+      this.notVillageChunks = notVillageChunks;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeCollection(this.villageChunks, FriendlyByteBuf::writeSectionPos);
       var1.writeCollection(this.notVillageChunks, FriendlyByteBuf::writeSectionPos);
    }
 
    @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<VillageSectionsDebugPayload> type() {
+      return TYPE;
    }
 }

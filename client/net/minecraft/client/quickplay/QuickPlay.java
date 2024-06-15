@@ -7,7 +7,6 @@ import com.mojang.realmsclient.dto.RealmsServerList;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
@@ -20,6 +19,7 @@ import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.StringUtil;
 
 public class QuickPlay {
    public static final Component ERROR_TITLE = Component.translatable("quickplay.error.title");
@@ -38,11 +38,11 @@ public class QuickPlay {
       String var3 = var1.singleplayer();
       String var4 = var1.multiplayer();
       String var5 = var1.realms();
-      if (!Util.isBlank(var3)) {
+      if (!StringUtil.isBlank(var3)) {
          joinSingleplayerWorld(var0, var3);
-      } else if (!Util.isBlank(var4)) {
+      } else if (!StringUtil.isBlank(var4)) {
          joinMultiplayerWorld(var0, var4);
-      } else if (!Util.isBlank(var5)) {
+      } else if (!StringUtil.isBlank(var5)) {
          joinRealmsWorld(var0, var2, var5);
       }
    }
@@ -52,7 +52,7 @@ public class QuickPlay {
          SelectWorldScreen var2 = new SelectWorldScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var2, ERROR_TITLE, INVALID_IDENTIFIER, TO_WORLD_LIST));
       } else {
-         var0.createWorldOpenFlows().checkForBackupAndLoad(var1, () -> var0.setScreen(new TitleScreen()));
+         var0.createWorldOpenFlows().openWorld(var1, () -> var0.setScreen(new TitleScreen()));
       }
    }
 
@@ -67,7 +67,7 @@ public class QuickPlay {
       }
 
       ServerAddress var4 = ServerAddress.parseString(var1);
-      ConnectScreen.startConnecting(new JoinMultiplayerScreen(new TitleScreen()), var0, var4, var3, true);
+      ConnectScreen.startConnecting(new JoinMultiplayerScreen(new TitleScreen()), var0, var4, var3, true, null);
    }
 
    private static void joinRealmsWorld(Minecraft var0, RealmsClient var1, String var2) {
@@ -75,7 +75,7 @@ public class QuickPlay {
       RealmsServerList var5;
       try {
          var3 = Long.parseLong(var2);
-         var5 = var1.listWorlds();
+         var5 = var1.listRealms();
       } catch (NumberFormatException var9) {
          RealmsMainScreen var11 = new RealmsMainScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var11, ERROR_TITLE, INVALID_IDENTIFIER, TO_REALMS_LIST));

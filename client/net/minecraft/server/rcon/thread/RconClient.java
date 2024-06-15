@@ -43,7 +43,7 @@ public class RconClient extends GenericThread {
    public void run() {
       try {
          try {
-            while(this.running) {
+            while (this.running) {
                BufferedInputStream var1 = new BufferedInputStream(this.client.getInputStream());
                int var2 = var1.read(this.buf, 0, 1460);
                if (10 > var2) {
@@ -61,7 +61,7 @@ public class RconClient extends GenericThread {
                var3 += 4;
                int var6 = PktUtils.intFromByteArray(this.buf, var3);
                var3 += 4;
-               switch(var6) {
+               switch (var6) {
                   case 2:
                      if (this.authed) {
                         String var8 = PktUtils.stringFromByteArray(this.buf, var3, var2);
@@ -130,7 +130,7 @@ public class RconClient extends GenericThread {
          this.send(var1, 0, var2.substring(0, var4));
          var2 = var2.substring(var4);
          var3 = var2.length();
-      } while(0 != var3);
+      } while (0 != var3);
    }
 
    @Override

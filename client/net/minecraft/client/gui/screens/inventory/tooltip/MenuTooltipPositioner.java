@@ -29,9 +29,9 @@ public class MenuTooltipPositioner implements ClientTooltipPositioner {
       int var9 = this.screenRectangle.bottom() + 3 + getOffset(0, 0, this.screenRectangle.height());
       int var10 = var2 - 5;
       if (var9 + var8 <= var10) {
-         var7.y += getOffset(var7.y, this.screenRectangle.top(), this.screenRectangle.height());
+         var7.y = var7.y + getOffset(var7.y, this.screenRectangle.top(), this.screenRectangle.height());
       } else {
-         var7.y -= var8 + getOffset(var7.y, this.screenRectangle.bottom(), this.screenRectangle.height());
+         var7.y = var7.y - (var8 + getOffset(var7.y, this.screenRectangle.bottom(), this.screenRectangle.height()));
       }
 
       return var7;

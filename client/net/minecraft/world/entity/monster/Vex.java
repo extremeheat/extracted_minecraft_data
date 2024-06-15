@@ -14,7 +14,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,7 +21,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -42,7 +40,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Vex extends Monster implements TraceableEntity {
    public static final float FLAP_DEGREES_PER_TICK = 45.836624F;
@@ -60,11 +57,6 @@ public class Vex extends Monster implements TraceableEntity {
       super(var1, var2);
       this.moveControl = new Vex.VexMoveControl(this);
       this.xpReward = 3;
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height - 0.28125F;
    }
 
    @Override
@@ -108,9 +100,9 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_FLAGS_ID, (byte)0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
    @Override
@@ -125,8 +117,6 @@ public class Vex extends Monster implements TraceableEntity {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
@@ -218,29 +208,17 @@ public class Vex extends Monster implements TraceableEntity {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      RandomSource var6 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var6, var2);
-      this.populateDefaultEquipmentEnchantments(var6, var2);
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      RandomSource var5 = var1.getRandom();
+      this.populateDefaultEquipmentSlots(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var5, var2);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
       this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return 0.04F;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 
    class VexChargeAttackGoal extends Goal {
@@ -252,11 +230,9 @@ public class Vex extends Monster implements TraceableEntity {
       @Override
       public boolean canUse() {
          LivingEntity var1 = Vex.this.getTarget();
-         if (var1 != null && var1.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0) {
-            return Vex.this.distanceToSqr(var1) > 4.0;
-         } else {
-            return false;
-         }
+         return var1 != null && var1.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0
+            ? Vex.this.distanceToSqr(var1) > 4.0
+            : false;
       }
 
       @Override
@@ -307,8 +283,8 @@ public class Vex extends Monster implements TraceableEntity {
    class VexCopyOwnerTargetGoal extends TargetGoal {
       private final TargetingConditions copyOwnerTargeting = TargetingConditions.forNonCombat().ignoreLineOfSight().ignoreInvisibilityTesting();
 
-      public VexCopyOwnerTargetGoal(PathfinderMob var2) {
-         super(var2, false);
+      public VexCopyOwnerTargetGoal(final PathfinderMob nullx) {
+         super(nullx, false);
       }
 
       @Override
@@ -324,8 +300,8 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    class VexMoveControl extends MoveControl {
-      public VexMoveControl(Vex var2) {
-         super(var2);
+      public VexMoveControl(final Vex nullx) {
+         super(nullx);
       }
 
       @Override
@@ -376,7 +352,7 @@ public class Vex extends Monster implements TraceableEntity {
             var1 = Vex.this.blockPosition();
          }
 
-         for(int var2 = 0; var2 < 3; ++var2) {
+         for (int var2 = 0; var2 < 3; var2++) {
             BlockPos var3 = var1.offset(Vex.this.random.nextInt(15) - 7, Vex.this.random.nextInt(11) - 5, Vex.this.random.nextInt(15) - 7);
             if (Vex.this.level().isEmptyBlock(var3)) {
                Vex.this.moveControl.setWantedPosition((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, 0.25);

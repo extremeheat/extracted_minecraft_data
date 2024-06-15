@@ -40,18 +40,7 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
 
    public static SimpleSoundInstance forMusic(SoundEvent var0) {
       return new SimpleSoundInstance(
-         var0.getLocation(),
-         SoundSource.MUSIC,
-         1.0F,
-         1.0F,
-         SoundInstance.createUnseededRandom(),
-         false,
-         0,
-         SoundInstance.Attenuation.NONE,
-         0.0,
-         0.0,
-         0.0,
-         true
+         var0.getLocation(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true
       );
    }
 

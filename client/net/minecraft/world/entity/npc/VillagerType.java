@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.npc;
 
 import com.google.common.collect.Maps;
-import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;

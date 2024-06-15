@@ -40,11 +40,11 @@ public interface StringRepresentable {
 
    static <T extends StringRepresentable> Function<String, T> createNameLookup(T[] var0, Function<String, String> var1) {
       if (var0.length > 16) {
-         Map var2 = Arrays.stream(var0).collect(Collectors.toMap(var1x -> (String)var1.apply(var1x.getSerializedName()), var0x -> var0x));
+         Map var2 = Arrays.stream(var0).collect(Collectors.toMap(var1x -> (String)var1.apply(var1x.getSerializedName()), var0x -> (StringRepresentable)var0x));
          return var1x -> (T)(var1x == null ? null : var2.get(var1x));
       } else {
          return var2x -> {
-            for(StringRepresentable var6 : var0) {
+            for (StringRepresentable var6 : var0) {
                if (((String)var1.apply(var6.getSerializedName())).equals(var2x)) {
                   return (T)var6;
                }
@@ -88,7 +88,7 @@ public interface StringRepresentable {
       public StringRepresentableCodec(S[] var1, Function<String, S> var2, ToIntFunction<S> var3) {
          super();
          this.codec = ExtraCodecs.orCompressed(
-            ExtraCodecs.stringResolverCodec(StringRepresentable::getSerializedName, var2),
+            Codec.stringResolver(StringRepresentable::getSerializedName, var2),
             ExtraCodecs.idResolverCodec(var3, var1x -> (S)(var1x >= 0 && var1x < var1.length ? var1[var1x] : null), -1)
          );
       }

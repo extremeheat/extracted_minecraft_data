@@ -2,6 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 
 public interface Bucketable {
@@ -30,32 +32,30 @@ public interface Bucketable {
 
    @Deprecated
    static void saveDefaultDataToBucketTag(Mob var0, ItemStack var1) {
-      CompoundTag var2 = var1.getOrCreateTag();
-      if (var0.hasCustomName()) {
-         var1.setHoverName(var0.getCustomName());
-      }
+      var1.set(DataComponents.CUSTOM_NAME, var0.getCustomName());
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, var1x -> {
+         if (var0.isNoAi()) {
+            var1x.putBoolean("NoAI", var0.isNoAi());
+         }
 
-      if (var0.isNoAi()) {
-         var2.putBoolean("NoAI", var0.isNoAi());
-      }
+         if (var0.isSilent()) {
+            var1x.putBoolean("Silent", var0.isSilent());
+         }
 
-      if (var0.isSilent()) {
-         var2.putBoolean("Silent", var0.isSilent());
-      }
+         if (var0.isNoGravity()) {
+            var1x.putBoolean("NoGravity", var0.isNoGravity());
+         }
 
-      if (var0.isNoGravity()) {
-         var2.putBoolean("NoGravity", var0.isNoGravity());
-      }
+         if (var0.hasGlowingTag()) {
+            var1x.putBoolean("Glowing", var0.hasGlowingTag());
+         }
 
-      if (var0.hasGlowingTag()) {
-         var2.putBoolean("Glowing", var0.hasGlowingTag());
-      }
+         if (var0.isInvulnerable()) {
+            var1x.putBoolean("Invulnerable", var0.isInvulnerable());
+         }
 
-      if (var0.isInvulnerable()) {
-         var2.putBoolean("Invulnerable", var0.isInvulnerable());
-      }
-
-      var2.putFloat("Health", var0.getHealth());
+         var1x.putFloat("Health", var0.getHealth());
+      });
    }
 
    @Deprecated

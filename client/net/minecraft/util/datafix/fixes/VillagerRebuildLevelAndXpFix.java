@@ -39,26 +39,26 @@ public class VillagerRebuildLevelAndXpFix extends DataFix {
                var2,
                var1,
                var3xx -> {
-                  Dynamic var4xxx = (Dynamic)var3xx.get(DSL.remainderFinder());
-                  int var5xxx = var4xxx.get("VillagerData").get("level").asInt(0);
-                  Typed var6xx = var3xx;
-                  if (var5xxx == 0 || var5xxx == 1) {
-                     int var7xx = var3xx.getOptionalTyped(var3)
+                  Dynamic var4xx = (Dynamic)var3xx.get(DSL.remainderFinder());
+                  int var5xx = var4xx.get("VillagerData").get("level").asInt(0);
+                  Typed var6x = var3xx;
+                  if (var5xx == 0 || var5xx == 1) {
+                     int var7x = var3xx.getOptionalTyped(var3)
                         .flatMap(var1xxx -> var1xxx.getOptionalTyped(var5))
                         .map(var1xxx -> var1xxx.getAllTyped(var7).size())
                         .orElse(0);
-                     var5xxx = Mth.clamp(var7xx / 2, 1, 5);
-                     if (var5xxx > 1) {
-                        var6xx = addLevel(var3xx, var5xxx);
+                     var5xx = Mth.clamp(var7x / 2, 1, 5);
+                     if (var5xx > 1) {
+                        var6x = addLevel(var3xx, var5xx);
                      }
                   }
-      
-                  Optional var8 = var4xxx.get("Xp").asNumber().result();
+
+                  Optional var8 = var4xx.get("Xp").asNumber().result();
                   if (var8.isEmpty()) {
-                     var6xx = addXpFromLevel(var6xx, var5xxx);
+                     var6x = addXpFromLevel(var6x, var5xx);
                   }
-      
-                  return var6xx;
+
+                  return var6x;
                }
             )
       );

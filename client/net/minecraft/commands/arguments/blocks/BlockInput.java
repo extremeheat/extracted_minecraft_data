@@ -39,7 +39,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
       if (!var2.is(this.state.getBlock())) {
          return false;
       } else {
-         for(Property var4 : this.properties) {
+         for (Property var4 : this.properties) {
             if (var2.getValue(var4) != this.state.getValue(var4)) {
                return false;
             }
@@ -49,7 +49,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
             return true;
          } else {
             BlockEntity var5 = var1.getEntity();
-            return var5 != null && NbtUtils.compareNbt(this.tag, var5.saveWithFullMetadata(), true);
+            return var5 != null && NbtUtils.compareNbt(this.tag, var5.saveWithFullMetadata(var1.getLevel().registryAccess()), true);
          }
       }
    }
@@ -70,7 +70,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
          if (this.tag != null) {
             BlockEntity var5 = var1.getBlockEntity(var2);
             if (var5 != null) {
-               var5.load(this.tag);
+               var5.loadWithComponents(this.tag, var1.registryAccess());
             }
          }
 

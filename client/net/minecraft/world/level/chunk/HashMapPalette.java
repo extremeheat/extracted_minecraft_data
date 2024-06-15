@@ -32,7 +32,7 @@ public class HashMapPalette<T> implements Palette<T> {
    }
 
    public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new HashMapPalette<>(var1, var0, var2, var3);
+      return new HashMapPalette(var1, var0, var2, var3);
    }
 
    @Override
@@ -50,7 +50,7 @@ public class HashMapPalette<T> implements Palette<T> {
 
    @Override
    public boolean maybeHas(Predicate<T> var1) {
-      for(int var2 = 0; var2 < this.getSize(); ++var2) {
+      for (int var2 = 0; var2 < this.getSize(); var2++) {
          if (var1.test(this.values.byId(var2))) {
             return true;
          }
@@ -74,7 +74,7 @@ public class HashMapPalette<T> implements Palette<T> {
       this.values.clear();
       int var2 = var1.readVarInt();
 
-      for(int var3 = 0; var3 < var2; ++var3) {
+      for (int var3 = 0; var3 < var2; var3++) {
          this.values.add(this.registry.byIdOrThrow(var1.readVarInt()));
       }
    }
@@ -84,7 +84,7 @@ public class HashMapPalette<T> implements Palette<T> {
       int var2 = this.getSize();
       var1.writeVarInt(var2);
 
-      for(int var3 = 0; var3 < var2; ++var3) {
+      for (int var3 = 0; var3 < var2; var3++) {
          var1.writeVarInt(this.registry.getId(this.values.byId(var3)));
       }
    }
@@ -93,7 +93,7 @@ public class HashMapPalette<T> implements Palette<T> {
    public int getSerializedSize() {
       int var1 = VarInt.getByteSize(this.getSize());
 
-      for(int var2 = 0; var2 < this.getSize(); ++var2) {
+      for (int var2 = 0; var2 < this.getSize(); var2++) {
          var1 += VarInt.getByteSize(this.registry.getId(this.values.byId(var2)));
       }
 

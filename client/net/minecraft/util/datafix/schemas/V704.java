@@ -9,6 +9,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
@@ -141,7 +142,7 @@ public class V704 extends Schema {
    });
    protected static final HookFunction ADD_NAMES = new HookFunction() {
       public <T> T apply(DynamicOps<T> var1, T var2) {
-         return V99.addNames(new Dynamic(var1, var2), V704.ITEM_TO_BLOCKENTITY, "ArmorStand");
+         return V99.addNames(new Dynamic(var1, var2), V704.ITEM_TO_BLOCKENTITY, V99.ITEM_TO_ENTITY);
       }
    };
 
@@ -189,7 +190,11 @@ public class V704 extends Schema {
 
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
       super.registerTypes(var1, var2, var3);
-      var1.registerType(false, References.BLOCK_ENTITY, () -> DSL.taggedChoiceLazy("id", NamespacedSchema.namespacedString(), var3));
+      var1.registerType(
+         true,
+         References.BLOCK_ENTITY,
+         () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", NamespacedSchema.namespacedString(), var3))
+      );
       var1.registerType(
          true,
          References.ITEM_STACK,
@@ -199,16 +204,14 @@ public class V704 extends Schema {
                   References.ITEM_NAME.in(var1),
                   "tag",
                   DSL.optionalFields(
-                     "EntityTag",
-                     References.ENTITY_TREE.in(var1),
-                     "BlockEntityTag",
-                     References.BLOCK_ENTITY.in(var1),
-                     "CanDestroy",
-                     DSL.list(References.BLOCK_NAME.in(var1)),
-                     "CanPlaceOn",
-                     DSL.list(References.BLOCK_NAME.in(var1)),
-                     "Items",
-                     DSL.list(References.ITEM_STACK.in(var1))
+                     new Pair[]{
+                        Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
+                        Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
+                        Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
+                        Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
+                        Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
+                        Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
+                     }
                   )
                ),
                ADD_NAMES,

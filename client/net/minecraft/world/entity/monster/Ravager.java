@@ -3,6 +3,7 @@ package net.minecraft.world.entity.monster;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
@@ -11,7 +12,6 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -36,19 +36,18 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Ravager extends Raider {
    private static final Predicate<Entity> NO_RAVAGER_AND_ALIVE = var0 -> var0.isAlive() && !(var0 instanceof Ravager);
    private static final double BASE_MOVEMENT_SPEED = 0.3;
    private static final double ATTACK_MOVEMENT_SPEED = 0.35;
    private static final int STUNNED_COLOR = 8356754;
-   private static final double STUNNED_COLOR_BLUE = 0.5725490196078431;
-   private static final double STUNNED_COLOR_GREEN = 0.5137254901960784;
-   private static final double STUNNED_COLOR_RED = 0.4980392156862745;
+   private static final float STUNNED_COLOR_BLUE = 0.57254905F;
+   private static final float STUNNED_COLOR_GREEN = 0.5137255F;
+   private static final float STUNNED_COLOR_RED = 0.49803922F;
    private static final int ATTACK_DURATION = 10;
    public static final int STUN_DURATION = 40;
    private int attackTick;
@@ -57,9 +56,8 @@ public class Ravager extends Raider {
 
    public Ravager(EntityType<? extends Ravager> var1, Level var2) {
       super(var1, var2);
-      this.setMaxUpStep(1.0F);
       this.xpReward = 20;
-      this.setPathfindingMalus(BlockPathTypes.LEAVES, 0.0F);
+      this.setPathfindingMalus(PathType.LEAVES, 0.0F);
    }
 
    @Override
@@ -93,7 +91,8 @@ public class Ravager extends Raider {
          .add(Attributes.KNOCKBACK_RESISTANCE, 0.75)
          .add(Attributes.ATTACK_DAMAGE, 12.0)
          .add(Attributes.ATTACK_KNOCKBACK, 1.5)
-         .add(Attributes.FOLLOW_RANGE, 32.0);
+         .add(Attributes.FOLLOW_RANGE, 32.0)
+         .add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    @Override
@@ -123,11 +122,6 @@ public class Ravager extends Raider {
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.0625F * var3, -0.0625F * var3);
-   }
-
-   @Override
    public void aiStep() {
       super.aiStep();
       if (this.isAlive()) {
@@ -143,7 +137,7 @@ public class Ravager extends Raider {
             boolean var7 = false;
             AABB var2 = this.getBoundingBox().inflate(0.2);
 
-            for(BlockPos var4 : BlockPos.betweenClosed(
+            for (BlockPos var4 : BlockPos.betweenClosed(
                Mth.floor(var2.minX), Mth.floor(var2.minY), Mth.floor(var2.minZ), Mth.floor(var2.maxX), Mth.floor(var2.maxY), Mth.floor(var2.maxZ)
             )) {
                BlockState var5 = this.level().getBlockState(var4);
@@ -159,18 +153,18 @@ public class Ravager extends Raider {
          }
 
          if (this.roarTick > 0) {
-            --this.roarTick;
+            this.roarTick--;
             if (this.roarTick == 10) {
                this.roar();
             }
          }
 
          if (this.attackTick > 0) {
-            --this.attackTick;
+            this.attackTick--;
          }
 
          if (this.stunnedTick > 0) {
-            --this.stunnedTick;
+            this.stunnedTick--;
             this.stunEffect();
             if (this.stunnedTick == 0) {
                this.playSound(SoundEvents.RAVAGER_ROAR, 1.0F, 1.0F);
@@ -185,7 +179,8 @@ public class Ravager extends Raider {
          double var1 = this.getX() - (double)this.getBbWidth() * Math.sin((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6 - 0.3);
          double var3 = this.getY() + (double)this.getBbHeight() - 0.3;
          double var5 = this.getZ() + (double)this.getBbWidth() * Math.cos((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6 - 0.3);
-         this.level().addParticle(ParticleTypes.ENTITY_EFFECT, var1, var3, var5, 0.4980392156862745, 0.5137254901960784, 0.5725490196078431);
+         this.level()
+            .addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.49803922F, 0.5137255F, 0.57254905F), var1, var3, var5, 0.0, 0.0, 0.0);
       }
    }
 
@@ -217,7 +212,7 @@ public class Ravager extends Raider {
 
    private void roar() {
       if (this.isAlive()) {
-         for(LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), NO_RAVAGER_AND_ALIVE)) {
+         for (LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), NO_RAVAGER_AND_ALIVE)) {
             if (!(var3 instanceof AbstractIllager)) {
                var3.hurt(this.damageSources().mobAttack(this), 6.0F);
             }
@@ -227,7 +222,7 @@ public class Ravager extends Raider {
 
          Vec3 var10 = this.getBoundingBox().getCenter();
 
-         for(int var11 = 0; var11 < 40; ++var11) {
+         for (int var11 = 0; var11 < 40; var11++) {
             double var4 = this.random.nextGaussian() * 0.2;
             double var6 = this.random.nextGaussian() * 0.2;
             double var8 = this.random.nextGaussian() * 0.2;

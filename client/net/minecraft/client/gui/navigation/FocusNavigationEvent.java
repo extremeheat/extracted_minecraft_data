@@ -3,12 +3,10 @@ package net.minecraft.client.gui.navigation;
 public interface FocusNavigationEvent {
    ScreenDirection getVerticalDirectionForInitialFocus();
 
-   public static record ArrowNavigation(ScreenDirection a) implements FocusNavigationEvent {
-      private final ScreenDirection direction;
-
-      public ArrowNavigation(ScreenDirection var1) {
+   public static record ArrowNavigation(ScreenDirection direction) implements FocusNavigationEvent {
+      public ArrowNavigation(ScreenDirection direction) {
          super();
-         this.direction = var1;
+         this.direction = direction;
       }
 
       @Override
@@ -28,12 +26,10 @@ public interface FocusNavigationEvent {
       }
    }
 
-   public static record TabNavigation(boolean a) implements FocusNavigationEvent {
-      private final boolean forward;
-
-      public TabNavigation(boolean var1) {
+   public static record TabNavigation(boolean forward) implements FocusNavigationEvent {
+      public TabNavigation(boolean forward) {
          super();
-         this.forward = var1;
+         this.forward = forward;
       }
 
       @Override

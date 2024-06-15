@@ -15,15 +15,13 @@ import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 
 public record WorldCreationContext(
-   WorldOptions a, Registry<LevelStem> b, WorldDimensions c, LayeredRegistryAccess<RegistryLayer> d, ReloadableServerResources e, WorldDataConfiguration f
+   WorldOptions options,
+   Registry<LevelStem> datapackDimensions,
+   WorldDimensions selectedDimensions,
+   LayeredRegistryAccess<RegistryLayer> worldgenRegistries,
+   ReloadableServerResources dataPackResources,
+   WorldDataConfiguration dataConfiguration
 ) {
-   private final WorldOptions options;
-   private final Registry<LevelStem> datapackDimensions;
-   private final WorldDimensions selectedDimensions;
-   private final LayeredRegistryAccess<RegistryLayer> worldgenRegistries;
-   private final ReloadableServerResources dataPackResources;
-   private final WorldDataConfiguration dataConfiguration;
-
    public WorldCreationContext(WorldGenSettings var1, LayeredRegistryAccess<RegistryLayer> var2, ReloadableServerResources var3, WorldDataConfiguration var4) {
       this(var1.options(), var1.dimensions(), var2, var3, var4);
    }
@@ -35,20 +33,20 @@ public record WorldCreationContext(
    }
 
    public WorldCreationContext(
-      WorldOptions var1,
-      Registry<LevelStem> var2,
-      WorldDimensions var3,
-      LayeredRegistryAccess<RegistryLayer> var4,
-      ReloadableServerResources var5,
-      WorldDataConfiguration var6
+      WorldOptions options,
+      Registry<LevelStem> datapackDimensions,
+      WorldDimensions selectedDimensions,
+      LayeredRegistryAccess<RegistryLayer> worldgenRegistries,
+      ReloadableServerResources dataPackResources,
+      WorldDataConfiguration dataConfiguration
    ) {
       super();
-      this.options = var1;
-      this.datapackDimensions = var2;
-      this.selectedDimensions = var3;
-      this.worldgenRegistries = var4;
-      this.dataPackResources = var5;
-      this.dataConfiguration = var6;
+      this.options = options;
+      this.datapackDimensions = datapackDimensions;
+      this.selectedDimensions = selectedDimensions;
+      this.worldgenRegistries = worldgenRegistries;
+      this.dataPackResources = dataPackResources;
+      this.dataConfiguration = dataConfiguration;
    }
 
    public WorldCreationContext withSettings(WorldOptions var1, WorldDimensions var2) {

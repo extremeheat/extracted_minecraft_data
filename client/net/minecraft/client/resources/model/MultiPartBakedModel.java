@@ -49,8 +49,8 @@ public class MultiPartBakedModel implements BakedModel {
          if (var4 == null) {
             var4 = new BitSet();
 
-            for(int var5 = 0; var5 < this.selectors.size(); ++var5) {
-               Pair var6 = (Pair)this.selectors.get(var5);
+            for (int var5 = 0; var5 < this.selectors.size(); var5++) {
+               Pair var6 = this.selectors.get(var5);
                if (((Predicate)var6.getLeft()).test(var1)) {
                   var4.set(var5);
                }
@@ -62,9 +62,9 @@ public class MultiPartBakedModel implements BakedModel {
          ArrayList var9 = Lists.newArrayList();
          long var10 = var3.nextLong();
 
-         for(int var8 = 0; var8 < var4.length(); ++var8) {
+         for (int var8 = 0; var8 < var4.length(); var8++) {
             if (var4.get(var8)) {
-               var9.addAll(((BakedModel)((Pair)this.selectors.get(var8)).getRight()).getQuads(var1, var2, RandomSource.create(var10)));
+               var9.addAll(((BakedModel)this.selectors.get(var8).getRight()).getQuads(var1, var2, RandomSource.create(var10)));
             }
          }
 

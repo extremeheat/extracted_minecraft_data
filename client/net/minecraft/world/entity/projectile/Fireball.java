@@ -6,6 +6,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -26,39 +27,45 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
    }
 
    public void setItem(ItemStack var1) {
-      if (!var1.is(Items.FIRE_CHARGE) || var1.hasTag()) {
+      if (var1.isEmpty()) {
+         this.getEntityData().set(DATA_ITEM_STACK, this.getDefaultItem());
+      } else {
          this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
       }
    }
 
-   protected ItemStack getItemRaw() {
+   @Override
+   public ItemStack getItem() {
       return this.getEntityData().get(DATA_ITEM_STACK);
    }
 
    @Override
-   public ItemStack getItem() {
-      ItemStack var1 = this.getItemRaw();
-      return var1.isEmpty() ? new ItemStack(Items.FIRE_CHARGE) : var1;
-   }
-
-   @Override
-   protected void defineSynchedData() {
-      this.getEntityData().define(DATA_ITEM_STACK, ItemStack.EMPTY);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_ITEM_STACK, this.getDefaultItem());
    }
 
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      ItemStack var2 = this.getItemRaw();
-      if (!var2.isEmpty()) {
-         var1.put("Item", var2.save(new CompoundTag()));
-      }
+      var1.put("Item", this.getItem().save(this.registryAccess()));
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      ItemStack var2 = ItemStack.of(var1.getCompound("Item"));
-      this.setItem(var2);
+      if (var1.contains("Item", 10)) {
+         this.setItem(ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElse(this.getDefaultItem()));
+      } else {
+         this.setItem(this.getDefaultItem());
+      }
+   }
+
+   private ItemStack getDefaultItem() {
+      return new ItemStack(Items.FIRE_CHARGE);
+   }
+
+   @Override
+   public SlotAccess getSlot(int var1) {
+      return var1 == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(var1);
    }
 }

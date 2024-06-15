@@ -4,7 +4,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.SimpleWeightedRandomList;
@@ -42,7 +42,7 @@ public class PlacementUtils {
       super();
    }
 
-   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
       AquaticPlacements.bootstrap(var0);
       CavePlacements.bootstrap(var0);
       EndPlacements.bootstrap(var0);
@@ -59,13 +59,13 @@ public class PlacementUtils {
    }
 
    public static void register(
-      BootstapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, List<PlacementModifier> var3
+      BootstrapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, List<PlacementModifier> var3
    ) {
       var0.register(var1, new PlacedFeature(var2, List.copyOf(var3)));
    }
 
    public static void register(
-      BootstapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, PlacementModifier... var3
+      BootstrapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, PlacementModifier... var3
    ) {
       register(var0, var1, var2, List.of(var3));
    }
@@ -75,9 +75,9 @@ public class PlacementUtils {
       if (Math.abs(var3 - (float)((int)var3)) > 1.0E-5F) {
          throw new IllegalStateException("Chance data cannot be represented as list weight");
       } else {
-         SimpleWeightedRandomList var4 = SimpleWeightedRandomList.<int>builder()
-            .add((int)ConstantInt.of(var0), (int)var3 - 1)
-            .add((int)ConstantInt.of(var0 + var2), 1)
+         SimpleWeightedRandomList var4 = SimpleWeightedRandomList.<ConstantInt>builder()
+            .add(ConstantInt.of(var0), (int)var3 - 1)
+            .add(ConstantInt.of(var0 + var2), 1)
             .build();
          return CountPlacement.of(new WeightedListInt(var4));
       }

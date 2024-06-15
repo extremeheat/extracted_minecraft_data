@@ -115,7 +115,7 @@ public class ActiveProfiler implements ProfileCollector {
          long var5 = var1 - var3;
          ActiveProfiler.PathEntry var7 = this.getCurrentEntry();
          var7.accumulatedDuration += var5;
-         ++var7.count;
+         var7.count++;
          var7.maxDuration = Math.max(var7.maxDuration, var5);
          var7.minDuration = Math.min(var7.minDuration, var5);
          if (this.warn && var5 > WARNING_TIME_NANOS) {

@@ -20,7 +20,7 @@ public class CollectFields extends CollectToTag {
       Builder var2 = ImmutableSet.builder();
       FieldTree var3 = FieldTree.createRoot();
 
-      for(FieldSelector var7 : var1) {
+      for (FieldSelector var7 : var1) {
          var3.addEntry(var7);
          var2.add(var7.type());
       }
@@ -53,7 +53,7 @@ public class CollectFields extends CollectToTag {
       if (this.depth() > var3.depth()) {
          return super.visitEntry(var1, var2);
       } else if (var3.selectedFields().remove(var2, var1)) {
-         --this.fieldsToGetCount;
+         this.fieldsToGetCount--;
          return super.visitEntry(var1, var2);
       } else {
          if (var1 == CompoundTag.TYPE) {

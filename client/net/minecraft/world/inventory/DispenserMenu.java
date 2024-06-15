@@ -24,19 +24,19 @@ public class DispenserMenu extends AbstractContainerMenu {
       this.dispenser = var3;
       var3.startOpen(var2.player);
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 3; ++var5) {
+      for (int var4 = 0; var4 < 3; var4++) {
+         for (int var5 = 0; var5 < 3; var5++) {
             this.addSlot(new Slot(var3, var5 + var4 * 3, 62 + var5 * 18, 17 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 3; ++var6) {
-         for(int var8 = 0; var8 < 9; ++var8) {
+      for (int var6 = 0; var6 < 3; var6++) {
+         for (int var8 = 0; var8 < 9; var8++) {
             this.addSlot(new Slot(var2, var8 + var6 * 9 + 9, 8 + var8 * 18, 84 + var6 * 18));
          }
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
+      for (int var7 = 0; var7 < 9; var7++) {
          this.addSlot(new Slot(var2, var7, 8 + var7 * 18, 142));
       }
    }

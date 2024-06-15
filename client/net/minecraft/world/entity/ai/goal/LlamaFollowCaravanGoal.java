@@ -25,13 +25,13 @@ public class LlamaFollowCaravanGoal extends Goal {
    public boolean canUse() {
       if (!this.llama.isLeashed() && !this.llama.inCaravan()) {
          List var1 = this.llama.level().getEntities(this.llama, this.llama.getBoundingBox().inflate(9.0, 4.0, 9.0), var0 -> {
-            EntityType var1xx = var0.getType();
-            return var1xx == EntityType.LLAMA || var1xx == EntityType.TRADER_LLAMA;
+            EntityType var1x = var0.getType();
+            return var1x == EntityType.LLAMA || var1x == EntityType.TRADER_LLAMA;
          });
          Llama var2 = null;
          double var3 = 1.7976931348623157E308;
 
-         for(Entity var6 : var1) {
+         for (Entity var6 : var1) {
             Llama var7 = (Llama)var6;
             if (var7.inCaravan() && !var7.hasCaravanTail()) {
                double var8 = this.llama.distanceToSqr(var7);
@@ -43,7 +43,7 @@ public class LlamaFollowCaravanGoal extends Goal {
          }
 
          if (var2 == null) {
-            for(Entity var11 : var1) {
+            for (Entity var11 : var1) {
                Llama var12 = (Llama)var11;
                if (var12.isLeashed() && !var12.hasCaravanTail()) {
                   double var13 = this.llama.distanceToSqr(var12);
@@ -87,7 +87,7 @@ public class LlamaFollowCaravanGoal extends Goal {
          }
 
          if (this.distCheckCounter > 0) {
-            --this.distCheckCounter;
+            this.distCheckCounter--;
          }
 
          return true;

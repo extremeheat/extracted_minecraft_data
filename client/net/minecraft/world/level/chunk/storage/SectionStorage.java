@@ -2,7 +2,6 @@ package net.minecraft.world.level.chunk.storage;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -13,7 +12,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -29,7 +27,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import org.slf4j.Logger;
@@ -37,38 +34,25 @@ import org.slf4j.Logger;
 public class SectionStorage<R> implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String SECTIONS_TAG = "Sections";
-   private final IOWorker worker;
+   private final SimpleRegionStorage simpleRegionStorage;
    private final Long2ObjectMap<Optional<R>> storage = new Long2ObjectOpenHashMap();
    private final LongLinkedOpenHashSet dirty = new LongLinkedOpenHashSet();
    private final Function<Runnable, Codec<R>> codec;
    private final Function<Runnable, R> factory;
-   private final DataFixer fixerUpper;
-   private final DataFixTypes type;
    private final RegistryAccess registryAccess;
    protected final LevelHeightAccessor levelHeightAccessor;
 
-   public SectionStorage(
-      Path var1,
-      Function<Runnable, Codec<R>> var2,
-      Function<Runnable, R> var3,
-      DataFixer var4,
-      DataFixTypes var5,
-      boolean var6,
-      RegistryAccess var7,
-      LevelHeightAccessor var8
-   ) {
+   public SectionStorage(SimpleRegionStorage var1, Function<Runnable, Codec<R>> var2, Function<Runnable, R> var3, RegistryAccess var4, LevelHeightAccessor var5) {
       super();
+      this.simpleRegionStorage = var1;
       this.codec = var2;
       this.factory = var3;
-      this.fixerUpper = var4;
-      this.type = var5;
-      this.registryAccess = var7;
-      this.levelHeightAccessor = var8;
-      this.worker = new IOWorker(var1, var6, var1.getFileName().toString());
+      this.registryAccess = var4;
+      this.levelHeightAccessor = var5;
    }
 
    protected void tick(BooleanSupplier var1) {
-      while(this.hasWork() && var1.getAsBoolean()) {
+      while (this.hasWork() && var1.getAsBoolean()) {
          ChunkPos var2 = SectionPos.of(this.dirty.firstLong()).chunk();
          this.writeColumn(var2);
       }
@@ -124,12 +108,12 @@ public class SectionStorage<R> implements AutoCloseable {
 
    private void readColumn(ChunkPos var1) {
       Optional var2 = this.tryRead(var1).join();
-      RegistryOps var3 = RegistryOps.create(NbtOps.INSTANCE, this.registryAccess);
-      this.readColumn(var1, var3, (Tag)var2.orElse(null));
+      RegistryOps var3 = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
+      this.readColumn(var1, var3, (CompoundTag)var2.orElse(null));
    }
 
    private CompletableFuture<Optional<CompoundTag>> tryRead(ChunkPos var1) {
-      return this.worker.loadAsync(var1).exceptionally(var1x -> {
+      return this.simpleRegionStorage.read(var1).exceptionally(var1x -> {
          if (var1x instanceof IOException var2) {
             LOGGER.error("Error reading chunk {} data from disk", var1, var2);
             return Optional.empty();
@@ -139,9 +123,9 @@ public class SectionStorage<R> implements AutoCloseable {
       });
    }
 
-   private <T> void readColumn(ChunkPos var1, DynamicOps<T> var2, @Nullable T var3) {
+   private void readColumn(ChunkPos var1, RegistryOps<Tag> var2, @Nullable CompoundTag var3) {
       if (var3 == null) {
-         for(int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); ++var4) {
+         for (int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); var4++) {
             this.storage.put(getKey(var1, var4), Optional.empty());
          }
       } else {
@@ -149,14 +133,14 @@ public class SectionStorage<R> implements AutoCloseable {
          int var5 = getVersion(var14);
          int var6 = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
          boolean var7 = var5 != var6;
-         Dynamic var8 = this.type.update(this.fixerUpper, var14, var5, var6);
+         Dynamic var8 = this.simpleRegionStorage.upgradeChunkTag(var14, var5);
          OptionalDynamic var9 = var8.get("Sections");
 
-         for(int var10 = this.levelHeightAccessor.getMinSection(); var10 < this.levelHeightAccessor.getMaxSection(); ++var10) {
+         for (int var10 = this.levelHeightAccessor.getMinSection(); var10 < this.levelHeightAccessor.getMaxSection(); var10++) {
             long var11 = getKey(var1, var10);
             Optional var13 = var9.get(Integer.toString(var10))
                .result()
-               .flatMap(var3x -> ((Codec)this.codec.apply(() -> this.setDirty(var11))).parse(var3x).resultOrPartial(LOGGER::error));
+               .flatMap(var3x -> this.codec.apply(() -> this.setDirty(var11)).parse(var3x).resultOrPartial(LOGGER::error));
             this.storage.put(var11, var13);
             var13.ifPresent(var4x -> {
                this.onSectionLoad(var11);
@@ -169,11 +153,11 @@ public class SectionStorage<R> implements AutoCloseable {
    }
 
    private void writeColumn(ChunkPos var1) {
-      RegistryOps var2 = RegistryOps.create(NbtOps.INSTANCE, this.registryAccess);
+      RegistryOps var2 = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
       Dynamic var3 = this.writeColumn(var1, var2);
       Tag var4 = (Tag)var3.getValue();
       if (var4 instanceof CompoundTag) {
-         this.worker.store(var1, (CompoundTag)var4);
+         this.simpleRegionStorage.write(var1, (CompoundTag)var4);
       } else {
          LOGGER.error("Expected compound tag, got {}", var4);
       }
@@ -182,12 +166,12 @@ public class SectionStorage<R> implements AutoCloseable {
    private <T> Dynamic<T> writeColumn(ChunkPos var1, DynamicOps<T> var2) {
       HashMap var3 = Maps.newHashMap();
 
-      for(int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); ++var4) {
+      for (int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); var4++) {
          long var5 = getKey(var1, var4);
          this.dirty.remove(var5);
          Optional var7 = (Optional)this.storage.get(var5);
          if (var7 != null && !var7.isEmpty()) {
-            DataResult var8 = ((Codec)this.codec.apply(() -> this.setDirty(var5))).encodeStart(var2, var7.get());
+            DataResult var8 = this.codec.apply(() -> this.setDirty(var5)).encodeStart(var2, var7.get());
             String var9 = Integer.toString(var4);
             var8.resultOrPartial(LOGGER::error).ifPresent(var3x -> var3.put(var2.createString(var9), var3x));
          }
@@ -228,7 +212,7 @@ public class SectionStorage<R> implements AutoCloseable {
 
    public void flush(ChunkPos var1) {
       if (this.hasWork()) {
-         for(int var2 = this.levelHeightAccessor.getMinSection(); var2 < this.levelHeightAccessor.getMaxSection(); ++var2) {
+         for (int var2 = this.levelHeightAccessor.getMinSection(); var2 < this.levelHeightAccessor.getMaxSection(); var2++) {
             long var3 = getKey(var1, var2);
             if (this.dirty.contains(var3)) {
                this.writeColumn(var1);
@@ -240,6 +224,6 @@ public class SectionStorage<R> implements AutoCloseable {
 
    @Override
    public void close() throws IOException {
-      this.worker.close();
+      this.simpleRegionStorage.close();
    }
 }

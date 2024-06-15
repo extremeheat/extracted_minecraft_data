@@ -6,7 +6,7 @@ import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -54,36 +54,35 @@ public abstract class AbstractCauldronBlock extends Block {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      ItemStack var7 = var4.getItemInHand(var5);
-      CauldronInteraction var8 = this.interactions.map().get(var7.getItem());
-      return var8.interact(var1, var2, var3, var4, var5, var7);
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      CauldronInteraction var8 = this.interactions.map().get(var1.getItem());
+      return var8.interact(var2, var3, var4, var5, var6, var1);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return INSIDE;
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
    public abstract boolean isFull(BlockState var1);
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockPos var5 = PointedDripstoneBlock.findStalactiteTipAboveCauldron(var2, var3);
       if (var5 != null) {
          Fluid var6 = PointedDripstoneBlock.getCauldronFillFluidType(var2, var5);

@@ -4,44 +4,45 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.world.entity.EquipmentTable;
 
-public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
-   private final CompoundTag entityToSpawn;
-   private final Optional<SpawnData.CustomSpawnRules> customSpawnRules;
+public record SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpawnRules> customSpawnRules, Optional<EquipmentTable> equipment) {
    public static final String ENTITY_TAG = "entity";
    public static final Codec<SpawnData> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                CompoundTag.CODEC.fieldOf("entity").forGetter(var0x -> var0x.entityToSpawn),
-               SpawnData.CustomSpawnRules.CODEC.optionalFieldOf("custom_spawn_rules").forGetter(var0x -> var0x.customSpawnRules)
+               SpawnData.CustomSpawnRules.CODEC.optionalFieldOf("custom_spawn_rules").forGetter(var0x -> var0x.customSpawnRules),
+               EquipmentTable.CODEC.optionalFieldOf("equipment").forGetter(var0x -> var0x.equipment)
             )
             .apply(var0, SpawnData::new)
    );
    public static final Codec<SimpleWeightedRandomList<SpawnData>> LIST_CODEC = SimpleWeightedRandomList.wrappedCodecAllowingEmpty(CODEC);
 
    public SpawnData() {
-      this(new CompoundTag(), Optional.empty());
+      this(new CompoundTag(), Optional.empty(), Optional.empty());
    }
 
-   public SpawnData(CompoundTag var1, Optional<SpawnData.CustomSpawnRules> var2) {
+   public SpawnData(CompoundTag entityToSpawn, Optional<SpawnData.CustomSpawnRules> customSpawnRules, Optional<EquipmentTable> equipment) {
       super();
-      if (var1.contains("id")) {
-         ResourceLocation var3 = ResourceLocation.tryParse(var1.getString("id"));
-         if (var3 != null) {
-            var1.putString("id", var3.toString());
+      if (entityToSpawn.contains("id")) {
+         ResourceLocation var4 = ResourceLocation.tryParse(entityToSpawn.getString("id"));
+         if (var4 != null) {
+            entityToSpawn.putString("id", var4.toString());
          } else {
-            var1.remove("id");
+            entityToSpawn.remove("id");
          }
       }
 
-      this.entityToSpawn = var1;
-      this.customSpawnRules = var2;
+      this.entityToSpawn = entityToSpawn;
+      this.customSpawnRules = customSpawnRules;
+      this.equipment = equipment;
    }
 
    public CompoundTag getEntityToSpawn() {
@@ -52,9 +53,11 @@ public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
       return this.customSpawnRules;
    }
 
-   public static record CustomSpawnRules(InclusiveRange<Integer> b, InclusiveRange<Integer> c) {
-      private final InclusiveRange<Integer> blockLightLimit;
-      private final InclusiveRange<Integer> skyLightLimit;
+   public Optional<EquipmentTable> getEquipment() {
+      return this.equipment;
+   }
+
+   public static record CustomSpawnRules(InclusiveRange<Integer> blockLightLimit, InclusiveRange<Integer> skyLightLimit) {
       private static final InclusiveRange<Integer> LIGHT_RANGE = new InclusiveRange<>(0, 15);
       public static final Codec<SpawnData.CustomSpawnRules> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
@@ -64,10 +67,10 @@ public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
                .apply(var0, SpawnData.CustomSpawnRules::new)
       );
 
-      public CustomSpawnRules(InclusiveRange<Integer> var1, InclusiveRange<Integer> var2) {
+      public CustomSpawnRules(InclusiveRange<Integer> blockLightLimit, InclusiveRange<Integer> skyLightLimit) {
          super();
-         this.blockLightLimit = var1;
-         this.skyLightLimit = var2;
+         this.blockLightLimit = blockLightLimit;
+         this.skyLightLimit = skyLightLimit;
       }
 
       private static DataResult<InclusiveRange<Integer>> checkLightBoundaries(InclusiveRange<Integer> var0) {
@@ -75,7 +78,12 @@ public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
       }
 
       private static MapCodec<InclusiveRange<Integer>> lightLimit(String var0) {
-         return ExtraCodecs.validate(InclusiveRange.INT.optionalFieldOf(var0, LIGHT_RANGE), SpawnData.CustomSpawnRules::checkLightBoundaries);
+         return InclusiveRange.INT.lenientOptionalFieldOf(var0, LIGHT_RANGE).validate(SpawnData.CustomSpawnRules::checkLightBoundaries);
+      }
+
+      public boolean isValidPosition(BlockPos var1, ServerLevel var2) {
+         return this.blockLightLimit.isValueInRange(var2.getBrightness(LightLayer.BLOCK, var1))
+            && this.skyLightLimit.isValueInRange(var2.getBrightness(LightLayer.SKY, var1));
       }
    }
 }

@@ -31,8 +31,6 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
       this.allowInline = var3;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<T> encode(Holder<E> var1, DynamicOps<T> var2, T var3) {
       if (var2 instanceof RegistryOps var4) {
          Optional var5 = var4.owner(this.registryKey);
@@ -49,8 +47,6 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
       return this.elementCodec.encode(var1.value(), var2, var3);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<Pair<Holder<E>, T>> decode(DynamicOps<T> var1, T var2) {
       if (var1 instanceof RegistryOps var3) {
          Optional var4 = var3.getter(this.registryKey);
@@ -66,7 +62,9 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
             } else {
                Pair var7 = (Pair)var6.result().get();
                ResourceKey var8 = ResourceKey.create(this.registryKey, (ResourceLocation)var7.getFirst());
-               return ((DataResult)var5.get(var8).map(DataResult::success).orElseGet(() -> (T)DataResult.error(() -> "Failed to get element " + var8)))
+               return var5.get(var8)
+                  .<DataResult>map(DataResult::success)
+                  .orElseGet(() -> DataResult.error(() -> "Failed to get element " + var8))
                   .map(var1x -> Pair.of(var1x, var7.getSecond()))
                   .setLifecycle(Lifecycle.stable());
             }

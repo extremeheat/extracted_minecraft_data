@@ -27,7 +27,7 @@ public class MerchantResultSlot extends Slot {
    @Override
    public ItemStack remove(int var1) {
       if (this.hasItem()) {
-         this.removeCount += Math.min(var1, this.getItem().getCount());
+         this.removeCount = this.removeCount + Math.min(var1, this.getItem().getCount());
       }
 
       return super.remove(var1);

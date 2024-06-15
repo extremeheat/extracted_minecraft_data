@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.InstrumentTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -26,7 +27,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -51,9 +51,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Goat extends Animal {
    public static final EntityDimensions LONG_JUMPING_DIMENSIONS = EntityDimensions.scalable(0.9F, 1.3F).scale(0.7F);
@@ -94,8 +93,8 @@ public class Goat extends Animal {
    public Goat(EntityType<? extends Goat> var1, Level var2) {
       super(var1, var2);
       this.getNavigation().setCanFloat(true);
-      this.setPathfindingMalus(BlockPathTypes.POWDER_SNOW, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_POWDER_SNOW, -1.0F);
+      this.setPathfindingMalus(PathType.POWDER_SNOW, -1.0F);
+      this.setPathfindingMalus(PathType.DANGER_POWDER_SNOW, -1.0F);
    }
 
    public ItemStack createHorn() {
@@ -164,8 +163,7 @@ public class Goat extends Animal {
       Goat var3 = EntityType.GOAT.create(var1);
       if (var3 != null) {
          GoatAi.initMemories(var3, var1.getRandom());
-         Object var4 = var1.getRandom().nextBoolean() ? this : var2;
-         boolean var5 = var4 instanceof Goat var6 && var6.isScreamingGoat() || var1.getRandom().nextDouble() < 0.02;
+         boolean var5 = (var1.getRandom().nextBoolean() ? this : var2) instanceof Goat var6 && var6.isScreamingGoat() || var1.getRandom().nextDouble() < 0.02;
          var3.setScreamingGoat(var5);
       }
 
@@ -174,7 +172,7 @@ public class Goat extends Animal {
 
    @Override
    public Brain<Goat> getBrain() {
-      return super.getBrain();
+      return (Brain<Goat>)super.getBrain();
    }
 
    @Override
@@ -207,6 +205,11 @@ public class Goat extends Animal {
    }
 
    @Override
+   public boolean isFood(ItemStack var1) {
+      return var1.is(ItemTags.GOAT_FOOD);
+   }
+
+   @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.BUCKET) && !this.isBaby()) {
@@ -225,19 +228,17 @@ public class Goat extends Animal {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      RandomSource var6 = var1.getRandom();
-      GoatAi.initMemories(this, var6);
-      this.setScreamingGoat(var6.nextDouble() < 0.02);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      RandomSource var5 = var1.getRandom();
+      GoatAi.initMemories(this, var5);
+      this.setScreamingGoat(var5.nextDouble() < 0.02);
       this.ageBoundaryReached();
-      if (!this.isBaby() && (double)var6.nextFloat() < 0.10000000149011612) {
-         EntityDataAccessor var7 = var6.nextBoolean() ? DATA_HAS_LEFT_HORN : DATA_HAS_RIGHT_HORN;
-         this.entityData.set(var7, false);
+      if (!this.isBaby() && (double)var5.nextFloat() < 0.10000000149011612) {
+         EntityDataAccessor var6 = var5.nextBoolean() ? DATA_HAS_LEFT_HORN : DATA_HAS_RIGHT_HORN;
+         this.entityData.set(var6, false);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -247,8 +248,8 @@ public class Goat extends Animal {
    }
 
    @Override
-   public EntityDimensions getDimensions(Pose var1) {
-      return var1 == Pose.LONG_JUMPING ? LONG_JUMPING_DIMENSIONS.scale(this.getScale()) : super.getDimensions(var1);
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return var1 == Pose.LONG_JUMPING ? LONG_JUMPING_DIMENSIONS.scale(this.getAgeScale()) : super.getDefaultDimensions(var1);
    }
 
    @Override
@@ -281,7 +282,7 @@ public class Goat extends Animal {
    @Override
    public void aiStep() {
       if (this.isLoweringHead) {
-         ++this.lowerHeadTick;
+         this.lowerHeadTick++;
       } else {
          this.lowerHeadTick -= 2;
       }
@@ -291,11 +292,11 @@ public class Goat extends Animal {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_IS_SCREAMING_GOAT, false);
-      this.entityData.define(DATA_HAS_LEFT_HORN, true);
-      this.entityData.define(DATA_HAS_RIGHT_HORN, true);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_IS_SCREAMING_GOAT, false);
+      var1.define(DATA_HAS_LEFT_HORN, true);
+      var1.define(DATA_HAS_RIGHT_HORN, true);
    }
 
    public boolean hasLeftHorn() {
@@ -357,10 +358,5 @@ public class Goat extends Animal {
 
    public static boolean checkGoatSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.GOATS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.1875F * var3, 0.0F);
    }
 }

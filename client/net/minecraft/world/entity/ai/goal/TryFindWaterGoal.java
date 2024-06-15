@@ -22,7 +22,7 @@ public class TryFindWaterGoal extends Goal {
    public void start() {
       BlockPos var1 = null;
 
-      for(BlockPos var4 : BlockPos.betweenClosed(
+      for (BlockPos var4 : BlockPos.betweenClosed(
          Mth.floor(this.mob.getX() - 2.0),
          Mth.floor(this.mob.getY() - 2.0),
          Mth.floor(this.mob.getZ() - 2.0),

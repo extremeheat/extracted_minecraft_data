@@ -68,7 +68,7 @@ public class PerlinNoise {
             DoubleArrayList var4 = new DoubleArrayList(new double[var3]);
             IntBidirectionalIterator var5 = var0.iterator();
 
-            while(var5.hasNext()) {
+            while (var5.hasNext()) {
                int var6 = var5.nextInt();
                var4.set(var6 + var1, 1.0);
             }
@@ -80,7 +80,7 @@ public class PerlinNoise {
 
    protected PerlinNoise(RandomSource var1, Pair<Integer, DoubleList> var2, boolean var3) {
       super();
-      this.firstOctave = var2.getFirst();
+      this.firstOctave = (Integer)var2.getFirst();
       this.amplitudes = (DoubleList)var2.getSecond();
       int var4 = this.amplitudes.size();
       int var5 = -this.firstOctave;
@@ -88,7 +88,7 @@ public class PerlinNoise {
       if (var3) {
          PositionalRandomFactory var6 = var1.forkPositional();
 
-         for(int var7 = 0; var7 < var4; ++var7) {
+         for (int var7 = 0; var7 < var4; var7++) {
             if (this.amplitudes.getDouble(var7) != 0.0) {
                int var8 = this.firstOctave + var7;
                this.noiseLevels[var7] = new ImprovedNoise(var6.fromHashOf("octave_" + var8));
@@ -103,7 +103,7 @@ public class PerlinNoise {
             }
          }
 
-         for(int var12 = var5 - 1; var12 >= 0; --var12) {
+         for (int var12 = var5 - 1; var12 >= 0; var12--) {
             if (var12 < var4) {
                double var13 = this.amplitudes.getDouble(var12);
                if (var13 != 0.0) {
@@ -148,7 +148,7 @@ public class PerlinNoise {
       double var14 = this.lowestFreqInputFactor;
       double var16 = this.lowestFreqValueFactor;
 
-      for(int var18 = 0; var18 < this.noiseLevels.length; ++var18) {
+      for (int var18 = 0; var18 < this.noiseLevels.length; var18++) {
          ImprovedNoise var19 = this.noiseLevels[var18];
          if (var19 != null) {
             double var20 = var19.noise(wrap(var1 * var14), var11 ? -var19.yo : wrap(var3 * var14), wrap(var5 * var14), var7 * var14, var9 * var14);
@@ -170,7 +170,7 @@ public class PerlinNoise {
       double var3 = 0.0;
       double var5 = this.lowestFreqValueFactor;
 
-      for(int var7 = 0; var7 < this.noiseLevels.length; ++var7) {
+      for (int var7 = 0; var7 < this.noiseLevels.length; var7++) {
          ImprovedNoise var8 = this.noiseLevels[var7];
          if (var8 != null) {
             var3 += this.amplitudes.getDouble(var7) * var1 * var5;
@@ -205,7 +205,7 @@ public class PerlinNoise {
       List var2 = this.amplitudes.stream().map(var0 -> String.format(Locale.ROOT, "%.2f", var0)).toList();
       var1.append("first octave: ").append(this.firstOctave).append(", amplitudes: ").append(var2).append(", noise levels: [");
 
-      for(int var3 = 0; var3 < this.noiseLevels.length; ++var3) {
+      for (int var3 = 0; var3 < this.noiseLevels.length; var3++) {
          var1.append(var3).append(": ");
          ImprovedNoise var4 = this.noiseLevels[var3];
          if (var4 == null) {

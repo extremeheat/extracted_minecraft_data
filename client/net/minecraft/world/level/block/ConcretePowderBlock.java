@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -55,7 +54,7 @@ public class ConcretePowderBlock extends FallingBlock {
       boolean var2 = false;
       BlockPos.MutableBlockPos var3 = var1.mutable();
 
-      for(Direction var7 : Direction.values()) {
+      for (Direction var7 : Direction.values()) {
          BlockState var8 = var0.getBlockState(var3);
          if (var7 != Direction.DOWN || canSolidify(var8)) {
             var3.setWithOffset(var1, var7);
@@ -75,7 +74,7 @@ public class ConcretePowderBlock extends FallingBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return touchesLiquid(var4, var5) ? this.concrete.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 

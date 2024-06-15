@@ -24,11 +24,11 @@ public class WetSpongeBlock extends Block {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var2.dimensionType().ultraWarm()) {
          var2.setBlock(var3, Blocks.SPONGE.defaultBlockState(), 3);
          var2.levelEvent(2009, var3, 0);
-         var2.playSound(null, var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, (1.0F + var2.getRandom().nextFloat() * 0.2F) * 0.7F);
+         var2.playSound(null, var3, SoundEvents.WET_SPONGE_DRIES, SoundSource.BLOCKS, 1.0F, (1.0F + var2.getRandom().nextFloat() * 0.2F) * 0.7F);
       }
    }
 
@@ -51,14 +51,14 @@ public class WetSpongeBlock extends Block {
                if (var5.getAxis() == Direction.Axis.X) {
                   var12 += var4.nextDouble();
                   if (var5 == Direction.EAST) {
-                     ++var8;
+                     var8++;
                   } else {
                      var8 += 0.05;
                   }
                } else {
                   var8 += var4.nextDouble();
                   if (var5 == Direction.SOUTH) {
-                     ++var12;
+                     var12++;
                   } else {
                      var12 += 0.05;
                   }

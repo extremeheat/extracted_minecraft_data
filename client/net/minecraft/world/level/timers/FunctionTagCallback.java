@@ -17,7 +17,7 @@ public class FunctionTagCallback implements TimerCallback<MinecraftServer> {
    public void handle(MinecraftServer var1, TimerQueue<MinecraftServer> var2, long var3) {
       ServerFunctionManager var5 = var1.getFunctions();
 
-      for(CommandFunction var8 : var5.getTag(this.tagId)) {
+      for (CommandFunction var8 : var5.getTag(this.tagId)) {
          var5.execute(var8, var5.getGameLoopSender());
       }
    }

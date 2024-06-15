@@ -1,14 +1,13 @@
 package net.minecraft.commands.execution;
 
-public record ChainModifiers(byte b) {
-   private final byte flags;
+public record ChainModifiers(byte flags) {
    public static final ChainModifiers DEFAULT = new ChainModifiers((byte)0);
    private static final byte FLAG_FORKED = 1;
    private static final byte FLAG_IS_RETURN = 2;
 
-   public ChainModifiers(byte var1) {
+   public ChainModifiers(byte flags) {
       super();
-      this.flags = var1;
+      this.flags = flags;
    }
 
    private ChainModifiers setFlag(byte var1) {

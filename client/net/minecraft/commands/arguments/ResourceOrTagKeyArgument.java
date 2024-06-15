@@ -65,8 +65,7 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<ResourceOrTagKe
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Object var4 = var1.getSource();
-      return var4 instanceof SharedSuggestionProvider var3
+      return var1.getSource() instanceof SharedSuggestionProvider var3
          ? var3.suggestRegistryElements(this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ALL, var2, var1)
          : var2.buildFuture();
    }
@@ -99,9 +98,9 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<ResourceOrTagKe
       public final class Template implements ArgumentTypeInfo.Template<ResourceOrTagKeyArgument<T>> {
          final ResourceKey<? extends Registry<T>> registryKey;
 
-         Template(ResourceKey<? extends Registry<T>> var2) {
+         Template(final ResourceKey<? extends Registry<T>> nullx) {
             super();
-            this.registryKey = var2;
+            this.registryKey = nullx;
          }
 
          public ResourceOrTagKeyArgument<T> instantiate(CommandBuildContext var1) {
@@ -115,12 +114,10 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<ResourceOrTagKe
       }
    }
 
-   static record ResourceResult<T>(ResourceKey<T> a) implements ResourceOrTagKeyArgument.Result<T> {
-      private final ResourceKey<T> key;
-
-      ResourceResult(ResourceKey<T> var1) {
+   static record ResourceResult<T>(ResourceKey<T> key) implements ResourceOrTagKeyArgument.Result<T> {
+      ResourceResult(ResourceKey<T> key) {
          super();
-         this.key = var1;
+         this.key = key;
       }
 
       @Override
@@ -151,12 +148,10 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<ResourceOrTagKe
       String asPrintable();
    }
 
-   static record TagResult<T>(TagKey<T> a) implements ResourceOrTagKeyArgument.Result<T> {
-      private final TagKey<T> key;
-
-      TagResult(TagKey<T> var1) {
+   static record TagResult<T>(TagKey<T> key) implements ResourceOrTagKeyArgument.Result<T> {
+      TagResult(TagKey<T> key) {
          super();
-         this.key = var1;
+         this.key = key;
       }
 
       @Override

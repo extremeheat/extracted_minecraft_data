@@ -23,7 +23,7 @@ public class ScreenManager {
       GLFW.glfwSetMonitorCallback(this::onMonitorChange);
       PointerBuffer var2 = GLFW.glfwGetMonitors();
       if (var2 != null) {
-         for(int var3 = 0; var3 < var2.limit(); ++var3) {
+         for (int var3 = 0; var3 < var2.limit(); var3++) {
             long var4 = var2.get(var3);
             this.monitors.put(var4, var1.createMonitor(var4));
          }
@@ -63,7 +63,7 @@ public class ScreenManager {
          LOGGER.debug("Selecting monitor - primary: {}, current monitors: {}", var10, this.monitors);
          ObjectIterator var12 = this.monitors.values().iterator();
 
-         while(var12.hasNext()) {
+         while (var12.hasNext()) {
             Monitor var13 = (Monitor)var12.next();
             int var14 = var13.getX();
             int var15 = var14 + var13.getCurrentMode().getWidth();

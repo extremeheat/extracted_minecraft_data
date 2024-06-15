@@ -3,13 +3,12 @@ package net.minecraft.client.gui.screens.reporting;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.UUID;
 import net.minecraft.Optionull;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.FrameLayout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.chat.report.ChatReport;
@@ -74,6 +73,7 @@ public class ChatReportScreen extends AbstractReportScreen<ChatReport.Builder> {
       var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).width(120).build());
       this.sendButton = var1.addChild(Button.builder(SEND_REPORT, var1x -> this.sendReport()).width(120).build());
       this.layout.visitWidgets(var1x -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1x);
       });
       this.repositionElements();
       this.onReportChanged();

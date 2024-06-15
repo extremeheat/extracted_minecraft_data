@@ -12,7 +12,7 @@ public class LeveledPriorityQueue {
       this.levelCount = var1;
       this.queues = new LongLinkedOpenHashSet[var1];
 
-      for(int var3 = 0; var3 < var1; ++var3) {
+      for (int var3 = 0; var3 < var1; var3++) {
          this.queues[var3] = new LongLinkedOpenHashSet(var2, 0.5F) {
             protected void rehash(int var1) {
                if (var1 > var2) {
@@ -58,7 +58,7 @@ public class LeveledPriorityQueue {
       int var2 = this.firstQueuedLevel;
       this.firstQueuedLevel = var1;
 
-      for(int var3 = var2 + 1; var3 < var1; ++var3) {
+      for (int var3 = var2 + 1; var3 < var1; var3++) {
          if (!this.queues[var3].isEmpty()) {
             this.firstQueuedLevel = var3;
             break;

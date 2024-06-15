@@ -47,19 +47,19 @@ public class CherryParticle extends TextureSheetParticle {
          double var5 = Math.sin(Math.toRadians((double)(this.particleRandom * 60.0F))) * 2.0 * Math.pow((double)var2, 1.25);
          this.xd += var3 * 0.0024999999441206455;
          this.zd += var5 * 0.0024999999441206455;
-         this.yd -= (double)this.gravity;
-         this.rotSpeed += this.spinAcceleration / 20.0F;
+         this.yd = this.yd - (double)this.gravity;
+         this.rotSpeed = this.rotSpeed + this.spinAcceleration / 20.0F;
          this.oRoll = this.roll;
-         this.roll += this.rotSpeed / 20.0F;
+         this.roll = this.roll + this.rotSpeed / 20.0F;
          this.move(this.xd, this.yd, this.zd);
          if (this.onGround || this.lifetime < 299 && (this.xd == 0.0 || this.zd == 0.0)) {
             this.remove();
          }
 
          if (!this.removed) {
-            this.xd *= (double)this.friction;
-            this.yd *= (double)this.friction;
-            this.zd *= (double)this.friction;
+            this.xd = this.xd * (double)this.friction;
+            this.yd = this.yd * (double)this.friction;
+            this.zd = this.zd * (double)this.friction;
          }
       }
    }

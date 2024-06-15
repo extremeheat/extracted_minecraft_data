@@ -8,8 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public record FallLocation(String i) {
-   private final String id;
+public record FallLocation(String id) {
    public static final FallLocation GENERIC = new FallLocation("generic");
    public static final FallLocation LADDER = new FallLocation("ladder");
    public static final FallLocation VINES = new FallLocation("vines");
@@ -19,9 +18,9 @@ public record FallLocation(String i) {
    public static final FallLocation OTHER_CLIMBABLE = new FallLocation("other_climbable");
    public static final FallLocation WATER = new FallLocation("water");
 
-   public FallLocation(String var1) {
+   public FallLocation(String id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public static FallLocation blockToFallLocation(BlockState var0) {

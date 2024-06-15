@@ -2,11 +2,10 @@ package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.SurfaceRuleData;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
@@ -17,29 +16,18 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public record NoiseGeneratorSettings(
-   NoiseSettings j,
-   BlockState k,
-   BlockState l,
-   NoiseRouter m,
-   SurfaceRules.RuleSource n,
-   List<Climate.ParameterPoint> o,
-   int p,
-   boolean q,
-   boolean r,
-   boolean s,
-   boolean t
+   NoiseSettings noiseSettings,
+   BlockState defaultBlock,
+   BlockState defaultFluid,
+   NoiseRouter noiseRouter,
+   SurfaceRules.RuleSource surfaceRule,
+   List<Climate.ParameterPoint> spawnTarget,
+   int seaLevel,
+   @Deprecated boolean disableMobGeneration,
+   boolean aquifersEnabled,
+   boolean oreVeinsEnabled,
+   boolean useLegacyRandomSource
 ) {
-   private final NoiseSettings noiseSettings;
-   private final BlockState defaultBlock;
-   private final BlockState defaultFluid;
-   private final NoiseRouter noiseRouter;
-   private final SurfaceRules.RuleSource surfaceRule;
-   private final List<Climate.ParameterPoint> spawnTarget;
-   private final int seaLevel;
-   private final boolean disableMobGeneration;
-   private final boolean aquifersEnabled;
-   private final boolean oreVeinsEnabled;
-   private final boolean useLegacyRandomSource;
    public static final Codec<NoiseGeneratorSettings> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                NoiseSettings.CODEC.fieldOf("noise").forGetter(NoiseGeneratorSettings::noiseSettings),
@@ -68,30 +56,30 @@ public record NoiseGeneratorSettings(
    );
 
    public NoiseGeneratorSettings(
-      NoiseSettings var1,
-      BlockState var2,
-      BlockState var3,
-      NoiseRouter var4,
-      SurfaceRules.RuleSource var5,
-      List<Climate.ParameterPoint> var6,
-      int var7,
-      boolean var8,
-      boolean var9,
-      boolean var10,
-      boolean var11
+      NoiseSettings noiseSettings,
+      BlockState defaultBlock,
+      BlockState defaultFluid,
+      NoiseRouter noiseRouter,
+      SurfaceRules.RuleSource surfaceRule,
+      List<Climate.ParameterPoint> spawnTarget,
+      int seaLevel,
+      boolean disableMobGeneration,
+      boolean aquifersEnabled,
+      boolean oreVeinsEnabled,
+      boolean useLegacyRandomSource
    ) {
       super();
-      this.noiseSettings = var1;
-      this.defaultBlock = var2;
-      this.defaultFluid = var3;
-      this.noiseRouter = var4;
-      this.surfaceRule = var5;
-      this.spawnTarget = var6;
-      this.seaLevel = var7;
-      this.disableMobGeneration = var8;
-      this.aquifersEnabled = var9;
-      this.oreVeinsEnabled = var10;
-      this.useLegacyRandomSource = var11;
+      this.noiseSettings = noiseSettings;
+      this.defaultBlock = defaultBlock;
+      this.defaultFluid = defaultFluid;
+      this.noiseRouter = noiseRouter;
+      this.surfaceRule = surfaceRule;
+      this.spawnTarget = spawnTarget;
+      this.seaLevel = seaLevel;
+      this.disableMobGeneration = disableMobGeneration;
+      this.aquifersEnabled = aquifersEnabled;
+      this.oreVeinsEnabled = oreVeinsEnabled;
+      this.useLegacyRandomSource = useLegacyRandomSource;
    }
 
    public boolean isAquifersEnabled() {
@@ -102,7 +90,7 @@ public record NoiseGeneratorSettings(
       return this.useLegacyRandomSource ? WorldgenRandom.Algorithm.LEGACY : WorldgenRandom.Algorithm.XOROSHIRO;
    }
 
-   public static void bootstrap(BootstapContext<NoiseGeneratorSettings> var0) {
+   public static void bootstrap(BootstrapContext<NoiseGeneratorSettings> var0) {
       var0.register(OVERWORLD, overworld(var0, false, false));
       var0.register(LARGE_BIOMES, overworld(var0, false, true));
       var0.register(AMPLIFIED, overworld(var0, true, false));
@@ -112,7 +100,7 @@ public record NoiseGeneratorSettings(
       var0.register(FLOATING_ISLANDS, floatingIslands(var0));
    }
 
-   private static NoiseGeneratorSettings end(BootstapContext<?> var0) {
+   private static NoiseGeneratorSettings end(BootstrapContext<?> var0) {
       return new NoiseGeneratorSettings(
          NoiseSettings.END_NOISE_SETTINGS,
          Blocks.END_STONE.defaultBlockState(),
@@ -128,7 +116,7 @@ public record NoiseGeneratorSettings(
       );
    }
 
-   private static NoiseGeneratorSettings nether(BootstapContext<?> var0) {
+   private static NoiseGeneratorSettings nether(BootstrapContext<?> var0) {
       return new NoiseGeneratorSettings(
          NoiseSettings.NETHER_NOISE_SETTINGS,
          Blocks.NETHERRACK.defaultBlockState(),
@@ -144,7 +132,7 @@ public record NoiseGeneratorSettings(
       );
    }
 
-   private static NoiseGeneratorSettings overworld(BootstapContext<?> var0, boolean var1, boolean var2) {
+   private static NoiseGeneratorSettings overworld(BootstrapContext<?> var0, boolean var1, boolean var2) {
       return new NoiseGeneratorSettings(
          NoiseSettings.OVERWORLD_NOISE_SETTINGS,
          Blocks.STONE.defaultBlockState(),
@@ -160,7 +148,7 @@ public record NoiseGeneratorSettings(
       );
    }
 
-   private static NoiseGeneratorSettings caves(BootstapContext<?> var0) {
+   private static NoiseGeneratorSettings caves(BootstrapContext<?> var0) {
       return new NoiseGeneratorSettings(
          NoiseSettings.CAVES_NOISE_SETTINGS,
          Blocks.STONE.defaultBlockState(),
@@ -176,7 +164,7 @@ public record NoiseGeneratorSettings(
       );
    }
 
-   private static NoiseGeneratorSettings floatingIslands(BootstapContext<?> var0) {
+   private static NoiseGeneratorSettings floatingIslands(BootstrapContext<?> var0) {
       return new NoiseGeneratorSettings(
          NoiseSettings.FLOATING_ISLANDS_NOISE_SETTINGS,
          Blocks.STONE.defaultBlockState(),

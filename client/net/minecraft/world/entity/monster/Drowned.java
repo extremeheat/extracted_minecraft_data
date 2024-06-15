@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BiomeTags;
@@ -22,6 +21,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -47,8 +47,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 public class Drowned extends Zombie implements RangedAttackMob {
@@ -59,11 +59,14 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public Drowned(EntityType<? extends Drowned> var1, Level var2) {
       super(var1, var2);
-      this.setMaxUpStep(1.0F);
       this.moveControl = new Drowned.DrownedMoveControl(this);
-      this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+      this.setPathfindingMalus(PathType.WATER, 0.0F);
       this.waterNavigation = new WaterBoundPathNavigation(this, var2);
       this.groundNavigation = new GroundPathNavigation(this, var2);
+   }
+
+   public static AttributeSupplier.Builder createAttributes() {
+      return Zombie.createAttributes().add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    @Override
@@ -83,10 +86,8 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      var4 = super.finalizeSpawn(var1, var2, var3, var4);
       if (this.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty() && var1.getRandom().nextFloat() < 0.03F) {
          this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.NAUTILUS_SHELL));
          this.setGuaranteedDrop(EquipmentSlot.OFFHAND);
@@ -105,10 +106,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
             && (MobSpawnType.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER));
          if (var6 && MobSpawnType.isSpawner(var2)) {
             return true;
-         } else if (var5.is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)) {
-            return var4.nextInt(15) == 0 && var6;
          } else {
-            return var4.nextInt(40) == 0 && isDeepEnoughToSpawn(var1, var3) && var6;
+            return var5.is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)
+               ? var4.nextInt(15) == 0 && var6
+               : var4.nextInt(40) == 0 && isDeepEnoughToSpawn(var1, var3) && var6;
          }
       }
    }
@@ -169,11 +170,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       if (var2.is(Items.NAUTILUS_SHELL)) {
          return false;
       } else if (var2.is(Items.TRIDENT)) {
-         if (var1.is(Items.TRIDENT)) {
-            return var1.getDamageValue() < var2.getDamageValue();
-         } else {
-            return false;
-         }
+         return var1.is(Items.TRIDENT) ? var1.getDamageValue() < var2.getDamageValue() : false;
       } else {
          return var1.is(Items.TRIDENT) ? true : super.canReplaceCurrentItem(var1, var2);
       }
@@ -190,11 +187,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    public boolean okTarget(@Nullable LivingEntity var1) {
-      if (var1 != null) {
-         return !this.level().isDay() || var1.isInWater();
-      } else {
-         return false;
-      }
+      return var1 != null ? !this.level().isDay() || var1.isInWater() : false;
    }
 
    @Override
@@ -380,7 +373,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
          RandomSource var1 = this.mob.getRandom();
          BlockPos var2 = this.mob.blockPosition();
 
-         for(int var3 = 0; var3 < 10; ++var3) {
+         for (int var3 = 0; var3 < 10; var3++) {
             BlockPos var4 = var2.offset(var1.nextInt(20) - 10, 2 - var1.nextInt(8), var1.nextInt(20) - 10);
             if (this.level.getBlockState(var4).is(Blocks.WATER)) {
                return Vec3.atBottomCenterOf(var4);

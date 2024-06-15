@@ -37,7 +37,7 @@ public class EntityRenderers {
          try {
             var1.put(var2, var3.create(var0));
          } catch (Exception var5) {
-            throw new IllegalArgumentException("Failed to create model for " + BuiltInRegistries.ENTITY_TYPE.getKey(var2), var5);
+            throw new IllegalArgumentException("Failed to create model for " + BuiltInRegistries.ENTITY_TYPE.getKey((EntityType<?>)var2), var5);
          }
       });
       return var1.build();
@@ -58,7 +58,7 @@ public class EntityRenderers {
    public static boolean validateRegistrations() {
       boolean var0 = true;
 
-      for(EntityType var2 : BuiltInRegistries.ENTITY_TYPE) {
+      for (EntityType var2 : BuiltInRegistries.ENTITY_TYPE) {
          if (var2 != EntityType.PLAYER && !PROVIDERS.containsKey(var2)) {
             LOGGER.warn("No renderer registered for {}", BuiltInRegistries.ENTITY_TYPE.getKey(var2));
             var0 = false;
@@ -71,6 +71,7 @@ public class EntityRenderers {
    static {
       register(EntityType.ALLAY, AllayRenderer::new);
       register(EntityType.AREA_EFFECT_CLOUD, NoopRenderer::new);
+      register(EntityType.ARMADILLO, ArmadilloRenderer::new);
       register(EntityType.ARMOR_STAND, ArmorStandRenderer::new);
       register(EntityType.ARROW, TippableArrowRenderer::new);
       register(EntityType.AXOLOTL, AxolotlRenderer::new);
@@ -79,7 +80,9 @@ public class EntityRenderers {
       register(EntityType.BLAZE, BlazeRenderer::new);
       register(EntityType.BLOCK_DISPLAY, DisplayRenderer.BlockDisplayRenderer::new);
       register(EntityType.BOAT, var0 -> new BoatRenderer(var0, false));
+      register(EntityType.BOGGED, BoggedRenderer::new);
       register(EntityType.BREEZE, BreezeRenderer::new);
+      register(EntityType.BREEZE_WIND_CHARGE, WindChargeRenderer::new);
       register(EntityType.CAT, CatRenderer::new);
       register(EntityType.CAMEL, var0 -> new CamelRenderer(var0, ModelLayers.CAMEL));
       register(EntityType.CAVE_SPIDER, CaveSpiderRenderer::new);
@@ -129,6 +132,7 @@ public class EntityRenderers {
       register(EntityType.ITEM, ItemEntityRenderer::new);
       register(EntityType.ITEM_DISPLAY, DisplayRenderer.ItemDisplayRenderer::new);
       register(EntityType.ITEM_FRAME, ItemFrameRenderer::new);
+      register(EntityType.OMINOUS_ITEM_SPAWNER, OminousItemSpawnerRenderer::new);
       register(EntityType.LEASH_KNOT, LeashKnotRenderer::new);
       register(EntityType.LIGHTNING_BOLT, LightningBoltRenderer::new);
       register(EntityType.LLAMA, var0 -> new LlamaRenderer(var0, ModelLayers.LLAMA));

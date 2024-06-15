@@ -26,8 +26,8 @@ public class ItemBannerColorFix extends DataFix {
       OpticFinder var3 = var1.findField("tag");
       OpticFinder var4 = var3.type().findField("BlockEntityTag");
       return this.fixTypeEverywhereTyped("ItemBannerColorFix", var1, var3x -> {
-         Optional var4xx = var3x.getOptional(var2);
-         if (var4xx.isPresent() && Objects.equals(((Pair)var4xx.get()).getSecond(), "minecraft:banner")) {
+         Optional var4x = var3x.getOptional(var2);
+         if (var4x.isPresent() && Objects.equals(((Pair)var4x.get()).getSecond(), "minecraft:banner")) {
             Dynamic var5 = (Dynamic)var3x.get(DSL.remainderFinder());
             Optional var6 = var3x.getOptionalTyped(var3);
             if (var6.isPresent()) {

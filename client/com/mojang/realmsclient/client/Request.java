@@ -107,7 +107,7 @@ public abstract class Request<T extends Request<T>> {
          InputStreamReader var2 = new InputStreamReader(var1, StandardCharsets.UTF_8);
          StringBuilder var3 = new StringBuilder();
 
-         for(int var4 = var2.read(); var4 != -1; var4 = var2.read()) {
+         for (int var4 = var2.read(); var4 != -1; var4 = var2.read()) {
             var3.append((char)var4);
          }
 
@@ -121,7 +121,7 @@ public abstract class Request<T extends Request<T>> {
       try {
          InputStream var2 = this.connection.getInputStream();
 
-         while(var2.read(var1) > 0) {
+         while (var2.read(var1) > 0) {
          }
 
          var2.close();
@@ -130,7 +130,7 @@ public abstract class Request<T extends Request<T>> {
          try {
             InputStream var3 = this.connection.getErrorStream();
             if (var3 != null) {
-               while(var3.read(var1) > 0) {
+               while (var3.read(var1) > 0) {
                }
 
                var3.close();

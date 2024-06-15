@@ -12,8 +12,8 @@ public class LootContextParamSets {
    private static final BiMap<ResourceLocation, LootContextParamSet> REGISTRY = HashBiMap.create();
    public static final Codec<LootContextParamSet> CODEC = ResourceLocation.CODEC
       .comapFlatMap(
-         var0 -> (DataResult)Optional.ofNullable((LootContextParamSet)REGISTRY.get(var0))
-               .map(DataResult::success)
+         var0 -> Optional.ofNullable((LootContextParamSet)REGISTRY.get(var0))
+               .<DataResult>map(DataResult::success)
                .orElseGet(() -> DataResult.error(() -> "No parameter set exists with id: '" + var0 + "'")),
          REGISTRY.inverse()::get
       );
@@ -38,11 +38,15 @@ public class LootContextParamSets {
             .optional(LootContextParams.DIRECT_KILLER_ENTITY)
             .optional(LootContextParams.LAST_DAMAGE_PLAYER)
    );
+   public static final LootContextParamSet EQUIPMENT = register(
+      "equipment", var0 -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY)
+   );
    public static final LootContextParamSet ARCHAEOLOGY = register(
       "archaeology", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)
    );
    public static final LootContextParamSet GIFT = register("gift", var0 -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY));
    public static final LootContextParamSet PIGLIN_BARTER = register("barter", var0 -> var0.required(LootContextParams.THIS_ENTITY));
+   public static final LootContextParamSet VAULT = register("vault", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
    public static final LootContextParamSet ADVANCEMENT_REWARD = register(
       "advancement_reward", var0 -> var0.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN)
    );
@@ -55,6 +59,9 @@ public class LootContextParamSets {
             .required(LootContextParams.ORIGIN)
             .required(LootContextParams.TOOL)
             .required(LootContextParams.BLOCK_STATE)
+   );
+   public static final LootContextParamSet BLOCK_USE = register(
+      "block_use", var0 -> var0.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.BLOCK_STATE)
    );
    public static final LootContextParamSet ALL_PARAMS = register(
       "generic",
@@ -77,6 +84,9 @@ public class LootContextParamSets {
             .optional(LootContextParams.THIS_ENTITY)
             .optional(LootContextParams.BLOCK_ENTITY)
             .optional(LootContextParams.EXPLOSION_RADIUS)
+   );
+   public static final LootContextParamSet SHEARING = register(
+      "shearing", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)
    );
 
    public LootContextParamSets() {

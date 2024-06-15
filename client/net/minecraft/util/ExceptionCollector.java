@@ -12,7 +12,7 @@ public class ExceptionCollector<T extends Throwable> {
 
    public void add(T var1) {
       if (this.result == null) {
-         this.result = var1;
+         this.result = (T)var1;
       } else {
          this.result.addSuppressed(var1);
       }

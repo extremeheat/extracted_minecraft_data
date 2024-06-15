@@ -65,10 +65,8 @@ public class VertexFormatElement {
             return false;
          } else if (this.index != var2.index) {
             return false;
-         } else if (this.type != var2.type) {
-            return false;
          } else {
-            return this.usage == var2.usage;
+            return this.type != var2.type ? false : this.usage == var2.usage;
          }
       } else {
          return false;
@@ -104,10 +102,10 @@ public class VertexFormatElement {
       private final String name;
       private final int glType;
 
-      private Type(int var3, String var4, int var5) {
-         this.size = var3;
-         this.name = var4;
-         this.glType = var5;
+      private Type(final int nullxx, final String nullxxx, final int nullxxxx) {
+         this.size = nullxx;
+         this.name = nullxxx;
+         this.glType = nullxxxx;
       }
 
       public int getSize() {
@@ -156,10 +154,10 @@ public class VertexFormatElement {
       private final VertexFormatElement.Usage.SetupState setupState;
       private final VertexFormatElement.Usage.ClearState clearState;
 
-      private Usage(String var3, VertexFormatElement.Usage.SetupState var4, VertexFormatElement.Usage.ClearState var5) {
-         this.name = var3;
-         this.setupState = var4;
-         this.clearState = var5;
+      private Usage(final String nullxx, final VertexFormatElement.Usage.SetupState nullxxx, final VertexFormatElement.Usage.ClearState nullxxxx) {
+         this.name = nullxx;
+         this.setupState = nullxxx;
+         this.clearState = nullxxxx;
       }
 
       void setupBufferState(int var1, int var2, int var3, long var4, int var6, int var7) {

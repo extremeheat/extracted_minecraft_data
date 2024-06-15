@@ -11,6 +11,6 @@ public class FrogRenderer extends MobRenderer<Frog, FrogModel<Frog>> {
    }
 
    public ResourceLocation getTextureLocation(Frog var1) {
-      return var1.getVariant().texture();
+      return var1.getVariant().value().texture();
    }
 }

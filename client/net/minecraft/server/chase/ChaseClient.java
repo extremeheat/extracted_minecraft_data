@@ -67,14 +67,14 @@ public class ChaseClient {
    public void run() {
       String var1 = this.serverHost + ":" + this.serverPort;
 
-      while(this.wantsToRun) {
+      while (this.wantsToRun) {
          try {
             LOGGER.info("Connecting to remote control server {}", var1);
             this.socket = new Socket(this.serverHost, this.serverPort);
             LOGGER.info("Connected to remote control server! Will continuously execute the command broadcasted by that server.");
 
             try (BufferedReader var2 = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), Charsets.US_ASCII))) {
-               while(this.wantsToRun) {
+               while (this.wantsToRun) {
                   String var3 = var2.readLine();
                   if (var3 == null) {
                      LOGGER.warn("Lost connection to remote control server {}. Will retry in {}s.", var1, 5);
@@ -163,16 +163,13 @@ public class ChaseClient {
          );
    }
 
-   static record TeleportTarget(ResourceKey<Level> a, Vec3 b, Vec2 c) {
-      final ResourceKey<Level> level;
-      final Vec3 pos;
-      final Vec2 rot;
+   static record TeleportTarget(ResourceKey<Level> level, Vec3 pos, Vec2 rot) {
 
-      TeleportTarget(ResourceKey<Level> var1, Vec3 var2, Vec2 var3) {
+      TeleportTarget(ResourceKey<Level> level, Vec3 pos, Vec2 rot) {
          super();
-         this.level = var1;
-         this.pos = var2;
-         this.rot = var3;
+         this.level = level;
+         this.pos = pos;
+         this.rot = rot;
       }
    }
 }

@@ -3,11 +3,9 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
@@ -45,15 +43,15 @@ public class SetWalkTargetAwayFrom {
                               return false;
                            }
                         }
-   
-                        for(int var16 = 0; var16 < 10; ++var16) {
+
+                        for (int var16 = 0; var16 < 10; var16++) {
                            Vec3 var17 = LandRandomPos.getPosAway(var8, 16, 7, var13);
                            if (var17 != null) {
                               var5x.set(new WalkTarget(var17, var1, 0));
                               break;
                            }
                         }
-   
+
                         return true;
                      }
                   }

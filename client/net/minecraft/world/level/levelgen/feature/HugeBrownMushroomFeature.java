@@ -17,8 +17,8 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
    protected void makeCap(LevelAccessor var1, RandomSource var2, BlockPos var3, int var4, BlockPos.MutableBlockPos var5, HugeMushroomFeatureConfiguration var6) {
       int var7 = var6.foliageRadius;
 
-      for(int var8 = -var7; var8 <= var7; ++var8) {
-         for(int var9 = -var7; var9 <= var7; ++var9) {
+      for (int var8 = -var7; var8 <= var7; var8++) {
+         for (int var9 = -var7; var9 <= var7; var9++) {
             boolean var10 = var8 == -var7;
             boolean var11 = var8 == var7;
             boolean var12 = var9 == -var7;

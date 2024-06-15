@@ -2,8 +2,8 @@ package net.minecraft.world.level.storage;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Stream;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -26,7 +26,7 @@ public class CommandStorage {
    }
 
    private SavedData.Factory<CommandStorage.Container> factory(String var1) {
-      return new SavedData.Factory<>(() -> this.newStorage(var1), var2 -> this.newStorage(var1).load(var2), DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
+      return new SavedData.Factory<>(() -> this.newStorage(var1), (var2, var3) -> this.newStorage(var1).load(var2), DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
    }
 
    public CompoundTag get(ResourceLocation var1) {
@@ -59,7 +59,7 @@ public class CommandStorage {
       CommandStorage.Container load(CompoundTag var1) {
          CompoundTag var2 = var1.getCompound("contents");
 
-         for(String var4 : var2.getAllKeys()) {
+         for (String var4 : var2.getAllKeys()) {
             this.storage.put(var4, var2.getCompound(var4));
          }
 
@@ -67,10 +67,10 @@ public class CommandStorage {
       }
 
       @Override
-      public CompoundTag save(CompoundTag var1) {
-         CompoundTag var2 = new CompoundTag();
-         this.storage.forEach((var1x, var2x) -> var2.put(var1x, var2x.copy()));
-         var1.put("contents", var2);
+      public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
+         CompoundTag var3 = new CompoundTag();
+         this.storage.forEach((var1x, var2x) -> var3.put(var1x, var2x.copy()));
+         var1.put("contents", var3);
          return var1;
       }
 

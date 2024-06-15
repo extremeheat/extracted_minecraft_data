@@ -31,19 +31,16 @@ public class BakedGlyph {
    }
 
    public void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, float var6, float var7, float var8, float var9, int var10) {
-      boolean var11 = true;
-      float var12 = var2 + this.left;
-      float var13 = var2 + this.right;
-      float var14 = this.up - 3.0F;
-      float var15 = this.down - 3.0F;
-      float var16 = var3 + var14;
-      float var17 = var3 + var15;
-      float var18 = var1 ? 1.0F - 0.25F * var14 : 0.0F;
-      float var19 = var1 ? 1.0F - 0.25F * var15 : 0.0F;
-      var5.vertex(var4, var12 + var18, var16, 0.0F).color(var6, var7, var8, var9).uv(this.u0, this.v0).uv2(var10).endVertex();
-      var5.vertex(var4, var12 + var19, var17, 0.0F).color(var6, var7, var8, var9).uv(this.u0, this.v1).uv2(var10).endVertex();
-      var5.vertex(var4, var13 + var19, var17, 0.0F).color(var6, var7, var8, var9).uv(this.u1, this.v1).uv2(var10).endVertex();
-      var5.vertex(var4, var13 + var18, var16, 0.0F).color(var6, var7, var8, var9).uv(this.u1, this.v0).uv2(var10).endVertex();
+      float var11 = var2 + this.left;
+      float var12 = var2 + this.right;
+      float var13 = var3 + this.up;
+      float var14 = var3 + this.down;
+      float var15 = var1 ? 1.0F - 0.25F * this.up : 0.0F;
+      float var16 = var1 ? 1.0F - 0.25F * this.down : 0.0F;
+      var5.vertex(var4, var11 + var15, var13, 0.0F).color(var6, var7, var8, var9).uv(this.u0, this.v0).uv2(var10).endVertex();
+      var5.vertex(var4, var11 + var16, var14, 0.0F).color(var6, var7, var8, var9).uv(this.u0, this.v1).uv2(var10).endVertex();
+      var5.vertex(var4, var12 + var16, var14, 0.0F).color(var6, var7, var8, var9).uv(this.u1, this.v1).uv2(var10).endVertex();
+      var5.vertex(var4, var12 + var15, var13, 0.0F).color(var6, var7, var8, var9).uv(this.u1, this.v0).uv2(var10).endVertex();
    }
 
    public void renderEffect(BakedGlyph.Effect var1, Matrix4f var2, VertexConsumer var3, int var4) {

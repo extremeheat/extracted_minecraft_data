@@ -24,7 +24,7 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
    protected abstract MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec();
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return canAttach(var2, var3, getConnectedDirection(var1).getOpposite());
    }
 
@@ -36,7 +36,7 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
    @Nullable
    @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      for(Direction var5 : var1.getNearestLookingDirections()) {
+      for (Direction var5 : var1.getNearestLookingDirections()) {
          BlockState var6;
          if (var5.getAxis() == Direction.Axis.Y) {
             var6 = this.defaultBlockState()
@@ -55,14 +55,14 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return getConnectedDirection(var1).getOpposite() == var2 && !var1.canSurvive(var4, var5)
          ? Blocks.AIR.defaultBlockState()
          : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
    protected static Direction getConnectedDirection(BlockState var0) {
-      switch((AttachFace)var0.getValue(FACE)) {
+      switch ((AttachFace)var0.getValue(FACE)) {
          case CEILING:
             return Direction.DOWN;
          case FLOOR:

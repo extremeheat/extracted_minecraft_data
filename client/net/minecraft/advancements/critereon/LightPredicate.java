@@ -2,29 +2,22 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 
-public record LightPredicate(MinMaxBounds.Ints b) {
-   private final MinMaxBounds.Ints composite;
+public record LightPredicate(MinMaxBounds.Ints composite) {
    public static final Codec<LightPredicate> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "light", MinMaxBounds.Ints.ANY).forGetter(LightPredicate::composite))
+      var0 -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("light", MinMaxBounds.Ints.ANY).forGetter(LightPredicate::composite))
             .apply(var0, LightPredicate::new)
    );
 
-   public LightPredicate(MinMaxBounds.Ints var1) {
+   public LightPredicate(MinMaxBounds.Ints composite) {
       super();
-      this.composite = var1;
+      this.composite = composite;
    }
 
    public boolean matches(ServerLevel var1, BlockPos var2) {
-      if (!var1.isLoaded(var2)) {
-         return false;
-      } else {
-         return this.composite.matches(var1.getMaxLocalRawBrightness(var2));
-      }
+      return !var1.isLoaded(var2) ? false : this.composite.matches(var1.getMaxLocalRawBrightness(var2));
    }
 
    public static class Builder {

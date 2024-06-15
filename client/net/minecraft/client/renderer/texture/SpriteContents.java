@@ -50,13 +50,13 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          CrashReport var3 = CrashReport.forThrowable(var6, "Generating mipmaps for frame");
          CrashReportCategory var4 = var3.addCategory("Sprite being mipmapped");
          var4.setDetail("First frame", () -> {
-            StringBuilder var1xx = new StringBuilder();
-            if (var1xx.length() > 0) {
-               var1xx.append(", ");
+            StringBuilder var1x = new StringBuilder();
+            if (var1x.length() > 0) {
+               var1x.append(", ");
             }
 
-            var1xx.append(this.originalImage.getWidth()).append("x").append(this.originalImage.getHeight());
-            return var1xx.toString();
+            var1x.append(this.originalImage.getWidth()).append("x").append(this.originalImage.getHeight());
+            return var1x.toString();
          });
          CrashReportCategory var5 = var3.addCategory("Frame being iterated");
          var5.setDetail("Sprite name", this.name);
@@ -79,14 +79,14 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       ArrayList var8 = new ArrayList();
       var4.forEachFrame((var1x, var2x) -> var8.add(new SpriteContents.FrameInfo(var1x, var2x)));
       if (var8.isEmpty()) {
-         for(int var9 = 0; var9 < var7; ++var9) {
+         for (int var9 = 0; var9 < var7; var9++) {
             var8.add(new SpriteContents.FrameInfo(var9, var4.getDefaultFrameTime()));
          }
       } else {
          int var14 = 0;
          IntOpenHashSet var10 = new IntOpenHashSet();
 
-         for(Iterator var11 = var8.iterator(); var11.hasNext(); ++var14) {
+         for (Iterator var11 = var8.iterator(); var11.hasNext(); var14++) {
             SpriteContents.FrameInfo var12 = (SpriteContents.FrameInfo)var11.next();
             boolean var13 = true;
             if (var12.time <= 0) {
@@ -116,7 +116,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    }
 
    void upload(int var1, int var2, int var3, int var4, NativeImage[] var5) {
-      for(int var6 = 0; var6 < this.byMipLevel.length; ++var6) {
+      for (int var6 = 0; var6 < this.byMipLevel.length; var6++) {
          var5[var6]
             .upload(var6, var1 >> var6, var2 >> var6, var3 >> var6, var4 >> var6, this.width >> var6, this.height >> var6, this.byMipLevel.length > 1, false);
       }
@@ -152,7 +152,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
    @Override
    public void close() {
-      for(NativeImage var4 : this.byMipLevel) {
+      for (NativeImage var4 : this.byMipLevel) {
          var4.close();
       }
    }
@@ -186,11 +186,11 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       private final int frameRowSize;
       private final boolean interpolateFrames;
 
-      AnimatedTexture(List<SpriteContents.FrameInfo> var2, int var3, boolean var4) {
+      AnimatedTexture(final List<SpriteContents.FrameInfo> nullx, final int nullxx, final boolean nullxxx) {
          super();
-         this.frames = var2;
-         this.frameRowSize = var3;
-         this.interpolateFrames = var4;
+         this.frames = nullx;
+         this.frameRowSize = nullxx;
+         this.interpolateFrames = nullxxx;
       }
 
       int getFrameX(int var1) {
@@ -237,7 +237,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       InterpolationData() {
          super();
 
-         for(int var2 = 0; var2 < this.activeFrame.length; ++var2) {
+         for (int var2 = 0; var2 < this.activeFrame.length; var2++) {
             int var3 = SpriteContents.this.width >> var2;
             int var4 = SpriteContents.this.height >> var2;
             this.activeFrame[var2] = new NativeImage(var3, var4, false);
@@ -252,12 +252,12 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          int var9 = var6.index;
          int var10 = ((SpriteContents.FrameInfo)var5.get((var3.frame + 1) % var5.size())).index;
          if (var9 != var10) {
-            for(int var11 = 0; var11 < this.activeFrame.length; ++var11) {
+            for (int var11 = 0; var11 < this.activeFrame.length; var11++) {
                int var12 = SpriteContents.this.width >> var11;
                int var13 = SpriteContents.this.height >> var11;
 
-               for(int var14 = 0; var14 < var13; ++var14) {
-                  for(int var15 = 0; var15 < var12; ++var15) {
+               for (int var14 = 0; var14 < var13; var14++) {
+                  for (int var15 = 0; var15 < var12; var15++) {
                      int var16 = this.getPixel(var4, var9, var11, var15, var14);
                      int var17 = this.getPixel(var4, var10, var11, var15, var14);
                      int var18 = this.mix(var7, var16 >> 16 & 0xFF, var17 >> 16 & 0xFF);
@@ -274,9 +274,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
       private int getPixel(SpriteContents.AnimatedTexture var1, int var2, int var3, int var4, int var5) {
          return SpriteContents.this.byMipLevel[var3]
-            .getPixelRGBA(
-               var4 + (var1.getFrameX(var2) * SpriteContents.this.width >> var3), var5 + (var1.getFrameY(var2) * SpriteContents.this.height >> var3)
-            );
+            .getPixelRGBA(var4 + (var1.getFrameX(var2) * SpriteContents.this.width >> var3), var5 + (var1.getFrameY(var2) * SpriteContents.this.height >> var3));
       }
 
       private int mix(double var1, int var3, int var4) {
@@ -285,7 +283,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
       @Override
       public void close() {
-         for(NativeImage var4 : this.activeFrame) {
+         for (NativeImage var4 : this.activeFrame) {
             var4.close();
          }
       }
@@ -298,15 +296,15 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       @Nullable
       private final SpriteContents.InterpolationData interpolationData;
 
-      Ticker(SpriteContents.AnimatedTexture var2, @Nullable SpriteContents.InterpolationData var3) {
+      Ticker(final SpriteContents.AnimatedTexture nullx, @Nullable final SpriteContents.InterpolationData nullxx) {
          super();
-         this.animationInfo = var2;
-         this.interpolationData = var3;
+         this.animationInfo = nullx;
+         this.interpolationData = nullxx;
       }
 
       @Override
       public void tickAndUpload(int var1, int var2) {
-         ++this.subFrame;
+         this.subFrame++;
          SpriteContents.FrameInfo var3 = this.animationInfo.frames.get(this.frame);
          if (this.subFrame >= var3.time) {
             int var4 = var3.index;

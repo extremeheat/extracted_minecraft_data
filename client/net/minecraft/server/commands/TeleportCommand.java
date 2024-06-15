@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -110,7 +109,7 @@ public class TeleportCommand {
                                                             ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                             Vec3Argument.getCoordinates(var0x, "location"),
                                                             null,
-                                                            new TeleportCommand.LookAt(
+                                                            new TeleportCommand.LookAtEntity(
                                                                EntityArgument.getEntity(var0x, "facingEntity"), EntityAnchorArgument.Anchor.FEET
                                                             )
                                                          )
@@ -124,7 +123,7 @@ public class TeleportCommand {
                                                                ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                                Vec3Argument.getCoordinates(var0x, "location"),
                                                                null,
-                                                               new TeleportCommand.LookAt(
+                                                               new TeleportCommand.LookAtEntity(
                                                                   EntityArgument.getEntity(var0x, "facingEntity"),
                                                                   EntityAnchorArgument.getAnchor(var0x, "facingAnchor")
                                                                )
@@ -142,7 +141,7 @@ public class TeleportCommand {
                                                 ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                 Vec3Argument.getCoordinates(var0x, "location"),
                                                 null,
-                                                new TeleportCommand.LookAt(Vec3Argument.getVec3(var0x, "facingLocation"))
+                                                new TeleportCommand.LookAtPosition(Vec3Argument.getVec3(var0x, "facingLocation"))
                                              )
                                        )
                                  )
@@ -164,7 +163,7 @@ public class TeleportCommand {
    }
 
    private static int teleportToEntity(CommandSourceStack var0, Collection<? extends Entity> var1, Entity var2) throws CommandSyntaxException {
-      for(Entity var4 : var1) {
+      for (Entity var4 : var1) {
          performTeleport(
             var0,
             var4,
@@ -227,7 +226,7 @@ public class TeleportCommand {
          }
       }
 
-      for(Entity var10 : var1) {
+      for (Entity var10 : var1) {
          if (var4 == null) {
             performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var10.getYRot(), var10.getXRot(), var5);
          } else {
@@ -262,8 +261,6 @@ public class TeleportCommand {
       return String.format(Locale.ROOT, "%f", var0);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void performTeleport(
       CommandSourceStack var0,
       Entity var1,
@@ -299,35 +296,37 @@ public class TeleportCommand {
       }
    }
 
-   static class LookAt {
-      private final Vec3 position;
-      private final Entity entity;
-      private final EntityAnchorArgument.Anchor anchor;
+   @FunctionalInterface
+   interface LookAt {
+      void perform(CommandSourceStack var1, Entity var2);
+   }
 
-      public LookAt(Entity var1, EntityAnchorArgument.Anchor var2) {
+   static record LookAtEntity(Entity entity, EntityAnchorArgument.Anchor anchor) implements TeleportCommand.LookAt {
+      LookAtEntity(Entity entity, EntityAnchorArgument.Anchor anchor) {
          super();
-         this.entity = var1;
-         this.anchor = var2;
-         this.position = var2.apply(var1);
+         this.entity = entity;
+         this.anchor = anchor;
       }
 
-      public LookAt(Vec3 var1) {
-         super();
-         this.entity = null;
-         this.position = var1;
-         this.anchor = null;
-      }
-
+      @Override
       public void perform(CommandSourceStack var1, Entity var2) {
-         if (this.entity != null) {
-            if (var2 instanceof ServerPlayer) {
-               ((ServerPlayer)var2).lookAt(var1.getAnchor(), this.entity, this.anchor);
-            } else {
-               var2.lookAt(var1.getAnchor(), this.position);
-            }
+         if (var2 instanceof ServerPlayer var3) {
+            var3.lookAt(var1.getAnchor(), this.entity, this.anchor);
          } else {
-            var2.lookAt(var1.getAnchor(), this.position);
+            var2.lookAt(var1.getAnchor(), this.anchor.apply(this.entity));
          }
+      }
+   }
+
+   static record LookAtPosition(Vec3 position) implements TeleportCommand.LookAt {
+      LookAtPosition(Vec3 position) {
+         super();
+         this.position = position;
+      }
+
+      @Override
+      public void perform(CommandSourceStack var1, Entity var2) {
+         var2.lookAt(var1.getAnchor(), this.position);
       }
    }
 }

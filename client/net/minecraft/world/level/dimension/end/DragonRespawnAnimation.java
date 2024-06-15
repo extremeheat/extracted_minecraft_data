@@ -17,7 +17,7 @@ public enum DragonRespawnAnimation {
       public void tick(ServerLevel var1, EndDragonFight var2, List<EndCrystal> var3, int var4, BlockPos var5) {
          BlockPos var6 = new BlockPos(0, 128, 0);
 
-         for(EndCrystal var8 : var3) {
+         for (EndCrystal var8 : var3) {
             var8.setBeamTarget(var6);
          }
 
@@ -39,7 +39,7 @@ public enum DragonRespawnAnimation {
    SUMMONING_PILLARS {
       @Override
       public void tick(ServerLevel var1, EndDragonFight var2, List<EndCrystal> var3, int var4, BlockPos var5) {
-         boolean var6 = true;
+         byte var6 = 40;
          boolean var7 = var4 % 40 == 0;
          boolean var8 = var4 % 40 == 39;
          if (var7 || var8) {
@@ -48,13 +48,13 @@ public enum DragonRespawnAnimation {
             if (var10 < var9.size()) {
                SpikeFeature.EndSpike var11 = (SpikeFeature.EndSpike)var9.get(var10);
                if (var7) {
-                  for(EndCrystal var13 : var3) {
+                  for (EndCrystal var13 : var3) {
                      var13.setBeamTarget(new BlockPos(var11.getCenterX(), var11.getHeight() + 1, var11.getCenterZ()));
                   }
                } else {
-                  boolean var15 = true;
+                  byte var15 = 10;
 
-                  for(BlockPos var14 : BlockPos.betweenClosed(
+                  for (BlockPos var14 : BlockPos.betweenClosed(
                      new BlockPos(var11.getCenterX() - 10, var11.getHeight() - 10, var11.getCenterZ() - 10),
                      new BlockPos(var11.getCenterX() + 10, var11.getHeight() + 10, var11.getCenterZ() + 10)
                   )) {
@@ -86,7 +86,7 @@ public enum DragonRespawnAnimation {
             var2.setRespawnStage(END);
             var2.resetSpikeCrystals();
 
-            for(EndCrystal var7 : var3) {
+            for (EndCrystal var7 : var3) {
                var7.setBeamTarget(null);
                var1.explode(var7, var7.getX(), var7.getY(), var7.getZ(), 6.0F, Level.ExplosionInteraction.NONE);
                var7.discard();
@@ -94,7 +94,7 @@ public enum DragonRespawnAnimation {
          } else if (var4 >= 80) {
             var1.levelEvent(3001, new BlockPos(0, 128, 0), 0);
          } else if (var4 == 0) {
-            for(EndCrystal var9 : var3) {
+            for (EndCrystal var9 : var3) {
                var9.setBeamTarget(new BlockPos(0, 128, 0));
             }
          } else if (var4 < 5) {

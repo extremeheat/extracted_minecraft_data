@@ -32,11 +32,11 @@ public class BonusChestFeature extends Feature<NoneFeatureConfiguration> {
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
       IntListIterator var8 = var5.iterator();
 
-      while(var8.hasNext()) {
+      while (var8.hasNext()) {
          Integer var9 = (Integer)var8.next();
          IntListIterator var10 = var6.iterator();
 
-         while(var10.hasNext()) {
+         while (var10.hasNext()) {
             Integer var11 = (Integer)var10.next();
             var7.set(var9, 0, var11);
             BlockPos var12 = var3.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var7);
@@ -45,7 +45,7 @@ public class BonusChestFeature extends Feature<NoneFeatureConfiguration> {
                RandomizableContainer.setBlockEntityLootTable(var3, var2, var12, BuiltInLootTables.SPAWN_BONUS_CHEST);
                BlockState var13 = Blocks.TORCH.defaultBlockState();
 
-               for(Direction var15 : Direction.Plane.HORIZONTAL) {
+               for (Direction var15 : Direction.Plane.HORIZONTAL) {
                   BlockPos var16 = var12.relative(var15);
                   if (var13.canSurvive(var3, var16)) {
                      var3.setBlock(var16, var13, 2);

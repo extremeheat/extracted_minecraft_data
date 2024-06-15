@@ -38,7 +38,11 @@ public class ClientRecipeBook extends RecipeBook {
       Builder var5 = ImmutableList.builder();
       var3.forEach(
          (var3x, var4x) -> var4.put(
-               var3x, (List)var4x.stream().map(var1xx -> new RecipeCollection(var2, var1xx)).peek(var5::add).collect(ImmutableList.toImmutableList())
+               var3x,
+               (List)var4x.stream()
+                  .map(var1xx -> new RecipeCollection(var2, (List<RecipeHolder<?>>)var1xx))
+                  .peek(var5::add)
+                  .collect(ImmutableList.toImmutableList())
             )
       );
       RecipeBookCategories.AGGREGATE_CATEGORIES
@@ -58,7 +62,7 @@ public class ClientRecipeBook extends RecipeBook {
       HashMap var1 = Maps.newHashMap();
       HashBasedTable var2 = HashBasedTable.create();
 
-      for(RecipeHolder var4 : var0) {
+      for (RecipeHolder var4 : var0) {
          Recipe var5 = var4.value();
          if (!var5.isSpecial() && !var5.isIncomplete()) {
             RecipeBookCategories var6 = getCategory(var4);
@@ -81,12 +85,10 @@ public class ClientRecipeBook extends RecipeBook {
       return var1;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static RecipeBookCategories getCategory(RecipeHolder<?> var0) {
       Recipe var1 = var0.value();
       if (var1 instanceof CraftingRecipe var5) {
-         return switch(var5.category()) {
+         return switch (var5.category()) {
             case BUILDING -> RecipeBookCategories.CRAFTING_BUILDING_BLOCKS;
             case EQUIPMENT -> RecipeBookCategories.CRAFTING_EQUIPMENT;
             case REDSTONE -> RecipeBookCategories.CRAFTING_REDSTONE;
@@ -97,7 +99,7 @@ public class ClientRecipeBook extends RecipeBook {
          if (var1 instanceof AbstractCookingRecipe var3) {
             CookingBookCategory var4 = var3.category();
             if (var2 == RecipeType.SMELTING) {
-               return switch(var4) {
+               return switch (var4) {
                   case BLOCKS -> RecipeBookCategories.FURNACE_BLOCKS;
                   case FOOD -> RecipeBookCategories.FURNACE_FOOD;
                   case MISC -> RecipeBookCategories.FURNACE_MISC;

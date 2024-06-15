@@ -29,51 +29,40 @@ public interface PieceGeneratorSupplier<C extends FeatureConfiguration> {
    }
 
    public static record Context<C extends FeatureConfiguration>(
-      ChunkGenerator a,
-      BiomeSource b,
-      RandomState c,
-      long d,
-      ChunkPos e,
-      C f,
-      LevelHeightAccessor g,
-      Predicate<Holder<Biome>> h,
-      StructureTemplateManager i,
-      RegistryAccess j
+      ChunkGenerator chunkGenerator,
+      BiomeSource biomeSource,
+      RandomState randomState,
+      long seed,
+      ChunkPos chunkPos,
+      C config,
+      LevelHeightAccessor heightAccessor,
+      Predicate<Holder<Biome>> validBiome,
+      StructureTemplateManager structureTemplateManager,
+      RegistryAccess registryAccess
    ) {
-      private final ChunkGenerator chunkGenerator;
-      private final BiomeSource biomeSource;
-      private final RandomState randomState;
-      private final long seed;
-      private final ChunkPos chunkPos;
-      private final C config;
-      private final LevelHeightAccessor heightAccessor;
-      private final Predicate<Holder<Biome>> validBiome;
-      private final StructureTemplateManager structureTemplateManager;
-      private final RegistryAccess registryAccess;
-
       public Context(
-         ChunkGenerator var1,
-         BiomeSource var2,
-         RandomState var3,
-         long var4,
-         ChunkPos var6,
-         C var7,
-         LevelHeightAccessor var8,
-         Predicate<Holder<Biome>> var9,
-         StructureTemplateManager var10,
-         RegistryAccess var11
+         ChunkGenerator chunkGenerator,
+         BiomeSource biomeSource,
+         RandomState randomState,
+         long seed,
+         ChunkPos chunkPos,
+         C config,
+         LevelHeightAccessor heightAccessor,
+         Predicate<Holder<Biome>> validBiome,
+         StructureTemplateManager structureTemplateManager,
+         RegistryAccess registryAccess
       ) {
          super();
-         this.chunkGenerator = var1;
-         this.biomeSource = var2;
-         this.randomState = var3;
-         this.seed = var4;
-         this.chunkPos = var6;
-         this.config = var7;
-         this.heightAccessor = var8;
-         this.validBiome = var9;
-         this.structureTemplateManager = var10;
-         this.registryAccess = var11;
+         this.chunkGenerator = chunkGenerator;
+         this.biomeSource = biomeSource;
+         this.randomState = randomState;
+         this.seed = seed;
+         this.chunkPos = chunkPos;
+         this.config = (C)config;
+         this.heightAccessor = heightAccessor;
+         this.validBiome = validBiome;
+         this.structureTemplateManager = structureTemplateManager;
+         this.registryAccess = registryAccess;
       }
 
       public boolean validBiomeOnTop(Heightmap.Types var1) {

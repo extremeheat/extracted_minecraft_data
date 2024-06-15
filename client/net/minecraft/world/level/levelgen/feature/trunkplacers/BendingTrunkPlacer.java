@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -19,7 +18,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class BendingTrunkPlacer extends TrunkPlacer {
-   public static final Codec<BendingTrunkPlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<BendingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> trunkPlacerParts(var0)
             .and(
                var0.group(
@@ -54,7 +53,7 @@ public class BendingTrunkPlacer extends TrunkPlacer {
       setDirtAt(var1, var2, var3, var10, var6);
       ArrayList var11 = Lists.newArrayList();
 
-      for(int var12 = 0; var12 <= var8; ++var12) {
+      for (int var12 = 0; var12 <= var8; var12++) {
          if (var12 + 1 >= var8 + var3.nextInt(2)) {
             var9.move(var7);
          }
@@ -72,7 +71,7 @@ public class BendingTrunkPlacer extends TrunkPlacer {
 
       int var14 = this.bendLength.sample(var3);
 
-      for(int var13 = 0; var13 <= var14; ++var13) {
+      for (int var13 = 0; var13 <= var14; var13++) {
          if (TreeFeature.validTreePos(var1, var9)) {
             this.placeLog(var1, var2, var3, var9, var6);
          }

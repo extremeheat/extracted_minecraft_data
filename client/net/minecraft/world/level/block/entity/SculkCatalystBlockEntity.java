@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -12,9 +14,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SculkCatalystBlock;
 import net.minecraft.world.level.block.SculkSpreader;
@@ -25,7 +25,7 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.phys.Vec3;
 
-public class SculkCatalystBlockEntity extends BlockEntity implements GameEventListener.Holder<SculkCatalystBlockEntity.CatalystListener> {
+public class SculkCatalystBlockEntity extends BlockEntity implements GameEventListener.Provider<SculkCatalystBlockEntity.CatalystListener> {
    private final SculkCatalystBlockEntity.CatalystListener catalystListener;
 
    public SculkCatalystBlockEntity(BlockPos var1, BlockState var2) {
@@ -38,14 +38,15 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
    }
 
    @Override
-   public void load(CompoundTag var1) {
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.catalystListener.sculkSpreader.load(var1);
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       this.catalystListener.sculkSpreader.save(var1);
-      super.saveAdditional(var1);
+      super.saveAdditional(var1, var2);
    }
 
    public SculkCatalystBlockEntity.CatalystListener getListener() {
@@ -81,26 +82,23 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
       }
 
       @Override
-      public boolean handleGameEvent(ServerLevel var1, GameEvent var2, GameEvent.Context var3, Vec3 var4) {
-         if (var2 == GameEvent.ENTITY_DIE) {
-            Entity var6 = var3.sourceEntity();
-            if (var6 instanceof LivingEntity var5) {
-               if (!((LivingEntity)var5).wasExperienceConsumed()) {
-                  int var7 = ((LivingEntity)var5).getExperienceReward();
-                  if (((LivingEntity)var5).shouldDropExperience() && var7 > 0) {
-                     this.sculkSpreader.addCursors(BlockPos.containing(var4.relative(Direction.UP, 0.5)), var7);
-                     this.tryAwardItSpreadsAdvancement(var1, (LivingEntity)var5);
-                  }
-
-                  ((LivingEntity)var5).skipDropExperience();
-                  this.positionSource.getPosition(var1).ifPresent(var2x -> this.bloom(var1, BlockPos.containing(var2x), this.blockState, var1.getRandom()));
+      public boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
+         if (var2.is(GameEvent.ENTITY_DIE) && var3.sourceEntity() instanceof LivingEntity var5) {
+            if (!var5.wasExperienceConsumed()) {
+               int var7 = var5.getExperienceReward();
+               if (var5.shouldDropExperience() && var7 > 0) {
+                  this.sculkSpreader.addCursors(BlockPos.containing(var4.relative(Direction.UP, 0.5)), var7);
+                  this.tryAwardItSpreadsAdvancement(var1, var5);
                }
 
-               return true;
+               var5.skipDropExperience();
+               this.positionSource.getPosition(var1).ifPresent(var2x -> this.bloom(var1, BlockPos.containing(var2x), this.blockState, var1.getRandom()));
             }
-         }
 
-         return false;
+            return true;
+         } else {
+            return false;
+         }
       }
 
       @VisibleForTesting
@@ -116,10 +114,9 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
       }
 
       private void tryAwardItSpreadsAdvancement(Level var1, LivingEntity var2) {
-         LivingEntity var3 = var2.getLastHurtByMob();
-         if (var3 instanceof ServerPlayer var4) {
-            DamageSource var5 = var2.getLastDamageSource() == null ? var1.damageSources().playerAttack((Player)var4) : var2.getLastDamageSource();
-            CriteriaTriggers.KILL_MOB_NEAR_SCULK_CATALYST.trigger((ServerPlayer)var4, var2, var5);
+         if (var2.getLastHurtByMob() instanceof ServerPlayer var4) {
+            DamageSource var5 = var2.getLastDamageSource() == null ? var1.damageSources().playerAttack(var4) : var2.getLastDamageSource();
+            CriteriaTriggers.KILL_MOB_NEAR_SCULK_CATALYST.trigger(var4, var2, var5);
          }
       }
    }

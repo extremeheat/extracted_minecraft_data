@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 
 public class PlayerSocialManager {
@@ -69,22 +68,16 @@ public class PlayerSocialManager {
       return this.discoveredNamesToUUID.getOrDefault(var1, Util.NIL_UUID);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void addPlayer(PlayerInfo var1) {
       GameProfile var2 = var1.getProfile();
       this.discoveredNamesToUUID.put(var2.getName(), var2.getId());
-      Screen var4 = this.minecraft.screen;
-      if (var4 instanceof SocialInteractionsScreen var3) {
+      if (this.minecraft.screen instanceof SocialInteractionsScreen var3) {
          var3.onAddPlayer(var1);
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void removePlayer(UUID var1) {
-      Screen var3 = this.minecraft.screen;
-      if (var3 instanceof SocialInteractionsScreen var2) {
+      if (this.minecraft.screen instanceof SocialInteractionsScreen var2) {
          var2.onRemovePlayer(var1);
       }
    }

@@ -1,6 +1,6 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
@@ -19,17 +19,17 @@ public class ShulkerBoxColoring extends CustomRecipe {
       int var3 = 0;
       int var4 = 0;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (Block.byItem(var6.getItem()) instanceof ShulkerBoxBlock) {
-               ++var3;
+               var3++;
             } else {
                if (!(var6.getItem() instanceof DyeItem)) {
                   return false;
                }
 
-               ++var4;
+               var4++;
             }
 
             if (var4 > 1 || var3 > 1) {
@@ -41,11 +41,11 @@ public class ShulkerBoxColoring extends CustomRecipe {
       return var3 == 1 && var4 == 1;
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ItemStack var3 = ItemStack.EMPTY;
       DyeItem var4 = (DyeItem)Items.WHITE_DYE;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             Item var7 = var6.getItem();
@@ -57,12 +57,8 @@ public class ShulkerBoxColoring extends CustomRecipe {
          }
       }
 
-      ItemStack var8 = ShulkerBoxBlock.getColoredItemStack(var4.getDyeColor());
-      if (var3.hasTag()) {
-         var8.setTag(var3.getTag().copy());
-      }
-
-      return var8;
+      Block var8 = ShulkerBoxBlock.getBlockByColor(var4.getDyeColor());
+      return var3.transmuteCopy(var8, 1);
    }
 
    @Override

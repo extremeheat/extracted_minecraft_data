@@ -1,24 +1,12 @@
 package net.minecraft.network.syncher;
 
-public class EntityDataAccessor<T> {
-   private final int id;
-   private final EntityDataSerializer<T> serializer;
-
-   public EntityDataAccessor(int var1, EntityDataSerializer<T> var2) {
+public record EntityDataAccessor<T>(int id, EntityDataSerializer<T> serializer) {
+   public EntityDataAccessor(int id, EntityDataSerializer<T> serializer) {
       super();
-      this.id = var1;
-      this.serializer = var2;
+      this.id = id;
+      this.serializer = serializer;
    }
 
-   public int getId() {
-      return this.id;
-   }
-
-   public EntityDataSerializer<T> getSerializer() {
-      return this.serializer;
-   }
-
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -30,12 +18,10 @@ public class EntityDataAccessor<T> {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.id;
    }
 
-   @Override
    public String toString() {
       return "<entity data: " + this.id + ">";
    }

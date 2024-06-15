@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,7 +54,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    private static VoxelShape[] makeShapes(VoxelShape var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4) {
-      return IntStream.range(0, 16).mapToObj(var5 -> makeStairShape(var5, var0, var1, var2, var3, var4)).toArray(var0x -> new VoxelShape[var0x]);
+      return IntStream.range(0, 16).mapToObj(var5 -> makeStairShape(var5, var0, var1, var2, var3, var4)).toArray(VoxelShape[]::new);
    }
 
    private static VoxelShape makeStairShape(int var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4, VoxelShape var5) {
@@ -94,12 +93,12 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return (var1.getValue(HALF) == Half.TOP ? TOP_SHAPES : BOTTOM_SHAPES)[SHAPE_BY_STATE[this.getShapeIndex(var1)]];
    }
 
@@ -125,7 +124,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -172,18 +171,18 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       Direction var3 = var1.getValue(FACING);
       StairsShape var4 = var1.getValue(SHAPE);
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
             if (var3.getAxis() == Direction.Axis.Z) {
-               switch(var4) {
+               switch (var4) {
                   case INNER_LEFT:
                      return var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
                   case INNER_RIGHT:
@@ -199,7 +198,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
             break;
          case FRONT_BACK:
             if (var3.getAxis() == Direction.Axis.X) {
-               switch(var4) {
+               switch (var4) {
                   case INNER_LEFT:
                      return var1.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
                   case INNER_RIGHT:
@@ -223,12 +222,12 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

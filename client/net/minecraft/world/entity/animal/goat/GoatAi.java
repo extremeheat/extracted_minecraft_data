@@ -3,11 +3,12 @@ package net.minecraft.world.entity.animal.goat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
+import java.util.function.Predicate;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
@@ -30,14 +31,12 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ItemStack;
 
 public class GoatAi {
    public static final int RAM_PREPARE_TIME = 20;
    public static final int RAM_MAX_DISTANCE = 7;
    private static final UniformInt ADULT_FOLLOW_RANGE = UniformInt.of(5, 16);
-   private static final float SPEED_MULTIPLIER_WHEN_MAKING_LOVE = 1.0F;
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 1.0F;
    private static final float SPEED_MULTIPLIER_WHEN_FOLLOWING_ADULT = 1.25F;
    private static final float SPEED_MULTIPLIER_WHEN_TEMPTED = 1.25F;
@@ -46,7 +45,7 @@ public class GoatAi {
    private static final UniformInt TIME_BETWEEN_LONG_JUMPS = UniformInt.of(600, 1200);
    public static final int MAX_LONG_JUMP_HEIGHT = 5;
    public static final int MAX_LONG_JUMP_WIDTH = 5;
-   public static final float MAX_JUMP_VELOCITY = 1.5F;
+   public static final float MAX_JUMP_VELOCITY_MULTIPLIER = 3.5714288F;
    private static final UniformInt TIME_BETWEEN_RAMS = UniformInt.of(600, 6000);
    private static final UniformInt TIME_BETWEEN_RAMS_SCREAMER = UniformInt.of(100, 300);
    private static final TargetingConditions RAM_TARGET_CONDITIONS = TargetingConditions.forCombat()
@@ -97,7 +96,7 @@ public class GoatAi {
          Activity.IDLE,
          ImmutableList.of(
             Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
-            Pair.of(0, new AnimalMakeLove(EntityType.GOAT, 1.0F)),
+            Pair.of(0, new AnimalMakeLove(EntityType.GOAT)),
             Pair.of(1, new FollowTemptation(var0x -> 1.25F)),
             Pair.of(2, BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F)),
             Pair.of(
@@ -123,7 +122,11 @@ public class GoatAi {
             Pair.of(
                1,
                new LongJumpToRandomPos<>(
-                  TIME_BETWEEN_LONG_JUMPS, 5, 5, 1.5F, var0x -> var0x.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_LONG_JUMP : SoundEvents.GOAT_LONG_JUMP
+                  TIME_BETWEEN_LONG_JUMPS,
+                  5,
+                  5,
+                  3.5714288F,
+                  var0x -> var0x.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_LONG_JUMP : SoundEvents.GOAT_LONG_JUMP
                )
             )
          ),
@@ -176,7 +179,7 @@ public class GoatAi {
       var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.RAM, Activity.LONG_JUMP, Activity.IDLE));
    }
 
-   public static Ingredient getTemptations() {
-      return Ingredient.of(Items.WHEAT);
+   public static Predicate<ItemStack> getTemptations() {
+      return var0 -> var0.is(ItemTags.GOAT_FOOD);
    }
 }

@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,14 +43,14 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
       }
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getValue(AGE) < 5;
    }
 
@@ -61,7 +60,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockPos var5 = var3.above();
       if (var2.isEmptyBlock(var5) && var5.getY() < var2.getMaxBuildHeight()) {
          int var6 = var1.getValue(AGE);
@@ -74,7 +73,7 @@ public class ChorusFlowerBlock extends Block {
             } else if (var9.is(this.plant)) {
                int var10 = 1;
 
-               for(int var11 = 0; var11 < 4; ++var11) {
+               for (int var11 = 0; var11 < 4; var11++) {
                   BlockState var12 = var2.getBlockState(var3.below(var10 + 1));
                   if (!var12.is(this.plant)) {
                      if (var12.is(Blocks.END_STONE)) {
@@ -83,7 +82,7 @@ public class ChorusFlowerBlock extends Block {
                      break;
                   }
 
-                  ++var10;
+                  var10++;
                }
 
                if (var10 < 2 || var10 <= var4.nextInt(var8 ? 5 : 4)) {
@@ -99,12 +98,12 @@ public class ChorusFlowerBlock extends Block {
             } else if (var6 < 4) {
                int var15 = var4.nextInt(4);
                if (var8) {
-                  ++var15;
+                  var15++;
                }
 
                boolean var16 = false;
 
-               for(int var17 = 0; var17 < var15; ++var17) {
+               for (int var17 = 0; var17 < var15; var17++) {
                   Direction var13 = Direction.Plane.HORIZONTAL.getRandomDirection(var4);
                   BlockPos var14 = var3.relative(var13);
                   if (var2.isEmptyBlock(var14) && var2.isEmptyBlock(var14.below()) && allNeighborsEmpty(var2, var14, var13.getOpposite())) {
@@ -136,7 +135,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    private static boolean allNeighborsEmpty(LevelReader var0, BlockPos var1, @Nullable Direction var2) {
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
+      for (Direction var4 : Direction.Plane.HORIZONTAL) {
          if (var4 != var2 && !var0.isEmptyBlock(var1.relative(var4))) {
             return false;
          }
@@ -146,7 +145,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 != Direction.UP && !var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -155,7 +154,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.below());
       if (!var4.is(this.plant) && !var4.is(Blocks.END_STONE)) {
          if (!var4.isAir()) {
@@ -163,7 +162,7 @@ public class ChorusFlowerBlock extends Block {
          } else {
             boolean var5 = false;
 
-            for(Direction var7 : Direction.Plane.HORIZONTAL) {
+            for (Direction var7 : Direction.Plane.HORIZONTAL) {
                BlockState var8 = var2.getBlockState(var3.relative(var7));
                if (var8.is(this.plant)) {
                   if (var5) {
@@ -197,10 +196,10 @@ public class ChorusFlowerBlock extends Block {
       Block var6 = Blocks.CHORUS_PLANT;
       int var7 = var2.nextInt(4) + 1;
       if (var5 == 0) {
-         ++var7;
+         var7++;
       }
 
-      for(int var8 = 0; var8 < var7; ++var8) {
+      for (int var8 = 0; var8 < var7; var8++) {
          BlockPos var9 = var1.above(var8 + 1);
          if (!allNeighborsEmpty(var0, var9, null)) {
             return;
@@ -214,10 +213,10 @@ public class ChorusFlowerBlock extends Block {
       if (var5 < 4) {
          int var14 = var2.nextInt(4);
          if (var5 == 0) {
-            ++var14;
+            var14++;
          }
 
-         for(int var10 = 0; var10 < var14; ++var10) {
+         for (int var10 = 0; var10 < var14; var10++) {
             Direction var11 = Direction.Plane.HORIZONTAL.getRandomDirection(var2);
             BlockPos var12 = var1.above(var7).relative(var11);
             if (Math.abs(var12.getX() - var3.getX()) < var4
@@ -243,7 +242,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       BlockPos var5 = var3.getBlockPos();
       if (!var1.isClientSide && var4.mayInteract(var1, var5) && var4.mayBreak(var1)) {
          var1.destroyBlock(var5, true, var4);

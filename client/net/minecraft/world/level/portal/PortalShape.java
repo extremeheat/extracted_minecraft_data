@@ -11,7 +11,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.NetherPortalBlock;
@@ -76,7 +75,7 @@ public class PortalShape {
    private BlockPos calculateBottomLeft(BlockPos var1) {
       int var2 = Math.max(this.level.getMinBuildHeight(), var1.getY() - 21);
 
-      while(var1.getY() > var2 && isEmpty(this.level.getBlockState(var1.below()))) {
+      while (var1.getY() > var2 && isEmpty(this.level.getBlockState(var1.below()))) {
          var1 = var1.below();
       }
 
@@ -93,7 +92,7 @@ public class PortalShape {
    private int getDistanceUntilEdgeAboveFrame(BlockPos var1, Direction var2) {
       BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
 
-      for(int var4 = 0; var4 <= 21; ++var4) {
+      for (int var4 = 0; var4 <= 21; var4++) {
          var3.set(var1).move(var2, var4);
          BlockState var5 = this.level.getBlockState(var3);
          if (!isEmpty(var5)) {
@@ -119,7 +118,7 @@ public class PortalShape {
    }
 
    private boolean hasTopFrame(BlockPos.MutableBlockPos var1, int var2) {
-      for(int var3 = 0; var3 < this.width; ++var3) {
+      for (int var3 = 0; var3 < this.width; var3++) {
          BlockPos.MutableBlockPos var4 = var1.set(this.bottomLeft).move(Direction.UP, var2).move(this.rightDir, var3);
          if (!FRAME.test(this.level.getBlockState(var4), this.level, var4)) {
             return false;
@@ -130,7 +129,7 @@ public class PortalShape {
    }
 
    private int getDistanceUntilTop(BlockPos.MutableBlockPos var1) {
-      for(int var2 = 0; var2 < 21; ++var2) {
+      for (int var2 = 0; var2 < 21; var2++) {
          var1.set(this.bottomLeft).move(Direction.UP, var2).move(this.rightDir, -1);
          if (!FRAME.test(this.level.getBlockState(var1), this.level, var1)) {
             return var2;
@@ -141,7 +140,7 @@ public class PortalShape {
             return var2;
          }
 
-         for(int var3 = 0; var3 < this.width; ++var3) {
+         for (int var3 = 0; var3 < this.width; var3++) {
             var1.set(this.bottomLeft).move(Direction.UP, var2).move(this.rightDir, var3);
             BlockState var4 = this.level.getBlockState(var1);
             if (!isEmpty(var4)) {
@@ -149,7 +148,7 @@ public class PortalShape {
             }
 
             if (var4.is(Blocks.NETHER_PORTAL)) {
-               ++this.numPortalBlocks;
+               this.numPortalBlocks++;
             }
          }
       }
@@ -176,12 +175,12 @@ public class PortalShape {
    }
 
    public static Vec3 getRelativePosition(BlockUtil.FoundRectangle var0, Direction.Axis var1, Vec3 var2, EntityDimensions var3) {
-      double var4 = (double)var0.axis1Size - (double)var3.width;
-      double var6 = (double)var0.axis2Size - (double)var3.height;
+      double var4 = (double)var0.axis1Size - (double)var3.width();
+      double var6 = (double)var0.axis2Size - (double)var3.height();
       BlockPos var8 = var0.minCorner;
       double var9;
       if (var4 > 0.0) {
-         double var11 = (double)var8.get(var1) + (double)var3.width / 2.0;
+         double var11 = (double)var8.get(var1) + (double)var3.width() / 2.0;
          var9 = Mth.clamp(Mth.inverseLerp(var2.get(var1) - var11, 0.0, var4), 0.0, 1.0);
       } else {
          var9 = 0.5;
@@ -211,8 +210,8 @@ public class PortalShape {
       EntityDimensions var15 = var4.getDimensions(var4.getPose());
       int var16 = var2 == var10 ? 0 : 90;
       Vec3 var17 = var2 == var10 ? var5 : new Vec3(var5.z, var5.y, -var5.x);
-      double var18 = (double)var15.width / 2.0 + (var11 - (double)var15.width) * var3.x();
-      double var20 = (var13 - (double)var15.height) * var3.y();
+      double var18 = (double)var15.width() / 2.0 + (var11 - (double)var15.width()) * var3.x();
+      double var20 = (var13 - (double)var15.height()) * var3.y();
       double var22 = 0.5 + var3.z();
       boolean var24 = var10 == Direction.Axis.X;
       Vec3 var25 = new Vec3((double)var8.getX() + (var24 ? var18 : var22), (double)var8.getY() + var20, (double)var8.getZ() + (var24 ? var22 : var18));
@@ -221,11 +220,11 @@ public class PortalShape {
    }
 
    private static Vec3 findCollisionFreePosition(Vec3 var0, ServerLevel var1, Entity var2, EntityDimensions var3) {
-      if (!(var3.width > 4.0F) && !(var3.height > 4.0F)) {
-         double var4 = (double)var3.height / 2.0;
+      if (!(var3.width() > 4.0F) && !(var3.height() > 4.0F)) {
+         double var4 = (double)var3.height() / 2.0;
          Vec3 var6 = var0.add(0.0, var4, 0.0);
-         VoxelShape var7 = Shapes.create(AABB.ofSize(var6, (double)var3.width, 0.0, (double)var3.width).expandTowards(0.0, 1.0, 0.0).inflate(1.0E-6));
-         Optional var8 = var1.findFreePosition(var2, var7, var6, (double)var3.width, (double)var3.height, (double)var3.width);
+         VoxelShape var7 = Shapes.create(AABB.ofSize(var6, (double)var3.width(), 0.0, (double)var3.width()).expandTowards(0.0, 1.0, 0.0).inflate(1.0E-6));
+         Optional var8 = var1.findFreePosition(var2, var7, var6, (double)var3.width(), (double)var3.height(), (double)var3.width());
          Optional var9 = var8.map(var2x -> var2x.subtract(0.0, var4, 0.0));
          return var9.orElse(var0);
       } else {

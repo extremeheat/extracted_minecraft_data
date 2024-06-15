@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
@@ -88,7 +87,7 @@ public class RecipeCommand {
    private static int giveRecipes(CommandSourceStack var0, Collection<ServerPlayer> var1, Collection<RecipeHolder<?>> var2) throws CommandSyntaxException {
       int var3 = 0;
 
-      for(ServerPlayer var5 : var1) {
+      for (ServerPlayer var5 : var1) {
          var3 += var5.awardRecipes(var2);
       }
 
@@ -110,7 +109,7 @@ public class RecipeCommand {
    private static int takeRecipes(CommandSourceStack var0, Collection<ServerPlayer> var1, Collection<RecipeHolder<?>> var2) throws CommandSyntaxException {
       int var3 = 0;
 
-      for(ServerPlayer var5 : var1) {
+      for (ServerPlayer var5 : var1) {
          var3 += var5.resetRecipes(var2);
       }
 

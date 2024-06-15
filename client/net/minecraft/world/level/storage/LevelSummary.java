@@ -8,7 +8,6 @@ import net.minecraft.WorldVersion;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -81,7 +80,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
       return this.settings.hardcore();
    }
 
-   public boolean hasCheats() {
+   public boolean hasCommands() {
       return this.settings.allowCommands();
    }
 
@@ -119,11 +118,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public boolean isDisabled() {
-      if (!this.isLocked() && !this.requiresManualConversion()) {
-         return !this.isCompatible();
-      } else {
-         return true;
-      }
+      return !this.isLocked() && !this.requiresManualConversion() ? !this.isCompatible() : true;
    }
 
    public boolean isCompatible() {
@@ -149,8 +144,8 @@ public class LevelSummary implements Comparable<LevelSummary> {
          MutableComponent var1 = this.isHardcore()
             ? Component.empty().append(Component.translatable("gameMode.hardcore").withColor(-65536))
             : Component.translatable("gameMode." + this.getGameMode().getName());
-         if (this.hasCheats()) {
-            var1.append(", ").append(Component.translatable("selectWorld.cheats"));
+         if (this.hasCommands()) {
+            var1.append(", ").append(Component.translatable("selectWorld.commands"));
          }
 
          if (this.isExperimental()) {
@@ -178,6 +173,10 @@ public class LevelSummary implements Comparable<LevelSummary> {
       return !this.isDisabled();
    }
 
+   public boolean canUpload() {
+      return !this.requiresManualConversion() && !this.isLocked();
+   }
+
    public boolean canEdit() {
       return !this.isDisabled();
    }
@@ -199,10 +198,10 @@ public class LevelSummary implements Comparable<LevelSummary> {
       private final boolean severe;
       private final String translationKey;
 
-      private BackupStatus(boolean var3, boolean var4, String var5) {
-         this.shouldBackup = var3;
-         this.severe = var4;
-         this.translationKey = var5;
+      private BackupStatus(final boolean nullxx, final boolean nullxxx, final String nullxxxx) {
+         this.shouldBackup = nullxx;
+         this.severe = nullxxx;
+         this.translationKey = nullxxxx;
       }
 
       public boolean shouldBackup() {
@@ -259,6 +258,11 @@ public class LevelSummary implements Comparable<LevelSummary> {
       }
 
       @Override
+      public boolean canUpload() {
+         return false;
+      }
+
+      @Override
       public boolean canEdit() {
          return false;
       }
@@ -305,6 +309,11 @@ public class LevelSummary implements Comparable<LevelSummary> {
       @Override
       public boolean primaryActionActive() {
          return true;
+      }
+
+      @Override
+      public boolean canUpload() {
+         return false;
       }
 
       @Override

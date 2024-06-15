@@ -2,13 +2,18 @@ package net.minecraft.network.protocol.game;
 
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.Level;
 
 public class ServerboundSetCommandMinecartPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetCommandMinecartPacket> STREAM_CODEC = Packet.codec(
+      ServerboundSetCommandMinecartPacket::write, ServerboundSetCommandMinecartPacket::new
+   );
    private final int entity;
    private final String command;
    private final boolean trackOutput;
@@ -20,18 +25,22 @@ public class ServerboundSetCommandMinecartPacket implements Packet<ServerGamePac
       this.trackOutput = var3;
    }
 
-   public ServerboundSetCommandMinecartPacket(FriendlyByteBuf var1) {
+   private ServerboundSetCommandMinecartPacket(FriendlyByteBuf var1) {
       super();
       this.entity = var1.readVarInt();
       this.command = var1.readUtf();
       this.trackOutput = var1.readBoolean();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.entity);
       var1.writeUtf(this.command);
       var1.writeBoolean(this.trackOutput);
+   }
+
+   @Override
+   public PacketType<ServerboundSetCommandMinecartPacket> type() {
+      return GamePacketTypes.SERVERBOUND_SET_COMMAND_MINECART;
    }
 
    public void handle(ServerGamePacketListener var1) {

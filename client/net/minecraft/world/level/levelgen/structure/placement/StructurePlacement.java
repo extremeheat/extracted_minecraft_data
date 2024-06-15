@@ -77,13 +77,17 @@ public abstract class StructurePlacement {
    }
 
    public boolean isStructureChunk(ChunkGeneratorStructureState var1, int var2, int var3) {
-      if (!this.isPlacementChunk(var1, var2, var3)) {
-         return false;
-      } else if (this.frequency < 1.0F && !this.frequencyReductionMethod.shouldGenerate(var1.getLevelSeed(), this.salt, var2, var3, this.frequency)) {
-         return false;
-      } else {
-         return !this.exclusionZone.isPresent() || !this.exclusionZone.get().isPlacementForbidden(var1, var2, var3);
-      }
+      return this.isPlacementChunk(var1, var2, var3)
+         && this.applyAdditionalChunkRestrictions(var2, var3, var1.getLevelSeed())
+         && this.applyInteractionsWithOtherStructures(var1, var2, var3);
+   }
+
+   public boolean applyAdditionalChunkRestrictions(int var1, int var2, long var3) {
+      return !(this.frequency < 1.0F) || this.frequencyReductionMethod.shouldGenerate(var3, this.salt, var1, var2, this.frequency);
+   }
+
+   public boolean applyInteractionsWithOtherStructures(ChunkGeneratorStructureState var1, int var2, int var3) {
+      return !this.exclusionZone.isPresent() || !this.exclusionZone.get().isPlacementForbidden(var1, var2, var3);
    }
 
    protected abstract boolean isPlacementChunk(ChunkGeneratorStructureState var1, int var2, int var3);
@@ -122,9 +126,7 @@ public abstract class StructurePlacement {
    }
 
    @Deprecated
-   public static record ExclusionZone(Holder<StructureSet> b, int c) {
-      private final Holder<StructureSet> otherSet;
-      private final int chunkCount;
+   public static record ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
       public static final Codec<StructurePlacement.ExclusionZone> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false)
@@ -135,10 +137,10 @@ public abstract class StructurePlacement {
                .apply(var0, StructurePlacement.ExclusionZone::new)
       );
 
-      public ExclusionZone(Holder<StructureSet> var1, int var2) {
+      public ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
          super();
-         this.otherSet = var1;
-         this.chunkCount = var2;
+         this.otherSet = otherSet;
+         this.chunkCount = chunkCount;
       }
 
       boolean isPlacementForbidden(ChunkGeneratorStructureState var1, int var2, int var3) {
@@ -163,9 +165,9 @@ public abstract class StructurePlacement {
       private final String name;
       private final StructurePlacement.FrequencyReducer reducer;
 
-      private FrequencyReductionMethod(String var3, StructurePlacement.FrequencyReducer var4) {
-         this.name = var3;
-         this.reducer = var4;
+      private FrequencyReductionMethod(final String nullxx, final StructurePlacement.FrequencyReducer nullxxx) {
+         this.name = nullxx;
+         this.reducer = nullxxx;
       }
 
       public boolean shouldGenerate(long var1, int var3, int var4, int var5, float var6) {

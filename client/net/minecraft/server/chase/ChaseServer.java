@@ -57,22 +57,22 @@ public class ChaseServer {
    private void runSender() {
       ChaseServer.PlayerPosition var1 = null;
 
-      while(this.wantsToRun) {
+      while (this.wantsToRun) {
          if (!this.clientSockets.isEmpty()) {
             ChaseServer.PlayerPosition var2 = this.getPlayerPosition();
             if (var2 != null && !var2.equals(var1)) {
                var1 = var2;
                byte[] var3 = var2.format().getBytes(StandardCharsets.US_ASCII);
 
-               for(Socket var5 : this.clientSockets) {
+               for (Socket var5 : this.clientSockets) {
                   if (!var5.isClosed()) {
                      Util.ioPool().submit(() -> {
                         try {
-                           OutputStream var2xx = var5.getOutputStream();
-                           var2xx.write(var3);
-                           var2xx.flush();
-                        } catch (IOException var3xx) {
-                           LOGGER.info("Remote control client socket got an IO exception and will be closed", var3xx);
+                           OutputStream var2x = var5.getOutputStream();
+                           var2x.write(var3);
+                           var2x.flush();
+                        } catch (IOException var3x) {
+                           LOGGER.info("Remote control client socket got an IO exception and will be closed", var3x);
                            IOUtils.closeQuietly(var5);
                         }
                      });
@@ -101,7 +101,7 @@ public class ChaseServer {
 
    private void runAcceptor() {
       try {
-         while(this.wantsToRun) {
+         while (this.wantsToRun) {
             if (this.serverSocket != null) {
                LOGGER.info("Remote control server is listening for connections on port {}", this.serverPort);
                Socket var1 = this.serverSocket.accept();
@@ -137,22 +137,15 @@ public class ChaseServer {
       }
    }
 
-   static record PlayerPosition(String a, double b, double c, double d, float e, float f) {
-      private final String dimensionName;
-      private final double x;
-      private final double y;
-      private final double z;
-      private final float yRot;
-      private final float xRot;
-
-      PlayerPosition(String var1, double var2, double var4, double var6, float var8, float var9) {
+   static record PlayerPosition(String dimensionName, double x, double y, double z, float yRot, float xRot) {
+      PlayerPosition(String dimensionName, double x, double y, double z, float yRot, float xRot) {
          super();
-         this.dimensionName = var1;
-         this.x = var2;
-         this.y = var4;
-         this.z = var6;
-         this.yRot = var8;
-         this.xRot = var9;
+         this.dimensionName = dimensionName;
+         this.x = x;
+         this.y = y;
+         this.z = z;
+         this.yRot = yRot;
+         this.xRot = xRot;
       }
 
       String format() {

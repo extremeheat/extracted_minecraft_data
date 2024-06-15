@@ -20,6 +20,7 @@ public class CommonComponents {
    public static final Component GUI_OPEN_IN_BROWSER = Component.translatable("chat.link.open");
    public static final Component GUI_COPY_LINK_TO_CLIPBOARD = Component.translatable("gui.copy_link_to_clipboard");
    public static final Component GUI_DISCONNECT = Component.translatable("menu.disconnect");
+   public static final Component TRANSFER_CONNECT_FAILED = Component.translatable("connect.failed.transfer");
    public static final Component CONNECT_FAILED = Component.translatable("connect.failed");
    public static final Component NEW_LINE = Component.literal("\n");
    public static final Component NARRATION_SEPARATOR = Component.literal(". ");
@@ -61,7 +62,7 @@ public class CommonComponents {
    public static MutableComponent joinForNarration(Component... var0) {
       MutableComponent var1 = Component.empty();
 
-      for(int var2 = 0; var2 < var0.length; ++var2) {
+      for (int var2 = 0; var2 < var0.length; var2++) {
          var1.append(var0[var2]);
          if (var2 != var0.length - 1) {
             var1.append(NARRATION_SEPARATOR);

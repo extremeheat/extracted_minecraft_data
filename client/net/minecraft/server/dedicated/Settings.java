@@ -125,8 +125,8 @@ public abstract class Settings<T extends Settings<T>> {
 
    protected <V> V get(String var1, Function<String, V> var2, UnaryOperator<V> var3, Function<V, String> var4, V var5) {
       return this.get(var1, var2x -> {
-         Object var3xx = var2.apply(var2x);
-         return (V)(var3xx != null ? var3.apply(var3xx) : null);
+         Object var3x = var2.apply(var2x);
+         return (V)(var3x != null ? var3.apply(var3x) : null);
       }, var4, (V)var5);
    }
 
@@ -189,11 +189,11 @@ public abstract class Settings<T extends Settings<T>> {
       private final V value;
       private final Function<V, String> serializer;
 
-      MutableValue(String var2, V var3, Function<V, String> var4) {
+      MutableValue(final String nullx, final V nullxx, final Function<V, String> nullxxx) {
          super();
-         this.key = var2;
-         this.value = (V)var3;
-         this.serializer = var4;
+         this.key = nullx;
+         this.value = (V)nullxx;
+         this.serializer = nullxxx;
       }
 
       @Override

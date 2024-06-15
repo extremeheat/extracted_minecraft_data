@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.carver;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -35,7 +36,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
    protected static final FluidState WATER = Fluids.WATER.defaultFluidState();
    protected static final FluidState LAVA = Fluids.LAVA.defaultFluidState();
    protected Set<Fluid> liquids = ImmutableSet.of(Fluids.WATER);
-   private final Codec<ConfiguredWorldCarver<C>> configuredCodec;
+   private final MapCodec<ConfiguredWorldCarver<C>> configuredCodec;
 
    private static <C extends CarverConfiguration, F extends WorldCarver<C>> F register(String var0, F var1) {
       return Registry.register(BuiltInRegistries.CARVER, var0, (F)var1);
@@ -43,14 +44,14 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
 
    public WorldCarver(Codec<C> var1) {
       super();
-      this.configuredCodec = var1.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config).codec();
+      this.configuredCodec = var1.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config);
    }
 
    public ConfiguredWorldCarver<C> configured(C var1) {
       return new ConfiguredWorldCarver<>(this, var1);
    }
 
-   public Codec<ConfiguredWorldCarver<C>> configuredCodec() {
+   public MapCodec<ConfiguredWorldCarver<C>> configuredCodec() {
       return this.configuredCodec;
    }
 
@@ -90,17 +91,17 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
          BlockPos.MutableBlockPos var35 = new BlockPos.MutableBlockPos();
          BlockPos.MutableBlockPos var36 = new BlockPos.MutableBlockPos();
 
-         for(int var37 = var27; var37 <= var28; ++var37) {
+         for (int var37 = var27; var37 <= var28; var37++) {
             int var38 = var18.getBlockX(var37);
             double var39 = ((double)var38 + 0.5 - var6) / var12;
 
-            for(int var41 = var32; var41 <= var33; ++var41) {
+            for (int var41 = var32; var41 <= var33; var41++) {
                int var42 = var18.getBlockZ(var41);
                double var43 = ((double)var42 + 0.5 - var10) / var12;
                if (!(var39 * var39 + var43 * var43 >= 1.0)) {
                   MutableBoolean var45 = new MutableBoolean(false);
 
-                  for(int var46 = var31; var46 > var29; --var46) {
+                  for (int var46 = var31; var46 > var29; var46--) {
                      double var47 = ((double)var46 - 0.5 - var8) / var14;
                      if (!var17.shouldSkip(var1, var39, var47, var43, var46) && (!var16.get(var37, var46, var41) || isDebugEnabled(var2))) {
                         var16.set(var37, var46, var41);

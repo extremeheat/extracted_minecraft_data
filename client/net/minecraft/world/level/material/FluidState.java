@@ -1,8 +1,8 @@
 package net.minecraft.world.level.material;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -26,7 +26,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
    public static final int AMOUNT_MAX = 9;
    public static final int AMOUNT_FULL = 8;
 
-   public FluidState(Fluid var1, ImmutableMap<Property<?>, Comparable<?>> var2, MapCodec<FluidState> var3) {
+   public FluidState(Fluid var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<FluidState> var3) {
       super(var1, var2, var3);
    }
 
@@ -59,8 +59,8 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
    }
 
    public boolean shouldRenderBackwardUpFace(BlockGetter var1, BlockPos var2) {
-      for(int var3 = -1; var3 <= 1; ++var3) {
-         for(int var4 = -1; var4 <= 1; ++var4) {
+      for (int var3 = -1; var3 <= 1; var3++) {
+         for (int var4 = -1; var4 <= 1; var4++) {
             BlockPos var5 = var2.offset(var3, 0, var4);
             FluidState var6 = var1.getFluidState(var5);
             if (!var6.getType().isSame(this.getType()) && !var1.getBlockState(var5).isSolidRender(var1, var5)) {

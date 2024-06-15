@@ -1,8 +1,8 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Map;
@@ -13,23 +13,23 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureElement;
@@ -40,12 +40,16 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -53,22 +57,17 @@ import org.slf4j.Logger;
 public class Item implements FeatureElement, ItemLike {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Map<Block, Item> BY_BLOCK = Maps.newHashMap();
-   protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
-   protected static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
-   public static final int MAX_STACK_SIZE = 64;
-   public static final int EAT_DURATION = 32;
+   public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+   public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+   public static final int DEFAULT_MAX_STACK_SIZE = 64;
+   public static final int ABSOLUTE_MAX_STACK_SIZE = 99;
    public static final int MAX_BAR_WIDTH = 13;
    private final Holder.Reference<Item> builtInRegistryHolder = BuiltInRegistries.ITEM.createIntrusiveHolder(this);
-   private final Rarity rarity;
-   private final int maxStackSize;
-   private final int maxDamage;
-   private final boolean isFireResistant;
+   private final DataComponentMap components;
    @Nullable
    private final Item craftingRemainingItem;
    @Nullable
    private String descriptionId;
-   @Nullable
-   private final FoodProperties foodProperties;
    private final FeatureFlagSet requiredFeatures;
 
    public static int getId(Item var0) {
@@ -86,12 +85,8 @@ public class Item implements FeatureElement, ItemLike {
 
    public Item(Item.Properties var1) {
       super();
-      this.rarity = var1.rarity;
+      this.components = var1.buildAndValidateComponents();
       this.craftingRemainingItem = var1.craftingRemainingItem;
-      this.maxDamage = var1.maxDamage;
-      this.maxStackSize = var1.maxStackSize;
-      this.foodProperties = var1.foodProperties;
-      this.isFireResistant = var1.isFireResistant;
       this.requiredFeatures = var1.requiredFeatures;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          String var2 = this.getClass().getSimpleName();
@@ -106,13 +101,21 @@ public class Item implements FeatureElement, ItemLike {
       return this.builtInRegistryHolder;
    }
 
+   public DataComponentMap components() {
+      return this.components;
+   }
+
+   public int getDefaultMaxStackSize() {
+      return this.components.getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
+   }
+
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
    }
 
    public void onDestroyed(ItemEntity var1) {
    }
 
-   public void verifyTagAfterLoad(CompoundTag var1) {
+   public void verifyComponentsAfterLoad(ItemStack var1) {
    }
 
    public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
@@ -129,13 +132,15 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public float getDestroySpeed(ItemStack var1, BlockState var2) {
-      return 1.0F;
+      Tool var3 = var1.get(DataComponents.TOOL);
+      return var3 != null ? var3.getMiningSpeed(var2) : 1.0F;
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      if (this.isEdible()) {
-         ItemStack var4 = var2.getItemInHand(var3);
-         if (var2.canEat(this.getFoodProperties().canAlwaysEat())) {
+      ItemStack var4 = var2.getItemInHand(var3);
+      FoodProperties var5 = var4.get(DataComponents.FOOD);
+      if (var5 != null) {
+         if (var2.canEat(var5.canAlwaysEat())) {
             var2.startUsingItem(var3);
             return InteractionResultHolder.consume(var4);
          } else {
@@ -147,19 +152,7 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      return this.isEdible() ? var3.eat(var2, var1) : var1;
-   }
-
-   public final int getMaxStackSize() {
-      return this.maxStackSize;
-   }
-
-   public final int getMaxDamage() {
-      return this.maxDamage;
-   }
-
-   public boolean canBeDepleted() {
-      return this.maxDamage > 0;
+      return var1.has(DataComponents.FOOD) ? var3.eat(var2, var1) : var1;
    }
 
    public boolean isBarVisible(ItemStack var1) {
@@ -167,12 +160,13 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public int getBarWidth(ItemStack var1) {
-      return Math.round(13.0F - (float)var1.getDamageValue() * 13.0F / (float)this.maxDamage);
+      return Mth.clamp(Math.round(13.0F - (float)var1.getDamageValue() * 13.0F / (float)var1.getMaxDamage()), 0, 13);
    }
 
    public int getBarColor(ItemStack var1) {
-      float var2 = Math.max(0.0F, ((float)this.maxDamage - (float)var1.getDamageValue()) / (float)this.maxDamage);
-      return Mth.hsvToRgb(var2 / 3.0F, 1.0F, 1.0F);
+      int var2 = var1.getMaxDamage();
+      float var3 = Math.max(0.0F, ((float)var2 - (float)var1.getDamageValue()) / (float)var2);
+      return Mth.hsvToRgb(var3 / 3.0F, 1.0F, 1.0F);
    }
 
    public boolean overrideStackedOnOther(ItemStack var1, Slot var2, ClickAction var3, Player var4) {
@@ -183,16 +177,30 @@ public class Item implements FeatureElement, ItemLike {
       return false;
    }
 
+   public float getAttackDamageBonus(Player var1, float var2) {
+      return 0.0F;
+   }
+
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
       return false;
    }
 
    public boolean mineBlock(ItemStack var1, Level var2, BlockState var3, BlockPos var4, LivingEntity var5) {
-      return false;
+      Tool var6 = var1.get(DataComponents.TOOL);
+      if (var6 == null) {
+         return false;
+      } else {
+         if (!var2.isClientSide && var3.getDestroySpeed(var2, var4) != 0.0F && var6.damagePerBlock() > 0) {
+            var1.hurtAndBreak(var6.damagePerBlock(), var5, EquipmentSlot.MAINHAND);
+         }
+
+         return true;
+      }
    }
 
-   public boolean isCorrectToolForDrops(BlockState var1) {
-      return false;
+   public boolean isCorrectToolForDrops(ItemStack var1, BlockState var2) {
+      Tool var3 = var1.get(DataComponents.TOOL);
+      return var3 != null && var3.isCorrectForDrops(var2);
    }
 
    public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
@@ -224,10 +232,6 @@ public class Item implements FeatureElement, ItemLike {
       return this.getDescriptionId();
    }
 
-   public boolean shouldOverrideMultiplayerNbt() {
-      return true;
-   }
-
    @Nullable
    public final Item getCraftingRemainingItem() {
       return this.craftingRemainingItem;
@@ -252,21 +256,18 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public UseAnim getUseAnimation(ItemStack var1) {
-      return var1.getItem().isEdible() ? UseAnim.EAT : UseAnim.NONE;
+      return var1.has(DataComponents.FOOD) ? UseAnim.EAT : UseAnim.NONE;
    }
 
    public int getUseDuration(ItemStack var1) {
-      if (var1.getItem().isEdible()) {
-         return this.getFoodProperties().isFastFood() ? 16 : 32;
-      } else {
-         return 0;
-      }
+      FoodProperties var2 = var1.get(DataComponents.FOOD);
+      return var2 != null ? var2.eatDurationTicks() : 0;
    }
 
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
    }
 
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
    }
 
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
@@ -281,40 +282,14 @@ public class Item implements FeatureElement, ItemLike {
       return var1.isEnchanted();
    }
 
-   public Rarity getRarity(ItemStack var1) {
-      if (!var1.isEnchanted()) {
-         return this.rarity;
-      } else {
-         switch(this.rarity) {
-            case COMMON:
-            case UNCOMMON:
-               return Rarity.RARE;
-            case RARE:
-               return Rarity.EPIC;
-            case EPIC:
-            default:
-               return this.rarity;
-         }
-      }
-   }
-
    public boolean isEnchantable(ItemStack var1) {
-      return this.getMaxStackSize() == 1 && this.canBeDepleted();
+      return var1.getMaxStackSize() == 1 && var1.has(DataComponents.MAX_DAMAGE);
    }
 
    protected static BlockHitResult getPlayerPOVHitResult(Level var0, Player var1, ClipContext.Fluid var2) {
-      float var3 = var1.getXRot();
-      float var4 = var1.getYRot();
-      Vec3 var5 = var1.getEyePosition();
-      float var6 = Mth.cos(-var4 * 0.017453292F - 3.1415927F);
-      float var7 = Mth.sin(-var4 * 0.017453292F - 3.1415927F);
-      float var8 = -Mth.cos(-var3 * 0.017453292F);
-      float var9 = Mth.sin(-var3 * 0.017453292F);
-      float var10 = var7 * var8;
-      float var12 = var6 * var8;
-      double var13 = 5.0;
-      Vec3 var15 = var5.add((double)var10 * 5.0, (double)var9 * 5.0, (double)var12 * 5.0);
-      return var0.clip(new ClipContext(var5, var15, ClipContext.Block.OUTLINE, var2, var1));
+      Vec3 var3 = var1.getEyePosition();
+      Vec3 var4 = var3.add(var1.calculateViewVector(var1.getXRot(), var1.getYRot()).scale(var1.blockInteractionRange()));
+      return var0.clip(new ClipContext(var3, var4, ClipContext.Block.OUTLINE, var2, var1));
    }
 
    public int getEnchantmentValue() {
@@ -325,8 +300,9 @@ public class Item implements FeatureElement, ItemLike {
       return false;
    }
 
-   public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return ImmutableMultimap.of();
+   @Deprecated
+   public ItemAttributeModifiers getDefaultAttributeModifiers() {
+      return ItemAttributeModifiers.EMPTY;
    }
 
    public boolean useOnRelease(ItemStack var1) {
@@ -337,15 +313,6 @@ public class Item implements FeatureElement, ItemLike {
       return new ItemStack(this);
    }
 
-   public boolean isEdible() {
-      return this.foodProperties != null;
-   }
-
-   @Nullable
-   public FoodProperties getFoodProperties() {
-      return this.foodProperties;
-   }
-
    public SoundEvent getDrinkingSound() {
       return SoundEvents.GENERIC_DRINK;
    }
@@ -354,12 +321,8 @@ public class Item implements FeatureElement, ItemLike {
       return SoundEvents.GENERIC_EAT;
    }
 
-   public boolean isFireResistant() {
-      return this.isFireResistant;
-   }
-
-   public boolean canBeHurtBy(DamageSource var1) {
-      return !this.isFireResistant || !var1.is(DamageTypeTags.IS_FIRE);
+   public SoundEvent getBreakingSound() {
+      return SoundEvents.ITEM_BREAK;
    }
 
    public boolean canFitInsideContainerItems() {
@@ -372,14 +335,11 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public static class Properties {
-      int maxStackSize = 64;
-      int maxDamage;
+      private static final Interner<DataComponentMap> COMPONENT_INTERNER = Interners.newStrongInterner();
+      @Nullable
+      private DataComponentMap.Builder components;
       @Nullable
       Item craftingRemainingItem;
-      Rarity rarity = Rarity.COMMON;
-      @Nullable
-      FoodProperties foodProperties;
-      boolean isFireResistant;
       FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
 
       public Properties() {
@@ -387,26 +347,17 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Item.Properties food(FoodProperties var1) {
-         this.foodProperties = var1;
-         return this;
+         return this.component(DataComponents.FOOD, var1);
       }
 
       public Item.Properties stacksTo(int var1) {
-         if (this.maxDamage > 0) {
-            throw new RuntimeException("Unable to have damage AND stack.");
-         } else {
-            this.maxStackSize = var1;
-            return this;
-         }
-      }
-
-      public Item.Properties defaultDurability(int var1) {
-         return this.maxDamage == 0 ? this.durability(var1) : this;
+         return this.component(DataComponents.MAX_STACK_SIZE, var1);
       }
 
       public Item.Properties durability(int var1) {
-         this.maxDamage = var1;
-         this.maxStackSize = 1;
+         this.component(DataComponents.MAX_DAMAGE, var1);
+         this.component(DataComponents.MAX_STACK_SIZE, 1);
+         this.component(DataComponents.DAMAGE, 0);
          return this;
       }
 
@@ -416,18 +367,110 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Item.Properties rarity(Rarity var1) {
-         this.rarity = var1;
-         return this;
+         return this.component(DataComponents.RARITY, var1);
       }
 
       public Item.Properties fireResistant() {
-         this.isFireResistant = true;
-         return this;
+         return this.component(DataComponents.FIRE_RESISTANT, Unit.INSTANCE);
       }
 
       public Item.Properties requiredFeatures(FeatureFlag... var1) {
          this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
          return this;
+      }
+
+      public <T> Item.Properties component(DataComponentType<T> var1, T var2) {
+         if (this.components == null) {
+            this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
+         }
+
+         this.components.set(var1, var2);
+         return this;
+      }
+
+      public Item.Properties attributes(ItemAttributeModifiers var1) {
+         return this.component(DataComponents.ATTRIBUTE_MODIFIERS, var1);
+      }
+
+      DataComponentMap buildAndValidateComponents() {
+         DataComponentMap var1 = this.buildComponents();
+         if (var1.has(DataComponents.DAMAGE) && var1.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
+            throw new IllegalStateException("Item cannot have both durability and be stackable");
+         } else {
+            return var1;
+         }
+      }
+
+      private DataComponentMap buildComponents() {
+         return this.components == null ? DataComponents.COMMON_ITEM_COMPONENTS : (DataComponentMap)COMPONENT_INTERNER.intern(this.components.build());
+      }
+   }
+
+   public interface TooltipContext {
+      Item.TooltipContext EMPTY = new Item.TooltipContext() {
+         @Nullable
+         @Override
+         public HolderLookup.Provider registries() {
+            return null;
+         }
+
+         @Override
+         public float tickRate() {
+            return 20.0F;
+         }
+
+         @Nullable
+         @Override
+         public MapItemSavedData mapData(MapId var1) {
+            return null;
+         }
+      };
+
+      @Nullable
+      HolderLookup.Provider registries();
+
+      float tickRate();
+
+      @Nullable
+      MapItemSavedData mapData(MapId var1);
+
+      static Item.TooltipContext of(@Nullable final Level var0) {
+         return var0 == null ? EMPTY : new Item.TooltipContext() {
+            @Override
+            public HolderLookup.Provider registries() {
+               return var0.registryAccess();
+            }
+
+            @Override
+            public float tickRate() {
+               return var0.tickRateManager().tickrate();
+            }
+
+            @Override
+            public MapItemSavedData mapData(MapId var1) {
+               return var0.getMapData(var1);
+            }
+         };
+      }
+
+      static Item.TooltipContext of(final HolderLookup.Provider var0) {
+         return new Item.TooltipContext() {
+            @Override
+            public HolderLookup.Provider registries() {
+               return var0;
+            }
+
+            @Override
+            public float tickRate() {
+               return 20.0F;
+            }
+
+            @Nullable
+            @Override
+            public MapItemSavedData mapData(MapId var1) {
+               return null;
+            }
+         };
       }
    }
 }

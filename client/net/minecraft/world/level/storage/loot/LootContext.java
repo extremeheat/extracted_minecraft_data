@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -20,10 +21,10 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class LootContext {
    private final LootParams params;
    private final RandomSource random;
-   private final LootDataResolver lootDataResolver;
+   private final HolderGetter.Provider lootDataResolver;
    private final Set<LootContext.VisitedEntry<?>> visitedElements = Sets.newLinkedHashSet();
 
-   LootContext(LootParams var1, RandomSource var2, LootDataResolver var3) {
+   LootContext(LootParams var1, RandomSource var2, HolderGetter.Provider var3) {
       super();
       this.params = var1;
       this.random = var2;
@@ -59,7 +60,7 @@ public class LootContext {
       this.visitedElements.remove(var1);
    }
 
-   public LootDataResolver getResolver() {
+   public HolderGetter.Provider getResolver() {
       return this.lootDataResolver;
    }
 
@@ -113,7 +114,7 @@ public class LootContext {
          ServerLevel var2 = this.getLevel();
          MinecraftServer var3 = var2.getServer();
          RandomSource var4 = Optional.ofNullable(this.random).or(() -> var1.map(var2::getRandomSequence)).orElseGet(var2::getRandom);
-         return new LootContext(this.params, var4, var3.getLootData());
+         return new LootContext(this.params, var4, var3.reloadableRegistries().lookup());
       }
    }
 
@@ -127,9 +128,9 @@ public class LootContext {
       private final String name;
       private final LootContextParam<? extends Entity> param;
 
-      private EntityTarget(String var3, LootContextParam<? extends Entity> var4) {
-         this.name = var3;
-         this.param = var4;
+      private EntityTarget(final String nullxx, final LootContextParam<? extends Entity> nullxxx) {
+         this.name = nullxx;
+         this.param = nullxxx;
       }
 
       public LootContextParam<? extends Entity> getParam() {
@@ -151,14 +152,11 @@ public class LootContext {
       }
    }
 
-   public static record VisitedEntry<T>(LootDataType<T> a, T b) {
-      private final LootDataType<T> type;
-      private final T value;
-
-      public VisitedEntry(LootDataType<T> var1, T var2) {
+   public static record VisitedEntry<T>(LootDataType<T> type, T value) {
+      public VisitedEntry(LootDataType<T> type, T value) {
          super();
-         this.type = var1;
-         this.value = (T)var2;
+         this.type = type;
+         this.value = (T)value;
       }
    }
 }

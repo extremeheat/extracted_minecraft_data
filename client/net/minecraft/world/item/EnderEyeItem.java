@@ -50,8 +50,8 @@ public class EnderEyeItem extends Item {
          if (var6 != null) {
             BlockPos var7 = var6.getFrontTopLeft().offset(-3, 0, -3);
 
-            for(int var8 = 0; var8 < 3; ++var8) {
-               for(int var9 = 0; var9 < 3; ++var9) {
+            for (int var8 = 0; var8 < 3; var8++) {
+               for (int var9 = 0; var9 < 3; var9++) {
                   var2.setBlock(var7.offset(var8, 0, var9), Blocks.END_PORTAL.defaultBlockState(), 2);
                }
             }
@@ -63,8 +63,11 @@ public class EnderEyeItem extends Item {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Override
+   public int getUseDuration(ItemStack var1) {
+      return 0;
+   }
+
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
@@ -96,10 +99,7 @@ public class EnderEyeItem extends Item {
                   0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
                );
                var1.levelEvent(null, 1003, var2.blockPosition(), 0);
-               if (!var2.getAbilities().instabuild) {
-                  var4.shrink(1);
-               }
-
+               var4.consume(1, var2);
                var2.awardStat(Stats.ITEM_USED.get(this));
                var2.swing(var3, true);
                return InteractionResultHolder.success(var4);

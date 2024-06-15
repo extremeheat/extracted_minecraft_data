@@ -1,12 +1,18 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.block.Block;
 
 public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockEventPacket> STREAM_CODEC = Packet.codec(
+      ClientboundBlockEventPacket::write, ClientboundBlockEventPacket::new
+   );
    private final BlockPos pos;
    private final int b0;
    private final int b1;
@@ -20,20 +26,24 @@ public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListe
       this.b1 = var4;
    }
 
-   public ClientboundBlockEventPacket(FriendlyByteBuf var1) {
+   private ClientboundBlockEventPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
       this.b0 = var1.readUnsignedByte();
       this.b1 = var1.readUnsignedByte();
-      this.block = var1.readById(BuiltInRegistries.BLOCK);
+      this.block = ByteBufCodecs.registry(Registries.BLOCK).decode(var1);
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
       var1.writeByte(this.b0);
       var1.writeByte(this.b1);
-      var1.writeId(BuiltInRegistries.BLOCK, this.block);
+      ByteBufCodecs.registry(Registries.BLOCK).encode(var1, this.block);
+   }
+
+   @Override
+   public PacketType<ClientboundBlockEventPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_BLOCK_EVENT;
    }
 
    public void handle(ClientGamePacketListener var1) {

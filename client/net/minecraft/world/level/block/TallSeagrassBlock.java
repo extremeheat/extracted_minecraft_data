@@ -37,7 +37,7 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
@@ -66,7 +66,7 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       if (var1.getValue(HALF) == DoubleBlockHalf.UPPER) {
          BlockState var5 = var2.getBlockState(var3.below());
          return var5.is(this) && var5.getValue(HALF) == DoubleBlockHalf.LOWER;
@@ -77,7 +77,7 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return Fluids.WATER.getSource(false);
    }
 

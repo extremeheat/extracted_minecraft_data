@@ -6,11 +6,10 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
@@ -33,7 +32,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ItemStack;
 
 public class CamelAi {
    private static final float SPEED_MULTIPLIER_WHEN_PANICKING = 4.0F;
@@ -101,7 +100,7 @@ public class CamelAi {
          Activity.IDLE,
          ImmutableList.of(
             Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
-            Pair.of(1, new AnimalMakeLove(EntityType.CAMEL, 1.0F)),
+            Pair.of(1, new AnimalMakeLove(EntityType.CAMEL)),
             Pair.of(
                2,
                new RunOne(
@@ -132,23 +131,17 @@ public class CamelAi {
       var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.IDLE));
    }
 
-   public static Ingredient getTemptations() {
-      return Camel.TEMPTATION_ITEM;
+   public static Predicate<ItemStack> getTemptations() {
+      return var0 -> var0.is(ItemTags.CAMEL_FOOD);
    }
 
-   public static class CamelPanic extends AnimalPanic {
+   public static class CamelPanic extends AnimalPanic<Camel> {
       public CamelPanic(float var1) {
          super(var1);
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-      @Override
-      protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-         if (var2 instanceof Camel var5) {
-            var5.standUpInstantly();
-         }
-
+      protected void start(ServerLevel var1, Camel var2, long var3) {
+         var2.standUpInstantly();
          super.start(var1, var2, var3);
       }
    }

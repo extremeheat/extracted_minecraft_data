@@ -58,7 +58,7 @@ public class StringTagVisitor implements TagVisitor {
       this.builder.append("[B;");
       byte[] var2 = var1.getAsByteArray();
 
-      for(int var3 = 0; var3 < var2.length; ++var3) {
+      for (int var3 = 0; var3 < var2.length; var3++) {
          if (var3 != 0) {
             this.builder.append(',');
          }
@@ -74,7 +74,7 @@ public class StringTagVisitor implements TagVisitor {
       this.builder.append("[I;");
       int[] var2 = var1.getAsIntArray();
 
-      for(int var3 = 0; var3 < var2.length; ++var3) {
+      for (int var3 = 0; var3 < var2.length; var3++) {
          if (var3 != 0) {
             this.builder.append(',');
          }
@@ -90,7 +90,7 @@ public class StringTagVisitor implements TagVisitor {
       this.builder.append("[L;");
       long[] var2 = var1.getAsLongArray();
 
-      for(int var3 = 0; var3 < var2.length; ++var3) {
+      for (int var3 = 0; var3 < var2.length; var3++) {
          if (var3 != 0) {
             this.builder.append(',');
          }
@@ -105,7 +105,7 @@ public class StringTagVisitor implements TagVisitor {
    public void visitList(ListTag var1) {
       this.builder.append('[');
 
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
+      for (int var2 = 0; var2 < var1.size(); var2++) {
          if (var2 != 0) {
             this.builder.append(',');
          }
@@ -122,7 +122,7 @@ public class StringTagVisitor implements TagVisitor {
       ArrayList var2 = Lists.newArrayList(var1.getAllKeys());
       Collections.sort(var2);
 
-      for(String var4 : var2) {
+      for (String var4 : var2) {
          if (this.builder.length() != 1) {
             this.builder.append(',');
          }

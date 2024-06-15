@@ -1,6 +1,6 @@
 package net.minecraft.world.inventory;
 
-import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
@@ -70,23 +70,23 @@ public class CartographyTableMenu extends AbstractContainerMenu {
             CartographyTableMenu.this.slots.get(1).remove(1);
             var2.getItem().onCraftedBy(var2, var1.level(), var1);
             var3.execute((var1x, var2x) -> {
-               long var3xx = var1x.getGameTime();
-               if (CartographyTableMenu.this.lastSoundTime != var3xx) {
+               long var3x = var1x.getGameTime();
+               if (CartographyTableMenu.this.lastSoundTime != var3x) {
                   var1x.playSound(null, var2x, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  CartographyTableMenu.this.lastSoundTime = var3xx;
+                  CartographyTableMenu.this.lastSoundTime = var3x;
                }
             });
             super.onTake(var1, var2);
          }
       });
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 9; ++var5) {
+      for (int var4 = 0; var4 < 3; var4++) {
+         for (int var5 = 0; var5 < 9; var5++) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
+      for (int var6 = 0; var6 < 9; var6++) {
          this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
       }
    }
@@ -117,11 +117,11 @@ public class CartographyTableMenu extends AbstractContainerMenu {
             ItemStack var7;
             if (var2.is(Items.PAPER) && !var6.locked && var6.scale < 4) {
                var7 = var1.copyWithCount(1);
-               var7.getOrCreateTag().putInt("map_scale_direction", 1);
+               var7.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.SCALE);
                this.broadcastChanges();
             } else if (var2.is(Items.GLASS_PANE) && !var6.locked) {
                var7 = var1.copyWithCount(1);
-               var7.getOrCreateTag().putBoolean("map_to_lock", true);
+               var7.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.LOCK);
                this.broadcastChanges();
             } else {
                if (!var2.is(Items.MAP)) {

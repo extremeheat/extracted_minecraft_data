@@ -15,8 +15,8 @@ public class AirRandomPos {
       Vec3 var7 = var4.subtract(var0.getX(), var0.getY(), var0.getZ());
       boolean var8 = GoalUtils.mobRestricted(var0, var1);
       return RandomPos.generateRandomPos(var0, () -> {
-         BlockPos var8xx = AirAndWaterRandomPos.generateRandomPos(var0, var1, var2, var3, var7.x, var7.z, var5, var8);
-         return var8xx != null && !GoalUtils.isWater(var0, var8xx) ? var8xx : null;
+         BlockPos var8x = AirAndWaterRandomPos.generateRandomPos(var0, var1, var2, var3, var7.x, var7.z, var5, var8);
+         return var8x != null && !GoalUtils.isWater(var0, var8x) ? var8x : null;
       });
    }
 }

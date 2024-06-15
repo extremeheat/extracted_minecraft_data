@@ -13,7 +13,7 @@ public class BastionHousingUnitsPools {
       super();
    }
 
-   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
       HolderGetter var1 = var0.lookup(Registries.PROCESSOR_LIST);
       Holder.Reference var2 = var1.getOrThrow(ProcessorLists.HOUSING);
       HolderGetter var3 = var0.lookup(Registries.TEMPLATE_POOL);
@@ -87,9 +87,7 @@ public class BastionHousingUnitsPools {
          var0,
          "bastion/units/stages/rot/stage_1",
          new StructureTemplatePool(
-            var4,
-            ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/units/stages/rot/stage_1_0", var2), 1)),
-            StructureTemplatePool.Projection.RIGID
+            var4, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/units/stages/rot/stage_1_0", var2), 1)), StructureTemplatePool.Projection.RIGID
          )
       );
       Pools.register(

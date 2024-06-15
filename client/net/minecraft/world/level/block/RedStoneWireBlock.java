@@ -14,7 +14,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -77,7 +76,7 @@ public class RedStoneWireBlock extends Block {
    );
    private static final Map<BlockState, VoxelShape> SHAPES_CACHE = Maps.newHashMap();
    private static final Vec3[] COLORS = Util.make(new Vec3[16], var0 -> {
-      for(int var1 = 0; var1 <= 15; ++var1) {
+      for (int var1 = 0; var1 <= 15; var1++) {
          float var2 = (float)var1 / 15.0F;
          float var3 = var2 * 0.6F + (var2 > 0.0F ? 0.4F : 0.3F);
          float var4 = Mth.clamp(var2 * var2 * 0.7F - 0.5F, 0.0F, 1.0F);
@@ -112,7 +111,7 @@ public class RedStoneWireBlock extends Block {
          .setValue(WEST, RedstoneSide.SIDE);
       UnmodifiableIterator var2 = this.getStateDefinition().getPossibleStates().iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          BlockState var3 = (BlockState)var2.next();
          if (var3.getValue(POWER) == 0) {
             SHAPES_CACHE.put(var3, this.calculateShape(var3));
@@ -123,7 +122,7 @@ public class RedStoneWireBlock extends Block {
    private VoxelShape calculateShape(BlockState var1) {
       VoxelShape var2 = SHAPE_DOT;
 
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
+      for (Direction var4 : Direction.Plane.HORIZONTAL) {
          RedstoneSide var5 = var1.getValue(PROPERTY_BY_DIRECTION.get(var4));
          if (var5 == RedstoneSide.SIDE) {
             var2 = Shapes.or(var2, SHAPES_FLOOR.get(var4));
@@ -136,7 +135,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPES_CACHE.get(var1.setValue(POWER, Integer.valueOf(0)));
    }
 
@@ -180,7 +179,7 @@ public class RedStoneWireBlock extends Block {
    private BlockState getMissingConnections(BlockGetter var1, BlockState var2, BlockPos var3) {
       boolean var4 = !var1.getBlockState(var3.above()).isRedstoneConductor(var1, var3);
 
-      for(Direction var6 : Direction.Plane.HORIZONTAL) {
+      for (Direction var6 : Direction.Plane.HORIZONTAL) {
          if (!var2.getValue(PROPERTY_BY_DIRECTION.get(var6)).isConnected()) {
             RedstoneSide var7 = this.getConnectingSide(var1, var3, var6, var4);
             var2 = var2.setValue(PROPERTY_BY_DIRECTION.get(var6), var7);
@@ -191,7 +190,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == Direction.DOWN) {
          return !this.canSurviveOn(var4, var6, var3) ? Blocks.AIR.defaultBlockState() : var1;
       } else if (var2 == Direction.UP) {
@@ -205,10 +204,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    private static boolean isCross(BlockState var0) {
-      return var0.getValue(NORTH).isConnected()
-         && var0.getValue(SOUTH).isConnected()
-         && var0.getValue(EAST).isConnected()
-         && var0.getValue(WEST).isConnected();
+      return var0.getValue(NORTH).isConnected() && var0.getValue(SOUTH).isConnected() && var0.getValue(EAST).isConnected() && var0.getValue(WEST).isConnected();
    }
 
    private static boolean isDot(BlockState var0) {
@@ -219,10 +215,10 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
+   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-      for(Direction var8 : Direction.Plane.HORIZONTAL) {
+      for (Direction var8 : Direction.Plane.HORIZONTAL) {
          RedstoneSide var9 = var1.getValue(PROPERTY_BY_DIRECTION.get(var8));
          if (var9 != RedstoneSide.NONE && !var2.getBlockState(var6.setWithOffset(var3, var8)).is(this)) {
             var6.move(Direction.DOWN);
@@ -266,7 +262,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
       return this.canSurviveOn(var2, var4, var5);
@@ -286,11 +282,11 @@ public class RedStoneWireBlock extends Block {
          HashSet var5 = Sets.newHashSet();
          var5.add(var2);
 
-         for(Direction var9 : Direction.values()) {
+         for (Direction var9 : Direction.values()) {
             var5.add(var2.relative(var9));
          }
 
-         for(BlockPos var11 : var5) {
+         for (BlockPos var11 : var5) {
             var1.updateNeighborsAt(var11, this);
          }
       }
@@ -302,7 +298,7 @@ public class RedStoneWireBlock extends Block {
       this.shouldSignal = true;
       int var4 = 0;
       if (var3 < 15) {
-         for(Direction var6 : Direction.Plane.HORIZONTAL) {
+         for (Direction var6 : Direction.Plane.HORIZONTAL) {
             BlockPos var7 = var2.relative(var6);
             BlockState var8 = var1.getBlockState(var7);
             var4 = Math.max(var4, this.getWireSignal(var8));
@@ -326,18 +322,18 @@ public class RedStoneWireBlock extends Block {
       if (var1.getBlockState(var2).is(this)) {
          var1.updateNeighborsAt(var2, this);
 
-         for(Direction var6 : Direction.values()) {
+         for (Direction var6 : Direction.values()) {
             var1.updateNeighborsAt(var2.relative(var6), this);
          }
       }
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock()) && !var2.isClientSide) {
          this.updatePowerStrength(var2, var3, var1);
 
-         for(Direction var7 : Direction.Plane.VERTICAL) {
+         for (Direction var7 : Direction.Plane.VERTICAL) {
             var2.updateNeighborsAt(var3.relative(var7), this);
          }
 
@@ -346,11 +342,11 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5 && !var1.is(var4.getBlock())) {
          super.onRemove(var1, var2, var3, var4, var5);
          if (!var2.isClientSide) {
-            for(Direction var9 : Direction.values()) {
+            for (Direction var9 : Direction.values()) {
                var2.updateNeighborsAt(var3.relative(var9), this);
             }
 
@@ -361,11 +357,11 @@ public class RedStoneWireBlock extends Block {
    }
 
    private void updateNeighborsOfNeighboringWires(Level var1, BlockPos var2) {
-      for(Direction var4 : Direction.Plane.HORIZONTAL) {
+      for (Direction var4 : Direction.Plane.HORIZONTAL) {
          this.checkCornerChangeAt(var1, var2.relative(var4));
       }
 
-      for(Direction var7 : Direction.Plane.HORIZONTAL) {
+      for (Direction var7 : Direction.Plane.HORIZONTAL) {
          BlockPos var5 = var2.relative(var7);
          if (var1.getBlockState(var5).isRedstoneConductor(var1, var5)) {
             this.checkCornerChangeAt(var1, var5.above());
@@ -376,7 +372,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (!var2.isClientSide) {
          if (var1.canSurvive(var2, var3)) {
             this.updatePowerStrength(var2, var3, var1);
@@ -388,12 +384,12 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return !this.shouldSignal ? 0 : var1.getSignal(var2, var3, var4);
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       if (this.shouldSignal && var4 != Direction.DOWN) {
          int var5 = var1.getValue(POWER);
          if (var5 == 0) {
@@ -418,15 +414,13 @@ public class RedStoneWireBlock extends Block {
       } else if (var0.is(Blocks.REPEATER)) {
          Direction var2 = var0.getValue(RepeaterBlock.FACING);
          return var2 == var1 || var2.getOpposite() == var1;
-      } else if (var0.is(Blocks.OBSERVER)) {
-         return var1 == var0.getValue(ObserverBlock.FACING);
       } else {
-         return var0.isSignalSource() && var1 != null;
+         return var0.is(Blocks.OBSERVER) ? var1 == var0.getValue(ObserverBlock.FACING) : var0.isSignalSource() && var1 != null;
       }
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return this.shouldSignal;
    }
 
@@ -459,9 +453,9 @@ public class RedStoneWireBlock extends Block {
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       int var5 = var1.getValue(POWER);
       if (var5 != 0) {
-         for(Direction var7 : Direction.Plane.HORIZONTAL) {
+         for (Direction var7 : Direction.Plane.HORIZONTAL) {
             RedstoneSide var8 = var1.getValue(PROPERTY_BY_DIRECTION.get(var7));
-            switch(var8) {
+            switch (var8) {
                case UP:
                   this.spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], var7, Direction.UP, -0.5F, 0.5F);
                case SIDE:
@@ -476,8 +470,8 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
+      switch (var2) {
          case CLOCKWISE_180:
             return var1.setValue(NORTH, var1.getValue(SOUTH))
                .setValue(EAST, var1.getValue(WEST))
@@ -499,8 +493,8 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
-      switch(var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
+      switch (var2) {
          case LEFT_RIGHT:
             return var1.setValue(NORTH, var1.getValue(SOUTH)).setValue(SOUTH, var1.getValue(NORTH));
          case FRONT_BACK:
@@ -516,17 +510,17 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!var4.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
          if (isCross(var1) || isDot(var1)) {
-            BlockState var7 = isCross(var1) ? this.defaultBlockState() : this.crossState;
-            var7 = var7.setValue(POWER, var1.getValue(POWER));
-            var7 = this.getConnectionState(var2, var7, var3);
-            if (var7 != var1) {
-               var2.setBlock(var3, var7, 3);
-               this.updatesOnShapeChange(var2, var3, var1, var7);
+            BlockState var6 = isCross(var1) ? this.defaultBlockState() : this.crossState;
+            var6 = var6.setValue(POWER, var1.getValue(POWER));
+            var6 = this.getConnectionState(var2, var6, var3);
+            if (var6 != var1) {
+               var2.setBlock(var3, var6, 3);
+               this.updatesOnShapeChange(var2, var3, var1, var6);
                return InteractionResult.SUCCESS;
             }
          }
@@ -536,7 +530,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    private void updatesOnShapeChange(Level var1, BlockPos var2, BlockState var3, BlockState var4) {
-      for(Direction var6 : Direction.Plane.HORIZONTAL) {
+      for (Direction var6 : Direction.Plane.HORIZONTAL) {
          BlockPos var7 = var2.relative(var6);
          if (var3.getValue(PROPERTY_BY_DIRECTION.get(var6)).isConnected() != var4.getValue(PROPERTY_BY_DIRECTION.get(var6)).isConnected()
             && var1.getBlockState(var7).isRedstoneConductor(var1, var7)) {

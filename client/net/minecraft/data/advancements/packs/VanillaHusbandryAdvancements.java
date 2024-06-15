@@ -1,10 +1,8 @@
 package net.minecraft.data.advancements.packs;
 
-import com.google.common.collect.BiMap;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
@@ -18,13 +16,16 @@ import net.minecraft.advancements.critereon.BredAnimalsTrigger;
 import net.minecraft.advancements.critereon.ConsumeItemTrigger;
 import net.minecraft.advancements.critereon.EffectsChangedTrigger;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
+import net.minecraft.advancements.critereon.EntityEquipmentPredicate;
 import net.minecraft.advancements.critereon.EntityFlagsPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.EntitySubPredicate;
+import net.minecraft.advancements.critereon.EntitySubPredicates;
 import net.minecraft.advancements.critereon.FilledBucketTrigger;
 import net.minecraft.advancements.critereon.FishingRodHookedTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.advancements.critereon.ItemEnchantmentsPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.ItemSubPredicates;
 import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
@@ -34,7 +35,11 @@ import net.minecraft.advancements.critereon.StartRidingTrigger;
 import net.minecraft.advancements.critereon.TameAnimalTrigger;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -70,7 +75,8 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
       EntityType.STRIDER,
       EntityType.GOAT,
       EntityType.AXOLOTL,
-      EntityType.CAMEL
+      EntityType.CAMEL,
+      EntityType.ARMADILLO
    );
    public static final List<EntityType<?>> INDIRECTLY_BREEDABLE_ANIMALS = List.of(EntityType.TURTLE, EntityType.FROG, EntityType.SNIFFER);
    private static final Item[] FISH = new Item[]{Items.COD, Items.TROPICAL_FISH, Items.PUFFERFISH, Items.SALMON};
@@ -117,7 +123,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
       Items.HONEY_BOTTLE,
       Items.GLOW_BERRIES
    };
-   private static final Item[] WAX_SCRAPING_TOOLS = new Item[]{
+   public static final Item[] WAX_SCRAPING_TOOLS = new Item[]{
       Items.WOODEN_AXE, Items.GOLDEN_AXE, Items.STONE_AXE, Items.IRON_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE
    };
 
@@ -294,6 +300,20 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          )
          .rewards(AdvancementRewards.Builder.experience(50))
          .save(var2, "husbandry/complete_catalogue");
+      addTamedWolfVariants(Advancement.Builder.advancement(), var1)
+         .parent(var6)
+         .display(
+            Items.BONE,
+            Component.translatable("advancements.husbandry.whole_pack.title"),
+            Component.translatable("advancements.husbandry.whole_pack.description"),
+            null,
+            AdvancementType.CHALLENGE,
+            true,
+            true,
+            false
+         )
+         .rewards(AdvancementRewards.Builder.experience(50))
+         .save(var2, "husbandry/whole_pack");
       AdvancementHolder var10 = Advancement.Builder.advancement()
          .parent(var3)
          .addCriterion(
@@ -329,7 +349,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "wax_on",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(((BiMap)HoneycombItem.WAXABLES.get()).keySet())),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(HoneycombItem.WAXABLES.get().keySet())),
                ItemPredicate.Builder.item().of(Items.HONEYCOMB)
             )
          )
@@ -349,7 +369,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "wax_off",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).keySet())),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(HoneycombItem.WAX_OFF_BY_BLOCK.get().keySet())),
                ItemPredicate.Builder.item().of(WAX_SCRAPING_TOOLS)
             )
          )
@@ -406,7 +426,11 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             "silk_touch_nest",
             BeeNestDestroyedTrigger.TriggerInstance.destroyedBeeNest(
                Blocks.BEE_NEST,
-               ItemPredicate.Builder.item().hasEnchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, MinMaxBounds.Ints.atLeast(1))),
+               ItemPredicate.Builder.item()
+                  .withSubPredicate(
+                     ItemSubPredicates.ENCHANTMENTS,
+                     ItemEnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(Enchantments.SILK_TOUCH, MinMaxBounds.Ints.atLeast(1))))
+                  ),
                MinMaxBounds.Ints.exactly(3)
             )
          )
@@ -495,8 +519,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "allay_deliver_cake_to_note_block",
             ItemUsedOnLocationTrigger.TriggerInstance.allayDropItemOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(Blocks.NOTE_BLOCK)),
-               ItemPredicate.Builder.item().of(Items.CAKE)
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(Blocks.NOTE_BLOCK)), ItemPredicate.Builder.item().of(Items.CAKE)
             )
          )
          .save(var2, "husbandry/allay_deliver_cake_to_note_block");
@@ -552,6 +575,58 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion("torchflower", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.TORCHFLOWER_CROP))
          .addCriterion("pitcher_pod", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.PITCHER_CROP))
          .save(var2, "husbandry/plant_any_sniffer_seed");
+      Advancement.Builder.advancement()
+         .parent(var6)
+         .display(
+            Items.SHEARS,
+            Component.translatable("advancements.husbandry.remove_wolf_armor.title"),
+            Component.translatable("advancements.husbandry.remove_wolf_armor.description"),
+            null,
+            AdvancementType.TASK,
+            true,
+            true,
+            false
+         )
+         .addCriterion(
+            "remove_wolf_armor",
+            PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
+               ItemPredicate.Builder.item().of(Items.SHEARS), Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.WOLF)))
+            )
+         )
+         .save(var2, "husbandry/remove_wolf_armor");
+      Advancement.Builder.advancement()
+         .parent(var6)
+         .display(
+            Items.WOLF_ARMOR,
+            Component.translatable("advancements.husbandry.repair_wolf_armor.title"),
+            Component.translatable("advancements.husbandry.repair_wolf_armor.description"),
+            null,
+            AdvancementType.TASK,
+            true,
+            true,
+            false
+         )
+         .addCriterion(
+            "repair_wolf_armor",
+            PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
+               ItemPredicate.Builder.item().of(Items.ARMADILLO_SCUTE),
+               Optional.of(
+                  EntityPredicate.wrap(
+                     EntityPredicate.Builder.entity()
+                        .of(EntityType.WOLF)
+                        .equipment(
+                           EntityEquipmentPredicate.Builder.equipment()
+                              .body(
+                                 ItemPredicate.Builder.item()
+                                    .of(Items.WOLF_ARMOR)
+                                    .hasComponents(DataComponentPredicate.builder().expect(DataComponents.DAMAGE, 0).build())
+                              )
+                        )
+                  )
+               )
+            )
+         )
+         .save(var2, "husbandry/repair_wolf_armor");
    }
 
    public static AdvancementHolder createBreedAllAnimalsAdvancement(
@@ -581,9 +656,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
                   var1.key().location().toString(),
                   PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
                      ItemPredicate.Builder.item().of(Items.LEAD),
-                     Optional.of(
-                        EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.FROG).subPredicate(EntitySubPredicate.variant(var1.value())))
-                     )
+                     Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.FROG).subPredicate(EntitySubPredicates.frogVariant(var1))))
                   )
                )
          );
@@ -591,7 +664,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder addFood(Advancement.Builder var0) {
-      for(Item var4 : EDIBLE_ITEMS) {
+      for (Item var4 : EDIBLE_ITEMS) {
          var0.addCriterion(BuiltInRegistries.ITEM.getKey(var4).getPath(), ConsumeItemTrigger.TriggerInstance.usedItem(var4));
       }
 
@@ -601,15 +674,16 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    private static Advancement.Builder addBreedable(Advancement.Builder var0, Stream<EntityType<?>> var1, Stream<EntityType<?>> var2) {
       var1.forEach(
          var1x -> var0.addCriterion(
-               EntityType.getKey(var1x).toString(), BredAnimalsTrigger.TriggerInstance.bredAnimals(EntityPredicate.Builder.entity().of(var1x))
+               EntityType.getKey((EntityType<?>)var1x).toString(),
+               BredAnimalsTrigger.TriggerInstance.bredAnimals(EntityPredicate.Builder.entity().of((EntityType<?>)var1x))
             )
       );
       var2.forEach(
          var1x -> var0.addCriterion(
-               EntityType.getKey(var1x).toString(),
+               EntityType.getKey((EntityType<?>)var1x).toString(),
                BredAnimalsTrigger.TriggerInstance.bredAnimals(
-                  Optional.of(EntityPredicate.Builder.entity().of(var1x).build()),
-                  Optional.of(EntityPredicate.Builder.entity().of(var1x).build()),
+                  Optional.of(EntityPredicate.Builder.entity().of((EntityType<?>)var1x).build()),
+                  Optional.of(EntityPredicate.Builder.entity().of((EntityType<?>)var1x).build()),
                   Optional.empty()
                )
             )
@@ -618,7 +692,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder addFishBuckets(Advancement.Builder var0) {
-      for(Item var4 : FISH_BUCKETS) {
+      for (Item var4 : FISH_BUCKETS) {
          var0.addCriterion(
             BuiltInRegistries.ITEM.getKey(var4).getPath(), FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(var4))
          );
@@ -628,7 +702,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder addFish(Advancement.Builder var0) {
-      for(Item var4 : FISH) {
+      for (Item var4 : FISH) {
          var0.addCriterion(
             BuiltInRegistries.ITEM.getKey(var4).getPath(),
             FishingRodHookedTrigger.TriggerInstance.fishedItem(Optional.empty(), Optional.empty(), Optional.of(ItemPredicate.Builder.item().of(var4).build()))
@@ -640,14 +714,31 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
 
    private static Advancement.Builder addCatVariants(Advancement.Builder var0) {
       BuiltInRegistries.CAT_VARIANT
-         .entrySet()
-         .stream()
-         .sorted(Entry.comparingByKey(Comparator.comparing(ResourceKey::location)))
+         .holders()
+         .sorted(Comparator.comparing(var0x -> var0x.key().location()))
          .forEach(
             var1 -> var0.addCriterion(
-                  var1.getKey().location().toString(),
-                  TameAnimalTrigger.TriggerInstance.tamedAnimal(EntityPredicate.Builder.entity().subPredicate(EntitySubPredicate.variant(var1.getValue())))
+                  var1.key().location().toString(),
+                  TameAnimalTrigger.TriggerInstance.tamedAnimal(EntityPredicate.Builder.entity().subPredicate(EntitySubPredicates.catVariant(var1)))
                )
+         );
+      return var0;
+   }
+
+   private static Advancement.Builder addTamedWolfVariants(Advancement.Builder var0, HolderLookup.Provider var1) {
+      HolderLookup.RegistryLookup var2 = var1.lookupOrThrow(Registries.WOLF_VARIANT);
+      var2.listElementIds()
+         .sorted(Comparator.comparing(ResourceKey::location))
+         .forEach(
+            var2x -> {
+               Holder.Reference var3 = var2.getOrThrow(var2x);
+               var0.addCriterion(
+                  var2x.location().toString(),
+                  TameAnimalTrigger.TriggerInstance.tamedAnimal(
+                     EntityPredicate.Builder.entity().subPredicate(EntitySubPredicates.wolfVariant(HolderSet.direct(var3)))
+                  )
+               );
+            }
          );
       return var0;
    }

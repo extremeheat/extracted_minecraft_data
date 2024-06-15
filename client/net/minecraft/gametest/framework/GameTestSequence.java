@@ -39,7 +39,7 @@ public class GameTestSequence {
    public GameTestSequence thenExecuteAfter(int var1, Runnable var2) {
       this.events.add(GameTestEvent.create(() -> {
          if (this.parent.getTick() < this.lastTick + (long)var1) {
-            throw new GameTestAssertException("Waiting");
+            throw new GameTestAssertException("Test timed out before sequence completed");
          } else {
             this.executeWithoutFail(var2);
          }
@@ -51,7 +51,7 @@ public class GameTestSequence {
       this.events.add(GameTestEvent.create(() -> {
          if (this.parent.getTick() < this.lastTick + (long)var1) {
             this.executeWithoutFail(var2);
-            throw new GameTestAssertException("Waiting");
+            throw new GameTestAssertException("Test timed out before sequence completed");
          }
       }));
       return this;
@@ -97,7 +97,7 @@ public class GameTestSequence {
    private void tick(long var1) {
       Iterator var3 = this.events.iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          GameTestEvent var4 = (GameTestEvent)var3.next();
          var4.assertion.run();
          var3.remove();

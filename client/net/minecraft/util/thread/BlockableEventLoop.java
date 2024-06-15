@@ -10,6 +10,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import javax.annotation.CheckReturnValue;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.util.profiling.metrics.MetricSampler;
 import net.minecraft.util.profiling.metrics.MetricsRegistry;
@@ -62,6 +63,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       }, this);
    }
 
+   @CheckReturnValue
    public CompletableFuture<Void> submit(Runnable var1) {
       if (this.scheduleExecutables()) {
          return this.submitAsync(var1);
@@ -102,7 +104,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
    }
 
    protected void runAllTasks() {
-      while(this.pollTask()) {
+      while (this.pollTask()) {
       }
    }
 
@@ -119,20 +121,20 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
    }
 
    public void managedBlock(BooleanSupplier var1) {
-      ++this.blockingCount;
+      this.blockingCount++;
 
       try {
-         while(!var1.getAsBoolean()) {
+         while (!var1.getAsBoolean()) {
             if (!this.pollTask()) {
                this.waitForTasks();
             }
          }
       } finally {
-         --this.blockingCount;
+         this.blockingCount--;
       }
    }
 
-   protected void waitForTasks() {
+   public void waitForTasks() {
       Thread.yield();
       LockSupport.parkNanos("waiting for tasks", 100000L);
    }

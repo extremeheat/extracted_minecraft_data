@@ -82,6 +82,6 @@ public class ThreadingDetector {
    }
 
    private static String stackTrace(Thread var0) {
-      return var0.getName() + ": \n\tat " + (String)Arrays.stream(var0.getStackTrace()).map(Object::toString).collect(Collectors.joining("\n\tat "));
+      return var0.getName() + ": \n\tat " + Arrays.stream(var0.getStackTrace()).map(Object::toString).collect(Collectors.joining("\n\tat "));
    }
 }

@@ -13,7 +13,14 @@ public class V100 extends Schema {
    }
 
    protected static TypeTemplate equipment(Schema var0) {
-      return DSL.optionalFields("ArmorItems", DSL.list(References.ITEM_STACK.in(var0)), "HandItems", DSL.list(References.ITEM_STACK.in(var0)));
+      return DSL.optionalFields(
+         "ArmorItems",
+         DSL.list(References.ITEM_STACK.in(var0)),
+         "HandItems",
+         DSL.list(References.ITEM_STACK.in(var0)),
+         "body_armor_item",
+         References.ITEM_STACK.in(var0)
+      );
    }
 
    protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
@@ -73,17 +80,12 @@ public class V100 extends Schema {
                "Inventory",
                DSL.list(References.ITEM_STACK.in(var1)),
                "Offers",
-               DSL.optionalFields(
-                  "Recipes",
-                  DSL.list(
-                     DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1))
-                  )
-               ),
+               DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))),
                equipment(var1)
             )
       );
       registerMob(var1, var2, "Shulker");
-      var1.registerSimple(var2, "AreaEffectCloud");
+      var1.register(var2, "AreaEffectCloud", var1x -> DSL.optionalFields("Particle", References.PARTICLE.in(var1)));
       var1.registerSimple(var2, "ShulkerBullet");
       return var2;
    }
@@ -103,5 +105,6 @@ public class V100 extends Schema {
             )
       );
       var1.registerType(false, References.BLOCK_STATE, DSL::remainder);
+      var1.registerType(false, References.FLAT_BLOCK_STATE, DSL::remainder);
    }
 }

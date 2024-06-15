@@ -19,7 +19,6 @@ import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.level.pathfinder.PathComputationType;
@@ -30,9 +29,9 @@ public class BehaviorUtils {
       super();
    }
 
-   public static void lockGazeAndWalkToEachOther(LivingEntity var0, LivingEntity var1, float var2) {
+   public static void lockGazeAndWalkToEachOther(LivingEntity var0, LivingEntity var1, float var2, int var3) {
       lookAtEachOther(var0, var1);
-      setWalkAndLookTargetMemoriesToEachOther(var0, var1, var2);
+      setWalkAndLookTargetMemoriesToEachOther(var0, var1, var2, var3);
    }
 
    public static boolean entityIsVisible(Brain<?> var0, LivingEntity var1) {
@@ -57,10 +56,9 @@ public class BehaviorUtils {
       var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var1, true));
    }
 
-   private static void setWalkAndLookTargetMemoriesToEachOther(LivingEntity var0, LivingEntity var1, float var2) {
-      boolean var3 = true;
-      setWalkAndLookTargetMemories(var0, var1, var2, 2);
-      setWalkAndLookTargetMemories(var1, var0, var2, 2);
+   private static void setWalkAndLookTargetMemoriesToEachOther(LivingEntity var0, LivingEntity var1, float var2, int var3) {
+      setWalkAndLookTargetMemories(var0, var1, var2, var3);
+      setWalkAndLookTargetMemories(var1, var0, var2, var3);
    }
 
    public static void setWalkAndLookTargetMemories(LivingEntity var0, Entity var1, float var2, int var3) {
@@ -102,9 +100,8 @@ public class BehaviorUtils {
    }
 
    public static boolean isWithinAttackRange(Mob var0, LivingEntity var1, int var2) {
-      Item var4 = var0.getMainHandItem().getItem();
-      if (var4 instanceof ProjectileWeaponItem var3 && var0.canFireProjectileWeapon((ProjectileWeaponItem)var3)) {
-         int var5 = ((ProjectileWeaponItem)var3).getDefaultProjectileRange() - var2;
+      if (var0.getMainHandItem().getItem() instanceof ProjectileWeaponItem var3 && var0.canFireProjectileWeapon(var3)) {
+         int var5 = var3.getDefaultProjectileRange() - var2;
          return var0.closerThan(var1, (double)var5);
       }
 
@@ -141,7 +138,7 @@ public class BehaviorUtils {
 
    public static Optional<LivingEntity> getLivingEntityFromUUIDMemory(LivingEntity var0, MemoryModuleType<UUID> var1) {
       Optional var2 = var0.getBrain().getMemory(var1);
-      return var2.<Entity>map(var1x -> ((ServerLevel)var0.level()).getEntity(var1x)).map(var0x -> var0x instanceof LivingEntity var1xx ? var1xx : null);
+      return var2.<Entity>map(var1x -> ((ServerLevel)var0.level()).getEntity(var1x)).map(var0x -> var0x instanceof LivingEntity var1x ? var1x : null);
    }
 
    @Nullable
@@ -149,11 +146,7 @@ public class BehaviorUtils {
       Vec3 var3 = DefaultRandomPos.getPos(var0, var1, var2);
       int var4 = 0;
 
-      while(
-         var3 != null
-            && !var0.level().getBlockState(BlockPos.containing(var3)).isPathfindable(var0.level(), BlockPos.containing(var3), PathComputationType.WATER)
-            && var4++ < 10
-      ) {
+      while (var3 != null && !var0.level().getBlockState(BlockPos.containing(var3)).isPathfindable(PathComputationType.WATER) && var4++ < 10) {
          var3 = DefaultRandomPos.getPos(var0, var1, var2);
       }
 

@@ -29,7 +29,7 @@ public class FollowParentGoal extends Goal {
          Animal var2 = null;
          double var3 = 1.7976931348623157E308;
 
-         for(Animal var6 : var1) {
+         for (Animal var6 : var1) {
             if (var6.getAge() >= 0) {
                double var7 = this.animal.distanceToSqr(var6);
                if (!(var7 > var3)) {

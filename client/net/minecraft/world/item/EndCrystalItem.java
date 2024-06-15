@@ -54,9 +54,4 @@ public class EndCrystalItem extends Item {
          }
       }
    }
-
-   @Override
-   public boolean isFoil(ItemStack var1) {
-      return true;
-   }
 }

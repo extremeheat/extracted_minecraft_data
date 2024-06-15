@@ -44,7 +44,7 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean noCollision(@Nullable Entity var1, AABB var2) {
-      for(VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
+      for (VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
          if (!var4.isEmpty()) {
             return false;
          }
@@ -61,7 +61,7 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean noBlockCollision(@Nullable Entity var1, AABB var2) {
-      for(VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
+      for (VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
          if (!var4.isEmpty()) {
             return false;
          }
@@ -91,7 +91,7 @@ public interface CollisionGetter extends BlockGetter {
    default boolean collidesWithSuffocatingBlock(@Nullable Entity var1, AABB var2) {
       BlockCollisions var3 = new BlockCollisions<>(this, var1, var2, true, (var0, var1x) -> var1x);
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          if (!((VoxelShape)var3.next()).isEmpty()) {
             return true;
          }
@@ -105,7 +105,7 @@ public interface CollisionGetter extends BlockGetter {
       double var4 = 1.7976931348623157E308;
       BlockCollisions var6 = new BlockCollisions<>(this, var1, var2, false, (var0, var1x) -> var0);
 
-      while(var6.hasNext()) {
+      while (var6.hasNext()) {
          BlockPos var7 = (BlockPos)var6.next();
          double var8 = var7.distToCenterSqr(var1.position());
          if (var8 < var4 || var8 == var4 && (var3 == null || var3.compareTo(var7) < 0)) {

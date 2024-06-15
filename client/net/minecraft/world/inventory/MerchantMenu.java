@@ -8,7 +8,9 @@ import net.minecraft.world.entity.npc.ClientSideMerchant;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.Merchant;
+import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 
 public class MerchantMenu extends AbstractContainerMenu {
@@ -41,13 +43,13 @@ public class MerchantMenu extends AbstractContainerMenu {
       this.addSlot(new Slot(this.tradeContainer, 1, 162, 37));
       this.addSlot(new MerchantResultSlot(var2.player, var3, this.tradeContainer, 2, 220, 37));
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 9; ++var5) {
+      for (int var4 = 0; var4 < 3; var4++) {
+         for (int var5 = 0; var5 < 9; var5++) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 108 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
+      for (int var6 = 0; var6 < 9; var6++) {
          this.addSlot(new Slot(var2, var6, 108 + var6 * 18, 142));
       }
    }
@@ -196,28 +198,25 @@ public class MerchantMenu extends AbstractContainerMenu {
          }
 
          if (this.tradeContainer.getItem(0).isEmpty() && this.tradeContainer.getItem(1).isEmpty()) {
-            ItemStack var4 = this.getOffers().get(var1).getCostA();
-            this.moveFromInventoryToPaymentSlot(0, var4);
-            ItemStack var5 = this.getOffers().get(var1).getCostB();
-            this.moveFromInventoryToPaymentSlot(1, var5);
+            MerchantOffer var4 = this.getOffers().get(var1);
+            this.moveFromInventoryToPaymentSlot(0, var4.getItemCostA());
+            var4.getItemCostB().ifPresent(var1x -> this.moveFromInventoryToPaymentSlot(1, var1x));
          }
       }
    }
 
-   private void moveFromInventoryToPaymentSlot(int var1, ItemStack var2) {
-      if (!var2.isEmpty()) {
-         for(int var3 = 3; var3 < 39; ++var3) {
-            ItemStack var4 = this.slots.get(var3).getItem();
-            if (!var4.isEmpty() && ItemStack.isSameItemSameTags(var2, var4)) {
-               ItemStack var5 = this.tradeContainer.getItem(var1);
-               int var6 = var5.isEmpty() ? 0 : var5.getCount();
-               int var7 = Math.min(var2.getMaxStackSize() - var6, var4.getCount());
-               ItemStack var8 = var4.copy();
-               int var9 = var6 + var7;
+   private void moveFromInventoryToPaymentSlot(int var1, ItemCost var2) {
+      for (int var3 = 3; var3 < 39; var3++) {
+         ItemStack var4 = this.slots.get(var3).getItem();
+         if (!var4.isEmpty() && var2.test(var4)) {
+            ItemStack var5 = this.tradeContainer.getItem(var1);
+            if (var5.isEmpty() || ItemStack.isSameItemSameComponents(var4, var5)) {
+               int var6 = var4.getMaxStackSize();
+               int var7 = Math.min(var6 - var5.getCount(), var4.getCount());
+               ItemStack var8 = var4.copyWithCount(var5.getCount() + var7);
                var4.shrink(var7);
-               var8.setCount(var9);
                this.tradeContainer.setItem(var1, var8);
-               if (var9 >= var2.getMaxStackSize()) {
+               if (var8.getCount() >= var6) {
                   break;
                }
             }

@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -31,25 +30,25 @@ public class DragonEggBlock extends FallingBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       this.teleport(var1, var2, var3);
       return InteractionResult.sidedSuccess(var2.isClientSide);
    }
 
    @Override
-   public void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
+   protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
       this.teleport(var1, var2, var3);
    }
 
    private void teleport(BlockState var1, Level var2, BlockPos var3) {
       WorldBorder var4 = var2.getWorldBorder();
 
-      for(int var5 = 0; var5 < 1000; ++var5) {
+      for (int var5 = 0; var5 < 1000; var5++) {
          BlockPos var6 = var3.offset(
             var2.random.nextInt(16) - var2.random.nextInt(16),
             var2.random.nextInt(8) - var2.random.nextInt(8),
@@ -57,7 +56,7 @@ public class DragonEggBlock extends FallingBlock {
          );
          if (var2.getBlockState(var6).isAir() && var4.isWithinBounds(var6)) {
             if (var2.isClientSide) {
-               for(int var7 = 0; var7 < 128; ++var7) {
+               for (int var7 = 0; var7 < 128; var7++) {
                   double var8 = var2.random.nextDouble();
                   float var10 = (var2.random.nextFloat() - 0.5F) * 0.2F;
                   float var11 = (var2.random.nextFloat() - 0.5F) * 0.2F;
@@ -83,7 +82,7 @@ public class DragonEggBlock extends FallingBlock {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

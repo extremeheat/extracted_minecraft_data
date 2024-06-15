@@ -11,9 +11,7 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.Tag.TagType;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Dynamic;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -324,12 +322,12 @@ public class EntityBlockStateFix extends DataFix {
       Type var3 = DSL.optional(DSL.field("BlockState", DSL.named(References.BLOCK_STATE.typeName(), DSL.remainderType())));
       Dynamic var4 = (Dynamic)var1.get(DSL.remainderFinder());
       return var1.update(var2.finder(), var3, var1x -> {
-         int var2xx = var1x.map(var0x -> (Integer)((Either)var0x.getSecond()).map(var0xx -> var0xx, EntityBlockStateFix::getBlockId), var1xx -> {
-            Optional var2xxx = var4.get("TileID").asNumber().result();
-            return var2xxx.map(Number::intValue).orElseGet(() -> var4.get("Tile").asByte((byte)0) & 0xFF);
+         int var2x = (Integer)var1x.map(var0x -> (Integer)((Either)var0x.getSecond()).map(var0xx -> var0xx, EntityBlockStateFix::getBlockId), var1xx -> {
+            Optional var2xx = var4.get("TileID").asNumber().result();
+            return var2xx.map(Number::intValue).orElseGet(() -> var4.get("Tile").asByte((byte)0) & 0xFF);
          });
-         int var3xx = var4.get("Data").asInt(0) & 15;
-         return Either.left(Pair.of(References.BLOCK_STATE.typeName(), BlockStateData.getTag(var2xx << 4 | var3xx)));
+         int var3x = var4.get("Data").asInt(0) & 15;
+         return Either.left(Pair.of(References.BLOCK_STATE.typeName(), BlockStateData.getTag(var2x << 4 | var3x)));
       }).set(DSL.remainderFinder(), var4.remove("Data").remove("TileID").remove("Tile"));
    }
 
@@ -338,9 +336,9 @@ public class EntityBlockStateFix extends DataFix {
       TagType var6 = DSL.field(var4, DSL.named(References.BLOCK_STATE.typeName(), DSL.remainderType()));
       Dynamic var7 = (Dynamic)var1.getOrCreate(DSL.remainderFinder());
       return var1.update(var5.finder(), var6, var2x -> {
-         int var3xx = ((Either)var2x.getSecond()).map(var0x -> var0x, EntityBlockStateFix::getBlockId);
-         int var4xx = var7.get(var3).asInt(0) & 15;
-         return Pair.of(References.BLOCK_STATE.typeName(), BlockStateData.getTag(var3xx << 4 | var4xx));
+         int var3x = (Integer)((Either)var2x.getSecond()).map(var0x -> var0x, EntityBlockStateFix::getBlockId);
+         int var4x = var7.get(var3).asInt(0) & 15;
+         return Pair.of(References.BLOCK_STATE.typeName(), BlockStateData.getTag(var3x << 4 | var4x));
       }).set(DSL.remainderFinder(), var7.remove(var3));
    }
 

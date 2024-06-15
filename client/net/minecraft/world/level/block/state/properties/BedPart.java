@@ -8,8 +8,8 @@ public enum BedPart implements StringRepresentable {
 
    private final String name;
 
-   private BedPart(String var3) {
-      this.name = var3;
+   private BedPart(final String nullxx) {
+      this.name = nullxx;
    }
 
    @Override

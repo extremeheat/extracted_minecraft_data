@@ -64,6 +64,7 @@ public final class BlockTags {
    public static final TagKey<Block> CANDLES = create("candles");
    public static final TagKey<Block> DIRT = create("dirt");
    public static final TagKey<Block> TERRACOTTA = create("terracotta");
+   public static final TagKey<Block> BADLANDS_TERRACOTTA = create("badlands_terracotta");
    public static final TagKey<Block> CONCRETE_POWDER = create("concrete_powder");
    public static final TagKey<Block> COMPLETES_FIND_TREE_TUTORIAL = create("completes_find_tree_tutorial");
    public static final TagKey<Block> FLOWER_POTS = create("flower_pots");
@@ -142,6 +143,12 @@ public final class BlockTags {
    public static final TagKey<Block> NEEDS_DIAMOND_TOOL = create("needs_diamond_tool");
    public static final TagKey<Block> NEEDS_IRON_TOOL = create("needs_iron_tool");
    public static final TagKey<Block> NEEDS_STONE_TOOL = create("needs_stone_tool");
+   public static final TagKey<Block> INCORRECT_FOR_NETHERITE_TOOL = create("incorrect_for_netherite_tool");
+   public static final TagKey<Block> INCORRECT_FOR_DIAMOND_TOOL = create("incorrect_for_diamond_tool");
+   public static final TagKey<Block> INCORRECT_FOR_IRON_TOOL = create("incorrect_for_iron_tool");
+   public static final TagKey<Block> INCORRECT_FOR_STONE_TOOL = create("incorrect_for_stone_tool");
+   public static final TagKey<Block> INCORRECT_FOR_GOLD_TOOL = create("incorrect_for_gold_tool");
+   public static final TagKey<Block> INCORRECT_FOR_WOODEN_TOOL = create("incorrect_for_wooden_tool");
    public static final TagKey<Block> FEATURES_CANNOT_REPLACE = create("features_cannot_replace");
    public static final TagKey<Block> LAVA_POOL_STONE_CANNOT_REPLACE = create("lava_pool_stone_cannot_replace");
    public static final TagKey<Block> GEODE_INVALID_BLOCKS = create("geode_invalid_blocks");
@@ -151,6 +158,7 @@ public final class BlockTags {
    public static final TagKey<Block> ANCIENT_CITY_REPLACEABLE = create("ancient_city_replaceable");
    public static final TagKey<Block> VIBRATION_RESONATORS = create("vibration_resonators");
    public static final TagKey<Block> ANIMALS_SPAWNABLE_ON = create("animals_spawnable_on");
+   public static final TagKey<Block> ARMADILLO_SPAWNABLE_ON = create("armadillo_spawnable_on");
    public static final TagKey<Block> AXOLOTLS_SPAWNABLE_ON = create("axolotls_spawnable_on");
    public static final TagKey<Block> GOATS_SPAWNABLE_ON = create("goats_spawnable_on");
    public static final TagKey<Block> MOOSHROOMS_SPAWNABLE_ON = create("mooshrooms_spawnable_on");
@@ -177,6 +185,8 @@ public final class BlockTags {
    public static final TagKey<Block> ENCHANTMENT_POWER_PROVIDER = create("enchantment_power_provider");
    public static final TagKey<Block> ENCHANTMENT_POWER_TRANSMITTER = create("enchantment_power_transmitter");
    public static final TagKey<Block> MAINTAINS_FARMLAND = create("maintains_farmland");
+   public static final TagKey<Block> BLOCKS_WIND_CHARGE_EXPLOSIONS = create("blocks_wind_charge_explosions");
+   public static final TagKey<Block> DOES_NOT_BLOCK_HOPPERS = create("does_not_block_hoppers");
 
    private BlockTags() {
       super();

@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -55,8 +56,8 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      return this.saveWithoutMetadata();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      return this.saveCustomOnly(var1);
    }
 
    public boolean isExtending() {
@@ -117,9 +118,9 @@ public class PistonMovingBlockEntity extends BlockEntity {
             boolean var11 = var3.movedState.is(Blocks.SLIME_BLOCK);
             Iterator var12 = var9.iterator();
 
-            while(true) {
+            while (true) {
                Entity var13;
-               while(true) {
+               while (true) {
                   if (!var12.hasNext()) {
                      return;
                   }
@@ -135,7 +136,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
                         double var15 = var14.x;
                         double var17 = var14.y;
                         double var19 = var14.z;
-                        switch(var4.getAxis()) {
+                        switch (var4.getAxis()) {
                            case X:
                               var15 = (double)var4.getStepX();
                               break;
@@ -154,7 +155,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
                double var21 = 0.0;
 
-               for(AABB var23 : var10) {
+               for (AABB var23 : var10) {
                   AABB var18 = PistonMath.getMovementArea(moveByPositionAndProgress(var1, var23, var3), var4, var5);
                   AABB var24 = var13.getBoundingBox();
                   if (var18.intersects(var24)) {
@@ -191,7 +192,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
             AABB var7 = moveByPositionAndProgress(var1, new AABB(0.0, var5, 0.0, 1.0, 1.5000010000000001, 1.0), var3);
             double var8 = (double)(var2 - var3.progress);
 
-            for(Entity var12 : var0.getEntities((Entity)null, var7, var2x -> matchesStickyCritera(var7, var2x, var1))) {
+            for (Entity var12 : var0.getEntities((Entity)null, var7, var2x -> matchesStickyCritera(var7, var2x, var1))) {
                moveEntityByPiston(var4, var12, var8, var4);
             }
          }
@@ -213,7 +214,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    private static double getMovement(AABB var0, Direction var1, AABB var2) {
-      switch(var1) {
+      switch (var1) {
          case EAST:
             return var0.maxX - var2.minX;
          case WEST:
@@ -282,7 +283,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
       var3.progressO = var3.progress;
       if (var3.progressO >= 1.0F) {
          if (var0.isClientSide && var3.deathTicks < 5) {
-            ++var3.deathTicks;
+            var3.deathTicks++;
          } else {
             var0.removeBlockEntity(var1);
             var3.setRemoved();
@@ -313,10 +314,10 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
-      Object var2 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
-      this.movedState = NbtUtils.readBlockState((HolderGetter<Block>)var2, var1.getCompound("blockState"));
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
+      Object var3 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
+      this.movedState = NbtUtils.readBlockState((HolderGetter<Block>)var3, var1.getCompound("blockState"));
       this.direction = Direction.from3DDataValue(var1.getInt("facing"));
       this.progress = var1.getFloat("progress");
       this.progressO = this.progress;
@@ -325,8 +326,8 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.put("blockState", NbtUtils.writeBlockState(this.movedState));
       var1.putInt("facing", this.direction.get3DDataValue());
       var1.putFloat("progress", this.progressO);

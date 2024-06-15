@@ -96,11 +96,7 @@ public class StringTag implements Tag {
 
    @Override
    public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return var1 instanceof StringTag && Objects.equals(this.data, ((StringTag)var1).data);
-      }
+      return this == var1 ? true : var1 instanceof StringTag && Objects.equals(this.data, ((StringTag)var1).data);
    }
 
    @Override
@@ -122,7 +118,7 @@ public class StringTag implements Tag {
       StringBuilder var1 = new StringBuilder(" ");
       int var2 = 0;
 
-      for(int var3 = 0; var3 < var0.length(); ++var3) {
+      for (int var3 = 0; var3 < var0.length(); var3++) {
          char var4 = var0.charAt(var3);
          if (var4 == '\\') {
             var1.append('\\');

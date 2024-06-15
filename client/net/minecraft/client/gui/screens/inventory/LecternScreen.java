@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
+import java.util.Objects;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -95,7 +96,7 @@ public class LecternScreen extends BookViewScreen implements MenuAccess<LecternM
 
    void bookChanged() {
       ItemStack var1 = this.menu.getBook();
-      this.setBookAccess(BookViewScreen.BookAccess.fromItem(var1));
+      this.setBookAccess(Objects.requireNonNullElse(BookViewScreen.BookAccess.fromItem(var1), BookViewScreen.EMPTY_ACCESS));
    }
 
    void pageChanged() {

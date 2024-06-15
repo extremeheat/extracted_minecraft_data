@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.treedecorators;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
@@ -9,10 +9,9 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class AlterGroundDecorator extends TreeDecorator {
-   public static final Codec<AlterGroundDecorator> CODEC = BlockStateProvider.CODEC
+   public static final MapCodec<AlterGroundDecorator> CODEC = BlockStateProvider.CODEC
       .fieldOf("provider")
-      .xmap(AlterGroundDecorator::new, var0 -> var0.provider)
-      .codec();
+      .xmap(AlterGroundDecorator::new, var0 -> var0.provider);
    private final BlockStateProvider provider;
 
    public AlterGroundDecorator(BlockStateProvider var1) {
@@ -47,12 +46,12 @@ public class AlterGroundDecorator extends TreeDecorator {
             this.placeCircle(var1, var2x.west().south(2));
             this.placeCircle(var1, var2x.east(2).south(2));
 
-            for(int var3xx = 0; var3xx < 5; ++var3xx) {
-               int var4xx = var1.random().nextInt(64);
-               int var5xx = var4xx % 8;
-               int var6 = var4xx / 8;
-               if (var5xx == 0 || var5xx == 7 || var6 == 0 || var6 == 7) {
-                  this.placeCircle(var1, var2x.offset(-3 + var5xx, 0, -3 + var6));
+            for (int var3x = 0; var3x < 5; var3x++) {
+               int var4x = var1.random().nextInt(64);
+               int var5x = var4x % 8;
+               int var6 = var4x / 8;
+               if (var5x == 0 || var5x == 7 || var6 == 0 || var6 == 7) {
+                  this.placeCircle(var1, var2x.offset(-3 + var5x, 0, -3 + var6));
                }
             }
          });
@@ -60,8 +59,8 @@ public class AlterGroundDecorator extends TreeDecorator {
    }
 
    private void placeCircle(TreeDecorator.Context var1, BlockPos var2) {
-      for(int var3 = -2; var3 <= 2; ++var3) {
-         for(int var4 = -2; var4 <= 2; ++var4) {
+      for (int var3 = -2; var3 <= 2; var3++) {
+         for (int var4 = -2; var4 <= 2; var4++) {
             if (Math.abs(var3) != 2 || Math.abs(var4) != 2) {
                this.placeBlockAt(var1, var2.offset(var3, 0, var4));
             }
@@ -70,7 +69,7 @@ public class AlterGroundDecorator extends TreeDecorator {
    }
 
    private void placeBlockAt(TreeDecorator.Context var1, BlockPos var2) {
-      for(int var3 = 2; var3 >= -3; --var3) {
+      for (int var3 = 2; var3 >= -3; var3--) {
          BlockPos var4 = var2.above(var3);
          if (Feature.isGrassOrDirt(var1.level(), var4)) {
             var1.setBlock(var4, this.provider.getState(var1.random(), var2));

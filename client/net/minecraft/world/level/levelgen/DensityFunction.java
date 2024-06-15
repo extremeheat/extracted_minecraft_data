@@ -74,10 +74,7 @@ public interface DensityFunction {
       }
    }
 
-   public static record NoiseHolder(Holder<NormalNoise.NoiseParameters> b, @Nullable NormalNoise c) {
-      private final Holder<NormalNoise.NoiseParameters> noiseData;
-      @Nullable
-      private final NormalNoise noise;
+   public static record NoiseHolder(Holder<NormalNoise.NoiseParameters> noiseData, @Nullable NormalNoise noise) {
       public static final Codec<DensityFunction.NoiseHolder> CODEC = NormalNoise.NoiseParameters.CODEC
          .xmap(var0 -> new DensityFunction.NoiseHolder(var0, null), DensityFunction.NoiseHolder::noiseData);
 
@@ -85,10 +82,10 @@ public interface DensityFunction {
          this(var1, null);
       }
 
-      public NoiseHolder(Holder<NormalNoise.NoiseParameters> var1, @Nullable NormalNoise var2) {
+      public NoiseHolder(Holder<NormalNoise.NoiseParameters> noiseData, @Nullable NormalNoise noise) {
          super();
-         this.noiseData = var1;
-         this.noise = var2;
+         this.noiseData = noiseData;
+         this.noise = noise;
       }
 
       public double getValue(double var1, double var3, double var5) {
@@ -112,16 +109,12 @@ public interface DensityFunction {
       }
    }
 
-   public static record SinglePointContext(int a, int b, int c) implements DensityFunction.FunctionContext {
-      private final int blockX;
-      private final int blockY;
-      private final int blockZ;
-
-      public SinglePointContext(int var1, int var2, int var3) {
+   public static record SinglePointContext(int blockX, int blockY, int blockZ) implements DensityFunction.FunctionContext {
+      public SinglePointContext(int blockX, int blockY, int blockZ) {
          super();
-         this.blockX = var1;
-         this.blockY = var2;
-         this.blockZ = var3;
+         this.blockX = blockX;
+         this.blockY = blockY;
+         this.blockZ = blockZ;
       }
    }
 

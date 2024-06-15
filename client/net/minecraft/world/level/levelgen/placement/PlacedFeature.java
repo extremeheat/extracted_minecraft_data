@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -18,9 +17,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> e, List<PlacementModifier> f) {
-   private final Holder<ConfiguredFeature<?, ?>> feature;
-   private final List<PlacementModifier> placement;
+public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<PlacementModifier> placement) {
    public static final Codec<PlacedFeature> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ConfiguredFeature.CODEC.fieldOf("feature").forGetter(var0x -> var0x.feature),
@@ -30,15 +27,13 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> e, List<PlacementMod
    );
    public static final Codec<Holder<PlacedFeature>> CODEC = RegistryFileCodec.create(Registries.PLACED_FEATURE, DIRECT_CODEC);
    public static final Codec<HolderSet<PlacedFeature>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.PLACED_FEATURE, DIRECT_CODEC);
-   public static final Codec<List<HolderSet<PlacedFeature>>> LIST_OF_LISTS_CODEC = RegistryCodecs.homogeneousList(
-         Registries.PLACED_FEATURE, DIRECT_CODEC, true
-      )
+   public static final Codec<List<HolderSet<PlacedFeature>>> LIST_OF_LISTS_CODEC = RegistryCodecs.homogeneousList(Registries.PLACED_FEATURE, DIRECT_CODEC, true)
       .listOf();
 
-   public PlacedFeature(Holder<ConfiguredFeature<?, ?>> var1, List<PlacementModifier> var2) {
+   public PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<PlacementModifier> placement) {
       super();
-      this.feature = var1;
-      this.placement = var2;
+      this.feature = feature;
+      this.placement = placement;
    }
 
    public boolean place(WorldGenLevel var1, ChunkGenerator var2, RandomSource var3, BlockPos var4) {
@@ -52,7 +47,7 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> e, List<PlacementMod
    private boolean placeWithContext(PlacementContext var1, RandomSource var2, BlockPos var3) {
       Stream var4 = Stream.of(var3);
 
-      for(PlacementModifier var6 : this.placement) {
+      for (PlacementModifier var6 : this.placement) {
          var4 = var4.flatMap(var3x -> var6.getPositions(var1, var2, var3x));
       }
 
@@ -70,7 +65,6 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> e, List<PlacementMod
       return this.feature.value().getFeatures();
    }
 
-   @Override
    public String toString() {
       return "Placed " + this.feature;
    }

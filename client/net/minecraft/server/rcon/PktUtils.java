@@ -14,8 +14,8 @@ public class PktUtils {
       int var3 = var2 - 1;
       int var4 = var1 > var3 ? var3 : var1;
 
-      while(0 != var0[var4] && var4 < var3) {
-         ++var4;
+      while (0 != var0[var4] && var4 < var3) {
+         var4++;
       }
 
       return new String(var0, var1, var4 - var1, StandardCharsets.UTF_8);

@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
@@ -35,8 +36,7 @@ import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
 
 public class SnifferAi {
@@ -70,8 +70,8 @@ public class SnifferAi {
       super();
    }
 
-   public static Ingredient getTemptations() {
-      return Ingredient.of(Items.TORCHFLOWER_SEEDS);
+   public static Predicate<ItemStack> getTemptations() {
+      return var0 -> var0.is(ItemTags.SNIFFER_FOOD);
    }
 
    protected static Brain<?> makeBrain(Brain<Sniffer> var0) {
@@ -92,10 +92,9 @@ public class SnifferAi {
    }
 
    private static void initCoreActivity(Brain<Sniffer> var0) {
-      var0.addActivity(Activity.CORE, 0, ImmutableList.of(new Swim(0.8F), new AnimalPanic(2.0F) {
-         @Override
-         protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-            SnifferAi.resetSniffing((Sniffer)var2);
+      var0.addActivity(Activity.CORE, 0, ImmutableList.of(new Swim(0.8F), new AnimalPanic<Sniffer>(2.0F) {
+         protected void start(ServerLevel var1, Sniffer var2, long var3) {
+            SnifferAi.resetSniffing(var2);
             super.start(var1, var2, var3);
          }
       }, new MoveToTargetSink(500, 700), new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS)));
@@ -129,7 +128,7 @@ public class SnifferAi {
       var0.addActivityWithConditions(
          Activity.IDLE,
          ImmutableList.of(
-            Pair.of(0, new AnimalMakeLove(EntityType.SNIFFER, 1.0F) {
+            Pair.of(0, new AnimalMakeLove(EntityType.SNIFFER) {
                @Override
                protected void start(ServerLevel var1, Animal var2, long var3) {
                   SnifferAi.resetSniffing((Sniffer)var2);

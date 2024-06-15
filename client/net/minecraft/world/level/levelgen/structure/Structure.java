@@ -48,8 +48,8 @@ public abstract class Structure {
       return Structure.StructureSettings.CODEC.forGetter(var0x -> var0x.settings);
    }
 
-   public static <S extends Structure> Codec<S> simpleCodec(Function<Structure.StructureSettings, S> var0) {
-      return RecordCodecBuilder.create(var1 -> var1.group(settingsCodec(var1)).apply(var1, var0));
+   public static <S extends Structure> MapCodec<S> simpleCodec(Function<Structure.StructureSettings, S> var0) {
+      return RecordCodecBuilder.mapCodec(var1 -> var1.group(settingsCodec(var1)).apply(var1, var0));
    }
 
    protected Structure(Structure.StructureSettings var1) {
@@ -139,6 +139,11 @@ public abstract class Structure {
       };
    }
 
+   public static int getMeanFirstOccupiedHeight(Structure.GenerationContext var0, int var1, int var2, int var3, int var4) {
+      int[] var5 = getCornerHeights(var0, var1, var2, var3, var4);
+      return (var5[0] + var5[1] + var5[2] + var5[3]) / 4;
+   }
+
    protected static int getLowestY(Structure.GenerationContext var0, int var1, int var2) {
       ChunkPos var3 = var0.chunkPos();
       int var4 = var3.getMinBlockX();
@@ -179,27 +184,17 @@ public abstract class Structure {
    public abstract StructureType<?> type();
 
    public static record GenerationContext(
-      RegistryAccess a,
-      ChunkGenerator b,
-      BiomeSource c,
-      RandomState d,
-      StructureTemplateManager e,
-      WorldgenRandom f,
-      long g,
-      ChunkPos h,
-      LevelHeightAccessor i,
-      Predicate<Holder<Biome>> j
+      RegistryAccess registryAccess,
+      ChunkGenerator chunkGenerator,
+      BiomeSource biomeSource,
+      RandomState randomState,
+      StructureTemplateManager structureTemplateManager,
+      WorldgenRandom random,
+      long seed,
+      ChunkPos chunkPos,
+      LevelHeightAccessor heightAccessor,
+      Predicate<Holder<Biome>> validBiome
    ) {
-      private final RegistryAccess registryAccess;
-      final ChunkGenerator chunkGenerator;
-      private final BiomeSource biomeSource;
-      final RandomState randomState;
-      private final StructureTemplateManager structureTemplateManager;
-      private final WorldgenRandom random;
-      private final long seed;
-      private final ChunkPos chunkPos;
-      private final LevelHeightAccessor heightAccessor;
-      final Predicate<Holder<Biome>> validBiome;
 
       public GenerationContext(
          RegistryAccess var1,
@@ -216,28 +211,28 @@ public abstract class Structure {
       }
 
       public GenerationContext(
-         RegistryAccess var1,
-         ChunkGenerator var2,
-         BiomeSource var3,
-         RandomState var4,
-         StructureTemplateManager var5,
-         WorldgenRandom var6,
-         long var7,
-         ChunkPos var9,
-         LevelHeightAccessor var10,
-         Predicate<Holder<Biome>> var11
+         RegistryAccess registryAccess,
+         ChunkGenerator chunkGenerator,
+         BiomeSource biomeSource,
+         RandomState randomState,
+         StructureTemplateManager structureTemplateManager,
+         WorldgenRandom random,
+         long seed,
+         ChunkPos chunkPos,
+         LevelHeightAccessor heightAccessor,
+         Predicate<Holder<Biome>> validBiome
       ) {
          super();
-         this.registryAccess = var1;
-         this.chunkGenerator = var2;
-         this.biomeSource = var3;
-         this.randomState = var4;
-         this.structureTemplateManager = var5;
-         this.random = var6;
-         this.seed = var7;
-         this.chunkPos = var9;
-         this.heightAccessor = var10;
-         this.validBiome = var11;
+         this.registryAccess = registryAccess;
+         this.chunkGenerator = chunkGenerator;
+         this.biomeSource = biomeSource;
+         this.randomState = randomState;
+         this.structureTemplateManager = structureTemplateManager;
+         this.random = random;
+         this.seed = seed;
+         this.chunkPos = chunkPos;
+         this.heightAccessor = heightAccessor;
+         this.validBiome = validBiome;
       }
 
       private static WorldgenRandom makeRandom(long var0, ChunkPos var2) {
@@ -247,18 +242,15 @@ public abstract class Structure {
       }
    }
 
-   public static record GenerationStub(BlockPos a, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> b) {
-      private final BlockPos position;
-      private final Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator;
-
+   public static record GenerationStub(BlockPos position, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator) {
       public GenerationStub(BlockPos var1, Consumer<StructurePiecesBuilder> var2) {
          this(var1, Either.left(var2));
       }
 
-      public GenerationStub(BlockPos var1, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> var2) {
+      public GenerationStub(BlockPos position, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator) {
          super();
-         this.position = var1;
-         this.generator = var2;
+         this.position = position;
+         this.generator = generator;
       }
 
       public StructurePiecesBuilder getPiecesBuilder() {
@@ -270,11 +262,9 @@ public abstract class Structure {
       }
    }
 
-   public static record StructureSettings(HolderSet<Biome> b, Map<MobCategory, StructureSpawnOverride> c, GenerationStep.Decoration d, TerrainAdjustment e) {
-      final HolderSet<Biome> biomes;
-      final Map<MobCategory, StructureSpawnOverride> spawnOverrides;
-      final GenerationStep.Decoration step;
-      final TerrainAdjustment terrainAdaptation;
+   public static record StructureSettings(
+      HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation
+   ) {
       public static final MapCodec<Structure.StructureSettings> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(Structure.StructureSettings::biomes),
@@ -289,12 +279,14 @@ public abstract class Structure {
                .apply(var0, Structure.StructureSettings::new)
       );
 
-      public StructureSettings(HolderSet<Biome> var1, Map<MobCategory, StructureSpawnOverride> var2, GenerationStep.Decoration var3, TerrainAdjustment var4) {
+      public StructureSettings(
+         HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation
+      ) {
          super();
-         this.biomes = var1;
-         this.spawnOverrides = var2;
-         this.step = var3;
-         this.terrainAdaptation = var4;
+         this.biomes = biomes;
+         this.spawnOverrides = spawnOverrides;
+         this.step = step;
+         this.terrainAdaptation = terrainAdaptation;
       }
    }
 }

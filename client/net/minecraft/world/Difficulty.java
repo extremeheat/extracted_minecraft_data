@@ -17,9 +17,9 @@ public enum Difficulty implements StringRepresentable {
    private final int id;
    private final String key;
 
-   private Difficulty(int var3, String var4) {
-      this.id = var3;
-      this.key = var4;
+   private Difficulty(final int nullxx, final String nullxxx) {
+      this.id = nullxx;
+      this.key = nullxxx;
    }
 
    public int getId() {

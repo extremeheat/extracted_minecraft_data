@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -15,10 +14,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
@@ -78,7 +75,7 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
             var1.getBlockPos(),
             (var0, var1x) -> false
          );
-         int var11 = ((Int2IntFunction)var10.apply(new BrightnessCombiner())).get(var5);
+         int var11 = var10.apply(new BrightnessCombiner()).get(var5);
          this.renderPiece(
             var3, var4, var9.getValue(BedBlock.PART) == BedPart.HEAD ? this.headRoot : this.footRoot, var9.getValue(BedBlock.FACING), var7, var11, var6, false
          );

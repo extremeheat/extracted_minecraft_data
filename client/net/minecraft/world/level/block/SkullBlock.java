@@ -3,11 +3,9 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -42,12 +40,12 @@ public class SkullBlock extends AbstractSkullBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.getType() == SkullBlock.Types.PIGLIN ? PIGLIN_SHAPE : SHAPE;
    }
 
    @Override
-   public VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Shapes.empty();
    }
 
@@ -57,12 +55,12 @@ public class SkullBlock extends AbstractSkullBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(ROTATION, Integer.valueOf(var2.rotate(var1.getValue(ROTATION), ROTATIONS)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.setValue(ROTATION, Integer.valueOf(var2.mirror(var1.getValue(ROTATION), ROTATIONS)));
    }
 
@@ -74,7 +72,7 @@ public class SkullBlock extends AbstractSkullBlock {
 
    public interface Type extends StringRepresentable {
       Map<String, SkullBlock.Type> TYPES = new Object2ObjectArrayMap();
-      Codec<SkullBlock.Type> CODEC = ExtraCodecs.stringResolverCodec(StringRepresentable::getSerializedName, TYPES::get);
+      Codec<SkullBlock.Type> CODEC = Codec.stringResolver(StringRepresentable::getSerializedName, TYPES::get);
    }
 
    public static enum Types implements SkullBlock.Type {
@@ -88,9 +86,9 @@ public class SkullBlock extends AbstractSkullBlock {
 
       private final String name;
 
-      private Types(String var3) {
-         this.name = var3;
-         TYPES.put(var3, this);
+      private Types(final String nullxx) {
+         this.name = nullxx;
+         TYPES.put(nullxx, this);
       }
 
       @Override

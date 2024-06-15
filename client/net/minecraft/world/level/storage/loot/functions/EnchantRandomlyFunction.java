@@ -2,8 +2,8 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,14 +11,11 @@ import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.slf4j.Logger;
@@ -29,9 +26,9 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       .holderByNameCodec()
       .listOf()
       .xmap(HolderSet::direct, var0 -> var0.stream().toList());
-   public static final Codec<EnchantRandomlyFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<EnchantRandomlyFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
-            .and(ExtraCodecs.strictOptionalField(ENCHANTMENT_SET_CODEC, "enchantments").forGetter(var0x -> var0x.enchantments))
+            .and(ENCHANTMENT_SET_CODEC.optionalFieldOf("enchantments").forGetter(var0x -> var0x.enchantments))
             .apply(var0, EnchantRandomlyFunction::new)
    );
    private final Optional<HolderSet<Enchantment>> enchantments;
@@ -42,7 +39,7 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<EnchantRandomlyFunction> getType() {
       return LootItemFunctions.ENCHANT_RANDOMLY;
    }
 
@@ -53,13 +50,14 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
          .<Holder<Enchantment>>flatMap(var1x -> var1x.getRandomElement(var3))
          .or(
             () -> {
-               boolean var2xx = var1.is(Items.BOOK);
-               List var3xx = BuiltInRegistries.ENCHANTMENT
+               boolean var3x = var1.is(Items.BOOK);
+               List var4x = BuiltInRegistries.ENCHANTMENT
                   .holders()
+                  .filter(var1xx -> var1xx.value().isEnabled(var2.getLevel().enabledFeatures()))
                   .filter(var0x -> var0x.value().isDiscoverable())
-                  .filter(var2xx -> var2x || var2xx.value().canEnchant(var1))
+                  .filter(var2xx -> var3x || var2xx.value().canEnchant(var1))
                   .toList();
-               return Util.getRandomSafe(var3xx, var3);
+               return Util.getRandomSafe(var4x, var3);
             }
          );
       if (var4.isEmpty()) {
@@ -74,11 +72,9 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       int var3 = Mth.nextInt(var2, var1.getMinLevel(), var1.getMaxLevel());
       if (var0.is(Items.BOOK)) {
          var0 = new ItemStack(Items.ENCHANTED_BOOK);
-         EnchantedBookItem.addEnchantment(var0, new EnchantmentInstance(var1, var3));
-      } else {
-         var0.enchant(var1, var3);
       }
 
+      var0.enchant(var1, var3);
       return var0;
    }
 

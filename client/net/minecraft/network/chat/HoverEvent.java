@@ -1,34 +1,39 @@
 package net.minecraft.network.chat;
 
+import com.google.gson.JsonParser;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Encoder;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class HoverEvent {
-   public static final Codec<HoverEvent> CODEC = Codec.either(HoverEvent.TypedHoverEvent.CODEC.codec(), HoverEvent.TypedHoverEvent.LEGACY_CODEC.codec())
-      .xmap(var0 -> new HoverEvent((HoverEvent.TypedHoverEvent<?>)var0.map(var0x -> var0x, var0x -> var0x)), var0 -> Either.left(var0.event));
+   public static final Codec<HoverEvent> CODEC = Codec.withAlternative(
+         HoverEvent.TypedHoverEvent.CODEC.codec(), HoverEvent.TypedHoverEvent.LEGACY_CODEC.codec()
+      )
+      .xmap(HoverEvent::new, var0 -> var0.event);
    private final HoverEvent.TypedHoverEvent<?> event;
 
    public <T> HoverEvent(HoverEvent.Action<T> var1, T var2) {
@@ -70,7 +75,7 @@ public class HoverEvent {
 
    public static class Action<T> implements StringRepresentable {
       public static final HoverEvent.Action<Component> SHOW_TEXT = new HoverEvent.Action<>(
-         "show_text", true, ComponentSerialization.CODEC, DataResult::success
+         "show_text", true, ComponentSerialization.CODEC, (var0, var1) -> DataResult.success(var0)
       );
       public static final HoverEvent.Action<HoverEvent.ItemStackInfo> SHOW_ITEM = new HoverEvent.Action<>(
          "show_item", true, HoverEvent.ItemStackInfo.CODEC, HoverEvent.ItemStackInfo::legacyCreate
@@ -81,21 +86,35 @@ public class HoverEvent {
       public static final Codec<HoverEvent.Action<?>> UNSAFE_CODEC = StringRepresentable.fromValues(
          () -> new HoverEvent.Action[]{SHOW_TEXT, SHOW_ITEM, SHOW_ENTITY}
       );
-      public static final Codec<HoverEvent.Action<?>> CODEC = ExtraCodecs.validate(UNSAFE_CODEC, HoverEvent.Action::filterForSerialization);
+      public static final Codec<HoverEvent.Action<?>> CODEC = UNSAFE_CODEC.validate(HoverEvent.Action::filterForSerialization);
       private final String name;
       private final boolean allowFromServer;
-      final Codec<HoverEvent.TypedHoverEvent<T>> codec;
-      final Codec<HoverEvent.TypedHoverEvent<T>> legacyCodec;
+      final MapCodec<HoverEvent.TypedHoverEvent<T>> codec;
+      final MapCodec<HoverEvent.TypedHoverEvent<T>> legacyCodec;
 
-      public Action(String var1, boolean var2, Codec<T> var3, Function<Component, DataResult<T>> var4) {
+      public Action(String var1, boolean var2, Codec<T> var3, final HoverEvent.LegacyConverter<T> var4) {
          super();
          this.name = var1;
          this.allowFromServer = var2;
-         this.codec = var3.xmap(var1x -> new HoverEvent.TypedHoverEvent<>(this, (T)var1x), var0 -> var0.value).fieldOf("contents").codec();
-         this.legacyCodec = Codec.of(
-            Encoder.error("Can't encode in legacy format"),
-            ComponentSerialization.CODEC.flatMap(var4).map(var1x -> new HoverEvent.TypedHoverEvent<>(this, (T)var1x))
-         );
+         this.codec = var3.xmap(var1x -> new HoverEvent.TypedHoverEvent<>(this, (T)var1x), var0 -> var0.value).fieldOf("contents");
+         this.legacyCodec = (new Codec<HoverEvent.TypedHoverEvent<T>>() {
+            public <D> DataResult<Pair<HoverEvent.TypedHoverEvent<T>, D>> decode(DynamicOps<D> var1, D var2) {
+               return ComponentSerialization.CODEC.decode(var1, var2).flatMap(var3 -> {
+                  DataResult var4x;
+                  if (var1 instanceof RegistryOps var5) {
+                     var4x = var4.parse((Component)var3.getFirst(), var5);
+                  } else {
+                     var4x = var4.parse((Component)var3.getFirst(), null);
+                  }
+
+                  return var4x.map(var2xx -> Pair.of(new HoverEvent.TypedHoverEvent<>(Action.this, var2xx), var3.getSecond()));
+               });
+            }
+
+            public <D> DataResult<D> encode(HoverEvent.TypedHoverEvent<T> var1, DynamicOps<D> var2, D var3) {
+               return DataResult.error(() -> "Can't encode in legacy format");
+            }
+         }).fieldOf("value");
       }
 
       public boolean isAllowedFromServer() {
@@ -130,7 +149,7 @@ public class HoverEvent {
          var0 -> var0.group(
                   BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("type").forGetter(var0x -> var0x.type),
                   UUIDUtil.LENIENT_CODEC.fieldOf("id").forGetter(var0x -> var0x.id),
-                  ExtraCodecs.strictOptionalField(ComponentSerialization.CODEC, "name").forGetter(var0x -> var0x.name)
+                  ComponentSerialization.CODEC.lenientOptionalFieldOf("name").forGetter(var0x -> var0x.name)
                )
                .apply(var0, HoverEvent.EntityTooltipInfo::new)
       );
@@ -151,15 +170,16 @@ public class HoverEvent {
          this.name = var3;
       }
 
-      public static DataResult<HoverEvent.EntityTooltipInfo> legacyCreate(Component var0) {
+      public static DataResult<HoverEvent.EntityTooltipInfo> legacyCreate(Component var0, @Nullable RegistryOps<?> var1) {
          try {
-            CompoundTag var1 = TagParser.parseTag(var0.getString());
-            MutableComponent var2 = Component.Serializer.fromJson(var1.getString("name"));
-            EntityType var3 = BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(var1.getString("type")));
-            UUID var4 = UUID.fromString(var1.getString("id"));
-            return DataResult.success(new HoverEvent.EntityTooltipInfo(var3, var4, var2));
-         } catch (Exception var5) {
-            return DataResult.error(() -> "Failed to parse tooltip: " + var5.getMessage());
+            CompoundTag var2 = TagParser.parseTag(var0.getString());
+            Object var3 = var1 != null ? var1.withParent(JsonOps.INSTANCE) : JsonOps.INSTANCE;
+            DataResult var4 = ComponentSerialization.CODEC.parse((DynamicOps)var3, JsonParser.parseString(var2.getString("name")));
+            EntityType var5 = BuiltInRegistries.ENTITY_TYPE.get(new ResourceLocation(var2.getString("type")));
+            UUID var6 = UUID.fromString(var2.getString("id"));
+            return var4.map(var2x -> new HoverEvent.EntityTooltipInfo(var5, var6, var2x));
+         } catch (Exception var7) {
+            return DataResult.error(() -> "Failed to parse tooltip: " + var7.getMessage());
          }
       }
 
@@ -195,35 +215,26 @@ public class HoverEvent {
    }
 
    public static class ItemStackInfo {
-      public static final Codec<HoverEvent.ItemStackInfo> FULL_CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  BuiltInRegistries.ITEM.byNameCodec().fieldOf("id").forGetter(var0x -> var0x.item),
-                  ExtraCodecs.strictOptionalField(Codec.INT, "count", 1).forGetter(var0x -> var0x.count),
-                  ExtraCodecs.strictOptionalField(TagParser.AS_CODEC, "tag").forGetter(var0x -> var0x.tag)
-               )
-               .apply(var0, HoverEvent.ItemStackInfo::new)
-      );
-      public static final Codec<HoverEvent.ItemStackInfo> CODEC = Codec.either(BuiltInRegistries.ITEM.byNameCodec(), FULL_CODEC)
-         .xmap(var0 -> (HoverEvent.ItemStackInfo)var0.map(var0x -> new HoverEvent.ItemStackInfo(var0x, 1, Optional.empty()), var0x -> var0x), Either::right);
-      private final Item item;
+      public static final Codec<HoverEvent.ItemStackInfo> FULL_CODEC = ItemStack.CODEC
+         .xmap(HoverEvent.ItemStackInfo::new, HoverEvent.ItemStackInfo::getItemStack);
+      private static final Codec<HoverEvent.ItemStackInfo> SIMPLE_CODEC = ItemStack.SIMPLE_ITEM_CODEC
+         .xmap(HoverEvent.ItemStackInfo::new, HoverEvent.ItemStackInfo::getItemStack);
+      public static final Codec<HoverEvent.ItemStackInfo> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
+      private final Holder<Item> item;
       private final int count;
-      private final Optional<CompoundTag> tag;
+      private final DataComponentPatch components;
       @Nullable
       private ItemStack itemStack;
 
-      ItemStackInfo(Item var1, int var2, @Nullable CompoundTag var3) {
-         this(var1, var2, Optional.ofNullable(var3));
-      }
-
-      ItemStackInfo(Item var1, int var2, Optional<CompoundTag> var3) {
+      ItemStackInfo(Holder<Item> var1, int var2, DataComponentPatch var3) {
          super();
          this.item = var1;
          this.count = var2;
-         this.tag = var3;
+         this.components = var3;
       }
 
       public ItemStackInfo(ItemStack var1) {
-         this(var1.getItem(), var1.getCount(), var1.getTag() != null ? Optional.of(var1.getTag().copy()) : Optional.empty());
+         this(var1.getItemHolder(), var1.getCount(), var1.getComponentsPatch());
       }
 
       @Override
@@ -232,7 +243,7 @@ public class HoverEvent {
             return true;
          } else if (var1 != null && this.getClass() == var1.getClass()) {
             HoverEvent.ItemStackInfo var2 = (HoverEvent.ItemStackInfo)var1;
-            return this.count == var2.count && this.item.equals(var2.item) && this.tag.equals(var2.tag);
+            return this.count == var2.count && this.item.equals(var2.item) && this.components.equals(var2.components);
          } else {
             return false;
          }
@@ -242,40 +253,42 @@ public class HoverEvent {
       public int hashCode() {
          int var1 = this.item.hashCode();
          var1 = 31 * var1 + this.count;
-         return 31 * var1 + this.tag.hashCode();
+         return 31 * var1 + this.components.hashCode();
       }
 
       public ItemStack getItemStack() {
          if (this.itemStack == null) {
-            this.itemStack = new ItemStack(this.item, this.count);
-            this.tag.ifPresent(this.itemStack::setTag);
+            this.itemStack = new ItemStack(this.item, this.count, this.components);
          }
 
          return this.itemStack;
       }
 
-      private static DataResult<HoverEvent.ItemStackInfo> legacyCreate(Component var0) {
+      private static DataResult<HoverEvent.ItemStackInfo> legacyCreate(Component var0, @Nullable RegistryOps<?> var1) {
          try {
-            CompoundTag var1 = TagParser.parseTag(var0.getString());
-            return DataResult.success(new HoverEvent.ItemStackInfo(ItemStack.of(var1)));
-         } catch (CommandSyntaxException var2) {
-            return DataResult.error(() -> "Failed to parse item tag: " + var2.getMessage());
+            CompoundTag var2 = TagParser.parseTag(var0.getString());
+            Object var3 = var1 != null ? var1.withParent(NbtOps.INSTANCE) : NbtOps.INSTANCE;
+            return ItemStack.CODEC.parse((DynamicOps)var3, var2).map(HoverEvent.ItemStackInfo::new);
+         } catch (CommandSyntaxException var4) {
+            return DataResult.error(() -> "Failed to parse item tag: " + var4.getMessage());
          }
       }
    }
 
-   static record TypedHoverEvent<T>(HoverEvent.Action<T> c, T d) {
-      final HoverEvent.Action<T> action;
-      final T value;
+   public interface LegacyConverter<T> {
+      DataResult<T> parse(Component var1, @Nullable RegistryOps<?> var2);
+   }
+
+   static record TypedHoverEvent<T>(HoverEvent.Action<T> action, T value) {
       public static final MapCodec<HoverEvent.TypedHoverEvent<?>> CODEC = HoverEvent.Action.CODEC
          .dispatchMap("action", HoverEvent.TypedHoverEvent::action, var0 -> var0.codec);
       public static final MapCodec<HoverEvent.TypedHoverEvent<?>> LEGACY_CODEC = HoverEvent.Action.CODEC
          .dispatchMap("action", HoverEvent.TypedHoverEvent::action, var0 -> var0.legacyCodec);
 
-      TypedHoverEvent(HoverEvent.Action<T> var1, T var2) {
+      TypedHoverEvent(HoverEvent.Action<T> action, T value) {
          super();
-         this.action = var1;
-         this.value = (T)var2;
+         this.action = action;
+         this.value = (T)value;
       }
    }
 }

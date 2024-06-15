@@ -25,18 +25,18 @@ public abstract class FallingBlock extends Block implements Fallable {
    protected abstract MapCodec<? extends FallingBlock> codec();
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       var2.scheduleTick(var3, this, this.getDelayAfterPlace());
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       var4.scheduleTick(var5, this, this.getDelayAfterPlace());
       return super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinBuildHeight()) {
          FallingBlockEntity var5 = FallingBlockEntity.fall(var2, var3, var1);
          this.falling(var5);

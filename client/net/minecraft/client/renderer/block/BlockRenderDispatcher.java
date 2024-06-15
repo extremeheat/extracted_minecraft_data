@@ -88,7 +88,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    public void renderSingleBlock(BlockState var1, PoseStack var2, MultiBufferSource var3, int var4, int var5) {
       RenderShape var6 = var1.getRenderShape();
       if (var6 != RenderShape.INVISIBLE) {
-         switch(var6) {
+         switch (var6) {
             case MODEL:
                BakedModel var7 = this.getBlockModel(var1);
                int var8 = this.blockColors.getColor(var1, null, null, 0);

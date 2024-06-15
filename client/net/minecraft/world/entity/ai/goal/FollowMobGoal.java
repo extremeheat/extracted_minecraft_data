@@ -9,7 +9,7 @@ import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 
 public class FollowMobGoal extends Goal {
    private final Mob mob;
@@ -41,7 +41,7 @@ public class FollowMobGoal extends Goal {
    public boolean canUse() {
       List var1 = this.mob.level().getEntitiesOfClass(Mob.class, this.mob.getBoundingBox().inflate((double)this.areaSize), this.followPredicate);
       if (!var1.isEmpty()) {
-         for(Mob var3 : var1) {
+         for (Mob var3 : var1) {
             if (!var3.isInvisible()) {
                this.followingMob = var3;
                return true;
@@ -62,15 +62,15 @@ public class FollowMobGoal extends Goal {
    @Override
    public void start() {
       this.timeToRecalcPath = 0;
-      this.oldWaterCost = this.mob.getPathfindingMalus(BlockPathTypes.WATER);
-      this.mob.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+      this.oldWaterCost = this.mob.getPathfindingMalus(PathType.WATER);
+      this.mob.setPathfindingMalus(PathType.WATER, 0.0F);
    }
 
    @Override
    public void stop() {
       this.followingMob = null;
       this.navigation.stop();
-      this.mob.setPathfindingMalus(BlockPathTypes.WATER, this.oldWaterCost);
+      this.mob.setPathfindingMalus(PathType.WATER, this.oldWaterCost);
    }
 
    @Override

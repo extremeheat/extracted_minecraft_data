@@ -7,23 +7,17 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.util.profiling.jfr.Percentiles;
 
-public record TimedStatSummary<T extends TimedStat>(T a, T b, @Nullable T c, int d, Map<Integer, Double> e, Duration f) {
-   private final T fastest;
-   private final T slowest;
-   @Nullable
-   private final T secondSlowest;
-   private final int count;
-   private final Map<Integer, Double> percentilesNanos;
-   private final Duration totalDuration;
-
-   public TimedStatSummary(T var1, T var2, @Nullable T var3, int var4, Map<Integer, Double> var5, Duration var6) {
+public record TimedStatSummary<T extends TimedStat>(
+   T fastest, T slowest, @Nullable T secondSlowest, int count, Map<Integer, Double> percentilesNanos, Duration totalDuration
+) {
+   public TimedStatSummary(T fastest, T slowest, @Nullable T secondSlowest, int count, Map<Integer, Double> percentilesNanos, Duration totalDuration) {
       super();
-      this.fastest = var1;
-      this.slowest = var2;
-      this.secondSlowest = var3;
-      this.count = var4;
-      this.percentilesNanos = var5;
-      this.totalDuration = var6;
+      this.fastest = (T)fastest;
+      this.slowest = (T)slowest;
+      this.secondSlowest = (T)secondSlowest;
+      this.count = count;
+      this.percentilesNanos = percentilesNanos;
+      this.totalDuration = totalDuration;
    }
 
    public static <T extends TimedStat> TimedStatSummary<T> summary(List<T> var0) {

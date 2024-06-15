@@ -599,6 +599,8 @@ public abstract class RenderType extends RenderStateShard {
          )
          .createCompositeState(false)
    );
+   private static final RenderType CLOUDS = createClouds(false);
+   private static final RenderType CLOUDS_DEPTH_ONLY = createClouds(true);
    public static final RenderType.CompositeRenderType LINES = create(
       "lines",
       DefaultVertexFormat.POSITION_COLOR_NORMAL,
@@ -1022,6 +1024,33 @@ public abstract class RenderType extends RenderStateShard {
       return END_GATEWAY;
    }
 
+   private static RenderType.CompositeRenderType createClouds(boolean var0) {
+      return create(
+         "clouds",
+         DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL,
+         VertexFormat.Mode.QUADS,
+         786432,
+         false,
+         false,
+         RenderType.CompositeState.builder()
+            .setShaderState(RENDERTYPE_CLOUDS_SHADER)
+            .setTextureState(new RenderStateShard.TextureStateShard(LevelRenderer.CLOUDS_LOCATION, false, false))
+            .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+            .setCullState(NO_CULL)
+            .setWriteMaskState(var0 ? DEPTH_WRITE : COLOR_DEPTH_WRITE)
+            .setOutputState(CLOUDS_TARGET)
+            .createCompositeState(true)
+      );
+   }
+
+   public static RenderType clouds() {
+      return CLOUDS;
+   }
+
+   public static RenderType cloudsDepthOnly() {
+      return CLOUDS_DEPTH_ONLY;
+   }
+
    public static RenderType lines() {
       return LINES;
    }
@@ -1384,8 +1413,8 @@ public abstract class RenderType extends RenderStateShard {
 
       private final String name;
 
-      private OutlineProperty(String var3) {
-         this.name = var3;
+      private OutlineProperty(final String nullxx) {
+         this.name = nullxx;
       }
 
       @Override

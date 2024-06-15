@@ -30,7 +30,7 @@ public class PlayerRespawnLogic {
          } else {
             BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
 
-            for(int var8 = var5 + 1; var8 >= var0.getMinBuildHeight(); --var8) {
+            for (int var8 = var5 + 1; var8 >= var0.getMinBuildHeight(); var8--) {
                var7.set(var1, var8, var2);
                BlockState var9 = var0.getBlockState(var7);
                if (!var9.getFluidState().isEmpty()) {
@@ -52,8 +52,8 @@ public class PlayerRespawnLogic {
       if (SharedConstants.debugVoidTerrain(var1)) {
          return null;
       } else {
-         for(int var2 = var1.getMinBlockX(); var2 <= var1.getMaxBlockX(); ++var2) {
-            for(int var3 = var1.getMinBlockZ(); var3 <= var1.getMaxBlockZ(); ++var3) {
+         for (int var2 = var1.getMinBlockX(); var2 <= var1.getMaxBlockX(); var2++) {
+            for (int var3 = var1.getMinBlockZ(); var3 <= var1.getMaxBlockZ(); var3++) {
                BlockPos var4 = getOverworldRespawnPos(var0, var2, var3);
                if (var4 != null) {
                   return var4;

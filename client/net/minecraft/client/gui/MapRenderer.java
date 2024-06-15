@@ -10,38 +10,41 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.MapDecorationTextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Matrix4f;
 
 public class MapRenderer implements AutoCloseable {
-   private static final ResourceLocation MAP_ICONS_LOCATION = new ResourceLocation("textures/map/map_icons.png");
-   static final RenderType MAP_ICONS = RenderType.text(MAP_ICONS_LOCATION);
    private static final int WIDTH = 128;
    private static final int HEIGHT = 128;
    final TextureManager textureManager;
+   final MapDecorationTextureManager decorationTextures;
    private final Int2ObjectMap<MapRenderer.MapInstance> maps = new Int2ObjectOpenHashMap();
 
-   public MapRenderer(TextureManager var1) {
+   public MapRenderer(TextureManager var1, MapDecorationTextureManager var2) {
       super();
       this.textureManager = var1;
+      this.decorationTextures = var2;
    }
 
-   public void update(int var1, MapItemSavedData var2) {
+   public void update(MapId var1, MapItemSavedData var2) {
       this.getOrCreateMapInstance(var1, var2).forceUpload();
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, MapItemSavedData var4, boolean var5, int var6) {
+   public void render(PoseStack var1, MultiBufferSource var2, MapId var3, MapItemSavedData var4, boolean var5, int var6) {
       this.getOrCreateMapInstance(var3, var4).draw(var1, var2, var5, var6);
    }
 
-   private MapRenderer.MapInstance getOrCreateMapInstance(int var1, MapItemSavedData var2) {
-      return (MapRenderer.MapInstance)this.maps.compute(var1, (var2x, var3) -> {
+   private MapRenderer.MapInstance getOrCreateMapInstance(MapId var1, MapItemSavedData var2) {
+      return (MapRenderer.MapInstance)this.maps.compute(var1.id(), (var2x, var3) -> {
          if (var3 == null) {
             return new MapRenderer.MapInstance(var2x, var2);
          } else {
@@ -54,7 +57,7 @@ public class MapRenderer implements AutoCloseable {
    public void resetData() {
       ObjectIterator var1 = this.maps.values().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          MapRenderer.MapInstance var2 = (MapRenderer.MapInstance)var1.next();
          var2.close();
       }
@@ -73,11 +76,11 @@ public class MapRenderer implements AutoCloseable {
       private final RenderType renderType;
       private boolean requiresUpload = true;
 
-      MapInstance(int var2, MapItemSavedData var3) {
+      MapInstance(final int nullx, final MapItemSavedData nullxx) {
          super();
-         this.data = var3;
+         this.data = nullxx;
          this.texture = new DynamicTexture(128, 128, true);
-         ResourceLocation var4 = MapRenderer.this.textureManager.register("map/" + var2, this.texture);
+         ResourceLocation var4 = MapRenderer.this.textureManager.register("map/" + nullx, this.texture);
          this.renderType = RenderType.text(var4);
       }
 
@@ -92,8 +95,8 @@ public class MapRenderer implements AutoCloseable {
       }
 
       private void updateTexture() {
-         for(int var1 = 0; var1 < 128; ++var1) {
-            for(int var2 = 0; var2 < 128; ++var2) {
+         for (int var1 = 0; var1 < 128; var1++) {
+            for (int var2 = 0; var2 < 128; var2++) {
                int var3 = var2 + var1 * 128;
                this.texture.getPixels().setPixelRGBA(var2, var1, MapColor.getColorFromPackedId(this.data.colors[var3]));
             }
@@ -119,29 +122,29 @@ public class MapRenderer implements AutoCloseable {
          var9.vertex(var8, 0.0F, 0.0F, -0.01F).color(255, 255, 255, 255).uv(0.0F, 0.0F).uv2(var4).endVertex();
          int var10 = 0;
 
-         for(MapDecoration var12 : this.data.getDecorations()) {
+         for (MapDecoration var12 : this.data.getDecorations()) {
             if (!var3 || var12.renderOnFrame()) {
                var1.pushPose();
                var1.translate(0.0F + (float)var12.x() / 2.0F + 64.0F, 0.0F + (float)var12.y() / 2.0F + 64.0F, -0.02F);
                var1.mulPose(Axis.ZP.rotationDegrees((float)(var12.rot() * 360) / 16.0F));
                var1.scale(4.0F, 4.0F, 3.0F);
                var1.translate(-0.125F, 0.125F, 0.0F);
-               byte var13 = var12.getImage();
-               float var14 = (float)(var13 % 16 + 0) / 16.0F;
-               float var15 = (float)(var13 / 16 + 0) / 16.0F;
-               float var16 = (float)(var13 % 16 + 1) / 16.0F;
-               float var17 = (float)(var13 / 16 + 1) / 16.0F;
-               Matrix4f var18 = var1.last().pose();
-               float var19 = -0.001F;
-               VertexConsumer var20 = var2.getBuffer(MapRenderer.MAP_ICONS);
-               var20.vertex(var18, -1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var14, var15).uv2(var4).endVertex();
-               var20.vertex(var18, 1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var15).uv2(var4).endVertex();
-               var20.vertex(var18, 1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var17).uv2(var4).endVertex();
-               var20.vertex(var18, -1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var14, var17).uv2(var4).endVertex();
+               Matrix4f var13 = var1.last().pose();
+               float var14 = -0.001F;
+               TextureAtlasSprite var15 = MapRenderer.this.decorationTextures.get(var12);
+               float var16 = var15.getU0();
+               float var17 = var15.getV0();
+               float var18 = var15.getU1();
+               float var19 = var15.getV1();
+               VertexConsumer var20 = var2.getBuffer(RenderType.text(var15.atlasLocation()));
+               var20.vertex(var13, -1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var17).uv2(var4).endVertex();
+               var20.vertex(var13, 1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var18, var17).uv2(var4).endVertex();
+               var20.vertex(var13, 1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var18, var19).uv2(var4).endVertex();
+               var20.vertex(var13, -1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var19).uv2(var4).endVertex();
                var1.popPose();
-               if (var12.name() != null) {
+               if (var12.name().isPresent()) {
                   Font var21 = Minecraft.getInstance().font;
-                  Component var22 = var12.name();
+                  Component var22 = var12.name().get();
                   float var23 = (float)var21.width(var22);
                   float var24 = Mth.clamp(25.0F / var23, 0.0F, 6.0F / 9.0F);
                   var1.pushPose();
@@ -152,7 +155,7 @@ public class MapRenderer implements AutoCloseable {
                   var1.popPose();
                }
 
-               ++var10;
+               var10++;
             }
          }
       }

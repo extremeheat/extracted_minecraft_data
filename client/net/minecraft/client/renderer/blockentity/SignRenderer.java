@@ -23,7 +23,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -114,8 +113,8 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
       int var9 = getDarkColor(var2);
       int var10 = 4 * var6 / 2;
       FormattedCharSequence[] var11 = var2.getRenderMessages(Minecraft.getInstance().isTextFilteringEnabled(), var2x -> {
-         List var3xx = this.font.split(var2x, var7);
-         return var3xx.isEmpty() ? FormattedCharSequence.EMPTY : (FormattedCharSequence)var3xx.get(0);
+         List var3x = this.font.split(var2x, var7);
+         return var3x.isEmpty() ? FormattedCharSequence.EMPTY : (FormattedCharSequence)var3x.get(0);
       });
       int var12;
       boolean var13;
@@ -130,7 +129,7 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
          var14 = var5;
       }
 
-      for(int var15 = 0; var15 < 4; ++var15) {
+      for (int var15 = 0; var15 < 4; var15++) {
          FormattedCharSequence var16 = var11[var15];
          float var17 = (float)(-this.font.width(var16) / 2);
          if (var13) {

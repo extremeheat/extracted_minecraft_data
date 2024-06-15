@@ -20,22 +20,18 @@ public interface ChunkTrackingView {
       return new ChunkTrackingView.Positioned(var0, var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    static void difference(ChunkTrackingView var0, ChunkTrackingView var1, Consumer<ChunkPos> var2, Consumer<ChunkPos> var3) {
       if (!var0.equals(var1)) {
-         if (var0 instanceof ChunkTrackingView.Positioned var4
-            && var1 instanceof ChunkTrackingView.Positioned var5
-            && var4.squareIntersects((ChunkTrackingView.Positioned)var5)) {
-            int var6 = Math.min(var4.minX(), ((ChunkTrackingView.Positioned)var5).minX());
-            int var7 = Math.min(var4.minZ(), ((ChunkTrackingView.Positioned)var5).minZ());
-            int var8 = Math.max(var4.maxX(), ((ChunkTrackingView.Positioned)var5).maxX());
-            int var9 = Math.max(var4.maxZ(), ((ChunkTrackingView.Positioned)var5).maxZ());
+         if (var0 instanceof ChunkTrackingView.Positioned var4 && var1 instanceof ChunkTrackingView.Positioned var5 && var4.squareIntersects(var5)) {
+            int var6 = Math.min(var4.minX(), var5.minX());
+            int var7 = Math.min(var4.minZ(), var5.minZ());
+            int var8 = Math.max(var4.maxX(), var5.maxX());
+            int var9 = Math.max(var4.maxZ(), var5.maxZ());
 
-            for(int var10 = var6; var10 <= var8; ++var10) {
-               for(int var11 = var7; var11 <= var9; ++var11) {
+            for (int var10 = var6; var10 <= var8; var10++) {
+               for (int var11 = var7; var11 <= var9; var11++) {
                   boolean var12 = var4.contains(var10, var11);
-                  boolean var13 = ((ChunkTrackingView.Positioned)var5).contains(var10, var11);
+                  boolean var13 = var5.contains(var10, var11);
                   if (var12 != var13) {
                      if (var13) {
                         var2.accept(new ChunkPos(var10, var11));
@@ -84,14 +80,11 @@ public interface ChunkTrackingView {
       return var12 < (long)var14;
    }
 
-   public static record Positioned(ChunkPos b, int c) implements ChunkTrackingView {
-      private final ChunkPos center;
-      private final int viewDistance;
-
-      public Positioned(ChunkPos var1, int var2) {
+   public static record Positioned(ChunkPos center, int viewDistance) implements ChunkTrackingView {
+      public Positioned(ChunkPos center, int viewDistance) {
          super();
-         this.center = var1;
-         this.viewDistance = var2;
+         this.center = center;
+         this.viewDistance = viewDistance;
       }
 
       int minX() {
@@ -122,8 +115,8 @@ public interface ChunkTrackingView {
 
       @Override
       public void forEach(Consumer<ChunkPos> var1) {
-         for(int var2 = this.minX(); var2 <= this.maxX(); ++var2) {
-            for(int var3 = this.minZ(); var3 <= this.maxZ(); ++var3) {
+         for (int var2 = this.minX(); var2 <= this.maxX(); var2++) {
+            for (int var3 = this.minZ(); var3 <= this.maxZ(); var3++) {
                if (this.contains(var2, var3)) {
                   var1.accept(new ChunkPos(var2, var3));
                }

@@ -17,7 +17,7 @@ public class WaterCurrentDownParticle extends TextureSheetParticle {
       this.yd = -0.05;
       this.zd = 0.0;
       this.setSize(0.02F, 0.02F);
-      this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
+      this.quadSize = this.quadSize * (this.random.nextFloat() * 0.6F + 0.2F);
       this.gravity = 0.002F;
    }
 
@@ -35,8 +35,8 @@ public class WaterCurrentDownParticle extends TextureSheetParticle {
          this.remove();
       } else {
          float var1 = 0.6F;
-         this.xd += (double)(0.6F * Mth.cos(this.angle));
-         this.zd += (double)(0.6F * Mth.sin(this.angle));
+         this.xd = this.xd + (double)(0.6F * Mth.cos(this.angle));
+         this.zd = this.zd + (double)(0.6F * Mth.sin(this.angle));
          this.xd *= 0.07;
          this.zd *= 0.07;
          this.move(this.xd, this.yd, this.zd);

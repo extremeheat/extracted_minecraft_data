@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.TimeArgument;
@@ -47,23 +46,23 @@ public class WeatherCommand {
    }
 
    private static int getDuration(CommandSourceStack var0, int var1, IntProvider var2) {
-      return var1 == -1 ? var2.sample(var0.getLevel().getRandom()) : var1;
+      return var1 == -1 ? var2.sample(var0.getServer().overworld().getRandom()) : var1;
    }
 
    private static int setClear(CommandSourceStack var0, int var1) {
-      var0.getLevel().setWeatherParameters(getDuration(var0, var1, ServerLevel.RAIN_DELAY), 0, false, false);
+      var0.getServer().overworld().setWeatherParameters(getDuration(var0, var1, ServerLevel.RAIN_DELAY), 0, false, false);
       var0.sendSuccess(() -> Component.translatable("commands.weather.set.clear"), true);
       return var1;
    }
 
    private static int setRain(CommandSourceStack var0, int var1) {
-      var0.getLevel().setWeatherParameters(0, getDuration(var0, var1, ServerLevel.RAIN_DURATION), true, false);
+      var0.getServer().overworld().setWeatherParameters(0, getDuration(var0, var1, ServerLevel.RAIN_DURATION), true, false);
       var0.sendSuccess(() -> Component.translatable("commands.weather.set.rain"), true);
       return var1;
    }
 
    private static int setThunder(CommandSourceStack var0, int var1) {
-      var0.getLevel().setWeatherParameters(0, getDuration(var0, var1, ServerLevel.THUNDER_DURATION), true, true);
+      var0.getServer().overworld().setWeatherParameters(0, getDuration(var0, var1, ServerLevel.THUNDER_DURATION), true, true);
       var0.sendSuccess(() -> Component.translatable("commands.weather.set.thunder"), true);
       return var1;
    }

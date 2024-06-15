@@ -13,7 +13,7 @@ public class SkipFields extends CollectToTag {
       super();
       FieldTree var2 = FieldTree.createRoot();
 
-      for(FieldSelector var6 : var1) {
+      for (FieldSelector var6 : var1) {
          var2.addEntry(var6);
       }
 

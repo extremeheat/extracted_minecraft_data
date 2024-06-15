@@ -2,12 +2,12 @@ package net.minecraft.world.item.crafting;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.DyeableLeatherItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.Level;
 
 public class ArmorDyeRecipe extends CustomRecipe {
@@ -19,10 +19,10 @@ public class ArmorDyeRecipe extends CustomRecipe {
       ItemStack var3 = ItemStack.EMPTY;
       ArrayList var4 = Lists.newArrayList();
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
-            if (var6.getItem() instanceof DyeableLeatherItem) {
+            if (var6.is(ItemTags.DYEABLE)) {
                if (!var3.isEmpty()) {
                   return false;
                }
@@ -41,31 +41,30 @@ public class ArmorDyeRecipe extends CustomRecipe {
       return !var3.isEmpty() && !var4.isEmpty();
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ArrayList var3 = Lists.newArrayList();
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
-            Item var7 = var6.getItem();
-            if (var7 instanceof DyeableLeatherItem) {
+            if (var6.is(ItemTags.DYEABLE)) {
                if (!var4.isEmpty()) {
                   return ItemStack.EMPTY;
                }
 
                var4 = var6.copy();
             } else {
-               if (!(var7 instanceof DyeItem)) {
+               if (!(var6.getItem() instanceof DyeItem var7)) {
                   return ItemStack.EMPTY;
                }
 
-               var3.add((DyeItem)var7);
+               var3.add(var7);
             }
          }
       }
 
-      return !var4.isEmpty() && !var3.isEmpty() ? DyeableLeatherItem.dyeArmor(var4, var3) : ItemStack.EMPTY;
+      return !var4.isEmpty() && !var3.isEmpty() ? DyedItemColor.applyDyes(var4, var3) : ItemStack.EMPTY;
    }
 
    @Override

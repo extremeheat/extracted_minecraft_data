@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -34,7 +35,7 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
       int var2 = -1;
       int var3 = 1;
 
-      for(int var4 = 0; var4 < this.items.size(); ++var4) {
+      for (int var4 = 0; var4 < this.items.size(); var4++) {
          if (!this.items.get(var4).isEmpty() && var1.nextInt(var3++) == 0) {
             var2 = var4;
          }
@@ -44,7 +45,7 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    public int addItem(ItemStack var1) {
-      for(int var2 = 0; var2 < this.items.size(); ++var2) {
+      for (int var2 = 0; var2 < this.items.size(); var2++) {
          if (this.items.get(var2).isEmpty()) {
             this.setItem(var2, var1);
             return var2;
@@ -60,19 +61,19 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
-         ContainerHelper.loadAllItems(var1, this.items);
+         ContainerHelper.loadAllItems(var1, this.items, var2);
       }
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.items);
+         ContainerHelper.saveAllItems(var1, this.items, var2);
       }
    }
 

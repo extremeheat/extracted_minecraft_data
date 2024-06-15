@@ -2,18 +2,14 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
-public record BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> b, Direction c, BlockPredicate d, boolean e) implements FeatureConfiguration {
-   private final List<BlockColumnConfiguration.Layer> layers;
-   private final Direction direction;
-   private final BlockPredicate allowedPlacement;
-   private final boolean prioritizeTip;
+public record BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> layers, Direction direction, BlockPredicate allowedPlacement, boolean prioritizeTip)
+   implements FeatureConfiguration {
    public static final Codec<BlockColumnConfiguration> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                BlockColumnConfiguration.Layer.CODEC.listOf().fieldOf("layers").forGetter(BlockColumnConfiguration::layers),
@@ -24,12 +20,12 @@ public record BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> b, D
             .apply(var0, BlockColumnConfiguration::new)
    );
 
-   public BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> var1, Direction var2, BlockPredicate var3, boolean var4) {
+   public BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> layers, Direction direction, BlockPredicate allowedPlacement, boolean prioritizeTip) {
       super();
-      this.layers = var1;
-      this.direction = var2;
-      this.allowedPlacement = var3;
-      this.prioritizeTip = var4;
+      this.layers = layers;
+      this.direction = direction;
+      this.allowedPlacement = allowedPlacement;
+      this.prioritizeTip = prioritizeTip;
    }
 
    public static BlockColumnConfiguration.Layer layer(IntProvider var0, BlockStateProvider var1) {
@@ -40,9 +36,7 @@ public record BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> b, D
       return new BlockColumnConfiguration(List.of(layer(var0, var1)), Direction.UP, BlockPredicate.ONLY_IN_AIR_PREDICATE, false);
    }
 
-   public static record Layer(IntProvider b, BlockStateProvider c) {
-      private final IntProvider height;
-      private final BlockStateProvider state;
+   public static record Layer(IntProvider height, BlockStateProvider state) {
       public static final Codec<BlockColumnConfiguration.Layer> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   IntProvider.NON_NEGATIVE_CODEC.fieldOf("height").forGetter(BlockColumnConfiguration.Layer::height),
@@ -51,10 +45,10 @@ public record BlockColumnConfiguration(List<BlockColumnConfiguration.Layer> b, D
                .apply(var0, BlockColumnConfiguration.Layer::new)
       );
 
-      public Layer(IntProvider var1, BlockStateProvider var2) {
+      public Layer(IntProvider height, BlockStateProvider state) {
          super();
-         this.height = var1;
-         this.state = var2;
+         this.height = height;
+         this.state = state;
       }
    }
 }

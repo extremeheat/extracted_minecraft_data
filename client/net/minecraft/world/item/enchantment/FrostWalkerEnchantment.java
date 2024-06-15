@@ -2,7 +2,6 @@ package net.minecraft.world.item.enchantment;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -11,28 +10,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class FrostWalkerEnchantment extends Enchantment {
-   public FrostWalkerEnchantment(Enchantment.Rarity var1, EquipmentSlot... var2) {
-      super(var1, EnchantmentCategory.ARMOR_FEET, var2);
-   }
-
-   @Override
-   public int getMinCost(int var1) {
-      return var1 * 10;
-   }
-
-   @Override
-   public int getMaxCost(int var1) {
-      return this.getMinCost(var1) + 15;
+   public FrostWalkerEnchantment(Enchantment.EnchantmentDefinition var1) {
+      super(var1);
    }
 
    @Override
    public boolean isTreasureOnly() {
       return true;
-   }
-
-   @Override
-   public int getMaxLevel() {
-      return 2;
    }
 
    public static void onEntityMoved(LivingEntity var0, Level var1, BlockPos var2, int var3) {
@@ -41,7 +25,7 @@ public class FrostWalkerEnchantment extends Enchantment {
          int var5 = Math.min(16, 2 + var3);
          BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-         for(BlockPos var8 : BlockPos.betweenClosed(var2.offset(-var5, -1, -var5), var2.offset(var5, -1, var5))) {
+         for (BlockPos var8 : BlockPos.betweenClosed(var2.offset(-var5, -1, -var5), var2.offset(var5, -1, var5))) {
             if (var8.closerToCenterThan(var0.position(), (double)var5)) {
                var6.set(var8.getX(), var8.getY() + 1, var8.getZ());
                BlockState var9 = var1.getBlockState(var6);

@@ -74,10 +74,10 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
       if (var2.isAir() || var2.is(Blocks.WATER) && var2.getFluidState().is(Fluids.WATER)) {
          int var3 = 0;
 
-         for(BlockPos var5 : BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 2, 4))) {
+         for (BlockPos var5 : BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 2, 4))) {
             BlockState var6 = var0.getBlockState(var5);
             if (var6.is(Blocks.SCULK_SENSOR) || var6.is(Blocks.SCULK_SHRIEKER)) {
-               ++var3;
+               var3++;
             }
 
             if (var3 > 2) {

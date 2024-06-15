@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.ArrayList;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FeatureFlagRemoveFix extends DataFix {
    private final String name;
@@ -40,7 +38,7 @@ public class FeatureFlagRemoveFix extends DataFix {
                      if (var5) {
                         var2.add(var1.createString((String)var4.get()));
                      }
-   
+
                      return !var5;
                   }
                })).map(var1::createList), var3x)

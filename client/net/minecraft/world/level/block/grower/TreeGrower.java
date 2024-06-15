@@ -12,7 +12,6 @@ import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
@@ -24,7 +23,7 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
 public final class TreeGrower {
    private static final Map<String, TreeGrower> GROWERS = new Object2ObjectArrayMap();
-   public static final Codec<TreeGrower> CODEC = ExtraCodecs.stringResolverCodec(var0 -> var0.name, GROWERS::get);
+   public static final Codec<TreeGrower> CODEC = Codec.stringResolver(var0 -> var0.name, GROWERS::get);
    public static final TreeGrower OAK = new TreeGrower(
       "oak",
       0.1F,
@@ -130,8 +129,8 @@ public final class TreeGrower {
       if (var6 != null) {
          Holder var7 = var1.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE).getHolder(var6).orElse(null);
          if (var7 != null) {
-            for(int var8 = 0; var8 >= -1; --var8) {
-               for(int var9 = 0; var9 >= -1; --var9) {
+            for (int var8 = 0; var8 >= -1; var8--) {
+               for (int var9 = 0; var9 >= -1; var9--) {
                   if (isTwoByTwoSapling(var4, var1, var3, var8, var9)) {
                      ConfiguredFeature var10 = (ConfiguredFeature)var7.value();
                      BlockState var11 = Blocks.AIR.defaultBlockState();
@@ -188,7 +187,7 @@ public final class TreeGrower {
    }
 
    private boolean hasFlowers(LevelAccessor var1, BlockPos var2) {
-      for(BlockPos var4 : BlockPos.MutableBlockPos.betweenClosed(var2.below().north(2).west(2), var2.above().south(2).east(2))) {
+      for (BlockPos var4 : BlockPos.MutableBlockPos.betweenClosed(var2.below().north(2).west(2), var2.above().south(2).east(2))) {
          if (var1.getBlockState(var4).is(BlockTags.FLOWERS)) {
             return true;
          }

@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.GlowSquid;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,6 +31,7 @@ import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.allay.Allay;
+import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.animal.camel.Camel;
 import net.minecraft.world.entity.animal.frog.Frog;
@@ -45,10 +45,13 @@ import net.minecraft.world.entity.animal.horse.ZombieHorse;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Blaze;
+import net.minecraft.world.entity.monster.Bogged;
 import net.minecraft.world.entity.monster.CaveSpider;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.entity.monster.ElderGuardian;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Endermite;
@@ -84,11 +87,13 @@ public class DefaultAttributes {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<EntityType<? extends LivingEntity>, AttributeSupplier> SUPPLIERS = ImmutableMap.builder()
       .put(EntityType.ALLAY, Allay.createAttributes().build())
-      .put(EntityType.ARMOR_STAND, LivingEntity.createLivingAttributes().build())
+      .put(EntityType.ARMADILLO, Armadillo.createAttributes().build())
+      .put(EntityType.ARMOR_STAND, ArmorStand.createAttributes().build())
       .put(EntityType.AXOLOTL, Axolotl.createAttributes().build())
       .put(EntityType.BAT, Bat.createAttributes().build())
       .put(EntityType.BEE, Bee.createAttributes().build())
       .put(EntityType.BLAZE, Blaze.createAttributes().build())
+      .put(EntityType.BOGGED, Bogged.createAttributes().build())
       .put(EntityType.CAT, Cat.createAttributes().build())
       .put(EntityType.CAMEL, Camel.createAttributes().build())
       .put(EntityType.CAVE_SPIDER, CaveSpider.createCaveSpider().build())
@@ -98,7 +103,7 @@ public class DefaultAttributes {
       .put(EntityType.CREEPER, Creeper.createAttributes().build())
       .put(EntityType.DOLPHIN, Dolphin.createAttributes().build())
       .put(EntityType.DONKEY, AbstractChestedHorse.createBaseChestedHorseAttributes().build())
-      .put(EntityType.DROWNED, Zombie.createAttributes().build())
+      .put(EntityType.DROWNED, Drowned.createAttributes().build())
       .put(EntityType.ELDER_GUARDIAN, ElderGuardian.createAttributes().build())
       .put(EntityType.ENDERMAN, EnderMan.createAttributes().build())
       .put(EntityType.ENDERMITE, Endermite.createAttributes().build())
@@ -183,7 +188,7 @@ public class DefaultAttributes {
       BuiltInRegistries.ENTITY_TYPE
          .stream()
          .filter(var0 -> var0.getCategory() != MobCategory.MISC)
-         .filter(var0 -> !hasSupplier(var0))
+         .filter(var0 -> !hasSupplier((EntityType<?>)var0))
          .map(BuiltInRegistries.ENTITY_TYPE::getKey)
          .forEach(var0 -> Util.logAndPauseIfInIde("Entity " + var0 + " has no attributes"));
    }

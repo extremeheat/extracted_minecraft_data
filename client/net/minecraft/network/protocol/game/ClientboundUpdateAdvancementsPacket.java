@@ -8,10 +8,16 @@ import java.util.Set;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket> STREAM_CODEC = Packet.codec(
+      ClientboundUpdateAdvancementsPacket::write, ClientboundUpdateAdvancementsPacket::new
+   );
    private final boolean reset;
    private final List<AdvancementHolder> added;
    private final Set<ResourceLocation> removed;
@@ -27,20 +33,24 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
       this.progress = Map.copyOf(var4);
    }
 
-   public ClientboundUpdateAdvancementsPacket(FriendlyByteBuf var1) {
+   private ClientboundUpdateAdvancementsPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.reset = var1.readBoolean();
-      this.added = var1.readList(AdvancementHolder::read);
+      this.added = AdvancementHolder.LIST_STREAM_CODEC.decode(var1);
       this.removed = var1.readCollection(Sets::newLinkedHashSetWithExpectedSize, FriendlyByteBuf::readResourceLocation);
       this.progress = var1.readMap(FriendlyByteBuf::readResourceLocation, AdvancementProgress::fromNetwork);
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeBoolean(this.reset);
-      var1.writeCollection(this.added, (var0, var1x) -> var1x.write(var0));
+      AdvancementHolder.LIST_STREAM_CODEC.encode(var1, this.added);
       var1.writeCollection(this.removed, FriendlyByteBuf::writeResourceLocation);
       var1.writeMap(this.progress, FriendlyByteBuf::writeResourceLocation, (var0, var1x) -> var1x.serializeToNetwork(var0));
+   }
+
+   @Override
+   public PacketType<ClientboundUpdateAdvancementsPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_UPDATE_ADVANCEMENTS;
    }
 
    public void handle(ClientGamePacketListener var1) {

@@ -82,7 +82,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
       public static Optional<SpectatorMenuItem> create(Minecraft var0, PlayerTeam var1) {
          ArrayList var2 = new ArrayList();
 
-         for(String var4 : var1.getPlayers()) {
+         for (String var4 : var1.getPlayers()) {
             PlayerInfo var5 = var0.getConnection().getPlayerInfo(var4);
             if (var5 != null && var5.getGameMode() != GameType.SPECTATOR) {
                var2.add(var5);

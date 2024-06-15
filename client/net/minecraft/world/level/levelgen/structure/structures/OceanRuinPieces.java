@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -50,6 +51,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.AppendLoot;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class OceanRuinPieces {
    static final StructureProcessor WARM_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(
@@ -127,7 +129,7 @@ public class OceanRuinPieces {
       super();
    }
 
-   private static StructureProcessor archyRuleProcessor(Block var0, Block var1, ResourceLocation var2) {
+   private static StructureProcessor archyRuleProcessor(Block var0, Block var1, ResourceKey<LootTable> var2) {
       return new CappedProcessor(
          new RuleProcessor(
             List.of(
@@ -167,7 +169,7 @@ public class OceanRuinPieces {
       List var10 = allPositions(var1, var9);
       int var11 = Mth.nextInt(var1, 4, 8);
 
-      for(int var12 = 0; var12 < var11; ++var12) {
+      for (int var12 = 0; var12 < var11; var12++) {
          if (!var10.isEmpty()) {
             int var13 = var1.nextInt(var10.size());
             BlockPos var14 = (BlockPos)var10.remove(var13);
@@ -204,7 +206,7 @@ public class OceanRuinPieces {
       boolean var6,
       float var7
    ) {
-      switch(var5.biomeTemp) {
+      switch (var5.biomeTemp) {
          case WARM:
          default:
             ResourceLocation var8 = var6 ? getBigWarmRuin(var4) : getSmallWarmRuin(var4);
@@ -287,7 +289,7 @@ public class OceanRuinPieces {
             if (var7 != null) {
                var7.setPersistenceRequired();
                var7.moveTo(var2, 0.0F, 0.0F);
-               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, null, null);
+               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, null);
                var3.addFreshEntityWithPassengers(var7);
                if (var2.getY() > var3.getSeaLevel()) {
                   var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
@@ -299,9 +301,7 @@ public class OceanRuinPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.templatePosition.getX(), this.templatePosition.getZ());
          this.templatePosition = new BlockPos(this.templatePosition.getX(), var8, this.templatePosition.getZ());
          BlockPos var9 = StructureTemplate.transform(
@@ -321,14 +321,14 @@ public class OceanRuinPieces {
          int var6 = var4 - 1;
          int var7 = 0;
 
-         for(BlockPos var9 : BlockPos.betweenClosed(var1, var3)) {
+         for (BlockPos var9 : BlockPos.betweenClosed(var1, var3)) {
             int var10 = var9.getX();
             int var11 = var9.getZ();
             int var12 = var1.getY() - 1;
             BlockPos.MutableBlockPos var13 = new BlockPos.MutableBlockPos(var10, var12, var11);
             BlockState var14 = var2.getBlockState(var13);
 
-            for(FluidState var15 = var2.getFluidState(var13);
+            for (FluidState var15 = var2.getFluidState(var13);
                (var14.isAir() || var15.is(FluidTags.WATER) || var14.is(BlockTags.ICE)) && var12 > var2.getMinBuildHeight() + 1;
                var15 = var2.getFluidState(var13)
             ) {
@@ -338,7 +338,7 @@ public class OceanRuinPieces {
 
             var5 = Math.min(var5, var12);
             if (var12 < var6 - 2) {
-               ++var7;
+               var7++;
             }
          }
 

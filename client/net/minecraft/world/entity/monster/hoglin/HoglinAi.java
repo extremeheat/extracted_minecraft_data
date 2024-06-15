@@ -78,7 +78,7 @@ public class HoglinAi {
          10,
          ImmutableList.of(
             BecomePassiveIfMemoryPresent.create(MemoryModuleType.NEAREST_REPELLENT, 200),
-            new AnimalMakeLove(EntityType.HOGLIN, 0.6F),
+            new AnimalMakeLove(EntityType.HOGLIN, 0.6F, 2),
             SetWalkTargetAwayFrom.pos(MemoryModuleType.NEAREST_REPELLENT, 1.0F, 8, true),
             StartAttacking.create(HoglinAi::findNearestValidAttackTarget),
             BehaviorBuilder.triggerIf(Hoglin::isAdult, SetWalkTargetAwayFrom.entity(MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLIN, 0.4F, 8, false)),
@@ -95,7 +95,7 @@ public class HoglinAi {
          10,
          ImmutableList.of(
             BecomePassiveIfMemoryPresent.create(MemoryModuleType.NEAREST_REPELLENT, 200),
-            new AnimalMakeLove(EntityType.HOGLIN, 0.6F),
+            new AnimalMakeLove(EntityType.HOGLIN, 0.6F, 2),
             SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F),
             BehaviorBuilder.triggerIf(Hoglin::isAdult, MeleeAttack.create(40)),
             BehaviorBuilder.triggerIf(AgeableMob::isBaby, MeleeAttack.create(15)),
@@ -132,7 +132,7 @@ public class HoglinAi {
       var1.setActiveActivityToFirstValid(ImmutableList.of(Activity.FIGHT, Activity.AVOID, Activity.IDLE));
       Activity var3 = var1.getActiveNonCoreActivity().orElse(null);
       if (var2 != var3) {
-         getSoundForCurrentActivity(var0).ifPresent(var0::playSoundEvent);
+         getSoundForCurrentActivity(var0).ifPresent(var0::makeSound);
       }
 
       var0.setAggressive(var1.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));

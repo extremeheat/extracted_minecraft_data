@@ -32,12 +32,12 @@ public class SporeBlossomBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return Block.canSupportCenter(var2, var3.above(), Direction.DOWN) && !var2.isWaterAt(var3);
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == Direction.UP && !this.canSurvive(var1, var4, var5)
          ? Blocks.AIR.defaultBlockState()
          : super.updateShape(var1, var2, var3, var4, var5, var6);
@@ -54,7 +54,7 @@ public class SporeBlossomBlock extends Block {
       var2.addParticle(ParticleTypes.FALLING_SPORE_BLOSSOM, var8, var10, var12, 0.0, 0.0, 0.0);
       BlockPos.MutableBlockPos var14 = new BlockPos.MutableBlockPos();
 
-      for(int var15 = 0; var15 < 14; ++var15) {
+      for (int var15 = 0; var15 < 14; var15++) {
          var14.set(var5 + Mth.nextInt(var4, -10, 10), var6 - var4.nextInt(10), var7 + Mth.nextInt(var4, -10, 10));
          BlockState var16 = var2.getBlockState(var14);
          if (!var16.isCollisionShapeFullBlock(var2, var14)) {
@@ -72,7 +72,7 @@ public class SporeBlossomBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 }

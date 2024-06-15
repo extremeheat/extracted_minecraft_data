@@ -89,7 +89,7 @@ public class TurtleEggBlock extends Block {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (this.shouldUpdateHatchLevel(var2) && onSand(var2, var3)) {
          int var5 = var1.getValue(HATCH);
          if (var5 < 2) {
@@ -101,7 +101,7 @@ public class TurtleEggBlock extends Block {
             var2.removeBlock(var3, false);
             var2.gameEvent(GameEvent.BLOCK_DESTROY, var3, GameEvent.Context.of(var1));
 
-            for(int var6 = 0; var6 < var1.getValue(EGGS); ++var6) {
+            for (int var6 = 0; var6 < var1.getValue(EGGS); var6++) {
                var2.levelEvent(2001, var3, Block.getId(var1));
                Turtle var7 = EntityType.TURTLE.create(var2);
                if (var7 != null) {
@@ -124,19 +124,15 @@ public class TurtleEggBlock extends Block {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (onSand(var2, var3) && !var2.isClientSide) {
-         var2.levelEvent(2005, var3, 0);
+         var2.levelEvent(2012, var3, 15);
       }
    }
 
    private boolean shouldUpdateHatchLevel(Level var1) {
       float var2 = var1.getTimeOfDay(1.0F);
-      if ((double)var2 < 0.69 && (double)var2 > 0.65) {
-         return true;
-      } else {
-         return var1.random.nextInt(500) == 0;
-      }
+      return (double)var2 < 0.69 && (double)var2 > 0.65 ? true : var1.random.nextInt(500) == 0;
    }
 
    @Override
@@ -146,7 +142,7 @@ public class TurtleEggBlock extends Block {
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       return !var2.isSecondaryUseActive() && var2.getItemInHand().is(this.asItem()) && var1.getValue(EGGS) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
@@ -158,7 +154,7 @@ public class TurtleEggBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return var1.getValue(EGGS) > 1 ? MULTIPLE_EGGS_AABB : ONE_EGG_AABB;
    }
 
@@ -170,10 +166,8 @@ public class TurtleEggBlock extends Block {
    private boolean canDestroyEgg(Level var1, Entity var2) {
       if (var2 instanceof Turtle || var2 instanceof Bat) {
          return false;
-      } else if (!(var2 instanceof LivingEntity)) {
-         return false;
       } else {
-         return var2 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+         return !(var2 instanceof LivingEntity) ? false : var2 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
       }
    }
 }

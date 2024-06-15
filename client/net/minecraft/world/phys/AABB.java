@@ -91,23 +91,18 @@ public class AABB {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof AABB)) {
+      } else if (!(var1 instanceof AABB var2)) {
+         return false;
+      } else if (Double.compare(var2.minX, this.minX) != 0) {
+         return false;
+      } else if (Double.compare(var2.minY, this.minY) != 0) {
+         return false;
+      } else if (Double.compare(var2.minZ, this.minZ) != 0) {
+         return false;
+      } else if (Double.compare(var2.maxX, this.maxX) != 0) {
          return false;
       } else {
-         AABB var2 = (AABB)var1;
-         if (Double.compare(var2.minX, this.minX) != 0) {
-            return false;
-         } else if (Double.compare(var2.minY, this.minY) != 0) {
-            return false;
-         } else if (Double.compare(var2.minZ, this.minZ) != 0) {
-            return false;
-         } else if (Double.compare(var2.maxX, this.maxX) != 0) {
-            return false;
-         } else if (Double.compare(var2.maxY, this.maxY) != 0) {
-            return false;
-         } else {
-            return Double.compare(var2.maxZ, this.maxZ) == 0;
-         }
+         return Double.compare(var2.maxY, this.maxY) != 0 ? false : Double.compare(var2.maxZ, this.maxZ) == 0;
       }
    }
 
@@ -316,7 +311,7 @@ public class AABB {
       double var8 = var2.y - var1.y;
       double var10 = var2.z - var1.z;
 
-      for(AABB var13 : var0) {
+      for (AABB var13 : var0) {
          var5 = getDirection(var13.move(var3), var1, var4, var5, var6, var8, var10);
       }
 

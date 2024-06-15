@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.models.model.ModelLocationUtils;
 import net.minecraft.data.models.model.ModelTemplate;
@@ -54,8 +55,12 @@ public class ItemModelGenerators {
       var3.create(ModelLocationUtils.getModelLocation(var1), TextureMapping.layer0(var2), this.output);
    }
 
+   private void generateItemWithOverlay(Item var1) {
+      this.generateLayeredItem(ModelLocationUtils.getModelLocation(var1), TextureMapping.getItemTexture(var1), TextureMapping.getItemTexture(var1, "_overlay"));
+   }
+
    private void generateCompassItem(Item var1) {
-      for(int var2 = 0; var2 < 32; ++var2) {
+      for (int var2 = 0; var2 < 32; var2++) {
          if (var2 != 16) {
             this.generateFlatItem(var1, String.format(Locale.ROOT, "_%02d", var2), ModelTemplates.FLAT_ITEM);
          }
@@ -63,7 +68,7 @@ public class ItemModelGenerators {
    }
 
    private void generateClockItem(Item var1) {
-      for(int var2 = 1; var2 < 64; ++var2) {
+      for (int var2 = 1; var2 < 64; var2++) {
          this.generateFlatItem(var1, String.format(Locale.ROOT, "_%02d", var2), ModelTemplates.FLAT_ITEM);
       }
    }
@@ -80,11 +85,11 @@ public class ItemModelGenerators {
       return var1.withSuffix("_" + var2 + "_trim");
    }
 
-   private JsonObject generateBaseArmorTrimTemplate(ResourceLocation var1, Map<TextureSlot, ResourceLocation> var2, ArmorMaterial var3) {
+   private JsonObject generateBaseArmorTrimTemplate(ResourceLocation var1, Map<TextureSlot, ResourceLocation> var2, Holder<ArmorMaterial> var3) {
       JsonObject var4 = ModelTemplates.TWO_LAYERED_ITEM.createBaseTemplate(var1, var2);
       JsonArray var5 = new JsonArray();
 
-      for(ItemModelGenerators.TrimModelData var7 : GENERATED_TRIM_MODELS) {
+      for (ItemModelGenerators.TrimModelData var7 : GENERATED_TRIM_MODELS) {
          JsonObject var8 = new JsonObject();
          JsonObject var9 = new JsonObject();
          var9.addProperty(TRIM_TYPE_PREDICATE_ID.getPath(), var7.itemModelIndex());
@@ -98,28 +103,30 @@ public class ItemModelGenerators {
    }
 
    private void generateArmorTrims(ArmorItem var1) {
-      ResourceLocation var2 = ModelLocationUtils.getModelLocation(var1);
-      ResourceLocation var3 = TextureMapping.getItemTexture(var1);
-      ResourceLocation var4 = TextureMapping.getItemTexture(var1, "_overlay");
-      if (var1.getMaterial() == ArmorMaterials.LEATHER) {
-         ModelTemplates.TWO_LAYERED_ITEM
-            .create(
-               var2, TextureMapping.layered(var3, var4), this.output, (var2x, var3x) -> this.generateBaseArmorTrimTemplate(var2x, var3x, var1.getMaterial())
-            );
-      } else {
-         ModelTemplates.FLAT_ITEM
-            .create(var2, TextureMapping.layer0(var3), this.output, (var2x, var3x) -> this.generateBaseArmorTrimTemplate(var2x, var3x, var1.getMaterial()));
-      }
-
-      for(ItemModelGenerators.TrimModelData var6 : GENERATED_TRIM_MODELS) {
-         String var7 = var6.name(var1.getMaterial());
-         ResourceLocation var8 = this.getItemModelForTrimMaterial(var2, var7);
-         String var9 = var1.getType().getName() + "_trim_" + var7;
-         ResourceLocation var10 = new ResourceLocation(var9).withPrefix("trims/items/");
-         if (var1.getMaterial() == ArmorMaterials.LEATHER) {
-            this.generateLayeredItem(var8, var3, var4, var10);
+      if (var1.getType().hasTrims()) {
+         ResourceLocation var2 = ModelLocationUtils.getModelLocation(var1);
+         ResourceLocation var3 = TextureMapping.getItemTexture(var1);
+         ResourceLocation var4 = TextureMapping.getItemTexture(var1, "_overlay");
+         if (var1.getMaterial().is(ArmorMaterials.LEATHER)) {
+            ModelTemplates.TWO_LAYERED_ITEM
+               .create(
+                  var2, TextureMapping.layered(var3, var4), this.output, (var2x, var3x) -> this.generateBaseArmorTrimTemplate(var2x, var3x, var1.getMaterial())
+               );
          } else {
-            this.generateLayeredItem(var8, var3, var10);
+            ModelTemplates.FLAT_ITEM
+               .create(var2, TextureMapping.layer0(var3), this.output, (var2x, var3x) -> this.generateBaseArmorTrimTemplate(var2x, var3x, var1.getMaterial()));
+         }
+
+         for (ItemModelGenerators.TrimModelData var6 : GENERATED_TRIM_MODELS) {
+            String var7 = var6.name(var1.getMaterial());
+            ResourceLocation var8 = this.getItemModelForTrimMaterial(var2, var7);
+            String var9 = var1.getType().getName() + "_trim_" + var7;
+            ResourceLocation var10 = new ResourceLocation(var9).withPrefix("trims/items/");
+            if (var1.getMaterial().is(ArmorMaterials.LEATHER)) {
+               this.generateLayeredItem(var8, var3, var4, var10);
+            } else {
+               this.generateLayeredItem(var8, var3, var10);
+            }
          }
       }
    }
@@ -131,6 +138,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.CHERRY_CHEST_BOAT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.AMETHYST_SHARD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.APPLE, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ARMADILLO_SCUTE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARMOR_STAND, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARROW, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BAKED_POTATO, ModelTemplates.FLAT_ITEM);
@@ -149,6 +157,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.BOWL, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BREAD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BRICK, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BREEZE_ROD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BROWN_DYE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BUCKET, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.CARROT_ON_A_STICK, ModelTemplates.FLAT_HANDHELD_ROD_ITEM);
@@ -199,6 +208,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.FIRE_CHARGE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.FLINT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.FLINT_AND_STEEL, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.FLOW_BANNER_PATTERN, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.FLOWER_BANNER_PATTERN, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.FURNACE_MINECART, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GHAST_TEAR, ModelTemplates.FLAT_ITEM);
@@ -223,6 +233,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.GRAY_DYE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GREEN_DYE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GUNPOWDER, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GUSTER_BANNER_PATTERN, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HEART_OF_THE_SEA, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HONEYCOMB, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HONEY_BOTTLE, ModelTemplates.FLAT_ITEM);
@@ -317,7 +328,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.SADDLE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SALMON, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SALMON_BUCKET, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.SCUTE, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.TURTLE_SCUTE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SHEARS, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SHULKER_SHELL, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SKULL_BANNER_PATTERN, ModelTemplates.FLAT_ITEM);
@@ -347,6 +358,9 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.WATER_BUCKET, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.WHEAT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.WHITE_DYE, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.WIND_CHARGE, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.MACE, ModelTemplates.FLAT_HANDHELD_MACE_ITEM);
+      this.generateItemWithOverlay(Items.WOLF_ARMOR);
       this.generateFlatItem(Items.WOODEN_AXE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.WOODEN_HOE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.WOODEN_PICKAXE, ModelTemplates.FLAT_HANDHELD_ITEM);
@@ -372,12 +386,14 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DEBUG_STICK, Items.STICK, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_APPLE, ModelTemplates.FLAT_ITEM);
 
-      for(Item var2 : BuiltInRegistries.ITEM) {
+      for (Item var2 : BuiltInRegistries.ITEM) {
          if (var2 instanceof ArmorItem var3) {
-            this.generateArmorTrims((ArmorItem)var3);
+            this.generateArmorTrims(var3);
          }
       }
 
@@ -389,7 +405,9 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.BURN_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DANGER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.EXPLORER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.FLOW_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.FRIEND_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.GUSTER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HEART_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HEARTBREAK_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HOWL_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
@@ -397,26 +415,25 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.MOURNER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.PLENTY_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.PRIZE_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.SCRAPE_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SHEAF_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SHELTER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SKULL_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SNORT_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.TRIAL_KEY, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.OMINOUS_TRIAL_KEY, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.OMINOUS_BOTTLE, ModelTemplates.FLAT_ITEM);
    }
 
-   static record TrimModelData(String a, float b, Map<ArmorMaterial, String> c) {
-      private final String name;
-      private final float itemModelIndex;
-      private final Map<ArmorMaterial, String> overrideArmorMaterials;
-
-      TrimModelData(String var1, float var2, Map<ArmorMaterial, String> var3) {
+   static record TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
+      TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
          super();
-         this.name = var1;
-         this.itemModelIndex = var2;
-         this.overrideArmorMaterials = var3;
+         this.name = name;
+         this.itemModelIndex = itemModelIndex;
+         this.overrideArmorMaterials = overrideArmorMaterials;
       }
 
-      public String name(ArmorMaterial var1) {
+      public String name(Holder<ArmorMaterial> var1) {
          return this.overrideArmorMaterials.getOrDefault(var1, this.name);
       }
    }

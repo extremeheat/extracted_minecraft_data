@@ -8,6 +8,7 @@ import net.minecraft.Util;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.math.Fraction;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -29,8 +30,8 @@ public class Mth {
    public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
    public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
    private static final float[] SIN = Util.make(new float[65536], var0x -> {
-      for(int var1xx = 0; var1xx < var0x.length; ++var1xx) {
-         var0x[var1xx] = (float)Math.sin((double)var1xx * 3.141592653589793 * 2.0 / 65536.0);
+      for (int var1x = 0; var1x < var0x.length; var1x++) {
+         var0x[var1x] = (float)Math.sin((double)var1x * 3.141592653589793 * 2.0 / 65536.0);
       }
    });
    private static final RandomSource RANDOM = RandomSource.createThreadSafe();
@@ -431,7 +432,7 @@ public class Mth {
       float var8;
       float var9;
       float var10;
-      switch(var3) {
+      switch (var3) {
          case 0:
             var8 = var2;
             var9 = var7;
@@ -480,7 +481,7 @@ public class Mth {
    public static int binarySearch(int var0, int var1, IntPredicate var2) {
       int var3 = var1 - var0;
 
-      while(var3 > 0) {
+      while (var3 > 0) {
          int var4 = var3 / 2;
          int var5 = var0 + var4;
          if (var2.test(var5)) {
@@ -669,8 +670,12 @@ public class Mth {
       return var2.set(var0.x * var3, var0.y * var3, var0.z * var3, var1.w).normalize();
    }
 
+   public static int mulAndTruncate(Fraction var0, int var1) {
+      return var0.getNumerator() * var1 / var0.getDenominator();
+   }
+
    static {
-      for(int var0 = 0; var0 < 257; ++var0) {
+      for (int var0 = 0; var0 < 257; var0++) {
          double var1 = (double)var0 / 256.0;
          double var3 = Math.asin(var1);
          COS_TAB[var0] = Math.cos(var3);

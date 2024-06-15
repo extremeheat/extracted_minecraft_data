@@ -23,7 +23,7 @@ public class TropicalFishModelB<T extends Entity> extends ColorableHierarchicalM
    public static LayerDefinition createBodyLayer(CubeDeformation var0) {
       MeshDefinition var1 = new MeshDefinition();
       PartDefinition var2 = var1.getRoot();
-      boolean var3 = true;
+      byte var3 = 19;
       var2.addOrReplaceChild(
          "body", CubeListBuilder.create().texOffs(0, 20).addBox(-1.0F, -3.0F, -3.0F, 2.0F, 6.0F, 6.0F, var0), PartPose.offset(0.0F, 19.0F, 0.0F)
       );

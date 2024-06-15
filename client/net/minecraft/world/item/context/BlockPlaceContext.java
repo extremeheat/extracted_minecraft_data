@@ -76,8 +76,8 @@ public class BlockPlaceContext extends UseOnContext {
          Direction var2 = this.getClickedFace();
          int var3 = 0;
 
-         while(var3 < var1.length && var1[var3] != var2.getOpposite()) {
-            ++var3;
+         while (var3 < var1.length && var1[var3] != var2.getOpposite()) {
+            var3++;
          }
 
          if (var3 > 0) {

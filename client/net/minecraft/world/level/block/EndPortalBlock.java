@@ -40,12 +40,12 @@ public class EndPortalBlock extends BaseEntityBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var2 instanceof ServerLevel
          && var4.canChangeDimensions()
          && Shapes.joinIsNotEmpty(
@@ -77,7 +77,7 @@ public class EndPortalBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, Fluid var2) {
+   protected boolean canBeReplaced(BlockState var1, Fluid var2) {
       return false;
    }
 }

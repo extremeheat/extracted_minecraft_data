@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddExperienceOrbPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
@@ -54,7 +55,12 @@ public class ExperienceOrb extends Entity {
    }
 
    @Override
-   protected void defineSynchedData() {
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+   }
+
+   @Override
+   protected double getDefaultGravity() {
+      return 0.03;
    }
 
    @Override
@@ -65,8 +71,8 @@ public class ExperienceOrb extends Entity {
       this.zo = this.getZ();
       if (this.isEyeInFluid(FluidTags.WATER)) {
          this.setUnderwaterMovement();
-      } else if (!this.isNoGravity()) {
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.03, 0.0));
+      } else {
+         this.applyGravity();
       }
 
       if (this.level().getFluidState(this.blockPosition()).is(FluidTags.LAVA)) {
@@ -113,7 +119,7 @@ public class ExperienceOrb extends Entity {
          this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, -0.9, 1.0));
       }
 
-      ++this.age;
+      this.age++;
       if (this.age >= 6000) {
          this.discard();
       }
@@ -130,14 +136,14 @@ public class ExperienceOrb extends Entity {
       }
 
       if (this.level() instanceof ServerLevel) {
-         for(ExperienceOrb var3 : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
+         for (ExperienceOrb var3 : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
             this.merge(var3);
          }
       }
    }
 
    public static void award(ServerLevel var0, Vec3 var1, int var2) {
-      while(var2 > 0) {
+      while (var2 > 0) {
          int var3 = getExperienceValue(var2);
          var2 -= var3;
          if (!tryMergeToExisting(var0, var1, var3)) {
@@ -152,7 +158,7 @@ public class ExperienceOrb extends Entity {
       List var5 = var0.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), var3, var2x -> canMerge(var2x, var4, var2));
       if (!var5.isEmpty()) {
          ExperienceOrb var6 = (ExperienceOrb)var5.get(0);
-         ++var6.count;
+         var6.count++;
          var6.age = 0;
          return true;
       } else {
@@ -169,7 +175,7 @@ public class ExperienceOrb extends Entity {
    }
 
    private void merge(ExperienceOrb var1) {
-      this.count += var1.count;
+      this.count = this.count + var1.count;
       this.age = Math.min(this.age, var1.age);
       var1.discard();
    }
@@ -227,7 +233,7 @@ public class ExperienceOrb extends Entity {
                var1.giveExperiencePoints(var2);
             }
 
-            --this.count;
+            this.count--;
             if (this.count == 0) {
                this.discard();
             }

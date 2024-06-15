@@ -34,7 +34,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       super();
       this.pendingTicks = var1;
 
-      for(SavedTick var3 : var1) {
+      for (SavedTick var3 : var1) {
          this.ticksPerPosition.add(ScheduledTick.probe(var3.type(), var3.pos()));
       }
    }
@@ -80,7 +80,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    public void removeIf(Predicate<ScheduledTick<T>> var1) {
       Iterator var2 = this.tickQueue.iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          ScheduledTick var3 = (ScheduledTick)var2.next();
          if (var1.test(var3)) {
             var2.remove();
@@ -101,12 +101,12 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    public ListTag save(long var1, Function<T, String> var3) {
       ListTag var4 = new ListTag();
       if (this.pendingTicks != null) {
-         for(SavedTick var6 : this.pendingTicks) {
+         for (SavedTick var6 : this.pendingTicks) {
             var4.add(var6.save(var3));
          }
       }
 
-      for(ScheduledTick var8 : this.tickQueue) {
+      for (ScheduledTick var8 : this.tickQueue) {
          var4.add(SavedTick.saveTick(var8, var3, var1));
       }
 
@@ -117,7 +117,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       if (this.pendingTicks != null) {
          int var3 = -this.pendingTicks.size();
 
-         for(SavedTick var5 : this.pendingTicks) {
+         for (SavedTick var5 : this.pendingTicks) {
             this.scheduleUnchecked(var5.unpack(var1, (long)(var3++)));
          }
       }

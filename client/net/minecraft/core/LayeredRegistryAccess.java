@@ -16,9 +16,9 @@ public class LayeredRegistryAccess<T> {
 
    public LayeredRegistryAccess(List<T> var1) {
       this(var1, Util.make(() -> {
-         RegistryAccess.Frozen[] var1xx = new RegistryAccess.Frozen[var1.size()];
-         Arrays.fill(var1xx, RegistryAccess.EMPTY);
-         return Arrays.asList(var1xx);
+         RegistryAccess.Frozen[] var1x = new RegistryAccess.Frozen[var1.size()];
+         Arrays.fill(var1x, RegistryAccess.EMPTY);
+         return Arrays.asList(var1x);
       }));
    }
 
@@ -68,13 +68,13 @@ public class LayeredRegistryAccess<T> {
       } else {
          ArrayList var4 = new ArrayList();
 
-         for(int var5 = 0; var5 < var3; ++var5) {
+         for (int var5 = 0; var5 < var3; var5++) {
             var4.add(this.values.get(var5));
          }
 
          var4.addAll(var2);
 
-         while(var4.size() < this.values.size()) {
+         while (var4.size() < this.values.size()) {
             var4.add(RegistryAccess.EMPTY);
          }
 

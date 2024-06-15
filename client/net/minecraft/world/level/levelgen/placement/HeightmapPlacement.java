@@ -1,15 +1,14 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class HeightmapPlacement extends PlacementModifier {
-   public static final Codec<HeightmapPlacement> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<HeightmapPlacement> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter(var0x -> var0x.heightmap)).apply(var0, HeightmapPlacement::new)
    );
    private final Heightmap.Types heightmap;

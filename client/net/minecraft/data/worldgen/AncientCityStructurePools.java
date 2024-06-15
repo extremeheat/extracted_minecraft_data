@@ -14,7 +14,7 @@ public class AncientCityStructurePools {
       super();
    }
 
-   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
       HolderGetter var1 = var0.lookup(Registries.PLACED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(CavePlacements.SCULK_PATCH_ANCIENT_CITY);
       HolderGetter var3 = var0.lookup(Registries.PROCESSOR_LIST);

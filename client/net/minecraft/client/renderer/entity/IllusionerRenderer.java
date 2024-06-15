@@ -38,7 +38,7 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner> {
          Vec3[] var7 = var1.getIllusionOffsets(var3);
          float var8 = this.getBob(var1, var3);
 
-         for(int var9 = 0; var9 < var7.length; ++var9) {
+         for (int var9 = 0; var9 < var7.length; var9++) {
             var4.pushPose();
             var4.translate(
                var7[var9].x + (double)Mth.cos((float)var9 + var8 * 0.5F) * 0.025,

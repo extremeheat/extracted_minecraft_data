@@ -39,8 +39,8 @@ public class PandaModel<T extends Panda> extends QuadrupedModel<T> {
          CubeListBuilder.create().texOffs(0, 25).addBox(-9.5F, -13.0F, -6.5F, 19.0F, 26.0F, 13.0F),
          PartPose.offsetAndRotation(0.0F, 10.0F, 0.0F, 1.5707964F, 0.0F, 0.0F)
       );
-      boolean var2 = true;
-      boolean var3 = true;
+      byte var2 = 9;
+      byte var3 = 6;
       CubeListBuilder var4 = CubeListBuilder.create().texOffs(40, 0).addBox(-3.0F, 0.0F, -3.0F, 6.0F, 9.0F, 6.0F);
       var1.addOrReplaceChild("right_hind_leg", var4, PartPose.offset(-5.5F, 15.0F, 9.0F));
       var1.addOrReplaceChild("left_hind_leg", var4, PartPose.offset(5.5F, 15.0F, 9.0F));

@@ -42,7 +42,7 @@ public class LanServerDetection {
       public void run() {
          byte[] var2 = new byte[1024];
 
-         while(!this.isInterrupted()) {
+         while (!this.isInterrupted()) {
             DatagramPacket var1 = new DatagramPacket(var2, var2.length);
 
             try {
@@ -94,7 +94,7 @@ public class LanServerDetection {
             var4 = var2.getHostAddress() + ":" + var4;
             boolean var5 = false;
 
-            for(LanServer var7 : this.servers) {
+            for (LanServer var7 : this.servers) {
                if (var7.getAddress().equals(var4)) {
                   var7.updatePingTime();
                   var5 = true;

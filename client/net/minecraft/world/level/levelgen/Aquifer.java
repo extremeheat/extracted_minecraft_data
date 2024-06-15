@@ -148,9 +148,9 @@ public interface Aquifer {
                long var16 = 0L;
                long var18 = 0L;
 
-               for(int var20 = 0; var20 <= 1; ++var20) {
-                  for(int var21 = -1; var21 <= 1; ++var21) {
-                     for(int var22 = 0; var22 <= 1; ++var22) {
+               for (int var20 = 0; var20 <= 1; var20++) {
+                  for (int var21 = -1; var21 <= 1; var21++) {
+                     for (int var22 = 0; var22 <= 1; var22++) {
                         int var23 = var8 + var20;
                         int var24 = var9 + var21;
                         int var25 = var10 + var22;
@@ -338,7 +338,7 @@ public interface Aquifer {
          int var7 = var2 - 12;
          boolean var8 = false;
 
-         for(int[] var12 : SURFACE_SAMPLING_OFFSETS_IN_CHUNKS) {
+         for (int[] var12 : SURFACE_SAMPLING_OFFSETS_IN_CHUNKS) {
             int var13 = var1 + SectionPos.sectionToBlockCoord(var12[0]);
             int var14 = var3 + SectionPos.sectionToBlockCoord(var12[1]);
             int var15 = this.noiseChunk.preliminarySurfaceLevel(var13, var14);
@@ -378,7 +378,7 @@ public interface Aquifer {
             var10 = -1.0;
          } else {
             int var12 = var5 + 8 - var2;
-            boolean var13 = true;
+            byte var13 = 64;
             double var14 = var6 ? Mth.clampedMap((double)var12, 0.0, 64.0, 1.0, 0.0) : 0.0;
             double var16 = Mth.clamp(this.fluidLevelFloodednessNoise.compute(var7), -1.0, 1.0);
             double var18 = Mth.map(var14, 1.0, 0.0, -0.3, 0.8);
@@ -400,13 +400,13 @@ public interface Aquifer {
       }
 
       private int computeRandomizedFluidSurfaceLevel(int var1, int var2, int var3, int var4) {
-         boolean var5 = true;
-         boolean var6 = true;
+         byte var5 = 16;
+         byte var6 = 40;
          int var7 = Math.floorDiv(var1, 16);
          int var8 = Math.floorDiv(var2, 40);
          int var9 = Math.floorDiv(var3, 16);
          int var10 = var8 * 40 + 20;
-         boolean var11 = true;
+         byte var11 = 10;
          double var12 = this.fluidLevelSpreadNoise.compute(new DensityFunction.SinglePointContext(var7, var8, var9)) * 10.0;
          int var14 = Mth.quantize(var12, 3);
          int var15 = var10 + var14;
@@ -416,8 +416,8 @@ public interface Aquifer {
       private BlockState computeFluidType(int var1, int var2, int var3, Aquifer.FluidStatus var4, int var5) {
          BlockState var6 = var4.fluidType;
          if (var5 <= -10 && var5 != DimensionType.WAY_BELOW_MIN_Y && var4.fluidType != Blocks.LAVA.defaultBlockState()) {
-            boolean var7 = true;
-            boolean var8 = true;
+            byte var7 = 64;
+            byte var8 = 40;
             int var9 = Math.floorDiv(var1, 64);
             int var10 = Math.floorDiv(var2, 40);
             int var11 = Math.floorDiv(var3, 64);

@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.stream.Stream;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -18,7 +17,7 @@ public class ItemUtils {
    }
 
    public static ItemStack createFilledResult(ItemStack var0, Player var1, ItemStack var2, boolean var3) {
-      boolean var4 = var1.getAbilities().instabuild;
+      boolean var4 = var1.hasInfiniteMaterials();
       if (var3 && var4) {
          if (!var1.getInventory().contains(var2)) {
             var1.getInventory().add(var2);
@@ -26,10 +25,7 @@ public class ItemUtils {
 
          return var0;
       } else {
-         if (!var4) {
-            var0.shrink(1);
-         }
-
+         var0.consume(1, var1);
          if (var0.isEmpty()) {
             return var2;
          } else {
@@ -46,7 +42,7 @@ public class ItemUtils {
       return createFilledResult(var0, var1, var2, true);
    }
 
-   public static void onContainerDestroyed(ItemEntity var0, Stream<ItemStack> var1) {
+   public static void onContainerDestroyed(ItemEntity var0, Iterable<ItemStack> var1) {
       Level var2 = var0.level();
       if (!var2.isClientSide) {
          var1.forEach(var2x -> var2.addFreshEntity(new ItemEntity(var2, var0.getX(), var0.getY(), var0.getZ(), var2x)));

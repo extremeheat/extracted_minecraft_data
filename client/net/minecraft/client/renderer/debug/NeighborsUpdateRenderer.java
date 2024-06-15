@@ -35,14 +35,14 @@ public class NeighborsUpdateRenderer implements DebugRenderer.SimpleDebugRendere
    @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       long var9 = this.minecraft.level.getGameTime();
-      boolean var11 = true;
+      short var11 = 200;
       double var12 = 0.0025;
       HashSet var14 = Sets.newHashSet();
       HashMap var15 = Maps.newHashMap();
       VertexConsumer var16 = var2.getBuffer(RenderType.lines());
       Iterator var17 = this.lastUpdate.entrySet().iterator();
 
-      while(var17.hasNext()) {
+      while (var17.hasNext()) {
          Entry var18 = (Entry)var17.next();
          Long var19 = (Long)var18.getKey();
          Map var20 = (Map)var18.getValue();
@@ -50,7 +50,7 @@ public class NeighborsUpdateRenderer implements DebugRenderer.SimpleDebugRendere
          if (var21 > 200L) {
             var17.remove();
          } else {
-            for(Entry var24 : var20.entrySet()) {
+            for (Entry var24 : var20.entrySet()) {
                BlockPos var25 = (BlockPos)var24.getKey();
                Integer var26 = (Integer)var24.getValue();
                if (var14.add(var25)) {
@@ -66,7 +66,7 @@ public class NeighborsUpdateRenderer implements DebugRenderer.SimpleDebugRendere
          }
       }
 
-      for(Entry var29 : var15.entrySet()) {
+      for (Entry var29 : var15.entrySet()) {
          BlockPos var30 = (BlockPos)var29.getKey();
          Integer var31 = (Integer)var29.getValue();
          DebugRenderer.renderFloatingText(var1, var2, String.valueOf(var31), var30.getX(), var30.getY(), var30.getZ(), -1);

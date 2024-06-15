@@ -85,11 +85,11 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       }
 
       this.contents[var2] = (T)var1;
-      ++this.size;
+      this.size++;
    }
 
    void removeInternal(int var1) {
-      --this.size;
+      this.size--;
       if (var1 != this.size) {
          System.arraycopy(this.contents, var1 + 1, this.contents, var1, this.size - var1);
       }
@@ -160,7 +160,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    @Override
    public <U> U[] toArray(U[] var1) {
       if (var1.length < this.size) {
-         return (U[])Arrays.copyOf(this.contents, this.size, var1.getClass());
+         return (U[])Arrays.copyOf(this.contents, this.size, (Class<? extends T[]>)var1.getClass());
       } else {
          System.arraycopy(this.contents, 0, var1, 0, this.size);
          if (var1.length > this.size) {
@@ -177,8 +177,6 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       this.size = 0;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean equals(Object var1) {
       if (this == var1) {
@@ -221,7 +219,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
             throw new IllegalStateException();
          } else {
             SortedArraySet.this.removeInternal(this.last);
-            --this.index;
+            this.index--;
             this.last = -1;
          }
       }

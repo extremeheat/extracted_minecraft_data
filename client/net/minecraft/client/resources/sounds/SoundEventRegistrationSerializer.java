@@ -35,7 +35,7 @@ public class SoundEventRegistrationSerializer implements JsonDeserializer<SoundE
       if (var1.has("sounds")) {
          JsonArray var3 = GsonHelper.getAsJsonArray(var1, "sounds");
 
-         for(int var4 = 0; var4 < var3.size(); ++var4) {
+         for (int var4 = 0; var4 < var3.size(); var4++) {
             JsonElement var5 = var3.get(var4);
             if (GsonHelper.isStringValue(var5)) {
                String var6 = GsonHelper.convertToString(var5, "sound");

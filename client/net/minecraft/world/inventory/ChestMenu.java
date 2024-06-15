@@ -55,19 +55,19 @@ public class ChestMenu extends AbstractContainerMenu {
       var4.startOpen(var3.player);
       int var6 = (this.containerRows - 4) * 18;
 
-      for(int var7 = 0; var7 < this.containerRows; ++var7) {
-         for(int var8 = 0; var8 < 9; ++var8) {
+      for (int var7 = 0; var7 < this.containerRows; var7++) {
+         for (int var8 = 0; var8 < 9; var8++) {
             this.addSlot(new Slot(var4, var8 + var7 * 9, 8 + var8 * 18, 18 + var7 * 18));
          }
       }
 
-      for(int var9 = 0; var9 < 3; ++var9) {
-         for(int var11 = 0; var11 < 9; ++var11) {
+      for (int var9 = 0; var9 < 3; var9++) {
+         for (int var11 = 0; var11 < 9; var11++) {
             this.addSlot(new Slot(var3, var11 + var9 * 9 + 9, 8 + var11 * 18, 103 + var9 * 18 + var6));
          }
       }
 
-      for(int var10 = 0; var10 < 9; ++var10) {
+      for (int var10 = 0; var10 < 9; var10++) {
          this.addSlot(new Slot(var3, var10, 8 + var10 * 18, 161 + var6));
       }
    }

@@ -8,9 +8,9 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.projectile.WindCharge;
+import net.minecraft.world.entity.projectile.windcharge.AbstractWindCharge;
 
-public class WindChargeRenderer extends EntityRenderer<WindCharge> {
+public class WindChargeRenderer extends EntityRenderer<AbstractWindCharge> {
    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/projectiles/wind_charge.png");
    private final WindChargeModel model;
 
@@ -19,11 +19,11 @@ public class WindChargeRenderer extends EntityRenderer<WindCharge> {
       this.model = new WindChargeModel(var1.bakeLayer(ModelLayers.WIND_CHARGE));
    }
 
-   public void render(WindCharge var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
+   public void render(AbstractWindCharge var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       float var7 = (float)var1.tickCount + var3;
       VertexConsumer var8 = var5.getBuffer(RenderType.breezeWind(TEXTURE_LOCATION, this.xOffset(var7) % 1.0F, 0.0F));
       this.model.setupAnim(var1, 0.0F, 0.0F, var7, 0.0F, 0.0F);
-      this.model.renderToBuffer(var4, var8, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 0.5F);
+      this.model.renderToBuffer(var4, var8, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
       super.render(var1, var2, var3, var4, var5, var6);
    }
 
@@ -31,7 +31,7 @@ public class WindChargeRenderer extends EntityRenderer<WindCharge> {
       return var1 * 0.03F;
    }
 
-   public ResourceLocation getTextureLocation(WindCharge var1) {
+   public ResourceLocation getTextureLocation(AbstractWindCharge var1) {
       return TEXTURE_LOCATION;
    }
 }

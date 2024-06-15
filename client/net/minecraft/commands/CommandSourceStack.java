@@ -417,8 +417,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
 
    @Nullable
    public ServerPlayer getPlayer() {
-      Entity var2 = this.entity;
-      return var2 instanceof ServerPlayer var1 ? var1 : null;
+      return this.entity instanceof ServerPlayer var1 ? var1 : null;
    }
 
    public boolean isPlayer() {
@@ -447,11 +446,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
 
    public boolean shouldFilterMessageTo(ServerPlayer var1) {
       ServerPlayer var2 = this.getPlayer();
-      if (var1 == var2) {
-         return false;
-      } else {
-         return var2 != null && var2.isTextFilteringEnabled() || var1.isTextFilteringEnabled();
-      }
+      return var1 == var2 ? false : var2 != null && var2.isTextFilteringEnabled() || var1.isTextFilteringEnabled();
    }
 
    public void sendChatMessage(OutgoingChatMessage var1, boolean var2, ChatType.Bound var3) {
@@ -494,7 +489,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    private void broadcastToAdmins(Component var1) {
       MutableComponent var2 = Component.translatable("chat.type.admin", this.getDisplayName(), var1).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
       if (this.server.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
-         for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
+         for (ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
             if (var4 != this.source && this.server.getPlayerList().isOp(var4.getGameProfile())) {
                var4.sendSystemMessage(var2);
             }
@@ -547,7 +542,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4
    ) {
       return this.registryAccess().registry(var1).map(var3x -> {
-         this.suggestRegistryElements(var3x, var2, var3);
+         this.suggestRegistryElements((Registry<?>)var3x, var2, var3);
          return var3.buildFuture();
       }).orElseGet(Suggestions::empty);
    }

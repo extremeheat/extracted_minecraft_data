@@ -1,14 +1,18 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSoundEntityPacket> STREAM_CODEC = Packet.codec(
+      ClientboundSoundEntityPacket::write, ClientboundSoundEntityPacket::new
+   );
    private final Holder<SoundEvent> sound;
    private final SoundSource source;
    private final int id;
@@ -26,9 +30,9 @@ public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketList
       this.seed = var6;
    }
 
-   public ClientboundSoundEntityPacket(FriendlyByteBuf var1) {
+   private ClientboundSoundEntityPacket(RegistryFriendlyByteBuf var1) {
       super();
-      this.sound = var1.readById(BuiltInRegistries.SOUND_EVENT.asHolderIdMap(), SoundEvent::readFromNetwork);
+      this.sound = SoundEvent.STREAM_CODEC.decode(var1);
       this.source = var1.readEnum(SoundSource.class);
       this.id = var1.readVarInt();
       this.volume = var1.readFloat();
@@ -36,14 +40,22 @@ public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketList
       this.seed = var1.readLong();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeId(BuiltInRegistries.SOUND_EVENT.asHolderIdMap(), this.sound, (var0, var1x) -> var1x.writeToNetwork(var0));
+   private void write(RegistryFriendlyByteBuf var1) {
+      SoundEvent.STREAM_CODEC.encode(var1, this.sound);
       var1.writeEnum(this.source);
       var1.writeVarInt(this.id);
       var1.writeFloat(this.volume);
       var1.writeFloat(this.pitch);
       var1.writeLong(this.seed);
+   }
+
+   @Override
+   public PacketType<ClientboundSoundEntityPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_SOUND_ENTITY;
+   }
+
+   public void handle(ClientGamePacketListener var1) {
+      var1.handleSoundEntityEvent(this);
    }
 
    public Holder<SoundEvent> getSound() {
@@ -68,9 +80,5 @@ public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketList
 
    public long getSeed() {
       return this.seed;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSoundEntityEvent(this);
    }
 }

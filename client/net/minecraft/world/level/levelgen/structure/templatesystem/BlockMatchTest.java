@@ -1,17 +1,13 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockMatchTest extends RuleTest {
-   public static final Codec<BlockMatchTest> CODEC = BuiltInRegistries.BLOCK
-      .byNameCodec()
-      .fieldOf("block")
-      .xmap(BlockMatchTest::new, var0 -> var0.block)
-      .codec();
+   public static final MapCodec<BlockMatchTest> CODEC = BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").xmap(BlockMatchTest::new, var0 -> var0.block);
    private final Block block;
 
    public BlockMatchTest(Block var1) {

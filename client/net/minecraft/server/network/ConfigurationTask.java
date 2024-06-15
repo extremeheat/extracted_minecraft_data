@@ -8,15 +8,12 @@ public interface ConfigurationTask {
 
    ConfigurationTask.Type type();
 
-   public static record Type(String a) {
-      private final String id;
-
-      public Type(String var1) {
+   public static record Type(String id) {
+      public Type(String id) {
          super();
-         this.id = var1;
+         this.id = id;
       }
 
-      @Override
       public String toString() {
          return this.id;
       }

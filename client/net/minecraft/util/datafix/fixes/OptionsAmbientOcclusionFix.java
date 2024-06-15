@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
@@ -27,7 +26,7 @@ public class OptionsAmbientOcclusionFix extends DataFix {
    }
 
    private static String updateValue(String var0) {
-      return switch(var0) {
+      return switch (var0) {
          case "0" -> "false";
          case "1", "2" -> "true";
          default -> var0;

@@ -11,12 +11,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -59,11 +57,6 @@ public class Squid extends WaterAnimal {
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.5F;
-   }
-
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.SQUID_AMBIENT;
    }
@@ -98,13 +91,18 @@ public class Squid extends WaterAnimal {
    }
 
    @Override
+   protected double getDefaultGravity() {
+      return 0.08;
+   }
+
+   @Override
    public void aiStep() {
       super.aiStep();
       this.xBodyRotO = this.xBodyRot;
       this.zBodyRotO = this.zBodyRot;
       this.oldTentacleMovement = this.tentacleMovement;
       this.oldTentacleAngle = this.tentacleAngle;
-      this.tentacleMovement += this.tentacleSpeed;
+      this.tentacleMovement = this.tentacleMovement + this.tentacleSpeed;
       if ((double)this.tentacleMovement > 6.283185307179586) {
          if (this.level().isClientSide) {
             this.tentacleMovement = 6.2831855F;
@@ -140,24 +138,24 @@ public class Squid extends WaterAnimal {
 
          Vec3 var4 = this.getDeltaMovement();
          double var2 = var4.horizontalDistance();
-         this.yBodyRot += (-((float)Mth.atan2(var4.x, var4.z)) * 57.295776F - this.yBodyRot) * 0.1F;
+         this.yBodyRot = this.yBodyRot + (-((float)Mth.atan2(var4.x, var4.z)) * 57.295776F - this.yBodyRot) * 0.1F;
          this.setYRot(this.yBodyRot);
-         this.zBodyRot += 3.1415927F * this.rotateSpeed * 1.5F;
-         this.xBodyRot += (-((float)Mth.atan2(var2, var4.y)) * 57.295776F - this.xBodyRot) * 0.1F;
+         this.zBodyRot = this.zBodyRot + 3.1415927F * this.rotateSpeed * 1.5F;
+         this.xBodyRot = this.xBodyRot + (-((float)Mth.atan2(var2, var4.y)) * 57.295776F - this.xBodyRot) * 0.1F;
       } else {
          this.tentacleAngle = Mth.abs(Mth.sin(this.tentacleMovement)) * 3.1415927F * 0.25F;
          if (!this.level().isClientSide) {
             double var5 = this.getDeltaMovement().y;
             if (this.hasEffect(MobEffects.LEVITATION)) {
                var5 = 0.05 * (double)(this.getEffect(MobEffects.LEVITATION).getAmplifier() + 1);
-            } else if (!this.isNoGravity()) {
-               var5 -= 0.08;
+            } else {
+               var5 -= this.getGravity();
             }
 
             this.setDeltaMovement(0.0, var5 * 0.9800000190734863, 0.0);
          }
 
-         this.xBodyRot += (-90.0F - this.xBodyRot) * 0.02F;
+         this.xBodyRot = this.xBodyRot + (-90.0F - this.xBodyRot) * 0.02F;
       }
    }
 
@@ -180,10 +178,10 @@ public class Squid extends WaterAnimal {
    }
 
    private void spawnInk() {
-      this.playSound(this.getSquirtSound(), this.getSoundVolume(), this.getVoicePitch());
+      this.makeSound(this.getSquirtSound());
       Vec3 var1 = this.rotateVector(new Vec3(0.0, -1.0, 0.0)).add(this.getX(), this.getY(), this.getZ());
 
-      for(int var2 = 0; var2 < 30; ++var2) {
+      for (int var2 = 0; var2 < 30; var2++) {
          Vec3 var3 = this.rotateVector(new Vec3((double)this.random.nextFloat() * 0.6 - 0.3, -1.0, (double)this.random.nextFloat() * 0.6 - 0.3));
          Vec3 var4 = var3.scale(0.3 + (double)(this.random.nextFloat() * 2.0F));
          ((ServerLevel)this.level()).sendParticles(this.getInkParticle(), var1.x, var1.y + 0.5, var1.z, 0, var4.x, var4.y, var4.z, 0.10000000149011612);
@@ -231,11 +229,7 @@ public class Squid extends WaterAnimal {
       @Override
       public boolean canUse() {
          LivingEntity var1 = Squid.this.getLastHurtByMob();
-         if (Squid.this.isInWater() && var1 != null) {
-            return Squid.this.distanceToSqr(var1) < 100.0;
-         } else {
-            return false;
-         }
+         return Squid.this.isInWater() && var1 != null ? Squid.this.distanceToSqr(var1) < 100.0 : false;
       }
 
       @Override
@@ -250,7 +244,7 @@ public class Squid extends WaterAnimal {
 
       @Override
       public void tick() {
-         ++this.fleeTicks;
+         this.fleeTicks++;
          LivingEntity var1 = Squid.this.getLastHurtByMob();
          if (var1 != null) {
             Vec3 var2 = new Vec3(Squid.this.getX() - var1.getX(), Squid.this.getY() - var1.getY(), Squid.this.getZ() - var1.getZ());
@@ -289,9 +283,9 @@ public class Squid extends WaterAnimal {
    class SquidRandomMovementGoal extends Goal {
       private final Squid squid;
 
-      public SquidRandomMovementGoal(Squid var2) {
+      public SquidRandomMovementGoal(final Squid nullx) {
          super();
-         this.squid = var2;
+         this.squid = nullx;
       }
 
       @Override

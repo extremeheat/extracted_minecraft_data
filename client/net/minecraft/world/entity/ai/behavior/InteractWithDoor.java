@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -20,7 +19,6 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -54,7 +52,7 @@ public class InteractWithDoor {
                         } else if (var1.decrementAndGet() > 0) {
                            return false;
                         }
-      
+
                         var0.setValue(var10.getNextNode());
                         Node var12 = var10.getPreviousNode();
                         Node var13 = var10.getNextNode();
@@ -65,10 +63,10 @@ public class InteractWithDoor {
                            if (!var16.isOpen(var15)) {
                               var16.setOpen(var7, var6, var15, var14, true);
                            }
-      
+
                            var11 = rememberDoorToClose(var4, var11, var6, var14);
                         }
-      
+
                         BlockPos var19 = var13.asBlockPos();
                         BlockState var17 = var6.getBlockState(var19);
                         if (var17.is(BlockTags.WOODEN_DOORS, var0xxxx -> var0xxxx.getBlock() instanceof DoorBlock)) {
@@ -78,8 +76,8 @@ public class InteractWithDoor {
                               var11 = rememberDoorToClose(var4, var11, var6, var19);
                            }
                         }
-      
-                        var11.ifPresent(var6x -> closeDoorsThatIHaveOpenedOrPassedThrough(var6, var7, var12, var13, var6x, var2.tryGet(var5)));
+
+                        var11.ifPresent(var6x -> closeDoorsThatIHaveOpenedOrPassedThrough(var6, var7, var12, var13, (Set<GlobalPos>)var6x, var2.tryGet(var5)));
                         return true;
                      } else {
                         return false;
@@ -93,7 +91,7 @@ public class InteractWithDoor {
    ) {
       Iterator var6 = var4.iterator();
 
-      while(var6.hasNext()) {
+      while (var6.hasNext()) {
          GlobalPos var7 = (GlobalPos)var6.next();
          BlockPos var8 = var7.pos();
          if ((var2 == null || !var2.asBlockPos().equals(var8)) && (var3 == null || !var3.asBlockPos().equals(var8))) {
@@ -156,13 +154,13 @@ public class InteractWithDoor {
       MemoryAccessor<Mu, Set<GlobalPos>> var0, Optional<Set<GlobalPos>> var1, ServerLevel var2, BlockPos var3
    ) {
       GlobalPos var4 = GlobalPos.of(var2.dimension(), var3);
-      return Optional.of(var1.<Set<GlobalPos>>map((Function<? super Set, ? extends Set<GlobalPos>>)(var1x -> {
+      return Optional.of(var1.<Set<GlobalPos>>map(var1x -> {
          var1x.add(var4);
-         return var1x;
-      })).orElseGet(() -> {
-         HashSet var2xx = Sets.newHashSet(new GlobalPos[]{var4});
-         var0.set(var2xx);
-         return var2xx;
+         return (Set<GlobalPos>)var1x;
+      }).orElseGet(() -> {
+         HashSet var2x = Sets.newHashSet(new GlobalPos[]{var4});
+         var0.set(var2x);
+         return var2x;
       }));
    }
 }

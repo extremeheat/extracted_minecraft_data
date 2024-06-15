@@ -52,10 +52,6 @@ public class Weight {
 
    @Override
    public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return var1 instanceof Weight && this.value == ((Weight)var1).value;
-      }
+      return this == var1 ? true : var1 instanceof Weight && this.value == ((Weight)var1).value;
    }
 }

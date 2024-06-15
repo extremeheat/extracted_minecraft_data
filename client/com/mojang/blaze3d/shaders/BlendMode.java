@@ -63,25 +63,20 @@ public class BlendMode {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof BlendMode)) {
+      } else if (!(var1 instanceof BlendMode var2)) {
+         return false;
+      } else if (this.blendFunc != var2.blendFunc) {
+         return false;
+      } else if (this.dstAlphaFactor != var2.dstAlphaFactor) {
+         return false;
+      } else if (this.dstColorFactor != var2.dstColorFactor) {
+         return false;
+      } else if (this.opaque != var2.opaque) {
+         return false;
+      } else if (this.separateBlend != var2.separateBlend) {
          return false;
       } else {
-         BlendMode var2 = (BlendMode)var1;
-         if (this.blendFunc != var2.blendFunc) {
-            return false;
-         } else if (this.dstAlphaFactor != var2.dstAlphaFactor) {
-            return false;
-         } else if (this.dstColorFactor != var2.dstColorFactor) {
-            return false;
-         } else if (this.opaque != var2.opaque) {
-            return false;
-         } else if (this.separateBlend != var2.separateBlend) {
-            return false;
-         } else if (this.srcAlphaFactor != var2.srcAlphaFactor) {
-            return false;
-         } else {
-            return this.srcColorFactor == var2.srcColorFactor;
-         }
+         return this.srcAlphaFactor != var2.srcAlphaFactor ? false : this.srcColorFactor == var2.srcColorFactor;
       }
    }
 

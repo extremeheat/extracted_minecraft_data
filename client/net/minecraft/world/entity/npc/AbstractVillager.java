@@ -1,11 +1,15 @@
 package net.minecraft.world.entity.npc;
 
 import com.google.common.collect.Lists;
+import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,10 +23,8 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.player.Player;
@@ -32,11 +34,13 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
 
 public abstract class AbstractVillager extends AgeableMob implements InventoryCarrier, Npc, Merchant {
    private static final EntityDataAccessor<Integer> DATA_UNHAPPY_COUNTER = SynchedEntityData.defineId(AbstractVillager.class, EntityDataSerializers.INT);
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int VILLAGER_SLOT_OFFSET = 300;
    private static final int VILLAGER_INVENTORY_SIZE = 8;
    @Nullable
@@ -47,19 +51,17 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    public AbstractVillager(EntityType<? extends AbstractVillager> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    public int getUnhappyCounter() {
@@ -76,14 +78,9 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return this.isBaby() ? 0.81F : 1.62F;
-   }
-
-   @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_UNHAPPY_COUNTER, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_UNHAPPY_COUNTER, 0);
    }
 
    @Override
@@ -140,7 +137,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    public void notifyTradeUpdated(ItemStack var1) {
       if (!this.level().isClientSide && this.ambientSoundTime > -this.getAmbientSoundInterval() + 20) {
          this.ambientSoundTime = -this.getAmbientSoundInterval();
-         this.playSound(this.getTradeUpdatedSound(!var1.isEmpty()), this.getSoundVolume(), this.getVoicePitch());
+         this.makeSound(this.getTradeUpdatedSound(!var1.isEmpty()));
       }
    }
 
@@ -154,7 +151,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    public void playCelebrateSound() {
-      this.playSound(SoundEvents.VILLAGER_CELEBRATE, this.getSoundVolume(), this.getVoicePitch());
+      this.makeSound(SoundEvents.VILLAGER_CELEBRATE);
    }
 
    @Override
@@ -162,20 +159,23 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       super.addAdditionalSaveData(var1);
       MerchantOffers var2 = this.getOffers();
       if (!var2.isEmpty()) {
-         var1.put("Offers", var2.createTag());
+         var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow());
       }
 
-      this.writeInventoryToTag(var1);
+      this.writeInventoryToTag(var1, this.registryAccess());
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("Offers", 10)) {
-         this.offers = new MerchantOffers(var1.getCompound("Offers"));
+      if (var1.contains("Offers")) {
+         MerchantOffers.CODEC
+            .parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1.get("Offers"))
+            .resultOrPartial(Util.prefix("Failed to load offers: ", LOGGER::warn))
+            .ifPresent(var1x -> this.offers = var1x);
       }
 
-      this.readInventoryFromTag(var1);
+      this.readInventoryFromTag(var1, this.registryAccess());
    }
 
    @Nullable
@@ -196,7 +196,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    protected void addParticlesAroundSelf(ParticleOptions var1) {
-      for(int var2 = 0; var2 < 5; ++var2) {
+      for (int var2 = 0; var2 < 5; var2++) {
          double var3 = this.random.nextGaussian() * 0.02;
          double var5 = this.random.nextGaussian() * 0.02;
          double var7 = this.random.nextGaussian() * 0.02;
@@ -226,11 +226,11 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       ArrayList var4 = Lists.newArrayList(var2);
       int var5 = 0;
 
-      while(var5 < var3 && !var4.isEmpty()) {
+      while (var5 < var3 && !var4.isEmpty()) {
          MerchantOffer var6 = ((VillagerTrades.ItemListing)var4.remove(this.random.nextInt(var4.size()))).getOffer(this, this.random);
          if (var6 != null) {
             var1.add(var6);
-            ++var5;
+            var5++;
          }
       }
    }

@@ -45,10 +45,11 @@ public class RealmsServer extends ValueObject {
    public int daysLeft;
    public RealmsServer.WorldType worldType;
    public int activeSlot;
+   @Nullable
    public String minigameName;
    public int minigameId;
    public String minigameImage;
-   public long parentWorldId = -1L;
+   public long parentRealmId = -1L;
    @Nullable
    public String parentWorldName;
    public String activeVersion = "";
@@ -67,6 +68,7 @@ public class RealmsServer extends ValueObject {
       return this.name;
    }
 
+   @Nullable
    public String getMinigameName() {
       return this.minigameName;
    }
@@ -84,7 +86,7 @@ public class RealmsServer extends ValueObject {
       int var3 = 0;
       MinecraftSessionService var4 = Minecraft.getInstance().getMinecraftSessionService();
 
-      for(UUID var6 : var1.players) {
+      for (UUID var6 : var1.players) {
          if (!Minecraft.getInstance().isLocalPlayer(var6)) {
             try {
                ProfileResult var7 = var4.fetchProfile(var6, false);
@@ -92,7 +94,7 @@ public class RealmsServer extends ValueObject {
                   var2.add(var7.profile().getName());
                }
 
-               ++var3;
+               var3++;
             } catch (Exception var8) {
                LOGGER.error("Could not get name for {}", var6, var8);
             }
@@ -135,7 +137,7 @@ public class RealmsServer extends ValueObject {
          var1.activeSlot = JsonUtils.getIntOr("activeSlot", var0, -1);
          var1.minigameId = JsonUtils.getIntOr("minigameId", var0, -1);
          var1.minigameImage = JsonUtils.getStringOr("minigameImage", var0, null);
-         var1.parentWorldId = JsonUtils.getLongOr("parentWorldId", var0, -1L);
+         var1.parentRealmId = JsonUtils.getLongOr("parentWorldId", var0, -1L);
          var1.parentWorldName = JsonUtils.getStringOr("parentWorldName", var0, null);
          var1.activeVersion = JsonUtils.getStringOr("activeVersion", var0, "");
          var1.compatibility = getCompatibility(JsonUtils.getStringOr("compatibility", var0, RealmsServer.Compatibility.UNVERIFIABLE.name()));
@@ -159,7 +161,7 @@ public class RealmsServer extends ValueObject {
    private static List<PlayerInfo> parseInvited(JsonArray var0) {
       ArrayList var1 = Lists.newArrayList();
 
-      for(JsonElement var3 : var0) {
+      for (JsonElement var3 : var0) {
          try {
             JsonObject var4 = var3.getAsJsonObject();
             PlayerInfo var5 = new PlayerInfo();
@@ -179,7 +181,7 @@ public class RealmsServer extends ValueObject {
    private static Map<Integer, RealmsWorldOptions> parseSlots(JsonArray var0) {
       HashMap var1 = Maps.newHashMap();
 
-      for(JsonElement var3 : var0) {
+      for (JsonElement var3 : var0) {
          try {
             JsonObject var5 = var3.getAsJsonObject();
             JsonParser var6 = new JsonParser();
@@ -197,7 +199,7 @@ public class RealmsServer extends ValueObject {
          }
       }
 
-      for(int var10 = 1; var10 <= 3; ++var10) {
+      for (int var10 = 1; var10 <= 3; var10++) {
          if (!var1.containsKey(var10)) {
             var1.put(var10, RealmsWorldOptions.createEmptyDefaults());
          }
@@ -309,7 +311,7 @@ public class RealmsServer extends ValueObject {
       var1.minigameId = this.minigameId;
       var1.minigameImage = this.minigameImage;
       var1.parentWorldName = this.parentWorldName;
-      var1.parentWorldId = this.parentWorldId;
+      var1.parentRealmId = this.parentRealmId;
       var1.activeVersion = this.activeVersion;
       var1.compatibility = this.compatibility;
       return var1;
@@ -318,7 +320,7 @@ public class RealmsServer extends ValueObject {
    public Map<Integer, RealmsWorldOptions> cloneSlots(Map<Integer, RealmsWorldOptions> var1) {
       HashMap var2 = Maps.newHashMap();
 
-      for(Entry var4 : var1.entrySet()) {
+      for (Entry var4 : var1.entrySet()) {
          var2.put((Integer)var4.getKey(), ((RealmsWorldOptions)var4.getValue()).clone());
       }
 
@@ -326,7 +328,7 @@ public class RealmsServer extends ValueObject {
    }
 
    public boolean isSnapshotRealm() {
-      return this.parentWorldId != -1L;
+      return this.parentRealmId != -1L;
    }
 
    public String getWorldName(int var1) {

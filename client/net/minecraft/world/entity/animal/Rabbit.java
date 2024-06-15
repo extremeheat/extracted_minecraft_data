@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -51,8 +52,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -96,7 +95,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       this.goalSelector.addGoal(1, new ClimbOnTopOfPowderSnowGoal(this, this.level()));
       this.goalSelector.addGoal(1, new Rabbit.RabbitPanicGoal(this, 2.2));
       this.goalSelector.addGoal(2, new BreedGoal(this, 0.8));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, Ingredient.of(Items.CARROT, Items.GOLDEN_CARROT, Blocks.DANDELION), false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, var0 -> var0.is(ItemTags.RABBIT_FOOD), false));
       this.goalSelector.addGoal(4, new Rabbit.RabbitAvoidEntityGoal<>(this, Player.class, 8.0F, 2.2, 2.2));
       this.goalSelector.addGoal(4, new Rabbit.RabbitAvoidEntityGoal<>(this, Wolf.class, 10.0F, 2.2, 2.2));
       this.goalSelector.addGoal(4, new Rabbit.RabbitAvoidEntityGoal<>(this, Monster.class, 4.0F, 2.2, 2.2));
@@ -124,7 +123,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
          var1 = 0.2F;
       }
 
-      return var1 + this.getJumpBoostPower();
+      return super.getJumpPower(var1 / 0.42F);
    }
 
    @Override
@@ -167,19 +166,19 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_TYPE_ID, Rabbit.Variant.BROWN.id);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_TYPE_ID, Rabbit.Variant.BROWN.id);
    }
 
    @Override
    public void customServerAiStep() {
       if (this.jumpDelayTicks > 0) {
-         --this.jumpDelayTicks;
+         this.jumpDelayTicks--;
       }
 
       if (this.moreCarrotTicks > 0) {
-         this.moreCarrotTicks -= this.random.nextInt(3);
+         this.moreCarrotTicks = this.moreCarrotTicks - this.random.nextInt(3);
          if (this.moreCarrotTicks < 0) {
             this.moreCarrotTicks = 0;
          }
@@ -255,7 +254,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    public void aiStep() {
       super.aiStep();
       if (this.jumpTicks != this.jumpDuration) {
-         ++this.jumpTicks;
+         this.jumpTicks++;
       } else if (this.jumpDuration != 0) {
          this.jumpTicks = 0;
          this.jumpDuration = 0;
@@ -315,12 +314,6 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       return this.getVariant() == Rabbit.Variant.EVIL ? SoundSource.HOSTILE : SoundSource.NEUTRAL;
    }
 
-   private static boolean isTemptingItem(ItemStack var0) {
-      return var0.is(Items.CARROT) || var0.is(Items.GOLDEN_CARROT) || var0.is(Blocks.DANDELION.asItem());
-   }
-
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Rabbit var3 = EntityType.RABBIT.create(var1);
@@ -345,7 +338,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
 
    @Override
    public boolean isFood(ItemStack var1) {
-      return isTemptingItem(var1);
+      return var1.is(ItemTags.RABBIT_FOOD);
    }
 
    public Rabbit.Variant getVariant() {
@@ -369,18 +362,16 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      Rabbit.Variant var6 = getRandomRabbitVariant(var1, this.blockPosition());
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      Rabbit.Variant var5 = getRandomRabbitVariant(var1, this.blockPosition());
       if (var4 instanceof Rabbit.RabbitGroupData) {
-         var6 = ((Rabbit.RabbitGroupData)var4).variant;
+         var5 = ((Rabbit.RabbitGroupData)var4).variant;
       } else {
-         var4 = new Rabbit.RabbitGroupData(var6);
+         var4 = new Rabbit.RabbitGroupData(var5);
       }
 
-      this.setVariant(var6);
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      this.setVariant(var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    private static Rabbit.Variant getRandomRabbitVariant(LevelAccessor var0, BlockPos var1) {
@@ -614,9 +605,9 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       final int id;
       private final String name;
 
-      private Variant(int var3, String var4) {
-         this.id = var3;
-         this.name = var4;
+      private Variant(final int nullxx, final String nullxxx) {
+         this.id = nullxx;
+         this.name = nullxxx;
       }
 
       @Override

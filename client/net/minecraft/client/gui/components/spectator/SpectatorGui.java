@@ -69,7 +69,7 @@ public class SpectatorGui implements SpectatorMenuListener {
 
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-      for(int var6 = 0; var6 < 9; ++var6) {
+      for (int var6 = 0; var6 < 9; var6++) {
          this.renderSlot(var1, var6, var1.guiWidth() / 2 - 90 + var6 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var6));
       }
 
@@ -99,9 +99,11 @@ public class SpectatorGui implements SpectatorMenuListener {
          SpectatorMenuItem var3 = this.menu.getSelectedItem();
          Component var4 = var3 == SpectatorMenu.EMPTY_SLOT ? this.menu.getSelectedCategory().getPrompt() : var3.getName();
          if (var4 != null) {
-            int var5 = (var1.guiWidth() - this.minecraft.font.width(var4)) / 2;
-            int var6 = var1.guiHeight() - 35;
-            var1.drawString(this.minecraft.font, var4, var5, var6, 16777215 + (var2 << 24));
+            int var5 = this.minecraft.font.width(var4);
+            int var6 = (var1.guiWidth() - var5) / 2;
+            int var7 = var1.guiHeight() - 35;
+            var1.fill(var6 - 2, var7 - 2, var6 + var5 + 2, var7 + 9 + 2, this.minecraft.options.getBackgroundColor(0));
+            var1.drawString(this.minecraft.font, var4, var6, var7, 16777215 + (var2 << 24));
          }
       }
    }
@@ -119,7 +121,7 @@ public class SpectatorGui implements SpectatorMenuListener {
    public void onMouseScrolled(int var1) {
       int var2 = this.menu.getSelectedSlot() + var1;
 
-      while(var2 >= 0 && var2 <= 8 && (this.menu.getItem(var2) == SpectatorMenu.EMPTY_SLOT || !this.menu.getItem(var2).isEnabled())) {
+      while (var2 >= 0 && var2 <= 8 && (this.menu.getItem(var2) == SpectatorMenu.EMPTY_SLOT || !this.menu.getItem(var2).isEnabled())) {
          var2 += var1;
       }
 

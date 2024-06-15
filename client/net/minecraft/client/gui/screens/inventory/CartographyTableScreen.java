@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -9,6 +10,7 @@ import net.minecraft.world.inventory.CartographyTableMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class CartographyTableScreen extends AbstractContainerScreen<CartographyTableMenu> {
@@ -40,11 +42,10 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       boolean var9 = var7.is(Items.PAPER);
       boolean var10 = var7.is(Items.GLASS_PANE);
       ItemStack var11 = this.menu.getSlot(0).getItem();
+      MapId var12 = var11.get(DataComponents.MAP_ID);
       boolean var14 = false;
-      Integer var12;
       MapItemSavedData var13;
-      if (var11.is(Items.FILLED_MAP)) {
-         var12 = MapItem.getMapId(var11);
+      if (var12 != null) {
          var13 = MapItem.getSavedData(var12, this.minecraft.level);
          if (var13 != null) {
             if (var13.locked) {
@@ -60,7 +61,6 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
             }
          }
       } else {
-         var12 = null;
          var13 = null;
       }
 
@@ -68,7 +68,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
    }
 
    private void renderResultingMap(
-      GuiGraphics var1, @Nullable Integer var2, @Nullable MapItemSavedData var3, boolean var4, boolean var5, boolean var6, boolean var7
+      GuiGraphics var1, @Nullable MapId var2, @Nullable MapItemSavedData var3, boolean var4, boolean var5, boolean var6, boolean var7
    ) {
       int var8 = this.leftPos;
       int var9 = this.topPos;
@@ -96,7 +96,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       }
    }
 
-   private void renderMap(GuiGraphics var1, @Nullable Integer var2, @Nullable MapItemSavedData var3, int var4, int var5, float var6) {
+   private void renderMap(GuiGraphics var1, @Nullable MapId var2, @Nullable MapItemSavedData var3, int var4, int var5, float var6) {
       if (var2 != null && var3 != null) {
          var1.pose().pushPose();
          var1.pose().translate((float)var4, (float)var5, 1.0F);

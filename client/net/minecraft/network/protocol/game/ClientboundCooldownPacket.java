@@ -1,41 +1,34 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.Item;
 
-public class ClientboundCooldownPacket implements Packet<ClientGamePacketListener> {
-   private final Item item;
-   private final int duration;
+public record ClientboundCooldownPacket(Item item, int duration) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCooldownPacket> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.registry(Registries.ITEM),
+      ClientboundCooldownPacket::item,
+      ByteBufCodecs.VAR_INT,
+      ClientboundCooldownPacket::duration,
+      ClientboundCooldownPacket::new
+   );
 
-   public ClientboundCooldownPacket(Item var1, int var2) {
+   public ClientboundCooldownPacket(Item item, int duration) {
       super();
-      this.item = var1;
-      this.duration = var2;
-   }
-
-   public ClientboundCooldownPacket(FriendlyByteBuf var1) {
-      super();
-      this.item = var1.readById(BuiltInRegistries.ITEM);
-      this.duration = var1.readVarInt();
+      this.item = item;
+      this.duration = duration;
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeId(BuiltInRegistries.ITEM, this.item);
-      var1.writeVarInt(this.duration);
+   public PacketType<ClientboundCooldownPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_COOLDOWN;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleItemCooldown(this);
-   }
-
-   public Item getItem() {
-      return this.item;
-   }
-
-   public int getDuration() {
-      return this.duration;
    }
 }

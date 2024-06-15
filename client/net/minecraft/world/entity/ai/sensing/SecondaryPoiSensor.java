@@ -23,11 +23,11 @@ public class SecondaryPoiSensor extends Sensor<Villager> {
       ResourceKey var3 = var1.dimension();
       BlockPos var4 = var2.blockPosition();
       ArrayList var5 = Lists.newArrayList();
-      boolean var6 = true;
+      byte var6 = 4;
 
-      for(int var7 = -4; var7 <= 4; ++var7) {
-         for(int var8 = -2; var8 <= 2; ++var8) {
-            for(int var9 = -4; var9 <= 4; ++var9) {
+      for (int var7 = -4; var7 <= 4; var7++) {
+         for (int var8 = -2; var8 <= 2; var8++) {
+            for (int var9 = -4; var9 <= 4; var9++) {
                BlockPos var10 = var4.offset(var7, var8, var9);
                if (var2.getVillagerData().getProfession().secondaryPoi().contains(var1.getBlockState(var10).getBlock())) {
                   var5.add(GlobalPos.of(var3, var10));

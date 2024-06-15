@@ -3,7 +3,7 @@ package net.minecraft.world.entity.vehicle;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,12 +22,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class ChestBoat extends Boat implements HasCustomInventoryScreen, ContainerEntity {
    private static final int CONTAINER_SIZE = 27;
    private NonNullList<ItemStack> itemStacks = NonNullList.withSize(27, ItemStack.EMPTY);
    @Nullable
-   private ResourceLocation lootTable;
+   private ResourceKey<LootTable> lootTable;
    private long lootTableSeed;
 
    public ChestBoat(EntityType<? extends Boat> var1, Level var2) {
@@ -55,13 +56,13 @@ public class ChestBoat extends Boat implements HasCustomInventoryScreen, Contain
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      this.addChestVehicleSaveData(var1);
+      this.addChestVehicleSaveData(var1, this.registryAccess());
    }
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.readChestVehicleSaveData(var1);
+      this.readChestVehicleSaveData(var1, this.registryAccess());
    }
 
    @Override
@@ -105,7 +106,7 @@ public class ChestBoat extends Boat implements HasCustomInventoryScreen, Contain
 
    @Override
    public Item getDropItem() {
-      return switch(this.getVariant()) {
+      return switch (this.getVariant()) {
          case SPRUCE -> Items.SPRUCE_CHEST_BOAT;
          case BIRCH -> Items.BIRCH_CHEST_BOAT;
          case JUNGLE -> Items.JUNGLE_CHEST_BOAT;
@@ -179,12 +180,12 @@ public class ChestBoat extends Boat implements HasCustomInventoryScreen, Contain
 
    @Nullable
    @Override
-   public ResourceLocation getLootTable() {
+   public ResourceKey<LootTable> getLootTable() {
       return this.lootTable;
    }
 
    @Override
-   public void setLootTable(@Nullable ResourceLocation var1) {
+   public void setLootTable(@Nullable ResourceKey<LootTable> var1) {
       this.lootTable = var1;
    }
 

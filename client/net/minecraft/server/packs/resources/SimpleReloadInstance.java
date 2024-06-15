@@ -54,7 +54,7 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
       final CompletableFuture var8 = var6;
       this.preparingListeners = Sets.newHashSet(var4);
 
-      for(final PreparableReloadListener var10 : var4) {
+      for (final PreparableReloadListener var10 : var4) {
          CompletableFuture var12 = var5.create(new PreparableReloadListener.PreparationBarrier() {
             @Override
             public <T> CompletableFuture<T> wait(T var1) {
@@ -73,10 +73,10 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
                this.doneTaskCounter.incrementAndGet();
             });
          }, var2x -> {
-            ++this.startedReloads;
+            this.startedReloads++;
             var2.execute(() -> {
                var2x.run();
-               ++this.finishedReloads;
+               this.finishedReloads++;
             });
          });
          var7.add(var12);

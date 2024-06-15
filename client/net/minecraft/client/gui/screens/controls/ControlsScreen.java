@@ -1,52 +1,46 @@
 package net.minecraft.client.gui.screens.controls;
 
+import javax.annotation.Nullable;
+import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.gui.screens.MouseSettingsScreen;
 import net.minecraft.client.gui.screens.OptionsSubScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class ControlsScreen extends OptionsSubScreen {
-   private static final int ROW_SPACING = 24;
+   private static final Component TITLE = Component.translatable("controls.title");
+   @Nullable
+   private OptionsList list;
+
+   private static OptionInstance<?>[] options(Options var0) {
+      return new OptionInstance[]{var0.toggleCrouch(), var0.toggleSprint(), var0.autoJump(), var0.operatorItemsTab()};
+   }
 
    public ControlsScreen(Screen var1, Options var2) {
-      super(var1, var2, Component.translatable("controls.title"));
+      super(var1, var2, TITLE);
    }
 
    @Override
    protected void init() {
+      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
+      this.list
+         .addSmall(
+            Button.builder(Component.translatable("options.mouse_settings"), var1 -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options)))
+               .build(),
+            Button.builder(Component.translatable("controls.keybinds"), var1 -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options))).build()
+         );
+      this.list.addSmall(options(this.options));
       super.init();
-      int var1 = this.width / 2 - 155;
-      int var2 = var1 + 160;
-      int var3 = this.height / 6 - 12;
-      this.addRenderableWidget(
-         Button.builder(Component.translatable("options.mouse_settings"), var1x -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options)))
-            .bounds(var1, var3, 150, 20)
-            .build()
-      );
-      this.addRenderableWidget(
-         Button.builder(Component.translatable("controls.keybinds"), var1x -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options)))
-            .bounds(var2, var3, 150, 20)
-            .build()
-      );
-      var3 += 24;
-      this.addRenderableWidget(this.options.toggleCrouch().createButton(this.options, var1, var3, 150));
-      this.addRenderableWidget(this.options.toggleSprint().createButton(this.options, var2, var3, 150));
-      var3 += 24;
-      this.addRenderableWidget(this.options.autoJump().createButton(this.options, var1, var3, 150));
-      this.addRenderableWidget(this.options.operatorItemsTab().createButton(this.options, var2, var3, 150));
-      var3 += 24;
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_DONE, var1x -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, var3, 200, 20).build()
-      );
    }
 
    @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 15, 16777215);
+   protected void repositionElements() {
+      super.repositionElements();
+      if (this.list != null) {
+         this.list.updateSize(this.width, this.layout);
+      }
    }
 }

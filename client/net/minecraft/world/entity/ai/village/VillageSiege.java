@@ -50,13 +50,13 @@ public class VillageSiege implements CustomSpawner {
             }
 
             if (this.nextSpawnTime > 0) {
-               --this.nextSpawnTime;
+               this.nextSpawnTime--;
                return 0;
             } else {
                this.nextSpawnTime = 2;
                if (this.zombiesToSpawn > 0) {
                   this.trySpawn(var1);
-                  --this.zombiesToSpawn;
+                  this.zombiesToSpawn--;
                } else {
                   this.siegeState = VillageSiege.State.SIEGE_DONE;
                }
@@ -72,11 +72,11 @@ public class VillageSiege implements CustomSpawner {
    }
 
    private boolean tryToSetupSiege(ServerLevel var1) {
-      for(Player var3 : var1.players()) {
+      for (Player var3 : var1.players()) {
          if (!var3.isSpectator()) {
             BlockPos var4 = var3.blockPosition();
             if (var1.isVillage(var4) && !var1.getBiome(var4).is(BiomeTags.WITHOUT_ZOMBIE_SIEGES)) {
-               for(int var5 = 0; var5 < 10; ++var5) {
+               for (int var5 = 0; var5 < 10; var5++) {
                   float var6 = var1.random.nextFloat() * 6.2831855F;
                   this.spawnX = var4.getX() + Mth.floor(Mth.cos(var6) * 32.0F);
                   this.spawnY = var4.getY();
@@ -102,7 +102,7 @@ public class VillageSiege implements CustomSpawner {
          Zombie var3;
          try {
             var3 = new Zombie(var1);
-            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.EVENT, null, null);
+            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.EVENT, null);
          } catch (Exception var5) {
             LOGGER.warn("Failed to create zombie for village siege at {}", var2, var5);
             return;
@@ -115,7 +115,7 @@ public class VillageSiege implements CustomSpawner {
 
    @Nullable
    private Vec3 findRandomSpawnPos(ServerLevel var1, BlockPos var2) {
-      for(int var3 = 0; var3 < 10; ++var3) {
+      for (int var3 = 0; var3 < 10; var3++) {
          int var4 = var2.getX() + var1.random.nextInt(16) - 8;
          int var5 = var2.getZ() + var1.random.nextInt(16) - 8;
          int var6 = var1.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var5);

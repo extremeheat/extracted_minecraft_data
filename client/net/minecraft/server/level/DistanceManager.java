@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
@@ -65,15 +64,15 @@ public abstract class DistanceManager {
    }
 
    protected void purgeStaleTickets() {
-      ++this.ticketTickCounter;
+      this.ticketTickCounter++;
       ObjectIterator var1 = this.tickets.long2ObjectEntrySet().fastIterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          Entry var2 = (Entry)var1.next();
          Iterator var3 = ((SortedArraySet)var2.getValue()).iterator();
          boolean var4 = false;
 
-         while(var3.hasNext()) {
+         while (var3.hasNext()) {
             Ticket var5 = (Ticket)var3.next();
             if (var5.timedOut(this.ticketTickCounter)) {
                var3.remove();
@@ -121,7 +120,7 @@ public abstract class DistanceManager {
          if (!this.ticketsToRelease.isEmpty()) {
             LongIterator var4 = this.ticketsToRelease.iterator();
 
-            while(var4.hasNext()) {
+            while (var4.hasNext()) {
                long var5 = var4.nextLong();
                if (this.getTickets(var5).stream().anyMatch(var0 -> var0.getType() == TicketType.PLAYER)) {
                   ChunkHolder var7 = var1.getUpdatingChunkIfPresent(var5);
@@ -130,10 +129,8 @@ public abstract class DistanceManager {
                   }
 
                   CompletableFuture var8 = var7.getEntityTickingChunkFuture();
-                  var8.thenAccept(
-                     var3x -> this.mainThreadExecutor.execute(() -> this.ticketThrottlerReleaser.tell(ChunkTaskPriorityQueueSorter.release(() -> {
-                           }, var5, false)))
-                  );
+                  var8.thenAccept(var3x -> this.mainThreadExecutor.execute(() -> this.ticketThrottlerReleaser.tell(ChunkTaskPriorityQueueSorter.release(() -> {
+                        }, var5, false))));
                }
             }
 
@@ -273,11 +270,11 @@ public abstract class DistanceManager {
       try (FileOutputStream var2 = new FileOutputStream(new File(var1))) {
          ObjectIterator var3 = this.tickets.long2ObjectEntrySet().iterator();
 
-         while(var3.hasNext()) {
+         while (var3.hasNext()) {
             Entry var4 = (Entry)var3.next();
             ChunkPos var5 = new ChunkPos(var4.getLongKey());
 
-            for(Ticket var7 : (SortedArraySet)var4.getValue()) {
+            for (Ticket var7 : (SortedArraySet)var4.getValue()) {
                var2.write((var5.x + "\t" + var5.z + "\t" + var7.getType() + "\t" + var7.getTicketLevel() + "\t\n").getBytes(StandardCharsets.UTF_8));
             }
          }
@@ -295,12 +292,12 @@ public abstract class DistanceManager {
       ImmutableSet var1 = ImmutableSet.of(TicketType.UNKNOWN, TicketType.POST_TELEPORT, TicketType.LIGHT);
       ObjectIterator var2 = this.tickets.long2ObjectEntrySet().fastIterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          Entry var3 = (Entry)var2.next();
          Iterator var4 = ((SortedArraySet)var3.getValue()).iterator();
          boolean var5 = false;
 
-         while(var4.hasNext()) {
+         while (var4.hasNext()) {
             Ticket var6 = (Ticket)var4.next();
             if (!var1.contains(var6.getType())) {
                var4.remove();
@@ -373,10 +370,10 @@ public abstract class DistanceManager {
       protected final Long2ByteMap chunks = new Long2ByteOpenHashMap();
       protected final int maxDistance;
 
-      protected FixedPlayerDistanceChunkTracker(int var2) {
-         super(var2 + 2, 16, 256);
-         this.maxDistance = var2;
-         this.chunks.defaultReturnValue((byte)(var2 + 2));
+      protected FixedPlayerDistanceChunkTracker(final int nullx) {
+         super(nullx + 2, 16, 256);
+         this.maxDistance = nullx;
+         this.chunks.defaultReturnValue((byte)(nullx + 2));
       }
 
       @Override
@@ -417,7 +414,7 @@ public abstract class DistanceManager {
          try (FileOutputStream var2 = new FileOutputStream(new File(var1))) {
             ObjectIterator var3 = this.chunks.long2ByteEntrySet().iterator();
 
-            while(var3.hasNext()) {
+            while (var3.hasNext()) {
                it.unimi.dsi.fastutil.longs.Long2ByteMap.Entry var4 = (it.unimi.dsi.fastutil.longs.Long2ByteMap.Entry)var3.next();
                ChunkPos var5 = new ChunkPos(var4.getLongKey());
                String var6 = Byte.toString(var4.getByteValue());
@@ -434,10 +431,10 @@ public abstract class DistanceManager {
       private final Long2IntMap queueLevels = Long2IntMaps.synchronize(new Long2IntOpenHashMap());
       private final LongSet toUpdate = new LongOpenHashSet();
 
-      protected PlayerTicketTracker(int var2) {
-         super(var2);
+      protected PlayerTicketTracker(final int nullx) {
+         super(nullx);
          this.viewDistance = 0;
-         this.queueLevels.defaultReturnValue(var2 + 2);
+         this.queueLevels.defaultReturnValue(nullx + 2);
       }
 
       @Override
@@ -448,7 +445,7 @@ public abstract class DistanceManager {
       public void updateViewDistance(int var1) {
          ObjectIterator var2 = this.chunks.long2ByteEntrySet().iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             it.unimi.dsi.fastutil.longs.Long2ByteMap.Entry var3 = (it.unimi.dsi.fastutil.longs.Long2ByteMap.Entry)var2.next();
             byte var4 = var3.getByteValue();
             long var5 = var3.getLongKey();
@@ -489,7 +486,7 @@ public abstract class DistanceManager {
          if (!this.toUpdate.isEmpty()) {
             LongIterator var1 = this.toUpdate.iterator();
 
-            while(var1.hasNext()) {
+            while (var1.hasNext()) {
                long var2 = var1.nextLong();
                int var4 = this.queueLevels.get(var2);
                int var5 = this.getLevel(var2);

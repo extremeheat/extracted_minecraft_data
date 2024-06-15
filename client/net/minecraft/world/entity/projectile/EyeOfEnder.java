@@ -34,24 +34,21 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    }
 
    public void setItem(ItemStack var1) {
-      if (!var1.is(Items.ENDER_EYE) || var1.hasTag()) {
+      if (var1.isEmpty()) {
+         this.getEntityData().set(DATA_ITEM_STACK, this.getDefaultItem());
+      } else {
          this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
       }
    }
 
-   private ItemStack getItemRaw() {
+   @Override
+   public ItemStack getItem() {
       return this.getEntityData().get(DATA_ITEM_STACK);
    }
 
    @Override
-   public ItemStack getItem() {
-      ItemStack var1 = this.getItemRaw();
-      return var1.isEmpty() ? new ItemStack(Items.ENDER_EYE) : var1;
-   }
-
-   @Override
-   protected void defineSynchedData() {
-      this.getEntityData().define(DATA_ITEM_STACK, ItemStack.EMPTY);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_ITEM_STACK, this.getDefaultItem());
    }
 
    @Override
@@ -127,7 +124,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
       float var21 = 0.25F;
       if (this.isInWater()) {
-         for(int var11 = 0; var11 < 4; ++var11) {
+         for (int var11 = 0; var11 < 4; var11++) {
             this.level().addParticle(ParticleTypes.BUBBLE, var2 - var1.x * 0.25, var4 - var1.y * 0.25, var6 - var1.z * 0.25, var1.x, var1.y, var1.z);
          }
       } else {
@@ -145,7 +142,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
       if (!this.level().isClientSide) {
          this.setPos(var2, var4, var6);
-         ++this.life;
+         this.life++;
          if (this.life > 80 && !this.level().isClientSide) {
             this.playSound(SoundEvents.ENDER_EYE_DEATH, 1.0F, 1.0F);
             this.discard();
@@ -162,16 +159,20 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
-      ItemStack var2 = this.getItemRaw();
-      if (!var2.isEmpty()) {
-         var1.put("Item", var2.save(new CompoundTag()));
-      }
+      var1.put("Item", this.getItem().save(this.registryAccess()));
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
-      ItemStack var2 = ItemStack.of(var1.getCompound("Item"));
-      this.setItem(var2);
+      if (var1.contains("Item", 10)) {
+         this.setItem(ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElse(this.getDefaultItem()));
+      } else {
+         this.setItem(this.getDefaultItem());
+      }
+   }
+
+   private ItemStack getDefaultItem() {
+      return new ItemStack(Items.ENDER_EYE);
    }
 
    @Override

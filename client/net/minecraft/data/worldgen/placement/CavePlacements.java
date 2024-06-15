@@ -4,7 +4,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.CaveFeatures;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.resources.ResourceKey;
@@ -50,7 +50,7 @@ public class CavePlacements {
       super();
    }
 
-   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
       HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(CaveFeatures.MONSTER_ROOM);
       Holder.Reference var3 = var1.getOrThrow(CaveFeatures.FOSSIL_COAL);
@@ -223,13 +223,7 @@ public class CavePlacements {
          BiomeFilter.biome()
       );
       PlacementUtils.register(
-         var0,
-         CLASSIC_VINES,
-         var16,
-         CountPlacement.of(256),
-         InSquarePlacement.spread(),
-         PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT,
-         BiomeFilter.biome()
+         var0, CLASSIC_VINES, var16, CountPlacement.of(256), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome()
       );
       PlacementUtils.register(
          var0,

@@ -30,12 +30,12 @@ public class LastSeenMessagesTracker {
    private void addEntry(@Nullable LastSeenTrackedEntry var1) {
       int var2 = this.tail;
       this.tail = (var2 + 1) % this.trackedMessages.length;
-      ++this.offset;
+      this.offset++;
       this.trackedMessages[var2] = var1;
    }
 
    public void ignorePending(MessageSignature var1) {
-      for(int var2 = 0; var2 < this.trackedMessages.length; ++var2) {
+      for (int var2 = 0; var2 < this.trackedMessages.length; var2++) {
          LastSeenTrackedEntry var3 = this.trackedMessages[var2];
          if (var3 != null && var3.pending() && var1.equals(var3.signature())) {
             this.trackedMessages[var2] = null;
@@ -55,7 +55,7 @@ public class LastSeenMessagesTracker {
       BitSet var2 = new BitSet(this.trackedMessages.length);
       ObjectArrayList var3 = new ObjectArrayList(this.trackedMessages.length);
 
-      for(int var4 = 0; var4 < this.trackedMessages.length; ++var4) {
+      for (int var4 = 0; var4 < this.trackedMessages.length; var4++) {
          int var5 = (this.tail + var4) % this.trackedMessages.length;
          LastSeenTrackedEntry var6 = this.trackedMessages[var5];
          if (var6 != null) {
@@ -74,14 +74,11 @@ public class LastSeenMessagesTracker {
       return this.offset;
    }
 
-   public static record Update(LastSeenMessages a, LastSeenMessages.Update b) {
-      private final LastSeenMessages lastSeen;
-      private final LastSeenMessages.Update update;
-
-      public Update(LastSeenMessages var1, LastSeenMessages.Update var2) {
+   public static record Update(LastSeenMessages lastSeen, LastSeenMessages.Update update) {
+      public Update(LastSeenMessages lastSeen, LastSeenMessages.Update update) {
          super();
-         this.lastSeen = var1;
-         this.update = var2;
+         this.lastSeen = lastSeen;
+         this.update = update;
       }
    }
 }

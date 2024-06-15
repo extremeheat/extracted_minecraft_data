@@ -38,7 +38,7 @@ public class AdvancementNode {
    public static AdvancementNode getRoot(AdvancementNode var0) {
       AdvancementNode var1 = var0;
 
-      while(true) {
+      while (true) {
          AdvancementNode var2 = var1.parent();
          if (var2 == null) {
             return var1;

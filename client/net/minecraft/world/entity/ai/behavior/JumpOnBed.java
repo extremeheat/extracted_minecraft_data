@@ -66,13 +66,13 @@ public class JumpOnBed extends Behavior<Mob> {
 
    protected void tick(ServerLevel var1, Mob var2, long var3) {
       if (!this.onOrOverBed(var1, var2)) {
-         --this.remainingTimeToReachBed;
+         this.remainingTimeToReachBed--;
       } else if (this.remainingCooldownUntilNextJump > 0) {
-         --this.remainingCooldownUntilNextJump;
+         this.remainingCooldownUntilNextJump--;
       } else {
          if (this.onBedSurface(var1, var2)) {
             var2.getJumpControl().jump();
-            --this.remainingJumps;
+            this.remainingJumps--;
             this.remainingCooldownUntilNextJump = 5;
          }
       }

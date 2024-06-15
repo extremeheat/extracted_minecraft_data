@@ -94,14 +94,14 @@ public class StructureTemplate {
          BlockPos var11 = new BlockPos(Math.max(var2.getX(), var6.getX()), Math.max(var2.getY(), var6.getY()), Math.max(var2.getZ(), var6.getZ()));
          this.size = var3;
 
-         for(BlockPos var13 : BlockPos.betweenClosed(var10, var11)) {
+         for (BlockPos var13 : BlockPos.betweenClosed(var10, var11)) {
             BlockPos var14 = var13.subtract(var10);
             BlockState var15 = var1.getBlockState(var13);
             if (var5 == null || !var15.is(var5)) {
                BlockEntity var16 = var1.getBlockEntity(var13);
                StructureTemplate.StructureBlockInfo var17;
                if (var16 != null) {
-                  var17 = new StructureTemplate.StructureBlockInfo(var14, var15, var16.saveWithId());
+                  var17 = new StructureTemplate.StructureBlockInfo(var14, var15, var16.saveWithId(var1.registryAccess()));
                } else {
                   var17 = new StructureTemplate.StructureBlockInfo(var14, var15, null);
                }
@@ -156,7 +156,7 @@ public class StructureTemplate {
       List var4 = var1.getEntitiesOfClass(Entity.class, AABB.encapsulatingFullBlocks(var2, var3), var0 -> !(var0 instanceof Player));
       this.entityInfoList.clear();
 
-      for(Entity var6 : var4) {
+      for (Entity var6 : var4) {
          Vec3 var7 = new Vec3(var6.getX() - (double)var2.getX(), var6.getY() - (double)var2.getY(), var6.getZ() - (double)var2.getZ());
          CompoundTag var8 = new CompoundTag();
          var6.save(var8);
@@ -181,7 +181,7 @@ public class StructureTemplate {
       if (this.palettes.isEmpty()) {
          return var5;
       } else {
-         for(StructureTemplate.StructureBlockInfo var8 : var2.getRandomPalette(this.palettes, var1).blocks(var3)) {
+         for (StructureTemplate.StructureBlockInfo var8 : var2.getRandomPalette(this.palettes, var1).blocks(var3)) {
             BlockPos var9 = var4 ? calculateRelativePosition(var2, var8.pos).offset(var1) : var8.pos;
             if (var6 == null || var6.isInside(var9)) {
                var5.add(new StructureTemplate.StructureBlockInfo(var9, var8.state.rotate(var2.getRotation()), var8.nbt));
@@ -222,7 +222,7 @@ public class StructureTemplate {
             int var16 = -2147483648;
             int var17 = -2147483648;
 
-            for(StructureTemplate.StructureBlockInfo var20 : processBlockInfos(var1, var2, var3, var4, var7)) {
+            for (StructureTemplate.StructureBlockInfo var20 : processBlockInfos(var1, var2, var3, var4, var7)) {
                BlockPos var21 = var20.pos;
                if (var8 == null || var8.isInside(var21)) {
                   FluidState var22 = var4.shouldKeepLiquids() ? var1.getFluidState(var21) : null;
@@ -248,7 +248,7 @@ public class StructureTemplate {
                               var20.nbt.putLong("LootTableSeed", var5.nextLong());
                            }
 
-                           var39.load(var20.nbt);
+                           var39.loadWithComponents(var20.nbt, var1.registryAccess());
                         }
                      }
 
@@ -269,15 +269,15 @@ public class StructureTemplate {
             boolean var28 = true;
             Direction[] var29 = new Direction[]{Direction.UP, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
-            while(var28 && !var9.isEmpty()) {
+            while (var28 && !var9.isEmpty()) {
                var28 = false;
                Iterator var30 = var9.iterator();
 
-               while(var30.hasNext()) {
+               while (var30.hasNext()) {
                   BlockPos var33 = (BlockPos)var30.next();
                   FluidState var36 = var1.getFluidState(var33);
 
-                  for(int var40 = 0; var40 < var29.length && !var36.isSource(); ++var40) {
+                  for (int var40 = 0; var40 < var29.length && !var36.isSource(); var40++) {
                      BlockPos var25 = var33.relative(var29[var40]);
                      FluidState var26 = var1.getFluidState(var25);
                      if (var26.isSource() && !var10.contains(var25)) {
@@ -304,7 +304,7 @@ public class StructureTemplate {
                   int var37 = var13;
                   int var42 = var14;
 
-                  for(Pair var48 : var11) {
+                  for (Pair var48 : var11) {
                      BlockPos var27 = (BlockPos)var48.getFirst();
                      var31.fill(var27.getX() - var34, var27.getY() - var37, var27.getZ() - var42);
                   }
@@ -312,7 +312,7 @@ public class StructureTemplate {
                   updateShapeAtEdge(var1, var6, var31, var34, var37, var42);
                }
 
-               for(Pair var35 : var11) {
+               for (Pair var35 : var11) {
                   BlockPos var38 = (BlockPos)var35.getFirst();
                   if (!var4.getKnownShape()) {
                      BlockState var43 = var1.getBlockState(var38);
@@ -344,20 +344,26 @@ public class StructureTemplate {
       }
    }
 
+   public static void updateShapeAtEdge(LevelAccessor var0, int var1, DiscreteVoxelShape var2, BlockPos var3) {
+      updateShapeAtEdge(var0, var1, var2, var3.getX(), var3.getY(), var3.getZ());
+   }
+
    public static void updateShapeAtEdge(LevelAccessor var0, int var1, DiscreteVoxelShape var2, int var3, int var4, int var5) {
-      var2.forAllFaces((var5x, var6, var7, var8) -> {
-         BlockPos var9 = new BlockPos(var3 + var6, var4 + var7, var5 + var8);
-         BlockPos var10 = var9.relative(var5x);
-         BlockState var11 = var0.getBlockState(var9);
-         BlockState var12 = var0.getBlockState(var10);
-         BlockState var13 = var11.updateShape(var5x, var12, var0, var9, var10);
+      BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+      BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
+      var2.forAllFaces((var7x, var8, var9, var10) -> {
+         var6.set(var3 + var8, var4 + var9, var5 + var10);
+         var7.setWithOffset(var6, var7x);
+         BlockState var11 = var0.getBlockState(var6);
+         BlockState var12 = var0.getBlockState(var7);
+         BlockState var13 = var11.updateShape(var7x, var12, var0, var6, var7);
          if (var11 != var13) {
-            var0.setBlock(var9, var13, var1 & -2);
+            var0.setBlock(var6, var13, var1 & -2);
          }
 
-         BlockState var14 = var12.updateShape(var5x.getOpposite(), var13, var0, var10, var9);
+         BlockState var14 = var12.updateShape(var7x.getOpposite(), var13, var0, var7, var6);
          if (var12 != var14) {
-            var0.setBlock(var10, var14, var1 & -2);
+            var0.setBlock(var7, var14, var1 & -2);
          }
       });
    }
@@ -368,12 +374,12 @@ public class StructureTemplate {
       ArrayList var5 = new ArrayList();
       Object var6 = new ArrayList();
 
-      for(StructureTemplate.StructureBlockInfo var8 : var4) {
+      for (StructureTemplate.StructureBlockInfo var8 : var4) {
          BlockPos var9 = calculateRelativePosition(var3, var8.pos).offset(var1);
          StructureTemplate.StructureBlockInfo var10 = new StructureTemplate.StructureBlockInfo(var9, var8.state, var8.nbt != null ? var8.nbt.copy() : null);
          Iterator var11 = var3.getProcessors().iterator();
 
-         while(var10 != null && var11.hasNext()) {
+         while (var10 != null && var11.hasNext()) {
             var10 = ((StructureProcessor)var11.next()).processBlock(var0, var1, var2, var8, var10, var3);
          }
 
@@ -383,7 +389,7 @@ public class StructureTemplate {
          }
       }
 
-      for(StructureProcessor var13 : var3.getProcessors()) {
+      for (StructureProcessor var13 : var3.getProcessors()) {
          var6 = var13.finalizeProcessing(var0, var1, var2, var5, (List<StructureTemplate.StructureBlockInfo>)var6, var3);
       }
 
@@ -391,7 +397,7 @@ public class StructureTemplate {
    }
 
    private void placeEntities(ServerLevelAccessor var1, BlockPos var2, Mirror var3, Rotation var4, BlockPos var5, @Nullable BoundingBox var6, boolean var7) {
-      for(StructureTemplate.StructureEntityInfo var9 : this.entityInfoList) {
+      for (StructureTemplate.StructureEntityInfo var9 : this.entityInfoList) {
          BlockPos var10 = transform(var9.blockPos, var3, var4, var5).offset(var2);
          if (var6 == null || var6.isInside(var10)) {
             CompoundTag var11 = var9.nbt.copy();
@@ -403,15 +409,15 @@ public class StructureTemplate {
             var14.add(DoubleTag.valueOf(var13.z));
             var11.put("Pos", var14);
             var11.remove("UUID");
-            createEntityIgnoreException(var1, var11).ifPresent(var6x -> {
-               float var7xx = var6x.rotate(var4);
-               var7xx += var6x.mirror(var3) - var6x.getYRot();
-               var6x.moveTo(var13.x, var13.y, var13.z, var7xx, var6x.getXRot());
-               if (var7 && var6x instanceof Mob) {
-                  ((Mob)var6x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), MobSpawnType.STRUCTURE, null, var11);
+            createEntityIgnoreException(var1, var11).ifPresent(var5x -> {
+               float var6x = var5x.rotate(var4);
+               var6x += var5x.mirror(var3) - var5x.getYRot();
+               var5x.moveTo(var13.x, var13.y, var13.z, var6x, var5x.getXRot());
+               if (var7 && var5x instanceof Mob) {
+                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), MobSpawnType.STRUCTURE, null);
                }
 
-               var1.addFreshEntityWithPassengers(var6x);
+               var1.addFreshEntityWithPassengers(var5x);
             });
          }
       }
@@ -426,7 +432,7 @@ public class StructureTemplate {
    }
 
    public Vec3i getSize(Rotation var1) {
-      switch(var1) {
+      switch (var1) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
             return new Vec3i(this.size.getZ(), this.size.getY(), this.size.getX());
@@ -440,7 +446,7 @@ public class StructureTemplate {
       int var5 = var0.getY();
       int var6 = var0.getZ();
       boolean var7 = true;
-      switch(var1) {
+      switch (var1) {
          case LEFT_RIGHT:
             var6 = -var6;
             break;
@@ -453,7 +459,7 @@ public class StructureTemplate {
 
       int var8 = var3.getX();
       int var9 = var3.getZ();
-      switch(var2) {
+      switch (var2) {
          case COUNTERCLOCKWISE_90:
             return new BlockPos(var8 - var9 + var6, var5, var8 + var9 - var4);
          case CLOCKWISE_90:
@@ -470,7 +476,7 @@ public class StructureTemplate {
       double var6 = var0.y;
       double var8 = var0.z;
       boolean var10 = true;
-      switch(var1) {
+      switch (var1) {
          case LEFT_RIGHT:
             var8 = 1.0 - var8;
             break;
@@ -483,7 +489,7 @@ public class StructureTemplate {
 
       int var11 = var3.getX();
       int var12 = var3.getZ();
-      switch(var2) {
+      switch (var2) {
          case COUNTERCLOCKWISE_90:
             return new Vec3((double)(var11 - var12) + var8, var6, (double)(var11 + var12 + 1) - var4);
          case CLOCKWISE_90:
@@ -500,12 +506,12 @@ public class StructureTemplate {
    }
 
    public static BlockPos getZeroPositionWithTransform(BlockPos var0, Mirror var1, Rotation var2, int var3, int var4) {
-      --var3;
-      --var4;
+      var3--;
+      var4--;
       int var5 = var1 == Mirror.FRONT_BACK ? var3 : 0;
       int var6 = var1 == Mirror.LEFT_RIGHT ? var4 : 0;
       BlockPos var7 = var0;
-      switch(var2) {
+      switch (var2) {
          case COUNTERCLOCKWISE_90:
             var7 = var0.offset(var6, 0, var3 - var5);
             break;
@@ -547,14 +553,14 @@ public class StructureTemplate {
          StructureTemplate.SimplePalette var3 = new StructureTemplate.SimplePalette();
          var2.add(var3);
 
-         for(int var4 = 1; var4 < this.palettes.size(); ++var4) {
+         for (int var4 = 1; var4 < this.palettes.size(); var4++) {
             var2.add(new StructureTemplate.SimplePalette());
          }
 
          ListTag var14 = new ListTag();
          List var5 = this.palettes.get(0).blocks();
 
-         for(int var6 = 0; var6 < var5.size(); ++var6) {
+         for (int var6 = 0; var6 < var5.size(); var6++) {
             StructureTemplate.StructureBlockInfo var7 = (StructureTemplate.StructureBlockInfo)var5.get(var6);
             CompoundTag var8 = new CompoundTag();
             var8.put("pos", this.newIntegerList(var7.pos.getX(), var7.pos.getY(), var7.pos.getZ()));
@@ -566,7 +572,7 @@ public class StructureTemplate {
 
             var14.add(var8);
 
-            for(int var10 = 1; var10 < this.palettes.size(); ++var10) {
+            for (int var10 = 1; var10 < this.palettes.size(); var10++) {
                StructureTemplate.SimplePalette var11 = (StructureTemplate.SimplePalette)var2.get(var10);
                var11.addMapping(this.palettes.get(var10).blocks().get(var6).state, var9);
             }
@@ -576,7 +582,7 @@ public class StructureTemplate {
          if (var2.size() == 1) {
             ListTag var17 = new ListTag();
 
-            for(BlockState var21 : var3) {
+            for (BlockState var21 : var3) {
                var17.add(NbtUtils.writeBlockState(var21));
             }
 
@@ -584,10 +590,10 @@ public class StructureTemplate {
          } else {
             ListTag var18 = new ListTag();
 
-            for(StructureTemplate.SimplePalette var22 : var2) {
+            for (StructureTemplate.SimplePalette var22 : var2) {
                ListTag var23 = new ListTag();
 
-               for(BlockState var25 : var22) {
+               for (BlockState var25 : var22) {
                   var23.add(NbtUtils.writeBlockState(var25));
                }
 
@@ -600,7 +606,7 @@ public class StructureTemplate {
 
       ListTag var12 = new ListTag();
 
-      for(StructureTemplate.StructureEntityInfo var15 : this.entityInfoList) {
+      for (StructureTemplate.StructureEntityInfo var15 : this.entityInfoList) {
          CompoundTag var16 = new CompoundTag();
          var16.put("pos", this.newDoubleList(var15.pos.x, var15.pos.y, var15.pos.z));
          var16.put("blockPos", this.newIntegerList(var15.blockPos.getX(), var15.blockPos.getY(), var15.blockPos.getZ()));
@@ -625,7 +631,7 @@ public class StructureTemplate {
       if (var2.contains("palettes", 9)) {
          ListTag var5 = var2.getList("palettes", 9);
 
-         for(int var6 = 0; var6 < var5.size(); ++var6) {
+         for (int var6 = 0; var6 < var5.size(); var6++) {
             this.loadPalette(var1, var5.getList(var6), var4);
          }
       } else {
@@ -634,7 +640,7 @@ public class StructureTemplate {
 
       ListTag var13 = var2.getList("entities", 10);
 
-      for(int var14 = 0; var14 < var13.size(); ++var14) {
+      for (int var14 = 0; var14 < var13.size(); var14++) {
          CompoundTag var7 = var13.getCompound(var14);
          ListTag var8 = var7.getList("pos", 6);
          Vec3 var9 = new Vec3(var8.getDouble(0), var8.getDouble(1), var8.getDouble(2));
@@ -650,7 +656,7 @@ public class StructureTemplate {
    private void loadPalette(HolderGetter<Block> var1, ListTag var2, ListTag var3) {
       StructureTemplate.SimplePalette var4 = new StructureTemplate.SimplePalette();
 
-      for(int var5 = 0; var5 < var2.size(); ++var5) {
+      for (int var5 = 0; var5 < var2.size(); var5++) {
          var4.addMapping(NbtUtils.readBlockState(var1, var2.getCompound(var5)), var5);
       }
 
@@ -658,7 +664,7 @@ public class StructureTemplate {
       ArrayList var6 = Lists.newArrayList();
       ArrayList var7 = Lists.newArrayList();
 
-      for(int var8 = 0; var8 < var3.size(); ++var8) {
+      for (int var8 = 0; var8 < var3.size(); var8++) {
          CompoundTag var9 = var3.getCompound(var8);
          ListTag var10 = var9.getList("pos", 3);
          BlockPos var11 = new BlockPos(var10.getInt(0), var10.getInt(1), var10.getInt(2));
@@ -681,7 +687,7 @@ public class StructureTemplate {
    private ListTag newIntegerList(int... var1) {
       ListTag var2 = new ListTag();
 
-      for(int var6 : var1) {
+      for (int var6 : var1) {
          var2.add(IntTag.valueOf(var6));
       }
 
@@ -691,7 +697,7 @@ public class StructureTemplate {
    private ListTag newDoubleList(double... var1) {
       ListTag var2 = new ListTag();
 
-      for(double var6 : var1) {
+      for (double var6 : var1) {
          var2.add(DoubleTag.valueOf(var6));
       }
 
@@ -751,20 +757,15 @@ public class StructureTemplate {
       }
    }
 
-   public static record StructureBlockInfo(BlockPos a, BlockState b, @Nullable CompoundTag c) {
-      final BlockPos pos;
-      final BlockState state;
-      @Nullable
-      final CompoundTag nbt;
+   public static record StructureBlockInfo(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
 
-      public StructureBlockInfo(BlockPos var1, BlockState var2, @Nullable CompoundTag var3) {
+      public StructureBlockInfo(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
          super();
-         this.pos = var1;
-         this.state = var2;
-         this.nbt = var3;
+         this.pos = pos;
+         this.state = state;
+         this.nbt = nbt;
       }
 
-      @Override
       public String toString() {
          return String.format(Locale.ROOT, "<StructureBlockInfo | %s | %s | %s>", this.pos, this.state, this.nbt);
       }

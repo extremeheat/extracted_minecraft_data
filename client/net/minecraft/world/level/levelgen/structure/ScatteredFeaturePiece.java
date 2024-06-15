@@ -46,12 +46,12 @@ public abstract class ScatteredFeaturePiece extends StructurePiece {
          int var5 = 0;
          BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-         for(int var7 = this.boundingBox.minZ(); var7 <= this.boundingBox.maxZ(); ++var7) {
-            for(int var8 = this.boundingBox.minX(); var8 <= this.boundingBox.maxX(); ++var8) {
+         for (int var7 = this.boundingBox.minZ(); var7 <= this.boundingBox.maxZ(); var7++) {
+            for (int var8 = this.boundingBox.minX(); var8 <= this.boundingBox.maxX(); var8++) {
                var6.set(var8, 64, var7);
                if (var2.isInside(var6)) {
                   var4 += var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var6).getY();
-                  ++var5;
+                  var5++;
                }
             }
          }
@@ -74,8 +74,8 @@ public abstract class ScatteredFeaturePiece extends StructurePiece {
          boolean var4 = false;
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-         for(int var6 = this.boundingBox.minZ(); var6 <= this.boundingBox.maxZ(); ++var6) {
-            for(int var7 = this.boundingBox.minX(); var7 <= this.boundingBox.maxX(); ++var7) {
+         for (int var6 = this.boundingBox.minZ(); var6 <= this.boundingBox.maxZ(); var6++) {
+            for (int var7 = this.boundingBox.minX(); var7 <= this.boundingBox.maxX(); var7++) {
                var5.set(var7, 0, var6);
                var3 = Math.min(var3, var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var5).getY());
                var4 = true;

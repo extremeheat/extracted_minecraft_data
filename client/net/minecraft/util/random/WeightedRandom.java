@@ -13,7 +13,7 @@ public class WeightedRandom {
    public static int getTotalWeight(List<? extends WeightedEntry> var0) {
       long var1 = 0L;
 
-      for(WeightedEntry var4 : var0) {
+      for (WeightedEntry var4 : var0) {
          var1 += (long)var4.getWeight().asInt();
       }
 
@@ -36,7 +36,7 @@ public class WeightedRandom {
    }
 
    public static <T extends WeightedEntry> Optional<T> getWeightedItem(List<T> var0, int var1) {
-      for(WeightedEntry var3 : var0) {
+      for (WeightedEntry var3 : var0) {
          var1 -= var3.getWeight().asInt();
          if (var1 < 0) {
             return Optional.of((T)var3);

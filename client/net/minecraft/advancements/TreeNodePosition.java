@@ -35,7 +35,7 @@ public class TreeNodePosition {
          this.y = -1.0F;
          TreeNodePosition var6 = null;
 
-         for(AdvancementNode var8 : var1.children()) {
+         for (AdvancementNode var8 : var1.children()) {
             var6 = this.addChild(var8, var6);
          }
       }
@@ -47,7 +47,7 @@ public class TreeNodePosition {
          var2 = new TreeNodePosition(var1, this, var2, this.children.size() + 1, this.x + 1);
          this.children.add(var2);
       } else {
-         for(AdvancementNode var4 : var1.children()) {
+         for (AdvancementNode var4 : var1.children()) {
             var2 = this.addChild(var4, var2);
          }
       }
@@ -65,7 +65,7 @@ public class TreeNodePosition {
       } else {
          TreeNodePosition var1 = null;
 
-         for(TreeNodePosition var3 : this.children) {
+         for (TreeNodePosition var3 : this.children) {
             var3.firstWalk();
             var1 = var3.apportion(var1 == null ? var3 : var1);
          }
@@ -88,7 +88,7 @@ public class TreeNodePosition {
          var3 = this.y;
       }
 
-      for(TreeNodePosition var5 : this.children) {
+      for (TreeNodePosition var5 : this.children) {
          var3 = var5.secondWalk(var1 + this.mod, var2 + 1, var3);
       }
 
@@ -98,7 +98,7 @@ public class TreeNodePosition {
    private void thirdWalk(float var1) {
       this.y += var1;
 
-      for(TreeNodePosition var3 : this.children) {
+      for (TreeNodePosition var3 : this.children) {
          var3.thirdWalk(var1);
       }
    }
@@ -107,7 +107,7 @@ public class TreeNodePosition {
       float var1 = 0.0F;
       float var2 = 0.0F;
 
-      for(int var3 = this.children.size() - 1; var3 >= 0; --var3) {
+      for (int var3 = this.children.size() - 1; var3 >= 0; var3--) {
          TreeNodePosition var4 = this.children.get(var3);
          var4.y += var1;
          var4.mod += var1;
@@ -147,7 +147,7 @@ public class TreeNodePosition {
          float var8 = var4.mod;
 
          float var9;
-         for(var9 = var5.mod; var4.nextOrThread() != null && var2.previousOrThread() != null; var7 += var3.mod) {
+         for (var9 = var5.mod; var4.nextOrThread() != null && var2.previousOrThread() != null; var7 += var3.mod) {
             var4 = var4.nextOrThread();
             var2 = var2.previousOrThread();
             var5 = var5.previousOrThread();
@@ -200,7 +200,7 @@ public class TreeNodePosition {
    private void finalizePosition() {
       this.node.advancement().display().ifPresent(var1 -> var1.setLocation((float)this.x, this.y));
       if (!this.children.isEmpty()) {
-         for(TreeNodePosition var2 : this.children) {
+         for (TreeNodePosition var2 : this.children) {
             var2.finalizePosition();
          }
       }

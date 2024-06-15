@@ -12,7 +12,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
@@ -29,7 +28,7 @@ public class TagNetworkSerialization {
    ) {
       return RegistrySynchronization.networkSafeRegistries(var0)
          .map(var0x -> Pair.of(var0x.key(), serializeToNetwork(var0x.value())))
-         .filter(var0x -> !((TagNetworkSerialization.NetworkPayload)var0x.getSecond()).isEmpty())
+         .filter(var0x -> ((TagNetworkSerialization.NetworkPayload)var0x.getSecond()).size() > 0)
          .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
    }
 
@@ -39,7 +38,7 @@ public class TagNetworkSerialization {
          HolderSet var3 = (HolderSet)var2.getSecond();
          IntArrayList var4 = new IntArrayList(var3.size());
 
-         for(Holder var6 : var3) {
+         for (Holder var6 : var3) {
             if (var6.kind() != Holder.Kind.REFERENCE) {
                throw new IllegalStateException("Can't serialize unregistered value " + var6);
             }
@@ -52,7 +51,7 @@ public class TagNetworkSerialization {
       return new TagNetworkSerialization.NetworkPayload(var1);
    }
 
-   public static <T> void deserializeTagsFromNetwork(
+   static <T> void deserializeTagsFromNetwork(
       ResourceKey<? extends Registry<T>> var0, Registry<T> var1, TagNetworkSerialization.NetworkPayload var2, TagNetworkSerialization.TagOutput<T> var3
    ) {
       var2.tags.forEach((var3x, var4) -> {
@@ -78,8 +77,16 @@ public class TagNetworkSerialization {
          return new TagNetworkSerialization.NetworkPayload(var0.readMap(FriendlyByteBuf::readResourceLocation, FriendlyByteBuf::readIntIdList));
       }
 
-      public boolean isEmpty() {
-         return this.tags.isEmpty();
+      public int size() {
+         return this.tags.size();
+      }
+
+      public <T> void applyToRegistry(Registry<T> var1) {
+         if (this.size() != 0) {
+            HashMap var2 = new HashMap(this.size());
+            TagNetworkSerialization.deserializeTagsFromNetwork(var1.key(), var1, this, var2::put);
+            var1.bindTags(var2);
+         }
       }
    }
 

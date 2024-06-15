@@ -95,7 +95,7 @@ public class ServerTickRateManager extends TickRateManager {
          return false;
       } else if (this.remainingSprintTicks > 0L) {
          this.sprintTickStartTime = System.nanoTime();
-         --this.remainingSprintTicks;
+         this.remainingSprintTicks--;
          return true;
       } else {
          this.finishTickSprint();
@@ -104,7 +104,7 @@ public class ServerTickRateManager extends TickRateManager {
    }
 
    public void endTickWork() {
-      this.sprintTimeSpend += System.nanoTime() - this.sprintTickStartTime;
+      this.sprintTimeSpend = this.sprintTimeSpend + (System.nanoTime() - this.sprintTickStartTime);
    }
 
    @Override

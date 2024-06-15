@@ -7,12 +7,10 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
 
 public interface MinMaxBounds<T extends Number> {
    SimpleCommandExceptionType ERROR_EMPTY = new SimpleCommandExceptionType(Component.translatable("argument.range.empty"));
@@ -34,16 +32,13 @@ public interface MinMaxBounds<T extends Number> {
 
    static <T extends Number, R extends MinMaxBounds<T>> Codec<R> createCodec(Codec<T> var0, MinMaxBounds.BoundsFactory<T, R> var1) {
       Codec var2 = RecordCodecBuilder.create(
-         var2x -> var2x.group(
-                  ExtraCodecs.strictOptionalField(var0, "min").forGetter(MinMaxBounds::min),
-                  ExtraCodecs.strictOptionalField(var0, "max").forGetter(MinMaxBounds::max)
-               )
+         var2x -> var2x.group(var0.optionalFieldOf("min").forGetter(MinMaxBounds::min), var0.optionalFieldOf("max").forGetter(MinMaxBounds::max))
                .apply(var2x, var1::create)
       );
       return Codec.either(var2, var0)
          .xmap(var1x -> (MinMaxBounds)var1x.map(var0xx -> var0xx, var1xx -> var1.create(Optional.of(var1xx), Optional.of(var1xx))), var0x -> {
-            Optional var1xx = var0x.unwrapPoint();
-            return var1xx.isPresent() ? Either.right((Number)var1xx.get()) : Either.left(var0x);
+            Optional var1x = var0x.unwrapPoint();
+            return var1x.isPresent() ? Either.right((Number)var1x.get()) : Either.left(var0x);
          });
    }
 
@@ -88,7 +83,7 @@ public interface MinMaxBounds<T extends Number> {
    private static <T extends Number> Optional<T> readNumber(StringReader var0, Function<String, T> var1, Supplier<DynamicCommandExceptionType> var2) throws CommandSyntaxException {
       int var3 = var0.getCursor();
 
-      while(var0.canRead() && isAllowedInputChat(var0)) {
+      while (var0.canRead() && isAllowedInputChat(var0)) {
          var0.skip();
       }
 
@@ -107,11 +102,7 @@ public interface MinMaxBounds<T extends Number> {
    private static boolean isAllowedInputChat(StringReader var0) {
       char var1 = var0.peek();
       if ((var1 < '0' || var1 > '9') && var1 != '-') {
-         if (var1 != '.') {
-            return false;
-         } else {
-            return !var0.canRead(2) || var0.peek(1) != '.';
-         }
+         return var1 != '.' ? false : !var0.canRead(2) || var0.peek(1) != '.';
       } else {
          return true;
       }
@@ -127,11 +118,7 @@ public interface MinMaxBounds<T extends Number> {
       R create(StringReader var1, Optional<T> var2, Optional<T> var3) throws CommandSyntaxException;
    }
 
-   public static record Doubles(Optional<Double> e, Optional<Double> f, Optional<Double> g, Optional<Double> h) implements MinMaxBounds<Double> {
-      private final Optional<Double> min;
-      private final Optional<Double> max;
-      private final Optional<Double> minSq;
-      private final Optional<Double> maxSq;
+   public static record Doubles(Optional<Double> min, Optional<Double> max, Optional<Double> minSq, Optional<Double> maxSq) implements MinMaxBounds<Double> {
       public static final MinMaxBounds.Doubles ANY = new MinMaxBounds.Doubles(Optional.empty(), Optional.empty());
       public static final Codec<MinMaxBounds.Doubles> CODEC = MinMaxBounds.createCodec(Codec.DOUBLE, MinMaxBounds.Doubles::new);
 
@@ -139,16 +126,16 @@ public interface MinMaxBounds<T extends Number> {
          this(var1, var2, squareOpt(var1), squareOpt(var2));
       }
 
-      public Doubles(Optional<Double> var1, Optional<Double> var2, Optional<Double> var3, Optional<Double> var4) {
+      public Doubles(Optional<Double> min, Optional<Double> max, Optional<Double> minSq, Optional<Double> maxSq) {
          super();
-         this.min = var1;
-         this.max = var2;
-         this.minSq = var3;
-         this.maxSq = var4;
+         this.min = min;
+         this.max = max;
+         this.minSq = minSq;
+         this.maxSq = maxSq;
       }
 
       private static MinMaxBounds.Doubles create(StringReader var0, Optional<Double> var1, Optional<Double> var2) throws CommandSyntaxException {
-         if (var1.isPresent() && var2.isPresent() && var1.get() > var2.get()) {
+         if (var1.isPresent() && var2.isPresent() && (Double)var1.get() > (Double)var2.get()) {
             throw ERROR_SWAPPED.createWithContext(var0);
          } else {
             return new MinMaxBounds.Doubles(var1, var2);
@@ -176,19 +163,11 @@ public interface MinMaxBounds<T extends Number> {
       }
 
       public boolean matches(double var1) {
-         if (this.min.isPresent() && this.min.get() > var1) {
-            return false;
-         } else {
-            return this.max.isEmpty() || !(this.max.get() < var1);
-         }
+         return this.min.isPresent() && this.min.get() > var1 ? false : this.max.isEmpty() || !(this.max.get() < var1);
       }
 
       public boolean matchesSqr(double var1) {
-         if (this.minSq.isPresent() && this.minSq.get() > var1) {
-            return false;
-         } else {
-            return this.maxSq.isEmpty() || !(this.maxSq.get() < var1);
-         }
+         return this.minSq.isPresent() && this.minSq.get() > var1 ? false : this.maxSq.isEmpty() || !(this.maxSq.get() < var1);
       }
 
       public static MinMaxBounds.Doubles fromReader(StringReader var0) throws CommandSyntaxException {
@@ -202,11 +181,7 @@ public interface MinMaxBounds<T extends Number> {
       }
    }
 
-   public static record Ints(Optional<Integer> e, Optional<Integer> f, Optional<Long> g, Optional<Long> h) implements MinMaxBounds<Integer> {
-      private final Optional<Integer> min;
-      private final Optional<Integer> max;
-      private final Optional<Long> minSq;
-      private final Optional<Long> maxSq;
+   public static record Ints(Optional<Integer> min, Optional<Integer> max, Optional<Long> minSq, Optional<Long> maxSq) implements MinMaxBounds<Integer> {
       public static final MinMaxBounds.Ints ANY = new MinMaxBounds.Ints(Optional.empty(), Optional.empty());
       public static final Codec<MinMaxBounds.Ints> CODEC = MinMaxBounds.createCodec(Codec.INT, MinMaxBounds.Ints::new);
 
@@ -214,16 +189,16 @@ public interface MinMaxBounds<T extends Number> {
          this(var1, var2, var1.map(var0 -> var0.longValue() * var0.longValue()), squareOpt(var2));
       }
 
-      public Ints(Optional<Integer> var1, Optional<Integer> var2, Optional<Long> var3, Optional<Long> var4) {
+      public Ints(Optional<Integer> min, Optional<Integer> max, Optional<Long> minSq, Optional<Long> maxSq) {
          super();
-         this.min = var1;
-         this.max = var2;
-         this.minSq = var3;
-         this.maxSq = var4;
+         this.min = min;
+         this.max = max;
+         this.minSq = minSq;
+         this.maxSq = maxSq;
       }
 
       private static MinMaxBounds.Ints create(StringReader var0, Optional<Integer> var1, Optional<Integer> var2) throws CommandSyntaxException {
-         if (var1.isPresent() && var2.isPresent() && var1.get() > var2.get()) {
+         if (var1.isPresent() && var2.isPresent() && (Integer)var1.get() > (Integer)var2.get()) {
             throw ERROR_SWAPPED.createWithContext(var0);
          } else {
             return new MinMaxBounds.Ints(var1, var2);
@@ -251,19 +226,11 @@ public interface MinMaxBounds<T extends Number> {
       }
 
       public boolean matches(int var1) {
-         if (this.min.isPresent() && this.min.get() > var1) {
-            return false;
-         } else {
-            return this.max.isEmpty() || this.max.get() >= var1;
-         }
+         return this.min.isPresent() && this.min.get() > var1 ? false : this.max.isEmpty() || this.max.get() >= var1;
       }
 
       public boolean matchesSqr(long var1) {
-         if (this.minSq.isPresent() && this.minSq.get() > var1) {
-            return false;
-         } else {
-            return this.maxSq.isEmpty() || this.maxSq.get() >= var1;
-         }
+         return this.minSq.isPresent() && this.minSq.get() > var1 ? false : this.maxSq.isEmpty() || this.maxSq.get() >= var1;
       }
 
       public static MinMaxBounds.Ints fromReader(StringReader var0) throws CommandSyntaxException {

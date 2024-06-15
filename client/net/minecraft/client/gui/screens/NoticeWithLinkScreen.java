@@ -42,7 +42,7 @@ public class NoticeWithLinkScreen extends Screen {
       GridLayout.RowHelper var1 = this.layout.createRowHelper(1);
       var1.addChild(new StringWidget(this.title, this.font));
       var1.addChild(new MultiLineTextWidget(this.message, this.font).setMaxWidth(this.width - 50).setCentered(true));
-      boolean var2 = true;
+      byte var2 = 120;
       GridLayout var3 = new GridLayout().columnSpacing(5);
       GridLayout.RowHelper var4 = var3.createRowHelper(3);
       var4.addChild(Button.builder(CommonComponents.GUI_OPEN_IN_BROWSER, var1x -> Util.getPlatform().openUri(this.url)).size(120, 20).build());

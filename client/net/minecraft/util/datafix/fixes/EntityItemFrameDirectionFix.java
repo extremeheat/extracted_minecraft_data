@@ -20,7 +20,7 @@ public class EntityItemFrameDirectionFix extends NamedEntityFix {
    }
 
    private static byte direction2dTo3d(byte var0) {
-      switch(var0) {
+      switch (var0) {
          case 0:
             return 3;
          case 1:

@@ -101,11 +101,9 @@ public class PolarBear extends Animal implements NeutralMob {
 
    public static boolean checkPolarBearSpawnRules(EntityType<PolarBear> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       Holder var5 = var1.getBiome(var3);
-      if (!var5.is(BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS)) {
-         return checkAnimalSpawnRules(var0, var1, var2, var3, var4);
-      } else {
-         return isBrightEnoughToSpawn(var1, var3) && var1.getBlockState(var3.below()).is(BlockTags.POLAR_BEARS_SPAWNABLE_ON_ALTERNATE);
-      }
+      return !var5.is(BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS)
+         ? checkAnimalSpawnRules(var0, var1, var2, var3, var4)
+         : isBrightEnoughToSpawn(var1, var3) && var1.getBlockState(var3.below()).is(BlockTags.POLAR_BEARS_SPAWNABLE_ON_ALTERNATE);
    }
 
    @Override
@@ -168,15 +166,15 @@ public class PolarBear extends Animal implements NeutralMob {
 
    protected void playWarningSound() {
       if (this.warningSoundTicks <= 0) {
-         this.playSound(SoundEvents.POLAR_BEAR_WARNING, 1.0F, this.getVoicePitch());
+         this.makeSound(SoundEvents.POLAR_BEAR_WARNING);
          this.warningSoundTicks = 40;
       }
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_STANDING_ID, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_STANDING_ID, false);
    }
 
    @Override
@@ -196,7 +194,7 @@ public class PolarBear extends Animal implements NeutralMob {
       }
 
       if (this.warningSoundTicks > 0) {
-         --this.warningSoundTicks;
+         this.warningSoundTicks--;
       }
 
       if (!this.level().isClientSide) {
@@ -205,13 +203,13 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    @Override
-   public EntityDimensions getDimensions(Pose var1) {
+   public EntityDimensions getDefaultDimensions(Pose var1) {
       if (this.clientSideStandAnimation > 0.0F) {
          float var2 = this.clientSideStandAnimation / 6.0F;
          float var3 = 1.0F + var2;
-         return super.getDimensions(var1).scale(1.0F, var3);
+         return super.getDefaultDimensions(var1).scale(1.0F, var3);
       } else {
-         return super.getDimensions(var1);
+         return super.getDefaultDimensions(var1);
       }
    }
 
@@ -243,14 +241,12 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    class PolarBearAttackPlayersGoal extends NearestAttackableTargetGoal<Player> {
@@ -264,7 +260,7 @@ public class PolarBear extends Animal implements NeutralMob {
             return false;
          } else {
             if (super.canUse()) {
-               for(PolarBear var3 : PolarBear.this.level().getEntitiesOfClass(PolarBear.class, PolarBear.this.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
+               for (PolarBear var3 : PolarBear.this.level().getEntitiesOfClass(PolarBear.class, PolarBear.this.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
                   if (var3.isBaby()) {
                      return true;
                   }

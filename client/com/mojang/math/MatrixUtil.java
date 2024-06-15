@@ -92,7 +92,7 @@ public class MatrixUtil {
       Matrix3f var3 = new Matrix3f();
       Quaternionf var4 = new Quaternionf();
 
-      for(int var5 = 0; var5 < var1; ++var5) {
+      for (int var5 = 0; var5 < var1; var5++) {
          stepJacobi(var0, var3, var4, var2);
       }
 
@@ -146,5 +146,13 @@ public class MatrixUtil {
       var17.transpose().mul(var15);
       Vector3f var18 = new Vector3f(var17.m00, var17.m11, var17.m22);
       return Triple.of(var9, var18, var2.conjugate());
+   }
+
+   public static boolean isPureTranslation(Matrix4f var0) {
+      return (var0.properties() & 8) != 0;
+   }
+
+   public static boolean isOrthonormal(Matrix4f var0) {
+      return (var0.properties() & 16) != 0;
    }
 }

@@ -51,7 +51,7 @@ public class SpriteLoader {
       int var6 = 2147483647;
       int var7 = 1 << var2;
 
-      for(SpriteContents var9 : var1) {
+      for (SpriteContents var9 : var1) {
          var6 = Math.min(var6, Math.min(var9.width(), var9.height()));
          int var10 = Math.min(Integer.lowestOneBit(var9.width()), Integer.lowestOneBit(var9.height()));
          if (var10 < var7) {
@@ -121,8 +121,8 @@ public class SpriteLoader {
    ) {
       SpriteResourceLoader var6 = SpriteResourceLoader.create(var5);
       return CompletableFuture.<List<Function<SpriteResourceLoader, SpriteContents>>>supplyAsync(() -> SpriteSourceList.load(var1, var2).list(var1), var4)
-         .thenCompose(var2x -> runSpriteSuppliers(var6, var2x, var4))
-         .thenApply(var3x -> this.stitch(var3x, var3, var4));
+         .thenCompose(var2x -> runSpriteSuppliers(var6, (List<Function<SpriteResourceLoader, SpriteContents>>)var2x, var4))
+         .thenApply(var3x -> this.stitch((List<SpriteContents>)var3x, var3, var4));
    }
 
    private Map<ResourceLocation, TextureAtlasSprite> getStitchedSprites(Stitcher<SpriteContents> var1, int var2, int var3) {
@@ -131,22 +131,29 @@ public class SpriteLoader {
       return var4;
    }
 
-   public static record Preparations(int a, int b, int c, TextureAtlasSprite d, Map<ResourceLocation, TextureAtlasSprite> e, CompletableFuture<Void> f) {
-      private final int width;
-      private final int height;
-      private final int mipLevel;
-      private final TextureAtlasSprite missing;
-      private final Map<ResourceLocation, TextureAtlasSprite> regions;
-      private final CompletableFuture<Void> readyForUpload;
-
-      public Preparations(int var1, int var2, int var3, TextureAtlasSprite var4, Map<ResourceLocation, TextureAtlasSprite> var5, CompletableFuture<Void> var6) {
+   public static record Preparations(
+      int width,
+      int height,
+      int mipLevel,
+      TextureAtlasSprite missing,
+      Map<ResourceLocation, TextureAtlasSprite> regions,
+      CompletableFuture<Void> readyForUpload
+   ) {
+      public Preparations(
+         int width,
+         int height,
+         int mipLevel,
+         TextureAtlasSprite missing,
+         Map<ResourceLocation, TextureAtlasSprite> regions,
+         CompletableFuture<Void> readyForUpload
+      ) {
          super();
-         this.width = var1;
-         this.height = var2;
-         this.mipLevel = var3;
-         this.missing = var4;
-         this.regions = var5;
-         this.readyForUpload = var6;
+         this.width = width;
+         this.height = height;
+         this.mipLevel = mipLevel;
+         this.missing = missing;
+         this.regions = regions;
+         this.readyForUpload = readyForUpload;
       }
 
       public CompletableFuture<SpriteLoader.Preparations> waitForUpload() {

@@ -58,8 +58,8 @@ public class GlowParticle extends TextureSheetParticle {
          GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.0, 0.0, 0.0, this.sprite);
          var15.setColor(1.0F, 0.9F, 1.0F);
          var15.setParticleSpeed(var9 * 0.25, var11 * 0.25, var13 * 0.25);
-         boolean var16 = true;
-         boolean var17 = true;
+         byte var16 = 2;
+         byte var17 = 4;
          var15.setLifetime(var2.random.nextInt(2) + 2);
          return var15;
       }
@@ -112,8 +112,8 @@ public class GlowParticle extends TextureSheetParticle {
          }
 
          var15.setParticleSpeed(var9 * 0.01, var11 * 0.01, var13 * 0.01);
-         boolean var16 = true;
-         boolean var17 = true;
+         byte var16 = 10;
+         byte var17 = 40;
          var15.setLifetime(var2.random.nextInt(30) + 10);
          return var15;
       }
@@ -132,8 +132,8 @@ public class GlowParticle extends TextureSheetParticle {
          GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.0, 0.0, 0.0, this.sprite);
          var15.setColor(1.0F, 0.9F, 1.0F);
          var15.setParticleSpeed(var9 * 0.01 / 2.0, var11 * 0.01, var13 * 0.01 / 2.0);
-         boolean var16 = true;
-         boolean var17 = true;
+         byte var16 = 10;
+         byte var17 = 40;
          var15.setLifetime(var2.random.nextInt(30) + 10);
          return var15;
       }
@@ -152,8 +152,8 @@ public class GlowParticle extends TextureSheetParticle {
          GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.0, 0.0, 0.0, this.sprite);
          var15.setColor(0.91F, 0.55F, 0.08F);
          var15.setParticleSpeed(var9 * 0.01 / 2.0, var11 * 0.01, var13 * 0.01 / 2.0);
-         boolean var16 = true;
-         boolean var17 = true;
+         byte var16 = 10;
+         byte var17 = 40;
          var15.setLifetime(var2.random.nextInt(30) + 10);
          return var15;
       }

@@ -3,37 +3,29 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -59,6 +51,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       var0 -> var0.group(DyeColor.CODEC.optionalFieldOf("color").forGetter(var0x -> Optional.ofNullable(var0x.color)), propertiesCodec())
             .apply(var0, (var0x, var1) -> new ShulkerBoxBlock((DyeColor)var0x.orElse(null), var1))
    );
+   private static final Component UNKNOWN_CONTENTS = Component.translatable("container.shulkerBox.unknownContents");
    private static final float OPEN_AABB_SIZE = 1.0F;
    private static final VoxelShape UP_OPEN_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
    private static final VoxelShape DOWN_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
@@ -102,29 +95,26 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else if (var4.isSpectator()) {
          return InteractionResult.CONSUME;
-      } else {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof ShulkerBoxBlockEntity var8) {
-            if (canOpen(var1, var2, var3, (ShulkerBoxBlockEntity)var8)) {
-               var4.openMenu((MenuProvider)var8);
-               var4.awardStat(Stats.OPEN_SHULKER_BOX);
-               PiglinAi.angerNearbyPiglins(var4, true);
-            }
-
-            return InteractionResult.CONSUME;
-         } else {
-            return InteractionResult.PASS;
+      } else if (var2.getBlockEntity(var3) instanceof ShulkerBoxBlockEntity var7) {
+         if (canOpen(var1, var2, var3, var7)) {
+            var4.openMenu(var7);
+            var4.awardStat(Stats.OPEN_SHULKER_BOX);
+            PiglinAi.angerNearbyPiglins(var4, true);
          }
+
+         return InteractionResult.CONSUME;
+      } else {
+         return InteractionResult.PASS;
       }
    }
 
@@ -132,7 +122,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       if (var3.getAnimationStatus() != ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
          return true;
       } else {
-         AABB var4 = Shulker.getProgressDeltaAabb(var0.getValue(FACING), 0.0F, 0.5F).move(var2).deflate(1.0E-6);
+         AABB var4 = Shulker.getProgressDeltaAabb(1.0F, var0.getValue(FACING), 0.0F, 0.5F).move(var2).deflate(1.0E-6);
          return var1.noCollision(var4);
       }
    }
@@ -147,19 +137,13 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       var1.add(FACING);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       BlockEntity var5 = var1.getBlockEntity(var2);
       if (var5 instanceof ShulkerBoxBlockEntity var6) {
          if (!var1.isClientSide && var4.isCreative() && !var6.isEmpty()) {
             ItemStack var7 = getColoredItemStack(this.getColor());
-            var5.saveToItem(var7);
-            if (var6.hasCustomName()) {
-               var7.setHoverName(var6.getCustomName());
-            }
-
+            var7.applyComponents(var5.collectComponents());
             ItemEntity var8 = new ItemEntity(var1, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, var7);
             var8.setDefaultPickUpDelay();
             var1.addFreshEntity(var8);
@@ -172,12 +156,12 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
+   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       BlockEntity var3 = var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
       if (var3 instanceof ShulkerBoxBlockEntity var4) {
          var2 = var2.withDynamicDrop(CONTENTS, var1x -> {
-            for(int var2xx = 0; var2xx < var4.getContainerSize(); ++var2xx) {
-               var1x.accept(var4.getItem(var2xx));
+            for (int var2x = 0; var2x < var4.getContainerSize(); var2x++) {
+               var1x.accept(var4.getItem(var2x));
             }
          });
       }
@@ -186,17 +170,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      if (var5.hasCustomHoverName()) {
-         BlockEntity var6 = var1.getBlockEntity(var2);
-         if (var6 instanceof ShulkerBoxBlockEntity) {
-            ((ShulkerBoxBlockEntity)var6).setCustomName(var5.getHoverName());
-         }
-      }
-   }
-
-   @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof ShulkerBoxBlockEntity) {
@@ -208,41 +182,31 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
-      CompoundTag var5 = BlockItem.getBlockEntityData(var1);
-      if (var5 != null) {
-         if (var5.contains("LootTable", 8)) {
-            var3.add(Component.translatable("container.shulkerBox.unknownContents"));
+      if (var1.has(DataComponents.CONTAINER_LOOT)) {
+         var3.add(UNKNOWN_CONTENTS);
+      }
+
+      int var5 = 0;
+      int var6 = 0;
+
+      for (ItemStack var8 : var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).nonEmptyItems()) {
+         var6++;
+         if (var5 <= 4) {
+            var5++;
+            var3.add(Component.translatable("container.shulkerBox.itemCount", var8.getHoverName(), var8.getCount()));
          }
+      }
 
-         if (var5.contains("Items", 9)) {
-            NonNullList var6 = NonNullList.withSize(27, ItemStack.EMPTY);
-            ContainerHelper.loadAllItems(var5, var6);
-            int var7 = 0;
-            int var8 = 0;
-
-            for(ItemStack var10 : var6) {
-               if (!var10.isEmpty()) {
-                  ++var8;
-                  if (var7 <= 4) {
-                     ++var7;
-                     var3.add(Component.translatable("container.shulkerBox.itemCount", var10.getHoverName(), String.valueOf(var10.getCount())));
-                  }
-               }
-            }
-
-            if (var8 - var7 > 0) {
-               var3.add(Component.translatable("container.shulkerBox.more", var8 - var7).withStyle(ChatFormatting.ITALIC));
-            }
-         }
+      if (var6 - var5 > 0) {
+         var3.add(Component.translatable("container.shulkerBox.more", var6 - var5).withStyle(ChatFormatting.ITALIC));
       }
    }
 
    @Override
-   public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      BlockEntity var4 = var2.getBlockEntity(var3);
-      if (var4 instanceof ShulkerBoxBlockEntity var5 && !var5.isClosed()) {
+   protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+      if (var2.getBlockEntity(var3) instanceof ShulkerBoxBlockEntity var5 && !var5.isClosed()) {
          return OPEN_SHAPE_BY_DIRECTION.get(var1.getValue(FACING).getOpposite());
       }
 
@@ -250,25 +214,30 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       return var5 instanceof ShulkerBoxBlockEntity ? Shapes.create(((ShulkerBoxBlockEntity)var5).getBoundingBox(var1)) : Shapes.block();
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return false;
+   }
+
+   @Override
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
    @Override
    public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       ItemStack var4 = super.getCloneItemStack(var1, var2, var3);
-      var1.getBlockEntity(var2, BlockEntityType.SHULKER_BOX).ifPresent(var1x -> var1x.saveToItem(var4));
+      var1.getBlockEntity(var2, BlockEntityType.SHULKER_BOX).ifPresent(var2x -> var2x.saveToItem(var4, var1.registryAccess()));
       return var4;
    }
 
@@ -286,41 +255,24 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       if (var0 == null) {
          return Blocks.SHULKER_BOX;
       } else {
-         switch(var0) {
-            case WHITE:
-               return Blocks.WHITE_SHULKER_BOX;
-            case ORANGE:
-               return Blocks.ORANGE_SHULKER_BOX;
-            case MAGENTA:
-               return Blocks.MAGENTA_SHULKER_BOX;
-            case LIGHT_BLUE:
-               return Blocks.LIGHT_BLUE_SHULKER_BOX;
-            case YELLOW:
-               return Blocks.YELLOW_SHULKER_BOX;
-            case LIME:
-               return Blocks.LIME_SHULKER_BOX;
-            case PINK:
-               return Blocks.PINK_SHULKER_BOX;
-            case GRAY:
-               return Blocks.GRAY_SHULKER_BOX;
-            case LIGHT_GRAY:
-               return Blocks.LIGHT_GRAY_SHULKER_BOX;
-            case CYAN:
-               return Blocks.CYAN_SHULKER_BOX;
-            case PURPLE:
-            default:
-               return Blocks.PURPLE_SHULKER_BOX;
-            case BLUE:
-               return Blocks.BLUE_SHULKER_BOX;
-            case BROWN:
-               return Blocks.BROWN_SHULKER_BOX;
-            case GREEN:
-               return Blocks.GREEN_SHULKER_BOX;
-            case RED:
-               return Blocks.RED_SHULKER_BOX;
-            case BLACK:
-               return Blocks.BLACK_SHULKER_BOX;
-         }
+         return switch (var0) {
+            case WHITE -> Blocks.WHITE_SHULKER_BOX;
+            case ORANGE -> Blocks.ORANGE_SHULKER_BOX;
+            case MAGENTA -> Blocks.MAGENTA_SHULKER_BOX;
+            case LIGHT_BLUE -> Blocks.LIGHT_BLUE_SHULKER_BOX;
+            case YELLOW -> Blocks.YELLOW_SHULKER_BOX;
+            case LIME -> Blocks.LIME_SHULKER_BOX;
+            case PINK -> Blocks.PINK_SHULKER_BOX;
+            case GRAY -> Blocks.GRAY_SHULKER_BOX;
+            case LIGHT_GRAY -> Blocks.LIGHT_GRAY_SHULKER_BOX;
+            case CYAN -> Blocks.CYAN_SHULKER_BOX;
+            case BLUE -> Blocks.BLUE_SHULKER_BOX;
+            case BROWN -> Blocks.BROWN_SHULKER_BOX;
+            case GREEN -> Blocks.GREEN_SHULKER_BOX;
+            case RED -> Blocks.RED_SHULKER_BOX;
+            case BLACK -> Blocks.BLACK_SHULKER_BOX;
+            case PURPLE -> Blocks.PURPLE_SHULKER_BOX;
+         };
       }
    }
 
@@ -334,12 +286,12 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 }

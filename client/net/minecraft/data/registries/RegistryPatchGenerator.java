@@ -30,7 +30,7 @@ public class RegistryPatchGenerator {
                   var7.orElseGet(() -> var1x.lookupOrThrow(Registries.PLACED_FEATURE)), var6.orElseGet(() -> var1x.lookupOrThrow(Registries.BIOME))
                );
             }
-   
+
             return var4;
          }
       );

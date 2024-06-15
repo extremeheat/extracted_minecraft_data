@@ -59,7 +59,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -68,17 +68,17 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) ? 15 : 0;
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) && var1.getValue(FACING) == var4 ? 15 : 0;
    }
 
@@ -94,7 +94,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       var2.setBlock(var3, var1.setValue(POWERED, Boolean.valueOf(false)), 3);
       this.updateNeighbours(var1, var2, var3);
    }
@@ -109,7 +109,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          if (var1.getValue(POWERED)) {
             this.updateNeighbours(var1, var2, var3);
@@ -120,7 +120,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          if (var1.getValue(POWERED) && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
             var2.setBlock(var3, var1.setValue(POWERED, Boolean.valueOf(false)), 18);
@@ -129,7 +129,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    @Override
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       if (var1.isThundering() && var4 instanceof ThrownTrident && ((ThrownTrident)var4).isChanneling()) {
          BlockPos var5 = var3.getBlockPos();
          if (var1.canSeeSky(var5)) {
@@ -152,7 +152,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 }

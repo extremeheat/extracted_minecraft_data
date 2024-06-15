@@ -3,21 +3,20 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -25,13 +24,12 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetEnchantmentsFunction extends LootItemConditionalFunction {
-   public static final Codec<SetEnchantmentsFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SetEnchantmentsFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  ExtraCodecs.strictOptionalField(
-                        Codec.unboundedMap(BuiltInRegistries.ENCHANTMENT.holderByNameCodec(), NumberProviders.CODEC), "enchantments", Map.of()
-                     )
+                  Codec.unboundedMap(BuiltInRegistries.ENCHANTMENT.holderByNameCodec(), NumberProviders.CODEC)
+                     .optionalFieldOf("enchantments", Map.of())
                      .forGetter(var0x -> var0x.enchantments),
                   Codec.BOOL.fieldOf("add").orElse(false).forGetter(var0x -> var0x.add)
                )
@@ -48,7 +46,7 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetEnchantmentsFunction> getType() {
       return LootItemFunctions.SET_ENCHANTMENTS;
    }
 
@@ -60,30 +58,20 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
    @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
       Object2IntOpenHashMap var3 = new Object2IntOpenHashMap();
-      this.enchantments.forEach((var2x, var3x) -> var3.put(var2x.value(), var3x.getInt(var2)));
-      if (var1.getItem() == Items.BOOK) {
-         ItemStack var5 = new ItemStack(Items.ENCHANTED_BOOK);
-         var3.forEach((var1x, var2x) -> EnchantedBookItem.addEnchantment(var5, new EnchantmentInstance(var1x, var2x)));
-         return var5;
-      } else {
-         Map var4 = EnchantmentHelper.getEnchantments(var1);
+      this.enchantments.forEach((var2x, var3x) -> var3.put(var2x.value(), Mth.clamp(var3x.getInt(var2), 0, 255)));
+      if (var1.is(Items.BOOK)) {
+         var1 = var1.transmuteCopy(Items.ENCHANTED_BOOK, var1.getCount());
+         var1.set(DataComponents.STORED_ENCHANTMENTS, var1.remove(DataComponents.ENCHANTMENTS));
+      }
+
+      EnchantmentHelper.updateEnchantments(var1, var2x -> {
          if (this.add) {
-            var3.forEach((var1x, var2x) -> updateEnchantment(var4, var1x, Math.max(var4.getOrDefault(var1x, 0) + var2x, 0)));
+            var3.forEach((var1xx, var2xx) -> var2x.set(var1xx, var2x.getLevel(var1xx) + var2xx));
          } else {
-            var3.forEach((var1x, var2x) -> updateEnchantment(var4, var1x, Math.max(var2x, 0)));
+            var3.forEach(var2x::set);
          }
-
-         EnchantmentHelper.setEnchantments(var4, var1);
-         return var1;
-      }
-   }
-
-   private static void updateEnchantment(Map<Enchantment, Integer> var0, Enchantment var1, int var2) {
-      if (var2 == 0) {
-         var0.remove(var1);
-      } else {
-         var0.put(var1, var2);
-      }
+      });
+      return var1;
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<SetEnchantmentsFunction.Builder> {

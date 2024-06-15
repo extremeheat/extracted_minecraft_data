@@ -15,6 +15,7 @@ import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.vault.VaultBlockEntity;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
@@ -99,8 +100,8 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<BrewingStandBlockEntity> BREWING_STAND = register(
       "brewing_stand", BlockEntityType.Builder.of(BrewingStandBlockEntity::new, Blocks.BREWING_STAND)
    );
-   public static final BlockEntityType<EnchantmentTableBlockEntity> ENCHANTING_TABLE = register(
-      "enchanting_table", BlockEntityType.Builder.of(EnchantmentTableBlockEntity::new, Blocks.ENCHANTING_TABLE)
+   public static final BlockEntityType<EnchantingTableBlockEntity> ENCHANTING_TABLE = register(
+      "enchanting_table", BlockEntityType.Builder.of(EnchantingTableBlockEntity::new, Blocks.ENCHANTING_TABLE)
    );
    public static final BlockEntityType<TheEndPortalBlockEntity> END_PORTAL = register(
       "end_portal", BlockEntityType.Builder.of(TheEndPortalBlockEntity::new, Blocks.END_PORTAL)
@@ -265,6 +266,7 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<TrialSpawnerBlockEntity> TRIAL_SPAWNER = register(
       "trial_spawner", BlockEntityType.Builder.of(TrialSpawnerBlockEntity::new, Blocks.TRIAL_SPAWNER)
    );
+   public static final BlockEntityType<VaultBlockEntity> VAULT = register("vault", BlockEntityType.Builder.of(VaultBlockEntity::new, Blocks.VAULT));
    private final BlockEntityType.BlockEntitySupplier<? extends T> factory;
    private final Set<Block> validBlocks;
    private final Type<?> dataType;
@@ -293,7 +295,7 @@ public class BlockEntityType<T extends BlockEntity> {
 
    @Nullable
    public T create(BlockPos var1, BlockState var2) {
-      return this.factory.create(var1, var2);
+      return (T)this.factory.create(var1, var2);
    }
 
    public boolean isValid(BlockState var1) {

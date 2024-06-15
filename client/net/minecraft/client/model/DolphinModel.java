@@ -69,7 +69,7 @@ public class DolphinModel<T extends Entity> extends HierarchicalModel<T> {
       this.body.xRot = var6 * 0.017453292F;
       this.body.yRot = var5 * 0.017453292F;
       if (var1.getDeltaMovement().horizontalDistanceSqr() > 1.0E-7) {
-         this.body.xRot += -0.05F - 0.05F * Mth.cos(var4 * 0.3F);
+         this.body.xRot = this.body.xRot + (-0.05F - 0.05F * Mth.cos(var4 * 0.3F));
          this.tail.xRot = -0.1F * Mth.cos(var4 * 0.3F);
          this.tailFin.xRot = -0.2F * Mth.cos(var4 * 0.3F);
       }

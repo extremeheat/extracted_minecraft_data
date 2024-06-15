@@ -2,6 +2,7 @@ package net.minecraft.client.server;
 
 import com.mojang.authlib.GameProfile;
 import java.net.SocketAddress;
+import javax.annotation.Nullable;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -11,6 +12,7 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 
 public class IntegratedPlayerList extends PlayerList {
+   @Nullable
    private CompoundTag playerData;
 
    public IntegratedPlayerList(IntegratedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
@@ -38,6 +40,7 @@ public class IntegratedPlayerList extends PlayerList {
       return (IntegratedServer)super.getServer();
    }
 
+   @Nullable
    @Override
    public CompoundTag getSingleplayerData() {
       return this.playerData;

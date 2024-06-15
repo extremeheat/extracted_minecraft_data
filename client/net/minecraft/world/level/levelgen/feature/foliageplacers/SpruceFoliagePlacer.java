@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -10,7 +9,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class SpruceFoliagePlacer extends FoliagePlacer {
-   public static final Codec<SpruceFoliagePlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SpruceFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> foliagePlacerParts(var0)
             .and(IntProvider.codec(0, 24).fieldOf("trunk_height").forGetter(var0x -> var0x.trunkHeight))
             .apply(var0, SpruceFoliagePlacer::new)
@@ -44,14 +43,14 @@ public class SpruceFoliagePlacer extends FoliagePlacer {
       int var12 = 1;
       byte var13 = 0;
 
-      for(int var14 = var9; var14 >= -var7; --var14) {
+      for (int var14 = var9; var14 >= -var7; var14--) {
          this.placeLeavesRow(var1, var2, var3, var4, var10, var11, var14, var6.doubleTrunk());
          if (var11 >= var12) {
             var11 = var13;
             var13 = 1;
             var12 = Math.min(var12 + 1, var8 + var6.radiusOffset());
          } else {
-            ++var11;
+            var11++;
          }
       }
    }

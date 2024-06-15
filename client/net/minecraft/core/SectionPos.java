@@ -193,7 +193,7 @@ public class SectionPos extends Vec3i {
    }
 
    public BlockPos center() {
-      boolean var1 = true;
+      byte var1 = 8;
       return this.origin().offset(8, 8, 8);
    }
 
@@ -271,9 +271,9 @@ public class SectionPos extends Vec3i {
       if (var4 == var5 && var6 == var7 && var8 == var9) {
          var3.accept(asLong(var4, var6, var8));
       } else {
-         for(int var10 = var4; var10 <= var5; ++var10) {
-            for(int var11 = var6; var11 <= var7; ++var11) {
-               for(int var12 = var8; var12 <= var9; ++var12) {
+         for (int var10 = var4; var10 <= var5; var10++) {
+            for (int var11 = var6; var11 <= var7; var11++) {
+               for (int var12 = var8; var12 <= var9; var12++) {
                   var3.accept(asLong(var10, var11, var12));
                }
             }

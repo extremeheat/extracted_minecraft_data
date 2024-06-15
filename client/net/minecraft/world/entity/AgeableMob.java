@@ -25,29 +25,27 @@ public abstract class AgeableMob extends PathfinderMob {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(true);
       }
 
-      AgeableMob.AgeableMobGroupData var6 = (AgeableMob.AgeableMobGroupData)var4;
-      if (var6.isShouldSpawnBaby() && var6.getGroupSize() > 0 && var1.getRandom().nextFloat() <= var6.getBabySpawnChance()) {
+      AgeableMob.AgeableMobGroupData var5 = (AgeableMob.AgeableMobGroupData)var4;
+      if (var5.isShouldSpawnBaby() && var5.getGroupSize() > 0 && var1.getRandom().nextFloat() <= var5.getBabySpawnChance()) {
          this.setAge(-24000);
       }
 
-      var6.increaseGroupSizeByOne();
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      var5.increaseGroupSizeByOne();
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    @Nullable
    public abstract AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2);
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_BABY_ID, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_BABY_ID, false);
    }
 
    public boolean canBreed() {
@@ -128,7 +126,7 @@ public abstract class AgeableMob extends PathfinderMob {
                this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
             }
 
-            --this.forcedAgeTimer;
+            this.forcedAgeTimer--;
          }
       } else if (this.isAlive()) {
          int var1 = this.getAge();
@@ -141,11 +139,8 @@ public abstract class AgeableMob extends PathfinderMob {
    }
 
    protected void ageBoundaryReached() {
-      if (!this.isBaby() && this.isPassenger()) {
-         Entity var2 = this.getVehicle();
-         if (var2 instanceof Boat var1 && !var1.hasEnoughSpaceFor(this)) {
-            this.stopRiding();
-         }
+      if (!this.isBaby() && this.isPassenger() && this.getVehicle() instanceof Boat var1 && !var1.hasEnoughSpaceFor(this)) {
+         this.stopRiding();
       }
    }
 
@@ -187,7 +182,7 @@ public abstract class AgeableMob extends PathfinderMob {
       }
 
       public void increaseGroupSizeByOne() {
-         ++this.groupSize;
+         this.groupSize++;
       }
 
       public boolean isShouldSpawnBaby() {

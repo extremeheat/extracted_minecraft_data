@@ -1,66 +1,75 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 
 public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateMobEffectPacket> STREAM_CODEC = Packet.codec(
+      ClientboundUpdateMobEffectPacket::write, ClientboundUpdateMobEffectPacket::new
+   );
    private static final int FLAG_AMBIENT = 1;
    private static final int FLAG_VISIBLE = 2;
    private static final int FLAG_SHOW_ICON = 4;
+   private static final int FLAG_BLEND = 8;
    private final int entityId;
-   private final MobEffect effect;
-   private final byte effectAmplifier;
+   private final Holder<MobEffect> effect;
+   private final int effectAmplifier;
    private final int effectDurationTicks;
    private final byte flags;
-   @Nullable
-   private final MobEffectInstance.FactorData factorData;
 
-   public ClientboundUpdateMobEffectPacket(int var1, MobEffectInstance var2) {
+   public ClientboundUpdateMobEffectPacket(int var1, MobEffectInstance var2, boolean var3) {
       super();
       this.entityId = var1;
       this.effect = var2.getEffect();
-      this.effectAmplifier = (byte)(var2.getAmplifier() & 0xFF);
+      this.effectAmplifier = var2.getAmplifier();
       this.effectDurationTicks = var2.getDuration();
-      byte var3 = 0;
+      byte var4 = 0;
       if (var2.isAmbient()) {
-         var3 = (byte)(var3 | 1);
+         var4 = (byte)(var4 | 1);
       }
 
       if (var2.isVisible()) {
-         var3 = (byte)(var3 | 2);
+         var4 = (byte)(var4 | 2);
       }
 
       if (var2.showIcon()) {
-         var3 = (byte)(var3 | 4);
+         var4 = (byte)(var4 | 4);
       }
 
-      this.flags = var3;
-      this.factorData = var2.getFactorData().orElse(null);
+      if (var3) {
+         var4 = (byte)(var4 | 8);
+      }
+
+      this.flags = var4;
    }
 
-   public ClientboundUpdateMobEffectPacket(FriendlyByteBuf var1) {
+   private ClientboundUpdateMobEffectPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.entityId = var1.readVarInt();
-      this.effect = var1.readById(BuiltInRegistries.MOB_EFFECT);
-      this.effectAmplifier = var1.readByte();
+      this.effect = ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).decode(var1);
+      this.effectAmplifier = var1.readVarInt();
       this.effectDurationTicks = var1.readVarInt();
       this.flags = var1.readByte();
-      this.factorData = var1.readNullable(var0 -> var0.readWithCodecTrusted(NbtOps.INSTANCE, MobEffectInstance.FactorData.CODEC));
+   }
+
+   private void write(RegistryFriendlyByteBuf var1) {
+      var1.writeVarInt(this.entityId);
+      ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).encode(var1, this.effect);
+      var1.writeVarInt(this.effectAmplifier);
+      var1.writeVarInt(this.effectDurationTicks);
+      var1.writeByte(this.flags);
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.entityId);
-      var1.writeId(BuiltInRegistries.MOB_EFFECT, this.effect);
-      var1.writeByte(this.effectAmplifier);
-      var1.writeVarInt(this.effectDurationTicks);
-      var1.writeByte(this.flags);
-      var1.writeNullable(this.factorData, (var0, var1x) -> var0.writeWithCodec(NbtOps.INSTANCE, MobEffectInstance.FactorData.CODEC, var1x));
+   public PacketType<ClientboundUpdateMobEffectPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_UPDATE_MOB_EFFECT;
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -71,11 +80,11 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
       return this.entityId;
    }
 
-   public MobEffect getEffect() {
+   public Holder<MobEffect> getEffect() {
       return this.effect;
    }
 
-   public byte getEffectAmplifier() {
+   public int getEffectAmplifier() {
       return this.effectAmplifier;
    }
 
@@ -84,19 +93,18 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
    }
 
    public boolean isEffectVisible() {
-      return (this.flags & 2) == 2;
+      return (this.flags & 2) != 0;
    }
 
    public boolean isEffectAmbient() {
-      return (this.flags & 1) == 1;
+      return (this.flags & 1) != 0;
    }
 
    public boolean effectShowsIcon() {
-      return (this.flags & 4) == 4;
+      return (this.flags & 4) != 0;
    }
 
-   @Nullable
-   public MobEffectInstance.FactorData getFactorData() {
-      return this.factorData;
+   public boolean shouldBlend() {
+      return (this.flags & 8) != 0;
    }
 }

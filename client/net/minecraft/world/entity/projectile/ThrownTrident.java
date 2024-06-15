@@ -10,7 +10,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -27,12 +26,11 @@ import net.minecraft.world.phys.Vec3;
 public class ThrownTrident extends AbstractArrow {
    private static final EntityDataAccessor<Byte> ID_LOYALTY = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BYTE);
    private static final EntityDataAccessor<Boolean> ID_FOIL = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BOOLEAN);
-   private static final ItemStack DEFAULT_ARROW_STACK = new ItemStack(Items.TRIDENT);
    private boolean dealtDamage;
    public int clientSideReturnTridentTickCount;
 
    public ThrownTrident(EntityType<? extends ThrownTrident> var1, Level var2) {
-      super(var1, var2, DEFAULT_ARROW_STACK);
+      super(var1, var2);
    }
 
    public ThrownTrident(Level var1, LivingEntity var2, ItemStack var3) {
@@ -41,11 +39,17 @@ public class ThrownTrident extends AbstractArrow {
       this.entityData.set(ID_FOIL, var3.hasFoil());
    }
 
+   public ThrownTrident(Level var1, double var2, double var4, double var6, ItemStack var8) {
+      super(EntityType.TRIDENT, var2, var4, var6, var1, var8);
+      this.entityData.set(ID_LOYALTY, (byte)EnchantmentHelper.getLoyalty(var8));
+      this.entityData.set(ID_FOIL, var8.hasFoil());
+   }
+
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(ID_LOYALTY, (byte)0);
-      this.entityData.define(ID_FOIL, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(ID_LOYALTY, (byte)0);
+      var1.define(ID_FOIL, false);
    }
 
    @Override
@@ -77,7 +81,7 @@ public class ThrownTrident extends AbstractArrow {
                this.playSound(SoundEvents.TRIDENT_RETURN, 10.0F, 1.0F);
             }
 
-            ++this.clientSideReturnTridentTickCount;
+            this.clientSideReturnTridentTickCount++;
          }
       }
 
@@ -86,11 +90,7 @@ public class ThrownTrident extends AbstractArrow {
 
    private boolean isAcceptibleReturnOwner() {
       Entity var1 = this.getOwner();
-      if (var1 == null || !var1.isAlive()) {
-         return false;
-      } else {
-         return !(var1 instanceof ServerPlayer) || !var1.isSpectator();
-      }
+      return var1 == null || !var1.isAlive() ? false : !(var1 instanceof ServerPlayer) || !var1.isSpectator();
    }
 
    public boolean isFoil() {
@@ -103,14 +103,12 @@ public class ThrownTrident extends AbstractArrow {
       return this.dealtDamage ? null : super.findHitEntity(var1, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       Entity var2 = var1.getEntity();
       float var3 = 8.0F;
       if (var2 instanceof LivingEntity var4) {
-         var3 += EnchantmentHelper.getDamageBonus(this.getPickupItemStackOrigin(), var4.getMobType());
+         var3 += EnchantmentHelper.getDamageBonus(this.getPickupItemStackOrigin(), var4.getType());
       }
 
       Entity var10 = this.getOwner();
@@ -124,15 +122,12 @@ public class ThrownTrident extends AbstractArrow {
 
          if (var2 instanceof LivingEntity var7) {
             if (var10 instanceof LivingEntity) {
-               EnchantmentHelper.doPostHurtEffects((LivingEntity)var7, var10);
-               EnchantmentHelper.doPostDamageEffects((LivingEntity)var10, (Entity)var7);
+               EnchantmentHelper.doPostHurtEffects(var7, var10);
+               EnchantmentHelper.doPostDamageEffects((LivingEntity)var10, var7);
             }
 
-            this.doPostHurtEffects((LivingEntity)var7);
+            this.doPostHurtEffects(var7);
          }
-      } else if (var2.getType().is(EntityTypeTags.DEFLECTS_TRIDENTS)) {
-         this.deflect();
-         return;
       }
 
       this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
@@ -161,6 +156,11 @@ public class ThrownTrident extends AbstractArrow {
    @Override
    protected boolean tryPickup(Player var1) {
       return super.tryPickup(var1) || this.isNoPhysics() && this.ownedBy(var1) && var1.getInventory().add(this.getPickupItem());
+   }
+
+   @Override
+   protected ItemStack getDefaultPickupItem() {
+      return new ItemStack(Items.TRIDENT);
    }
 
    @Override

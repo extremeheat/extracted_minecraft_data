@@ -31,11 +31,7 @@ public class EatBlockGoal extends Goal {
          return false;
       } else {
          BlockPos var1 = this.mob.blockPosition();
-         if (IS_TALL_GRASS.test(this.level.getBlockState(var1))) {
-            return true;
-         } else {
-            return this.level.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK);
-         }
+         return IS_TALL_GRASS.test(this.level.getBlockState(var1)) ? true : this.level.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK);
       }
    }
 

@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -7,6 +8,7 @@ import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,13 +36,20 @@ public class TabButton extends AbstractWidget {
 
    @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.blitSprite(SPRITES.get(this.isSelected(), this.isHovered()), this.getX(), this.getY(), this.width, this.height);
+      RenderSystem.enableBlend();
+      var1.blitSprite(SPRITES.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
+      RenderSystem.disableBlend();
       Font var5 = Minecraft.getInstance().font;
       int var6 = this.active ? -1 : -6250336;
       this.renderString(var1, var5, var6);
       if (this.isSelected()) {
+         this.renderMenuBackground(var1, this.getX() + 2, this.getY() + 2, this.getRight() - 2, this.getBottom());
          this.renderFocusUnderline(var1, var5, var6);
       }
+   }
+
+   protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      Screen.renderMenuBackgroundTexture(var1, Screen.MENU_BACKGROUND, var2, var3, 0.0F, 0.0F, var4 - var2, var5 - var3);
    }
 
    public void renderString(GuiGraphics var1, Font var2, int var3) {

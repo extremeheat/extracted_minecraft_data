@@ -38,7 +38,7 @@ public class AlertScreen extends Screen {
       this.message = MultiLineLabel.create(this.font, this.messageText, this.width - 50);
       int var1 = this.message.getLineCount() * 9;
       int var2 = Mth.clamp(90 + var1 + 12, this.height / 6 + 96, this.height - 24);
-      boolean var3 = true;
+      short var3 = 150;
       this.addRenderableWidget(Button.builder(this.okButton, var1x -> this.callback.run()).bounds((this.width - 150) / 2, var2, 150, 20).build());
    }
 

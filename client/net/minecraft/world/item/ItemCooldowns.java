@@ -30,11 +30,11 @@ public class ItemCooldowns {
    }
 
    public void tick() {
-      ++this.tickCount;
+      this.tickCount++;
       if (!this.cooldowns.isEmpty()) {
          Iterator var1 = this.cooldowns.entrySet().iterator();
 
-         while(var1.hasNext()) {
+         while (var1.hasNext()) {
             Entry var2 = (Entry)var1.next();
             if (((ItemCooldowns.CooldownInstance)var2.getValue()).endTime <= this.tickCount) {
                var1.remove();

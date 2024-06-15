@@ -9,7 +9,7 @@ public interface TagType<T extends Tag> {
    StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException;
 
    default void parseRoot(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
-      switch(var2.visitRootEntry(this)) {
+      switch (var2.visitRootEntry(this)) {
          case CONTINUE:
             this.parse(var1, var2, var3);
          case HALT:
@@ -86,7 +86,7 @@ public interface TagType<T extends Tag> {
    public interface VariableSize<T extends Tag> extends TagType<T> {
       @Override
       default void skip(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         for(int var4 = 0; var4 < var2; ++var4) {
+         for (int var4 = 0; var4 < var2; var4++) {
             this.skip(var1, var3);
          }
       }

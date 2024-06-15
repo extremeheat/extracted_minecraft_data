@@ -7,6 +7,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
@@ -66,7 +68,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
       boolean var5 = true;
 
-      while(var1.canRead() && var1.peek() != ' ') {
+      while (var1.canRead() && var1.peek() != ' ') {
          NbtPathArgument.Node var6 = parseNode(var1, var5);
          var2.add(var6);
          var4.put(var6, var1.getCursor() - var3);
@@ -83,41 +85,34 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
    }
 
    private static NbtPathArgument.Node parseNode(StringReader var0, boolean var1) throws CommandSyntaxException {
-      Object var10000;
-      switch(var0.peek()) {
-         case '"':
-         case '\'':
-            var10000 = readObjectNode(var0, var0.readString());
-            break;
-         case '[':
+      return (NbtPathArgument.Node)(switch (var0.peek()) {
+         case '"', '\'' -> readObjectNode(var0, var0.readString());
+         case '[' -> {
             var0.skip();
             char var4 = var0.peek();
             if (var4 == '{') {
                CompoundTag var3 = new TagParser(var0).readStruct();
                var0.expect(']');
-               var10000 = new NbtPathArgument.MatchElementNode(var3);
+               yield new NbtPathArgument.MatchElementNode(var3);
             } else if (var4 == ']') {
                var0.skip();
-               var10000 = NbtPathArgument.AllElementsNode.INSTANCE;
+               yield NbtPathArgument.AllElementsNode.INSTANCE;
             } else {
                int var5 = var0.readInt();
                var0.expect(']');
-               var10000 = new NbtPathArgument.IndexedElementNode(var5);
+               yield new NbtPathArgument.IndexedElementNode(var5);
             }
-            break;
-         case '{':
+         }
+         case '{' -> {
             if (!var1) {
                throw ERROR_INVALID_NODE.createWithContext(var0);
             }
 
             CompoundTag var2 = new TagParser(var0).readStruct();
-            var10000 = new NbtPathArgument.MatchRootObjectNode(var2);
-            break;
-         default:
-            var10000 = readObjectNode(var0, readUnquotedName(var0));
-      }
-
-      return (NbtPathArgument.Node)var10000;
+            yield new NbtPathArgument.MatchRootObjectNode(var2);
+         }
+         default -> readObjectNode(var0, readUnquotedName(var0));
+      });
    }
 
    private static NbtPathArgument.Node readObjectNode(StringReader var0, String var1) throws CommandSyntaxException {
@@ -132,7 +127,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
    private static String readUnquotedName(StringReader var0) throws CommandSyntaxException {
       int var1 = var0.getCursor();
 
-      while(var0.canRead() && isAllowedInUnquotedName(var0.peek())) {
+      while (var0.canRead() && isAllowedInUnquotedName(var0.peek())) {
          var0.skip();
       }
 
@@ -172,13 +167,13 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       @Override
       public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
          if (var1 instanceof CollectionTag var4) {
-            if (((CollectionTag)var4).isEmpty()) {
+            if (var4.isEmpty()) {
                Tag var5 = (Tag)var2.get();
-               if (((CollectionTag)var4).addTag(0, var5)) {
+               if (var4.addTag(0, var5)) {
                   var3.add(var5);
                }
             } else {
-               var3.addAll((Collection)var4);
+               var3.addAll(var4);
             }
          }
       }
@@ -190,10 +185,9 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
 
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
-         if (!(var1 instanceof CollectionTag)) {
+         if (!(var1 instanceof CollectionTag var3)) {
             return 0;
          } else {
-            CollectionTag var3 = (CollectionTag)var1;
             int var4 = var3.size();
             if (var4 == 0) {
                var3.addTag(0, (Tag)var2.get());
@@ -208,7 +202,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
                   if (!var3.addTag(0, var5)) {
                      return 0;
                   } else {
-                     for(int var7 = 1; var7 < var4; ++var7) {
+                     for (int var7 = 1; var7 < var4; var7++) {
                         var3.addTag(var7, (Tag)var2.get());
                      }
 
@@ -219,8 +213,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          }
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          if (var1 instanceof CollectionTag var2) {
@@ -253,8 +245,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          }
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
          if (var1 instanceof CompoundTag var4) {
@@ -275,8 +265,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return new CompoundTag();
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
          if (var1 instanceof CompoundTag var3) {
@@ -290,8 +278,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return 0;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          if (var1 instanceof CompoundTag var2 && var2.contains(this.name)) {
@@ -311,8 +297,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          this.index = var1;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getTag(Tag var1, List<Tag> var2) {
          if (var1 instanceof CollectionTag var3) {
@@ -334,8 +318,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return new ListTag();
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
          if (var1 instanceof CollectionTag var3) {
@@ -353,8 +335,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return 0;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          if (var1 instanceof CollectionTag var2) {
@@ -380,8 +360,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          this.predicate = NbtPathArgument.createTagPredicate(var1);
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getTag(Tag var1, List<Tag> var2) {
          if (var1 instanceof ListTag var3) {
@@ -389,8 +367,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          }
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
          MutableBoolean var4 = new MutableBoolean();
@@ -412,8 +388,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return new ListTag();
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
          int var3 = 0;
@@ -421,14 +395,14 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
             int var5 = var4.size();
             if (var5 == 0) {
                var4.add((Tag)var2.get());
-               ++var3;
+               var3++;
             } else {
-               for(int var6 = 0; var6 < var5; ++var6) {
+               for (int var6 = 0; var6 < var5; var6++) {
                   Tag var7 = var4.get(var6);
                   if (this.predicate.test(var7)) {
                      Tag var8 = (Tag)var2.get();
                      if (!var8.equals(var7) && var4.setTag(var6, var8)) {
-                        ++var3;
+                        var3++;
                      }
                   }
                }
@@ -438,16 +412,14 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return var3;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          int var2 = 0;
          if (var1 instanceof ListTag var3) {
-            for(int var4 = var3.size() - 1; var4 >= 0; --var4) {
+            for (int var4 = var3.size() - 1; var4 >= 0; var4--) {
                if (this.predicate.test(var3.get(var4))) {
                   var3.remove(var4);
-                  ++var2;
+                  var2++;
                }
             }
          }
@@ -478,8 +450,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          }
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
          if (var1 instanceof CompoundTag var4) {
@@ -499,8 +469,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return new CompoundTag();
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
          if (var1 instanceof CompoundTag var3) {
@@ -517,8 +485,6 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return 0;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          if (var1 instanceof CompoundTag var2) {
@@ -573,6 +539,18 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       private final String original;
       private final Object2IntMap<NbtPathArgument.Node> nodeToOriginalPosition;
       private final NbtPathArgument.Node[] nodes;
+      public static final Codec<NbtPathArgument.NbtPath> CODEC = Codec.STRING.comapFlatMap(var0 -> {
+         try {
+            NbtPathArgument.NbtPath var1 = new NbtPathArgument().parse(new StringReader(var0));
+            return DataResult.success(var1);
+         } catch (CommandSyntaxException var2) {
+            return DataResult.error(() -> "Failed to parse path " + var0 + ": " + var2.getMessage());
+         }
+      }, NbtPathArgument.NbtPath::asString);
+
+      public static NbtPathArgument.NbtPath of(String var0) throws CommandSyntaxException {
+         return new NbtPathArgument().parse(new StringReader(var0));
+      }
 
       public NbtPath(String var1, NbtPathArgument.Node[] var2, Object2IntMap<NbtPathArgument.Node> var3) {
          super();
@@ -584,7 +562,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       public List<Tag> get(Tag var1) throws CommandSyntaxException {
          List var2 = Collections.singletonList(var1);
 
-         for(NbtPathArgument.Node var6 : this.nodes) {
+         for (NbtPathArgument.Node var6 : this.nodes) {
             var2 = var6.get(var2);
             if (var2.isEmpty()) {
                throw this.createNotFoundException(var6);
@@ -597,7 +575,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       public int countMatching(Tag var1) {
          List var2 = Collections.singletonList(var1);
 
-         for(NbtPathArgument.Node var6 : this.nodes) {
+         for (NbtPathArgument.Node var6 : this.nodes) {
             var2 = var6.get(var2);
             if (var2.isEmpty()) {
                return 0;
@@ -610,7 +588,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       private List<Tag> getOrCreateParents(Tag var1) throws CommandSyntaxException {
          List var2 = Collections.singletonList(var1);
 
-         for(int var3 = 0; var3 < this.nodes.length - 1; ++var3) {
+         for (int var3 = 0; var3 < this.nodes.length - 1; var3++) {
             NbtPathArgument.Node var4 = this.nodes[var3];
             int var5 = var3 + 1;
             var2 = var4.getOrCreate(var2, this.nodes[var5]::createPreferredParentTag);
@@ -632,21 +610,19 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return var0.stream().<Integer>map(var1).reduce(0, (var0x, var1x) -> var0x + var1x);
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public static boolean isTooDeep(Tag var0, int var1) {
          if (var1 >= 512) {
             return true;
          } else {
             if (var0 instanceof CompoundTag var2) {
-               for(String var5 : var2.getAllKeys()) {
+               for (String var5 : var2.getAllKeys()) {
                   Tag var6 = var2.get(var5);
                   if (var6 != null && isTooDeep(var6, var1 + 1)) {
                      return true;
                   }
                }
             } else if (var0 instanceof ListTag) {
-               for(Tag var8 : (ListTag)var0) {
+               for (Tag var8 : (ListTag)var0) {
                   if (isTooDeep(var8, var1 + 1)) {
                      return true;
                   }
@@ -687,7 +663,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       public int insert(int var1, CompoundTag var2, List<Tag> var3) throws CommandSyntaxException {
          ArrayList var4 = new ArrayList(var3.size());
 
-         for(Tag var6 : var3) {
+         for (Tag var6 : var3) {
             Tag var7 = var6.copy();
             var4.add(var7);
             if (isTooDeep(var7, this.estimatePathDepth())) {
@@ -699,19 +675,18 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          int var18 = 0;
          boolean var19 = false;
 
-         for(Tag var9 : var17) {
-            if (!(var9 instanceof CollectionTag)) {
+         for (Tag var9 : var17) {
+            if (!(var9 instanceof CollectionTag var10)) {
                throw NbtPathArgument.ERROR_EXPECTED_LIST.create(var9);
             }
 
-            CollectionTag var10 = (CollectionTag)var9;
             boolean var11 = false;
             int var12 = var1 < 0 ? var10.size() + var1 + 1 : var1;
 
-            for(Tag var14 : var4) {
+            for (Tag var14 : var4) {
                try {
                   if (var10.addTag(var12, var19 ? var14.copy() : var14)) {
-                     ++var12;
+                     var12++;
                      var11 = true;
                   }
                } catch (IndexOutOfBoundsException var16) {
@@ -729,7 +704,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       public int remove(Tag var1) {
          List var2 = Collections.singletonList(var1);
 
-         for(int var3 = 0; var3 < this.nodes.length - 1; ++var3) {
+         for (int var3 = 0; var3 < this.nodes.length - 1; var3++) {
             var2 = this.nodes[var3].get(var2);
          }
 
@@ -774,7 +749,7 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
       default List<Tag> collect(List<Tag> var1, BiConsumer<Tag, List<Tag>> var2) {
          ArrayList var3 = Lists.newArrayList();
 
-         for(Tag var5 : var1) {
+         for (Tag var5 : var1) {
             var2.accept(var5, var3);
          }
 

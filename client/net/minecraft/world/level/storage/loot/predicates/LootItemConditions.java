@@ -1,27 +1,25 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.Codec;
-import java.util.List;
-import java.util.function.Predicate;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 
 public class LootItemConditions {
    private static final Codec<LootItemCondition> TYPED_CODEC = BuiltInRegistries.LOOT_CONDITION_TYPE
       .byNameCodec()
       .dispatch("condition", LootItemCondition::getType, LootItemConditionType::codec);
-   public static final Codec<LootItemCondition> CODEC = ExtraCodecs.lazyInitializedCodec(
-      () -> ExtraCodecs.withAlternative(TYPED_CODEC, AllOfCondition.INLINE_CODEC)
-   );
+   public static final Codec<LootItemCondition> DIRECT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(TYPED_CODEC, AllOfCondition.INLINE_CODEC));
+   public static final Codec<Holder<LootItemCondition>> CODEC = RegistryFileCodec.create(Registries.PREDICATE, DIRECT_CODEC);
    public static final LootItemConditionType INVERTED = register("inverted", InvertedLootItemCondition.CODEC);
    public static final LootItemConditionType ANY_OF = register("any_of", AnyOfCondition.CODEC);
    public static final LootItemConditionType ALL_OF = register("all_of", AllOfCondition.CODEC);
    public static final LootItemConditionType RANDOM_CHANCE = register("random_chance", LootItemRandomChanceCondition.CODEC);
-   public static final LootItemConditionType RANDOM_CHANCE_WITH_LOOTING = register(
-      "random_chance_with_looting", LootItemRandomChanceWithLootingCondition.CODEC
-   );
+   public static final LootItemConditionType RANDOM_CHANCE_WITH_LOOTING = register("random_chance_with_looting", LootItemRandomChanceWithLootingCondition.CODEC);
    public static final LootItemConditionType ENTITY_PROPERTIES = register("entity_properties", LootItemEntityPropertyCondition.CODEC);
    public static final LootItemConditionType KILLED_BY_PLAYER = register("killed_by_player", LootItemKilledByPlayerCondition.CODEC);
    public static final LootItemConditionType ENTITY_SCORES = register("entity_scores", EntityHasScoreCondition.CODEC);
@@ -40,45 +38,7 @@ public class LootItemConditions {
       super();
    }
 
-   private static LootItemConditionType register(String var0, Codec<? extends LootItemCondition> var1) {
+   private static LootItemConditionType register(String var0, MapCodec<? extends LootItemCondition> var1) {
       return Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, new ResourceLocation(var0), new LootItemConditionType(var1));
-   }
-
-   public static <T> Predicate<T> andConditions(List<? extends Predicate<T>> var0) {
-      List var1 = List.copyOf(var0);
-
-      return switch(var1.size()) {
-         case 0 -> var0x -> true;
-         case 1 -> (Predicate)var1.get(0);
-         case 2 -> ((Predicate)var1.get(0)).and((Predicate<? super T>)var1.get(1));
-         default -> var1x -> {
-         for(Predicate var3 : var1) {
-            if (!var3.test(var1x)) {
-               return false;
-            }
-         }
-
-         return true;
-      };
-      };
-   }
-
-   public static <T> Predicate<T> orConditions(List<? extends Predicate<T>> var0) {
-      List var1 = List.copyOf(var0);
-
-      return switch(var1.size()) {
-         case 0 -> var0x -> false;
-         case 1 -> (Predicate)var1.get(0);
-         case 2 -> ((Predicate)var1.get(0)).or((Predicate<? super T>)var1.get(1));
-         default -> var1x -> {
-         for(Predicate var3 : var1) {
-            if (var3.test(var1x)) {
-               return true;
-            }
-         }
-
-         return false;
-      };
-      };
    }
 }

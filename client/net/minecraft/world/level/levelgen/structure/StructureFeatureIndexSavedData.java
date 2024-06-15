@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.structure;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -28,12 +29,12 @@ public class StructureFeatureIndexSavedData extends SavedData {
       this(new LongOpenHashSet(), new LongOpenHashSet());
    }
 
-   public static StructureFeatureIndexSavedData load(CompoundTag var0) {
+   public static StructureFeatureIndexSavedData load(CompoundTag var0, HolderLookup.Provider var1) {
       return new StructureFeatureIndexSavedData(new LongOpenHashSet(var0.getLongArray("All")), new LongOpenHashSet(var0.getLongArray("Remaining")));
    }
 
    @Override
-   public CompoundTag save(CompoundTag var1) {
+   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       var1.putLongArray("All", this.all.toLongArray());
       var1.putLongArray("Remaining", this.remaining.toLongArray());
       return var1;

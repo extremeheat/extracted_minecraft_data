@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -144,7 +143,7 @@ public class ExperienceCommand {
    }
 
    private static int addExperience(CommandSourceStack var0, Collection<? extends ServerPlayer> var1, int var2, ExperienceCommand.Type var3) {
-      for(ServerPlayer var5 : var1) {
+      for (ServerPlayer var5 : var1) {
          var3.add.accept(var5, var2);
       }
 
@@ -165,9 +164,9 @@ public class ExperienceCommand {
    private static int setExperience(CommandSourceStack var0, Collection<? extends ServerPlayer> var1, int var2, ExperienceCommand.Type var3) throws CommandSyntaxException {
       int var4 = 0;
 
-      for(ServerPlayer var6 : var1) {
+      for (ServerPlayer var6 : var1) {
          if (var3.set.test(var6, var2)) {
-            ++var4;
+            var4++;
          }
       }
 
@@ -208,11 +207,16 @@ public class ExperienceCommand {
       public final String name;
       final ToIntFunction<ServerPlayer> query;
 
-      private Type(String var3, BiConsumer<ServerPlayer, Integer> var4, BiPredicate<ServerPlayer, Integer> var5, ToIntFunction<ServerPlayer> var6) {
-         this.add = var4;
-         this.name = var3;
-         this.set = var5;
-         this.query = var6;
+      private Type(
+         final String nullxx,
+         final BiConsumer<ServerPlayer, Integer> nullxxx,
+         final BiPredicate<ServerPlayer, Integer> nullxxxx,
+         final ToIntFunction<ServerPlayer> nullxxxxx
+      ) {
+         this.add = nullxxx;
+         this.name = nullxx;
+         this.set = nullxxxx;
+         this.query = nullxxxxx;
       }
    }
 }

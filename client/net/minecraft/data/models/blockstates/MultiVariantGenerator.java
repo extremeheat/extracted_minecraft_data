@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.world.level.block.Block;
@@ -33,7 +32,7 @@ public class MultiVariantGenerator implements BlockStateGenerator {
       var1.getDefinedProperties().forEach(var1x -> {
          if (this.block.getStateDefinition().getProperty(var1x.getName()) != var1x) {
             throw new IllegalStateException("Property " + var1x + " is not defined for block " + this.block);
-         } else if (!this.seenProperties.add(var1x)) {
+         } else if (!this.seenProperties.add((Property<?>)var1x)) {
             throw new IllegalStateException("Values of property " + var1x + " already defined for block " + this.block);
          }
       });
@@ -44,12 +43,12 @@ public class MultiVariantGenerator implements BlockStateGenerator {
    public JsonElement get() {
       Stream var1 = Stream.of(Pair.of(Selector.empty(), this.baseVariants));
 
-      for(PropertyDispatch var3 : this.declaredPropertySets) {
+      for (PropertyDispatch var3 : this.declaredPropertySets) {
          Map var4 = var3.getEntries();
          var1 = var1.flatMap(var1x -> var4.entrySet().stream().map(var1xx -> {
                Selector var2 = ((Selector)var1x.getFirst()).extend((Selector)var1xx.getKey());
-               List var3xx = mergeVariants((List<Variant>)var1x.getSecond(), (List<Variant>)var1xx.getValue());
-               return Pair.of(var2, var3xx);
+               List var3x = mergeVariants((List<Variant>)var1x.getSecond(), (List<Variant>)var1xx.getValue());
+               return Pair.of(var2, var3x);
             }));
       }
 

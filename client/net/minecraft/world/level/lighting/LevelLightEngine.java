@@ -37,11 +37,7 @@ public class LevelLightEngine implements LightEventListener {
 
    @Override
    public boolean hasLightWork() {
-      if (this.skyEngine != null && this.skyEngine.hasLightWork()) {
-         return true;
-      } else {
-         return this.blockEngine != null && this.blockEngine.hasLightWork();
-      }
+      return this.skyEngine != null && this.skyEngine.hasLightWork() ? true : this.blockEngine != null && this.blockEngine.hasLightWork();
    }
 
    @Override

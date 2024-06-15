@@ -3,7 +3,6 @@ package net.minecraft.server.commands.data;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Locale;
 import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;

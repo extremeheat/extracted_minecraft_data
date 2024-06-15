@@ -13,10 +13,8 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.List.ListType;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 public class ChunkBedBlockEntityInjecterFix extends DataFix {
@@ -27,11 +25,9 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
    public TypeRewriteRule makeRule() {
       Type var1 = this.getOutputSchema().getType(References.CHUNK);
       Type var2 = var1.findFieldType("Level");
-      Type var3 = var2.findFieldType("TileEntities");
-      if (!(var3 instanceof ListType)) {
+      if (!(var2.findFieldType("TileEntities") instanceof ListType var4)) {
          throw new IllegalStateException("Tile entity type is not a list type.");
       } else {
-         ListType var4 = (ListType)var3;
          return this.cap(var2, var4);
       }
    }
@@ -40,7 +36,7 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
       Type var3 = var2.getElement();
       OpticFinder var4 = DSL.fieldFinder("Level", var1);
       OpticFinder var5 = DSL.fieldFinder("TileEntities", var2);
-      boolean var6 = true;
+      short var6 = 416;
       return TypeRewriteRule.seq(
          this.fixTypeEverywhere(
             "InjectBedBlockEntityType",
@@ -52,27 +48,27 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
             "BedBlockEntityInjecter",
             this.getOutputSchema().getType(References.CHUNK),
             var3x -> {
-               Typed var4xx = var3x.getTyped(var4);
-               Dynamic var5xx = (Dynamic)var4xx.get(DSL.remainderFinder());
-               int var6xx = var5xx.get("xPos").asInt(0);
-               int var7 = var5xx.get("zPos").asInt(0);
-               ArrayList var8 = Lists.newArrayList((Iterable)var4xx.getOrCreate(var5));
-      
-               for(Dynamic var11 : var5xx.get("Sections").asList(Function.identity())) {
+               Typed var4x = var3x.getTyped(var4);
+               Dynamic var5x = (Dynamic)var4x.get(DSL.remainderFinder());
+               int var6x = var5x.get("xPos").asInt(0);
+               int var7 = var5x.get("zPos").asInt(0);
+               ArrayList var8 = Lists.newArrayList((Iterable)var4x.getOrCreate(var5));
+
+               for (Dynamic var11 : var5x.get("Sections").asList(Function.identity())) {
                   int var12 = var11.get("Y").asInt(0);
                   Streams.mapWithIndex(var11.get("Blocks").asIntStream(), (var4xx, var5xx) -> {
                         if (416 == (var4xx & 0xFF) << 4) {
-                           int var7xx = (int)var5xx;
-                           int var8xx = var7xx & 15;
-                           int var9 = var7xx >> 8 & 15;
-                           int var10 = var7xx >> 4 & 15;
-                           HashMap var11xx = Maps.newHashMap();
-                           var11xx.put(var11.createString("id"), var11.createString("minecraft:bed"));
-                           var11xx.put(var11.createString("x"), var11.createInt(var8xx + (var6x << 4)));
-                           var11xx.put(var11.createString("y"), var11.createInt(var9 + (var12 << 4)));
-                           var11xx.put(var11.createString("z"), var11.createInt(var10 + (var7 << 4)));
-                           var11xx.put(var11.createString("color"), var11.createShort((short)14));
-                           return var11xx;
+                           int var7x = (int)var5xx;
+                           int var8x = var7x & 15;
+                           int var9 = var7x >> 8 & 15;
+                           int var10 = var7x >> 4 & 15;
+                           HashMap var11x = Maps.newHashMap();
+                           var11x.put(var11.createString("id"), var11.createString("minecraft:bed"));
+                           var11x.put(var11.createString("x"), var11.createInt(var8x + (var6x << 4)));
+                           var11x.put(var11.createString("y"), var11.createInt(var9 + (var12 << 4)));
+                           var11x.put(var11.createString("z"), var11.createInt(var10 + (var7 << 4)));
+                           var11x.put(var11.createString("color"), var11.createShort((short)14));
+                           return var11x;
                         } else {
                            return null;
                         }
@@ -90,8 +86,8 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
                         }
                      );
                }
-      
-               return !var8.isEmpty() ? var3x.set(var4, var4xx.set(var5, var8)) : var3x;
+
+               return !var8.isEmpty() ? var3x.set(var4, var4x.set(var5, var8)) : var3x;
             }
          )
       );

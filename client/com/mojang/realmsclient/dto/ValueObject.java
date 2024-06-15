@@ -13,7 +13,7 @@ public abstract class ValueObject {
    public String toString() {
       StringBuilder var1 = new StringBuilder("{");
 
-      for(Field var5 : this.getClass().getFields()) {
+      for (Field var5 : this.getClass().getFields()) {
          if (!isStatic(var5)) {
             try {
                var1.append(getName(var5)).append("=").append(var5.get(this)).append(" ");

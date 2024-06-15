@@ -4,10 +4,9 @@ import com.mojang.realmsclient.dto.Backup;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -30,17 +29,18 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.layout.addToHeader(new StringWidget(TITLE, this.font));
+      this.layout.addTitleHeader(TITLE, this.font);
       this.backupInfoList = this.layout.addToContents(new RealmsBackupInfoScreen.BackupInfoList(this.minecraft));
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).build());
       this.repositionElements();
       this.layout.visitWidgets(var1 -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1);
       });
    }
 
    @Override
    protected void repositionElements() {
-      this.backupInfoList.setSize(this.width, this.height - this.layout.getFooterHeight() - this.layout.getHeaderHeight());
+      this.backupInfoList.setSize(this.width, this.layout.getContentHeight());
       this.layout.arrangeElements();
    }
 
@@ -75,18 +75,18 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
    }
 
    class BackupInfoList extends ObjectSelectionList<RealmsBackupInfoScreen.BackupInfoListEntry> {
-      public BackupInfoList(Minecraft var2) {
+      public BackupInfoList(final Minecraft nullx) {
          super(
-            var2,
+            nullx,
             RealmsBackupInfoScreen.this.width,
-            RealmsBackupInfoScreen.this.height - RealmsBackupInfoScreen.this.layout.getFooterHeight() - RealmsBackupInfoScreen.this.layout.getHeaderHeight(),
+            RealmsBackupInfoScreen.this.layout.getContentHeight(),
             RealmsBackupInfoScreen.this.layout.getHeaderHeight(),
             36
          );
          if (RealmsBackupInfoScreen.this.backup.changeList != null) {
             RealmsBackupInfoScreen.this.backup
                .changeList
-               .forEach((var1x, var2x) -> this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1x, var2x)));
+               .forEach((var1, var2) -> this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1, var2)));
          }
       }
    }
@@ -106,10 +106,10 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       private final String key;
       private final String value;
 
-      public BackupInfoListEntry(String var2, String var3) {
+      public BackupInfoListEntry(final String nullx, final String nullxx) {
          super();
-         this.key = var2;
-         this.value = var3;
+         this.key = nullx;
+         this.value = nullxx;
       }
 
       @Override
@@ -119,7 +119,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       }
 
       private Component translateKey(String var1) {
-         return switch(var1) {
+         return switch (var1) {
             case "template_name" -> TEMPLATE_NAME;
             case "game_difficulty" -> GAME_DIFFICULTY;
             case "name" -> NAME;

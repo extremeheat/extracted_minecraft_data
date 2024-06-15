@@ -10,7 +10,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.progress.StoringChunkProgressListener;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public class LevelLoadingScreen extends Screen {
    private static final long NARRATION_DELAY_MS = 2000L;
@@ -78,9 +78,9 @@ public class LevelLoadingScreen extends Screen {
 
       int var7 = this.width / 2;
       int var8 = this.height / 2;
-      boolean var9 = true;
-      renderChunks(var1, this.progressListener, var7, var8 + 30, 2, 0);
-      var1.drawCenteredString(this.font, this.getFormattedProgress(), var7, var8 - 9 / 2 - 30, 16777215);
+      renderChunks(var1, this.progressListener, var7, var8, 2, 0);
+      int var9 = this.progressListener.getDiameter() + 9 + 2;
+      var1.drawCenteredString(this.font, this.getFormattedProgress(), var7, var8 - var9, 16777215);
    }
 
    public static void renderChunks(GuiGraphics var0, StoringChunkProgressListener var1, int var2, int var3, int var4, int var5) {
@@ -101,12 +101,12 @@ public class LevelLoadingScreen extends Screen {
             var0.fill(var2 - var13, var3 + var13 - 1, var2 + var13, var3 + var13, -16772609);
          }
 
-         for(int var11xx = 0; var11xx < var9; ++var11xx) {
-            for(int var12xx = 0; var12xx < var9; ++var12xx) {
-               ChunkStatus var13xx = var1.getStatus(var11xx, var12xx);
-               int var14xx = var11 + var11xx * var6;
-               int var15 = var12 + var12xx * var6;
-               var0.fill(var14xx, var15, var14xx + var4, var15 + var4, COLORS.getInt(var13xx) | 0xFF000000);
+         for (int var11x = 0; var11x < var9; var11x++) {
+            for (int var12x = 0; var12x < var9; var12x++) {
+               ChunkStatus var13x = var1.getStatus(var11x, var12x);
+               int var14x = var11 + var11x * var6;
+               int var15 = var12 + var12x * var6;
+               var0.fill(var14x, var15, var14x + var4, var15 + var4, COLORS.getInt(var13x) | 0xFF000000);
             }
          }
       });

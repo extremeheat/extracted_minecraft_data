@@ -26,7 +26,7 @@ public class ZombieAttackGoal extends MeleeAttackGoal {
    @Override
    public void tick() {
       super.tick();
-      ++this.raiseArmTicks;
+      this.raiseArmTicks++;
       if (this.raiseArmTicks >= 5 && this.getTicksUntilNextAttack() < this.getAttackInterval() / 2) {
          this.zombie.setAggressive(true);
       } else {

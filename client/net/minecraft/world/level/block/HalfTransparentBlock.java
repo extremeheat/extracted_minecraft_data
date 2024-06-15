@@ -18,7 +18,7 @@ public class HalfTransparentBlock extends Block {
    }
 
    @Override
-   public boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
+   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
       return var2.is(this) ? true : super.skipRendering(var1, var2, var3);
    }
 }

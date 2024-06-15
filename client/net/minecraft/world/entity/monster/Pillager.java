@@ -1,8 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import com.google.common.collect.Maps;
-import java.util.HashMap;
-import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -16,13 +13,11 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -38,14 +33,12 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -55,7 +48,6 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    private static final EntityDataAccessor<Boolean> IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(Pillager.class, EntityDataSerializers.BOOLEAN);
    private static final int INVENTORY_SIZE = 5;
    private static final int SLOT_OFFSET = 300;
-   private static final float CROSSBOW_POWER = 1.6F;
    private final SimpleContainer inventory = new SimpleContainer(5);
 
    public Pillager(EntityType<? extends Pillager> var1, Level var2) {
@@ -86,9 +78,9 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(IS_CHARGING_CROSSBOW, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(IS_CHARGING_CROSSBOW, false);
    }
 
    @Override
@@ -113,7 +105,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      this.writeInventoryToTag(var1);
+      this.writeInventoryToTag(var1, this.registryAccess());
    }
 
    @Override
@@ -130,7 +122,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.readInventoryFromTag(var1);
+      this.readInventoryFromTag(var1, this.registryAccess());
       this.setCanPickUpLoot(true);
    }
 
@@ -146,13 +138,11 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      RandomSource var6 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var6, var2);
-      this.populateDefaultEquipmentEnchantments(var6, var2);
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      RandomSource var5 = var1.getRandom();
+      this.populateDefaultEquipmentSlots(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var5, var2);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -166,22 +156,9 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       if (var1.nextInt(300) == 0) {
          ItemStack var3 = this.getMainHandItem();
          if (var3.is(Items.CROSSBOW)) {
-            Map var4 = EnchantmentHelper.getEnchantments(var3);
-            var4.putIfAbsent(Enchantments.PIERCING, 1);
-            EnchantmentHelper.setEnchantments(var4, var3);
+            var3.enchant(Enchantments.PIERCING, 1);
             this.setItemSlot(EquipmentSlot.MAINHAND, var3);
          }
-      }
-   }
-
-   @Override
-   public boolean isAlliedTo(Entity var1) {
-      if (super.isAlliedTo(var1)) {
-         return true;
-      } else if (var1 instanceof LivingEntity && ((LivingEntity)var1).getMobType() == MobType.ILLAGER) {
-         return this.getTeam() == null && var1.getTeam() == null;
-      } else {
-         return false;
       }
    }
 
@@ -203,11 +180,6 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    @Override
    public void performRangedAttack(LivingEntity var1, float var2) {
       this.performCrossbowAttack(this, 1.6F);
-   }
-
-   @Override
-   public void shootCrossbowProjectile(LivingEntity var1, ItemStack var2, Projectile var3, float var4) {
-      this.shootCrossbowProjectile(this, var1, var3, var4, 1.6F);
    }
 
    @Override
@@ -247,15 +219,13 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       boolean var4 = this.random.nextFloat() <= var3.getEnchantOdds();
       if (var4) {
          ItemStack var5 = new ItemStack(Items.CROSSBOW);
-         HashMap var6 = Maps.newHashMap();
          if (var1 > var3.getNumGroups(Difficulty.NORMAL)) {
-            var6.put(Enchantments.QUICK_CHARGE, 2);
+            var5.enchant(Enchantments.QUICK_CHARGE, 2);
          } else if (var1 > var3.getNumGroups(Difficulty.EASY)) {
-            var6.put(Enchantments.QUICK_CHARGE, 1);
+            var5.enchant(Enchantments.QUICK_CHARGE, 1);
          }
 
-         var6.put(Enchantments.MULTISHOT, 1);
-         EnchantmentHelper.setEnchantments(var6, var5);
+         var5.enchant(Enchantments.MULTISHOT, 1);
          this.setItemSlot(EquipmentSlot.MAINHAND, var5);
       }
    }

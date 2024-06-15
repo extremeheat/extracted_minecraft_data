@@ -48,12 +48,12 @@ public class DetectorRailBlock extends BaseRailBlock {
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide) {
          if (!var1.getValue(POWERED)) {
             this.checkPressed(var2, var3, var1);
@@ -62,19 +62,19 @@ public class DetectorRailBlock extends BaseRailBlock {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(POWERED)) {
          this.checkPressed(var2, var3, var1);
       }
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) ? 15 : 0;
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       if (!var1.getValue(POWERED)) {
          return 0;
       } else {
@@ -120,14 +120,14 @@ public class DetectorRailBlock extends BaseRailBlock {
    protected void updatePowerToConnected(Level var1, BlockPos var2, BlockState var3, boolean var4) {
       RailState var5 = new RailState(var1, var2, var3);
 
-      for(BlockPos var8 : var5.getConnections()) {
+      for (BlockPos var8 : var5.getConnections()) {
          BlockState var9 = var1.getBlockState(var8);
          var1.neighborChanged(var9, var8, var9.getBlock(), var2, false);
       }
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock())) {
          BlockState var6 = this.updateState(var1, var2, var3, var5);
          this.checkPressed(var2, var3, var6);
@@ -140,12 +140,12 @@ public class DetectorRailBlock extends BaseRailBlock {
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       if (var1.getValue(POWERED)) {
          List var4 = this.getInteractingMinecartOfType(var2, var3, MinecartCommandBlock.class, var0 -> true);
          if (!var4.isEmpty()) {
@@ -178,10 +178,10 @@ public class DetectorRailBlock extends BaseRailBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
+      switch (var2) {
          case CLOCKWISE_180:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
                case ASCENDING_WEST:
@@ -200,7 +200,7 @@ public class DetectorRailBlock extends BaseRailBlock {
                   return var1.setValue(SHAPE, RailShape.SOUTH_WEST);
             }
          case COUNTERCLOCKWISE_90:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_NORTH);
                case ASCENDING_WEST:
@@ -223,7 +223,7 @@ public class DetectorRailBlock extends BaseRailBlock {
                   return var1.setValue(SHAPE, RailShape.NORTH_SOUTH);
             }
          case CLOCKWISE_90:
-            switch((RailShape)var1.getValue(SHAPE)) {
+            switch ((RailShape)var1.getValue(SHAPE)) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
                case ASCENDING_WEST:
@@ -251,11 +251,11 @@ public class DetectorRailBlock extends BaseRailBlock {
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       RailShape var3 = var1.getValue(SHAPE);
-      switch(var2) {
+      switch (var2) {
          case LEFT_RIGHT:
-            switch(var3) {
+            switch (var3) {
                case ASCENDING_NORTH:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_SOUTH);
                case ASCENDING_SOUTH:
@@ -272,7 +272,7 @@ public class DetectorRailBlock extends BaseRailBlock {
                   return super.mirror(var1, var2);
             }
          case FRONT_BACK:
-            switch(var3) {
+            switch (var3) {
                case ASCENDING_EAST:
                   return var1.setValue(SHAPE, RailShape.ASCENDING_WEST);
                case ASCENDING_WEST:

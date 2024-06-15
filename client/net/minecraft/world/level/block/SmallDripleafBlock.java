@@ -46,14 +46,13 @@ public class SmallDripleafBlock extends DoublePlantBlock implements Bonemealable
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(BlockTags.SMALL_DRIPLEAF_PLACEABLE)
-         || var2.getFluidState(var3.above()).isSourceOfType(Fluids.WATER) && super.mayPlaceOn(var1, var2, var3);
+      return var1.is(BlockTags.SMALL_DRIPLEAF_PLACEABLE) || var2.getFluidState(var3.above()).isSourceOfType(Fluids.WATER) && super.mayPlaceOn(var1, var2, var3);
    }
 
    @Nullable
@@ -77,12 +76,12 @@ public class SmallDripleafBlock extends DoublePlantBlock implements Bonemealable
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       if (var1.getValue(HALF) == DoubleBlockHalf.UPPER) {
          return super.canSurvive(var1, var2, var3);
       } else {
@@ -93,7 +92,7 @@ public class SmallDripleafBlock extends DoublePlantBlock implements Bonemealable
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -129,17 +128,17 @@ public class SmallDripleafBlock extends DoublePlantBlock implements Bonemealable
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
    @Override
-   public float getMaxVerticalOffset() {
+   protected float getMaxVerticalOffset() {
       return 0.1F;
    }
 }

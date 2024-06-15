@@ -8,7 +8,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +30,7 @@ import net.minecraft.world.entity.Entity;
 
 public class TranslatableContents implements ComponentContents {
    public static final Object[] NO_ARGS = new Object[0];
-   private static final Codec<Object> PRIMITIVE_ARG_CODEC = ExtraCodecs.validate(ExtraCodecs.JAVA, TranslatableContents::filterAllowedArguments);
+   private static final Codec<Object> PRIMITIVE_ARG_CODEC = ExtraCodecs.JAVA.validate(TranslatableContents::filterAllowedArguments);
    private static final Codec<Object> ARG_CODEC = Codec.either(PRIMITIVE_ARG_CODEC, ComponentSerialization.CODEC)
       .xmap(
          var0 -> var0.map(var0x -> var0x, var0x -> Objects.requireNonNullElse(var0x.tryCollapseToString(), var0x)),
@@ -40,8 +39,8 @@ public class TranslatableContents implements ComponentContents {
    public static final MapCodec<TranslatableContents> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Codec.STRING.fieldOf("translate").forGetter(var0x -> var0x.key),
-               Codec.STRING.optionalFieldOf("fallback").forGetter(var0x -> Optional.ofNullable(var0x.fallback)),
-               ExtraCodecs.strictOptionalField(ARG_CODEC.listOf(), "with").forGetter(var0x -> adjustArgs(var0x.args))
+               Codec.STRING.lenientOptionalFieldOf("fallback").forGetter(var0x -> Optional.ofNullable(var0x.fallback)),
+               ARG_CODEC.listOf().optionalFieldOf("with").forGetter(var0x -> adjustArgs(var0x.args))
             )
             .apply(var0, TranslatableContents::create)
    );
@@ -110,12 +109,11 @@ public class TranslatableContents implements ComponentContents {
 
       try {
          int var4 = 0;
+         int var5 = 0;
 
-         int var5;
-         int var7;
-         for(var5 = 0; var3.find(var5); var5 = var7) {
+         while (var3.find(var5)) {
             int var6 = var3.start();
-            var7 = var3.end();
+            int var7 = var3.end();
             if (var6 > var5) {
                String var8 = var1.substring(var5, var6);
                if (var8.indexOf(37) != -1) {
@@ -138,6 +136,8 @@ public class TranslatableContents implements ComponentContents {
                int var11 = var10 != null ? Integer.parseInt(var10) - 1 : var4++;
                var2.accept(this.getArgument(var11));
             }
+
+            var5 = var7;
          }
 
          if (var5 < var1.length()) {
@@ -170,7 +170,7 @@ public class TranslatableContents implements ComponentContents {
    public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
       this.decompose();
 
-      for(FormattedText var4 : this.decomposedParts) {
+      for (FormattedText var4 : this.decomposedParts) {
          Optional var5 = var4.visit(var1, var2);
          if (var5.isPresent()) {
             return var5;
@@ -184,7 +184,7 @@ public class TranslatableContents implements ComponentContents {
    public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
       this.decompose();
 
-      for(FormattedText var3 : this.decomposedParts) {
+      for (FormattedText var3 : this.decomposedParts) {
          Optional var4 = var3.visit(var1);
          if (var4.isPresent()) {
             return var4;
@@ -198,10 +198,10 @@ public class TranslatableContents implements ComponentContents {
    public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
       Object[] var4 = new Object[this.args.length];
 
-      for(int var5 = 0; var5 < var4.length; ++var5) {
+      for (int var5 = 0; var5 < var4.length; var5++) {
          Object var6 = this.args[var5];
          if (var6 instanceof Component var7) {
-            var4[var5] = ComponentUtils.updateForEntity(var1, (Component)var7, var2, var3);
+            var4[var5] = ComponentUtils.updateForEntity(var1, var7, var2, var3);
          } else {
             var4[var5] = var6;
          }

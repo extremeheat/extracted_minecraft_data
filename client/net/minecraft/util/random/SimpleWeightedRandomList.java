@@ -33,7 +33,7 @@ public class SimpleWeightedRandomList<E> extends WeightedRandomList<WeightedEntr
    }
 
    public Optional<E> getRandomValue(RandomSource var1) {
-      return this.getRandom(var1).map(WeightedEntry.Wrapper::getData);
+      return this.getRandom(var1).map(WeightedEntry.Wrapper::data);
    }
 
    public static class Builder<E> {

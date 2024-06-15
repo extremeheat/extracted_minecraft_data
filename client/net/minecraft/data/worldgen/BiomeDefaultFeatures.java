@@ -457,7 +457,7 @@ public class BiomeDefaultFeatures {
 
    public static void dripstoneCavesSpawns(MobSpawnSettings.Builder var0) {
       caveSpawns(var0);
-      boolean var1 = true;
+      byte var1 = 95;
       monsters(var0, 95, 5, 100, false);
       var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 95, 4, 4));
    }

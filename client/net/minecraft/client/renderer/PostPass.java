@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.IntSupplier;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import org.joml.Matrix4f;
 
 public class PostPass implements AutoCloseable {
@@ -24,12 +24,14 @@ public class PostPass implements AutoCloseable {
    private final List<Integer> auxWidths = Lists.newArrayList();
    private final List<Integer> auxHeights = Lists.newArrayList();
    private Matrix4f shaderOrthoMatrix;
+   private final int filterMode;
 
-   public PostPass(ResourceManager var1, String var2, RenderTarget var3, RenderTarget var4) throws IOException {
+   public PostPass(ResourceProvider var1, String var2, RenderTarget var3, RenderTarget var4, boolean var5) throws IOException {
       super();
       this.effect = new EffectInstance(var1, var2);
       this.inTarget = var3;
       this.outTarget = var4;
+      this.filterMode = var5 ? 9729 : 9728;
    }
 
    @Override
@@ -59,7 +61,7 @@ public class PostPass implements AutoCloseable {
       RenderSystem.viewport(0, 0, (int)var2, (int)var3);
       this.effect.setSampler("DiffuseSampler", this.inTarget::getColorTextureId);
 
-      for(int var4 = 0; var4 < this.auxAssets.size(); ++var4) {
+      for (int var4 = 0; var4 < this.auxAssets.size(); var4++) {
          this.effect.setSampler(this.auxNames.get(var4), this.auxAssets.get(var4));
          this.effect.safeGetUniform("AuxSize" + var4).set((float)this.auxWidths.get(var4).intValue(), (float)this.auxHeights.get(var4).intValue());
       }
@@ -86,7 +88,7 @@ public class PostPass implements AutoCloseable {
       this.outTarget.unbindWrite();
       this.inTarget.unbindRead();
 
-      for(Object var7 : this.auxAssets) {
+      for (Object var7 : this.auxAssets) {
          if (var7 instanceof RenderTarget) {
             ((RenderTarget)var7).unbindRead();
          }
@@ -95,5 +97,9 @@ public class PostPass implements AutoCloseable {
 
    public EffectInstance getEffect() {
       return this.effect;
+   }
+
+   public int getFilterMode() {
+      return this.filterMode;
    }
 }

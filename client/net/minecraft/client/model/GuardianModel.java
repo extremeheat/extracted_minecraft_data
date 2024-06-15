@@ -35,7 +35,7 @@ public class GuardianModel extends HierarchicalModel<Guardian> {
       this.spikeParts = new ModelPart[12];
       this.head = var1.getChild("head");
 
-      for(int var2 = 0; var2 < this.spikeParts.length; ++var2) {
+      for (int var2 = 0; var2 < this.spikeParts.length; var2++) {
          this.spikeParts[var2] = this.head.getChild(createSpikeName(var2));
       }
 
@@ -70,7 +70,7 @@ public class GuardianModel extends HierarchicalModel<Guardian> {
       );
       CubeListBuilder var3 = CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -4.5F, -1.0F, 2.0F, 9.0F, 2.0F);
 
-      for(int var4 = 0; var4 < 12; ++var4) {
+      for (int var4 = 0; var4 < 12; var4++) {
          float var5 = getSpikeX(var4, 0.0F, 0.0F);
          float var6 = getSpikeY(var4, 0.0F, 0.0F);
          float var7 = getSpikeZ(var4, 0.0F, 0.0F);
@@ -136,7 +136,7 @@ public class GuardianModel extends HierarchicalModel<Guardian> {
    }
 
    private void setupSpikes(float var1, float var2) {
-      for(int var3 = 0; var3 < 12; ++var3) {
+      for (int var3 = 0; var3 < 12; var3++) {
          this.spikeParts[var3].x = getSpikeX(var3, var1, var2);
          this.spikeParts[var3].y = getSpikeY(var3, var1, var2);
          this.spikeParts[var3].z = getSpikeZ(var3, var1, var2);

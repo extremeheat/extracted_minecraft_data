@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -21,6 +20,9 @@ import net.minecraft.world.entity.raid.Raid;
 
 public class VillagerGoalPackages {
    private static final float STROLL_SPEED_MODIFIER = 0.4F;
+   public static final int INTERACT_DIST_SQR = 5;
+   public static final int INTERACT_WALKUP_DIST = 2;
+   public static final float INTERACT_SPEED_MODIFIER = 0.5F;
 
    public VillagerGoalPackages() {
       super();
@@ -250,7 +252,7 @@ public class VillagerGoalPackages {
    }
 
    public static ImmutableList<Pair<Integer, ? extends BehaviorControl<? super Villager>>> getHidePackage(VillagerProfession var0, float var1) {
-      boolean var2 = true;
+      byte var2 = 2;
       return ImmutableList.of(Pair.of(0, SetHiddenState.create(15, 3)), Pair.of(1, LocateHidingPlace.create(32, var1 * 1.25F, 2)), getMinimalLookBehavior());
    }
 

@@ -6,14 +6,14 @@ import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.execution.Frame;
 
 public class FallthroughTask<T extends ExecutionCommandSource<T>> implements EntryAction<T> {
-   private static final FallthroughTask<? extends ExecutionCommandSource<?>> INSTANCE = new FallthroughTask<>();
+   private static final FallthroughTask<? extends ExecutionCommandSource<?>> INSTANCE = (FallthroughTask<? extends ExecutionCommandSource<?>>)(new FallthroughTask<>());
 
    public FallthroughTask() {
       super();
    }
 
    public static <T extends ExecutionCommandSource<T>> EntryAction<T> instance() {
-      return INSTANCE;
+      return (EntryAction<T>)INSTANCE;
    }
 
    @Override

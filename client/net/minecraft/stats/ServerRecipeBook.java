@@ -32,14 +32,14 @@ public class ServerRecipeBook extends RecipeBook {
       ArrayList var3 = Lists.newArrayList();
       int var4 = 0;
 
-      for(RecipeHolder var6 : var1) {
+      for (RecipeHolder var6 : var1) {
          ResourceLocation var7 = var6.id();
          if (!this.known.contains(var7) && !var6.value().isSpecial()) {
             this.add(var7);
             this.addHighlight(var7);
             var3.add(var7);
             CriteriaTriggers.RECIPE_UNLOCKED.trigger(var2, var6);
-            ++var4;
+            var4++;
          }
       }
 
@@ -54,12 +54,12 @@ public class ServerRecipeBook extends RecipeBook {
       ArrayList var3 = Lists.newArrayList();
       int var4 = 0;
 
-      for(RecipeHolder var6 : var1) {
+      for (RecipeHolder var6 : var1) {
          ResourceLocation var7 = var6.id();
          if (this.known.contains(var7)) {
             this.remove(var7);
             var3.add(var7);
-            ++var4;
+            var4++;
          }
       }
 
@@ -76,14 +76,14 @@ public class ServerRecipeBook extends RecipeBook {
       this.getBookSettings().write(var1);
       ListTag var2 = new ListTag();
 
-      for(ResourceLocation var4 : this.known) {
+      for (ResourceLocation var4 : this.known) {
          var2.add(StringTag.valueOf(var4.toString()));
       }
 
       var1.put("recipes", var2);
       ListTag var6 = new ListTag();
 
-      for(ResourceLocation var5 : this.highlight) {
+      for (ResourceLocation var5 : this.highlight) {
          var6.add(StringTag.valueOf(var5.toString()));
       }
 
@@ -100,7 +100,7 @@ public class ServerRecipeBook extends RecipeBook {
    }
 
    private void loadRecipes(ListTag var1, Consumer<RecipeHolder<?>> var2, RecipeManager var3) {
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
+      for (int var4 = 0; var4 < var1.size(); var4++) {
          String var5 = var1.getString(var4);
 
          try {

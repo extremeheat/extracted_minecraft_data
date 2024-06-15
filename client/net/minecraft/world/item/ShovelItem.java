@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -30,8 +31,8 @@ public class ShovelItem extends DiggerItem {
          .build()
    );
 
-   public ShovelItem(Tier var1, float var2, float var3, Item.Properties var4) {
-      super(var2, var3, var1, BlockTags.MINEABLE_WITH_SHOVEL, var4);
+   public ShovelItem(Tier var1, Item.Properties var2) {
+      super(var1, BlockTags.MINEABLE_WITH_SHOVEL, var2);
    }
 
    @Override
@@ -62,7 +63,7 @@ public class ShovelItem extends DiggerItem {
                var2.setBlock(var3, var7, 11);
                var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5, var7));
                if (var5 != null) {
-                  var1.getItemInHand().hurtAndBreak(1, var5, var1x -> var1x.broadcastBreakEvent(var1.getHand()));
+                  var1.getItemInHand().hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var1.getHand()));
                }
             }
 

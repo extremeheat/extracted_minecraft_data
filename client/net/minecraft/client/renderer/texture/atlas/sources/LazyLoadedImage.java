@@ -24,7 +24,7 @@ public class LazyLoadedImage {
    public NativeImage get() throws IOException {
       NativeImage var1 = this.image.get();
       if (var1 == null) {
-         synchronized(this) {
+         synchronized (this) {
             var1 = this.image.get();
             if (var1 == null) {
                try (InputStream var3 = this.resource.open()) {

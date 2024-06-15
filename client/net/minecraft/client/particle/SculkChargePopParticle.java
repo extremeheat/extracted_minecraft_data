@@ -31,12 +31,10 @@ public class SculkChargePopParticle extends TextureSheetParticle {
       this.setSpriteFromAge(this.sprites);
    }
 
-   public static record Provider(SpriteSet a) implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprite;
-
-      public Provider(SpriteSet var1) {
+   public static record Provider(SpriteSet sprite) implements ParticleProvider<SimpleParticleType> {
+      public Provider(SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {

@@ -16,7 +16,7 @@ public class ScreenNarrationCollector {
    }
 
    public void update(Consumer<NarrationElementOutput> var1) {
-      ++this.generation;
+      this.generation++;
       var1.accept(new ScreenNarrationCollector.Output(0));
    }
 
@@ -79,9 +79,9 @@ public class ScreenNarrationCollector {
    class Output implements NarrationElementOutput {
       private final int depth;
 
-      Output(int var2) {
+      Output(final int nullx) {
          super();
-         this.depth = var2;
+         this.depth = nullx;
       }
 
       @Override

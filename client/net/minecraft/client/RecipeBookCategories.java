@@ -47,12 +47,12 @@ public enum RecipeBookCategories {
    );
    private final List<ItemStack> itemIcons;
 
-   private RecipeBookCategories(ItemStack... var3) {
-      this.itemIcons = ImmutableList.copyOf(var3);
+   private RecipeBookCategories(final ItemStack... nullxx) {
+      this.itemIcons = ImmutableList.copyOf(nullxx);
    }
 
    public static List<RecipeBookCategories> getCategories(RecipeBookType var0) {
-      return switch(var0) {
+      return switch (var0) {
          case CRAFTING -> CRAFTING_CATEGORIES;
          case FURNACE -> FURNACE_CATEGORIES;
          case BLAST_FURNACE -> BLAST_FURNACE_CATEGORIES;

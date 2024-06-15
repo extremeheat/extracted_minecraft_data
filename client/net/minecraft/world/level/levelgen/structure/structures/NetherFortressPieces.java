@@ -14,7 +14,6 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
@@ -124,9 +123,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 7, 3, 0, 11, 4, 18, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 3, 7, 18, 4, 11, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 8, 5, 0, 10, 7, 18, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
@@ -144,8 +141,8 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 7, 0, 0, 11, 1, 3, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 7, 0, 15, 11, 1, 18, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var8 = 7; var8 <= 11; ++var8) {
-            for(int var9 = 0; var9 <= 2; ++var9) {
+         for (int var8 = 7; var8 <= 11; var8++) {
+            for (int var9 = 0; var9 <= 2; var9++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var8, -1, var9, var5);
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var8, -1, 18 - var9, var5);
             }
@@ -156,8 +153,8 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 0, 0, 7, 3, 1, 11, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 15, 0, 7, 18, 1, 11, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var10 = 0; var10 <= 2; ++var10) {
-            for(int var11 = 7; var11 <= 11; ++var11) {
+         for (int var10 = 0; var10 <= 2; var10++) {
+            for (int var11 = 7; var11 <= 11; var11++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var10, -1, var11, var5);
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), 18 - var10, -1, var11, var5);
             }
@@ -196,13 +193,11 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          RandomSource var8 = RandomSource.create((long)this.selfSeed);
 
-         for(int var9 = 0; var9 <= 4; ++var9) {
-            for(int var10 = 3; var10 <= 4; ++var10) {
+         for (int var9 = 0; var9 <= 4; var9++) {
+            for (int var10 = 3; var10 <= 4; var10++) {
                int var11 = var8.nextInt(8);
                this.generateBox(
                   var1, var5, var9, var10, 0, var9, var10, var11, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false
@@ -215,15 +210,15 @@ public class NetherFortressPieces {
          var12 = var8.nextInt(8);
          this.generateBox(var1, var5, 4, 5, 0, 4, 5, var12, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var14 = 0; var14 <= 4; ++var14) {
+         for (int var14 = 0; var14 <= 4; var14++) {
             int var16 = var8.nextInt(5);
             this.generateBox(
                var1, var5, var14, 2, 0, var14, 2, var16, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false
             );
          }
 
-         for(int var15 = 0; var15 <= 4; ++var15) {
-            for(int var17 = 0; var17 <= 1; ++var17) {
+         for (int var15 = 0; var15 <= 4; var15++) {
+            for (int var17 = 0; var17 <= 1; var17++) {
                int var18 = var8.nextInt(3);
                this.generateBox(
                   var1, var5, var15, var17, 0, var15, var17, var18, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false
@@ -260,9 +255,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 3, 0, 4, 4, 18, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 1, 5, 0, 3, 7, 18, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 5, 0, 0, 5, 18, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
@@ -272,8 +265,8 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 0, 0, 0, 4, 1, 3, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 0, 15, 4, 1, 18, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var8 = 0; var8 <= 4; ++var8) {
-            for(int var9 = 0; var9 <= 2; ++var9) {
+         for (int var8 = 0; var8 <= 4; var8++) {
+            for (int var9 = 0; var9 <= 2; var9++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var8, -1, var9, var5);
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var8, -1, 18 - var9, var5);
             }
@@ -323,16 +316,14 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          BlockState var8 = Blocks.NETHER_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
          BlockState var9 = Blocks.NETHER_BRICK_FENCE
             .defaultBlockState()
             .setValue(FenceBlock.NORTH, Boolean.valueOf(true))
             .setValue(FenceBlock.SOUTH, Boolean.valueOf(true));
 
-         for(int var10 = 0; var10 <= 9; ++var10) {
+         for (int var10 = 0; var10 <= 9; var10++) {
             int var11 = Math.max(1, 7 - var10);
             int var12 = Math.min(Math.max(var11 + 5, 14 - var10), 13);
             int var13 = var10;
@@ -360,7 +351,7 @@ public class NetherFortressPieces {
                this.generateBox(var1, var5, 4, var11 + 2, var10, 4, var11 + 3, var10, var9, var9, false);
             }
 
-            for(int var14 = 0; var14 <= 4; ++var14) {
+            for (int var14 = 0; var14 <= 4; var14++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var14, -1, var13, var5);
             }
          }
@@ -401,9 +392,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          BlockState var8 = Blocks.NETHER_BRICK_FENCE
             .defaultBlockState()
             .setValue(FenceBlock.NORTH, Boolean.valueOf(true))
@@ -448,8 +437,8 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 1, 4, 5, 1, 5, 5, var9, var9, false);
          this.generateBox(var1, var5, 7, 4, 5, 7, 5, 5, var9, var9, false);
 
-         for(int var10 = 0; var10 <= 5; ++var10) {
-            for(int var11 = 0; var11 <= 8; ++var11) {
+         for (int var10 = 0; var10 <= 5; var10++) {
+            for (int var11 = 0; var11 <= 8; var11++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var11, -1, var10, var5);
             }
          }
@@ -483,9 +472,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 3, 0, 12, 4, 12, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 5, 0, 12, 13, 12, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 5, 0, 1, 12, 12, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
@@ -507,7 +494,7 @@ public class NetherFortressPieces {
             .setValue(FenceBlock.NORTH, Boolean.valueOf(true))
             .setValue(FenceBlock.SOUTH, Boolean.valueOf(true));
 
-         for(int var10 = 1; var10 <= 11; var10 += 2) {
+         for (byte var10 = 1; var10 <= 11; var10 += 2) {
             this.generateBox(var1, var5, var10, 10, 0, var10, 11, 0, var8, var8, false);
             this.generateBox(var1, var5, var10, 10, 12, var10, 11, 12, var8, var8, false);
             this.generateBox(var1, var5, 0, 10, var10, 0, 11, var10, var9, var9, false);
@@ -557,7 +544,7 @@ public class NetherFortressPieces {
             var5
          );
 
-         for(int var12 = 3; var12 <= 9; var12 += 2) {
+         for (byte var12 = 3; var12 <= 9; var12 += 2) {
             this.generateBox(
                var1,
                var5,
@@ -593,15 +580,15 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 0, 0, 4, 3, 1, 8, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 9, 0, 4, 12, 1, 8, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var13 = 4; var13 <= 8; ++var13) {
-            for(int var11 = 0; var11 <= 2; ++var11) {
+         for (int var13 = 4; var13 <= 8; var13++) {
+            for (int var11 = 0; var11 <= 2; var11++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var13, -1, var11, var5);
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var13, -1, 12 - var11, var5);
             }
          }
 
-         for(int var14 = 0; var14 <= 2; ++var14) {
-            for(int var16 = 4; var16 <= 8; ++var16) {
+         for (int var14 = 0; var14 <= 2; var14++) {
+            for (int var16 = 4; var16 <= 8; var16++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var14, -1, var16, var5);
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), 12 - var14, -1, var16, var5);
             }
@@ -647,9 +634,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 1, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 4, 5, 4, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 0, 5, 0, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
@@ -658,8 +643,8 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 4, 2, 4, 4, 5, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 6, 0, 4, 6, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var8 = 0; var8 <= 4; ++var8) {
-            for(int var9 = 0; var9 <= 4; ++var9) {
+         for (int var8 = 0; var8 <= 4; var8++) {
+            for (int var9 = 0; var9 <= 4; var9++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var8, -1, var9, var5);
             }
          }
@@ -704,9 +689,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 1, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 4, 5, 4, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          BlockState var8 = Blocks.NETHER_BRICK_FENCE
@@ -731,8 +714,8 @@ public class NetherFortressPieces {
 
          this.generateBox(var1, var5, 0, 6, 0, 4, 6, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var10 = 0; var10 <= 4; ++var10) {
-            for(int var11 = 0; var11 <= 4; ++var11) {
+         for (int var10 = 0; var10 <= 4; var10++) {
+            for (int var11 = 0; var11 <= 4; var11++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var10, -1, var11, var5);
             }
          }
@@ -766,9 +749,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 1, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 4, 5, 4, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          BlockState var8 = Blocks.NETHER_BRICK_FENCE
@@ -783,8 +764,8 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 4, 3, 3, 4, 4, 3, var8, var8, false);
          this.generateBox(var1, var5, 0, 6, 0, 4, 6, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var9 = 0; var9 <= 4; ++var9) {
-            for(int var10 = 0; var10 <= 4; ++var10) {
+         for (int var9 = 0; var9 <= 4; var9++) {
+            for (int var10 = 0; var10 <= 4; var10++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var9, -1, var10, var5);
             }
          }
@@ -829,9 +810,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 1, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 4, 5, 4, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          BlockState var8 = Blocks.NETHER_BRICK_FENCE
@@ -856,8 +835,8 @@ public class NetherFortressPieces {
 
          this.generateBox(var1, var5, 0, 6, 0, 4, 6, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var10 = 0; var10 <= 4; ++var10) {
-            for(int var11 = 0; var11 <= 4; ++var11) {
+         for (int var10 = 0; var10 <= 4; var10++) {
+            for (int var11 = 0; var11 <= 4; var11++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var10, -1, var11, var5);
             }
          }
@@ -890,9 +869,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 3, 0, 12, 4, 12, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 5, 0, 12, 13, 12, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 5, 0, 1, 12, 12, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
@@ -915,7 +892,7 @@ public class NetherFortressPieces {
          BlockState var10 = var9.setValue(FenceBlock.WEST, Boolean.valueOf(true));
          BlockState var11 = var9.setValue(FenceBlock.EAST, Boolean.valueOf(true));
 
-         for(int var12 = 1; var12 <= 11; var12 += 2) {
+         for (byte var12 = 1; var12 <= 11; var12 += 2) {
             this.generateBox(var1, var5, var12, 10, 0, var12, 11, 0, var8, var8, false);
             this.generateBox(var1, var5, var12, 10, 12, var12, 11, 12, var8, var8, false);
             this.generateBox(var1, var5, 0, 10, var12, 0, 11, var12, var9, var9, false);
@@ -965,17 +942,17 @@ public class NetherFortressPieces {
             var5
          );
 
-         for(int var17 = 3; var17 <= 9; var17 += 2) {
+         for (byte var17 = 3; var17 <= 9; var17 += 2) {
             this.generateBox(var1, var5, 1, 7, var17, 1, 8, var17, var10, var10, false);
             this.generateBox(var1, var5, 11, 7, var17, 11, 8, var17, var11, var11, false);
          }
 
          BlockState var18 = Blocks.NETHER_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
 
-         for(int var13 = 0; var13 <= 6; ++var13) {
+         for (int var13 = 0; var13 <= 6; var13++) {
             int var14 = var13 + 4;
 
-            for(int var15 = 5; var15 <= 7; ++var15) {
+            for (int var15 = 5; var15 <= 7; var15++) {
                this.placeBlock(var1, var18, var15, 5 + var13, var14, var5);
             }
 
@@ -994,7 +971,7 @@ public class NetherFortressPieces {
             }
          }
 
-         for(int var19 = 5; var19 <= 7; ++var19) {
+         for (int var19 = 5; var19 <= 7; var19++) {
             this.placeBlock(var1, var18, var19, 12, 11, var5);
          }
 
@@ -1028,15 +1005,15 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 0, 0, 4, 3, 1, 8, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 9, 0, 4, 12, 1, 8, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
 
-         for(int var22 = 4; var22 <= 8; ++var22) {
-            for(int var16 = 0; var16 <= 2; ++var16) {
+         for (int var22 = 4; var22 <= 8; var22++) {
+            for (int var16 = 0; var16 <= 2; var16++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var22, -1, var16, var5);
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var22, -1, 12 - var16, var5);
             }
          }
 
-         for(int var23 = 0; var23 <= 2; ++var23) {
-            for(int var24 = 4; var24 <= 8; ++var24) {
+         for (int var23 = 0; var23 <= 2; var23++) {
+            for (int var24 = 4; var24 <= 8; var24++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var23, -1, var24, var5);
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), 12 - var23, -1, var24, var5);
             }
@@ -1071,12 +1048,8 @@ public class NetherFortressPieces {
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new NetherFortressPieces.MonsterThrone(var4, var6, var5) : null;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 2, 0, 6, 7, 7, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          this.generateBox(var1, var5, 1, 0, 0, 5, 1, 7, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 1, 2, 1, 5, 2, 7, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
@@ -1145,15 +1118,14 @@ public class NetherFortressPieces {
             if (var5.isInside(var10)) {
                this.hasPlacedSpawner = true;
                var1.setBlock(var10, Blocks.SPAWNER.defaultBlockState(), 2);
-               BlockEntity var11 = var1.getBlockEntity(var10);
-               if (var11 instanceof SpawnerBlockEntity var12) {
+               if (var1.getBlockEntity(var10) instanceof SpawnerBlockEntity var12) {
                   var12.setEntityId(EntityType.BLAZE, var4);
                }
             }
          }
 
-         for(int var13 = 0; var13 <= 6; ++var13) {
-            for(int var14 = 0; var14 <= 6; ++var14) {
+         for (int var13 = 0; var13 <= 6; var13++) {
+            for (int var14 = 0; var14 <= 6; var14++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var13, -1, var14, var5);
             }
          }
@@ -1177,7 +1149,7 @@ public class NetherFortressPieces {
          boolean var2 = false;
          int var3 = 0;
 
-         for(NetherFortressPieces.PieceWeight var5 : var1) {
+         for (NetherFortressPieces.PieceWeight var5 : var1) {
             if (var5.maxPlaceCount > 0 && var5.placeCount < var5.maxPlaceCount) {
                var2 = true;
             }
@@ -1203,11 +1175,11 @@ public class NetherFortressPieces {
          boolean var11 = var10 > 0 && var9 <= 30;
          int var12 = 0;
 
-         while(var12 < 5 && var11) {
-            ++var12;
+         while (var12 < 5 && var11) {
+            var12++;
             int var13 = var4.nextInt(var10);
 
-            for(NetherFortressPieces.PieceWeight var15 : var2) {
+            for (NetherFortressPieces.PieceWeight var15 : var2) {
                var13 -= var15.weight;
                if (var13 < 0) {
                   if (!var15.doPlace(var9) || var15 == var1.previousPiece && !var15.allowInRow) {
@@ -1218,7 +1190,7 @@ public class NetherFortressPieces {
                      var15, var3, var4, var5, var6, var7, var8, var9
                   );
                   if (var16 != null) {
-                     ++var15.placeCount;
+                     var15.placeCount++;
                      var1.previousPiece = var15;
                      if (!var15.isValid()) {
                         var2.remove(var15);
@@ -1268,7 +1240,7 @@ public class NetherFortressPieces {
       ) {
          Direction var7 = this.getOrientation();
          if (var7 != null) {
-            switch(var7) {
+            switch (var7) {
                case NORTH:
                   return this.generateAndAddPiece(
                      var1,
@@ -1329,7 +1301,7 @@ public class NetherFortressPieces {
       ) {
          Direction var7 = this.getOrientation();
          if (var7 != null) {
-            switch(var7) {
+            switch (var7) {
                case NORTH:
                   return this.generateAndAddPiece(
                      var1,
@@ -1390,7 +1362,7 @@ public class NetherFortressPieces {
       ) {
          Direction var7 = this.getOrientation();
          if (var7 != null) {
-            switch(var7) {
+            switch (var7) {
                case NORTH:
                   return this.generateAndAddPiece(
                      var1,
@@ -1505,9 +1477,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 6, 1, 6, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 6, 7, 6, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 1, 6, 0, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
@@ -1535,8 +1505,8 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 6, 6, 2, 6, 6, 4, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 6, 5, 2, 6, 5, 4, var9, var9, false);
 
-         for(int var10 = 0; var10 <= 6; ++var10) {
-            for(int var11 = 0; var11 <= 6; ++var11) {
+         for (int var10 = 0; var10 <= 6; var10++) {
+            for (int var11 = 0; var11 <= 6; var11++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var10, -1, var11, var5);
             }
          }
@@ -1568,9 +1538,7 @@ public class NetherFortressPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 6, 1, 6, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 6, 10, 6, Blocks.AIR.defaultBlockState(), Blocks.AIR.defaultBlockState(), false);
          this.generateBox(var1, var5, 0, 2, 0, 1, 8, 0, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
@@ -1599,8 +1567,8 @@ public class NetherFortressPieces {
          this.generateBox(var1, var5, 2, 6, 0, 4, 8, 0, Blocks.NETHER_BRICKS.defaultBlockState(), Blocks.NETHER_BRICKS.defaultBlockState(), false);
          this.generateBox(var1, var5, 2, 5, 0, 4, 5, 0, var8, var8, false);
 
-         for(int var10 = 0; var10 <= 6; ++var10) {
-            for(int var11 = 0; var11 <= 6; ++var11) {
+         for (int var10 = 0; var10 <= 6; var10++) {
+            for (int var11 = 0; var11 <= 6; var11++) {
                this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var10, -1, var11, var5);
             }
          }
@@ -1617,14 +1585,14 @@ public class NetherFortressPieces {
          super(var2, var3, getRandomHorizontalDirection(var1));
          this.availableBridgePieces = Lists.newArrayList();
 
-         for(NetherFortressPieces.PieceWeight var7 : NetherFortressPieces.BRIDGE_PIECE_WEIGHTS) {
+         for (NetherFortressPieces.PieceWeight var7 : NetherFortressPieces.BRIDGE_PIECE_WEIGHTS) {
             var7.placeCount = 0;
             this.availableBridgePieces.add(var7);
          }
 
          this.availableCastlePieces = Lists.newArrayList();
 
-         for(NetherFortressPieces.PieceWeight var11 : NetherFortressPieces.CASTLE_PIECE_WEIGHTS) {
+         for (NetherFortressPieces.PieceWeight var11 : NetherFortressPieces.CASTLE_PIECE_WEIGHTS) {
             var11.placeCount = 0;
             this.availableCastlePieces.add(var11);
          }

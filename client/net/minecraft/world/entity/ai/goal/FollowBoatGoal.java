@@ -29,7 +29,7 @@ public class FollowBoatGoal extends Goal {
       List var1 = this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0));
       boolean var2 = false;
 
-      for(Boat var4 : var1) {
+      for (Boat var4 : var1) {
          LivingEntity var5 = var4.getControllingPassenger();
          if (var5 instanceof Player && (Mth.abs(((Player)var5).xxa) > 0.0F || Mth.abs(((Player)var5).zza) > 0.0F)) {
             var2 = true;
@@ -52,10 +52,9 @@ public class FollowBoatGoal extends Goal {
 
    @Override
    public void start() {
-      for(Boat var3 : this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0))) {
-         LivingEntity var5 = var3.getControllingPassenger();
-         if (var5 instanceof Player var4) {
-            this.following = (Player)var4;
+      for (Boat var3 : this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0))) {
+         if (var3.getControllingPassenger() instanceof Player var4) {
+            this.following = var4;
             break;
          }
       }

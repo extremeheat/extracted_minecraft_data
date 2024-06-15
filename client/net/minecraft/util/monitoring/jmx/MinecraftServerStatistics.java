@@ -31,7 +31,7 @@ public final class MinecraftServerStatistics implements DynamicMBean {
    private final MBeanInfo mBeanInfo;
    private final Map<String, MinecraftServerStatistics.AttributeDescription> attributeDescriptionByName = Stream.of(
          new MinecraftServerStatistics.AttributeDescription("tickTimes", this::getTickTimes, "Historical tick times (ms)", long[].class),
-         new MinecraftServerStatistics.AttributeDescription("averageTickTime", this::getAverageTickTime, "Current average tick time (ms)", Long.TYPE)
+         new MinecraftServerStatistics.AttributeDescription("averageTickTime", this::getAverageTickTime, "Current average tick time (ms)", long.class)
       )
       .collect(Collectors.toMap(var0 -> var0.name, Function.identity()));
 
@@ -42,7 +42,7 @@ public final class MinecraftServerStatistics implements DynamicMBean {
          .values()
          .stream()
          .map(MinecraftServerStatistics.AttributeDescription::asMBeanAttributeInfo)
-         .toArray(var0 -> new MBeanAttributeInfo[var0]);
+         .toArray(MBeanAttributeInfo[]::new);
       this.mBeanInfo = new MBeanInfo(
          MinecraftServerStatistics.class.getSimpleName(), "metrics for dedicated server", var2, null, null, new MBeanNotificationInfo[0]
       );

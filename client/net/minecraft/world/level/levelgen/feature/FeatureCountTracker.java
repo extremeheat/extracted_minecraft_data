@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -74,7 +75,7 @@ public class FeatureCountTracker {
                               + " "
                               + String.format(Locale.ROOT, "%10d ", var4x)
                               + String.format(Locale.ROOT, "%10f ", (double)var4x.intValue() / (double)var6.intValue())
-                              + var3x.topFeature().flatMap(var4::getResourceKey).map(ResourceKey::location)
+                              + var3x.topFeature().flatMap(var4::getResourceKey).<ResourceLocation>map(ResourceKey::location)
                               + " "
                               + var3x.feature().feature()
                               + " "
@@ -85,25 +86,19 @@ public class FeatureCountTracker {
          );
    }
 
-   static record FeatureData(ConfiguredFeature<?, ?> a, Optional<PlacedFeature> b) {
-      private final ConfiguredFeature<?, ?> feature;
-      private final Optional<PlacedFeature> topFeature;
-
-      FeatureData(ConfiguredFeature<?, ?> var1, Optional<PlacedFeature> var2) {
+   static record FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
+      FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
          super();
-         this.feature = var1;
-         this.topFeature = var2;
+         this.feature = feature;
+         this.topFeature = topFeature;
       }
    }
 
-   static record LevelData(Object2IntMap<FeatureCountTracker.FeatureData> a, MutableInt b) {
-      private final Object2IntMap<FeatureCountTracker.FeatureData> featureData;
-      private final MutableInt chunksWithFeatures;
-
-      LevelData(Object2IntMap<FeatureCountTracker.FeatureData> var1, MutableInt var2) {
+   static record LevelData(Object2IntMap<FeatureCountTracker.FeatureData> featureData, MutableInt chunksWithFeatures) {
+      LevelData(Object2IntMap<FeatureCountTracker.FeatureData> featureData, MutableInt chunksWithFeatures) {
          super();
-         this.featureData = var1;
-         this.chunksWithFeatures = var2;
+         this.featureData = featureData;
+         this.chunksWithFeatures = chunksWithFeatures;
       }
    }
 }

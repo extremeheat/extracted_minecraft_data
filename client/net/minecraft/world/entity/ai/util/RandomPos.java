@@ -47,7 +47,7 @@ public class RandomPos {
       } else {
          BlockPos var3 = var0.above();
 
-         while(var3.getY() < var1 && var2.test(var3)) {
+         while (var3.getY() < var1 && var2.test(var3)) {
             var3 = var3.above();
          }
 
@@ -64,17 +64,19 @@ public class RandomPos {
       } else {
          BlockPos var4 = var0.above();
 
-         while(var4.getY() < var2 && var3.test(var4)) {
+         while (var4.getY() < var2 && var3.test(var4)) {
             var4 = var4.above();
          }
 
-         BlockPos var5;
-         BlockPos var6;
-         for(var5 = var4; var5.getY() < var2 && var5.getY() - var4.getY() < var1; var5 = var6) {
-            var6 = var5.above();
+         BlockPos var5 = var4;
+
+         while (var5.getY() < var2 && var5.getY() - var4.getY() < var1) {
+            BlockPos var6 = var5.above();
             if (var3.test(var6)) {
                break;
             }
+
+            var5 = var6;
          }
 
          return var5;
@@ -91,7 +93,7 @@ public class RandomPos {
       double var2 = -1.0 / 0.0;
       BlockPos var4 = null;
 
-      for(int var5 = 0; var5 < 10; ++var5) {
+      for (int var5 = 0; var5 < 10; var5++) {
          BlockPos var6 = (BlockPos)var0.get();
          if (var6 != null) {
             double var7 = var1.applyAsDouble(var6);

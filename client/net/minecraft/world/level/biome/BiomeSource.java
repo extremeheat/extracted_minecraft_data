@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,7 @@ public abstract class BiomeSource implements BiomeResolver {
       super();
    }
 
-   protected abstract Codec<? extends BiomeSource> codec();
+   protected abstract MapCodec<? extends BiomeSource> codec();
 
    protected abstract Stream<Holder<Biome>> collectPossibleBiomes();
 
@@ -54,9 +55,9 @@ public abstract class BiomeSource implements BiomeResolver {
       int var14 = var11 - var8 + 1;
       HashSet var15 = Sets.newHashSet();
 
-      for(int var16 = 0; var16 < var14; ++var16) {
-         for(int var17 = 0; var17 < var12; ++var17) {
-            for(int var18 = 0; var18 < var13; ++var18) {
+      for (int var16 = 0; var16 < var14; var16++) {
+         for (int var17 = 0; var17 < var12; var17++) {
+            for (int var18 = 0; var18 < var13; var18++) {
                int var19 = var6 + var17;
                int var20 = var7 + var18;
                int var21 = var8 + var16;
@@ -86,13 +87,13 @@ public abstract class BiomeSource implements BiomeResolver {
          int var9 = Math.floorDiv(var2, var3);
          int[] var10 = Mth.outFromOrigin(var1.getY(), var7.getMinBuildHeight() + 1, var7.getMaxBuildHeight(), var4).toArray();
 
-         for(BlockPos.MutableBlockPos var12 : BlockPos.spiralAround(BlockPos.ZERO, var9, Direction.EAST, Direction.SOUTH)) {
+         for (BlockPos.MutableBlockPos var12 : BlockPos.spiralAround(BlockPos.ZERO, var9, Direction.EAST, Direction.SOUTH)) {
             int var13 = var1.getX() + var12.getX() * var3;
             int var14 = var1.getZ() + var12.getZ() * var3;
             int var15 = QuartPos.fromBlock(var13);
             int var16 = QuartPos.fromBlock(var14);
 
-            for(int var20 : var10) {
+            for (int var20 : var10) {
                int var21 = QuartPos.fromBlock(var20);
                Holder var22 = this.getNoiseBiome(var15, var21, var16, var6);
                if (var8.contains(var22)) {
@@ -116,12 +117,13 @@ public abstract class BiomeSource implements BiomeResolver {
       Pair var14 = null;
       int var15 = 0;
       int var16 = var8 ? 0 : var12;
+      int var17 = var16;
 
-      for(int var17 = var16; var17 <= var12; var17 += var5) {
-         for(int var18 = SharedConstants.debugGenerateSquareTerrainWithoutNoise ? 0 : -var17; var18 <= var17; var18 += var5) {
+      while (var17 <= var12) {
+         for (int var18 = SharedConstants.debugGenerateSquareTerrainWithoutNoise ? 0 : -var17; var18 <= var17; var18 += var5) {
             boolean var19 = Math.abs(var18) == var17;
 
-            for(int var20 = -var17; var20 <= var17; var20 += var5) {
+            for (int var20 = -var17; var20 <= var17; var20 += var5) {
                if (var8) {
                   boolean var21 = Math.abs(var20) == var17;
                   if (!var21 && !var19) {
@@ -142,10 +144,12 @@ public abstract class BiomeSource implements BiomeResolver {
                      var14 = Pair.of(var24, var23);
                   }
 
-                  ++var15;
+                  var15++;
                }
             }
          }
+
+         var17 += var5;
       }
 
       return var14;

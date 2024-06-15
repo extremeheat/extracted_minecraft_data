@@ -20,9 +20,9 @@ public class EndIslandFeature extends Feature<NoneFeatureConfiguration> {
       BlockPos var4 = var1.origin();
       float var5 = (float)var3.nextInt(3) + 4.0F;
 
-      for(int var6 = 0; var5 > 0.5F; --var6) {
-         for(int var7 = Mth.floor(-var5); var7 <= Mth.ceil(var5); ++var7) {
-            for(int var8 = Mth.floor(-var5); var8 <= Mth.ceil(var5); ++var8) {
+      for (int var6 = 0; var5 > 0.5F; var6--) {
+         for (int var7 = Mth.floor(-var5); var7 <= Mth.ceil(var5); var7++) {
+            for (int var8 = Mth.floor(-var5); var8 <= Mth.ceil(var5); var8++) {
                if ((float)(var7 * var7 + var8 * var8) <= (var5 + 1.0F) * (var5 + 1.0F)) {
                   this.setBlock(var2, var4.offset(var7, var6, var8), Blocks.END_STONE.defaultBlockState());
                }

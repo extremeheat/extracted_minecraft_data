@@ -39,7 +39,7 @@ public class ThreadSafeLegacyRandomSource implements BitRandomSource {
       do {
          var2 = this.seed.get();
          var4 = var2 * 25214903917L + 11L & 281474976710655L;
-      } while(!this.seed.compareAndSet(var2, var4));
+      } while (!this.seed.compareAndSet(var2, var4));
 
       return (int)(var4 >>> 48 - var1);
    }

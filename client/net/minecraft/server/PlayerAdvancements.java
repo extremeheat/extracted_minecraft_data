@@ -3,6 +3,7 @@ package net.minecraft.server;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
@@ -24,7 +25,6 @@ import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
-import net.minecraft.Util;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
@@ -34,7 +34,6 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
@@ -68,7 +67,7 @@ public class PlayerAdvancements {
       this.playerSavePath = var4;
       this.player = var5;
       this.tree = var3.tree();
-      boolean var6 = true;
+      short var6 = 1343;
       this.codec = DataFixTypes.ADVANCEMENTS.wrapCodec(PlayerAdvancements.Data.CODEC, var1, 1343);
       this.load(var3);
    }
@@ -78,7 +77,7 @@ public class PlayerAdvancements {
    }
 
    public void stopListening() {
-      for(CriterionTrigger var2 : BuiltInRegistries.TRIGGER_TYPES) {
+      for (CriterionTrigger var2 : BuiltInRegistries.TRIGGER_TYPES) {
          var2.removePlayerListeners(this);
       }
    }
@@ -96,13 +95,13 @@ public class PlayerAdvancements {
    }
 
    private void registerListeners(ServerAdvancementManager var1) {
-      for(AdvancementHolder var3 : var1.getAllAdvancements()) {
+      for (AdvancementHolder var3 : var1.getAllAdvancements()) {
          this.registerListeners(var3);
       }
    }
 
    private void checkForAutomaticTriggers(ServerAdvancementManager var1) {
-      for(AdvancementHolder var3 : var1.getAllAdvancements()) {
+      for (AdvancementHolder var3 : var1.getAllAdvancements()) {
          Advancement var4 = var3.value();
          if (var4.criteria().isEmpty()) {
             this.award(var3, "");
@@ -119,7 +118,7 @@ public class PlayerAdvancements {
             try {
                var2.setLenient(false);
                JsonElement var3 = Streams.parse(var2);
-               PlayerAdvancements.Data var4 = Util.getOrThrow(this.codec.parse(JsonOps.INSTANCE, var3), JsonParseException::new);
+               PlayerAdvancements.Data var4 = (PlayerAdvancements.Data)this.codec.parse(JsonOps.INSTANCE, var3).getOrThrow(JsonParseException::new);
                this.applyFrom(var1, var4);
             } catch (Throwable var6) {
                try {
@@ -132,10 +131,10 @@ public class PlayerAdvancements {
             }
 
             var2.close();
-         } catch (JsonParseException var7) {
-            LOGGER.error("Couldn't parse player advancements in {}", this.playerSavePath, var7);
-         } catch (IOException var8) {
-            LOGGER.error("Couldn't access player advancements in {}", this.playerSavePath, var8);
+         } catch (JsonIOException | IOException var7) {
+            LOGGER.error("Couldn't access player advancements in {}", this.playerSavePath, var7);
+         } catch (JsonParseException var8) {
+            LOGGER.error("Couldn't parse player advancements in {}", this.playerSavePath, var8);
          }
       }
 
@@ -144,13 +143,13 @@ public class PlayerAdvancements {
    }
 
    public void save() {
-      JsonElement var1 = Util.getOrThrow(this.codec.encodeStart(JsonOps.INSTANCE, this.asData()), IllegalStateException::new);
+      JsonElement var1 = (JsonElement)this.codec.encodeStart(JsonOps.INSTANCE, this.asData()).getOrThrow();
 
       try {
          FileUtil.createDirectoriesSafe(this.playerSavePath.getParent());
 
          try (BufferedWriter var2 = Files.newBufferedWriter(this.playerSavePath, StandardCharsets.UTF_8)) {
-            GSON.toJson(var1, var2);
+            GSON.toJson(var1, GSON.newJsonWriter(var2));
          }
       } catch (IOException var7) {
          LOGGER.error("Couldn't save player advancements to {}", this.playerSavePath, var7);
@@ -232,7 +231,7 @@ public class PlayerAdvancements {
    private void registerListeners(AdvancementHolder var1) {
       AdvancementProgress var2 = this.getOrStartProgress(var1);
       if (!var2.isDone()) {
-         for(Entry var4 : var1.value().criteria().entrySet()) {
+         for (Entry var4 : var1.value().criteria().entrySet()) {
             CriterionProgress var5 = var2.getCriterion((String)var4.getKey());
             if (var5 != null && !var5.isDone()) {
                this.registerListener(var1, (String)var4.getKey(), (Criterion)var4.getValue());
@@ -248,7 +247,7 @@ public class PlayerAdvancements {
    private void unregisterListeners(AdvancementHolder var1) {
       AdvancementProgress var2 = this.getOrStartProgress(var1);
 
-      for(Entry var4 : var1.value().criteria().entrySet()) {
+      for (Entry var4 : var1.value().criteria().entrySet()) {
          CriterionProgress var5 = var2.getCriterion((String)var4.getKey());
          if (var5 != null && (var5.isDone() || var2.isDone())) {
             this.removeListener(var1, (String)var4.getKey(), (Criterion)var4.getValue());
@@ -266,13 +265,13 @@ public class PlayerAdvancements {
          HashSet var3 = new HashSet();
          HashSet var4 = new HashSet();
 
-         for(AdvancementNode var6 : this.rootsToUpdate) {
+         for (AdvancementNode var6 : this.rootsToUpdate) {
             this.updateTreeVisibility(var6, var3, var4);
          }
 
          this.rootsToUpdate.clear();
 
-         for(AdvancementHolder var8 : this.progressChanged) {
+         for (AdvancementHolder var8 : this.progressChanged) {
             if (this.visible.contains(var8)) {
                var2.put(var8.id(), this.progress.get(var8));
             }
@@ -331,14 +330,13 @@ public class PlayerAdvancements {
       });
    }
 
-   static record Data(Map<ResourceLocation, AdvancementProgress> b) {
-      private final Map<ResourceLocation, AdvancementProgress> map;
+   static record Data(Map<ResourceLocation, AdvancementProgress> map) {
       public static final Codec<PlayerAdvancements.Data> CODEC = Codec.unboundedMap(ResourceLocation.CODEC, AdvancementProgress.CODEC)
          .xmap(PlayerAdvancements.Data::new, PlayerAdvancements.Data::map);
 
-      Data(Map<ResourceLocation, AdvancementProgress> var1) {
+      Data(Map<ResourceLocation, AdvancementProgress> map) {
          super();
-         this.map = var1;
+         this.map = map;
       }
 
       public void forEach(BiConsumer<ResourceLocation, AdvancementProgress> var1) {

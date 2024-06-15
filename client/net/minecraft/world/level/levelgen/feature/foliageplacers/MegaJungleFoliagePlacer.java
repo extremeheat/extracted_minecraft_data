@@ -1,15 +1,15 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class MegaJungleFoliagePlacer extends FoliagePlacer {
-   public static final Codec<MegaJungleFoliagePlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<MegaJungleFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> foliagePlacerParts(var0).and(Codec.intRange(0, 16).fieldOf("height").forGetter(var0x -> var0x.height)).apply(var0, MegaJungleFoliagePlacer::new)
    );
    protected final int height;
@@ -38,7 +38,7 @@ public class MegaJungleFoliagePlacer extends FoliagePlacer {
    ) {
       int var10 = var6.doubleTrunk() ? var7 : 1 + var3.nextInt(2);
 
-      for(int var11 = var9; var11 >= var9 - var10; --var11) {
+      for (int var11 = var9; var11 >= var9 - var10; var11--) {
          int var12 = var8 + var6.radiusOffset() + 1 - var11;
          this.placeLeavesRow(var1, var2, var3, var4, var6.pos(), var12, var11, var6.doubleTrunk());
       }
@@ -51,10 +51,6 @@ public class MegaJungleFoliagePlacer extends FoliagePlacer {
 
    @Override
    protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      if (var2 + var4 >= 7) {
-         return true;
-      } else {
-         return var2 * var2 + var4 * var4 > var5 * var5;
-      }
+      return var2 + var4 >= 7 ? true : var2 * var2 + var4 * var4 > var5 * var5;
    }
 }

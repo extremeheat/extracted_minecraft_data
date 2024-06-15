@@ -37,7 +37,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<BehaviorB
       return new OneShot<E>() {
          @Override
          public boolean trigger(ServerLevel var1x, E var2, long var3) {
-            Trigger var5 = (Trigger)var1.tryTrigger(var1x, (E)var2, var3);
+            Trigger var5 = (Trigger)var1.tryTrigger(var1x, var2, var3);
             return var5 == null ? false : var5.trigger(var1x, var2, var3);
          }
 
@@ -146,16 +146,16 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<BehaviorB
 
       public <A, R> Function<App<BehaviorBuilder.Mu<E>, A>, App<BehaviorBuilder.Mu<E>, R>> lift1(App<BehaviorBuilder.Mu<E>, Function<A, R>> var1) {
          return var2 -> {
-            final BehaviorBuilder.TriggerWithResult var3 = BehaviorBuilder.get(var2);
+            final BehaviorBuilder.TriggerWithResult var3 = BehaviorBuilder.get((App<BehaviorBuilder.Mu<E>, M>)var2);
             final BehaviorBuilder.TriggerWithResult var4 = BehaviorBuilder.get(var1);
             return BehaviorBuilder.create(new BehaviorBuilder.TriggerWithResult<E, R>() {
                @Override
                public R tryTrigger(ServerLevel var1, E var2, long var3x) {
-                  Object var5 = var3.tryTrigger(var1, (E)var2, var3x);
+                  Object var5 = var3.tryTrigger(var1, var2, var3x);
                   if (var5 == null) {
                      return null;
                   } else {
-                     Function var6 = (Function)var4.tryTrigger(var1, (E)var2, var3x);
+                     Function var6 = (Function)var4.tryTrigger(var1, var2, var3x);
                      return (R)(var6 == null ? null : var6.apply(var5));
                   }
                }
@@ -178,7 +178,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<BehaviorB
          return BehaviorBuilder.create(new BehaviorBuilder.TriggerWithResult<E, R>() {
             @Override
             public R tryTrigger(ServerLevel var1x, E var2, long var3x) {
-               Object var5 = var3.tryTrigger(var1x, (E)var2, var3x);
+               Object var5 = var3.tryTrigger(var1x, var2, var3x);
                return (R)(var5 == null ? null : var1.apply(var5));
             }
 
@@ -203,15 +203,15 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<BehaviorB
          return BehaviorBuilder.create(new BehaviorBuilder.TriggerWithResult<E, R>() {
             @Override
             public R tryTrigger(ServerLevel var1, E var2, long var3) {
-               Object var5x = var4.tryTrigger(var1, (E)var2, var3);
+               Object var5x = var4.tryTrigger(var1, var2, var3);
                if (var5x == null) {
                   return null;
                } else {
-                  Object var6x = var5.tryTrigger(var1, (E)var2, var3);
+                  Object var6x = var5.tryTrigger(var1, var2, var3);
                   if (var6x == null) {
                      return null;
                   } else {
-                     BiFunction var7 = (BiFunction)var6.tryTrigger(var1, (E)var2, var3);
+                     BiFunction var7 = (BiFunction)var6.tryTrigger(var1, var2, var3);
                      return (R)(var7 == null ? null : var7.apply(var5x, var6x));
                   }
                }
@@ -242,19 +242,19 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<BehaviorB
          return BehaviorBuilder.create(new BehaviorBuilder.TriggerWithResult<E, R>() {
             @Override
             public R tryTrigger(ServerLevel var1, E var2, long var3) {
-               Object var5x = var5.tryTrigger(var1, (E)var2, var3);
+               Object var5x = var5.tryTrigger(var1, var2, var3);
                if (var5x == null) {
                   return null;
                } else {
-                  Object var6x = var6.tryTrigger(var1, (E)var2, var3);
+                  Object var6x = var6.tryTrigger(var1, var2, var3);
                   if (var6x == null) {
                      return null;
                   } else {
-                     Object var7x = var7.tryTrigger(var1, (E)var2, var3);
+                     Object var7x = var7.tryTrigger(var1, var2, var3);
                      if (var7x == null) {
                         return null;
                      } else {
-                        Function3 var8x = (Function3)var8.tryTrigger(var1, (E)var2, var3);
+                        Function3 var8x = (Function3)var8.tryTrigger(var1, var2, var3);
                         return (R)(var8x == null ? null : var8x.apply(var5x, var6x, var7x));
                      }
                   }
@@ -288,23 +288,23 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<BehaviorB
          return BehaviorBuilder.create(new BehaviorBuilder.TriggerWithResult<E, R>() {
             @Override
             public R tryTrigger(ServerLevel var1, E var2, long var3) {
-               Object var5 = var6.tryTrigger(var1, (E)var2, var3);
+               Object var5 = var6.tryTrigger(var1, var2, var3);
                if (var5 == null) {
                   return null;
                } else {
-                  Object var6x = var7.tryTrigger(var1, (E)var2, var3);
+                  Object var6x = var7.tryTrigger(var1, var2, var3);
                   if (var6x == null) {
                      return null;
                   } else {
-                     Object var7x = var8.tryTrigger(var1, (E)var2, var3);
+                     Object var7x = var8.tryTrigger(var1, var2, var3);
                      if (var7x == null) {
                         return null;
                      } else {
-                        Object var8x = var9.tryTrigger(var1, (E)var2, var3);
+                        Object var8x = var9.tryTrigger(var1, var2, var3);
                         if (var8x == null) {
                            return null;
                         } else {
-                           Function4 var9x = (Function4)var10.tryTrigger(var1, (E)var2, var3);
+                           Function4 var9x = (Function4)var10.tryTrigger(var1, var2, var3);
                            return (R)(var9x == null ? null : var9x.apply(var5, var6x, var7x, var8x));
                         }
                      }

@@ -18,13 +18,14 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractOptionSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.OptionEnum;
 import org.slf4j.Logger;
@@ -111,6 +112,10 @@ public final class OptionInstance<T> {
       return (var0, var1) -> var1.getCaption();
    }
 
+   public AbstractWidget createButton(Options var1) {
+      return this.createButton(var1, 0, 0, 150);
+   }
+
    public AbstractWidget createButton(Options var1, int var2, int var3, int var4) {
       return this.createButton(var1, var2, var3, var4, var0 -> {
       });
@@ -152,21 +157,18 @@ public final class OptionInstance<T> {
       return this.values;
    }
 
-   public static record AltEnum<T>(List<T> a, List<T> b, BooleanSupplier c, OptionInstance.CycleableValueSet.ValueSetter<T> d, Codec<T> e)
-      implements OptionInstance.CycleableValueSet<T> {
-      private final List<T> values;
-      private final List<T> altValues;
-      private final BooleanSupplier altCondition;
-      private final OptionInstance.CycleableValueSet.ValueSetter<T> valueSetter;
-      private final Codec<T> codec;
-
-      public AltEnum(List<T> var1, List<T> var2, BooleanSupplier var3, OptionInstance.CycleableValueSet.ValueSetter<T> var4, Codec<T> var5) {
+   public static record AltEnum<T>(
+      List<T> values, List<T> altValues, BooleanSupplier altCondition, OptionInstance.CycleableValueSet.ValueSetter<T> valueSetter, Codec<T> codec
+   ) implements OptionInstance.CycleableValueSet<T> {
+      public AltEnum(
+         List<T> values, List<T> altValues, BooleanSupplier altCondition, OptionInstance.CycleableValueSet.ValueSetter<T> valueSetter, Codec<T> codec
+      ) {
          super();
-         this.values = var1;
-         this.altValues = var2;
-         this.altCondition = var3;
-         this.valueSetter = var4;
-         this.codec = var5;
+         this.values = values;
+         this.altValues = altValues;
+         this.altCondition = altCondition;
+         this.valueSetter = valueSetter;
+         this.codec = codec;
       }
 
       @Override
@@ -184,18 +186,14 @@ public final class OptionInstance<T> {
       Component toString(Component var1, T var2);
    }
 
-   public static record ClampingLazyMaxIntRange(int a, IntSupplier b, int c)
+   public static record ClampingLazyMaxIntRange(int minInclusive, IntSupplier maxSupplier, int encodableMaxInclusive)
       implements OptionInstance.IntRangeBase,
       OptionInstance.SliderableOrCyclableValueSet<Integer> {
-      private final int minInclusive;
-      private final IntSupplier maxSupplier;
-      private final int encodableMaxInclusive;
-
-      public ClampingLazyMaxIntRange(int var1, IntSupplier var2, int var3) {
+      public ClampingLazyMaxIntRange(int minInclusive, IntSupplier maxSupplier, int encodableMaxInclusive) {
          super();
-         this.minInclusive = var1;
-         this.maxSupplier = var2;
-         this.encodableMaxInclusive = var3;
+         this.minInclusive = minInclusive;
+         this.maxSupplier = maxSupplier;
+         this.encodableMaxInclusive = encodableMaxInclusive;
       }
 
       public Optional<Integer> validateValue(Integer var1) {
@@ -209,15 +207,15 @@ public final class OptionInstance<T> {
 
       @Override
       public Codec<Integer> codec() {
-         return ExtraCodecs.validate(
-            Codec.INT,
-            var1 -> {
-               int var2 = this.encodableMaxInclusive + 1;
-               return var1.compareTo(this.minInclusive) >= 0 && var1.compareTo(var2) <= 0
-                  ? DataResult.success(var1)
-                  : DataResult.error(() -> "Value " + var1 + " outside of range [" + this.minInclusive + ":" + var2 + "]", var1);
-            }
-         );
+         return Codec.INT
+            .validate(
+               var1 -> {
+                  int var2 = this.encodableMaxInclusive + 1;
+                  return var1.compareTo(this.minInclusive) >= 0 && var1.compareTo(var2) <= 0
+                     ? DataResult.success(var1)
+                     : DataResult.error(() -> "Value " + var1 + " outside of range [" + this.minInclusive + ":" + var2 + "]", var1);
+               }
+            );
       }
 
       @Override
@@ -258,14 +256,11 @@ public final class OptionInstance<T> {
       }
    }
 
-   public static record Enum<T>(List<T> a, Codec<T> b) implements OptionInstance.CycleableValueSet<T> {
-      private final List<T> values;
-      private final Codec<T> codec;
-
-      public Enum(List<T> var1, Codec<T> var2) {
+   public static record Enum<T>(List<T> values, Codec<T> codec) implements OptionInstance.CycleableValueSet<T> {
+      public Enum(List<T> values, Codec<T> codec) {
          super();
-         this.values = var1;
-         this.codec = var2;
+         this.values = values;
+         this.codec = codec;
       }
 
       @Override
@@ -279,14 +274,16 @@ public final class OptionInstance<T> {
       }
    }
 
-   public static record IntRange(int a, int b) implements OptionInstance.IntRangeBase {
-      private final int minInclusive;
-      private final int maxInclusive;
-
+   public static record IntRange(int minInclusive, int maxInclusive, boolean applyValueImmediately) implements OptionInstance.IntRangeBase {
       public IntRange(int var1, int var2) {
+         this(var1, var2, true);
+      }
+
+      public IntRange(int minInclusive, int maxInclusive, boolean applyValueImmediately) {
          super();
-         this.minInclusive = var1;
-         this.maxInclusive = var2;
+         this.minInclusive = minInclusive;
+         this.maxInclusive = maxInclusive;
+         this.applyValueImmediately = applyValueImmediately;
       }
 
       public Optional<Integer> validateValue(Integer var1) {
@@ -305,18 +302,28 @@ public final class OptionInstance<T> {
       int maxInclusive();
 
       default double toSliderValue(Integer var1) {
-         return (double)Mth.map((float)var1.intValue(), (float)this.minInclusive(), (float)this.maxInclusive(), 0.0F, 1.0F);
+         if (var1 == this.minInclusive()) {
+            return 0.0;
+         } else {
+            return var1 == this.maxInclusive()
+               ? 1.0
+               : Mth.map((double)var1.intValue() + 0.5, (double)this.minInclusive(), (double)this.maxInclusive() + 1.0, 0.0, 1.0);
+         }
       }
 
       default Integer fromSliderValue(double var1) {
-         return Mth.floor(Mth.map(var1, 0.0, 1.0, (double)this.minInclusive(), (double)this.maxInclusive()));
+         if (var1 >= 1.0) {
+            var1 = 0.9999899864196777;
+         }
+
+         return Mth.floor(Mth.map(var1, 0.0, 1.0, (double)this.minInclusive(), (double)this.maxInclusive() + 1.0));
       }
 
       default <R> OptionInstance.SliderableValueSet<R> xmap(final IntFunction<? extends R> var1, final ToIntFunction<? super R> var2) {
          return new OptionInstance.SliderableValueSet<R>() {
             @Override
             public Optional<R> validateValue(R var1x) {
-               return IntRangeBase.this.validateValue((T)Integer.valueOf(var2.applyAsInt(var1x))).map(var1::apply);
+               return IntRangeBase.this.validateValue(Integer.valueOf(var2.applyAsInt(var1x))).map(var1::apply);
             }
 
             @Override
@@ -337,16 +344,13 @@ public final class OptionInstance<T> {
       }
    }
 
-   public static record LazyEnum<T>(Supplier<List<T>> a, Function<T, Optional<T>> b, Codec<T> c) implements OptionInstance.CycleableValueSet<T> {
-      private final Supplier<List<T>> values;
-      private final Function<T, Optional<T>> validateValue;
-      private final Codec<T> codec;
-
-      public LazyEnum(Supplier<List<T>> var1, Function<T, Optional<T>> var2, Codec<T> var3) {
+   public static record LazyEnum<T>(Supplier<List<T>> values, Function<T, Optional<T>> validateValue, Codec<T> codec)
+      implements OptionInstance.CycleableValueSet<T> {
+      public LazyEnum(Supplier<List<T>> values, Function<T, Optional<T>> validateValue, Codec<T> codec) {
          super();
-         this.values = var1;
-         this.validateValue = var2;
-         this.codec = var3;
+         this.values = values;
+         this.validateValue = validateValue;
+         this.codec = codec;
       }
 
       @Override
@@ -360,11 +364,14 @@ public final class OptionInstance<T> {
       }
    }
 
-   static final class OptionInstanceSliderButton<N> extends AbstractOptionSliderButton {
+   public static final class OptionInstanceSliderButton<N> extends AbstractOptionSliderButton {
       private final OptionInstance<N> instance;
       private final OptionInstance.SliderableValueSet<N> values;
       private final OptionInstance.TooltipSupplier<N> tooltipSupplier;
       private final Consumer<N> onValueChanged;
+      @Nullable
+      private Long delayedApplyAt;
+      private final boolean applyValueImmediately;
 
       OptionInstanceSliderButton(
          Options var1,
@@ -375,27 +382,49 @@ public final class OptionInstance<T> {
          OptionInstance<N> var6,
          OptionInstance.SliderableValueSet<N> var7,
          OptionInstance.TooltipSupplier<N> var8,
-         Consumer<N> var9
+         Consumer<N> var9,
+         boolean var10
       ) {
-         super(var1, var2, var3, var4, var5, var7.toSliderValue((T)var6.get()));
+         super(var1, var2, var3, var4, var5, var7.toSliderValue(var6.get()));
          this.instance = var6;
          this.values = var7;
          this.tooltipSupplier = var8;
          this.onValueChanged = var9;
+         this.applyValueImmediately = var10;
          this.updateMessage();
       }
 
       @Override
       protected void updateMessage() {
-         this.setMessage(this.instance.toString.apply(this.instance.get()));
+         this.setMessage(this.instance.toString.apply(this.values.fromSliderValue(this.value)));
          this.setTooltip(this.tooltipSupplier.apply(this.values.fromSliderValue(this.value)));
       }
 
       @Override
       protected void applyValue() {
-         this.instance.set(this.values.fromSliderValue(this.value));
-         this.options.save();
-         this.onValueChanged.accept(this.instance.get());
+         if (this.applyValueImmediately) {
+            this.applyUnsavedValue();
+         } else {
+            this.delayedApplyAt = Util.getMillis() + 600L;
+         }
+      }
+
+      public void applyUnsavedValue() {
+         Object var1 = this.values.fromSliderValue(this.value);
+         if (!Objects.equals(var1, this.instance.get())) {
+            this.instance.set((N)var1);
+            this.options.save();
+            this.onValueChanged.accept(this.instance.get());
+         }
+      }
+
+      @Override
+      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+         super.renderWidget(var1, var2, var3, var4);
+         if (this.delayedApplyAt != null && Util.getMillis() >= this.delayedApplyAt) {
+            this.delayedApplyAt = null;
+            this.applyUnsavedValue();
+         }
       }
    }
 
@@ -417,11 +446,15 @@ public final class OptionInstance<T> {
 
       T fromSliderValue(double var1);
 
+      default boolean applyValueImmediately() {
+         return true;
+      }
+
       @Override
       default Function<OptionInstance<T>, AbstractWidget> createButton(
          OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6
       ) {
-         return var7 -> new OptionInstance.OptionInstanceSliderButton<>(var2, var3, var4, var5, 20, var7, this, var1, var6);
+         return var7 -> new OptionInstance.OptionInstanceSliderButton<>(var2, var3, var4, var5, 20, var7, this, var1, var6, this.applyValueImmediately());
       }
    }
 
@@ -475,7 +508,7 @@ public final class OptionInstance<T> {
 
       @Override
       public Codec<Double> codec() {
-         return ExtraCodecs.withAlternative(Codec.doubleRange(0.0, 1.0), Codec.BOOL, var0 -> var0 ? 1.0 : 0.0);
+         return Codec.withAlternative(Codec.doubleRange(0.0, 1.0), Codec.BOOL, var0 -> var0 ? 1.0 : 0.0);
       }
    }
 

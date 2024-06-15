@@ -2,10 +2,8 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.platform.GlUtil;
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.lang.management.GarbageCollectorMXBean;
@@ -43,14 +41,13 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.ServerTickRateManager;
-import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.util.SampleLogger;
+import net.minecraft.util.debugchart.LocalSampleLogger;
+import net.minecraft.util.debugchart.RemoteDebugSampleType;
+import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
@@ -64,10 +61,9 @@ import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.material.FluidState;
@@ -102,10 +98,11 @@ public class DebugScreenOverlay {
    private boolean renderProfilerChart;
    private boolean renderFpsCharts;
    private boolean renderNetworkCharts;
-   private final SampleLogger frameTimeLogger = new SampleLogger();
-   private final SampleLogger tickTimeLogger = new SampleLogger();
-   private final SampleLogger pingLogger = new SampleLogger();
-   private final SampleLogger bandwidthLogger = new SampleLogger();
+   private final LocalSampleLogger frameTimeLogger = new LocalSampleLogger(1);
+   private final LocalSampleLogger tickTimeLogger = new LocalSampleLogger(TpsDebugDimensions.values().length);
+   private final LocalSampleLogger pingLogger = new LocalSampleLogger(1);
+   private final LocalSampleLogger bandwidthLogger = new LocalSampleLogger(1);
+   private final Map<RemoteDebugSampleType, LocalSampleLogger> remoteSupportingLoggers = Map.of(RemoteDebugSampleType.TICK_TIME, this.tickTimeLogger);
    private final FpsDebugChart fpsChart;
    private final TpsDebugChart tpsChart;
    private final PingDebugChart pingChart;
@@ -136,12 +133,12 @@ public class DebugScreenOverlay {
          this.drawGameInformation(var1);
          this.drawSystemInformation(var1);
          if (this.renderFpsCharts) {
-            int var2xx = var1.guiWidth();
-            int var3 = var2xx / 2;
+            int var2x = var1.guiWidth();
+            int var3 = var2x / 2;
             this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var3));
-            if (this.minecraft.getSingleplayerServer() != null) {
+            if (this.tickTimeLogger.size() > 0) {
                int var4 = this.tpsChart.getWidth(var3);
-               this.tpsChart.drawChart(var1, var2xx - var4, var4);
+               this.tpsChart.drawChart(var1, var2x - var4, var4);
             }
          }
 
@@ -185,7 +182,7 @@ public class DebugScreenOverlay {
    private void renderLines(GuiGraphics var1, List<String> var2, boolean var3) {
       byte var4 = 9;
 
-      for(int var5 = 0; var5 < var2.size(); ++var5) {
+      for (int var5 = 0; var5 < var2.size(); var5++) {
          String var6 = (String)var2.get(var5);
          if (!Strings.isNullOrEmpty(var6)) {
             int var7 = this.font.width(var6);
@@ -195,7 +192,7 @@ public class DebugScreenOverlay {
          }
       }
 
-      for(int var10 = 0; var10 < var2.size(); ++var10) {
+      for (int var10 = 0; var10 < var2.size(); var10++) {
          String var11 = (String)var2.get(var10);
          if (!Strings.isNullOrEmpty(var11)) {
             int var12 = this.font.width(var11);
@@ -261,7 +258,7 @@ public class DebugScreenOverlay {
          Entity var29 = this.minecraft.getCameraEntity();
          Direction var30 = var29.getDirection();
 
-         String var12 = switch(var30) {
+         String var12 = switch (var30) {
             case NORTH -> "Towards negative Z";
             case SOUTH -> "Towards positive Z";
             case WEST -> "Towards negative X";
@@ -342,7 +339,7 @@ public class DebugScreenOverlay {
             LevelChunk var22 = this.getServerChunk();
             StringBuilder var23 = new StringBuilder("CH");
 
-            for(Heightmap.Types var27 : Heightmap.Types.values()) {
+            for (Heightmap.Types var27 : Heightmap.Types.values()) {
                if (var27.sendToClient()) {
                   var23.append(" ").append(HEIGHTMAP_NAMES.get(var27)).append(": ").append(var18.getHeight(var27, var28.getX(), var28.getZ()));
                }
@@ -352,7 +349,7 @@ public class DebugScreenOverlay {
             var23.setLength(0);
             var23.append("SH");
 
-            for(Heightmap.Types var45 : Heightmap.Types.values()) {
+            for (Heightmap.Types var45 : Heightmap.Types.values()) {
                if (var45.keepAfterWorldgen()) {
                   var23.append(" ").append(HEIGHTMAP_NAMES.get(var45)).append(": ");
                   if (var22 != null) {
@@ -406,7 +403,7 @@ public class DebugScreenOverlay {
                   "SC: "
                      + var47
                      + ", "
-                     + (String)Stream.of(MobCategory.values())
+                     + Stream.of(MobCategory.values())
                         .map(var1x -> Character.toUpperCase(var1x.getName().charAt(0)) + ": " + var44.getInt(var1x))
                         .collect(Collectors.joining(", "))
                );
@@ -461,7 +458,7 @@ public class DebugScreenOverlay {
 
          this.serverChunk = var1.getChunkSource()
             .getChunkFuture(this.lastPos.x, this.lastPos.z, ChunkStatus.FULL, false)
-            .thenApply(var0 -> (LevelChunk)var0.map(var0x -> (LevelChunk)var0x, var0x -> null));
+            .thenApply(var0 -> (LevelChunk)var0.orElse(null));
       }
 
       return this.serverChunk.getNow(null);
@@ -482,10 +479,10 @@ public class DebugScreenOverlay {
       long var7 = var3 - var5;
       ArrayList var9 = Lists.newArrayList(
          new String[]{
-            String.format(Locale.ROOT, "Java: %s %dbit", System.getProperty("java.version"), this.minecraft.is64Bit() ? 64 : 32),
-            String.format(Locale.ROOT, "Mem: % 2d%% %03d/%03dMB", var7 * 100L / var1, bytesToMegabytes(var7), bytesToMegabytes(var1)),
-            String.format(Locale.ROOT, "Allocation rate: %03dMB /s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(var7))),
-            String.format(Locale.ROOT, "Allocated: % 2d%% %03dMB", var3 * 100L / var1, bytesToMegabytes(var3)),
+            String.format(Locale.ROOT, "Java: %s", System.getProperty("java.version")),
+            String.format(Locale.ROOT, "Mem: %2d%% %03d/%03dMB", var7 * 100L / var1, bytesToMegabytes(var7), bytesToMegabytes(var1)),
+            String.format(Locale.ROOT, "Allocation rate: %03dMB/s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(var7))),
+            String.format(Locale.ROOT, "Allocated: %2d%% %03dMB", var3 * 100L / var1, bytesToMegabytes(var3)),
             "",
             String.format(Locale.ROOT, "CPU: %s", GlUtil.getCpuInfo()),
             "",
@@ -509,10 +506,8 @@ public class DebugScreenOverlay {
             var9.add("");
             var9.add(ChatFormatting.UNDERLINE + "Targeted Block: " + var10.getX() + ", " + var10.getY() + ", " + var10.getZ());
             var9.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(var11.getBlock())));
-            UnmodifiableIterator var12 = var11.getValues().entrySet().iterator();
 
-            while(var12.hasNext()) {
-               Entry var13 = (Entry)var12.next();
+            for (Entry var13 : var11.getValues().entrySet()) {
                var9.add(this.getPropertyValueString(var13));
             }
 
@@ -525,10 +520,8 @@ public class DebugScreenOverlay {
             var9.add("");
             var9.add(ChatFormatting.UNDERLINE + "Targeted Fluid: " + var14.getX() + ", " + var14.getY() + ", " + var14.getZ());
             var9.add(String.valueOf(BuiltInRegistries.FLUID.getKey(var16.getType())));
-            UnmodifiableIterator var17 = var16.getValues().entrySet().iterator();
 
-            while(var17.hasNext()) {
-               Entry var18 = (Entry)var17.next();
+            for (Entry var18 : var16.getValues().entrySet()) {
                var9.add(this.getPropertyValueString(var18));
             }
 
@@ -549,7 +542,7 @@ public class DebugScreenOverlay {
    private String getPropertyValueString(Entry<Property<?>, Comparable<?>> var1) {
       Property var2 = (Property)var1.getKey();
       Comparable var3 = (Comparable)var1.getValue();
-      String var4 = Util.getPropertyName(var2, var3);
+      Object var4 = Util.getPropertyName(var2, var3);
       if (Boolean.TRUE.equals(var3)) {
          var4 = ChatFormatting.GREEN + var4;
       } else if (Boolean.FALSE.equals(var3)) {
@@ -573,6 +566,10 @@ public class DebugScreenOverlay {
 
    public boolean showNetworkCharts() {
       return this.showDebugScreen() && this.renderNetworkCharts;
+   }
+
+   public boolean showFpsCharts() {
+      return this.showDebugScreen() && this.renderFpsCharts;
    }
 
    public void toggleOverlay() {
@@ -606,16 +603,23 @@ public class DebugScreenOverlay {
       this.frameTimeLogger.logSample(var1);
    }
 
-   public void logTickDuration(long var1) {
-      this.tickTimeLogger.logSample(var1);
+   public LocalSampleLogger getTickTimeLogger() {
+      return this.tickTimeLogger;
    }
 
-   public SampleLogger getPingLogger() {
+   public LocalSampleLogger getPingLogger() {
       return this.pingLogger;
    }
 
-   public SampleLogger getBandwidthLogger() {
+   public LocalSampleLogger getBandwidthLogger() {
       return this.bandwidthLogger;
+   }
+
+   public void logRemoteSample(long[] var1, RemoteDebugSampleType var2) {
+      LocalSampleLogger var3 = this.remoteSupportingLoggers.get(var2);
+      if (var3 != null) {
+         var3.logFullSample(var1);
+      }
    }
 
    public void reset() {
@@ -659,7 +663,7 @@ public class DebugScreenOverlay {
       private static long gcCounts() {
          long var0 = 0L;
 
-         for(GarbageCollectorMXBean var3 : GC_MBEANS) {
+         for (GarbageCollectorMXBean var3 : GC_MBEANS) {
             var0 += var3.getCollectionCount();
          }
 

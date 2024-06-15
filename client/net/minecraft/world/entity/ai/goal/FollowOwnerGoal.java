@@ -10,7 +10,7 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 
 public class FollowOwnerGoal extends Goal {
@@ -65,29 +65,27 @@ public class FollowOwnerGoal extends Goal {
    public boolean canContinueToUse() {
       if (this.navigation.isDone()) {
          return false;
-      } else if (this.unableToMove()) {
-         return false;
       } else {
-         return !(this.tamable.distanceToSqr(this.owner) <= (double)(this.stopDistance * this.stopDistance));
+         return this.unableToMove() ? false : !(this.tamable.distanceToSqr(this.owner) <= (double)(this.stopDistance * this.stopDistance));
       }
    }
 
    private boolean unableToMove() {
-      return this.tamable.isOrderedToSit() || this.tamable.isPassenger() || this.tamable.isLeashed();
+      return this.tamable.isOrderedToSit() || this.tamable.isPassenger() || this.tamable.mayBeLeashed();
    }
 
    @Override
    public void start() {
       this.timeToRecalcPath = 0;
-      this.oldWaterCost = this.tamable.getPathfindingMalus(BlockPathTypes.WATER);
-      this.tamable.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+      this.oldWaterCost = this.tamable.getPathfindingMalus(PathType.WATER);
+      this.tamable.setPathfindingMalus(PathType.WATER, 0.0F);
    }
 
    @Override
    public void stop() {
       this.owner = null;
       this.navigation.stop();
-      this.tamable.setPathfindingMalus(BlockPathTypes.WATER, this.oldWaterCost);
+      this.tamable.setPathfindingMalus(PathType.WATER, this.oldWaterCost);
    }
 
    @Override
@@ -106,7 +104,7 @@ public class FollowOwnerGoal extends Goal {
    private void teleportToOwner() {
       BlockPos var1 = this.owner.blockPosition();
 
-      for(int var2 = 0; var2 < 10; ++var2) {
+      for (int var2 = 0; var2 < 10; var2++) {
          int var3 = this.randomIntInclusive(-3, 3);
          int var4 = this.randomIntInclusive(-1, 1);
          int var5 = this.randomIntInclusive(-3, 3);
@@ -130,8 +128,8 @@ public class FollowOwnerGoal extends Goal {
    }
 
    private boolean canTeleportTo(BlockPos var1) {
-      BlockPathTypes var2 = WalkNodeEvaluator.getBlockPathTypeStatic(this.level, var1.mutable());
-      if (var2 != BlockPathTypes.WALKABLE) {
+      PathType var2 = WalkNodeEvaluator.getPathTypeStatic(this.tamable, var1);
+      if (var2 != PathType.WALKABLE) {
          return false;
       } else {
          BlockState var3 = this.level.getBlockState(var1.below());

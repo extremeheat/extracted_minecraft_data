@@ -78,11 +78,7 @@ public class LongTag extends NumericTag {
 
    @Override
    public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return var1 instanceof LongTag && this.data == ((LongTag)var1).data;
-      }
+      return this == var1 ? true : var1 instanceof LongTag && this.data == ((LongTag)var1).data;
    }
 
    @Override
@@ -145,7 +141,7 @@ public class LongTag extends NumericTag {
       }
 
       static {
-         for(int var0 = 0; var0 < cache.length; ++var0) {
+         for (int var0 = 0; var0 < cache.length; var0++) {
             cache[var0] = new LongTag((long)(-128 + var0));
          }
       }

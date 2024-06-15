@@ -34,17 +34,13 @@ public class RavagerModel extends HierarchicalModel<Ravager> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      boolean var2 = true;
+      byte var2 = 16;
       PartDefinition var3 = var1.addOrReplaceChild(
          "neck", CubeListBuilder.create().texOffs(68, 73).addBox(-5.0F, -1.0F, -18.0F, 10.0F, 10.0F, 18.0F), PartPose.offset(0.0F, -7.0F, 5.5F)
       );
       PartDefinition var4 = var3.addOrReplaceChild(
          "head",
-         CubeListBuilder.create()
-            .texOffs(0, 0)
-            .addBox(-8.0F, -20.0F, -14.0F, 16.0F, 20.0F, 16.0F)
-            .texOffs(0, 0)
-            .addBox(-2.0F, -6.0F, -18.0F, 4.0F, 8.0F, 4.0F),
+         CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -20.0F, -14.0F, 16.0F, 20.0F, 16.0F).texOffs(0, 0).addBox(-2.0F, -6.0F, -18.0F, 4.0F, 8.0F, 4.0F),
          PartPose.offset(0.0F, 16.0F, -17.0F)
       );
       var4.addOrReplaceChild(
@@ -79,9 +75,7 @@ public class RavagerModel extends HierarchicalModel<Ravager> {
          "right_front_leg", CubeListBuilder.create().texOffs(64, 0).addBox(-4.0F, 0.0F, -4.0F, 8.0F, 37.0F, 8.0F), PartPose.offset(-8.0F, -13.0F, -5.0F)
       );
       var1.addOrReplaceChild(
-         "left_front_leg",
-         CubeListBuilder.create().texOffs(64, 0).mirror().addBox(-4.0F, 0.0F, -4.0F, 8.0F, 37.0F, 8.0F),
-         PartPose.offset(8.0F, -13.0F, -5.0F)
+         "left_front_leg", CubeListBuilder.create().texOffs(64, 0).mirror().addBox(-4.0F, 0.0F, -4.0F, 8.0F, 37.0F, 8.0F), PartPose.offset(8.0F, -13.0F, -5.0F)
       );
       return LayerDefinition.create(var0, 128, 128);
    }
@@ -105,9 +99,9 @@ public class RavagerModel extends HierarchicalModel<Ravager> {
       super.prepareMobModel(var1, var2, var3, var4);
       int var5 = var1.getStunnedTick();
       int var6 = var1.getRoarTick();
-      boolean var7 = true;
+      byte var7 = 20;
       int var8 = var1.getAttackTick();
-      boolean var9 = true;
+      byte var9 = 10;
       if (var8 > 0) {
          float var10 = Mth.triangleWave((float)var8 - var4, 10.0F);
          float var11 = (1.0F + var10) * 0.5F;

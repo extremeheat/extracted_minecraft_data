@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 public interface CommandFunction<T> {
    ResourceLocation id();
 
-   InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2, T var3) throws FunctionInstantiationException;
+   InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException;
 
    private static boolean shouldConcatenateNextLine(CharSequence var0) {
       int var1 = var0.length();
@@ -29,7 +29,7 @@ public interface CommandFunction<T> {
    static <T extends ExecutionCommandSource<T>> CommandFunction<T> fromLines(ResourceLocation var0, CommandDispatcher<T> var1, T var2, List<String> var3) {
       FunctionBuilder var4 = new FunctionBuilder();
 
-      for(int var5 = 0; var5 < var3.size(); ++var5) {
+      for (int var5 = 0; var5 < var3.size(); var5++) {
          int var6 = var5 + 1;
          String var7 = ((String)var3.get(var5)).trim();
          String var8;
@@ -44,13 +44,15 @@ public interface CommandFunction<T> {
                var9.deleteCharAt(var9.length() - 1);
                String var10 = ((String)var3.get(var5)).trim();
                var9.append(var10);
-            } while(shouldConcatenateNextLine(var9));
+               checkCommandLineLength(var9);
+            } while (shouldConcatenateNextLine(var9));
 
             var8 = var9.toString();
          } else {
             var8 = var7;
          }
 
+         checkCommandLineLength(var8);
          StringReader var12 = new StringReader(var8);
          if (var12.canRead() && var12.peek() != '#') {
             if (var12.peek() == '/') {
@@ -68,7 +70,7 @@ public interface CommandFunction<T> {
             }
 
             if (var12.peek() == '$') {
-               var4.addMacro(var8.substring(1), var6);
+               var4.addMacro(var8.substring(1), var6, (T)var2);
             } else {
                try {
                   var4.addCommand(parseCommand(var1, (T)var2, var12));
@@ -80,6 +82,13 @@ public interface CommandFunction<T> {
       }
 
       return var4.build(var0);
+   }
+
+   static void checkCommandLineLength(CharSequence var0) {
+      if (var0.length() > 2000000) {
+         CharSequence var1 = var0.subSequence(0, Math.min(512, 2000000));
+         throw new IllegalStateException("Command too long: " + var0.length() + " characters, contents: " + var1 + "...");
+      }
    }
 
    static <T extends ExecutionCommandSource<T>> UnboundEntryAction<T> parseCommand(CommandDispatcher<T> var0, T var1, StringReader var2) throws CommandSyntaxException {

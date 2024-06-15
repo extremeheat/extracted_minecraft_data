@@ -1,8 +1,6 @@
 package net.minecraft.world.entity.monster;
 
-import com.google.common.collect.Maps;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
@@ -14,13 +12,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -41,7 +37,6 @@ import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -123,32 +118,19 @@ public class Vindicator extends AbstractIllager {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      SpawnGroupData var6 = super.finalizeSpawn(var1, var2, var3, var4, var5);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
       ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
-      RandomSource var7 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var7, var2);
-      this.populateDefaultEquipmentEnchantments(var7, var2);
-      return var6;
+      RandomSource var6 = var1.getRandom();
+      this.populateDefaultEquipmentSlots(var6, var2);
+      this.populateDefaultEquipmentEnchantments(var6, var2);
+      return var5;
    }
 
    @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       if (this.getCurrentRaid() == null) {
          this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_AXE));
-      }
-   }
-
-   @Override
-   public boolean isAlliedTo(Entity var1) {
-      if (super.isAlliedTo(var1)) {
-         return true;
-      } else if (var1 instanceof LivingEntity && ((LivingEntity)var1).getMobType() == MobType.ILLAGER) {
-         return this.getTeam() == null && var1.getTeam() == null;
-      } else {
-         return false;
       }
    }
 
@@ -186,9 +168,7 @@ public class Vindicator extends AbstractIllager {
 
       boolean var6 = this.random.nextFloat() <= var4.getEnchantOdds();
       if (var6) {
-         HashMap var7 = Maps.newHashMap();
-         var7.put(Enchantments.SHARPNESS, Integer.valueOf(var5));
-         EnchantmentHelper.setEnchantments(var7, var3);
+         var3.enchant(Enchantments.SHARPNESS, var5);
       }
 
       this.setItemSlot(EquipmentSlot.MAINHAND, var3);

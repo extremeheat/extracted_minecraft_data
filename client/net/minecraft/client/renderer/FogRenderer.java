@@ -119,9 +119,9 @@ public class FogRenderer {
             }
          }
 
-         fogRed += (var25 - fogRed) * var20;
-         fogGreen += (var28 - fogGreen) * var20;
-         fogBlue += (var31 - fogBlue) * var20;
+         fogRed = fogRed + (var25 - fogRed) * var20;
+         fogGreen = fogGreen + (var28 - fogGreen) * var20;
+         fogBlue = fogBlue + (var31 - fogBlue) * var20;
          float var37 = var2.getRainLevel(var1);
          if (var37 > 0.0F) {
             float var39 = 1.0F - var37 * 0.5F;
@@ -175,10 +175,8 @@ public class FogRenderer {
          }
       } else {
          label86: {
-            if (var6 instanceof LivingEntity var29
-               && ((LivingEntity)var29).hasEffect(MobEffects.NIGHT_VISION)
-               && !((LivingEntity)var29).hasEffect(MobEffects.DARKNESS)) {
-               var27 = GameRenderer.getNightVisionScale((LivingEntity)var29, var1);
+            if (var6 instanceof LivingEntity var29 && var29.hasEffect(MobEffects.NIGHT_VISION) && !var29.hasEffect(MobEffects.DARKNESS)) {
+               var27 = GameRenderer.getNightVisionScale(var29, var1);
                break label86;
             }
 
@@ -205,8 +203,6 @@ public class FogRenderer {
       return var0 instanceof LivingEntity var2 ? MOB_EFFECT_FOG.stream().filter(var2x -> var2x.isEnabled(var2, var1)).findFirst().orElse(null) : null;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static void setupFog(Camera var0, FogRenderer.FogMode var1, float var2, boolean var3, float var4) {
       FogType var5 = var0.getFluidInCamera();
       Entity var6 = var0.getEntity();
@@ -218,7 +214,7 @@ public class FogRenderer {
             var7.end = var2 * 0.5F;
          } else if (var6 instanceof LivingEntity && ((LivingEntity)var6).hasEffect(MobEffects.FIRE_RESISTANCE)) {
             var7.start = 0.0F;
-            var7.end = 3.0F;
+            var7.end = 5.0F;
          } else {
             var7.start = 0.25F;
             var7.end = 1.0F;
@@ -241,7 +237,7 @@ public class FogRenderer {
          var7.start = -8.0F;
          var7.end = 96.0F;
          if (var6 instanceof LocalPlayer var11) {
-            var7.end *= Math.max(0.25F, var11.getWaterVision());
+            var7.end = var7.end * Math.max(0.25F, var11.getWaterVision());
             Holder var13 = var11.level().getBiome(var11.blockPosition());
             if (var13.is(BiomeTags.HAS_CLOSER_WATER_FOG)) {
                var7.end *= 0.85F;
@@ -281,7 +277,7 @@ public class FogRenderer {
       }
 
       @Override
-      public MobEffect getMobEffect() {
+      public Holder<MobEffect> getMobEffect() {
          return MobEffects.BLINDNESS;
       }
 
@@ -304,22 +300,20 @@ public class FogRenderer {
       }
 
       @Override
-      public MobEffect getMobEffect() {
+      public Holder<MobEffect> getMobEffect() {
          return MobEffects.DARKNESS;
       }
 
       @Override
       public void setupFog(FogRenderer.FogData var1, LivingEntity var2, MobEffectInstance var3, float var4, float var5) {
-         if (!var3.getFactorData().isEmpty()) {
-            float var6 = Mth.lerp(var3.getFactorData().get().getFactor(var2, var5), var4, 15.0F);
-            var1.start = var1.mode == FogRenderer.FogMode.FOG_SKY ? 0.0F : var6 * 0.75F;
-            var1.end = var6;
-         }
+         float var6 = Mth.lerp(var3.getBlendFactor(var2, var5), var4, 15.0F);
+         var1.start = var1.mode == FogRenderer.FogMode.FOG_SKY ? 0.0F : var6 * 0.75F;
+         var1.end = var6;
       }
 
       @Override
       public float getModifiedVoidDarkness(LivingEntity var1, MobEffectInstance var2, float var3, float var4) {
-         return var2.getFactorData().isEmpty() ? 0.0F : 1.0F - var2.getFactorData().get().getFactor(var1, var4);
+         return 1.0F - var2.getBlendFactor(var1, var4);
       }
    }
 
@@ -344,7 +338,7 @@ public class FogRenderer {
    }
 
    interface MobEffectFogFunction {
-      MobEffect getMobEffect();
+      Holder<MobEffect> getMobEffect();
 
       void setupFog(FogRenderer.FogData var1, LivingEntity var2, MobEffectInstance var3, float var4, float var5);
 

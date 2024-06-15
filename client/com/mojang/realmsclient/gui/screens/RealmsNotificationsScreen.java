@@ -1,11 +1,9 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.realmsclient.RealmsAvailability;
-import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.dto.RealmsNotification;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.task.DataFetcher;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
@@ -123,7 +121,7 @@ public class RealmsNotificationsScreen extends RealmsScreen {
 
    private void drawIcons(GuiGraphics var1) {
       int var2 = this.numberOfPendingInvites;
-      boolean var3 = true;
+      byte var3 = 24;
       int var4 = this.height / 4 + 48;
       int var5 = this.width / 2 + 100;
       int var6 = var4 + 48 + 2;
@@ -163,8 +161,8 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       var2.subscribe(var1.notificationsTask, var0 -> {
          hasUnseenNotifications = false;
 
-         for(RealmsNotification var2xx : var0) {
-            if (!var2xx.seen()) {
+         for (RealmsNotification var2x : var0) {
+            if (!var2x.seen()) {
                hasUnseenNotifications = true;
                break;
             }

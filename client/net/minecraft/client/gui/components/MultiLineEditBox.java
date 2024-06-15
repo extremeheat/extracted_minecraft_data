@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import java.util.function.Consumer;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,6 +10,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.StringUtil;
 
 public class MultiLineEditBox extends AbstractScrollWidget {
    private static final int CURSOR_INSERT_WIDTH = 1;
@@ -85,7 +85,7 @@ public class MultiLineEditBox extends AbstractScrollWidget {
 
    @Override
    public boolean charTyped(char var1, int var2) {
-      if (this.visible && this.isFocused() && SharedConstants.isAllowedChatCharacter(var1)) {
+      if (this.visible && this.isFocused() && StringUtil.isAllowedChatCharacter(var1)) {
          this.textField.insertText(Character.toString(var1));
          return true;
       } else {
@@ -113,7 +113,7 @@ public class MultiLineEditBox extends AbstractScrollWidget {
          int var10 = 0;
          int var11 = this.getY() + this.innerPadding();
 
-         for(MultilineTextField.StringView var13 : this.textField.iterateLines()) {
+         for (MultilineTextField.StringView var13 : this.textField.iterateLines()) {
             boolean var14 = this.withinContentAreaTopBottom(var11, var11 + 9);
             if (var7 && var8 && var6 >= var13.beginIndex() && var6 <= var13.endIndex()) {
                if (var14) {
@@ -142,7 +142,7 @@ public class MultiLineEditBox extends AbstractScrollWidget {
             int var20 = this.getX() + this.innerPadding();
             var11 = this.getY() + this.innerPadding();
 
-            for(MultilineTextField.StringView var15 : this.textField.iterateLines()) {
+            for (MultilineTextField.StringView var15 : this.textField.iterateLines()) {
                if (var19.beginIndex() > var15.endIndex()) {
                   var11 += 9;
                } else {

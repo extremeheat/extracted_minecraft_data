@@ -41,7 +41,7 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
       if (var0.getValue(WATERLOGGED)) {
          return true;
       } else {
-         for(Direction var6 : Direction.values()) {
+         for (Direction var6 : Direction.values()) {
             if (var1.getFluidState(var2.relative(var6)).is(FluidTags.WATER)) {
                return true;
             }
@@ -59,12 +59,12 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return AABB;
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -75,7 +75,7 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       return var2.getBlockState(var4).isFaceSturdy(var2, var4, Direction.UP);
    }
@@ -86,7 +86,7 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 }

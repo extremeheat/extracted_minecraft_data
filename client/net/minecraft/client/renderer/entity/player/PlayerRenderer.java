@@ -70,7 +70,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    }
 
    public Vec3 getRenderOffset(AbstractClientPlayer var1, float var2) {
-      return var1.isCrouching() ? new Vec3(0.0, -0.125, 0.0) : super.getRenderOffset(var1, var2);
+      return var1.isCrouching() ? new Vec3(0.0, (double)(var1.getScale() * -2.0F) / 16.0, 0.0) : super.getRenderOffset(var1, var2);
    }
 
    private void setModelProperties(AbstractClientPlayer var1) {
@@ -155,21 +155,21 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.scale(0.9375F, 0.9375F, 0.9375F);
    }
 
-   protected void renderNameTag(AbstractClientPlayer var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5) {
-      double var6 = this.entityRenderDispatcher.distanceToSqr(var1);
+   protected void renderNameTag(AbstractClientPlayer var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5, float var6) {
+      double var7 = this.entityRenderDispatcher.distanceToSqr(var1);
       var3.pushPose();
-      if (var6 < 100.0) {
-         Scoreboard var8 = var1.getScoreboard();
-         Objective var9 = var8.getDisplayObjective(DisplaySlot.BELOW_NAME);
-         if (var9 != null) {
-            ReadOnlyScoreInfo var10 = var8.getPlayerScoreInfo(var1, var9);
-            MutableComponent var11 = ReadOnlyScoreInfo.safeFormatValue(var10, var9.numberFormatOrDefault(StyledFormat.NO_STYLE));
-            super.renderNameTag(var1, Component.empty().append(var11).append(CommonComponents.SPACE).append(var9.getDisplayName()), var3, var4, var5);
+      if (var7 < 100.0) {
+         Scoreboard var9 = var1.getScoreboard();
+         Objective var10 = var9.getDisplayObjective(DisplaySlot.BELOW_NAME);
+         if (var10 != null) {
+            ReadOnlyScoreInfo var11 = var9.getPlayerScoreInfo(var1, var10);
+            MutableComponent var12 = ReadOnlyScoreInfo.safeFormatValue(var11, var10.numberFormatOrDefault(StyledFormat.NO_STYLE));
+            super.renderNameTag(var1, Component.empty().append(var12).append(CommonComponents.SPACE).append(var10.getDisplayName()), var3, var4, var5, var6);
             var3.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
          }
       }
 
-      super.renderNameTag(var1, var2, var3, var4, var5);
+      super.renderNameTag(var1, var2, var3, var4, var5, var6);
       var3.popPose();
    }
 
@@ -195,36 +195,36 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var6.render(var1, var2.getBuffer(RenderType.entityTranslucent(var8)), var3, OverlayTexture.NO_OVERLAY);
    }
 
-   protected void setupRotations(AbstractClientPlayer var1, PoseStack var2, float var3, float var4, float var5) {
-      float var6 = var1.getSwimAmount(var5);
-      float var7 = var1.getViewXRot(var5);
+   protected void setupRotations(AbstractClientPlayer var1, PoseStack var2, float var3, float var4, float var5, float var6) {
+      float var7 = var1.getSwimAmount(var5);
+      float var8 = var1.getViewXRot(var5);
       if (var1.isFallFlying()) {
-         super.setupRotations(var1, var2, var3, var4, var5);
-         float var8 = (float)var1.getFallFlyingTicks() + var5;
-         float var9 = Mth.clamp(var8 * var8 / 100.0F, 0.0F, 1.0F);
+         super.setupRotations(var1, var2, var3, var4, var5, var6);
+         float var9 = (float)var1.getFallFlyingTicks() + var5;
+         float var10 = Mth.clamp(var9 * var9 / 100.0F, 0.0F, 1.0F);
          if (!var1.isAutoSpinAttack()) {
-            var2.mulPose(Axis.XP.rotationDegrees(var9 * (-90.0F - var7)));
+            var2.mulPose(Axis.XP.rotationDegrees(var10 * (-90.0F - var8)));
          }
 
-         Vec3 var10 = var1.getViewVector(var5);
-         Vec3 var11 = var1.getDeltaMovementLerped(var5);
-         double var12 = var11.horizontalDistanceSqr();
-         double var14 = var10.horizontalDistanceSqr();
-         if (var12 > 0.0 && var14 > 0.0) {
-            double var16 = (var11.x * var10.x + var11.z * var10.z) / Math.sqrt(var12 * var14);
-            double var18 = var11.x * var10.z - var11.z * var10.x;
-            var2.mulPose(Axis.YP.rotation((float)(Math.signum(var18) * Math.acos(var16))));
+         Vec3 var11 = var1.getViewVector(var5);
+         Vec3 var12 = var1.getDeltaMovementLerped(var5);
+         double var13 = var12.horizontalDistanceSqr();
+         double var15 = var11.horizontalDistanceSqr();
+         if (var13 > 0.0 && var15 > 0.0) {
+            double var17 = (var12.x * var11.x + var12.z * var11.z) / Math.sqrt(var13 * var15);
+            double var19 = var12.x * var11.z - var12.z * var11.x;
+            var2.mulPose(Axis.YP.rotation((float)(Math.signum(var19) * Math.acos(var17))));
          }
-      } else if (var6 > 0.0F) {
-         super.setupRotations(var1, var2, var3, var4, var5);
-         float var20 = var1.isInWater() ? -90.0F - var7 : -90.0F;
-         float var21 = Mth.lerp(var6, 0.0F, var20);
-         var2.mulPose(Axis.XP.rotationDegrees(var21));
+      } else if (var7 > 0.0F) {
+         super.setupRotations(var1, var2, var3, var4, var5, var6);
+         float var21 = var1.isInWater() ? -90.0F - var8 : -90.0F;
+         float var22 = Mth.lerp(var7, 0.0F, var21);
+         var2.mulPose(Axis.XP.rotationDegrees(var22));
          if (var1.isVisuallySwimming()) {
             var2.translate(0.0F, -1.0F, 0.3F);
          }
       } else {
-         super.setupRotations(var1, var2, var3, var4, var5);
+         super.setupRotations(var1, var2, var3, var4, var5, var6);
       }
    }
 }

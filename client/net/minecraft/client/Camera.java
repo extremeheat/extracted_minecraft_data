@@ -20,6 +20,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Camera {
+   private static final float DEFAULT_CAMERA_DISTANCE = 4.0F;
    private boolean initialized;
    private BlockGetter level;
    private Entity entity;
@@ -58,10 +59,11 @@ public class Camera {
             this.setRotation(this.yRot + 180.0F, -this.xRot);
          }
 
-         this.move(-this.getMaxZoom(4.0), 0.0, 0.0);
+         float var6 = var2 instanceof LivingEntity var7 ? var7.getScale() : 1.0F;
+         this.move(-this.getMaxZoom((double)(4.0F * var6)), 0.0, 0.0);
       } else if (var2 instanceof LivingEntity && ((LivingEntity)var2).isSleeping()) {
-         Direction var6 = ((LivingEntity)var2).getBedOrientation();
-         this.setRotation(var6 != null ? var6.toYRot() - 180.0F : 0.0F, 0.0F);
+         Direction var8 = ((LivingEntity)var2).getBedOrientation();
+         this.setRotation(var8 != null ? var8.toYRot() - 180.0F : 0.0F, 0.0F);
          this.move(0.0, 0.3, 0.0);
       }
    }
@@ -69,12 +71,12 @@ public class Camera {
    public void tick() {
       if (this.entity != null) {
          this.eyeHeightOld = this.eyeHeight;
-         this.eyeHeight += (this.entity.getEyeHeight() - this.eyeHeight) * 0.5F;
+         this.eyeHeight = this.eyeHeight + (this.entity.getEyeHeight() - this.eyeHeight) * 0.5F;
       }
    }
 
    private double getMaxZoom(double var1) {
-      for(int var3 = 0; var3 < 8; ++var3) {
+      for (int var3 = 0; var3 < 8; var3++) {
          float var4 = (float)((var3 & 1) * 2 - 1);
          float var5 = (float)((var3 >> 1 & 1) * 2 - 1);
          float var6 = (float)((var3 >> 2 & 1) * 2 - 1);
@@ -177,7 +179,7 @@ public class Camera {
          } else {
             Camera.NearPlane var2 = this.getNearPlane();
 
-            for(Vec3 var5 : Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight())) {
+            for (Vec3 var5 : Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight())) {
                Vec3 var6 = this.position.add(var5);
                BlockPos var7 = BlockPos.containing(var6);
                FluidState var8 = this.level.getFluidState(var7);

@@ -32,7 +32,7 @@ public interface FormattedCharSequence {
    }
 
    static FormattedCharSink decorateOutput(FormattedCharSink var0, Int2IntFunction var1) {
-      return (var2, var3, var4) -> var0.accept(var2, var3, var1.apply(var4));
+      return (var2, var3, var4) -> var0.accept(var2, var3, (Integer)var1.apply(var4));
    }
 
    static FormattedCharSequence composite() {
@@ -53,7 +53,7 @@ public interface FormattedCharSequence {
 
    static FormattedCharSequence composite(List<FormattedCharSequence> var0) {
       int var1 = var0.size();
-      switch(var1) {
+      switch (var1) {
          case 0:
             return EMPTY;
          case 1:
@@ -71,7 +71,7 @@ public interface FormattedCharSequence {
 
    static FormattedCharSequence fromList(List<FormattedCharSequence> var0) {
       return var1 -> {
-         for(FormattedCharSequence var3 : var0) {
+         for (FormattedCharSequence var3 : var0) {
             if (!var3.accept(var1)) {
                return false;
             }

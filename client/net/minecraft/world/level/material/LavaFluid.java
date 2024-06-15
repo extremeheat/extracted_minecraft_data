@@ -82,7 +82,7 @@ public abstract class LavaFluid extends FlowingFluid {
          if (var5 > 0) {
             BlockPos var6 = var2;
 
-            for(int var7 = 0; var7 < var5; ++var7) {
+            for (int var7 = 0; var7 < var5; var7++) {
                var6 = var6.offset(var4.nextInt(3) - 1, 1, var4.nextInt(3) - 1);
                if (!var1.isLoaded(var6)) {
                   return;
@@ -99,7 +99,7 @@ public abstract class LavaFluid extends FlowingFluid {
                }
             }
          } else {
-            for(int var9 = 0; var9 < 3; ++var9) {
+            for (int var9 = 0; var9 < 3; var9++) {
                BlockPos var10 = var2.offset(var4.nextInt(3) - 1, 0, var4.nextInt(3) - 1);
                if (!var1.isLoaded(var10)) {
                   return;
@@ -114,7 +114,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    private boolean hasFlammableNeighbours(LevelReader var1, BlockPos var2) {
-      for(Direction var6 : Direction.values()) {
+      for (Direction var6 : Direction.values()) {
          if (this.isFlammable(var1, var2.relative(var6))) {
             return true;
          }

@@ -41,7 +41,7 @@ public final class FeatureFlagSet {
    }
 
    private static long computeMask(FeatureFlagUniverse var0, long var1, Iterable<FeatureFlag> var3) {
-      for(FeatureFlag var5 : var3) {
+      for (FeatureFlag var5 : var3) {
          if (var0 != var5.universe) {
             throw new IllegalStateException("Mismatched feature universe, expected '" + var0 + "', but got '" + var5.universe + "'");
          }
@@ -53,21 +53,23 @@ public final class FeatureFlagSet {
    }
 
    public boolean contains(FeatureFlag var1) {
-      if (this.universe != var1.universe) {
-         return false;
-      } else {
-         return (this.mask & var1.mask) != 0L;
-      }
+      return this.universe != var1.universe ? false : (this.mask & var1.mask) != 0L;
+   }
+
+   public boolean isEmpty() {
+      return this.equals(EMPTY);
    }
 
    public boolean isSubsetOf(FeatureFlagSet var1) {
       if (this.universe == null) {
          return true;
-      } else if (this.universe != var1.universe) {
-         return false;
       } else {
-         return (this.mask & ~var1.mask) == 0L;
+         return this.universe != var1.universe ? false : (this.mask & ~var1.mask) == 0L;
       }
+   }
+
+   public boolean intersects(FeatureFlagSet var1) {
+      return this.universe != null && var1.universe != null && this.universe == var1.universe ? (this.mask & var1.mask) != 0L : false;
    }
 
    public FeatureFlagSet join(FeatureFlagSet var1) {
@@ -79,6 +81,17 @@ public final class FeatureFlagSet {
          throw new IllegalArgumentException("Mismatched set elements: '" + this.universe + "' != '" + var1.universe + "'");
       } else {
          return new FeatureFlagSet(this.universe, this.mask | var1.mask);
+      }
+   }
+
+   public FeatureFlagSet subtract(FeatureFlagSet var1) {
+      if (this.universe == null || var1.universe == null) {
+         return this;
+      } else if (this.universe != var1.universe) {
+         throw new IllegalArgumentException("Mismatched set elements: '" + this.universe + "' != '" + var1.universe + "'");
+      } else {
+         long var2 = this.mask & ~var1.mask;
+         return var2 == 0L ? EMPTY : new FeatureFlagSet(this.universe, var2);
       }
    }
 

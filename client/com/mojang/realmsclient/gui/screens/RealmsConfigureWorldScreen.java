@@ -16,7 +16,6 @@ import com.mojang.realmsclient.util.task.SwitchSlotTask;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -25,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringUtil;
 import org.slf4j.Logger;
 
 public class RealmsConfigureWorldScreen extends RealmsScreen {
@@ -99,7 +99,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       );
       this.slotButtonList.clear();
 
-      for(int var1 = 1; var1 < 5; ++var1) {
+      for (int var1 = 1; var1 < 5; var1++) {
          this.slotButtonList.add(this.addSlotButton(var1));
       }
 
@@ -172,25 +172,25 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       int var2 = this.frame(var1);
       int var3 = row(5) + 5;
       RealmsWorldSlotButton var4 = new RealmsWorldSlotButton(var2, var3, 80, 80, var1, var2x -> {
-         RealmsWorldSlotButton.State var3xx = ((RealmsWorldSlotButton)var2x).getState();
-         if (var3xx != null) {
-            switch(var3xx.action) {
+         RealmsWorldSlotButton.State var3x = ((RealmsWorldSlotButton)var2x).getState();
+         if (var3x != null) {
+            switch (var3x.action) {
                case NOTHING:
                   break;
                case JOIN:
                   this.joinRealm(this.serverData);
                   break;
                case SWITCH_SLOT:
-                  if (var3xx.minigame) {
+                  if (var3x.minigame) {
                      this.switchToMinigame();
-                  } else if (var3xx.empty) {
+                  } else if (var3x.empty) {
                      this.switchToEmptySlot(var1, this.serverData);
                   } else {
                      this.switchToFullSlot(var1, this.serverData);
                   }
                   break;
                default:
-                  throw new IllegalStateException("Unknown action " + var3xx.action);
+                  throw new IllegalStateException("Unknown action " + var3x.action);
             }
          }
       });
@@ -226,14 +226,10 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          int var9 = Math.min(this.centerButton(2, 3) + 80 - 11, this.width / 2 + var6 / 2 + var8 / 2 + 10);
          this.drawServerStatus(var1, var9, 7, var2, var3);
          if (this.isMinigame()) {
-            var1.drawString(
-               this.font,
-               Component.translatable("mco.configure.world.minigame", this.serverData.getMinigameName()),
-               this.leftX + 80 + 20 + 10,
-               row(13),
-               -1,
-               false
-            );
+            String var10 = this.serverData.getMinigameName();
+            if (var10 != null) {
+               var1.drawString(this.font, Component.translatable("mco.configure.world.minigame", var10), this.leftX + 80 + 20 + 10, row(13), -1, false);
+            }
          }
       }
    }
@@ -255,7 +251,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          RealmsClient var3 = RealmsClient.create();
 
          try {
-            RealmsServer var4 = var3.getOwnWorld(var1);
+            RealmsServer var4 = var3.getOwnRealm(var1);
             this.minecraft.execute(() -> {
                this.serverData = var4;
                this.disableButtons();
@@ -267,8 +263,8 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
                   this.show(this.resetWorldButton);
                }
 
-               for(RealmsWorldSlotButton var3xx : this.slotButtonList) {
-                  var3xx.setServerData(var4);
+               for (RealmsWorldSlotButton var3x : this.slotButtonList) {
+                  var3x.setServerData(var4);
                }
             });
          } catch (RealmsServiceException var5) {
@@ -340,10 +336,10 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
                var3x -> {
                   if (var3x) {
                      this.stateChanged();
-                     RealmsResetWorldScreen var4xx = RealmsResetWorldScreen.forEmptySlot(
+                     RealmsResetWorldScreen var4x = RealmsResetWorldScreen.forEmptySlot(
                         this, var1, var2, () -> this.minecraft.execute(() -> this.minecraft.setScreen(this.getNewScreen()))
                      );
-                     this.minecraft.setScreen(var4xx);
+                     this.minecraft.setScreen(var4x);
                   } else {
                      this.minecraft.setScreen(this);
                   }
@@ -434,7 +430,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    public void saveSettings(String var1, String var2) {
-      String var3 = Util.isBlank(var2) ? null : var2;
+      String var3 = StringUtil.isBlank(var2) ? null : var2;
       RealmsClient var4 = RealmsClient.create();
 
       try {

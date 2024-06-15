@@ -1,10 +1,9 @@
 package net.minecraft.world.level.block.state;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +20,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -31,6 +31,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -96,7 +97,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected final FeatureFlagSet requiredFeatures;
    protected final BlockBehaviour.Properties properties;
    @Nullable
-   protected ResourceLocation drops;
+   protected ResourceKey<LootTable> drops;
 
    public BlockBehaviour(BlockBehaviour.Properties var1) {
       super();
@@ -127,58 +128,50 @@ public abstract class BlockBehaviour implements FeatureElement {
       return RecordCodecBuilder.mapCodec(var1 -> var1.group(propertiesCodec()).apply(var1, var0));
    }
 
-   @Deprecated
-   public void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
+   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
    }
 
-   @Deprecated
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
-      switch(var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+      switch (var2) {
          case LAND:
-            return !var1.isCollisionShapeFullBlock(var2, var3);
+            return !var1.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
          case WATER:
-            return var2.getFluidState(var3).is(FluidTags.WATER);
+            return var1.getFluidState().is(FluidTags.WATER);
          case AIR:
-            return !var1.isCollisionShapeFullBlock(var2, var3);
+            return !var1.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
          default:
             return false;
       }
    }
 
-   @Deprecated
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var1;
    }
 
-   @Deprecated
-   public boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
+   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
       return false;
    }
 
-   @Deprecated
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       DebugPackets.sendNeighborsUpdatePacket(var2, var3);
    }
 
-   @Deprecated
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
    }
 
-   @Deprecated
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var1.hasBlockEntity() && !var1.is(var4.getBlock())) {
          var2.removeBlockEntity(var3);
       }
    }
 
-   @Deprecated
-   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (!var1.isAir() && var4.getBlockInteraction() != Explosion.BlockInteraction.TRIGGER_BLOCK) {
          Block var6 = var1.getBlock();
          boolean var7 = var4.getIndirectSourceEntity() instanceof Player;
          if (var6.dropFromExplosion(var4) && var2 instanceof ServerLevel var8) {
             BlockEntity var9 = var1.hasBlockEntity() ? var2.getBlockEntity(var3) : null;
-            LootParams.Builder var10 = new LootParams.Builder((ServerLevel)var8)
+            LootParams.Builder var10 = new LootParams.Builder(var8)
                .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3))
                .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
                .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var9)
@@ -187,7 +180,7 @@ public abstract class BlockBehaviour implements FeatureElement {
                var10.withParameter(LootContextParams.EXPLOSION_RADIUS, var4.radius());
             }
 
-            var1.spawnAfterBreak((ServerLevel)var8, var3, ItemStack.EMPTY, var7);
+            var1.spawnAfterBreak(var8, var3, ItemStack.EMPTY, var7);
             var1.getDrops(var10).forEach(var2x -> var5.accept(var2x, var3));
          }
 
@@ -196,46 +189,43 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
    }
 
-   @Deprecated
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       return InteractionResult.PASS;
    }
 
-   @Deprecated
-   public boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+   }
+
+   protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       return false;
    }
 
-   @Deprecated
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Deprecated
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return false;
    }
 
-   @Deprecated
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return false;
    }
 
-   @Deprecated
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return Fluids.EMPTY.defaultFluidState();
    }
 
-   @Deprecated
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return false;
    }
 
-   public float getMaxHorizontalOffset() {
+   protected float getMaxHorizontalOffset() {
       return 0.25F;
    }
 
-   public float getMaxVerticalOffset() {
+   protected float getMaxVerticalOffset() {
       return 0.2F;
    }
 
@@ -244,61 +234,51 @@ public abstract class BlockBehaviour implements FeatureElement {
       return this.requiredFeatures;
    }
 
-   @Deprecated
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1;
    }
 
-   @Deprecated
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1;
    }
 
-   @Deprecated
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       return var1.canBeReplaced() && (var2.getItemInHand().isEmpty() || !var2.getItemInHand().is(this.asItem()));
    }
 
-   @Deprecated
-   public boolean canBeReplaced(BlockState var1, Fluid var2) {
+   protected boolean canBeReplaced(BlockState var1, Fluid var2) {
       return var1.canBeReplaced() || !var1.isSolid();
    }
 
-   @Deprecated
-   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
-      ResourceLocation var3 = this.getLootTable();
+   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
+      ResourceKey var3 = this.getLootTable();
       if (var3 == BuiltInLootTables.EMPTY) {
          return Collections.emptyList();
       } else {
          LootParams var4 = var2.withParameter(LootContextParams.BLOCK_STATE, var1).create(LootContextParamSets.BLOCK);
          ServerLevel var5 = var4.getLevel();
-         LootTable var6 = var5.getServer().getLootData().getLootTable(var3);
+         LootTable var6 = var5.getServer().reloadableRegistries().getLootTable(var3);
          return var6.getRandomItems(var4);
       }
    }
 
-   @Deprecated
-   public long getSeed(BlockState var1, BlockPos var2) {
+   protected long getSeed(BlockState var1, BlockPos var2) {
       return Mth.getSeed(var2);
    }
 
-   @Deprecated
-   public VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.getShape(var2, var3);
    }
 
-   @Deprecated
-   public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return this.getCollisionShape(var1, var2, var3, CollisionContext.empty());
    }
 
-   @Deprecated
-   public VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Shapes.empty();
    }
 
-   @Deprecated
-   public int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       if (var1.isSolidRender(var2, var3)) {
          return var2.getMaxLightLevel();
       } else {
@@ -307,61 +287,49 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    @Nullable
-   @Deprecated
-   public MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return null;
    }
 
-   @Deprecated
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return true;
    }
 
-   @Deprecated
-   public float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.isCollisionShapeFullBlock(var2, var3) ? 0.2F : 1.0F;
    }
 
-   @Deprecated
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return 0;
    }
 
-   @Deprecated
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.block();
    }
 
-   @Deprecated
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.hasCollision ? var1.getShape(var2, var3) : Shapes.empty();
    }
 
-   @Deprecated
-   public boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Block.isShapeFullBlock(var1.getCollisionShape(var2, var3));
    }
 
-   @Deprecated
-   public boolean isOcclusionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean isOcclusionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Block.isShapeFullBlock(var1.getOcclusionShape(var2, var3));
    }
 
-   @Deprecated
-   public VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.getCollisionShape(var1, var2, var3, var4);
    }
 
-   @Deprecated
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
    }
 
-   @Deprecated
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
    }
 
-   @Deprecated
-   public float getDestroyProgress(BlockState var1, Player var2, BlockGetter var3, BlockPos var4) {
+   protected float getDestroyProgress(BlockState var1, Player var2, BlockGetter var3, BlockPos var4) {
       float var5 = var1.getDestroySpeed(var3, var4);
       if (var5 == -1.0F) {
          return 0.0F;
@@ -371,39 +339,45 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
    }
 
-   @Deprecated
-   public void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
+   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
    }
 
-   @Deprecated
-   public void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
+   protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
    }
 
-   @Deprecated
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return 0;
    }
 
-   @Deprecated
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
    }
 
-   @Deprecated
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return 0;
    }
 
-   public final ResourceLocation getLootTable() {
+   public final ResourceKey<LootTable> getLootTable() {
       if (this.drops == null) {
          ResourceLocation var1 = BuiltInRegistries.BLOCK.getKey(this.asBlock());
-         this.drops = var1.withPrefix("blocks/");
+         this.drops = ResourceKey.create(Registries.LOOT_TABLE, var1.withPrefix("blocks/"));
       }
 
       return this.drops;
    }
 
-   @Deprecated
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   }
+
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return !Block.isShapeFullBlock(var1.getShape(var2, var3)) && var1.getFluidState().isEmpty();
+   }
+
+   protected boolean isRandomlyTicking(BlockState var1) {
+      return this.isRandomlyTicking;
+   }
+
+   protected SoundType getSoundType(BlockState var1) {
+      return this.soundType;
    }
 
    public abstract Item asItem();
@@ -446,7 +420,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private FluidState fluidState = Fluids.EMPTY.defaultFluidState();
       private boolean isRandomlyTicking;
 
-      protected BlockStateBase(Block var1, ImmutableMap<Property<?>, Comparable<?>> var2, MapCodec<BlockState> var3) {
+      protected BlockStateBase(Block var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<BlockState> var3) {
          super(var1, var2, var3);
          BlockBehaviour.Properties var4 = var1.properties;
          this.lightEmission = var4.lightEmission.applyAsInt(this.asState());
@@ -483,11 +457,7 @@ public abstract class BlockBehaviour implements FeatureElement {
                return false;
             } else {
                AABB var2 = var1.bounds();
-               if (var2.getSize() >= 0.7291666666666666) {
-                  return true;
-               } else {
-                  return var2.getYsize() >= 1.0;
-               }
+               return var2.getSize() >= 0.7291666666666666 ? true : var2.getYsize() >= 1.0;
             }
          }
       }
@@ -693,8 +663,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().triggerEvent(this.asState(), var1, var2, var3, var4);
       }
 
-      @Deprecated
-      public void neighborChanged(Level var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
+      public void handleNeighborChanged(Level var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
          this.getBlock().neighborChanged(this.asState(), var1, var2, var3, var4, var5);
       }
 
@@ -705,7 +674,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3, int var4) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-         for(Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
+         for (Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
             var5.setWithOffset(var2, var9);
             var1.neighborShapeChanged(var9.getOpposite(), this.asState(), var5, var2, var3, var4);
          }
@@ -751,8 +720,12 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().getDrops(this.asState(), var1);
       }
 
-      public InteractionResult use(Level var1, Player var2, InteractionHand var3, BlockHitResult var4) {
-         return this.getBlock().use(this.asState(), var1, var4.getBlockPos(), var2, var3, var4);
+      public ItemInteractionResult useItemOn(ItemStack var1, Level var2, Player var3, InteractionHand var4, BlockHitResult var5) {
+         return this.getBlock().useItemOn(var1, this.asState(), var2, var5.getBlockPos(), var3, var4, var5);
+      }
+
+      public InteractionResult useWithoutItem(Level var1, Player var2, BlockHitResult var3) {
+         return this.getBlock().useWithoutItem(this.asState(), var1, var3.getBlockPos(), var2, var3);
       }
 
       public void attack(Level var1, BlockPos var2, Player var3) {
@@ -771,8 +744,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().updateShape(this.asState(), var1, var2, var3, var4, var5);
       }
 
-      public boolean isPathfindable(BlockGetter var1, BlockPos var2, PathComputationType var3) {
-         return this.getBlock().isPathfindable(this.asState(), var1, var2, var3);
+      public boolean isPathfindable(PathComputationType var1) {
+         return this.getBlock().isPathfindable(this.asState(), var1);
       }
 
       public boolean canBeReplaced(BlockPlaceContext var1) {
@@ -908,7 +881,7 @@ public abstract class BlockBehaviour implements FeatureElement {
                this.occlusionShapes = new VoxelShape[DIRECTIONS.length];
                VoxelShape var3 = var2.getOcclusionShape(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
 
-               for(Direction var7 : DIRECTIONS) {
+               for (Direction var7 : DIRECTIONS) {
                   this.occlusionShapes[var7.ordinal()] = Shapes.getFaceShape(var3, var7);
                }
             }
@@ -927,8 +900,8 @@ public abstract class BlockBehaviour implements FeatureElement {
                   .anyMatch(var1x -> this.collisionShape.min(var1x) < 0.0 || this.collisionShape.max(var1x) > 1.0);
                this.faceSturdy = new boolean[DIRECTIONS.length * SUPPORT_TYPE_COUNT];
 
-               for(Direction var14 : DIRECTIONS) {
-                  for(SupportType var10 : SupportType.values()) {
+               for (Direction var14 : DIRECTIONS) {
+                  for (SupportType var10 : SupportType.values()) {
                      this.faceSturdy[getFaceSupportIndex(var14, var10)] = var10.isSupporting(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO, var14);
                   }
                }
@@ -973,7 +946,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       float friction = 0.6F;
       float speedFactor = 1.0F;
       float jumpFactor = 1.0F;
-      ResourceLocation drops;
+      ResourceKey<LootTable> drops;
       boolean canOcclude = true;
       boolean isAir;
       boolean ignitedByLava;
@@ -1210,7 +1183,17 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public BlockBehaviour.Properties offsetType(BlockBehaviour.OffsetType var1) {
-         switch(var1) {
+         switch (var1) {
+            case XZ:
+               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
+                  Block var3 = var0.getBlock();
+                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
+                  float var6 = var3.getMaxHorizontalOffset();
+                  double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+                  double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+                  return new Vec3(var7, 0.0, var9);
+               });
+               break;
             case XYZ:
                this.offsetFunction = Optional.of((var0, var1x, var2) -> {
                   Block var3 = var0.getBlock();
@@ -1220,16 +1203,6 @@ public abstract class BlockBehaviour implements FeatureElement {
                   double var9 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
                   double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
                   return new Vec3(var9, var6, var11);
-               });
-               break;
-            case XZ:
-               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
-                  Block var3 = var0.getBlock();
-                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
-                  float var6 = var3.getMaxHorizontalOffset();
-                  double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-                  double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-                  return new Vec3(var7, 0.0, var9);
                });
                break;
             default:

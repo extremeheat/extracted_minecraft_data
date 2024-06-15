@@ -16,9 +16,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntUnaryOperator;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.PngInfo;
 import org.apache.commons.io.IOUtils;
@@ -26,10 +28,12 @@ import org.lwjgl.stb.STBIWriteCallback;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.stb.STBImageResize;
 import org.lwjgl.stb.STBImageWrite;
-import org.lwjgl.stb.STBTTFontinfo;
-import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.util.freetype.FT_Bitmap;
+import org.lwjgl.util.freetype.FT_Face;
+import org.lwjgl.util.freetype.FT_GlyphSlot;
+import org.lwjgl.util.freetype.FreeType;
 import org.slf4j.Logger;
 
 public final class NativeImage implements AutoCloseable {
@@ -263,7 +267,7 @@ public final class NativeImage implements AutoCloseable {
          IntBuffer var4 = MemoryUtil.memIntBuffer(this.pixels, var3);
          IntBuffer var5 = MemoryUtil.memIntBuffer(var2.pixels, var3);
 
-         for(int var6 = 0; var6 < var3; ++var6) {
+         for (int var6 = 0; var6 < var3; var6++) {
             var5.put(var6, var1.applyAsInt(var4.get(var6)));
          }
 
@@ -279,7 +283,7 @@ public final class NativeImage implements AutoCloseable {
          int var2 = this.width * this.height;
          IntBuffer var3 = MemoryUtil.memIntBuffer(this.pixels, var2);
 
-         for(int var4 = 0; var4 < var2; ++var4) {
+         for (int var4 = 0; var4 < var2; var4++) {
             var3.put(var4, var1.applyAsInt(var3.get(var4)));
          }
       }
@@ -406,8 +410,8 @@ public final class NativeImage implements AutoCloseable {
          this.checkAllocated();
          int[] var1 = new int[this.getWidth() * this.getHeight()];
 
-         for(int var2 = 0; var2 < this.getHeight(); ++var2) {
-            for(int var3 = 0; var3 < this.getWidth(); ++var3) {
+         for (int var2 = 0; var2 < this.getHeight(); var2++) {
+            for (int var3 = 0; var3 < this.getWidth(); var3++) {
                int var4 = this.getPixelRGBA(var3, var2);
                var1[var3 + var2 * this.getWidth()] = FastColor.ARGB32.color(
                   FastColor.ABGR32.alpha(var4), FastColor.ABGR32.red(var4), FastColor.ABGR32.green(var4), FastColor.ABGR32.blue(var4)
@@ -467,8 +471,8 @@ public final class NativeImage implements AutoCloseable {
       this.format.setPackPixelStoreState();
       GlStateManager._getTexImage(3553, var1, this.format.glFormat(), 5121, this.pixels);
       if (var2 && this.format.hasAlpha()) {
-         for(int var3 = 0; var3 < this.getHeight(); ++var3) {
-            for(int var4 = 0; var4 < this.getWidth(); ++var4) {
+         for (int var3 = 0; var3 < this.getHeight(); var3++) {
+            for (int var4 = 0; var4 < this.getWidth(); var4++) {
                this.setPixelRGBA(var4, var3, this.getPixelRGBA(var4, var3) | 255 << this.format.alphaOffset());
             }
          }
@@ -496,17 +500,28 @@ public final class NativeImage implements AutoCloseable {
       this.writeToFile(var1.toPath());
    }
 
-   public void copyFromFont(STBTTFontinfo var1, int var2, int var3, int var4, float var5, float var6, float var7, float var8, int var9, int var10) {
-      if (var9 < 0 || var9 + var3 > this.getWidth() || var10 < 0 || var10 + var4 > this.getHeight()) {
-         throw new IllegalArgumentException(
-            String.format(Locale.ROOT, "Out of bounds: start: (%s, %s) (size: %sx%s); size: %sx%s", var9, var10, var3, var4, this.getWidth(), this.getHeight())
-         );
-      } else if (this.format.components() != 1) {
+   public boolean copyFromFont(FT_Face var1, int var2) {
+      if (this.format.components() != 1) {
          throw new IllegalArgumentException("Can only write fonts into 1-component images.");
+      } else if (FreeTypeUtil.checkError(FreeType.FT_Load_Glyph(var1, var2, 4), "Loading glyph")) {
+         return false;
       } else {
-         STBTruetype.nstbtt_MakeGlyphBitmapSubpixel(
-            var1.address(), this.pixels + (long)var9 + (long)(var10 * this.getWidth()), var3, var4, this.getWidth(), var5, var6, var7, var8, var2
-         );
+         FT_GlyphSlot var3 = Objects.requireNonNull(var1.glyph(), "Glyph not initialized");
+         FT_Bitmap var4 = var3.bitmap();
+         if (var4.pixel_mode() != 2) {
+            throw new IllegalStateException("Rendered glyph was not 8-bit grayscale");
+         } else if (var4.width() == this.getWidth() && var4.rows() == this.getHeight()) {
+            int var5 = var4.width() * var4.rows();
+            ByteBuffer var6 = Objects.requireNonNull(var4.buffer(var5), "Glyph has no bitmap");
+            MemoryUtil.memCopy(MemoryUtil.memAddress(var6), this.pixels, (long)var5);
+            return true;
+         } else {
+            throw new IllegalArgumentException(
+               String.format(
+                  Locale.ROOT, "Glyph bitmap of size %sx%s does not match image of size: %sx%s", var4.width(), var4.rows(), this.getWidth(), this.getHeight()
+               )
+            );
+         }
       }
    }
 
@@ -576,7 +591,7 @@ public final class NativeImage implements AutoCloseable {
             int var3 = Math.min(this.getWidth(), var1.getWidth());
             int var4 = Math.min(this.getHeight(), var1.getHeight());
 
-            for(int var5 = 0; var5 < var4; ++var5) {
+            for (int var5 = 0; var5 < var4; var5++) {
                int var6 = var5 * var1.getWidth() * var2;
                int var7 = var5 * this.getWidth() * var2;
                MemoryUtil.memCopy(var1.pixels + (long)var6, this.pixels + (long)var7, (long)var3);
@@ -586,8 +601,8 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public void fillRect(int var1, int var2, int var3, int var4, int var5) {
-      for(int var6 = var2; var6 < var2 + var4; ++var6) {
-         for(int var7 = var1; var7 < var1 + var3; ++var7) {
+      for (int var6 = var2; var6 < var2 + var4; var6++) {
+         for (int var7 = var1; var7 < var1 + var3; var7++) {
             this.setPixelRGBA(var7, var6, var5);
          }
       }
@@ -598,8 +613,8 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public void copyRect(NativeImage var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9) {
-      for(int var10 = 0; var10 < var7; ++var10) {
-         for(int var11 = 0; var11 < var6; ++var11) {
+      for (int var10 = 0; var10 < var7; var10++) {
+         for (int var11 = 0; var11 < var6; var11++) {
             int var12 = var8 ? var6 - 1 - var11 : var11;
             int var13 = var9 ? var7 - 1 - var10 : var10;
             int var14 = this.getPixelRGBA(var2 + var11, var3 + var10);
@@ -615,7 +630,7 @@ public final class NativeImage implements AutoCloseable {
       long var3 = MemoryUtil.nmemAlloc((long)var2);
 
       try {
-         for(int var5 = 0; var5 < this.getHeight() / 2; ++var5) {
+         for (int var5 = 0; var5 < this.getHeight() / 2; var5++) {
             int var6 = var5 * this.getWidth() * var1;
             int var7 = (this.getHeight() - 1 - var5) * this.getWidth() * var1;
             MemoryUtil.memCopy(this.pixels + (long)var6, var3, (long)var2);
@@ -672,33 +687,33 @@ public final class NativeImage implements AutoCloseable {
       private final boolean supportedByStb;
 
       private Format(
-         int var3,
-         int var4,
-         boolean var5,
-         boolean var6,
-         boolean var7,
-         boolean var8,
-         boolean var9,
-         int var10,
-         int var11,
-         int var12,
-         int var13,
-         int var14,
-         boolean var15
+         final int nullxx,
+         final int nullxxx,
+         final boolean nullxxxx,
+         final boolean nullxxxxx,
+         final boolean nullxxxxxx,
+         final boolean nullxxxxxxx,
+         final boolean nullxxxxxxxx,
+         final int nullxxxxxxxxx,
+         final int nullxxxxxxxxxx,
+         final int nullxxxxxxxxxxx,
+         final int nullxxxxxxxxxxxx,
+         final int nullxxxxxxxxxxxxx,
+         final boolean nullxxxxxxxxxxxxxx
       ) {
-         this.components = var3;
-         this.glFormat = var4;
-         this.hasRed = var5;
-         this.hasGreen = var6;
-         this.hasBlue = var7;
-         this.hasLuminance = var8;
-         this.hasAlpha = var9;
-         this.redOffset = var10;
-         this.greenOffset = var11;
-         this.blueOffset = var12;
-         this.luminanceOffset = var13;
-         this.alphaOffset = var14;
-         this.supportedByStb = var15;
+         this.components = nullxx;
+         this.glFormat = nullxxx;
+         this.hasRed = nullxxxx;
+         this.hasGreen = nullxxxxx;
+         this.hasBlue = nullxxxxxx;
+         this.hasLuminance = nullxxxxxxx;
+         this.hasAlpha = nullxxxxxxxx;
+         this.redOffset = nullxxxxxxxxx;
+         this.greenOffset = nullxxxxxxxxxx;
+         this.blueOffset = nullxxxxxxxxxxx;
+         this.luminanceOffset = nullxxxxxxxxxxxx;
+         this.alphaOffset = nullxxxxxxxxxxxxx;
+         this.supportedByStb = nullxxxxxxxxxxxxxx;
       }
 
       public int components() {
@@ -796,7 +811,7 @@ public final class NativeImage implements AutoCloseable {
       }
 
       static NativeImage.Format getStbFormat(int var0) {
-         switch(var0) {
+         switch (var0) {
             case 1:
                return LUMINANCE;
             case 2:
@@ -818,8 +833,8 @@ public final class NativeImage implements AutoCloseable {
 
       private final int glFormat;
 
-      private InternalGlFormat(int var3) {
-         this.glFormat = var3;
+      private InternalGlFormat(final int nullxx) {
+         this.glFormat = nullxx;
       }
 
       public int glFormat() {

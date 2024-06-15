@@ -43,7 +43,7 @@ public class SavedDataFeaturePoolElementFix extends DataFix {
    }
 
    private static <T> Dynamic<T> updateChildren(Dynamic<T> var0) {
-      return (Dynamic<T>)var0.asStreamOpt().map(SavedDataFeaturePoolElementFix::updateChildren).map(var0::createList).result().orElse((T)var0);
+      return var0.asStreamOpt().map(SavedDataFeaturePoolElementFix::updateChildren).map(var0::createList).result().orElse(var0);
    }
 
    private static Stream<? extends Dynamic<?>> updateChildren(Stream<? extends Dynamic<?>> var0) {
@@ -68,7 +68,7 @@ public class SavedDataFeaturePoolElementFix extends DataFix {
       } else {
          OptionalDynamic var2 = var0.get(var1[0]);
 
-         for(int var3 = 1; var3 < var1.length; ++var3) {
+         for (int var3 = 1; var3 < var1.length; var3++) {
             String var4 = var1[var3];
             Matcher var5 = INDEX_PATTERN.matcher(var4);
             if (var5.matches()) {

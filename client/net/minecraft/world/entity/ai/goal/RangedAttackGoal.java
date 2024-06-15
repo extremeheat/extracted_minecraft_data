@@ -73,7 +73,7 @@ public class RangedAttackGoal extends Goal {
       double var1 = this.mob.distanceToSqr(this.target.getX(), this.target.getY(), this.target.getZ());
       boolean var3 = this.mob.getSensing().hasLineOfSight(this.target);
       if (var3) {
-         ++this.seeTime;
+         this.seeTime++;
       } else {
          this.seeTime = 0;
       }

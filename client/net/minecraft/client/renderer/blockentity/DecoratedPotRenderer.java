@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -24,6 +25,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
+import net.minecraft.world.level.block.entity.PotDecorations;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity> {
    private static final String NECK = "neck";
@@ -88,13 +90,15 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    }
 
    @Nullable
-   private static Material getMaterial(Item var0) {
-      Material var1 = Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.getResourceKey(var0));
-      if (var1 == null) {
-         var1 = Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.getResourceKey(Items.BRICK));
+   private static Material getMaterial(Optional<Item> var0) {
+      if (var0.isPresent()) {
+         Material var1 = Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.getResourceKey((Item)var0.get()));
+         if (var1 != null) {
+            return var1;
+         }
       }
 
-      return var1;
+      return Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.getResourceKey(Items.BRICK));
    }
 
    public void render(DecoratedPotBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
@@ -126,7 +130,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       this.neck.render(var3, var14, var5, var6);
       this.top.render(var3, var14, var5, var6);
       this.bottom.render(var3, var14, var5, var6);
-      DecoratedPotBlockEntity.Decorations var16 = var1.getDecorations();
+      PotDecorations var16 = var1.getDecorations();
       this.renderSide(this.frontSide, var3, var4, var5, var6, getMaterial(var16.front()));
       this.renderSide(this.backSide, var3, var4, var5, var6, getMaterial(var16.back()));
       this.renderSide(this.leftSide, var3, var4, var5, var6, getMaterial(var16.left()));
@@ -136,7 +140,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
 
    private void renderSide(ModelPart var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, @Nullable Material var6) {
       if (var6 == null) {
-         var6 = getMaterial(Items.BRICK);
+         var6 = getMaterial(Optional.empty());
       }
 
       if (var6 != null) {

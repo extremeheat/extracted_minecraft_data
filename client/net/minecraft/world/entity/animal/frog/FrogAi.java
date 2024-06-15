@@ -4,14 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
@@ -39,23 +40,23 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.PathfindingContext;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 
 public class FrogAi {
    private static final float SPEED_MULTIPLIER_WHEN_PANICKING = 2.0F;
-   private static final float SPEED_MULTIPLIER_WHEN_MAKING_LOVE = 1.0F;
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 1.0F;
    private static final float SPEED_MULTIPLIER_ON_LAND = 1.0F;
    private static final float SPEED_MULTIPLIER_IN_WATER = 0.75F;
    private static final UniformInt TIME_BETWEEN_LONG_JUMPS = UniformInt.of(100, 140);
    private static final int MAX_LONG_JUMP_HEIGHT = 2;
    private static final int MAX_LONG_JUMP_WIDTH = 4;
-   private static final float MAX_JUMP_VELOCITY = 1.5F;
+   private static final float MAX_JUMP_VELOCITY_MULTIPLIER = 3.5714288F;
    private static final float SPEED_MULTIPLIER_WHEN_TEMPTED = 1.25F;
 
    public FrogAi() {
@@ -98,7 +99,7 @@ public class FrogAi {
          Activity.IDLE,
          ImmutableList.of(
             Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
-            Pair.of(0, new AnimalMakeLove(EntityType.FROG, 1.0F)),
+            Pair.of(0, new AnimalMakeLove(EntityType.FROG)),
             Pair.of(1, new FollowTemptation(var0x -> 1.25F)),
             Pair.of(2, StartAttacking.create(FrogAi::canAttack, var0x -> var0x.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
             Pair.of(3, TryFindLand.create(6, 1.0F)),
@@ -188,7 +189,7 @@ public class FrogAi {
                   TIME_BETWEEN_LONG_JUMPS,
                   2,
                   4,
-                  1.5F,
+                  3.5714288F,
                   var0x -> SoundEvents.FROG_LONG_JUMP,
                   BlockTags.FROG_PREFER_JUMP_TO,
                   0.5F,
@@ -221,9 +222,10 @@ public class FrogAi {
          BlockState var4 = var2.getBlockState(var1);
          BlockState var5 = var2.getBlockState(var3);
          if (!var4.is(BlockTags.FROG_PREFER_JUMP_TO) && !var5.is(BlockTags.FROG_PREFER_JUMP_TO)) {
-            BlockPathTypes var6 = WalkNodeEvaluator.getBlockPathTypeStatic(var2, var1.mutable());
-            BlockPathTypes var7 = WalkNodeEvaluator.getBlockPathTypeStatic(var2, var3.mutable());
-            return var6 != BlockPathTypes.TRAPDOOR && (!var4.isAir() || var7 != BlockPathTypes.TRAPDOOR)
+            PathfindingContext var6 = new PathfindingContext(var0.level(), var0);
+            PathType var7 = WalkNodeEvaluator.getPathTypeStatic(var6, var1.mutable());
+            PathType var8 = WalkNodeEvaluator.getPathTypeStatic(var6, var3.mutable());
+            return var7 != PathType.TRAPDOOR && (!var4.isAir() || var8 != PathType.TRAPDOOR)
                ? LongJumpToRandomPos.defaultAcceptableLandingSpot(var0, var1)
                : true;
          } else {
@@ -242,7 +244,7 @@ public class FrogAi {
       var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.TONGUE, Activity.LAY_SPAWN, Activity.LONG_JUMP, Activity.SWIM, Activity.IDLE));
    }
 
-   public static Ingredient getTemptations() {
-      return Frog.TEMPTATION_ITEM;
+   public static Predicate<ItemStack> getTemptations() {
+      return var0 -> var0.is(ItemTags.FROG_FOOD);
    }
 }

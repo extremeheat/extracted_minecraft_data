@@ -4,30 +4,27 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabOrderedElement;
 import net.minecraft.client.gui.components.Tooltip;
@@ -42,12 +39,16 @@ import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.renderer.CubeMap;
+import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.StringUtil;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.slf4j.Logger;
@@ -56,7 +57,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Set<String> ALLOWED_PROTOCOLS = Sets.newHashSet(new String[]{"http", "https"});
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   public static final ResourceLocation BACKGROUND_LOCATION = new ResourceLocation("textures/gui/options_background.png");
+   protected static final CubeMap CUBE_MAP = new CubeMap(new ResourceLocation("textures/gui/title/background/panorama"));
+   protected static final PanoramaRenderer PANORAMA = new PanoramaRenderer(CUBE_MAP);
+   public static final ResourceLocation MENU_BACKGROUND = new ResourceLocation("textures/gui/menu_background.png");
+   public static final ResourceLocation HEADER_SEPARATOR = new ResourceLocation("textures/gui/header_separator.png");
+   public static final ResourceLocation FOOTER_SEPARATOR = new ResourceLocation("textures/gui/footer_separator.png");
+   private static final ResourceLocation INWORLD_MENU_BACKGROUND = new ResourceLocation("textures/gui/inworld_menu_background.png");
+   public static final ResourceLocation INWORLD_HEADER_SEPARATOR = new ResourceLocation("textures/gui/inworld_header_separator.png");
+   public static final ResourceLocation INWORLD_FOOTER_SEPARATOR = new ResourceLocation("textures/gui/inworld_footer_separator.png");
    protected final Component title;
    private final List<GuiEventListener> children = Lists.newArrayList();
    private final List<NarratableEntry> narratables = Lists.newArrayList();
@@ -66,6 +74,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public int width;
    public int height;
    private final List<Renderable> renderables = Lists.newArrayList();
+   private long lastPanoramaRenderTime = Util.getMillis();
    protected Font font;
    @Nullable
    private URI clickedLink;
@@ -112,7 +121,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1, var2, var3, var4);
 
-      for(Renderable var6 : this.renderables) {
+      for (Renderable var6 : this.renderables) {
          var6.render(var1, var2, var3, var4);
       }
    }
@@ -125,7 +134,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       } else if (super.keyPressed(var1, var2, var3)) {
          return true;
       } else {
-         Object var4 = switch(var1) {
+         Object var4 = switch (var1) {
             case 258 -> this.createTabEvent();
             default -> null;
             case 262 -> this.createArrowEvent(ScreenDirection.RIGHT);
@@ -156,6 +165,16 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    private FocusNavigationEvent.ArrowNavigation createArrowEvent(ScreenDirection var1) {
       return new FocusNavigationEvent.ArrowNavigation(var1);
+   }
+
+   protected void setInitialFocus() {
+      if (this.minecraft.getLastInputType().isKeyboard()) {
+         FocusNavigationEvent.TabNavigation var1 = new FocusNavigationEvent.TabNavigation(true);
+         ComponentPath var2 = super.nextFocusPath(var1);
+         if (var2 != null) {
+            this.changeFocus(var2);
+         }
+      }
    }
 
    protected void setInitialFocus(GuiEventListener var1) {
@@ -221,7 +240,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public static List<Component> getTooltipFromItem(Minecraft var0, ItemStack var1) {
-      return var1.getTooltipLines(var0.player, var0.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
+      return var1.getTooltipLines(
+         Item.TooltipContext.of(var0.level), var0.player, var0.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL
+      );
    }
 
    protected void insertText(String var1, boolean var2) {
@@ -266,9 +287,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
                URI var6 = new File(var2.getValue()).toURI();
                this.openLink(var6);
             } else if (var2.getAction() == ClickEvent.Action.SUGGEST_COMMAND) {
-               this.insertText(SharedConstants.filterText(var2.getValue()), true);
+               this.insertText(StringUtil.filterText(var2.getValue()), true);
             } else if (var2.getAction() == ClickEvent.Action.RUN_COMMAND) {
-               String var7 = SharedConstants.filterText(var2.getValue());
+               String var7 = StringUtil.filterText(var2.getValue());
                if (var7.startsWith("/")) {
                   if (!this.minecraft.player.connection.sendUnsignedCommand(var7.substring(1))) {
                      LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var7);
@@ -296,6 +317,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.height = var3;
       if (!this.initialized) {
          this.init();
+         this.setInitialFocus();
       } else {
          this.repositionElements();
       }
@@ -309,6 +331,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.clearWidgets();
       this.clearFocus();
       this.init();
+      this.setInitialFocus();
    }
 
    @Override
@@ -329,22 +352,48 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      if (this.minecraft.level != null) {
-         this.renderTransparentBackground(var1);
-      } else {
-         this.renderDirtBackground(var1);
+      if (this.minecraft.level == null) {
+         this.renderPanorama(var1, var4);
       }
+
+      this.renderBlurredBackground(var4);
+      this.renderMenuBackground(var1);
+   }
+
+   protected void renderBlurredBackground(float var1) {
+      this.minecraft.gameRenderer.processBlurEffect(var1);
+      this.minecraft.getMainRenderTarget().bindWrite(false);
+   }
+
+   protected float advancePanoramaTime() {
+      long var1 = Util.getMillis();
+      long var3 = 50L;
+      float var5 = (float)(var1 - this.lastPanoramaRenderTime) / 50.0F;
+      this.lastPanoramaRenderTime = var1;
+      return var5 > 7.0F ? 0.5F : var5;
+   }
+
+   protected void renderPanorama(GuiGraphics var1, float var2) {
+      PANORAMA.render(var1, this.width, this.height, 1.0F, this.advancePanoramaTime());
+   }
+
+   protected void renderMenuBackground(GuiGraphics var1) {
+      this.renderMenuBackground(var1, 0, 0, this.width, this.height);
+   }
+
+   protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      renderMenuBackgroundTexture(var1, this.minecraft.level == null ? MENU_BACKGROUND : INWORLD_MENU_BACKGROUND, var2, var3, 0.0F, 0.0F, var4, var5);
+   }
+
+   public static void renderMenuBackgroundTexture(GuiGraphics var0, ResourceLocation var1, int var2, int var3, float var4, float var5, int var6, int var7) {
+      byte var8 = 32;
+      RenderSystem.enableBlend();
+      var0.blit(var1, var2, var3, 0, var4, var5, var6, var7, 32, 32);
+      RenderSystem.disableBlend();
    }
 
    public void renderTransparentBackground(GuiGraphics var1) {
       var1.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
-   }
-
-   public void renderDirtBackground(GuiGraphics var1) {
-      var1.setColor(0.25F, 0.25F, 0.25F, 1.0F);
-      boolean var2 = true;
-      var1.blit(BACKGROUND_LOCATION, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
    public boolean isPauseScreen() {
@@ -365,13 +414,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public static boolean hasControlDown() {
-      if (Minecraft.ON_OSX) {
-         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 343)
-            || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 347);
-      } else {
-         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 341)
+      return Minecraft.ON_OSX
+         ? InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 343)
+            || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 347)
+         : InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 341)
             || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 345);
-      }
    }
 
    public static boolean hasShiftDown() {
@@ -426,10 +473,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       int var5 = var1.indexOf(47);
       if (var2 == ':') {
          return (var5 == -1 || var3 <= var5) && var4 == -1;
-      } else if (var2 == '/') {
-         return var3 > var4;
       } else {
-         return var2 == '_' || var2 == '-' || var2 >= 'a' && var2 <= 'z' || var2 >= '0' && var2 <= '9' || var2 == '.';
+         return var2 == '/' ? var3 > var4 : var2 == '_' || var2 == '-' || var2 >= 'a' && var2 <= 'z' || var2 >= '0' && var2 <= '9' || var2 == '.';
       }
    }
 
@@ -506,8 +551,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void updateNarratedWidget(NarrationElementOutput var1) {
-      List var2 = this.narratables.stream().filter(NarratableEntry::isActive).collect(Collectors.toList());
-      Collections.sort(var2, Comparator.comparingInt(TabOrderedElement::getTabOrderGroup));
+      List var2 = this.narratables.stream().filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
       Screen.NarratableSearchResult var3 = findNarratableWidget(var2, this.lastNarratable);
       if (var3 != null) {
          if (var3.priority.isTerminal()) {
@@ -535,7 +579,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       Screen.NarratableSearchResult var3 = null;
       int var4 = 0;
 
-      for(int var5 = var0.size(); var4 < var5; ++var4) {
+      for (int var5 = var0.size(); var4 < var5; var4++) {
          NarratableEntry var6 = (NarratableEntry)var0.get(var4);
          NarratableEntry.NarrationPriority var7 = var6.narrationPriority();
          if (var7.isTerminal()) {
@@ -556,6 +600,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.scheduleNarration(NARRATE_DELAY_NARRATOR_ENABLED, false);
    }
 
+   protected void clearTooltipForNextRenderPass() {
+      this.deferredTooltipRendering = null;
+   }
+
    public void setTooltipForNextRenderPass(List<FormattedCharSequence> var1) {
       this.setTooltipForNextRenderPass(var1, DefaultTooltipPositioner.INSTANCE, true);
    }
@@ -566,18 +614,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       }
    }
 
-   protected void setTooltipForNextRenderPass(Component var1) {
+   public void setTooltipForNextRenderPass(Component var1) {
       this.setTooltipForNextRenderPass(Tooltip.splitTooltip(this.minecraft, var1));
    }
 
    public void setTooltipForNextRenderPass(Tooltip var1, ClientTooltipPositioner var2, boolean var3) {
       this.setTooltipForNextRenderPass(var1.toCharSequence(this.minecraft), var2, var3);
-   }
-
-   protected static void hideWidgets(AbstractWidget... var0) {
-      for(AbstractWidget var4 : var0) {
-         var4.visible = false;
-      }
    }
 
    @Override
@@ -590,14 +632,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return null;
    }
 
-   static record DeferredTooltipRendering(List<FormattedCharSequence> a, ClientTooltipPositioner b) {
-      private final List<FormattedCharSequence> tooltip;
-      private final ClientTooltipPositioner positioner;
-
-      DeferredTooltipRendering(List<FormattedCharSequence> var1, ClientTooltipPositioner var2) {
+   static record DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
+      DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
          super();
-         this.tooltip = var1;
-         this.positioner = var2;
+         this.tooltip = tooltip;
+         this.positioner = positioner;
       }
    }
 

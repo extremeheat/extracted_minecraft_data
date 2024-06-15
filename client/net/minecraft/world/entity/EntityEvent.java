@@ -39,7 +39,6 @@ public class EntityEvent {
    public static final byte TRUSTING_FAILED = 40;
    public static final byte TRUSTING_SUCCEEDED = 41;
    public static final byte VILLAGER_SWEAT = 42;
-   public static final byte BAD_OMEN_TRIGGERED = 43;
    public static final byte FOX_EAT = 45;
    public static final byte TELEPORT = 46;
    public static final byte MAINHAND_BREAK = 47;
@@ -58,6 +57,8 @@ public class EntityEvent {
    public static final byte TENDRILS_SHIVER = 61;
    public static final byte SONIC_CHARGE = 62;
    public static final byte SNIFFER_DIGGING_SOUND = 63;
+   public static final byte ARMADILLO_PEEK = 64;
+   public static final byte BODY_BREAK = 65;
 
    public EntityEvent() {
       super();

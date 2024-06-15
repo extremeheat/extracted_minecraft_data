@@ -3,11 +3,9 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
-import java.util.stream.Stream;
 
 public class IglooMetadataRemovalFix extends DataFix {
    public IglooMetadataRemovalFix(Schema var1, boolean var2) {
@@ -25,7 +23,7 @@ public class IglooMetadataRemovalFix extends DataFix {
    }
 
    private static <T> Dynamic<T> removeIglooPieces(Dynamic<T> var0) {
-      return (Dynamic<T>)var0.asStreamOpt().map(var0x -> var0x.filter(var0xx -> !isIglooPiece(var0xx))).map(var0::createList).result().orElse((T)var0);
+      return var0.asStreamOpt().map(var0x -> var0x.filter(var0xx -> !isIglooPiece((Dynamic<?>)var0xx))).map(var0::createList).result().orElse(var0);
    }
 
    private static boolean isIglooPiece(Dynamic<?> var0) {

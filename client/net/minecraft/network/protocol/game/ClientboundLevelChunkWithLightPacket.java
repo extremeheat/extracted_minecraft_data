@@ -2,13 +2,18 @@ package net.minecraft.network.protocol.game;
 
 import java.util.BitSet;
 import javax.annotation.Nullable;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 
 public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkWithLightPacket> STREAM_CODEC = Packet.codec(
+      ClientboundLevelChunkWithLightPacket::write, ClientboundLevelChunkWithLightPacket::new
+   );
    private final int x;
    private final int z;
    private final ClientboundLevelChunkPacketData chunkData;
@@ -23,7 +28,7 @@ public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePa
       this.lightData = new ClientboundLightUpdatePacketData(var5, var2, var3, var4);
    }
 
-   public ClientboundLevelChunkWithLightPacket(FriendlyByteBuf var1) {
+   private ClientboundLevelChunkWithLightPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.x = var1.readInt();
       this.z = var1.readInt();
@@ -31,12 +36,16 @@ public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePa
       this.lightData = new ClientboundLightUpdatePacketData(var1, this.x, this.z);
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeInt(this.x);
       var1.writeInt(this.z);
       this.chunkData.write(var1);
       this.lightData.write(var1);
+   }
+
+   @Override
+   public PacketType<ClientboundLevelChunkWithLightPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_LEVEL_CHUNK_WITH_LIGHT;
    }
 
    public void handle(ClientGamePacketListener var1) {

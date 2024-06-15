@@ -48,7 +48,7 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
    private float[] translations(Direction var1, int var2) {
       float[] var3 = new float[]{0.5F, 0.0F, 0.5F};
       float var4 = (float)var2 / 10.0F * 0.75F;
-      switch(var1) {
+      switch (var1) {
          case EAST:
             var3[0] = 0.73F + var4;
             break;

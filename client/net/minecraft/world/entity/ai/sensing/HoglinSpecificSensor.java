@@ -41,9 +41,9 @@ public class HoglinSpecificSensor extends Sensor<Hoglin> {
       ArrayList var6 = Lists.newArrayList();
       NearestVisibleLivingEntities var7 = var3.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
 
-      for(LivingEntity var9 : var7.findAll(var0 -> !var0.isBaby() && (var0 instanceof Piglin || var0 instanceof Hoglin))) {
+      for (LivingEntity var9 : var7.findAll(var0 -> !var0.isBaby() && (var0 instanceof Piglin || var0 instanceof Hoglin))) {
          if (var9 instanceof Piglin var10) {
-            ++var5;
+            var5++;
             if (var4.isEmpty()) {
                var4 = Optional.of(var10);
             }

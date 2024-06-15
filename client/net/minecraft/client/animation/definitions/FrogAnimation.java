@@ -30,9 +30,7 @@ public class FrogAnimation {
             new Keyframe(
                0.5417F, KeyframeAnimations.scaleVec(1.2999999523162842, 2.0999999046325684, 1.600000023841858), AnimationChannel.Interpolations.LINEAR
             ),
-            new Keyframe(
-               0.625F, KeyframeAnimations.scaleVec(1.2999999523162842, 2.0999999046325684, 1.600000023841858), AnimationChannel.Interpolations.LINEAR
-            ),
+            new Keyframe(0.625F, KeyframeAnimations.scaleVec(1.2999999523162842, 2.0999999046325684, 1.600000023841858), AnimationChannel.Interpolations.LINEAR),
             new Keyframe(0.7083F, KeyframeAnimations.scaleVec(1.0, 1.0, 1.0), AnimationChannel.Interpolations.LINEAR),
             new Keyframe(2.25F, KeyframeAnimations.scaleVec(1.0, 1.0, 1.0), AnimationChannel.Interpolations.LINEAR),
             new Keyframe(
@@ -46,9 +44,7 @@ public class FrogAnimation {
             new Keyframe(
                2.6667F, KeyframeAnimations.scaleVec(1.2999999523162842, 2.0999999046325684, 1.600000023841858), AnimationChannel.Interpolations.LINEAR
             ),
-            new Keyframe(
-               2.875F, KeyframeAnimations.scaleVec(1.2999999523162842, 2.0999999046325684, 1.600000023841858), AnimationChannel.Interpolations.LINEAR
-            ),
+            new Keyframe(2.875F, KeyframeAnimations.scaleVec(1.2999999523162842, 2.0999999046325684, 1.600000023841858), AnimationChannel.Interpolations.LINEAR),
             new Keyframe(2.9583F, KeyframeAnimations.scaleVec(1.0, 1.0, 1.0), AnimationChannel.Interpolations.LINEAR),
             new Keyframe(3.0F, KeyframeAnimations.scaleVec(0.0, 0.0, 0.0), AnimationChannel.Interpolations.LINEAR)
          )

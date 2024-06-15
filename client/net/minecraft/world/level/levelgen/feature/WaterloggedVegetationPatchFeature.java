@@ -27,13 +27,13 @@ public class WaterloggedVegetationPatchFeature extends VegetationPatchFeature {
       HashSet var9 = new HashSet();
       BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
 
-      for(BlockPos var12 : var8) {
+      for (BlockPos var12 : var8) {
          if (!isExposed(var1, var8, var12, var10)) {
             var9.add(var12);
          }
       }
 
-      for(BlockPos var14 : var9) {
+      for (BlockPos var14 : var9) {
          var1.setBlock(var14, Blocks.WATER.defaultBlockState(), 2);
       }
 

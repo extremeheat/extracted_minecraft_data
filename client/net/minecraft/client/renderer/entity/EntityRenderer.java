@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -62,7 +63,7 @@ public abstract class EntityRenderer<T extends Entity> {
 
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       if (this.shouldShowName(var1)) {
-         this.renderNameTag((T)var1, var1.getDisplayName(), var4, var5, var6);
+         this.renderNameTag((T)var1, var1.getDisplayName(), var4, var5, var6, var3);
       }
    }
 
@@ -76,29 +77,35 @@ public abstract class EntityRenderer<T extends Entity> {
       return this.font;
    }
 
-   protected void renderNameTag(T var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5) {
-      double var6 = this.entityRenderDispatcher.distanceToSqr(var1);
-      if (!(var6 > 4096.0)) {
-         boolean var8 = !var1.isDiscrete();
-         float var9 = var1.getNameTagOffsetY();
-         int var10 = "deadmau5".equals(var2.getString()) ? -10 : 0;
-         var3.pushPose();
-         var3.translate(0.0F, var9, 0.0F);
-         var3.mulPose(this.entityRenderDispatcher.cameraOrientation());
-         var3.scale(-0.025F, -0.025F, 0.025F);
-         Matrix4f var11 = var3.last().pose();
-         float var12 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
-         int var13 = (int)(var12 * 255.0F) << 24;
-         Font var14 = this.getFont();
-         float var15 = (float)(-var14.width(var2) / 2);
-         var14.drawInBatch(
-            var2, var15, (float)var10, 553648127, false, var11, var4, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var13, var5
-         );
-         if (var8) {
-            var14.drawInBatch(var2, var15, (float)var10, -1, false, var11, var4, Font.DisplayMode.NORMAL, 0, var5);
-         }
+   protected void renderNameTag(T var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5, float var6) {
+      double var7 = this.entityRenderDispatcher.distanceToSqr(var1);
+      if (!(var7 > 4096.0)) {
+         Vec3 var9 = var1.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, var1.getViewYRot(var6));
+         if (var9 != null) {
+            boolean var10 = !var1.isDiscrete();
+            int var11 = "deadmau5".equals(var2.getString()) ? -10 : 0;
+            var3.pushPose();
+            var3.translate(var9.x, var9.y + 0.5, var9.z);
+            var3.mulPose(this.entityRenderDispatcher.cameraOrientation());
+            var3.scale(-0.025F, -0.025F, 0.025F);
+            Matrix4f var12 = var3.last().pose();
+            float var13 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
+            int var14 = (int)(var13 * 255.0F) << 24;
+            Font var15 = this.getFont();
+            float var16 = (float)(-var15.width(var2) / 2);
+            var15.drawInBatch(
+               var2, var16, (float)var11, 553648127, false, var12, var4, var10 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var14, var5
+            );
+            if (var10) {
+               var15.drawInBatch(var2, var16, (float)var11, -1, false, var12, var4, Font.DisplayMode.NORMAL, 0, var5);
+            }
 
-         var3.popPose();
+            var3.popPose();
+         }
       }
+   }
+
+   protected float getShadowRadius(T var1) {
+      return this.shadowRadius;
    }
 }

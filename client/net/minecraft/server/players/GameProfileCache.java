@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.util.StringUtil;
 import org.slf4j.Logger;
 
 public class GameProfileCache {
@@ -73,7 +73,7 @@ public class GameProfileCache {
    }
 
    private static Optional<GameProfile> lookupGameProfile(GameProfileRepository var0, String var1) {
-      if (!Player.isValidUsername(var1)) {
+      if (!StringUtil.isValidPlayerName(var1)) {
          return createUnknownProfile(var1);
       } else {
          final AtomicReference var2 = new AtomicReference();

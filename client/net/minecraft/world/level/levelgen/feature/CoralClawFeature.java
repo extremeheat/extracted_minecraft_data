@@ -25,7 +25,7 @@ public class CoralClawFeature extends CoralFeature {
          int var6 = var2.nextInt(2) + 2;
          List var7 = Util.toShuffledList(Stream.of(var5, var5.getClockWise(), var5.getCounterClockWise()), var2);
 
-         for(Direction var10 : var7.subList(0, var6)) {
+         for (Direction var10 : var7.subList(0, var6)) {
             BlockPos.MutableBlockPos var11 = var3.mutable();
             int var12 = var2.nextInt(2) + 1;
             var11.move(var10);
@@ -41,14 +41,14 @@ public class CoralClawFeature extends CoralFeature {
                var13 = var2.nextInt(3) + 3;
             }
 
-            for(int var16 = 0; var16 < var12 && this.placeCoralBlock(var1, var2, var11, var4); ++var16) {
+            for (int var16 = 0; var16 < var12 && this.placeCoralBlock(var1, var2, var11, var4); var16++) {
                var11.move(var14);
             }
 
             var11.move(var14.getOpposite());
             var11.move(Direction.UP);
 
-            for(int var17 = 0; var17 < var13; ++var17) {
+            for (int var17 = 0; var17 < var13; var17++) {
                var11.move(var5);
                if (!this.placeCoralBlock(var1, var2, var11, var4)) {
                   break;

@@ -10,8 +10,10 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.SpecialGlyphs;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -26,11 +28,10 @@ public class FontSet implements AutoCloseable {
    private final ResourceLocation name;
    private BakedGlyph missingGlyph;
    private BakedGlyph whiteGlyph;
-   private final List<GlyphProvider> providers = Lists.newArrayList();
-   private final CodepointMap<BakedGlyph> glyphs = new CodepointMap<>(var0 -> new BakedGlyph[var0], var0 -> new BakedGlyph[var0][]);
-   private final CodepointMap<FontSet.GlyphInfoFilter> glyphInfos = new CodepointMap<>(
-      var0 -> new FontSet.GlyphInfoFilter[var0], var0 -> new FontSet.GlyphInfoFilter[var0][]
-   );
+   private List<GlyphProvider.Conditional> allProviders = List.of();
+   private List<GlyphProvider> activeProviders = List.of();
+   private final CodepointMap<BakedGlyph> glyphs = new CodepointMap<>(BakedGlyph[]::new, BakedGlyph[][]::new);
+   private final CodepointMap<FontSet.GlyphInfoFilter> glyphInfos = new CodepointMap<>(FontSet.GlyphInfoFilter[]::new, FontSet.GlyphInfoFilter[][]::new);
    private final Int2ObjectMap<IntList> glyphsByWidth = new Int2ObjectOpenHashMap();
    private final List<FontTexture> textures = Lists.newArrayList();
 
@@ -40,52 +41,60 @@ public class FontSet implements AutoCloseable {
       this.name = var2;
    }
 
-   public void reload(List<GlyphProvider> var1) {
-      this.closeProviders();
+   public void reload(List<GlyphProvider.Conditional> var1, Set<FontOption> var2) {
+      this.allProviders = var1;
+      this.reload(var2);
+   }
+
+   public void reload(Set<FontOption> var1) {
+      this.activeProviders = List.of();
+      this.resetTextures();
+      this.activeProviders = this.selectProviders(this.allProviders, var1);
+   }
+
+   private void resetTextures() {
       this.closeTextures();
       this.glyphs.clear();
       this.glyphInfos.clear();
       this.glyphsByWidth.clear();
       this.missingGlyph = SpecialGlyphs.MISSING.bake(this::stitch);
       this.whiteGlyph = SpecialGlyphs.WHITE.bake(this::stitch);
-      IntOpenHashSet var2 = new IntOpenHashSet();
+   }
 
-      for(GlyphProvider var4 : var1) {
-         var2.addAll(var4.getSupportedGlyphs());
+   private List<GlyphProvider> selectProviders(List<GlyphProvider.Conditional> var1, Set<FontOption> var2) {
+      IntOpenHashSet var3 = new IntOpenHashSet();
+      ArrayList var4 = new ArrayList();
+
+      for (GlyphProvider.Conditional var6 : var1) {
+         if (var6.filter().apply(var2)) {
+            var4.add(var6.provider());
+            var3.addAll(var6.provider().getSupportedGlyphs());
+         }
       }
 
-      HashSet var5 = Sets.newHashSet();
-      var2.forEach(var3 -> {
-         for(GlyphProvider var5xx : var1) {
-            GlyphInfo var6 = var5xx.getGlyph(var3);
-            if (var6 != null) {
-               var5.add(var5xx);
-               if (var6 != SpecialGlyphs.MISSING) {
-                  ((IntList)this.glyphsByWidth.computeIfAbsent(Mth.ceil(var6.getAdvance(false)), var0 -> new IntArrayList())).add(var3);
+      HashSet var7 = Sets.newHashSet();
+      var3.forEach(var3x -> {
+         for (GlyphProvider var5 : var4) {
+            GlyphInfo var6x = var5.getGlyph(var3x);
+            if (var6x != null) {
+               var7.add(var5);
+               if (var6x != SpecialGlyphs.MISSING) {
+                  ((IntList)this.glyphsByWidth.computeIfAbsent(Mth.ceil(var6x.getAdvance(false)), var0 -> new IntArrayList())).add(var3x);
                }
                break;
             }
          }
       });
-      var1.stream().filter(var5::contains).forEach(this.providers::add);
+      return var4.stream().filter(var7::contains).toList();
    }
 
    @Override
    public void close() {
-      this.closeProviders();
       this.closeTextures();
    }
 
-   private void closeProviders() {
-      for(GlyphProvider var2 : this.providers) {
-         var2.close();
-      }
-
-      this.providers.clear();
-   }
-
    private void closeTextures() {
-      for(FontTexture var2 : this.textures) {
+      for (FontTexture var2 : this.textures) {
          var2.close();
       }
 
@@ -105,7 +114,7 @@ public class FontSet implements AutoCloseable {
    private FontSet.GlyphInfoFilter computeGlyphInfo(int var1) {
       GlyphInfo var2 = null;
 
-      for(GlyphProvider var4 : this.providers) {
+      for (GlyphProvider var4 : this.activeProviders) {
          GlyphInfo var5 = var4.getGlyph(var1);
          if (var5 != null) {
             if (var2 == null) {
@@ -126,7 +135,7 @@ public class FontSet implements AutoCloseable {
    }
 
    private BakedGlyph computeBakedGlyph(int var1) {
-      for(GlyphProvider var3 : this.providers) {
+      for (GlyphProvider var3 : this.activeProviders) {
          GlyphInfo var4 = var3.getGlyph(var1);
          if (var4 != null) {
             return var4.bake(this::stitch);
@@ -141,7 +150,7 @@ public class FontSet implements AutoCloseable {
    }
 
    private BakedGlyph stitch(SheetGlyphInfo var1) {
-      for(FontTexture var3 : this.textures) {
+      for (FontTexture var3 : this.textures) {
          BakedGlyph var4 = var3.add(var1);
          if (var4 != null) {
             return var4;
@@ -163,19 +172,21 @@ public class FontSet implements AutoCloseable {
       return var2 != null && !var2.isEmpty() ? this.getGlyph(var2.getInt(RANDOM.nextInt(var2.size()))) : this.missingGlyph;
    }
 
+   public ResourceLocation name() {
+      return this.name;
+   }
+
    public BakedGlyph whiteGlyph() {
       return this.whiteGlyph;
    }
 
-   static record GlyphInfoFilter(GlyphInfo a, GlyphInfo b) {
-      private final GlyphInfo glyphInfo;
-      private final GlyphInfo glyphInfoNotFishy;
+   static record GlyphInfoFilter(GlyphInfo glyphInfo, GlyphInfo glyphInfoNotFishy) {
       static final FontSet.GlyphInfoFilter MISSING = new FontSet.GlyphInfoFilter(SpecialGlyphs.MISSING, SpecialGlyphs.MISSING);
 
-      GlyphInfoFilter(GlyphInfo var1, GlyphInfo var2) {
+      GlyphInfoFilter(GlyphInfo glyphInfo, GlyphInfo glyphInfoNotFishy) {
          super();
-         this.glyphInfo = var1;
-         this.glyphInfoNotFishy = var2;
+         this.glyphInfo = glyphInfo;
+         this.glyphInfoNotFishy = glyphInfoNotFishy;
       }
 
       GlyphInfo select(boolean var1) {

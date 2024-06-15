@@ -41,7 +41,7 @@ public class BlockStatePredictionHandler implements AutoCloseable {
    public void endPredictionsUpTo(int var1, ClientLevel var2) {
       ObjectIterator var3 = this.serverVerifiedStates.long2ObjectEntrySet().iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          Entry var4 = (Entry)var3.next();
          BlockStatePredictionHandler.ServerVerifiedState var5 = (BlockStatePredictionHandler.ServerVerifiedState)var4.getValue();
          if (var5.sequence <= var1) {
@@ -53,7 +53,7 @@ public class BlockStatePredictionHandler implements AutoCloseable {
    }
 
    public BlockStatePredictionHandler startPredicting() {
-      ++this.currentSequenceNr;
+      this.currentSequenceNr++;
       this.isPredicting = true;
       return this;
    }

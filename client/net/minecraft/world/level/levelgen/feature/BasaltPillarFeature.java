@@ -28,7 +28,7 @@ public class BasaltPillarFeature extends Feature<NoneFeatureConfiguration> {
          boolean var9 = true;
          boolean var10 = true;
 
-         while(var3.isEmptyBlock(var5)) {
+         while (var3.isEmptyBlock(var5)) {
             if (var3.isOutsideBuildHeight(var5)) {
                return true;
             }
@@ -49,14 +49,14 @@ public class BasaltPillarFeature extends Feature<NoneFeatureConfiguration> {
          var5.move(Direction.DOWN);
          BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
 
-         for(int var12 = -3; var12 < 4; ++var12) {
-            for(int var13 = -3; var13 < 4; ++var13) {
+         for (int var12 = -3; var12 < 4; var12++) {
+            for (int var13 = -3; var13 < 4; var13++) {
                int var14 = Mth.abs(var12) * Mth.abs(var13);
                if (var4.nextInt(10) < 10 - var14) {
                   var11.set(var5.offset(var12, 0, var13));
                   int var15 = 3;
 
-                  while(var3.isEmptyBlock(var6.setWithOffset(var11, Direction.DOWN))) {
+                  while (var3.isEmptyBlock(var6.setWithOffset(var11, Direction.DOWN))) {
                      var11.move(Direction.DOWN);
                      if (--var15 <= 0) {
                         break;

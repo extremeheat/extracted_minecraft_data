@@ -78,6 +78,11 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
    }
 
    @Override
+   public boolean isGridAligned() {
+      return false;
+   }
+
+   @Override
    public void tick() {
       super.tick();
       if (!this.level().isClientSide && this.isAlive() && this.isEnabled() && this.suckInItems()) {
@@ -89,7 +94,7 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       if (HopperBlockEntity.suckInItems(this.level(), this)) {
          return true;
       } else {
-         for(ItemEntity var3 : this.level()
+         for (ItemEntity var3 : this.level()
             .getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.25, 0.0, 0.25), EntitySelector.ENTITY_STILL_ALIVE)) {
             if (HopperBlockEntity.addItem(this, var3)) {
                return true;

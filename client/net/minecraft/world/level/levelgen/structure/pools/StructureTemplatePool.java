@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -14,7 +13,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Rotation;
@@ -29,7 +27,7 @@ public class StructureTemplatePool {
    private static final MutableObject<Codec<Holder<StructureTemplatePool>>> CODEC_REFERENCE = new MutableObject();
    public static final Codec<StructureTemplatePool> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.lazyInitializedCodec(CODEC_REFERENCE::getValue).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback),
+               Codec.lazyInitialized(CODEC_REFERENCE::getValue).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback),
                Codec.mapPair(StructurePoolElement.CODEC.fieldOf("element"), Codec.intRange(1, 150).fieldOf("weight"))
                   .codec()
                   .listOf()
@@ -51,10 +49,10 @@ public class StructureTemplatePool {
       this.rawTemplates = var2;
       this.templates = new ObjectArrayList();
 
-      for(Pair var4 : var2) {
+      for (Pair var4 : var2) {
          StructurePoolElement var5 = (StructurePoolElement)var4.getFirst();
 
-         for(int var6 = 0; var6 < var4.getSecond(); ++var6) {
+         for (int var6 = 0; var6 < var4.getSecond(); var6++) {
             this.templates.add(var5);
          }
       }
@@ -71,11 +69,11 @@ public class StructureTemplatePool {
       this.rawTemplates = Lists.newArrayList();
       this.templates = new ObjectArrayList();
 
-      for(Pair var5 : var2) {
+      for (Pair var5 : var2) {
          StructurePoolElement var6 = (StructurePoolElement)((Function)var5.getFirst()).apply(var3);
          this.rawTemplates.add(Pair.of(var6, (Integer)var5.getSecond()));
 
-         for(int var7 = 0; var7 < var5.getSecond(); ++var7) {
+         for (int var7 = 0; var7 < var5.getSecond(); var7++) {
             this.templates.add(var6);
          }
       }
@@ -122,9 +120,9 @@ public class StructureTemplatePool {
       private final String name;
       private final ImmutableList<StructureProcessor> processors;
 
-      private Projection(String var3, ImmutableList<StructureProcessor> var4) {
-         this.name = var3;
-         this.processors = var4;
+      private Projection(final String nullxx, final ImmutableList<StructureProcessor> nullxxx) {
+         this.name = nullxx;
+         this.processors = nullxxx;
       }
 
       public String getName() {

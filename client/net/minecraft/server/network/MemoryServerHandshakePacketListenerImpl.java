@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.handshake.ClientIntent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.handshake.ServerHandshakePacketListener;
+import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.server.MinecraftServer;
 
 public class MemoryServerHandshakePacketListenerImpl implements ServerHandshakePacketListener {
@@ -22,8 +23,8 @@ public class MemoryServerHandshakePacketListenerImpl implements ServerHandshakeP
       if (var1.intention() != ClientIntent.LOGIN) {
          throw new UnsupportedOperationException("Invalid intention " + var1.intention());
       } else {
-         this.connection.setClientboundProtocolAfterHandshake(ClientIntent.LOGIN);
-         this.connection.setListener(new ServerLoginPacketListenerImpl(this.server, this.connection));
+         this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, false));
+         this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
       }
    }
 

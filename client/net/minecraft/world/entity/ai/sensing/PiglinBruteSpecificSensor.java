@@ -33,7 +33,7 @@ public class PiglinBruteSpecificSensor extends Sensor<LivingEntity> {
       NearestVisibleLivingEntities var5 = var3.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
       Optional var6 = var5.findClosest(var0 -> var0 instanceof WitherSkeleton || var0 instanceof WitherBoss).map(Mob.class::cast);
 
-      for(LivingEntity var9 : var3.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).orElse(ImmutableList.of())) {
+      for (LivingEntity var9 : var3.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).orElse(ImmutableList.of())) {
          if (var9 instanceof AbstractPiglin && ((AbstractPiglin)var9).isAdult()) {
             var4.add((AbstractPiglin)var9);
          }

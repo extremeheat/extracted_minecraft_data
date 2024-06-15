@@ -14,8 +14,8 @@ public interface ClientTooltipComponent {
    }
 
    static ClientTooltipComponent create(TooltipComponent var0) {
-      if (var0 instanceof BundleTooltip) {
-         return new ClientBundleTooltip((BundleTooltip)var0);
+      if (var0 instanceof BundleTooltip var1) {
+         return new ClientBundleTooltip(var1.contents());
       } else {
          throw new IllegalArgumentException("Unknown TooltipComponent");
       }

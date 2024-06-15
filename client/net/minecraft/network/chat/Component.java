@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.contents.DataSource;
 import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.NbtContents;
@@ -60,12 +60,9 @@ public interface Component extends Message, FormattedText {
 
    List<Component> getSiblings();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    default String tryCollapseToString() {
-      ComponentContents var2 = this.getContents();
-      if (var2 instanceof PlainTextContents var1 && this.getSiblings().isEmpty() && this.getStyle().isEmpty()) {
+      if (this.getContents() instanceof PlainTextContents var1 && this.getSiblings().isEmpty() && this.getStyle().isEmpty()) {
          return var1.text();
       }
 
@@ -89,7 +86,7 @@ public interface Component extends Message, FormattedText {
       if (var4.isPresent()) {
          return var4;
       } else {
-         for(Component var6 : this.getSiblings()) {
+         for (Component var6 : this.getSiblings()) {
             Optional var7 = var6.visit(var1, var3);
             if (var7.isPresent()) {
                return var7;
@@ -106,7 +103,7 @@ public interface Component extends Message, FormattedText {
       if (var2.isPresent()) {
          return var2;
       } else {
-         for(Component var4 : this.getSiblings()) {
+         for (Component var4 : this.getSiblings()) {
             Optional var5 = var4.visit(var1);
             if (var5.isPresent()) {
                return var5;
@@ -160,7 +157,7 @@ public interface Component extends Message, FormattedText {
    }
 
    static MutableComponent translatableEscape(String var0, Object... var1) {
-      for(int var2 = 0; var2 < var1.length; ++var2) {
+      for (int var2 = 0; var2 < var1.length; var2++) {
          Object var3 = var1[var2];
          if (!TranslatableContents.isAllowedPrimitiveArgument(var3) && !(var3 instanceof Component)) {
             var1[var2] = String.valueOf(var3);
@@ -225,53 +222,56 @@ public interface Component extends Message, FormattedText {
          super();
       }
 
-      static MutableComponent deserialize(JsonElement var0) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new);
+      static MutableComponent deserialize(JsonElement var0, HolderLookup.Provider var1) {
+         return (MutableComponent)ComponentSerialization.CODEC
+            .parse(var1.createSerializationContext(JsonOps.INSTANCE), var0)
+            .getOrThrow(JsonParseException::new);
       }
 
-      static JsonElement serialize(Component var0) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, var0), JsonParseException::new);
+      static JsonElement serialize(Component var0, HolderLookup.Provider var1) {
+         return (JsonElement)ComponentSerialization.CODEC
+            .encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0)
+            .getOrThrow(JsonParseException::new);
       }
 
-      public static String toJson(Component var0) {
-         return GSON.toJson(serialize(var0));
-      }
-
-      public static JsonElement toJsonTree(Component var0) {
-         return serialize(var0);
-      }
-
-      @Nullable
-      public static MutableComponent fromJson(String var0) {
-         JsonElement var1 = JsonParser.parseString(var0);
-         return var1 == null ? null : deserialize(var1);
+      public static String toJson(Component var0, HolderLookup.Provider var1) {
+         return GSON.toJson(serialize(var0, var1));
       }
 
       @Nullable
-      public static MutableComponent fromJson(@Nullable JsonElement var0) {
-         return var0 == null ? null : deserialize(var0);
+      public static MutableComponent fromJson(String var0, HolderLookup.Provider var1) {
+         JsonElement var2 = JsonParser.parseString(var0);
+         return var2 == null ? null : deserialize(var2, var1);
       }
 
       @Nullable
-      public static MutableComponent fromJsonLenient(String var0) {
-         JsonReader var1 = new JsonReader(new StringReader(var0));
-         var1.setLenient(true);
-         JsonElement var2 = JsonParser.parseReader(var1);
-         return var2 == null ? null : deserialize(var2);
+      public static MutableComponent fromJson(@Nullable JsonElement var0, HolderLookup.Provider var1) {
+         return var0 == null ? null : deserialize(var0, var1);
+      }
+
+      @Nullable
+      public static MutableComponent fromJsonLenient(String var0, HolderLookup.Provider var1) {
+         JsonReader var2 = new JsonReader(new StringReader(var0));
+         var2.setLenient(true);
+         JsonElement var3 = JsonParser.parseReader(var2);
+         return var3 == null ? null : deserialize(var3, var1);
       }
    }
 
    public static class SerializerAdapter implements JsonDeserializer<MutableComponent>, JsonSerializer<Component> {
-      public SerializerAdapter() {
+      private final HolderLookup.Provider registries;
+
+      public SerializerAdapter(HolderLookup.Provider var1) {
          super();
+         this.registries = var1;
       }
 
       public MutableComponent deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         return Component.Serializer.deserialize(var1);
+         return Component.Serializer.deserialize(var1, this.registries);
       }
 
       public JsonElement serialize(Component var1, Type var2, JsonSerializationContext var3) {
-         return Component.Serializer.serialize(var1);
+         return Component.Serializer.serialize(var1, this.registries);
       }
    }
 }

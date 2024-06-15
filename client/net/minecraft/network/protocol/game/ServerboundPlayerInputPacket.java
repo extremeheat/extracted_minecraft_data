@@ -1,9 +1,14 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerInputPacket> STREAM_CODEC = Packet.codec(
+      ServerboundPlayerInputPacket::write, ServerboundPlayerInputPacket::new
+   );
    private static final int FLAG_JUMPING = 1;
    private static final int FLAG_SHIFT_KEY_DOWN = 2;
    private final float xxa;
@@ -19,7 +24,7 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
       this.isShiftKeyDown = var4;
    }
 
-   public ServerboundPlayerInputPacket(FriendlyByteBuf var1) {
+   private ServerboundPlayerInputPacket(FriendlyByteBuf var1) {
       super();
       this.xxa = var1.readFloat();
       this.zza = var1.readFloat();
@@ -28,8 +33,7 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
       this.isShiftKeyDown = (var2 & 2) > 0;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeFloat(this.xxa);
       var1.writeFloat(this.zza);
       byte var2 = 0;
@@ -42,6 +46,11 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
       }
 
       var1.writeByte(var2);
+   }
+
+   @Override
+   public PacketType<ServerboundPlayerInputPacket> type() {
+      return GamePacketTypes.SERVERBOUND_PLAYER_INPUT;
    }
 
    public void handle(ServerGamePacketListener var1) {

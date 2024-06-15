@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
@@ -30,9 +29,7 @@ public class ListPlayersCommand {
    }
 
    private static int listPlayersWithUuids(CommandSourceStack var0) {
-      return format(
-         var0, var0x -> Component.translatable("commands.list.nameAndId", var0x.getName(), Component.translationArg(var0x.getGameProfile().getId()))
-      );
+      return format(var0, var0x -> Component.translatable("commands.list.nameAndId", var0x.getName(), Component.translationArg(var0x.getGameProfile().getId())));
    }
 
    private static int format(CommandSourceStack var0, Function<ServerPlayer, Component> var1) {

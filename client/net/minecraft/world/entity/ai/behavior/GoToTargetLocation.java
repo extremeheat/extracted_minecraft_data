@@ -1,11 +1,9 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 public class GoToTargetLocation {
@@ -36,7 +34,7 @@ public class GoToTargetLocation {
                      if (!var9) {
                         BehaviorUtils.setWalkAndLookTargetMemories(var5x, getNearbyPos(var5x, var8), var2, var1);
                      }
-      
+
                      return true;
                   })
       );

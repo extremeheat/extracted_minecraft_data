@@ -8,14 +8,12 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +22,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
@@ -43,7 +42,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -126,6 +124,7 @@ import net.minecraft.server.commands.TellRawCommand;
 import net.minecraft.server.commands.TickCommand;
 import net.minecraft.server.commands.TimeCommand;
 import net.minecraft.server.commands.TitleCommand;
+import net.minecraft.server.commands.TransferCommand;
 import net.minecraft.server.commands.TriggerCommand;
 import net.minecraft.server.commands.WardenSpawnTrackerCommand;
 import net.minecraft.server.commands.WeatherCommand;
@@ -153,7 +152,7 @@ public class Commands {
       AdvancementCommands.register(this.dispatcher);
       AttributeCommand.register(this.dispatcher, var2);
       ExecuteCommand.register(this.dispatcher, var2);
-      BossBarCommands.register(this.dispatcher);
+      BossBarCommands.register(this.dispatcher, var2);
       ClearInventoryCommands.register(this.dispatcher, var2);
       CloneCommands.register(this.dispatcher, var2);
       DamageCommand.register(this.dispatcher, var2);
@@ -191,7 +190,7 @@ public class Commands {
       RideCommand.register(this.dispatcher);
       SayCommand.register(this.dispatcher);
       ScheduleCommand.register(this.dispatcher);
-      ScoreboardCommand.register(this.dispatcher);
+      ScoreboardCommand.register(this.dispatcher, var2);
       SeedCommand.register(this.dispatcher, var1 != Commands.CommandSelection.INTEGRATED);
       SetBlockCommand.register(this.dispatcher, var2);
       SetSpawnCommand.register(this.dispatcher);
@@ -201,13 +200,13 @@ public class Commands {
       StopSoundCommand.register(this.dispatcher);
       SummonCommand.register(this.dispatcher, var2);
       TagCommand.register(this.dispatcher);
-      TeamCommand.register(this.dispatcher);
+      TeamCommand.register(this.dispatcher, var2);
       TeamMsgCommand.register(this.dispatcher);
       TeleportCommand.register(this.dispatcher);
-      TellRawCommand.register(this.dispatcher);
+      TellRawCommand.register(this.dispatcher, var2);
       TickCommand.register(this.dispatcher);
       TimeCommand.register(this.dispatcher);
-      TitleCommand.register(this.dispatcher);
+      TitleCommand.register(this.dispatcher, var2);
       TriggerCommand.register(this.dispatcher);
       WeatherCommand.register(this.dispatcher);
       WorldBorderCommand.register(this.dispatcher);
@@ -218,7 +217,7 @@ public class Commands {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          TestCommand.register(this.dispatcher);
          ResetChunksCommand.register(this.dispatcher);
-         RaidCommand.register(this.dispatcher);
+         RaidCommand.register(this.dispatcher, var2);
          DebugPathCommand.register(this.dispatcher);
          DebugMobSpawningCommand.register(this.dispatcher);
          WardenSpawnTrackerCommand.register(this.dispatcher);
@@ -243,6 +242,7 @@ public class Commands {
          SaveOnCommand.register(this.dispatcher);
          SetPlayerIdleTimeoutCommand.register(this.dispatcher);
          StopCommand.register(this.dispatcher);
+         TransferCommand.register(this.dispatcher);
          WhitelistCommand.register(this.dispatcher);
       }
 
@@ -279,7 +279,7 @@ public class Commands {
             LOGGER.error("Command exception: /{}", var2, var12);
             StackTraceElement[] var7 = var12.getStackTrace();
 
-            for(int var8 = 0; var8 < Math.min(var7.length, 3); ++var8) {
+            for (int var8 = 0; var8 < Math.min(var7.length, 3); var8++) {
                var6.append("\n\n")
                   .append(var7[var8].getMethodName())
                   .append("\n ")
@@ -358,15 +358,13 @@ public class Commands {
       var1.connection.send(new ClientboundCommandsPacket(var3));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void fillUsableCommands(
       CommandNode<CommandSourceStack> var1,
       CommandNode<SharedSuggestionProvider> var2,
       CommandSourceStack var3,
       Map<CommandNode<CommandSourceStack>, CommandNode<SharedSuggestionProvider>> var4
    ) {
-      for(CommandNode var6 : var1.getChildren()) {
+      for (CommandNode var6 : var1.getChildren()) {
          if (var6.canUse(var3)) {
             ArgumentBuilder var7 = var6.createBuilder();
             var7.requires(var0 -> true);
@@ -374,8 +372,11 @@ public class Commands {
                var7.executes(var0 -> 0);
             }
 
-            if (var7 instanceof RequiredArgumentBuilder var8 && var8.getSuggestionsProvider() != null) {
-               var8.suggests(SuggestionProviders.safelySwap(var8.getSuggestionsProvider()));
+            if (var7 instanceof RequiredArgumentBuilder) {
+               RequiredArgumentBuilder var8 = (RequiredArgumentBuilder)var7;
+               if (var8.getSuggestionsProvider() != null) {
+                  var8.suggests(SuggestionProviders.safelySwap(var8.getSuggestionsProvider()));
+               }
             }
 
             if (var7.getRedirect() != null) {
@@ -438,18 +439,31 @@ public class Commands {
    public static CommandBuildContext createValidationContext(final HolderLookup.Provider var0) {
       return new CommandBuildContext() {
          @Override
-         public <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<T>> var1) {
-            final HolderLookup.RegistryLookup var2 = var0.lookupOrThrow(var1);
-            return new HolderLookup.Delegate<T>(var2) {
+         public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
+            return var0.listRegistries();
+         }
+
+         @Override
+         public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
+            return var0.<T>lookup(var1).map(this::createLookup);
+         }
+
+         private <T> HolderLookup.RegistryLookup.Delegate<T> createLookup(final HolderLookup.RegistryLookup<T> var1) {
+            return new HolderLookup.RegistryLookup.Delegate<T>() {
                @Override
-               public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
-                  return Optional.of(this.getOrThrow(var1));
+               public HolderLookup.RegistryLookup<T> parent() {
+                  return var1;
                }
 
                @Override
-               public HolderSet.Named<T> getOrThrow(TagKey<T> var1) {
-                  Optional var2x = var2.get(var1);
-                  return var2x.orElseGet(() -> HolderSet.emptyNamed(var2, var1));
+               public Optional<HolderSet.Named<T>> get(TagKey<T> var1x) {
+                  return Optional.of(this.getOrThrow(var1x));
+               }
+
+               @Override
+               public HolderSet.Named<T> getOrThrow(TagKey<T> var1x) {
+                  Optional var2 = this.parent().get(var1x);
+                  return var2.orElseGet(() -> HolderSet.emptyNamed(this.parent(), var1x));
                }
             };
          }
@@ -481,9 +495,9 @@ public class Commands {
       final boolean includeIntegrated;
       final boolean includeDedicated;
 
-      private CommandSelection(boolean var3, boolean var4) {
-         this.includeIntegrated = var3;
-         this.includeDedicated = var4;
+      private CommandSelection(final boolean nullxx, final boolean nullxxx) {
+         this.includeIntegrated = nullxx;
+         this.includeDedicated = nullxxx;
       }
    }
 

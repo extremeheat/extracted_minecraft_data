@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
@@ -126,7 +125,7 @@ public class AttributeCommand {
                                                                      "value", DoubleArgumentType.doubleArg()
                                                                   )
                                                                   .then(
-                                                                     Commands.literal("add")
+                                                                     Commands.literal("add_value")
                                                                         .executes(
                                                                            var0x -> addModifier(
                                                                                  (CommandSourceStack)var0x.getSource(),
@@ -135,12 +134,12 @@ public class AttributeCommand {
                                                                                  UuidArgument.getUuid(var0x, "uuid"),
                                                                                  StringArgumentType.getString(var0x, "name"),
                                                                                  DoubleArgumentType.getDouble(var0x, "value"),
-                                                                                 AttributeModifier.Operation.ADDITION
+                                                                                 AttributeModifier.Operation.ADD_VALUE
                                                                               )
                                                                         )
                                                                   ))
                                                                .then(
-                                                                  Commands.literal("multiply")
+                                                                  Commands.literal("add_multiplied_base")
                                                                      .executes(
                                                                         var0x -> addModifier(
                                                                               (CommandSourceStack)var0x.getSource(),
@@ -149,12 +148,12 @@ public class AttributeCommand {
                                                                               UuidArgument.getUuid(var0x, "uuid"),
                                                                               StringArgumentType.getString(var0x, "name"),
                                                                               DoubleArgumentType.getDouble(var0x, "value"),
-                                                                              AttributeModifier.Operation.MULTIPLY_TOTAL
+                                                                              AttributeModifier.Operation.ADD_MULTIPLIED_BASE
                                                                            )
                                                                      )
                                                                ))
                                                             .then(
-                                                               Commands.literal("multiply_base")
+                                                               Commands.literal("add_multiplied_total")
                                                                   .executes(
                                                                      var0x -> addModifier(
                                                                            (CommandSourceStack)var0x.getSource(),
@@ -163,7 +162,7 @@ public class AttributeCommand {
                                                                            UuidArgument.getUuid(var0x, "uuid"),
                                                                            StringArgumentType.getString(var0x, "name"),
                                                                            DoubleArgumentType.getDouble(var0x, "value"),
-                                                                           AttributeModifier.Operation.MULTIPLY_BASE
+                                                                           AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                                                                         )
                                                                   )
                                                             )

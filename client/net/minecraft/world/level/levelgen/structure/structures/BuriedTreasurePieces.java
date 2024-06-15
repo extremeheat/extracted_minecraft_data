@@ -36,13 +36,11 @@ public class BuriedTreasurePieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.boundingBox.minX(), this.boundingBox.minZ());
          BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(this.boundingBox.minX(), var8, this.boundingBox.minZ());
 
-         while(var9.getY() > var1.getMinBuildHeight()) {
+         while (var9.getY() > var1.getMinBuildHeight()) {
             BlockState var10 = var1.getBlockState(var9);
             BlockState var11 = var1.getBlockState(var9.below());
             if (var11 == Blocks.SANDSTONE.defaultBlockState()
@@ -52,7 +50,7 @@ public class BuriedTreasurePieces {
                || var11 == Blocks.DIORITE.defaultBlockState()) {
                BlockState var12 = !var10.isAir() && !this.isLiquid(var10) ? var10 : Blocks.SAND.defaultBlockState();
 
-               for(Direction var16 : Direction.values()) {
+               for (Direction var16 : Direction.values()) {
                   BlockPos var17 = var9.relative(var16);
                   BlockState var18 = var1.getBlockState(var17);
                   if (var18.isAir() || this.isLiquid(var18)) {

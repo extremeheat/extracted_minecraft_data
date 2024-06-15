@@ -13,8 +13,8 @@ public class VisibilitySet {
    }
 
    public void add(Set<Direction> var1) {
-      for(Direction var3 : var1) {
-         for(Direction var5 : var1) {
+      for (Direction var3 : var1) {
+         for (Direction var5 : var1) {
             this.set(var3, var5, true);
          }
       }
@@ -38,16 +38,16 @@ public class VisibilitySet {
       StringBuilder var1 = new StringBuilder();
       var1.append(' ');
 
-      for(Direction var5 : Direction.values()) {
+      for (Direction var5 : Direction.values()) {
          var1.append(' ').append(var5.toString().toUpperCase().charAt(0));
       }
 
       var1.append('\n');
 
-      for(Direction var14 : Direction.values()) {
+      for (Direction var14 : Direction.values()) {
          var1.append(var14.toString().toUpperCase().charAt(0));
 
-         for(Direction var9 : Direction.values()) {
+         for (Direction var9 : Direction.values()) {
             if (var14 == var9) {
                var1.append("  ");
             } else {

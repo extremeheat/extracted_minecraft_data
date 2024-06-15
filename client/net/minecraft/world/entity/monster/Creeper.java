@@ -75,7 +75,7 @@ public class Creeper extends Monster implements PowerableMob {
 
    @Override
    public int getMaxFallDistance() {
-      return this.getTarget() == null ? 3 : 3 + (int)(this.getHealth() - 1.0F);
+      return this.getTarget() == null ? this.getComfortableFallDistance(0.0F) : this.getComfortableFallDistance(this.getHealth() - 1.0F);
    }
 
    @Override
@@ -90,11 +90,11 @@ public class Creeper extends Monster implements PowerableMob {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_SWELL_DIR, -1);
-      this.entityData.define(DATA_IS_POWERED, false);
-      this.entityData.define(DATA_IS_IGNITED, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_SWELL_DIR, -1);
+      var1.define(DATA_IS_POWERED, false);
+      var1.define(DATA_IS_IGNITED, false);
    }
 
    @Override
@@ -171,8 +171,6 @@ public class Creeper extends Monster implements PowerableMob {
       return SoundEvents.CREEPER_DEATH;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
@@ -222,7 +220,7 @@ public class Creeper extends Monster implements PowerableMob {
             if (!var3.isDamageableItem()) {
                var3.shrink(1);
             } else {
-               var3.hurtAndBreak(1, var1, var1x -> var1x.broadcastBreakEvent(var2));
+               var3.hurtAndBreak(1, var1, getSlotForHand(var2));
             }
          }
 
@@ -252,7 +250,7 @@ public class Creeper extends Monster implements PowerableMob {
          var2.setDuration(var2.getDuration() / 2);
          var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
 
-         for(MobEffectInstance var4 : var1) {
+         for (MobEffectInstance var4 : var1) {
             var2.addEffect(new MobEffectInstance(var4));
          }
 
@@ -273,6 +271,6 @@ public class Creeper extends Monster implements PowerableMob {
    }
 
    public void increaseDroppedSkulls() {
-      ++this.droppedSkulls;
+      this.droppedSkulls++;
    }
 }

@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -10,7 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -80,7 +78,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.CONSUME;
       } else {
@@ -94,13 +92,13 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
 
          if (!canSetSpawn(var2)) {
             var2.removeBlock(var3, false);
-            BlockPos var7 = var3.relative(var1.getValue(FACING).getOpposite());
-            if (var2.getBlockState(var7).is(this)) {
-               var2.removeBlock(var7, false);
+            BlockPos var6 = var3.relative(var1.getValue(FACING).getOpposite());
+            if (var2.getBlockState(var6).is(this)) {
+               var2.removeBlock(var6, false);
             }
 
-            Vec3 var8 = var3.getCenter();
-            var2.explode(null, var2.damageSources().badRespawnPointExplosion(var8), null, var8, 5.0F, true, Level.ExplosionInteraction.BLOCK);
+            Vec3 var7 = var3.getCenter();
+            var2.explode(null, var2.damageSources().badRespawnPointExplosion(var7), null, var7, 5.0F, true, Level.ExplosionInteraction.BLOCK);
             return InteractionResult.SUCCESS;
          } else if (var1.getValue(OCCUPIED)) {
             if (!this.kickVillagerOutOfBed(var2, var3)) {
@@ -156,11 +154,9 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == getNeighbourDirection(var1.getValue(PART), var1.getValue(FACING))) {
-         return var3.is(this) && var3.getValue(PART) != var1.getValue(PART)
-            ? var1.setValue(OCCUPIED, var3.getValue(OCCUPIED))
-            : Blocks.AIR.defaultBlockState();
+         return var3.is(this) && var3.getValue(PART) != var1.getValue(PART) ? var1.setValue(OCCUPIED, var3.getValue(OCCUPIED)) : Blocks.AIR.defaultBlockState();
       } else {
          return super.updateShape(var1, var2, var3, var4, var5, var6);
       }
@@ -200,9 +196,9 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       Direction var5 = getConnectedDirection(var1).getOpposite();
-      switch(var5) {
+      switch (var5) {
          case NORTH:
             return NORTH_SHAPE;
          case SOUTH:
@@ -271,7 +267,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    private static Optional<Vec3> findStandUpPositionAtOffset(EntityType<?> var0, CollisionGetter var1, BlockPos var2, int[][] var3, boolean var4) {
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
 
-      for(int[] var9 : var3) {
+      for (int[] var9 : var3) {
          var5.set(var2.getX() + var9[0], var2.getY(), var2.getZ() + var9[1]);
          Vec3 var10 = DismountHelper.findSafeDismountLocation(var0, var1, var5, var4);
          if (var10 != null) {
@@ -283,7 +279,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
@@ -313,13 +309,13 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    @Override
-   public long getSeed(BlockState var1, BlockPos var2) {
+   protected long getSeed(BlockState var1, BlockPos var2) {
       BlockPos var3 = var2.relative(var1.getValue(FACING), var1.getValue(PART) == BedPart.HEAD ? 0 : 1);
       return Mth.getSeed(var3.getX(), var2.getY(), var3.getZ());
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 

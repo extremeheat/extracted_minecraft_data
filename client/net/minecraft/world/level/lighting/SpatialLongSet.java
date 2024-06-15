@@ -88,7 +88,7 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
             long[] var9 = this.key;
             var8 = (int)HashCommon.mix(var3) & this.mask;
 
-            for(long var10 = var9[var8]; var10 != 0L; var10 = var9[var8]) {
+            for (long var10 = var9[var8]; var10 != 0L; var10 = var9[var8]) {
                if (var10 == var3) {
                   this.lastPos = var8;
                   this.lastOuterKey = var3;
@@ -105,7 +105,7 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
             this.first = this.last = var8;
             this.link[var8] = -1L;
          } else {
-            this.link[this.last] ^= (this.link[this.last] ^ (long)var8 & 4294967295L) & 4294967295L;
+            this.link[this.last] = this.link[this.last] ^ (this.link[this.last] ^ (long)var8 & 4294967295L) & 4294967295L;
             this.link[var8] = ((long)this.last & 4294967295L) << 32 | 4294967295L;
             this.last = var8;
          }
@@ -119,7 +119,7 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
 
       private boolean replaceBit(int var1, long var2) {
          boolean var4 = (this.value[var1] & var2) != 0L;
-         this.value[var1] |= var2;
+         this.value[var1] = this.value[var1] | var2;
          return var4;
       }
 
@@ -135,7 +135,7 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
             long[] var8 = this.key;
             int var9 = (int)HashCommon.mix(var3) & this.mask;
 
-            for(long var10 = var8[var9]; var10 != 0L; var10 = var8[var9]) {
+            for (long var10 = var8[var9]; var10 != 0L; var10 = var8[var9]) {
                if (var3 == var10) {
                   this.lastPos = var9;
                   this.lastOuterKey = var3;
@@ -153,12 +153,12 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          if ((this.value[this.n] & var1) == 0L) {
             return false;
          } else {
-            this.value[this.n] &= ~var1;
+            this.value[this.n] = this.value[this.n] & ~var1;
             if (this.value[this.n] != 0L) {
                return true;
             } else {
                this.containsNullKey = false;
-               --this.size;
+               this.size--;
                this.fixPointers(this.n);
                if (this.size < this.maxFill / 4 && this.n > 16) {
                   this.rehash(this.n / 2);
@@ -173,12 +173,12 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          if ((this.value[var1] & var2) == 0L) {
             return false;
          } else {
-            this.value[var1] &= ~var2;
+            this.value[var1] = this.value[var1] & ~var2;
             if (this.value[var1] != 0L) {
                return true;
             } else {
                this.lastPos = -1;
-               --this.size;
+               this.size--;
                this.fixPointers(var1);
                this.shiftKeys(var1);
                if (this.size < this.maxFill / 4 && this.n > 16) {
@@ -197,7 +197,7 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
             int var1 = this.first;
             long var2 = this.key[var1];
             int var4 = Long.numberOfTrailingZeros(this.value[var1]);
-            this.value[var1] &= ~(1L << var4);
+            this.value[var1] = this.value[var1] & ~(1L << var4);
             if (this.value[var1] == 0L) {
                this.removeFirstLong();
                this.lastPos = -1;

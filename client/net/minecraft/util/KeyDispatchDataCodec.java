@@ -1,22 +1,14 @@
 package net.minecraft.util;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 
-public record KeyDispatchDataCodec<A>(Codec<A> a) {
-   private final Codec<A> codec;
-
-   public KeyDispatchDataCodec(Codec<A> var1) {
+public record KeyDispatchDataCodec<A>(MapCodec<A> codec) {
+   public KeyDispatchDataCodec(MapCodec<A> codec) {
       super();
-      this.codec = var1;
-   }
-
-   @Deprecated
-   public static <A> KeyDispatchDataCodec<A> of(Codec<A> var0) {
-      return new KeyDispatchDataCodec<>(var0);
+      this.codec = codec;
    }
 
    public static <A> KeyDispatchDataCodec<A> of(MapCodec<A> var0) {
-      return new KeyDispatchDataCodec<>(var0.codec());
+      return new KeyDispatchDataCodec<>(var0);
    }
 }

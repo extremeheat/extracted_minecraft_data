@@ -37,6 +37,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.FastBufferedInputStream;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.LevelResource;
@@ -93,7 +94,7 @@ public class StructureTemplateManager {
    }
 
    private Optional<StructureTemplate> tryLoad(ResourceLocation var1) {
-      for(StructureTemplateManager.Source var3 : this.sources) {
+      for (StructureTemplateManager.Source var3 : this.sources) {
          try {
             Optional var4 = var3.loader().apply(var1);
             if (var4.isPresent()) {
@@ -165,8 +166,8 @@ public class StructureTemplateManager {
             return Files.walk(var1).filter(var1x -> var1x.toString().endsWith(var3)).mapMulti((var4x, var5x) -> {
                try {
                   var5x.accept(new ResourceLocation(var2, (String)var5.apply(this.relativize(var1, var4x))));
-               } catch (ResourceLocationException var7xx) {
-                  LOGGER.error("Invalid location while listing pack contents", var7xx);
+               } catch (ResourceLocationException var7x) {
+                  LOGGER.error("Invalid location while listing pack contents", var7x);
                }
             });
          } catch (IOException var7) {
@@ -205,16 +206,19 @@ public class StructureTemplateManager {
 
    private Optional<StructureTemplate> load(StructureTemplateManager.InputStreamOpener var1, Consumer<Throwable> var2) {
       try {
-         Optional var4;
-         try (InputStream var3 = var1.open()) {
-            var4 = Optional.of(this.readStructure(var3));
+         Optional var5;
+         try (
+            InputStream var3 = var1.open();
+            FastBufferedInputStream var4 = new FastBufferedInputStream(var3);
+         ) {
+            var5 = Optional.of(this.readStructure(var4));
          }
 
-         return var4;
-      } catch (FileNotFoundException var8) {
+         return var5;
+      } catch (FileNotFoundException var11) {
          return Optional.empty();
-      } catch (Throwable var9) {
-         var2.accept(var9);
+      } catch (Throwable var12) {
+         var2.accept(var12);
          return Optional.empty();
       }
    }
@@ -300,14 +304,11 @@ public class StructureTemplateManager {
       InputStream open() throws IOException;
    }
 
-   static record Source(Function<ResourceLocation, Optional<StructureTemplate>> a, Supplier<Stream<ResourceLocation>> b) {
-      private final Function<ResourceLocation, Optional<StructureTemplate>> loader;
-      private final Supplier<Stream<ResourceLocation>> lister;
-
-      Source(Function<ResourceLocation, Optional<StructureTemplate>> var1, Supplier<Stream<ResourceLocation>> var2) {
+   static record Source(Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
+      Source(Function<ResourceLocation, Optional<StructureTemplate>> loader, Supplier<Stream<ResourceLocation>> lister) {
          super();
-         this.loader = var1;
-         this.lister = var2;
+         this.loader = loader;
+         this.lister = lister;
       }
    }
 }

@@ -1,14 +1,13 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BannerItem;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class ShieldDecorationRecipe extends CustomRecipe {
    public ShieldDecorationRecipe(CraftingBookCategory var1) {
@@ -19,7 +18,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       ItemStack var3 = ItemStack.EMPTY;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.getItem() instanceof BannerItem) {
@@ -37,7 +36,8 @@ public class ShieldDecorationRecipe extends CustomRecipe {
                   return false;
                }
 
-               if (BlockItem.getBlockEntityData(var6) != null) {
+               BannerPatternLayers var7 = var6.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+               if (!var7.layers().isEmpty()) {
                   return false;
                }
 
@@ -49,11 +49,11 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       return !var3.isEmpty() && !var4.isEmpty();
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ItemStack var3 = ItemStack.EMPTY;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.getItem() instanceof BannerItem) {
@@ -67,10 +67,8 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       if (var4.isEmpty()) {
          return var4;
       } else {
-         CompoundTag var7 = BlockItem.getBlockEntityData(var3);
-         CompoundTag var8 = var7 == null ? new CompoundTag() : var7.copy();
-         var8.putInt("Base", ((BannerItem)var3.getItem()).getColor().getId());
-         BlockItem.setBlockEntityData(var4, BlockEntityType.BANNER, var8);
+         var4.set(DataComponents.BANNER_PATTERNS, var3.get(DataComponents.BANNER_PATTERNS));
+         var4.set(DataComponents.BASE_COLOR, ((BannerItem)var3.getItem()).getColor());
          return var4;
       }
    }

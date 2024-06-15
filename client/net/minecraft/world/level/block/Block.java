@@ -133,7 +133,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       if (var4.isEmpty()) {
          return var1;
       } else {
-         for(Entity var7 : var2.getEntities(null, var4.bounds())) {
+         for (Entity var7 : var2.getEntities(null, var4.bounds())) {
             double var8 = Shapes.collide(Direction.Axis.Y, var7.getBoundingBox().move(0.0, 1.0, 0.0), List.of(var4), -1.0);
             var7.teleportRelative(0.0, 1.0 + var8, 0.0);
          }
@@ -150,7 +150,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       BlockState var3 = var0;
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
 
-      for(Direction var8 : UPDATE_SHAPE_ORDER) {
+      for (Direction var8 : UPDATE_SHAPE_ORDER) {
          var4.setWithOffset(var2, var8);
          var3 = var3.updateShape(var8, var1.getBlockState(var4), var1, var2, var4);
       }
@@ -198,17 +198,13 @@ public class Block extends BlockBehaviour implements ItemLike {
          || var0.is(BlockTags.SHULKER_BOXES);
    }
 
-   public boolean isRandomlyTicking(BlockState var1) {
-      return this.isRandomlyTicking;
-   }
-
    public static boolean shouldRenderFace(BlockState var0, BlockGetter var1, BlockPos var2, Direction var3, BlockPos var4) {
       BlockState var5 = var1.getBlockState(var4);
       if (var0.skipRendering(var5, var3)) {
          return false;
       } else if (var5.canOcclude()) {
          Block.BlockStatePairKey var6 = new Block.BlockStatePairKey(var0, var5, var3);
-         Object2ByteLinkedOpenHashMap var7 = (Object2ByteLinkedOpenHashMap)OCCLUSION_CACHE.get();
+         Object2ByteLinkedOpenHashMap var7 = OCCLUSION_CACHE.get();
          byte var8 = var7.getAndMoveToFirst(var6);
          if (var8 != 127) {
             return var8 != 0;
@@ -247,11 +243,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static boolean isShapeFullBlock(VoxelShape var0) {
-      return SHAPE_FULL_BLOCK_CACHE.getUnchecked(var0);
-   }
-
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return !isShapeFullBlock(var1.getShape(var2, var3)) && var1.getFluidState().isEmpty();
+      return (Boolean)SHAPE_FULL_BLOCK_CACHE.getUnchecked(var0);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
@@ -438,7 +430,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    public final BlockState withPropertiesOf(BlockState var1) {
       BlockState var2 = this.defaultBlockState();
 
-      for(Property var4 : var1.getBlock().getStateDefinition().getProperties()) {
+      for (Property var4 : var1.getBlock().getStateDefinition().getProperties()) {
          if (var2.hasProperty(var4)) {
             var2 = copyProperty(var1, var2, var4);
          }
@@ -449,10 +441,6 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    private static <T extends Comparable<T>> BlockState copyProperty(BlockState var0, BlockState var1, Property<T> var2) {
       return var1.setValue(var2, var0.getValue(var2));
-   }
-
-   public SoundType getSoundType(BlockState var1) {
-      return this.soundType;
    }
 
    @Override
@@ -473,7 +461,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       return "Block{" + BuiltInRegistries.BLOCK.getKey(this) + "}";
    }
 
-   public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
    }
 
    @Override
@@ -515,11 +503,10 @@ public class Block extends BlockBehaviour implements ItemLike {
       public boolean equals(Object var1) {
          if (this == var1) {
             return true;
-         } else if (!(var1 instanceof Block.BlockStatePairKey)) {
-            return false;
          } else {
-            Block.BlockStatePairKey var2 = (Block.BlockStatePairKey)var1;
-            return this.first == var2.first && this.second == var2.second && this.direction == var2.direction;
+            return !(var1 instanceof Block.BlockStatePairKey var2)
+               ? false
+               : this.first == var2.first && this.second == var2.second && this.direction == var2.direction;
          }
       }
 

@@ -49,7 +49,7 @@ public class BlockModelDefinition {
       super();
       BlockModelDefinition var2 = null;
 
-      for(BlockModelDefinition var4 : var1) {
+      for (BlockModelDefinition var4 : var1) {
          if (var4.isMultiPart()) {
             this.variants.clear();
             var2 = var4;
@@ -78,8 +78,6 @@ public class BlockModelDefinition {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean equals(Object var1) {
       if (this == var1) {
@@ -164,7 +162,7 @@ public class BlockModelDefinition {
          if (var2.has("variants")) {
             JsonObject var4 = GsonHelper.getAsJsonObject(var2, "variants");
 
-            for(Entry var6 : var4.entrySet()) {
+            for (Entry var6 : var4.entrySet()) {
                var3.put((String)var6.getKey(), (MultiVariant)var1.deserialize((JsonElement)var6.getValue(), MultiVariant.class));
             }
          }

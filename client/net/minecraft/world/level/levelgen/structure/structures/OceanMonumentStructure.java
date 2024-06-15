@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.Direction;
@@ -19,7 +19,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class OceanMonumentStructure extends Structure {
-   public static final Codec<OceanMonumentStructure> CODEC = simpleCodec(OceanMonumentStructure::new);
+   public static final MapCodec<OceanMonumentStructure> CODEC = simpleCodec(OceanMonumentStructure::new);
 
    public OceanMonumentStructure(Structure.StructureSettings var1) {
       super(var1);
@@ -30,7 +30,7 @@ public class OceanMonumentStructure extends Structure {
       int var2 = var1.chunkPos().getBlockX(9);
       int var3 = var1.chunkPos().getBlockZ(9);
 
-      for(Holder var6 : var1.biomeSource().getBiomesWithin(var2, var1.chunkGenerator().getSeaLevel(), var3, 29, var1.randomState().sampler())) {
+      for (Holder var6 : var1.biomeSource().getBiomesWithin(var2, var1.chunkGenerator().getSeaLevel(), var3, 29, var1.randomState().sampler())) {
          if (!var6.is(BiomeTags.REQUIRED_OCEAN_MONUMENT_SURROUNDING)) {
             return Optional.empty();
          }

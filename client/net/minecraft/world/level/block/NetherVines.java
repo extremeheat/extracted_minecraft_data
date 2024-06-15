@@ -19,7 +19,7 @@ public class NetherVines {
       double var1 = 1.0;
 
       int var3;
-      for(var3 = 0; var0.nextDouble() < var1; ++var3) {
+      for (var3 = 0; var0.nextDouble() < var1; var3++) {
          var1 *= 0.826;
       }
 

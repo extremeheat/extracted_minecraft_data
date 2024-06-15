@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.google.common.base.Stopwatch;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.datafixers.util.Pair;
@@ -27,10 +26,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
@@ -95,8 +91,7 @@ public class LocateCommand {
                      Commands.argument("poi", ResourceOrTagArgument.resourceOrTag(var1, Registries.POINT_OF_INTEREST_TYPE))
                         .executes(
                            var0x -> locatePoi(
-                                 (CommandSourceStack)var0x.getSource(),
-                                 ResourceOrTagArgument.getResourceOrTag(var0x, "poi", Registries.POINT_OF_INTEREST_TYPE)
+                                 (CommandSourceStack)var0x.getSource(), ResourceOrTagArgument.getResourceOrTag(var0x, "poi", Registries.POINT_OF_INTEREST_TYPE)
                               )
                         )
                   )
@@ -149,10 +144,6 @@ public class LocateCommand {
       }
    }
 
-   private static String getElementName(Pair<BlockPos, ? extends Holder<?>> var0) {
-      return ((Holder)var0.getSecond()).unwrapKey().map(var0x -> var0x.location().toString()).orElse("[unregistered]");
-   }
-
    public static int showLocateResult(
       CommandSourceStack var0,
       ResourceOrTagArgument.Result<?> var1,
@@ -162,7 +153,8 @@ public class LocateCommand {
       boolean var5,
       Duration var6
    ) {
-      String var7 = (String)var1.unwrap().map(var1x -> var1.asPrintable(), var2x -> var1.asPrintable() + " (" + getElementName(var3) + ")");
+      String var7 = (String)var1.unwrap()
+         .map(var1x -> var1.asPrintable(), var2x -> var1.asPrintable() + " (" + ((Holder)var3.getSecond()).getRegisteredName() + ")");
       return showLocateResult(var0, var2, var3, var4, var5, var7, var6);
    }
 
@@ -175,7 +167,8 @@ public class LocateCommand {
       boolean var5,
       Duration var6
    ) {
-      String var7 = (String)var1.unwrap().map(var0x -> var0x.location().toString(), var1x -> "#" + var1x.location() + " (" + getElementName(var3) + ")");
+      String var7 = (String)var1.unwrap()
+         .map(var0x -> var0x.location().toString(), var1x -> "#" + var1x.location() + " (" + ((Holder)var3.getSecond()).getRegisteredName() + ")");
       return showLocateResult(var0, var2, var3, var4, var5, var7, var6);
    }
 

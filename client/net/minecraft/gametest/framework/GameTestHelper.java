@@ -16,10 +16,10 @@ import java.util.stream.LongStream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.Connection;
-import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.commands.FillBiomeCommand;
@@ -28,7 +28,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -41,6 +41,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -92,13 +93,17 @@ public class GameTestHelper {
       var3.forEach(Entity::kill);
    }
 
+   public ItemEntity spawnItem(Item var1, Vec3 var2) {
+      ServerLevel var3 = this.getLevel();
+      Vec3 var4 = this.absoluteVec(var2);
+      ItemEntity var5 = new ItemEntity(var3, var4.x, var4.y, var4.z, new ItemStack(var1, 1));
+      var5.setDeltaMovement(0.0, 0.0, 0.0);
+      var3.addFreshEntity(var5);
+      return var5;
+   }
+
    public ItemEntity spawnItem(Item var1, float var2, float var3, float var4) {
-      ServerLevel var5 = this.getLevel();
-      Vec3 var6 = this.absoluteVec(new Vec3((double)var2, (double)var3, (double)var4));
-      ItemEntity var7 = new ItemEntity(var5, var6.x, var6.y, var6.z, new ItemStack(var1, 1));
-      var7.setDeltaMovement(0.0, 0.0, 0.0);
-      var5.addFreshEntity(var7);
-      return var7;
+      return this.spawnItem(var1, new Vec3((double)var2, (double)var3, (double)var4));
    }
 
    public ItemEntity spawnItem(Item var1, BlockPos var2) {
@@ -109,8 +114,6 @@ public class GameTestHelper {
       return this.spawn(var1, Vec3.atBottomCenterOf(var2));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2) {
       ServerLevel var3 = this.getLevel();
       Entity var4 = var1.create(var3);
@@ -126,6 +129,41 @@ public class GameTestHelper {
          var3.addFreshEntity(var4);
          return (E)var4;
       }
+   }
+
+   public <E extends Entity> E findOneEntity(EntityType<E> var1) {
+      return this.findClosestEntity(var1, 0, 0, 0, 2.147483647E9);
+   }
+
+   public <E extends Entity> E findClosestEntity(EntityType<E> var1, int var2, int var3, int var4, double var5) {
+      List var7 = this.findEntities(var1, var2, var3, var4, var5);
+      if (var7.isEmpty()) {
+         throw new GameTestAssertException("Expected " + var1.toShortString() + " to exist around " + var2 + "," + var3 + "," + var4);
+      } else if (var7.size() > 1) {
+         throw new GameTestAssertException(
+            "Expected only one " + var1.toShortString() + " to exist around " + var2 + "," + var3 + "," + var4 + ", but found " + var7.size()
+         );
+      } else {
+         Vec3 var8 = this.absoluteVec(new Vec3((double)var2, (double)var3, (double)var4));
+         var7.sort((var1x, var2x) -> {
+            double var3x = var1x.position().distanceTo(var8);
+            double var5x = var2x.position().distanceTo(var8);
+            return Double.compare(var3x, var5x);
+         });
+         return (E)var7.get(0);
+      }
+   }
+
+   public <E extends Entity> List<E> findEntities(EntityType<E> var1, int var2, int var3, int var4, double var5) {
+      return this.findEntities(var1, Vec3.atBottomCenterOf(new BlockPos(var2, var3, var4)), var5);
+   }
+
+   public <E extends Entity> List<E> findEntities(EntityType<E> var1, Vec3 var2, double var3) {
+      ServerLevel var5 = this.getLevel();
+      Vec3 var6 = this.absoluteVec(var2);
+      AABB var7 = this.testInfo.getStructureBounds();
+      AABB var8 = new AABB(var6.add(-var3, -var3, -var3), var6.add(var3, var3, var3));
+      return var5.getEntities(var1, var7, var1x -> var1x.getBoundingBox().intersects(var8) && var1x.isAlive());
    }
 
    public <E extends Entity> E spawn(EntityType<E> var1, int var2, int var3, int var4) {
@@ -156,6 +194,11 @@ public class GameTestHelper {
       return this.spawnWithNoFreeWill(var1, new Vec3((double)var2, (double)var3, (double)var4));
    }
 
+   public void moveTo(Mob var1, float var2, float var3, float var4) {
+      Vec3 var5 = this.absoluteVec(new Vec3((double)var2, (double)var3, (double)var4));
+      var1.moveTo(var5.x, var5.y, var5.z, var1.getYRot(), var1.getXRot());
+   }
+
    public GameTestSequence walkTo(Mob var1, BlockPos var2, float var3) {
       return this.startSequence().thenExecuteAfter(2, () -> {
          Path var4 = var1.getNavigation().createPath(this.absolutePos(var2), 0);
@@ -176,7 +219,7 @@ public class GameTestHelper {
    }
 
    public void useBlock(BlockPos var1) {
-      this.useBlock(var1, this.makeMockPlayer());
+      this.useBlock(var1, this.makeMockPlayer(GameType.CREATIVE));
    }
 
    public void useBlock(BlockPos var1, Player var2) {
@@ -187,10 +230,13 @@ public class GameTestHelper {
    public void useBlock(BlockPos var1, Player var2, BlockHitResult var3) {
       BlockPos var4 = this.absolutePos(var1);
       BlockState var5 = this.getLevel().getBlockState(var4);
-      InteractionResult var6 = var5.use(this.getLevel(), var2, InteractionHand.MAIN_HAND, var3);
-      if (!var6.consumesAction()) {
-         UseOnContext var7 = new UseOnContext(var2, InteractionHand.MAIN_HAND, var3);
-         var2.getItemInHand(InteractionHand.MAIN_HAND).useOn(var7);
+      InteractionHand var6 = InteractionHand.MAIN_HAND;
+      ItemInteractionResult var7 = var5.useItemOn(var2.getItemInHand(var6), this.getLevel(), var2, var6, var3);
+      if (!var7.consumesAction()) {
+         if (var7 != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION || !var5.useWithoutItem(this.getLevel(), var2, var3).consumesAction()) {
+            UseOnContext var8 = new UseOnContext(var2, var6, var3);
+            var2.getItemInHand(var6).useOn(var8);
+         }
       }
    }
 
@@ -200,35 +246,21 @@ public class GameTestHelper {
       return var1;
    }
 
-   public Player makeMockSurvivalPlayer() {
-      return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
-         @Override
-         public boolean isSpectator() {
-            return false;
-         }
-
-         @Override
-         public boolean isCreative() {
-            return false;
-         }
-      };
-   }
-
    public LivingEntity withLowHealth(LivingEntity var1) {
       var1.setHealth(0.25F);
       return var1;
    }
 
-   public Player makeMockPlayer() {
+   public Player makeMockPlayer(final GameType var1) {
       return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
          @Override
          public boolean isSpectator() {
-            return false;
+            return var1 == GameType.SPECTATOR;
          }
 
          @Override
          public boolean isCreative() {
-            return true;
+            return var1.isCreative();
          }
 
          @Override
@@ -242,7 +274,7 @@ public class GameTestHelper {
       forRemoval = true
    )
    public ServerPlayer makeMockServerPlayerInLevel() {
-      CommonListenerCookie var1 = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-mock-player"));
+      CommonListenerCookie var1 = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-mock-player"), false);
       ServerPlayer var2 = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), var1.gameProfile(), var1.clientInformation()) {
          @Override
          public boolean isSpectator() {
@@ -255,8 +287,7 @@ public class GameTestHelper {
          }
       };
       Connection var3 = new Connection(PacketFlow.SERVERBOUND);
-      EmbeddedChannel var4 = new EmbeddedChannel(new ChannelHandler[]{var3});
-      var4.attr(Connection.ATTRIBUTE_SERVERBOUND_PROTOCOL).set(ConnectionProtocol.PLAY.codec(PacketFlow.SERVERBOUND));
+      new EmbeddedChannel(new ChannelHandler[]{var3});
       this.getLevel().getServer().getPlayerList().placeNewPlayer(var3, var2, var1);
       return var2;
    }
@@ -354,8 +385,8 @@ public class GameTestHelper {
          if (!var2x.hasProperty(var2)) {
             return false;
          } else {
-            Comparable var3xx = var2x.getValue(var2);
-            return var3.test(var3xx);
+            Comparable var3x = var2x.getValue(var2);
+            return var3.test(var3x);
          }
       }, () -> var4);
    }
@@ -438,6 +469,10 @@ public class GameTestHelper {
       return this.getLevel().getEntities(var1, new AABB(var5).inflate(var3), Entity::isAlive);
    }
 
+   public <T extends Entity> List<T> getEntities(EntityType<T> var1) {
+      return this.getLevel().getEntities(var1, this.getBounds(), Entity::isAlive);
+   }
+
    public void assertEntityInstancePresent(Entity var1, int var2, int var3, int var4) {
       this.assertEntityInstancePresent(var1, new BlockPos(var2, var3, var4));
    }
@@ -456,7 +491,7 @@ public class GameTestHelper {
       List var7 = this.getLevel().getEntities(EntityType.ITEM, new AABB(var6).inflate(var3), Entity::isAlive);
       int var8 = 0;
 
-      for(ItemEntity var10 : var7) {
+      for (ItemEntity var10 : var7) {
          ItemStack var11 = var10.getItem();
          if (var11.is(var1)) {
             var8 += var11.getCount();
@@ -473,7 +508,7 @@ public class GameTestHelper {
    public void assertItemEntityPresent(Item var1, BlockPos var2, double var3) {
       BlockPos var5 = this.absolutePos(var2);
 
-      for(Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
+      for (Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
          ItemEntity var9 = (ItemEntity)var8;
          if (var9.getItem().getItem().equals(var1)) {
             return;
@@ -486,7 +521,7 @@ public class GameTestHelper {
    public void assertItemEntityNotPresent(Item var1, BlockPos var2, double var3) {
       BlockPos var5 = this.absolutePos(var2);
 
-      for(Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
+      for (Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
          ItemEntity var9 = (ItemEntity)var8;
          if (var9.getItem().getItem().equals(var1)) {
             throw new GameTestAssertPosException("Did not expect " + var1.getDescription().getString() + " item", var5, var2, this.testInfo.getTick());
@@ -495,7 +530,7 @@ public class GameTestHelper {
    }
 
    public void assertItemEntityPresent(Item var1) {
-      for(Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
+      for (Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
          ItemEntity var5 = (ItemEntity)var4;
          if (var5.getItem().getItem().equals(var1)) {
             return;
@@ -506,7 +541,7 @@ public class GameTestHelper {
    }
 
    public void assertItemEntityNotPresent(Item var1) {
-      for(Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
+      for (Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
          ItemEntity var5 = (ItemEntity)var4;
          if (var5.getItem().getItem().equals(var1)) {
             throw new GameTestAssertException("Did not expect " + var1.getDescription().getString() + " item");
@@ -530,6 +565,15 @@ public class GameTestHelper {
       List var4 = this.getLevel().getEntities(var1, new AABB(var3), Entity::isAlive);
       if (!var4.isEmpty()) {
          throw new GameTestAssertPosException("Did not expect " + var1.toShortString(), var3, var2, this.testInfo.getTick());
+      }
+   }
+
+   public void assertEntityNotPresent(EntityType<?> var1, Vec3 var2, Vec3 var3) {
+      List var4 = this.getLevel().getEntities(var1, new AABB(var2, var3), Entity::isAlive);
+      if (!var4.isEmpty()) {
+         throw new GameTestAssertPosException(
+            "Did not expect " + var1.toShortString() + " between ", BlockPos.containing(var2), BlockPos.containing(var3), this.testInfo.getTick()
+         );
       }
    }
 
@@ -559,7 +603,7 @@ public class GameTestHelper {
       if (var6.isEmpty()) {
          throw new GameTestAssertPosException("Expected " + var2.toShortString(), var5, var1, this.testInfo.getTick());
       } else {
-         for(Entity var8 : var6) {
+         for (Entity var8 : var6) {
             Object var9 = var3.apply(var8);
             if (var9 == null) {
                if (var4 != null) {
@@ -578,7 +622,7 @@ public class GameTestHelper {
       if (var5.isEmpty()) {
          throw new GameTestAssertPosException("Expected entity of type: " + var2, var4, var1, this.getTick());
       } else {
-         for(LivingEntity var7 : var5) {
+         for (LivingEntity var7 : var5) {
             if (var7.isHolding(var3)) {
                return;
             }
@@ -594,7 +638,7 @@ public class GameTestHelper {
       if (var5.isEmpty()) {
          throw new GameTestAssertPosException("Expected " + var2.toShortString() + " to exist", var4, var1, this.getTick());
       } else {
-         for(Entity var7 : var5) {
+         for (Entity var7 : var5) {
             if (((InventoryCarrier)var7).getInventory().hasAnyMatching(var1x -> var1x.is(var3))) {
                return;
             }
@@ -662,11 +706,11 @@ public class GameTestHelper {
       }
    }
 
-   public void assertLivingEntityHasMobEffect(LivingEntity var1, MobEffect var2, int var3) {
+   public void assertLivingEntityHasMobEffect(LivingEntity var1, Holder<MobEffect> var2, int var3) {
       MobEffectInstance var4 = var1.getEffect(var2);
       if (var4 == null || var4.getAmplifier() != var3) {
          int var5 = var3 + 1;
-         throw new GameTestAssertException("Entity " + var1 + " failed has " + var2.getDescriptionId() + " x " + var5 + " test");
+         throw new GameTestAssertException("Entity " + var1 + " failed has " + ((MobEffect)var2.value()).getDescriptionId() + " x " + var5 + " test");
       }
    }
 
@@ -739,8 +783,8 @@ public class GameTestHelper {
       int var3 = (int)Math.floor(var1.maxZ);
       int var4 = (int)Math.floor(var1.maxY);
 
-      for(int var5 = (int)Math.floor(var1.minX); var5 < var2; ++var5) {
-         for(int var6 = (int)Math.floor(var1.minZ); var6 < var3; ++var6) {
+      for (int var5 = (int)Math.floor(var1.minX); var5 < var2; var5++) {
+         for (int var6 = (int)Math.floor(var1.minZ); var6 < var3; var6++) {
             this.tickPrecipitation(new BlockPos(var5, var4, var6));
          }
       }
@@ -804,6 +848,12 @@ public class GameTestHelper {
       }
    }
 
+   public <N> void assertValueEqual(N var1, N var2, String var3) {
+      if (!var1.equals(var2)) {
+         throw new GameTestAssertException("Expected " + var3 + " to be " + var2 + ", but was " + var1);
+      }
+   }
+
    public void assertFalse(boolean var1, String var2) {
       if (var1) {
          throw new GameTestAssertException(var2);
@@ -824,8 +874,8 @@ public class GameTestHelper {
    }
 
    public void forEveryBlockInStructure(Consumer<BlockPos> var1) {
-      AABB var2 = this.getRelativeBounds();
-      BlockPos.MutableBlockPos.betweenClosedStream(var2.move(0.0, 1.0, 0.0)).forEach(var1);
+      AABB var2 = this.getRelativeBounds().contract(1.0, 1.0, 1.0);
+      BlockPos.MutableBlockPos.betweenClosedStream(var2).forEach(var1);
    }
 
    public void onEachTick(Runnable var1) {

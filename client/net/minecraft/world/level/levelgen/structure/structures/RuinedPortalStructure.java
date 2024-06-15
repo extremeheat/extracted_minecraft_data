@@ -2,8 +2,8 @@ package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -51,7 +51,7 @@ public class RuinedPortalStructure extends Structure {
    private static final float PROBABILITY_OF_GIANT_PORTAL = 0.05F;
    private static final int MIN_Y_INDEX = 15;
    private final List<RuinedPortalStructure.Setup> setups;
-   public static final Codec<RuinedPortalStructure> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<RuinedPortalStructure> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                settingsCodec(var0), ExtraCodecs.nonEmptyList(RuinedPortalStructure.Setup.CODEC.listOf()).fieldOf("setups").forGetter(var0x -> var0x.setups)
             )
@@ -75,13 +75,13 @@ public class RuinedPortalStructure extends Structure {
       if (this.setups.size() > 1) {
          float var5 = 0.0F;
 
-         for(RuinedPortalStructure.Setup var7 : this.setups) {
+         for (RuinedPortalStructure.Setup var7 : this.setups) {
             var5 += var7.weight();
          }
 
          float var21 = var3.nextFloat();
 
-         for(RuinedPortalStructure.Setup var8 : this.setups) {
+         for (RuinedPortalStructure.Setup var8 : this.setups) {
             var21 -= var8.weight() / var5;
             if (var21 < 0.0F) {
                var4 = var8;
@@ -130,12 +130,10 @@ public class RuinedPortalStructure extends Structure {
                         var19,
                         var1.chunkGenerator()
                            .getBiomeSource()
-                           .getNoiseBiome(
-                              QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler()
-                           )
+                           .getNoiseBiome(QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler())
                      );
                   }
-      
+
                   var10x.addPiece(new RuinedPortalPiece(var1.structureTemplateManager(), var19, var20.placement(), var2, var22, var24, var25, var9, var10));
                })
             )
@@ -146,10 +144,8 @@ public class RuinedPortalStructure extends Structure {
    private static boolean sample(WorldgenRandom var0, float var1) {
       if (var1 == 0.0F) {
          return false;
-      } else if (var1 == 1.0F) {
-         return true;
       } else {
-         return var0.nextFloat() < var1;
+         return var1 == 1.0F ? true : var0.nextFloat() < var1;
       }
    }
 
@@ -200,10 +196,10 @@ public class RuinedPortalStructure extends Structure {
       Heightmap.Types var13 = var2 == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR ? Heightmap.Types.OCEAN_FLOOR_WG : Heightmap.Types.WORLD_SURFACE_WG;
 
       int var14;
-      for(var14 = var9; var14 > var10; --var14) {
+      for (var14 = var9; var14 > var10; var14--) {
          int var15 = 0;
 
-         for(NoiseColumn var17 : var12) {
+         for (NoiseColumn var17 : var12) {
             BlockState var18 = var17.getBlock(var14);
             if (var13.isOpaque().test(var18)) {
                if (++var15 == 3) {
@@ -225,15 +221,16 @@ public class RuinedPortalStructure extends Structure {
       return StructureType.RUINED_PORTAL;
    }
 
-   public static record Setup(RuinedPortalPiece.VerticalPlacement b, float c, float d, boolean e, boolean f, boolean g, boolean h, float i) {
-      private final RuinedPortalPiece.VerticalPlacement placement;
-      private final float airPocketProbability;
-      private final float mossiness;
-      private final boolean overgrown;
-      private final boolean vines;
-      private final boolean canBeCold;
-      private final boolean replaceWithBlackstone;
-      private final float weight;
+   public static record Setup(
+      RuinedPortalPiece.VerticalPlacement placement,
+      float airPocketProbability,
+      float mossiness,
+      boolean overgrown,
+      boolean vines,
+      boolean canBeCold,
+      boolean replaceWithBlackstone,
+      float weight
+   ) {
       public static final Codec<RuinedPortalStructure.Setup> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   RuinedPortalPiece.VerticalPlacement.CODEC.fieldOf("placement").forGetter(RuinedPortalStructure.Setup::placement),
@@ -248,16 +245,25 @@ public class RuinedPortalStructure extends Structure {
                .apply(var0, RuinedPortalStructure.Setup::new)
       );
 
-      public Setup(RuinedPortalPiece.VerticalPlacement var1, float var2, float var3, boolean var4, boolean var5, boolean var6, boolean var7, float var8) {
+      public Setup(
+         RuinedPortalPiece.VerticalPlacement placement,
+         float airPocketProbability,
+         float mossiness,
+         boolean overgrown,
+         boolean vines,
+         boolean canBeCold,
+         boolean replaceWithBlackstone,
+         float weight
+      ) {
          super();
-         this.placement = var1;
-         this.airPocketProbability = var2;
-         this.mossiness = var3;
-         this.overgrown = var4;
-         this.vines = var5;
-         this.canBeCold = var6;
-         this.replaceWithBlackstone = var7;
-         this.weight = var8;
+         this.placement = placement;
+         this.airPocketProbability = airPocketProbability;
+         this.mossiness = mossiness;
+         this.overgrown = overgrown;
+         this.vines = vines;
+         this.canBeCold = canBeCold;
+         this.replaceWithBlackstone = replaceWithBlackstone;
+         this.weight = weight;
       }
    }
 }

@@ -20,7 +20,7 @@ public class IceSpikeFeature extends Feature<NoneFeatureConfiguration> {
       RandomSource var3 = var1.random();
       WorldGenLevel var4 = var1.level();
 
-      while(var4.isEmptyBlock(var2) && var2.getY() > var4.getMinBuildHeight() + 2) {
+      while (var4.isEmptyBlock(var2) && var2.getY() > var4.getMinBuildHeight() + 2) {
          var2 = var2.below();
       }
 
@@ -34,14 +34,14 @@ public class IceSpikeFeature extends Feature<NoneFeatureConfiguration> {
             var2 = var2.above(10 + var3.nextInt(30));
          }
 
-         for(int var7 = 0; var7 < var5; ++var7) {
+         for (int var7 = 0; var7 < var5; var7++) {
             float var8 = (1.0F - (float)var7 / (float)var5) * (float)var6;
             int var9 = Mth.ceil(var8);
 
-            for(int var10 = -var9; var10 <= var9; ++var10) {
+            for (int var10 = -var9; var10 <= var9; var10++) {
                float var11 = (float)Mth.abs(var10) - 0.25F;
 
-               for(int var12 = -var9; var12 <= var9; ++var12) {
+               for (int var12 = -var9; var12 <= var9; var12++) {
                   float var13 = (float)Mth.abs(var12) - 0.25F;
                   if ((var10 == 0 && var12 == 0 || !(var11 * var11 + var13 * var13 > var8 * var8))
                      && (var10 != -var9 && var10 != var9 && var12 != -var9 && var12 != var9 || !(var3.nextFloat() > 0.75F))) {
@@ -68,15 +68,15 @@ public class IceSpikeFeature extends Feature<NoneFeatureConfiguration> {
             var16 = 1;
          }
 
-         for(int var17 = -var16; var17 <= var16; ++var17) {
-            for(int var18 = -var16; var18 <= var16; ++var18) {
+         for (int var17 = -var16; var17 <= var16; var17++) {
+            for (int var18 = -var16; var18 <= var16; var18++) {
                BlockPos var19 = var2.offset(var17, -1, var18);
                int var20 = 50;
                if (Math.abs(var17) == 1 && Math.abs(var18) == 1) {
                   var20 = var3.nextInt(5);
                }
 
-               while(var19.getY() > 50) {
+               while (var19.getY() > 50) {
                   BlockState var21 = var4.getBlockState(var19);
                   if (!var21.isAir() && !isDirt(var21) && !var21.is(Blocks.SNOW_BLOCK) && !var21.is(Blocks.ICE) && !var21.is(Blocks.PACKED_ICE)) {
                      break;

@@ -16,7 +16,6 @@ import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Block;
@@ -56,9 +55,9 @@ public class HarvestFarmland extends Behavior<Villager> {
          BlockPos.MutableBlockPos var3 = var2.blockPosition().mutable();
          this.validFarmlandAroundVillager.clear();
 
-         for(int var4 = -1; var4 <= 1; ++var4) {
-            for(int var5 = -1; var5 <= 1; ++var5) {
-               for(int var6 = -1; var6 <= 1; ++var6) {
+         for (int var4 = -1; var4 <= 1; var4++) {
+            for (int var5 = -1; var5 <= 1; var5++) {
+               for (int var6 = -1; var6 <= 1; var6++) {
                   var3.set(var2.getX() + (double)var4, var2.getY() + (double)var5, var2.getZ() + (double)var6);
                   if (this.validPos(var3, var1)) {
                      this.validFarmlandAroundVillager.add(new BlockPos(var3));
@@ -100,8 +99,6 @@ public class HarvestFarmland extends Behavior<Villager> {
       this.nextOkStartTime = var3 + 40L;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       if (this.aboveFarmlandPos == null || this.aboveFarmlandPos.closerToCenterThan(var2.position(), 1.0)) {
          if (this.aboveFarmlandPos != null && var3 > this.nextOkStartTime) {
@@ -115,17 +112,14 @@ public class HarvestFarmland extends Behavior<Villager> {
             if (var5.isAir() && var7 instanceof FarmBlock && var2.hasFarmSeeds()) {
                SimpleContainer var8 = var2.getInventory();
 
-               for(int var9 = 0; var9 < var8.getContainerSize(); ++var9) {
+               for (int var9 = 0; var9 < var8.getContainerSize(); var9++) {
                   ItemStack var10 = var8.getItem(var9);
                   boolean var11 = false;
-                  if (!var10.isEmpty() && var10.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
-                     Item var13 = var10.getItem();
-                     if (var13 instanceof BlockItem var12) {
-                        BlockState var14 = var12.getBlock().defaultBlockState();
-                        var1.setBlockAndUpdate(this.aboveFarmlandPos, var14);
-                        var1.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(var2, var14));
-                        var11 = true;
-                     }
+                  if (!var10.isEmpty() && var10.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) && var10.getItem() instanceof BlockItem var12) {
+                     BlockState var14 = var12.getBlock().defaultBlockState();
+                     var1.setBlockAndUpdate(this.aboveFarmlandPos, var14);
+                     var1.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(var2, var14));
+                     var11 = true;
                   }
 
                   if (var11) {
@@ -159,7 +153,7 @@ public class HarvestFarmland extends Behavior<Villager> {
             }
          }
 
-         ++this.timeWorkedSoFar;
+         this.timeWorkedSoFar++;
       }
    }
 

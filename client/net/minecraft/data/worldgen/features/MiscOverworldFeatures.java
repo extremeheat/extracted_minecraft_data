@@ -3,7 +3,7 @@ package net.minecraft.data.worldgen.features;
 import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
@@ -43,7 +43,7 @@ public class MiscOverworldFeatures {
       super();
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
       FeatureUtils.register(var0, ICE_SPIKE, Feature.ICE_SPIKE);
       FeatureUtils.register(
          var0,

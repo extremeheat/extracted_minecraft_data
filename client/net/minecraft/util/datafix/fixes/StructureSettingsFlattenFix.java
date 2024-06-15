@@ -4,7 +4,6 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
@@ -41,8 +40,7 @@ public class StructureSettingsFlattenFix extends DataFix {
          .orElseEmptyMap()
          .updateMapValues(var1x -> var1x.mapSecond(var1xx -> var1xx.set("type", var0.createString("minecraft:random_spread"))));
       return (Dynamic<?>)DataFixUtils.orElse(
-         var0.get("stronghold").result().map(var2 -> var1.set("minecraft:stronghold", var2.set("type", var0.createString("minecraft:concentric_rings")))),
-         var1
+         var0.get("stronghold").result().map(var2 -> var1.set("minecraft:stronghold", var2.set("type", var0.createString("minecraft:concentric_rings")))), var1
       );
    }
 }

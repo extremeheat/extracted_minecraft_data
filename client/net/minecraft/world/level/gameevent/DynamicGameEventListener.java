@@ -6,7 +6,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public class DynamicGameEventListener<T extends GameEventListener> {
    private final T listener;
@@ -15,7 +15,7 @@ public class DynamicGameEventListener<T extends GameEventListener> {
 
    public DynamicGameEventListener(T var1) {
       super();
-      this.listener = var1;
+      this.listener = (T)var1;
    }
 
    public void add(ServerLevel var1) {

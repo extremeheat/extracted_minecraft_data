@@ -33,7 +33,7 @@ public class AdvancementToast implements Toast {
             var1.drawString(var2.getMinecraft().font, var5.getType().getDisplayName(), 30, 7, var7 | 0xFF000000, false);
             var1.drawString(var2.getMinecraft().font, (FormattedCharSequence)var6.get(0), 30, 18, -1, false);
          } else {
-            boolean var8 = true;
+            short var8 = 1500;
             float var9 = 300.0F;
             if (var3 < 1500L) {
                int var10 = Mth.floor(Mth.clamp((float)(1500L - var3) / 300.0F, 0.0F, 1.0F) * 255.0F) << 24 | 67108864;
@@ -42,7 +42,7 @@ public class AdvancementToast implements Toast {
                int var14 = Mth.floor(Mth.clamp((float)(var3 - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F) << 24 | 67108864;
                int var11 = this.height() / 2 - var6.size() * 9 / 2;
 
-               for(FormattedCharSequence var13 : var6) {
+               for (FormattedCharSequence var13 : var6) {
                   var1.drawString(var2.getMinecraft().font, var13, 30, var11, 16777215 | var14, false);
                   var11 += 9;
                }

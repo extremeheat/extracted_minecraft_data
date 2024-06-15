@@ -1,7 +1,7 @@
 package net.minecraft.world.damagesource;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -37,6 +37,8 @@ public interface DamageTypes {
    ResourceKey<DamageType> ARROW = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("arrow"));
    ResourceKey<DamageType> TRIDENT = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("trident"));
    ResourceKey<DamageType> MOB_PROJECTILE = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("mob_projectile"));
+   ResourceKey<DamageType> SPIT = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("spit"));
+   ResourceKey<DamageType> WIND_CHARGE = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("wind_charge"));
    ResourceKey<DamageType> FIREWORKS = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("fireworks"));
    ResourceKey<DamageType> FIREBALL = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("fireball"));
    ResourceKey<DamageType> UNATTRIBUTED_FIREBALL = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("unattributed_fireball"));
@@ -51,7 +53,7 @@ public interface DamageTypes {
    ResourceKey<DamageType> OUTSIDE_BORDER = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("outside_border"));
    ResourceKey<DamageType> GENERIC_KILL = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("generic_kill"));
 
-   static void bootstrap(BootstapContext<DamageType> var0) {
+   static void bootstrap(BootstrapContext<DamageType> var0) {
       var0.register(IN_FIRE, new DamageType("inFire", 0.1F, DamageEffects.BURNING));
       var0.register(LIGHTNING_BOLT, new DamageType("lightningBolt", 0.1F));
       var0.register(ON_FIRE, new DamageType("onFire", 0.0F, DamageEffects.BURNING));
@@ -83,6 +85,7 @@ public interface DamageTypes {
       var0.register(ARROW, new DamageType("arrow", 0.1F));
       var0.register(TRIDENT, new DamageType("trident", 0.1F));
       var0.register(MOB_PROJECTILE, new DamageType("mob", 0.1F));
+      var0.register(SPIT, new DamageType("mob", 0.1F));
       var0.register(FIREWORKS, new DamageType("fireworks", 0.1F));
       var0.register(UNATTRIBUTED_FIREBALL, new DamageType("onFire", 0.1F, DamageEffects.BURNING));
       var0.register(FIREBALL, new DamageType("fireball", 0.1F, DamageEffects.BURNING));

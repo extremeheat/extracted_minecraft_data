@@ -29,7 +29,7 @@ public class BlockStatePredicate implements Predicate<BlockState> {
          if (this.properties.isEmpty()) {
             return true;
          } else {
-            for(Entry var3 : this.properties.entrySet()) {
+            for (Entry var3 : this.properties.entrySet()) {
                if (!this.applies(var1, (Property)var3.getKey(), (Predicate<Object>)var3.getValue())) {
                   return false;
                }

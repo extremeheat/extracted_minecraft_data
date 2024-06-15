@@ -99,7 +99,7 @@ public class LinearLayout implements Layout {
       }
 
       void setSpacing(GridLayout var1, int var2) {
-         switch(this) {
+         switch (this) {
             case HORIZONTAL:
                var1.columnSpacing(var2);
                break;
@@ -109,9 +109,9 @@ public class LinearLayout implements Layout {
       }
 
       public <T extends LayoutElement> T addChild(GridLayout var1, T var2, int var3, LayoutSettings var4) {
-         return (T)(switch(this) {
-            case HORIZONTAL -> var1.addChild(var2, 0, var3, var4);
-            case VERTICAL -> var1.addChild(var2, var3, 0, var4);
+         return (T)(switch (this) {
+            case HORIZONTAL -> (LayoutElement)var1.addChild(var2, 0, var3, var4);
+            case VERTICAL -> (LayoutElement)var1.addChild(var2, var3, 0, var4);
          });
       }
    }

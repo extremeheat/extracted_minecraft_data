@@ -10,9 +10,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -22,7 +20,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
@@ -34,7 +31,7 @@ public class WorldCreationUiState {
    private WorldCreationUiState.SelectedGameMode gameMode = WorldCreationUiState.SelectedGameMode.SURVIVAL;
    private Difficulty difficulty = Difficulty.NORMAL;
    @Nullable
-   private Boolean allowCheats;
+   private Boolean allowCommands;
    private String seed;
    private boolean generateStructures;
    private boolean bonusChest;
@@ -73,7 +70,7 @@ public class WorldCreationUiState {
          this.settings = this.settings.withOptions(var1x -> var1x.withStructures(var2));
       }
 
-      for(Consumer var4 : this.listeners) {
+      for (Consumer var4 : this.listeners) {
          var4.accept(this);
       }
    }
@@ -128,20 +125,18 @@ public class WorldCreationUiState {
       return this.getGameMode() == WorldCreationUiState.SelectedGameMode.HARDCORE;
    }
 
-   public void setAllowCheats(boolean var1) {
-      this.allowCheats = var1;
+   public void setAllowCommands(boolean var1) {
+      this.allowCommands = var1;
       this.onChanged();
    }
 
-   public boolean isAllowCheats() {
+   public boolean isAllowCommands() {
       if (this.isDebug()) {
          return true;
       } else if (this.isHardcore()) {
          return false;
-      } else if (this.allowCheats == null) {
-         return this.getGameMode() == WorldCreationUiState.SelectedGameMode.CREATIVE;
       } else {
-         return this.allowCheats;
+         return this.allowCommands == null ? this.getGameMode() == WorldCreationUiState.SelectedGameMode.CREATIVE : this.allowCommands;
       }
    }
 
@@ -249,7 +244,7 @@ public class WorldCreationUiState {
    }
 
    private static Optional<Holder<WorldPreset>> findPreset(WorldCreationContext var0, Optional<ResourceKey<WorldPreset>> var1) {
-      return var1.flatMap(var1x -> var0.worldgenLoadContext().<WorldPreset>registryOrThrow(Registries.WORLD_PRESET).getHolder(var1x));
+      return var1.flatMap(var1x -> var0.worldgenLoadContext().registryOrThrow(Registries.WORLD_PRESET).getHolder((ResourceKey<WorldPreset>)var1x));
    }
 
    private static Optional<List<WorldCreationUiState.WorldTypeEntry>> getNonEmptyList(Registry<WorldPreset> var0, TagKey<WorldPreset> var1) {
@@ -275,10 +270,10 @@ public class WorldCreationUiState {
       public final Component displayName;
       private final Component info;
 
-      private SelectedGameMode(String var3, GameType var4) {
-         this.gameType = var4;
-         this.displayName = Component.translatable("selectWorld.gameMode." + var3);
-         this.info = Component.translatable("selectWorld.gameMode." + var3 + ".info");
+      private SelectedGameMode(final String nullxx, final GameType nullxxx) {
+         this.gameType = nullxxx;
+         this.displayName = Component.translatable("selectWorld.gameMode." + nullxx);
+         this.info = Component.translatable("selectWorld.gameMode." + nullxx + ".info");
       }
 
       public Component getInfo() {
@@ -286,14 +281,12 @@ public class WorldCreationUiState {
       }
    }
 
-   public static record WorldTypeEntry(@Nullable Holder<WorldPreset> a) {
-      @Nullable
-      private final Holder<WorldPreset> preset;
+   public static record WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
       private static final Component CUSTOM_WORLD_DESCRIPTION = Component.translatable("generator.custom");
 
-      public WorldTypeEntry(@Nullable Holder<WorldPreset> var1) {
+      public WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
          super();
-         this.preset = var1;
+         this.preset = preset;
       }
 
       public Component describePreset() {

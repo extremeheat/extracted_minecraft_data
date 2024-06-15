@@ -59,10 +59,10 @@ public class GameModeCommand {
    private static int setMode(CommandContext<CommandSourceStack> var0, Collection<ServerPlayer> var1, GameType var2) {
       int var3 = 0;
 
-      for(ServerPlayer var5 : var1) {
+      for (ServerPlayer var5 : var1) {
          if (var5.setGameMode(var2)) {
             logGamemodeChange((CommandSourceStack)var0.getSource(), var5, var2);
-            ++var3;
+            var3++;
          }
       }
 

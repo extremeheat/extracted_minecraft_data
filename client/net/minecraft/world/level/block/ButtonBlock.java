@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -12,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -82,10 +80,10 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       Direction var5 = var1.getValue(FACING);
       boolean var6 = var1.getValue(POWERED);
-      switch((AttachFace)var1.getValue(FACE)) {
+      switch ((AttachFace)var1.getValue(FACE)) {
          case FLOOR:
             if (var5.getAxis() == Direction.Axis.X) {
                return var6 ? PRESSED_FLOOR_AABB_X : FLOOR_AABB_X;
@@ -93,7 +91,7 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
 
             return var6 ? PRESSED_FLOOR_AABB_Z : FLOOR_AABB_Z;
          case WALL:
-            return switch(var5) {
+            return switch (var5) {
                case EAST -> var6 ? PRESSED_EAST_AABB : EAST_AABB;
                case WEST -> var6 ? PRESSED_WEST_AABB : WEST_AABB;
                case SOUTH -> var6 ? PRESSED_SOUTH_AABB : SOUTH_AABB;
@@ -110,7 +108,7 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var1.getValue(POWERED)) {
          return InteractionResult.CONSUME;
       } else {
@@ -122,7 +120,7 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide() && !var1.getValue(POWERED)) {
          this.press(var1, var2, var3);
       }
@@ -145,7 +143,7 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5 && !var1.is(var4.getBlock())) {
          if (var1.getValue(POWERED)) {
             this.updateNeighbours(var1, var2, var3);
@@ -156,29 +154,29 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) ? 15 : 0;
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) && getConnectedDirection(var1) == var4 ? 15 : 0;
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(POWERED)) {
          this.checkPressed(var1, var2, var3);
       }
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide && this.type.canButtonBeActivatedByArrows() && !var1.getValue(POWERED)) {
          this.checkPressed(var1, var2, var3);
       }

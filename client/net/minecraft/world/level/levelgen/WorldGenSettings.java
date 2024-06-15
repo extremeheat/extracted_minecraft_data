@@ -4,22 +4,19 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 
-public record WorldGenSettings(WorldOptions b, WorldDimensions c) {
-   private final WorldOptions options;
-   private final WorldDimensions dimensions;
+public record WorldGenSettings(WorldOptions options, WorldDimensions dimensions) {
    public static final Codec<WorldGenSettings> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(WorldOptions.CODEC.forGetter(WorldGenSettings::options), WorldDimensions.CODEC.forGetter(WorldGenSettings::dimensions))
             .apply(var0, var0.stable(WorldGenSettings::new))
    );
 
-   public WorldGenSettings(WorldOptions var1, WorldDimensions var2) {
+   public WorldGenSettings(WorldOptions options, WorldDimensions dimensions) {
       super();
-      this.options = var1;
-      this.dimensions = var2;
+      this.options = options;
+      this.dimensions = dimensions;
    }
 
    public static <T> DataResult<T> encode(DynamicOps<T> var0, WorldOptions var1, WorldDimensions var2) {

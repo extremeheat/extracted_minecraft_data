@@ -15,7 +15,6 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemOverrides {
@@ -32,26 +31,22 @@ public class ItemOverrides {
 
    public ItemOverrides(ModelBaker var1, BlockModel var2, List<ItemOverride> var3) {
       super();
-      this.properties = var3.stream()
-         .flatMap(ItemOverride::getPredicates)
-         .map(ItemOverride.Predicate::getProperty)
-         .distinct()
-         .toArray(var0 -> new ResourceLocation[var0]);
+      this.properties = var3.stream().flatMap(ItemOverride::getPredicates).map(ItemOverride.Predicate::getProperty).distinct().toArray(ResourceLocation[]::new);
       Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
 
-      for(int var5 = 0; var5 < this.properties.length; ++var5) {
+      for (int var5 = 0; var5 < this.properties.length; var5++) {
          var4.put(this.properties[var5], var5);
       }
 
       ArrayList var10 = Lists.newArrayList();
 
-      for(int var6 = var3.size() - 1; var6 >= 0; --var6) {
+      for (int var6 = var3.size() - 1; var6 >= 0; var6--) {
          ItemOverride var7 = (ItemOverride)var3.get(var6);
          BakedModel var8 = this.bakeModel(var1, var2, var7);
          ItemOverrides.PropertyMatcher[] var9 = var7.getPredicates().map(var1x -> {
-            int var2xx = var4.getInt(var1x.getProperty());
-            return new ItemOverrides.PropertyMatcher(var2xx, var1x.getValue());
-         }).toArray(var0 -> new ItemOverrides.PropertyMatcher[var0]);
+            int var2x = var4.getInt(var1x.getProperty());
+            return new ItemOverrides.PropertyMatcher(var2x, var1x.getValue());
+         }).toArray(ItemOverrides.PropertyMatcher[]::new);
          var10.add(new ItemOverrides.BakedOverride(var9, var8));
       }
 
@@ -67,28 +62,27 @@ public class ItemOverrides {
    @Nullable
    public BakedModel resolve(BakedModel var1, ItemStack var2, @Nullable ClientLevel var3, @Nullable LivingEntity var4, int var5) {
       if (this.overrides.length != 0) {
-         Item var6 = var2.getItem();
-         int var7 = this.properties.length;
-         float[] var8 = new float[var7];
+         int var6 = this.properties.length;
+         float[] var7 = new float[var6];
 
-         for(int var9 = 0; var9 < var7; ++var9) {
-            ResourceLocation var10 = this.properties[var9];
-            ItemPropertyFunction var11 = ItemProperties.getProperty(var6, var10);
-            if (var11 != null) {
-               var8[var9] = var11.call(var2, var3, var4, var5);
+         for (int var8 = 0; var8 < var6; var8++) {
+            ResourceLocation var9 = this.properties[var8];
+            ItemPropertyFunction var10 = ItemProperties.getProperty(var2, var9);
+            if (var10 != null) {
+               var7[var8] = var10.call(var2, var3, var4, var5);
             } else {
-               var8[var9] = -1.0F / 0.0F;
+               var7[var8] = -1.0F / 0.0F;
             }
          }
 
-         for(ItemOverrides.BakedOverride var12 : this.overrides) {
-            if (var12.test(var8)) {
-               BakedModel var13 = var12.model;
-               if (var13 == null) {
+         for (ItemOverrides.BakedOverride var11 : this.overrides) {
+            if (var11.test(var7)) {
+               BakedModel var12 = var11.model;
+               if (var12 == null) {
                   return var1;
                }
 
-               return var13;
+               return var12;
             }
          }
       }
@@ -108,7 +102,7 @@ public class ItemOverrides {
       }
 
       boolean test(float[] var1) {
-         for(ItemOverrides.PropertyMatcher var5 : this.matchers) {
+         for (ItemOverrides.PropertyMatcher var5 : this.matchers) {
             float var6 = var1[var5.index];
             if (var6 < var5.value) {
                return false;

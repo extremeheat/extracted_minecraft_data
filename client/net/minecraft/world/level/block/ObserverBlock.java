@@ -35,17 +35,17 @@ public class ObserverBlock extends DirectionalBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(POWERED)) {
          var2.setBlock(var3, var1.setValue(POWERED, Boolean.valueOf(false)), 2);
       } else {
@@ -57,7 +57,7 @@ public class ObserverBlock extends DirectionalBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(FACING) == var2 && !var1.getValue(POWERED)) {
          this.startSignal(var4, var5);
       }
@@ -79,22 +79,22 @@ public class ObserverBlock extends DirectionalBlock {
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getSignal(var2, var3, var4);
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) && var1.getValue(FACING) == var4 ? 15 : 0;
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          if (!var2.isClientSide() && var1.getValue(POWERED) && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
             BlockState var6 = var1.setValue(POWERED, Boolean.valueOf(false));
@@ -105,7 +105,7 @@ public class ObserverBlock extends DirectionalBlock {
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          if (!var2.isClientSide && var1.getValue(POWERED) && var2.getBlockTicks().hasScheduledTick(var3, this)) {
             this.updateNeighborsInFront(var2, var3, var1.setValue(POWERED, Boolean.valueOf(false)));

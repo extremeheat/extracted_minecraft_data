@@ -37,8 +37,8 @@ public enum DataFixTypes {
    public static final Set<TypeReference> TYPES_FOR_LEVEL_LIST;
    private final TypeReference type;
 
-   private DataFixTypes(TypeReference var3) {
-      this.type = var3;
+   private DataFixTypes(final TypeReference nullxx) {
+      this.type = nullxx;
    }
 
    static int currentVersion() {

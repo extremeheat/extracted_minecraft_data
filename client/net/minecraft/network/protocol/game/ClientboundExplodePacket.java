@@ -4,17 +4,22 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundExplodePacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundExplodePacket> STREAM_CODEC = Packet.codec(
+      ClientboundExplodePacket::write, ClientboundExplodePacket::new
+   );
    private final double x;
    private final double y;
    private final double z;
@@ -26,7 +31,7 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
    private final ParticleOptions smallExplosionParticles;
    private final ParticleOptions largeExplosionParticles;
    private final Explosion.BlockInteraction blockInteraction;
-   private final SoundEvent explosionSound;
+   private final Holder<SoundEvent> explosionSound;
 
    public ClientboundExplodePacket(
       double var1,
@@ -38,7 +43,7 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
       Explosion.BlockInteraction var10,
       ParticleOptions var11,
       ParticleOptions var12,
-      SoundEvent var13
+      Holder<SoundEvent> var13
    ) {
       super();
       this.x = var1;
@@ -62,7 +67,7 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
       this.largeExplosionParticles = var12;
    }
 
-   public ClientboundExplodePacket(FriendlyByteBuf var1) {
+   private ClientboundExplodePacket(RegistryFriendlyByteBuf var1) {
       super();
       this.x = var1.readDouble();
       this.y = var1.readDouble();
@@ -72,31 +77,21 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
       int var3 = Mth.floor(this.y);
       int var4 = Mth.floor(this.z);
       this.toBlow = var1.readList(var3x -> {
-         int var4xx = var3x.readByte() + var2;
+         int var4x = var3x.readByte() + var2;
          int var5 = var3x.readByte() + var3;
          int var6 = var3x.readByte() + var4;
-         return new BlockPos(var4xx, var5, var6);
+         return new BlockPos(var4x, var5, var6);
       });
       this.knockbackX = var1.readFloat();
       this.knockbackY = var1.readFloat();
       this.knockbackZ = var1.readFloat();
       this.blockInteraction = var1.readEnum(Explosion.BlockInteraction.class);
-      this.smallExplosionParticles = this.readParticle(var1, var1.readById(BuiltInRegistries.PARTICLE_TYPE));
-      this.largeExplosionParticles = this.readParticle(var1, var1.readById(BuiltInRegistries.PARTICLE_TYPE));
-      this.explosionSound = SoundEvent.readFromNetwork(var1);
+      this.smallExplosionParticles = ParticleTypes.STREAM_CODEC.decode(var1);
+      this.largeExplosionParticles = ParticleTypes.STREAM_CODEC.decode(var1);
+      this.explosionSound = SoundEvent.STREAM_CODEC.decode(var1);
    }
 
-   public void writeParticle(FriendlyByteBuf var1, ParticleOptions var2) {
-      var1.writeId(BuiltInRegistries.PARTICLE_TYPE, var2.getType());
-      var2.writeToNetwork(var1);
-   }
-
-   private <T extends ParticleOptions> T readParticle(FriendlyByteBuf var1, ParticleType<T> var2) {
-      return (T)var2.getDeserializer().fromNetwork(var2, var1);
-   }
-
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
       var1.writeDouble(this.z);
@@ -116,9 +111,14 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
       var1.writeFloat(this.knockbackY);
       var1.writeFloat(this.knockbackZ);
       var1.writeEnum(this.blockInteraction);
-      this.writeParticle(var1, this.smallExplosionParticles);
-      this.writeParticle(var1, this.largeExplosionParticles);
-      this.explosionSound.writeToNetwork(var1);
+      ParticleTypes.STREAM_CODEC.encode(var1, this.smallExplosionParticles);
+      ParticleTypes.STREAM_CODEC.encode(var1, this.largeExplosionParticles);
+      SoundEvent.STREAM_CODEC.encode(var1, this.explosionSound);
+   }
+
+   @Override
+   public PacketType<ClientboundExplodePacket> type() {
+      return GamePacketTypes.CLIENTBOUND_EXPLODE;
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -169,7 +169,7 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
       return this.largeExplosionParticles;
    }
 
-   public SoundEvent getExplosionSound() {
+   public Holder<SoundEvent> getExplosionSound() {
       return this.explosionSound;
    }
 }

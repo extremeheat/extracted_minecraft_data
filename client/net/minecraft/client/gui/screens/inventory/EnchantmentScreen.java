@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       int var6 = (this.width - this.imageWidth) / 2;
       int var7 = (this.height - this.imageHeight) / 2;
 
-      for(int var8 = 0; var8 < 3; ++var8) {
+      for (int var8 = 0; var8 < 3; var8++) {
          double var9 = var1 - (double)(var6 + 60);
          double var11 = var3 - (double)(var7 + 14 + 19 * var8);
          if (var9 >= 0.0 && var11 >= 0.0 && var9 < 108.0 && var11 < 19.0 && this.menu.clickMenuButton(this.minecraft.player, var8)) {
@@ -91,25 +92,30 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       EnchantmentNames.getInstance().initSeed((long)this.menu.getEnchantmentSeed());
       int var7 = this.menu.getGoldCount();
 
-      for(int var8 = 0; var8 < 3; ++var8) {
+      for (int var8 = 0; var8 < 3; var8++) {
          int var9 = var5 + 60;
          int var10 = var9 + 20;
          int var11 = this.menu.costs[var8];
          if (var11 == 0) {
+            RenderSystem.enableBlend();
             var1.blitSprite(ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
+            RenderSystem.disableBlend();
          } else {
             String var12 = var11 + "";
             int var13 = 86 - this.font.width(var12);
             FormattedText var14 = EnchantmentNames.getInstance().getRandomName(this.font, var13);
             int var15 = 6839882;
             if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.getAbilities().instabuild) {
+               RenderSystem.enableBlend();
                var1.blitSprite(ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                var1.blitSprite(DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
+               RenderSystem.disableBlend();
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1);
                var15 = 4226832;
             } else {
                int var16 = var3 - (var5 + 60);
                int var17 = var4 - (var6 + 14 + 19 * var8);
+               RenderSystem.enableBlend();
                if (var16 >= 0 && var17 >= 0 && var16 < 108 && var17 < 19) {
                   var1.blitSprite(ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                   var15 = 16777088;
@@ -118,6 +124,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
                }
 
                var1.blitSprite(ENABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
+               RenderSystem.disableBlend();
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, var15);
                var15 = 8453920;
             }
@@ -158,7 +165,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       boolean var5 = this.minecraft.player.getAbilities().instabuild;
       int var6 = this.menu.getGoldCount();
 
-      for(int var7 = 0; var7 < 3; ++var7) {
+      for (int var7 = 0; var7 < 3; var7++) {
          int var8 = this.menu.costs[var7];
          Enchantment var9 = Enchantment.byId(this.menu.enchantClue[var7]);
          int var10 = this.menu.levelClue[var7];
@@ -202,16 +209,16 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
          this.last = var1;
 
          do {
-            this.flipT += (float)(this.random.nextInt(4) - this.random.nextInt(4));
-         } while(this.flip <= this.flipT + 1.0F && this.flip >= this.flipT - 1.0F);
+            this.flipT = this.flipT + (float)(this.random.nextInt(4) - this.random.nextInt(4));
+         } while (this.flip <= this.flipT + 1.0F && this.flip >= this.flipT - 1.0F);
       }
 
-      ++this.time;
+      this.time++;
       this.oFlip = this.flip;
       this.oOpen = this.open;
       boolean var2 = false;
 
-      for(int var3 = 0; var3 < 3; ++var3) {
+      for (int var3 = 0; var3 < 3; var3++) {
          if (this.menu.costs[var3] != 0) {
             var2 = true;
          }
@@ -227,7 +234,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       float var5 = (this.flipT - this.flip) * 0.4F;
       float var4 = 0.2F;
       var5 = Mth.clamp(var5, -0.2F, 0.2F);
-      this.flipA += (var5 - this.flipA) * 0.9F;
-      this.flip += this.flipA;
+      this.flipA = this.flipA + (var5 - this.flipA) * 0.9F;
+      this.flip = this.flip + this.flipA;
    }
 }

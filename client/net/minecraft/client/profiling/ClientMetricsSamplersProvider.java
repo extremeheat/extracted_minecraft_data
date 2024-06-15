@@ -34,8 +34,7 @@ public class ClientMetricsSamplersProvider implements MetricsSamplerProvider {
       this.samplers.add(MetricSampler.create("lastViewDistance", MetricCategory.CHUNK_RENDERING, this.levelRenderer, LevelRenderer::getLastViewDistance));
       SectionRenderDispatcher var1 = this.levelRenderer.getSectionRenderDispatcher();
       this.samplers.add(MetricSampler.create("toUpload", MetricCategory.CHUNK_RENDERING_DISPATCHING, var1, SectionRenderDispatcher::getToUpload));
-      this.samplers
-         .add(MetricSampler.create("freeBufferCount", MetricCategory.CHUNK_RENDERING_DISPATCHING, var1, SectionRenderDispatcher::getFreeBufferCount));
+      this.samplers.add(MetricSampler.create("freeBufferCount", MetricCategory.CHUNK_RENDERING_DISPATCHING, var1, SectionRenderDispatcher::getFreeBufferCount));
       this.samplers.add(MetricSampler.create("toBatchCount", MetricCategory.CHUNK_RENDERING_DISPATCHING, var1, SectionRenderDispatcher::getToBatchCount));
       if (TimerQuery.getInstance().isPresent()) {
          this.samplers.add(MetricSampler.create("gpuUtilization", MetricCategory.GPU, Minecraft.getInstance(), Minecraft::getGpuUtilization));

@@ -29,7 +29,7 @@ public class MangroveRootsBlock extends Block implements SimpleWaterloggedBlock 
    }
 
    @Override
-   public boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
+   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
       return var2.is(Blocks.MANGROVE_ROOTS) && var3.getAxis() == Direction.Axis.Y;
    }
 
@@ -42,7 +42,7 @@ public class MangroveRootsBlock extends Block implements SimpleWaterloggedBlock 
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -51,7 +51,7 @@ public class MangroveRootsBlock extends Block implements SimpleWaterloggedBlock 
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 

@@ -20,10 +20,10 @@ public class Fluids {
    }
 
    static {
-      for(Fluid var1 : BuiltInRegistries.FLUID) {
+      for (Fluid var1 : BuiltInRegistries.FLUID) {
          UnmodifiableIterator var2 = var1.getStateDefinition().getPossibleStates().iterator();
 
-         while(var2.hasNext()) {
+         while (var2.hasNext()) {
             FluidState var3 = (FluidState)var2.next();
             Fluid.FLUID_STATE_REGISTRY.add(var3);
          }

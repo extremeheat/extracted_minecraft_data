@@ -1,6 +1,5 @@
 package net.minecraft.client.telemetry;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
@@ -25,50 +24,49 @@ public class TelemetryPropertyMap {
       return new TelemetryPropertyMap.Builder();
    }
 
-   public static Codec<TelemetryPropertyMap> createCodec(final List<TelemetryProperty<?>> var0) {
-      return (new MapCodec<TelemetryPropertyMap>() {
-            public <T> RecordBuilder<T> encode(TelemetryPropertyMap var1, DynamicOps<T> var2, RecordBuilder<T> var3) {
-               RecordBuilder var4 = var3;
-   
-               for(TelemetryProperty var6 : var0) {
-                  var4 = this.encodeProperty(var1, var4, var6);
-               }
-   
-               return var4;
+   public static MapCodec<TelemetryPropertyMap> createCodec(final List<TelemetryProperty<?>> var0) {
+      return new MapCodec<TelemetryPropertyMap>() {
+         public <T> RecordBuilder<T> encode(TelemetryPropertyMap var1, DynamicOps<T> var2, RecordBuilder<T> var3) {
+            RecordBuilder var4 = var3;
+
+            for (TelemetryProperty var6 : var0) {
+               var4 = this.encodeProperty(var1, var4, var6);
             }
-   
-            private <T, V> RecordBuilder<T> encodeProperty(TelemetryPropertyMap var1, RecordBuilder<T> var2, TelemetryProperty<V> var3) {
-               Object var4 = var1.get(var3);
-               return var4 != null ? var2.add(var3.id(), var4, var3.codec()) : var2;
+
+            return var4;
+         }
+
+         private <T, V> RecordBuilder<T> encodeProperty(TelemetryPropertyMap var1, RecordBuilder<T> var2, TelemetryProperty<V> var3) {
+            Object var4 = var1.get(var3);
+            return var4 != null ? var2.add(var3.id(), var4, var3.codec()) : var2;
+         }
+
+         public <T> DataResult<TelemetryPropertyMap> decode(DynamicOps<T> var1, MapLike<T> var2) {
+            DataResult var3 = DataResult.success(new TelemetryPropertyMap.Builder());
+
+            for (TelemetryProperty var5 : var0) {
+               var3 = this.decodeProperty(var3, var1, var2, var5);
             }
-   
-            public <T> DataResult<TelemetryPropertyMap> decode(DynamicOps<T> var1, MapLike<T> var2) {
-               DataResult var3 = DataResult.success(new TelemetryPropertyMap.Builder());
-   
-               for(TelemetryProperty var5 : var0) {
-                  var3 = this.decodeProperty(var3, var1, var2, var5);
-               }
-   
-               return var3.map(TelemetryPropertyMap.Builder::build);
+
+            return var3.map(TelemetryPropertyMap.Builder::build);
+         }
+
+         private <T, V> DataResult<TelemetryPropertyMap.Builder> decodeProperty(
+            DataResult<TelemetryPropertyMap.Builder> var1, DynamicOps<T> var2, MapLike<T> var3, TelemetryProperty<V> var4
+         ) {
+            Object var5 = var3.get(var4.id());
+            if (var5 != null) {
+               DataResult var6 = var4.codec().parse(var2, var5);
+               return var1.apply2stable((var1x, var2x) -> var1x.put(var4, var2x), var6);
+            } else {
+               return var1;
             }
-   
-            private <T, V> DataResult<TelemetryPropertyMap.Builder> decodeProperty(
-               DataResult<TelemetryPropertyMap.Builder> var1, DynamicOps<T> var2, MapLike<T> var3, TelemetryProperty<V> var4
-            ) {
-               Object var5 = var3.get(var4.id());
-               if (var5 != null) {
-                  DataResult var6 = var4.codec().parse(var2, var5);
-                  return var1.apply2stable((var1x, var2x) -> var1x.put(var4, (T)var2x), var6);
-               } else {
-                  return var1;
-               }
-            }
-   
-            public <T> Stream<T> keys(DynamicOps<T> var1) {
-               return var0.stream().map(TelemetryProperty::id).map(var1::createString);
-            }
-         })
-         .codec();
+         }
+
+         public <T> Stream<T> keys(DynamicOps<T> var1) {
+            return var0.stream().map(TelemetryProperty::id).map(var1::createString);
+         }
+      };
    }
 
    @Nullable

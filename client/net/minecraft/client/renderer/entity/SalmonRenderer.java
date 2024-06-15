@@ -19,17 +19,17 @@ public class SalmonRenderer extends MobRenderer<Salmon, SalmonModel<Salmon>> {
       return SALMON_LOCATION;
    }
 
-   protected void setupRotations(Salmon var1, PoseStack var2, float var3, float var4, float var5) {
-      super.setupRotations(var1, var2, var3, var4, var5);
-      float var6 = 1.0F;
+   protected void setupRotations(Salmon var1, PoseStack var2, float var3, float var4, float var5, float var6) {
+      super.setupRotations(var1, var2, var3, var4, var5, var6);
       float var7 = 1.0F;
+      float var8 = 1.0F;
       if (!var1.isInWater()) {
-         var6 = 1.3F;
-         var7 = 1.7F;
+         var7 = 1.3F;
+         var8 = 1.7F;
       }
 
-      float var8 = var6 * 4.3F * Mth.sin(var7 * 0.6F * var3);
-      var2.mulPose(Axis.YP.rotationDegrees(var8));
+      float var9 = var7 * 4.3F * Mth.sin(var8 * 0.6F * var3);
+      var2.mulPose(Axis.YP.rotationDegrees(var9));
       var2.translate(0.0F, 0.0F, -0.4F);
       if (!var1.isInWater()) {
          var2.translate(0.2F, 0.1F, 0.0F);

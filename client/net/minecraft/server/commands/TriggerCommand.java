@@ -5,7 +5,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -28,9 +27,7 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class TriggerCommand {
-   private static final SimpleCommandExceptionType ERROR_NOT_PRIMED = new SimpleCommandExceptionType(
-      Component.translatable("commands.trigger.failed.unprimed")
-   );
+   private static final SimpleCommandExceptionType ERROR_NOT_PRIMED = new SimpleCommandExceptionType(Component.translatable("commands.trigger.failed.unprimed"));
    private static final SimpleCommandExceptionType ERROR_INVALID_OBJECTIVE = new SimpleCommandExceptionType(
       Component.translatable("commands.trigger.failed.invalid")
    );
@@ -90,7 +87,7 @@ public class TriggerCommand {
       if (var2 != null) {
          ServerScoreboard var4 = var0.getServer().getScoreboard();
 
-         for(Objective var6 : var4.getObjectives()) {
+         for (Objective var6 : var4.getObjectives()) {
             if (var6.getCriteria() == ObjectiveCriteria.TRIGGER) {
                ReadOnlyScoreInfo var7 = var4.getPlayerScoreInfo(var2, var6);
                if (var7 != null && !var7.isLocked()) {

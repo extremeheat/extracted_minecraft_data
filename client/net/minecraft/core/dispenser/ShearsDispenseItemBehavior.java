@@ -12,7 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -28,8 +27,8 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       if (!var3.isClientSide()) {
          BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
          this.setSuccess(tryShearBeehive(var3, var4) || tryShearLivingEntity(var3, var4));
-         if (this.isSuccess() && var2.hurt(1, var3.getRandom(), null)) {
-            var2.setCount(0);
+         if (this.isSuccess()) {
+            var2.hurtAndBreak(1, var3.getRandom(), null, () -> var2.setCount(0));
          }
       }
 
@@ -52,10 +51,8 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       return false;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static boolean tryShearLivingEntity(ServerLevel var0, BlockPos var1) {
-      for(LivingEntity var4 : var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS)) {
+      for (LivingEntity var4 : var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS)) {
          if (var4 instanceof Shearable var5 && var5.readyForShearing()) {
             var5.shear(SoundSource.BLOCKS);
             var0.gameEvent(null, GameEvent.SHEAR, var1);

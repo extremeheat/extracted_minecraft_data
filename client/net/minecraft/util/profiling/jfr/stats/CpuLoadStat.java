@@ -2,16 +2,12 @@ package net.minecraft.util.profiling.jfr.stats;
 
 import jdk.jfr.consumer.RecordedEvent;
 
-public record CpuLoadStat(double a, double b, double c) {
-   private final double jvm;
-   private final double userJvm;
-   private final double system;
-
-   public CpuLoadStat(double var1, double var3, double var5) {
+public record CpuLoadStat(double jvm, double userJvm, double system) {
+   public CpuLoadStat(double jvm, double userJvm, double system) {
       super();
-      this.jvm = var1;
-      this.userJvm = var3;
-      this.system = var5;
+      this.jvm = jvm;
+      this.userJvm = userJvm;
+      this.system = system;
    }
 
    public static CpuLoadStat from(RecordedEvent var0) {

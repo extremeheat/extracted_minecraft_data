@@ -38,7 +38,7 @@ public class DirectionalPlaceContext extends BlockPlaceContext {
 
    @Override
    public Direction[] getNearestLookingDirections() {
-      switch(this.direction) {
+      switch (this.direction) {
          case DOWN:
          default:
             return new Direction[]{Direction.DOWN, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP};

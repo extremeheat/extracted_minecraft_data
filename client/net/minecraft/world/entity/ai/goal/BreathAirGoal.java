@@ -51,7 +51,7 @@ public class BreathAirGoal extends Goal {
       );
       BlockPos var2 = null;
 
-      for(BlockPos var4 : var1) {
+      for (BlockPos var4 : var1) {
          if (this.givesAir(this.mob.level(), var4)) {
             var2 = var4;
             break;
@@ -74,6 +74,6 @@ public class BreathAirGoal extends Goal {
 
    private boolean givesAir(LevelReader var1, BlockPos var2) {
       BlockState var3 = var1.getBlockState(var2);
-      return (var1.getFluidState(var2).isEmpty() || var3.is(Blocks.BUBBLE_COLUMN)) && var3.isPathfindable(var1, var2, PathComputationType.LAND);
+      return (var1.getFluidState(var2).isEmpty() || var3.is(Blocks.BUBBLE_COLUMN)) && var3.isPathfindable(PathComputationType.LAND);
    }
 }

@@ -58,8 +58,8 @@ public interface Condition extends Supplier<JsonElement> {
 
       final String id;
 
-      private Operation(String var3) {
-         this.id = var3;
+      private Operation(final String nullxx) {
+         this.id = nullxx;
       }
    }
 
@@ -71,7 +71,7 @@ public interface Condition extends Supplier<JsonElement> {
       }
 
       private static <T extends Comparable<T>> String joinValues(Property<T> var0, Stream<T> var1) {
-         return var1.<String>map(var0::getName).collect(Collectors.joining("|"));
+         return var1.<CharSequence>map(var0::getName).collect(Collectors.joining("|"));
       }
 
       private static <T extends Comparable<T>> String getTerm(Property<T> var0, T var1, T[] var2) {

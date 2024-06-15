@@ -21,9 +21,9 @@ public class CoralMushroomFeature extends CoralFeature {
       int var8 = var2.nextInt(3) + 1;
       BlockPos.MutableBlockPos var9 = var3.mutable();
 
-      for(int var10 = 0; var10 <= var6; ++var10) {
-         for(int var11 = 0; var11 <= var5; ++var11) {
-            for(int var12 = 0; var12 <= var7; ++var12) {
+      for (int var10 = 0; var10 <= var6; var10++) {
+         for (int var11 = 0; var11 <= var5; var11++) {
+            for (int var12 = 0; var12 <= var7; var12++) {
                var9.set(var10 + var3.getX(), var11 + var3.getY(), var12 + var3.getZ());
                var9.move(Direction.DOWN, var8);
                if ((var10 != 0 && var10 != var6 || var11 != 0 && var11 != var5)

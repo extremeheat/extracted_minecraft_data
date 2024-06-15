@@ -31,7 +31,7 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == this.growthDirection.getOpposite() && !var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -78,7 +78,7 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       boolean var3 = super.canBeReplaced(var1, var2);
       return var3 && var2.getItemInHand().is(this.getHeadBlock().asItem()) ? false : var3;
    }

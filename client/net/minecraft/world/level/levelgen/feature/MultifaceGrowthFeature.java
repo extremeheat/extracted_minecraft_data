@@ -30,11 +30,11 @@ public class MultifaceGrowthFeature extends Feature<MultifaceGrowthConfiguration
          } else {
             BlockPos.MutableBlockPos var7 = var3.mutable();
 
-            for(Direction var9 : var6) {
+            for (Direction var9 : var6) {
                var7.set(var3);
                List var10 = var5.getShuffledDirectionsExcept(var4, var9.getOpposite());
 
-               for(int var11 = 0; var11 < var5.searchRange; ++var11) {
+               for (int var11 = 0; var11 < var5.searchRange; var11++) {
                   var7.setWithOffset(var3, var9);
                   BlockState var12 = var2.getBlockState(var7);
                   if (!isAirOrWater(var12) && !var12.is(var5.placeBlock)) {
@@ -57,7 +57,7 @@ public class MultifaceGrowthFeature extends Feature<MultifaceGrowthConfiguration
    ) {
       BlockPos.MutableBlockPos var6 = var1.mutable();
 
-      for(Direction var8 : var5) {
+      for (Direction var8 : var5) {
          BlockState var9 = var0.getBlockState(var6.setWithOffset(var1, var8));
          if (var9.is(var3.canBePlacedOn)) {
             BlockState var10 = var3.placeBlock.getStateForPlacement(var2, var0, var1, var8);

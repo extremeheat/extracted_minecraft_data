@@ -57,7 +57,7 @@ public interface RandomSource {
    }
 
    default void consumeCount(int var1) {
-      for(int var2 = 0; var2 < var1; ++var2) {
+      for (int var2 = 0; var2 < var1; var2++) {
          this.nextInt();
       }
    }

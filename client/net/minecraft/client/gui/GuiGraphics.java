@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
@@ -156,6 +157,10 @@ public class GuiGraphics {
       this.applyScissor(this.scissorStack.pop());
    }
 
+   public boolean containsPointInScissor(int var1, int var2) {
+      return this.scissorStack.containsPoint(var1, var2);
+   }
+
    private void applyScissor(@Nullable ScreenRectangle var1) {
       this.flushIfManaged();
       if (var1 != null) {
@@ -245,6 +250,16 @@ public class GuiGraphics {
       var1.vertex(var17, (float)var4, (float)var3, (float)var6).color(var10, var11, var12, var9).endVertex();
    }
 
+   public void fillRenderType(RenderType var1, int var2, int var3, int var4, int var5, int var6) {
+      Matrix4f var7 = this.pose.last().pose();
+      VertexConsumer var8 = this.bufferSource.getBuffer(var1);
+      var8.vertex(var7, (float)var2, (float)var3, (float)var6).endVertex();
+      var8.vertex(var7, (float)var2, (float)var5, (float)var6).endVertex();
+      var8.vertex(var7, (float)var4, (float)var5, (float)var6).endVertex();
+      var8.vertex(var7, (float)var4, (float)var3, (float)var6).endVertex();
+      this.flushIfUnmanaged();
+   }
+
    public void drawCenteredString(Font var1, String var2, int var3, int var4, int var5) {
       this.drawString(var1, var2, var3 - var1.width(var2) / 2, var4, var5);
    }
@@ -303,7 +318,7 @@ public class GuiGraphics {
    }
 
    public void drawWordWrap(Font var1, FormattedText var2, int var3, int var4, int var5, int var6) {
-      for(FormattedCharSequence var8 : var1.split(var2, var5)) {
+      for (FormattedCharSequence var8 : var1.split(var2, var5)) {
          this.drawString(var1, var8, var3, var4, var6, false);
          var4 += 9;
       }
@@ -330,8 +345,6 @@ public class GuiGraphics {
       this.blitSprite(var1, var2, var3, 0, var4, var5);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6) {
       TextureAtlasSprite var7 = this.sprites.getSprite(var1);
       GuiSpriteScaling var8 = this.sprites.getSpriteScaling(var7);
@@ -340,7 +353,7 @@ public class GuiGraphics {
       } else if (var8 instanceof GuiSpriteScaling.Tile var9) {
          this.blitTiledSprite(var7, var2, var3, var4, var5, var6, 0, 0, var9.width(), var9.height(), var9.width(), var9.height());
       } else if (var8 instanceof GuiSpriteScaling.NineSlice var10) {
-         this.blitNineSlicedSprite(var7, (GuiSpriteScaling.NineSlice)var10, var2, var3, var4, var5, var6);
+         this.blitNineSlicedSprite(var7, var10, var2, var3, var4, var5, var6);
       }
    }
 
@@ -538,10 +551,10 @@ public class GuiGraphics {
    ) {
       if (var5 > 0 && var6 > 0) {
          if (var9 > 0 && var10 > 0) {
-            for(int var13 = 0; var13 < var5; var13 += var9) {
+            for (int var13 = 0; var13 < var5; var13 += var9) {
                int var14 = Math.min(var9, var5 - var13);
 
-               for(int var15 = 0; var15 < var6; var15 += var10) {
+               for (int var15 = 0; var15 < var6; var15 += var10) {
                   int var16 = Math.min(var10, var6 - var15);
                   this.blitSprite(var1, var11, var12, var7, var8, var2 + var13, var3 + var15, var4, var14, var16);
                }
@@ -587,8 +600,7 @@ public class GuiGraphics {
          this.pose.translate((float)(var4 + 8), (float)(var5 + 8), (float)(150 + (var8.isGui3d() ? var7 : 0)));
 
          try {
-            this.pose.mulPoseMatrix(new Matrix4f().scaling(1.0F, -1.0F, 1.0F));
-            this.pose.scale(16.0F, 16.0F, 16.0F);
+            this.pose.scale(16.0F, -16.0F, 16.0F);
             boolean var9 = !var8.usesBlockLight();
             if (var9) {
                Lighting.setupForFlatItems();
@@ -605,8 +617,7 @@ public class GuiGraphics {
             CrashReport var10 = CrashReport.forThrowable(var12, "Rendering item");
             CrashReportCategory var11 = var10.addCategory("Item being rendered");
             var11.setDetail("Item Type", () -> String.valueOf(var3.getItem()));
-            var11.setDetail("Item Damage", () -> String.valueOf(var3.getDamageValue()));
-            var11.setDetail("Item NBT", () -> String.valueOf(var3.getTag()));
+            var11.setDetail("Item Components", () -> String.valueOf(var3.getComponents()));
             var11.setDetail("Item Foil", () -> String.valueOf(var3.hasFoil()));
             throw new ReportedException(var10);
          }
@@ -654,8 +665,8 @@ public class GuiGraphics {
    }
 
    public void renderTooltip(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5) {
-      List var6 = var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Collectors.toList());
-      var3.ifPresent(var1x -> var6.add(1, ClientTooltipComponent.create(var1x)));
+      List var6 = var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
+      var3.ifPresent(var1x -> var6.add(var6.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
       this.renderTooltipInternal(var1, var6, var4, var5, DefaultTooltipPositioner.INSTANCE);
    }
 
@@ -682,7 +693,7 @@ public class GuiGraphics {
          int var6 = 0;
          int var7 = var2.size() == 1 ? -2 : 0;
 
-         for(ClientTooltipComponent var9 : var2) {
+         for (ClientTooltipComponent var9 : var2) {
             int var10 = var9.getWidth(var1);
             if (var10 > var6) {
                var6 = var10;
@@ -697,12 +708,12 @@ public class GuiGraphics {
          int var11 = var19.x();
          int var12 = var19.y();
          this.pose.pushPose();
-         boolean var13 = true;
+         short var13 = 400;
          this.drawManaged(() -> TooltipRenderUtil.renderTooltipBackground(this, var11, var12, var17, var18, 400));
          this.pose.translate(0.0F, 0.0F, 400.0F);
          int var14 = var12;
 
-         for(int var15 = 0; var15 < var2.size(); ++var15) {
+         for (int var15 = 0; var15 < var2.size(); var15++) {
             ClientTooltipComponent var16 = (ClientTooltipComponent)var2.get(var15);
             var16.renderText(var1, var11, var14, this.pose.last().pose(), this.bufferSource);
             var14 += var16.getHeight() + (var15 == 0 ? 2 : 0);
@@ -710,7 +721,7 @@ public class GuiGraphics {
 
          var14 = var12;
 
-         for(int var21 = 0; var21 < var2.size(); ++var21) {
+         for (int var21 = 0; var21 < var2.size(); var21++) {
             ClientTooltipComponent var22 = (ClientTooltipComponent)var2.get(var21);
             var22.renderImage(var1, var11, var14, this);
             var14 += var22.getHeight() + (var21 == 0 ? 2 : 0);
@@ -769,6 +780,10 @@ public class GuiGraphics {
             this.stack.removeLast();
             return this.stack.peekLast();
          }
+      }
+
+      public boolean containsPoint(int var1, int var2) {
+         return this.stack.isEmpty() ? true : this.stack.peek().containsPoint(var1, var2);
       }
    }
 }

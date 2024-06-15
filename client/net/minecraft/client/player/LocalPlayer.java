@@ -32,6 +32,7 @@ import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
@@ -62,6 +63,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.ClickAction;
@@ -200,14 +202,14 @@ public class LocalPlayer extends AbstractClientPlayer {
             this.sendPosition();
          }
 
-         for(AmbientSoundHandler var2 : this.ambientSoundHandlers) {
+         for (AmbientSoundHandler var2 : this.ambientSoundHandlers) {
             var2.tick();
          }
       }
    }
 
    public float getCurrentMood() {
-      for(AmbientSoundHandler var2 : this.ambientSoundHandlers) {
+      for (AmbientSoundHandler var2 : this.ambientSoundHandlers) {
          if (var2 instanceof BiomeAmbientSoundsHandler) {
             return ((BiomeAmbientSoundsHandler)var2).getMoodiness();
          }
@@ -233,7 +235,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          double var6 = this.getZ() - this.zLast;
          double var8 = (double)(this.getYRot() - this.yRotLast);
          double var10 = (double)(this.getXRot() - this.xRotLast);
-         ++this.positionReminder;
+         this.positionReminder++;
          boolean var12 = Mth.lengthSquared(var15, var4, var6) > Mth.square(2.0E-4) || this.positionReminder >= 20;
          boolean var13 = var8 != 0.0 || var10 != 0.0;
          if (this.isPassenger()) {
@@ -364,9 +366,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    protected void sendRidingJump() {
       this.connection
-         .send(
-            new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_RIDING_JUMP, Mth.floor(this.getJumpRidingScale() * 100.0F))
-         );
+         .send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_RIDING_JUMP, Mth.floor(this.getJumpRidingScale() * 100.0F)));
    }
 
    public void sendOpenInventory() {
@@ -411,7 +411,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          double var11 = 1.7976931348623157E308;
          Direction[] var13 = new Direction[]{Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH};
 
-         for(Direction var17 : var13) {
+         for (Direction var17 : var13) {
             double var18 = var17.getAxis().choose(var6, 0.0, var8);
             double var20 = var17.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1.0 - var18 : var18;
             if (var20 < var11 && !this.suffocatesAt(var5.relative(var17))) {
@@ -535,9 +535,8 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Nullable
    public PlayerRideableJumping jumpableVehicle() {
-      Entity var2 = this.getControlledVehicle();
-      if (var2 instanceof PlayerRideableJumping var1 && ((PlayerRideableJumping)var1).canJump()) {
-         return (PlayerRideableJumping)var1;
+      if (this.getControlledVehicle() instanceof PlayerRideableJumping var1 && var1.canJump()) {
+         return var1;
       }
 
       return null;
@@ -555,7 +554,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public void openTextEdit(SignBlockEntity var1, boolean var2) {
       if (var1 instanceof HangingSignBlockEntity var3) {
-         this.minecraft.setScreen(new HangingSignEditScreen((SignBlockEntity)var3, var2, this.minecraft.isTextFilteringEnabled()));
+         this.minecraft.setScreen(new HangingSignEditScreen(var3, var2, this.minecraft.isTextFilteringEnabled()));
       } else {
          this.minecraft.setScreen(new SignEditScreen(var1, var2, this.minecraft.isTextFilteringEnabled()));
       }
@@ -621,8 +620,8 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.jumping = this.input.jumping;
          this.yBobO = this.yBob;
          this.xBobO = this.xBob;
-         this.xBob += (this.getXRot() - this.xBob) * 0.5F;
-         this.yBob += (this.getYRot() - this.yBob) * 0.5F;
+         this.xBob = this.xBob + (this.getXRot() - this.xBob) * 0.5F;
+         this.yBob = this.yBob + (this.getYRot() - this.yBob) * 0.5F;
       }
    }
 
@@ -633,7 +632,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    public void resetPos() {
       this.setPose(Pose.STANDING);
       if (this.level() != null) {
-         for(double var1 = this.getY(); var1 > (double)this.level().getMinBuildHeight() && var1 < (double)this.level().getMaxBuildHeight(); ++var1) {
+         for (double var1 = this.getY(); var1 > (double)this.level().getMinBuildHeight() && var1 < (double)this.level().getMaxBuildHeight(); var1++) {
             this.setPos(this.getX(), var1, this.getZ());
             if (this.level().noCollision(this)) {
                break;
@@ -651,7 +650,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public void aiStep() {
       if (this.sprintTriggerTime > 0) {
-         --this.sprintTriggerTime;
+         this.sprintTriggerTime--;
       }
 
       if (!(this.minecraft.screen instanceof ReceivingLevelScreen)) {
@@ -661,13 +660,14 @@ public class LocalPlayer extends AbstractClientPlayer {
       boolean var1 = this.input.jumping;
       boolean var2 = this.input.shiftKeyDown;
       boolean var3 = this.hasEnoughImpulseToStartSprinting();
-      this.crouching = !this.getAbilities().flying
+      Abilities var4 = this.getAbilities();
+      this.crouching = !var4.flying
          && !this.isSwimming()
          && !this.isPassenger()
          && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING)
          && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
-      float var4 = Mth.clamp(0.3F + EnchantmentHelper.getSneakingSpeedBonus(this), 0.0F, 1.0F);
-      this.input.tick(this.isMovingSlowly(), var4);
+      float var5 = Mth.clamp(0.3F + EnchantmentHelper.getSneakingSpeedBonus(this), 0.0F, 1.0F);
+      this.input.tick(this.isMovingSlowly(), var5);
       this.minecraft.getTutorial().onInput(this.input);
       if (this.isUsingItem() && !this.isPassenger()) {
          this.input.leftImpulse *= 0.2F;
@@ -675,10 +675,10 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.sprintTriggerTime = 0;
       }
 
-      boolean var5 = false;
+      boolean var6 = false;
       if (this.autoJumpTime > 0) {
-         --this.autoJumpTime;
-         var5 = true;
+         this.autoJumpTime--;
+         var6 = true;
          this.input.jumping = true;
       }
 
@@ -693,10 +693,10 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.sprintTriggerTime = 0;
       }
 
-      boolean var6 = this.canStartSprinting();
-      boolean var7 = this.isPassenger() ? this.getVehicle().onGround() : this.onGround();
-      boolean var8 = !var2 && !var3;
-      if ((var7 || this.isUnderWater()) && var8 && var6) {
+      boolean var7 = this.canStartSprinting();
+      boolean var8 = this.isPassenger() ? this.getVehicle().onGround() : this.onGround();
+      boolean var9 = !var2 && !var3;
+      if ((var8 || this.isUnderWater()) && var9 && var7) {
          if (this.sprintTriggerTime <= 0 && !this.minecraft.options.keySprint.isDown()) {
             this.sprintTriggerTime = 7;
          } else {
@@ -704,45 +704,49 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       }
 
-      if ((!this.isInWater() || this.isUnderWater()) && var6 && this.minecraft.options.keySprint.isDown()) {
+      if ((!this.isInWater() || this.isUnderWater()) && var7 && this.minecraft.options.keySprint.isDown()) {
          this.setSprinting(true);
       }
 
       if (this.isSprinting()) {
-         boolean var9 = !this.input.hasForwardImpulse() || !this.hasEnoughFoodToStartSprinting();
-         boolean var10 = var9 || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
+         boolean var10 = !this.input.hasForwardImpulse() || !this.hasEnoughFoodToStartSprinting();
+         boolean var11 = var10 || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
          if (this.isSwimming()) {
-            if (!this.onGround() && !this.input.shiftKeyDown && var9 || !this.isInWater()) {
+            if (!this.onGround() && !this.input.shiftKeyDown && var10 || !this.isInWater()) {
                this.setSprinting(false);
             }
-         } else if (var10) {
+         } else if (var11) {
             this.setSprinting(false);
          }
       }
 
-      boolean var11 = false;
-      if (this.getAbilities().mayfly) {
+      boolean var12 = false;
+      if (var4.mayfly) {
          if (this.minecraft.gameMode.isAlwaysFlying()) {
-            if (!this.getAbilities().flying) {
-               this.getAbilities().flying = true;
-               var11 = true;
+            if (!var4.flying) {
+               var4.flying = true;
+               var12 = true;
                this.onUpdateAbilities();
             }
-         } else if (!var1 && this.input.jumping && !var5) {
+         } else if (!var1 && this.input.jumping && !var6) {
             if (this.jumpTriggerTime == 0) {
                this.jumpTriggerTime = 7;
             } else if (!this.isSwimming()) {
-               this.getAbilities().flying = !this.getAbilities().flying;
-               var11 = true;
+               var4.flying = !var4.flying;
+               if (var4.flying && this.onGround()) {
+                  this.jumpFromGround();
+               }
+
+               var12 = true;
                this.onUpdateAbilities();
                this.jumpTriggerTime = 0;
             }
          }
       }
 
-      if (this.input.jumping && !var11 && !var1 && !this.getAbilities().flying && !this.isPassenger() && !this.onClimbable()) {
-         ItemStack var12 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if (var12.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var12) && this.tryToStartFallFlying()) {
+      if (this.input.jumping && !var12 && !var1 && !var4.flying && !this.isPassenger() && !this.onClimbable()) {
+         ItemStack var13 = this.getItemBySlot(EquipmentSlot.CHEST);
+         if (var13.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var13) && this.tryToStartFallFlying()) {
             this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
          }
       }
@@ -753,32 +757,32 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       if (this.isEyeInFluid(FluidTags.WATER)) {
-         int var13 = this.isSpectator() ? 10 : 1;
-         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var13, 0, 600);
+         int var14 = this.isSpectator() ? 10 : 1;
+         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var14, 0, 600);
       } else if (this.waterVisionTime > 0) {
          this.isEyeInFluid(FluidTags.WATER);
          this.waterVisionTime = Mth.clamp(this.waterVisionTime - 10, 0, 600);
       }
 
-      if (this.getAbilities().flying && this.isControlledCamera()) {
-         int var14 = 0;
+      if (var4.flying && this.isControlledCamera()) {
+         int var15 = 0;
          if (this.input.shiftKeyDown) {
-            --var14;
+            var15--;
          }
 
          if (this.input.jumping) {
-            ++var14;
+            var15++;
          }
 
-         if (var14 != 0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var14 * this.getAbilities().getFlyingSpeed() * 3.0F), 0.0));
+         if (var15 != 0) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var15 * var4.getFlyingSpeed() * 3.0F), 0.0));
          }
       }
 
-      PlayerRideableJumping var15 = this.jumpableVehicle();
-      if (var15 != null && var15.getJumpCooldown() == 0) {
+      PlayerRideableJumping var16 = this.jumpableVehicle();
+      if (var16 != null && var16.getJumpCooldown() == 0) {
          if (this.jumpRidingTicks < 0) {
-            ++this.jumpRidingTicks;
+            this.jumpRidingTicks++;
             if (this.jumpRidingTicks == 0) {
                this.jumpRidingScale = 0.0F;
             }
@@ -786,13 +790,13 @@ public class LocalPlayer extends AbstractClientPlayer {
 
          if (var1 && !this.input.jumping) {
             this.jumpRidingTicks = -10;
-            var15.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
+            var16.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
             this.sendRidingJump();
          } else if (!var1 && this.input.jumping) {
             this.jumpRidingTicks = 0;
             this.jumpRidingScale = 0.0F;
          } else if (var1) {
-            ++this.jumpRidingTicks;
+            this.jumpRidingTicks++;
             if (this.jumpRidingTicks < 10) {
                this.jumpRidingScale = (float)this.jumpRidingTicks * 0.1F;
             } else {
@@ -804,15 +808,15 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       super.aiStep();
-      if (this.onGround() && this.getAbilities().flying && !this.minecraft.gameMode.isAlwaysFlying()) {
-         this.getAbilities().flying = false;
+      if (this.onGround() && var4.flying && !this.minecraft.gameMode.isAlwaysFlying()) {
+         var4.flying = false;
          this.onUpdateAbilities();
       }
    }
 
    @Override
    protected void tickDeath() {
-      ++this.deathTime;
+      this.deathTime++;
       if (this.deathTime == 20) {
          this.remove(Entity.RemovalReason.KILLED);
       }
@@ -848,16 +852,13 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.processPortalCooldown();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void rideTick() {
       super.rideTick();
       this.handsBusy = false;
-      Entity var2 = this.getControlledVehicle();
-      if (var2 instanceof Boat var1) {
+      if (this.getControlledVehicle() instanceof Boat var1) {
          var1.setInput(this.input.left, this.input.right, this.input.up, this.input.down);
-         this.handsBusy |= this.input.left || this.input.right || this.input.up || this.input.down;
+         this.handsBusy = this.handsBusy | (this.input.left || this.input.right || this.input.up || this.input.down);
       }
    }
 
@@ -867,8 +868,8 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Nullable
    @Override
-   public MobEffectInstance removeEffectNoUpdate(@Nullable MobEffect var1) {
-      if (var1 == MobEffects.CONFUSION) {
+   public MobEffectInstance removeEffectNoUpdate(Holder<MobEffect> var1) {
+      if (var1.is(MobEffects.CONFUSION)) {
          this.oSpinningEffectIntensity = 0.0F;
          this.spinningEffectIntensity = 0.0F;
       }
@@ -943,14 +944,14 @@ public class LocalPlayer extends AbstractClientPlayer {
                   Iterator var31 = StreamSupport.<VoxelShape>stream(var30.spliterator(), false).flatMap(var0 -> var0.toAabbs().stream()).iterator();
                   float var33 = 1.0E-45F;
 
-                  while(var31.hasNext()) {
+                  while (var31.hasNext()) {
                      AABB var35 = (AABB)var31.next();
                      if (var35.intersects(var26, var27) || var35.intersects(var28, var29)) {
                         var33 = (float)var35.maxY;
                         Vec3 var32 = var35.getCenter();
                         BlockPos var36 = BlockPos.containing(var32);
 
-                        for(int var37 = 1; (float)var37 < var17; ++var37) {
+                        for (int var37 = 1; (float)var37 < var17; var37++) {
                            BlockPos var38 = var36.above(var37);
                            BlockState var39 = this.level().getBlockState(var38);
                            VoxelShape var34;

@@ -79,6 +79,7 @@ public class PartNames {
    public static final String WIND_MID = "wind_mid";
    public static final String WIND_BOTTOM = "wind_bottom";
    public static final String RODS = "rods";
+   public static final String MUSHROOMS = "mushrooms";
    public static final String BONE = "bone";
 
    public PartNames() {

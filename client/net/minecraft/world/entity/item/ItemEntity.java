@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -20,6 +21,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -31,6 +33,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class ItemEntity extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
+   private static final float FLOAT_HEIGHT = 0.1F;
+   public static final float EYE_HEIGHT = 0.2125F;
    private static final int LIFETIME = 6000;
    private static final int INFINITE_PICKUP_DELAY = 32767;
    private static final int INFINITE_LIFETIME = -32768;
@@ -75,28 +79,19 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return this.getItem().is(ItemTags.DAMPENS_VIBRATIONS);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public Entity getOwner() {
       if (this.cachedThrower != null && !this.cachedThrower.isRemoved()) {
          return this.cachedThrower;
+      } else if (this.thrower != null && this.level() instanceof ServerLevel var1) {
+         this.cachedThrower = var1.getEntity(this.thrower);
+         return this.cachedThrower;
       } else {
-         if (this.thrower != null) {
-            Level var2 = this.level();
-            if (var2 instanceof ServerLevel var1) {
-               this.cachedThrower = var1.getEntity(this.thrower);
-               return this.cachedThrower;
-            }
-         }
-
          return null;
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
@@ -111,8 +106,13 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.getEntityData().define(DATA_ITEM, ItemStack.EMPTY);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_ITEM, ItemStack.EMPTY);
+   }
+
+   @Override
+   protected double getDefaultGravity() {
+      return 0.04;
    }
 
    @Override
@@ -122,20 +122,19 @@ public class ItemEntity extends Entity implements TraceableEntity {
       } else {
          super.tick();
          if (this.pickupDelay > 0 && this.pickupDelay != 32767) {
-            --this.pickupDelay;
+            this.pickupDelay--;
          }
 
          this.xo = this.getX();
          this.yo = this.getY();
          this.zo = this.getZ();
          Vec3 var1 = this.getDeltaMovement();
-         float var2 = this.getEyeHeight() - 0.11111111F;
-         if (this.isInWater() && this.getFluidHeight(FluidTags.WATER) > (double)var2) {
+         if (this.isInWater() && this.getFluidHeight(FluidTags.WATER) > 0.10000000149011612) {
             this.setUnderwaterMovement();
-         } else if (this.isInLava() && this.getFluidHeight(FluidTags.LAVA) > (double)var2) {
+         } else if (this.isInLava() && this.getFluidHeight(FluidTags.LAVA) > 0.10000000149011612) {
             this.setUnderLavaMovement();
-         } else if (!this.isNoGravity()) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.04, 0.0));
+         } else {
+            this.applyGravity();
          }
 
          if (this.level().isClientSide) {
@@ -149,36 +148,36 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
          if (!this.onGround() || this.getDeltaMovement().horizontalDistanceSqr() > 9.999999747378752E-6 || (this.tickCount + this.getId()) % 4 == 0) {
             this.move(MoverType.SELF, this.getDeltaMovement());
-            float var3 = 0.98F;
+            float var2 = 0.98F;
             if (this.onGround()) {
-               var3 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
+               var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
             }
 
-            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var3, 0.98, (double)var3));
+            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var2, 0.98, (double)var2));
             if (this.onGround()) {
-               Vec3 var4 = this.getDeltaMovement();
-               if (var4.y < 0.0) {
-                  this.setDeltaMovement(var4.multiply(1.0, -0.5, 1.0));
+               Vec3 var3 = this.getDeltaMovement();
+               if (var3.y < 0.0) {
+                  this.setDeltaMovement(var3.multiply(1.0, -0.5, 1.0));
                }
             }
          }
 
-         boolean var7 = Mth.floor(this.xo) != Mth.floor(this.getX())
+         boolean var6 = Mth.floor(this.xo) != Mth.floor(this.getX())
             || Mth.floor(this.yo) != Mth.floor(this.getY())
             || Mth.floor(this.zo) != Mth.floor(this.getZ());
-         int var8 = var7 ? 2 : 40;
-         if (this.tickCount % var8 == 0 && !this.level().isClientSide && this.isMergable()) {
+         int var7 = var6 ? 2 : 40;
+         if (this.tickCount % var7 == 0 && !this.level().isClientSide && this.isMergable()) {
             this.mergeWithNeighbours();
          }
 
          if (this.age != -32768) {
-            ++this.age;
+            this.age++;
          }
 
-         this.hasImpulse |= this.updateInWaterStateAndDoFluidPushing();
+         this.hasImpulse = this.hasImpulse | this.updateInWaterStateAndDoFluidPushing();
          if (!this.level().isClientSide) {
-            double var5 = this.getDeltaMovement().subtract(var1).lengthSqr();
-            if (var5 > 0.01) {
+            double var4 = this.getDeltaMovement().subtract(var1).lengthSqr();
+            if (var4 > 0.01) {
                this.hasImpulse = true;
             }
          }
@@ -206,7 +205,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    private void mergeWithNeighbours() {
       if (this.isMergable()) {
-         for(ItemEntity var3 : this.level()
+         for (ItemEntity var3 : this.level()
             .getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.5, 0.0, 0.5), var1 -> var1 != this && var1.isMergable())) {
             if (var3.isMergable()) {
                this.tryToMerge(var3);
@@ -236,15 +235,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    public static boolean areMergable(ItemStack var0, ItemStack var1) {
-      if (!var1.is(var0.getItem())) {
-         return false;
-      } else if (var1.getCount() + var0.getCount() > var1.getMaxStackSize()) {
-         return false;
-      } else if (var1.hasTag() ^ var0.hasTag()) {
-         return false;
-      } else {
-         return !var1.hasTag() || var1.getTag().equals(var0.getTag());
-      }
+      return var1.getCount() + var0.getCount() > var1.getMaxStackSize() ? false : ItemStack.isSameItemSameComponents(var0, var1);
    }
 
    public static ItemStack merge(ItemStack var0, ItemStack var1, int var2) {
@@ -270,7 +261,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Override
    public boolean fireImmune() {
-      return this.getItem().getItem().isFireResistant() || super.fireImmune();
+      return this.getItem().has(DataComponents.FIRE_RESISTANT) || super.fireImmune();
    }
 
    @Override
@@ -279,7 +270,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
          return false;
       } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.is(DamageTypeTags.IS_EXPLOSION)) {
          return false;
-      } else if (!this.getItem().getItem().canBeHurtBy(var1)) {
+      } else if (!this.getItem().canBeHurtBy(var1)) {
          return false;
       } else if (this.level().isClientSide) {
          return true;
@@ -310,7 +301,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
       }
 
       if (!this.getItem().isEmpty()) {
-         var1.put("Item", this.getItem().save(new CompoundTag()));
+         var1.put("Item", this.getItem().save(this.registryAccess()));
       }
    }
 
@@ -331,8 +322,13 @@ public class ItemEntity extends Entity implements TraceableEntity {
          this.cachedThrower = null;
       }
 
-      CompoundTag var2 = var1.getCompound("Item");
-      this.setItem(ItemStack.of(var2));
+      if (var1.contains("Item", 10)) {
+         CompoundTag var2 = var1.getCompound("Item");
+         this.setItem(ItemStack.parse(this.registryAccess(), var2).orElse(ItemStack.EMPTY));
+      } else {
+         this.setItem(ItemStack.EMPTY);
+      }
+
       if (this.getItem().isEmpty()) {
          this.discard();
       }
@@ -457,5 +453,10 @@ public class ItemEntity extends Entity implements TraceableEntity {
    @Override
    public float getVisualRotationYInDegrees() {
       return 180.0F - this.getSpin(0.5F) / 6.2831855F * 360.0F;
+   }
+
+   @Override
+   public SlotAccess getSlot(int var1) {
+      return var1 == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(var1);
    }
 }

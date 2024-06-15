@@ -12,12 +12,15 @@ import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.BuiltInMetadata;
+import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
 import net.minecraft.server.packs.VanillaPackResourcesBuilder;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.repository.BuiltInPackSource;
+import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
@@ -29,11 +32,15 @@ public class ClientPackSource extends BuiltInPackSource {
       Optional.empty()
    );
    private static final BuiltInMetadata BUILT_IN_METADATA = BuiltInMetadata.of(PackMetadataSection.TYPE, VERSION_METADATA_SECTION);
-   private static final Component VANILLA_NAME = Component.translatable("resourcePack.vanilla.name");
    public static final String HIGH_CONTRAST_PACK = "high_contrast";
    private static final Map<String, Component> SPECIAL_PACK_NAMES = Map.of(
       "programmer_art", Component.translatable("resourcePack.programmer_art.name"), "high_contrast", Component.translatable("resourcePack.high_contrast.name")
    );
+   private static final PackLocationInfo VANILLA_PACK_INFO = new PackLocationInfo(
+      "vanilla", Component.translatable("resourcePack.vanilla.name"), PackSource.BUILT_IN, Optional.of(CORE_PACK_INFO)
+   );
+   private static final PackSelectionConfig VANILLA_SELECTION_CONFIG = new PackSelectionConfig(true, Pack.Position.BOTTOM, false);
+   private static final PackSelectionConfig BUILT_IN_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.TOP, false);
    private static final ResourceLocation PACKS_DIR = new ResourceLocation("minecraft", "resourcepacks");
    @Nullable
    private final Path externalAssetDir;
@@ -41,6 +48,10 @@ public class ClientPackSource extends BuiltInPackSource {
    public ClientPackSource(Path var1, DirectoryValidator var2) {
       super(PackType.CLIENT_RESOURCES, createVanillaPackSource(var1), PACKS_DIR, var2);
       this.externalAssetDir = this.findExplodedAssetPacks(var1);
+   }
+
+   private static PackLocationInfo createBuiltInPackLocation(String var0, Component var1) {
+      return new PackLocationInfo(var0, var1, PackSource.BUILT_IN, Optional.of(KnownPack.vanilla(var0)));
    }
 
    @Nullable
@@ -57,7 +68,7 @@ public class ClientPackSource extends BuiltInPackSource {
 
    private static VanillaPackResources createVanillaPackSource(Path var0) {
       VanillaPackResourcesBuilder var1 = new VanillaPackResourcesBuilder().setMetadata(BUILT_IN_METADATA).exposeNamespace("minecraft", "realms");
-      return var1.applyDevelopmentConfig().pushJarResources().pushAssetPath(PackType.CLIENT_RESOURCES, var0).build();
+      return var1.applyDevelopmentConfig().pushJarResources().pushAssetPath(PackType.CLIENT_RESOURCES, var0).build(VANILLA_PACK_INFO);
    }
 
    @Override
@@ -69,13 +80,13 @@ public class ClientPackSource extends BuiltInPackSource {
    @Nullable
    @Override
    protected Pack createVanillaPack(PackResources var1) {
-      return Pack.readMetaAndCreate("vanilla", VANILLA_NAME, true, fixedResources(var1), PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.BUILT_IN);
+      return Pack.readMetaAndCreate(VANILLA_PACK_INFO, fixedResources(var1), PackType.CLIENT_RESOURCES, VANILLA_SELECTION_CONFIG);
    }
 
    @Nullable
    @Override
    protected Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3) {
-      return Pack.readMetaAndCreate(var1, var3, false, var2, PackType.CLIENT_RESOURCES, Pack.Position.TOP, PackSource.BUILT_IN);
+      return Pack.readMetaAndCreate(createBuiltInPackLocation(var1, var3), var2, PackType.CLIENT_RESOURCES, BUILT_IN_SELECTION_CONFIG);
    }
 
    @Override

@@ -12,9 +12,9 @@ public enum PackCompatibility {
    private final Component description;
    private final Component confirmation;
 
-   private PackCompatibility(String var3) {
-      this.description = Component.translatable("pack.incompatible." + var3).withStyle(ChatFormatting.GRAY);
-      this.confirmation = Component.translatable("pack.incompatible.confirm." + var3);
+   private PackCompatibility(final String nullxx) {
+      this.description = Component.translatable("pack.incompatible." + nullxx).withStyle(ChatFormatting.GRAY);
+      this.confirmation = Component.translatable("pack.incompatible.confirm." + nullxx);
    }
 
    public boolean isCompatible() {
@@ -22,7 +22,7 @@ public enum PackCompatibility {
    }
 
    public static PackCompatibility forVersion(InclusiveRange<Integer> var0, int var1) {
-      if (var0.maxInclusive() < var1) {
+      if ((Integer)var0.maxInclusive() < var1) {
          return TOO_OLD;
       } else {
          return var1 < var0.minInclusive() ? TOO_NEW : COMPATIBLE;

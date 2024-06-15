@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -40,17 +39,17 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(25) == 0) {
          int var5 = 5;
-         boolean var6 = true;
+         byte var6 = 4;
 
-         for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-4, -1, -4), var3.offset(4, 1, 4))) {
+         for (BlockPos var8 : BlockPos.betweenClosed(var3.offset(-4, -1, -4), var3.offset(4, 1, 4))) {
             if (var2.getBlockState(var8).is(this)) {
                if (--var5 <= 0) {
                   return;
@@ -60,7 +59,7 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
 
          BlockPos var9 = var3.offset(var4.nextInt(3) - 1, var4.nextInt(2) - var4.nextInt(2), var4.nextInt(3) - 1);
 
-         for(int var10 = 0; var10 < 4; ++var10) {
+         for (int var10 = 0; var10 < 4; var10++) {
             if (var2.isEmptyBlock(var9) && var1.canSurvive(var2, var9)) {
                var3 = var9;
             }
@@ -80,14 +79,10 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
-      if (var5.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
-         return true;
-      } else {
-         return var2.getRawBrightness(var3, 0) < 13 && this.mayPlaceOn(var5, var2, var4);
-      }
+      return var5.is(BlockTags.MUSHROOM_GROW_BLOCK) ? true : var2.getRawBrightness(var3, 0) < 13 && this.mayPlaceOn(var5, var2, var4);
    }
 
    public boolean growMushroom(ServerLevel var1, BlockPos var2, BlockState var3, RandomSource var4) {

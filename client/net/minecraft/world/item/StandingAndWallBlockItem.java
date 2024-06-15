@@ -33,7 +33,7 @@ public class StandingAndWallBlockItem extends BlockItem {
       Level var4 = var1.getLevel();
       BlockPos var5 = var1.getClickedPos();
 
-      for(Direction var9 : var1.getNearestLookingDirections()) {
+      for (Direction var9 : var1.getNearestLookingDirections()) {
          if (var9 != this.attachmentDirection.getOpposite()) {
             BlockState var10 = var9 == this.attachmentDirection ? this.getBlock().getStateForPlacement(var1) : var2;
             if (var10 != null && this.canPlace(var4, var10, var5)) {

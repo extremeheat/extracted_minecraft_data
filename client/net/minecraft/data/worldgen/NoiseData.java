@@ -12,7 +12,7 @@ public class NoiseData {
       super();
    }
 
-   public static void bootstrap(BootstapContext<NormalNoise.NoiseParameters> var0) {
+   public static void bootstrap(BootstrapContext<NormalNoise.NoiseParameters> var0) {
       registerBiomeNoises(var0, 0, Noises.TEMPERATURE, Noises.VEGETATION, Noises.CONTINENTALNESS, Noises.EROSION);
       registerBiomeNoises(var0, -2, Noises.TEMPERATURE_LARGE, Noises.VEGETATION_LARGE, Noises.CONTINENTALNESS_LARGE, Noises.EROSION_LARGE);
       register(var0, Noises.RIDGE, -7, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0);
@@ -70,7 +70,7 @@ public class NoiseData {
    }
 
    private static void registerBiomeNoises(
-      BootstapContext<NormalNoise.NoiseParameters> var0,
+      BootstrapContext<NormalNoise.NoiseParameters> var0,
       int var1,
       ResourceKey<NormalNoise.NoiseParameters> var2,
       ResourceKey<NormalNoise.NoiseParameters> var3,
@@ -84,7 +84,7 @@ public class NoiseData {
    }
 
    private static void register(
-      BootstapContext<NormalNoise.NoiseParameters> var0, ResourceKey<NormalNoise.NoiseParameters> var1, int var2, double var3, double... var5
+      BootstrapContext<NormalNoise.NoiseParameters> var0, ResourceKey<NormalNoise.NoiseParameters> var1, int var2, double var3, double... var5
    ) {
       var0.register(var1, new NormalNoise.NoiseParameters(var2, var3, var5));
    }

@@ -9,11 +9,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public final class ModelPart {
    public static final float DEFAULT_SCALE = 1.0F;
@@ -116,7 +114,7 @@ public final class ModelPart {
                this.compile(var1.last(), var2, var3, var4, var5, var6, var7, var8);
             }
 
-            for(ModelPart var10 : this.children.values()) {
+            for (ModelPart var10 : this.children.values()) {
                var10.render(var1, var2, var3, var4, var5, var6, var7, var8);
             }
 
@@ -135,7 +133,7 @@ public final class ModelPart {
          this.translateAndRotate(var1);
          PoseStack.Pose var4 = var1.last();
 
-         for(int var5 = 0; var5 < this.cubes.size(); ++var5) {
+         for (int var5 = 0; var5 < this.cubes.size(); var5++) {
             var2.visit(var4, var3, var5, this.cubes.get(var5));
          }
 
@@ -157,7 +155,7 @@ public final class ModelPart {
    }
 
    private void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-      for(ModelPart.Cube var10 : this.cubes) {
+      for (ModelPart.Cube var10 : this.cubes) {
          var10.compile(var1, var2, var3, var4, var5, var6, var7, var8);
       }
    }
@@ -171,21 +169,21 @@ public final class ModelPart {
    }
 
    public void offsetPos(Vector3f var1) {
-      this.x += var1.x();
-      this.y += var1.y();
-      this.z += var1.z();
+      this.x = this.x + var1.x();
+      this.y = this.y + var1.y();
+      this.z = this.z + var1.z();
    }
 
    public void offsetRotation(Vector3f var1) {
-      this.xRot += var1.x();
-      this.yRot += var1.y();
-      this.zRot += var1.z();
+      this.xRot = this.xRot + var1.x();
+      this.yRot = this.yRot + var1.y();
+      this.zRot = this.zRot + var1.z();
    }
 
    public void offsetScale(Vector3f var1) {
-      this.xScale += var1.x();
-      this.yScale += var1.y();
-      this.zScale += var1.z();
+      this.xScale = this.xScale + var1.x();
+      this.yScale = this.yScale + var1.y();
+      this.zScale = this.zScale + var1.z();
    }
 
    public Stream<ModelPart> getAllParts() {
@@ -298,19 +296,19 @@ public final class ModelPart {
 
       public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
          Matrix4f var9 = var1.pose();
-         Matrix3f var10 = var1.normal();
+         Vector3f var10 = new Vector3f();
 
-         for(ModelPart.Polygon var14 : this.polygons) {
-            Vector3f var15 = var10.transform(new Vector3f(var14.normal));
+         for (ModelPart.Polygon var14 : this.polygons) {
+            Vector3f var15 = var1.transformNormal(var14.normal, var10);
             float var16 = var15.x();
             float var17 = var15.y();
             float var18 = var15.z();
 
-            for(ModelPart.Vertex var22 : var14.vertices) {
+            for (ModelPart.Vertex var22 : var14.vertices) {
                float var23 = var22.pos.x() / 16.0F;
                float var24 = var22.pos.y() / 16.0F;
                float var25 = var22.pos.z() / 16.0F;
-               Vector4f var26 = var9.transform(new Vector4f(var23, var24, var25, 1.0F));
+               Vector3f var26 = var9.transformPosition(var23, var24, var25, var10);
                var2.vertex(var26.x(), var26.y(), var26.z(), var5, var6, var7, var8, var22.u, var22.v, var4, var3, var16, var17, var18);
             }
          }
@@ -333,7 +331,7 @@ public final class ModelPart {
          if (var8) {
             int var12 = var1.length;
 
-            for(int var13 = 0; var13 < var12 / 2; ++var13) {
+            for (int var13 = 0; var13 < var12 / 2; var13++) {
                ModelPart.Vertex var14 = var1[var13];
                var1[var13] = var1[var12 - 1 - var13];
                var1[var12 - 1 - var13] = var14;

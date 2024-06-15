@@ -17,7 +17,7 @@ public class UseItemGoal<T extends Mob> extends Goal {
 
    public UseItemGoal(T var1, ItemStack var2, @Nullable SoundEvent var3, Predicate<? super T> var4) {
       super();
-      this.mob = var1;
+      this.mob = (T)var1;
       this.item = var2;
       this.finishUsingSound = var3;
       this.canUseSelector = var4;

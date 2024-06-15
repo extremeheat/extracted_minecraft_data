@@ -44,8 +44,12 @@ public class TestFunctionArgument implements ArgumentType<TestFunction> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Stream var3 = GameTestRegistry.getAllTestFunctions().stream().map(TestFunction::getTestName);
-      return SharedSuggestionProvider.suggest(var3, var2);
+      return suggestTestFunction(var1, var2);
+   }
+
+   public static <S> CompletableFuture<Suggestions> suggestTestFunction(CommandContext<S> var0, SuggestionsBuilder var1) {
+      Stream var2 = GameTestRegistry.getAllTestFunctions().stream().map(TestFunction::testName);
+      return SharedSuggestionProvider.suggest(var2, var1);
    }
 
    public Collection<String> getExamples() {

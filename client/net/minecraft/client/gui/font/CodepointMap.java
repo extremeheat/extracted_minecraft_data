@@ -86,14 +86,14 @@ public class CodepointMap<T> {
    }
 
    public void forEach(CodepointMap.Output<T> var1) {
-      for(int var2 = 0; var2 < this.blockMap.length; ++var2) {
+      for (int var2 = 0; var2 < this.blockMap.length; var2++) {
          Object[] var3 = this.blockMap[var2];
          if (var3 != this.empty) {
-            for(int var4 = 0; var4 < var3.length; ++var4) {
+            for (int var4 = 0; var4 < var3.length; var4++) {
                Object var5 = var3[var4];
                if (var5 != null) {
                   int var6 = var2 << 8 | var4;
-                  var1.accept(var6, (T)var5);
+                  var1.accept(var6, var5);
                }
             }
          }

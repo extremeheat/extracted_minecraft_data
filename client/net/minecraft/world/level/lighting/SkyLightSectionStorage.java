@@ -27,7 +27,7 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyLightSec
       if (var8 != var7.currentLowestY && var6 < var8) {
          DataLayer var9 = this.getDataLayer(var7, var4);
          if (var9 == null) {
-            for(var1 = BlockPos.getFlatIndex(var1); var9 == null; var9 = this.getDataLayer(var7, var4)) {
+            for (var1 = BlockPos.getFlatIndex(var1); var9 == null; var9 = this.getDataLayer(var7, var4)) {
                if (++var6 >= var8) {
                   return 15;
                }
@@ -65,8 +65,8 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyLightSec
       int var5 = SectionPos.y(var1);
       if (this.updatingSectionData.topSections.get(var3) == var5 + 1) {
          long var6;
-         for(var6 = var1; !this.storingLightForSection(var6) && this.hasLightDataAtOrBelow(var5); var6 = SectionPos.offset(var6, Direction.DOWN)) {
-            --var5;
+         for (var6 = var1; !this.storingLightForSection(var6) && this.hasLightDataAtOrBelow(var5); var6 = SectionPos.offset(var6, Direction.DOWN)) {
+            var5--;
          }
 
          if (this.storingLightForSection(var6)) {
@@ -88,7 +88,7 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyLightSec
             long var5 = SectionPos.offset(var1, Direction.UP);
 
             DataLayer var7;
-            while((var7 = this.getDataLayer(var5, true)) == null) {
+            while ((var7 = this.getDataLayer(var5, true)) == null) {
                var5 = SectionPos.offset(var5, Direction.UP);
             }
 
@@ -106,7 +106,7 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyLightSec
          byte[] var1 = var0.getData();
          byte[] var2 = new byte[2048];
 
-         for(int var3 = 0; var3 < 16; ++var3) {
+         for (int var3 = 0; var3 < 16; var3++) {
             System.arraycopy(var1, 0, var2, var3 * 128, 128);
          }
 

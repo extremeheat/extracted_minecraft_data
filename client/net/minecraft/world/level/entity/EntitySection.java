@@ -29,7 +29,7 @@ public class EntitySection<T extends EntityAccess> {
    }
 
    public AbortableIterationConsumer.Continuation getEntities(AABB var1, AbortableIterationConsumer<T> var2) {
-      for(EntityAccess var4 : this.storage) {
+      for (EntityAccess var4 : this.storage) {
          if (var4.getBoundingBox().intersects(var1) && var2.accept(var4).shouldAbort()) {
             return AbortableIterationConsumer.Continuation.ABORT;
          }
@@ -43,7 +43,7 @@ public class EntitySection<T extends EntityAccess> {
       if (var4.isEmpty()) {
          return AbortableIterationConsumer.Continuation.CONTINUE;
       } else {
-         for(EntityAccess var6 : var4) {
+         for (EntityAccess var6 : var4) {
             EntityAccess var7 = (EntityAccess)var1.tryCast(var6);
             if (var7 != null && var6.getBoundingBox().intersects(var2) && var3.accept(var7).shouldAbort()) {
                return AbortableIterationConsumer.Continuation.ABORT;

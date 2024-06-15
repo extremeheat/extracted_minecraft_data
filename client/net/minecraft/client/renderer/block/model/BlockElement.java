@@ -39,14 +39,14 @@ public class BlockElement {
    }
 
    private void fillUvs() {
-      for(Entry var2 : this.faces.entrySet()) {
+      for (Entry var2 : this.faces.entrySet()) {
          float[] var3 = this.uvsByFace((Direction)var2.getKey());
          ((BlockElementFace)var2.getValue()).uv.setMissingUv(var3);
       }
    }
 
    private float[] uvsByFace(Direction var1) {
-      switch(var1) {
+      switch (var1) {
          case DOWN:
             return new float[]{this.from.x(), 16.0F - this.to.z(), this.to.x(), 16.0F - this.from.z()};
          case UP:
@@ -132,7 +132,7 @@ public class BlockElement {
          EnumMap var3 = Maps.newEnumMap(Direction.class);
          JsonObject var4 = GsonHelper.getAsJsonObject(var2, "faces");
 
-         for(Entry var6 : var4.entrySet()) {
+         for (Entry var6 : var4.entrySet()) {
             Direction var7 = this.getFacing((String)var6.getKey());
             var3.put(var7, (BlockElementFace)var1.deserialize((JsonElement)var6.getValue(), BlockElementFace.class));
          }
@@ -174,7 +174,7 @@ public class BlockElement {
          } else {
             float[] var4 = new float[3];
 
-            for(int var5 = 0; var5 < var4.length; ++var5) {
+            for (int var5 = 0; var5 < var4.length; var5++) {
                var4[var5] = GsonHelper.convertToFloat(var3.get(var5), var2 + "[" + var5 + "]");
             }
 

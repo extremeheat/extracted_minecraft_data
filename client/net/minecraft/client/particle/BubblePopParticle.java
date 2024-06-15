@@ -25,7 +25,7 @@ public class BubblePopParticle extends TextureSheetParticle {
       if (this.age++ >= this.lifetime) {
          this.remove();
       } else {
-         this.yd -= (double)this.gravity;
+         this.yd = this.yd - (double)this.gravity;
          this.move(this.xd, this.yd, this.zd);
          this.setSpriteFromAge(this.sprites);
       }

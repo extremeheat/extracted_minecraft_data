@@ -14,7 +14,7 @@ public class DebugMemoryUntracker {
       try {
          Lookup var0 = MethodHandles.lookup();
          Class var1 = Class.forName("org.lwjgl.system.MemoryManage$DebugAllocator");
-         Method var2 = var1.getDeclaredMethod("untrack", Long.TYPE);
+         Method var2 = var1.getDeclaredMethod("untrack", long.class);
          var2.setAccessible(true);
          Field var3 = Class.forName("org.lwjgl.system.MemoryUtil$LazyInit").getDeclaredField("ALLOCATOR");
          var3.setAccessible(true);

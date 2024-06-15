@@ -37,7 +37,7 @@ public class RecoverWorldDataScreen extends Screen {
    private static final Component NO_ISSUES = Component.translatable("recover_world.issue.none").withStyle(ChatFormatting.GREEN);
    private static final Component MISSING_FILE = Component.translatable("recover_world.issue.missing_file").withStyle(ChatFormatting.RED);
    private final BooleanConsumer callback;
-   private final LinearLayout layout = LinearLayout.vertical().spacing(10);
+   private final LinearLayout layout = LinearLayout.vertical().spacing(8);
    private final Component message;
    private final MultiLineTextWidget messageWidget;
    private final MultiLineTextWidget issuesWidget;
@@ -61,10 +61,7 @@ public class RecoverWorldDataScreen extends Screen {
       LinearLayout var8 = LinearLayout.horizontal().spacing(5);
       var8.addChild(Button.builder(BUGTRACKER_BUTTON, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/snapshotbugs?ref=game")).size(120, 20).build());
       var8.addChild(
-            Button.builder(RESTORE_BUTTON, var2x -> this.attemptRestore(var1))
-               .size(120, 20)
-               .tooltip(var7 ? null : Tooltip.create(NO_FALLBACK_TOOLTIP))
-               .build()
+            Button.builder(RESTORE_BUTTON, var2x -> this.attemptRestore(var1)).size(120, 20).tooltip(var7 ? null : Tooltip.create(NO_FALLBACK_TOOLTIP)).build()
          )
          .active = var7;
       this.layout.addChild(var8);
@@ -76,7 +73,7 @@ public class RecoverWorldDataScreen extends Screen {
       Exception var2 = this.collectIssue(this.storageAccess, false);
       Exception var3 = this.collectIssue(this.storageAccess, true);
       if (var2 != null && var3 == null) {
-         var1.forceSetScreen(new GenericDirtMessageScreen(Component.translatable("recover_world.restoring")));
+         var1.forceSetScreen(new GenericMessageScreen(Component.translatable("recover_world.restoring")));
          EditWorldScreen.makeBackupAndShowToast(this.storageAccess);
          if (this.storageAccess.restoreLevelDataFromOld()) {
             var1.setScreen(new ConfirmScreen(this.callback, DONE_TITLE, DONE_SUCCESS, CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));

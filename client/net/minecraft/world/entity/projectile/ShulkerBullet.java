@@ -10,6 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -50,11 +51,8 @@ public class ShulkerBullet extends Projectile {
    public ShulkerBullet(Level var1, LivingEntity var2, Entity var3, Direction.Axis var4) {
       this(EntityType.SHULKER_BULLET, var1);
       this.setOwner(var2);
-      BlockPos var5 = var2.blockPosition();
-      double var6 = (double)var5.getX() + 0.5;
-      double var8 = (double)var5.getY() + 0.5;
-      double var10 = (double)var5.getZ() + 0.5;
-      this.moveTo(var6, var8, var10, this.getYRot(), this.getXRot());
+      Vec3 var5 = var2.getBoundingBox().getCenter();
+      this.moveTo(var5.x, var5.y, var5.z, this.getYRot(), this.getXRot());
       this.finalTarget = var3;
       this.currentMoveDirection = Direction.UP;
       this.selectNextMoveDirection(var4);
@@ -99,7 +97,7 @@ public class ShulkerBullet extends Projectile {
    }
 
    @Override
-   protected void defineSynchedData() {
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
    @Nullable
@@ -154,7 +152,7 @@ public class ShulkerBullet extends Projectile {
 
          var11 = Direction.getRandom(this.random);
          if (var13.isEmpty()) {
-            for(int var14 = 5; !this.level().isEmptyBlock(var12.relative(var11)) && var14 > 0; --var14) {
+            for (int var14 = 5; !this.level().isEmptyBlock(var12.relative(var11)) && var14 > 0; var14--) {
                var11 = Direction.getRandom(this.random);
             }
          } else {
@@ -193,6 +191,11 @@ public class ShulkerBullet extends Projectile {
    }
 
    @Override
+   protected double getDefaultGravity() {
+      return 0.04;
+   }
+
+   @Override
    public void tick() {
       super.tick();
       if (!this.level().isClientSide) {
@@ -204,9 +207,7 @@ public class ShulkerBullet extends Projectile {
          }
 
          if (this.finalTarget == null || !this.finalTarget.isAlive() || this.finalTarget instanceof Player && this.finalTarget.isSpectator()) {
-            if (!this.isNoGravity()) {
-               this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.04, 0.0));
-            }
+            this.applyGravity();
          } else {
             this.targetDeltaX = Mth.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
             this.targetDeltaY = Mth.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
@@ -217,7 +218,7 @@ public class ShulkerBullet extends Projectile {
 
          HitResult var5 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
          if (var5.getType() != HitResult.Type.MISS) {
-            this.onHit(var5);
+            this.hitTargetOrDeflectSelf(var5);
          }
       }
 
@@ -229,7 +230,7 @@ public class ShulkerBullet extends Projectile {
          this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var6.x, this.getY() - var6.y + 0.15, this.getZ() - var6.z, 0.0, 0.0, 0.0);
       } else if (this.finalTarget != null && !this.finalTarget.isRemoved()) {
          if (this.flightSteps > 0) {
-            --this.flightSteps;
+            this.flightSteps--;
             if (this.flightSteps == 0) {
                this.selectNextMoveDirection(this.currentMoveDirection == null ? null : this.currentMoveDirection.getAxis());
             }
@@ -272,8 +273,6 @@ public class ShulkerBullet extends Projectile {
       return 1.0F;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);

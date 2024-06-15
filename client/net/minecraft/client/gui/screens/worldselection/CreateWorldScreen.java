@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.worldselection;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
@@ -25,7 +25,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -37,14 +36,14 @@ import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.CommonLayouts;
-import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
-import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.commands.Commands;
@@ -57,12 +56,9 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
-import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
-import net.minecraft.server.packs.resources.CloseableResourceManager;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
@@ -71,6 +67,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
@@ -86,19 +83,17 @@ import org.slf4j.Logger;
 public class CreateWorldScreen extends Screen {
    private static final int GROUP_BOTTOM = 1;
    private static final int TAB_COLUMN_WIDTH = 210;
-   private static final int FOOTER_HEIGHT = 36;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TEMP_WORLD_PREFIX = "mcworld-";
    static final Component GAME_MODEL_LABEL = Component.translatable("selectWorld.gameMode");
    static final Component NAME_LABEL = Component.translatable("selectWorld.enterName");
    static final Component EXPERIMENTS_LABEL = Component.translatable("selectWorld.experiments");
-   static final Component ALLOW_CHEATS_INFO = Component.translatable("selectWorld.allowCommands.info");
+   static final Component ALLOW_COMMANDS_INFO = Component.translatable("selectWorld.allowCommands.info");
    private static final Component PREPARING_WORLD_DATA = Component.translatable("createWorld.preparing");
    private static final int HORIZONTAL_BUTTON_SPACING = 10;
    private static final int VERTICAL_BUTTON_SPACING = 8;
-   public static final ResourceLocation HEADER_SEPERATOR = new ResourceLocation("textures/gui/header_separator.png");
-   public static final ResourceLocation FOOTER_SEPERATOR = new ResourceLocation("textures/gui/footer_separator.png");
-   public static final ResourceLocation LIGHT_DIRT_BACKGROUND = new ResourceLocation("textures/gui/light_dirt_background.png");
+   public static final ResourceLocation TAB_HEADER_BACKGROUND = new ResourceLocation("textures/gui/tab_header_background.png");
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    final WorldCreationUiState uiState;
    private final TabManager tabManager = new TabManager(this::addRenderableWidget, var1x -> this.removeWidget(var1x));
    private boolean recreated;
@@ -109,8 +104,6 @@ public class CreateWorldScreen extends Screen {
    private Path tempDataPackDir;
    @Nullable
    private PackRepository tempDataPackRepository;
-   @Nullable
-   private GridLayout bottomButtons;
    @Nullable
    private TabNavigationBar tabNavigationBar;
 
@@ -138,15 +131,13 @@ public class CreateWorldScreen extends Screen {
       var0.setScreen(new CreateWorldScreen(var0, var1, (WorldCreationContext)var4.join(), Optional.of(WorldPresets.NORMAL), OptionalLong.empty()));
    }
 
-   public static CreateWorldScreen createFromExisting(
-      Minecraft var0, @Nullable Screen var1, LevelSettings var2, WorldCreationContext var3, @Nullable Path var4
-   ) {
+   public static CreateWorldScreen createFromExisting(Minecraft var0, @Nullable Screen var1, LevelSettings var2, WorldCreationContext var3, @Nullable Path var4) {
       CreateWorldScreen var5 = new CreateWorldScreen(
-         var0, var1, var3, WorldPresets.fromSettings(var3.selectedDimensions().dimensions()), OptionalLong.of(var3.options().seed())
+         var0, var1, var3, WorldPresets.fromSettings(var3.selectedDimensions()), OptionalLong.of(var3.options().seed())
       );
       var5.recreated = true;
       var5.uiState.setName(var2.levelName());
-      var5.uiState.setAllowCheats(var2.allowCommands());
+      var5.uiState.setAllowCommands(var2.allowCommands());
       var5.uiState.setDifficulty(var2.difficulty());
       var5.uiState.getGameRules().assignFrom(var2.gameRules(), null);
       if (var2.hardcore()) {
@@ -178,11 +169,10 @@ public class CreateWorldScreen extends Screen {
          .addTabs(new CreateWorldScreen.GameTab(), new CreateWorldScreen.WorldTab(), new CreateWorldScreen.MoreTab())
          .build();
       this.addRenderableWidget(this.tabNavigationBar);
-      this.bottomButtons = new GridLayout().columnSpacing(10);
-      GridLayout.RowHelper var1 = this.bottomButtons.createRowHelper(2);
+      LinearLayout var1 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var1.addChild(Button.builder(Component.translatable("selectWorld.create"), var1x -> this.onCreate()).build());
       var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.popScreen()).build());
-      this.bottomButtons.visitWidgets(var1x -> {
+      this.layout.visitWidgets(var1x -> {
          var1x.setTabOrderGroup(1);
          this.addRenderableWidget(var1x);
       });
@@ -192,20 +182,24 @@ public class CreateWorldScreen extends Screen {
    }
 
    @Override
+   protected void setInitialFocus() {
+   }
+
+   @Override
    public void repositionElements() {
-      if (this.tabNavigationBar != null && this.bottomButtons != null) {
+      if (this.tabNavigationBar != null) {
          this.tabNavigationBar.setWidth(this.width);
          this.tabNavigationBar.arrangeElements();
-         this.bottomButtons.arrangeElements();
-         FrameLayout.centerInRectangle(this.bottomButtons, 0, this.height - 36, this.width, 36);
          int var1 = this.tabNavigationBar.getRectangle().bottom();
-         ScreenRectangle var2 = new ScreenRectangle(0, var1, this.width, this.bottomButtons.getY() - var1);
+         ScreenRectangle var2 = new ScreenRectangle(0, var1, this.width, this.height - this.layout.getFooterHeight() - var1);
          this.tabManager.setTabArea(var2);
+         this.layout.setHeaderHeight(var1);
+         this.layout.arrangeElements();
       }
    }
 
    private static void queueLoadScreen(Minecraft var0, Component var1) {
-      var0.forceSetScreen(new GenericDirtMessageScreen(var1));
+      var0.forceSetScreen(new GenericMessageScreen(var1));
    }
 
    private void onCreate() {
@@ -246,7 +240,7 @@ public class CreateWorldScreen extends Screen {
             this.uiState.getGameMode().gameType,
             this.uiState.isHardcore(),
             this.uiState.getDifficulty(),
-            this.uiState.isAllowCheats(),
+            this.uiState.isAllowCommands(),
             this.uiState.getGameRules(),
             this.uiState.getSettings().dataConfiguration()
          );
@@ -280,13 +274,15 @@ public class CreateWorldScreen extends Screen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.blit(FOOTER_SEPERATOR, 0, Mth.roundToward(this.height - 36 - 2, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
+      RenderSystem.enableBlend();
+      var1.blit(Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
+      RenderSystem.disableBlend();
    }
 
    @Override
-   public void renderDirtBackground(GuiGraphics var1) {
-      boolean var2 = true;
-      var1.blit(LIGHT_DIRT_BACKGROUND, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
+   protected void renderMenuBackground(GuiGraphics var1) {
+      var1.blit(TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
+      this.renderMenuBackground(var1, 0, this.layout.getHeaderHeight(), this.width, this.height);
    }
 
    @Override
@@ -342,9 +338,7 @@ public class CreateWorldScreen extends Screen {
    private void tryApplyNewDataPacks(PackRepository var1, boolean var2, Consumer<WorldDataConfiguration> var3) {
       ImmutableList var4 = ImmutableList.copyOf(var1.getSelectedIds());
       List var5 = var1.getAvailableIds().stream().filter(var1x -> !var4.contains(var1x)).collect(ImmutableList.toImmutableList());
-      WorldDataConfiguration var6 = new WorldDataConfiguration(
-         new DataPackConfig(var4, var5), this.uiState.getSettings().dataConfiguration().enabledFeatures()
-      );
+      WorldDataConfiguration var6 = new WorldDataConfiguration(new DataPackConfig(var4, var5), this.uiState.getSettings().dataConfiguration().enabledFeatures());
       if (this.uiState.tryUpdateDataConfiguration(var6)) {
          this.minecraft.setScreen(this);
       } else {
@@ -364,7 +358,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    private void applyNewPackConfig(PackRepository var1, WorldDataConfiguration var2, Consumer<WorldDataConfiguration> var3) {
-      this.minecraft.forceSetScreen(new GenericDirtMessageScreen(Component.translatable("dataPack.validation.working")));
+      this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("dataPack.validation.working")));
       WorldLoader.InitConfig var4 = createDefaultLoadConfig(var1, var2);
       WorldLoader.<CreateWorldScreen.DataPackReloadCookie, WorldCreationContext>load(
             var4,
@@ -374,12 +368,12 @@ public class CreateWorldScreen extends Screen {
                } else if (var1x.datapackWorldgen().registryOrThrow(Registries.BIOME).size() == 0) {
                   throw new IllegalStateException("Needs at least one biome continue");
                } else {
-                  WorldCreationContext var2xx = this.uiState.getSettings();
-                  RegistryOps var3xx = RegistryOps.create(JsonOps.INSTANCE, var2xx.worldgenLoadContext());
-                  DataResult var4xx = WorldGenSettings.encode(var3xx, var2xx.options(), var2xx.selectedDimensions()).setLifecycle(Lifecycle.stable());
-                  RegistryOps var5 = RegistryOps.create(JsonOps.INSTANCE, var1x.datapackWorldgen());
-                  WorldGenSettings var6 = (WorldGenSettings)var4xx.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
-                     .getOrThrow(false, Util.prefix("Error parsing worldgen settings after loading data packs: ", LOGGER::error));
+                  WorldCreationContext var2x = this.uiState.getSettings();
+                  RegistryOps var3x = var2x.worldgenLoadContext().createSerializationContext(JsonOps.INSTANCE);
+                  DataResult var4x = WorldGenSettings.encode(var3x, var2x.options(), var2x.selectedDimensions()).setLifecycle(Lifecycle.stable());
+                  RegistryOps var5 = var1x.datapackWorldgen().createSerializationContext(JsonOps.INSTANCE);
+                  WorldGenSettings var6 = (WorldGenSettings)var4x.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
+                     .getOrThrow(var0 -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + var0));
                   return new WorldLoader.DataLoadOutput<>(
                      new CreateWorldScreen.DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions()
                   );
@@ -392,8 +386,15 @@ public class CreateWorldScreen extends Screen {
             Util.backgroundExecutor(),
             this.minecraft
          )
+         .thenApplyAsync(var0 -> {
+            for (LevelStem var2x : var0.datapackDimensions()) {
+               var2x.generator().validate();
+            }
+
+            return (WorldCreationContext)var0;
+         })
          .thenAcceptAsync(this.uiState::setSettings, this.minecraft)
-         .handle(
+         .handleAsync(
             (var2x, var3x) -> {
                if (var3x != null) {
                   LOGGER.warn("Failed to validate datapack", var3x);
@@ -416,9 +417,10 @@ public class CreateWorldScreen extends Screen {
                } else {
                   this.minecraft.setScreen(this);
                }
-      
+
                return null;
-            }
+            },
+            this.minecraft
          );
    }
 
@@ -492,19 +494,19 @@ public class CreateWorldScreen extends Screen {
 
       try (Stream var3 = Files.walk(var0)) {
          var3.filter(var1x -> !var1x.equals(var0)).forEach(var2x -> {
-            Path var3xx = (Path)var2.getValue();
-            if (var3xx == null) {
+            Path var3x = (Path)var2.getValue();
+            if (var3x == null) {
                try {
-                  var3xx = Files.createTempDirectory("mcworld-");
+                  var3x = Files.createTempDirectory("mcworld-");
                } catch (IOException var5) {
                   LOGGER.warn("Failed to create temporary dir");
                   throw new UncheckedIOException(var5);
                }
 
-               var2.setValue(var3xx);
+               var2.setValue(var3x);
             }
 
-            copyBetweenDirs(var0, var3xx, var2x);
+            copyBetweenDirs(var0, var3x, var2x);
          });
       } catch (UncheckedIOException | IOException var8) {
          LOGGER.warn("Failed to copy datapacks from world {}", var0, var8);
@@ -531,20 +533,17 @@ public class CreateWorldScreen extends Screen {
       }
    }
 
-   static record DataPackReloadCookie(WorldGenSettings a, WorldDataConfiguration b) {
-      private final WorldGenSettings worldGenSettings;
-      private final WorldDataConfiguration dataConfiguration;
-
-      DataPackReloadCookie(WorldGenSettings var1, WorldDataConfiguration var2) {
+   static record DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataConfiguration dataConfiguration) {
+      DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataConfiguration dataConfiguration) {
          super();
-         this.worldGenSettings = var1;
-         this.dataConfiguration = var2;
+         this.worldGenSettings = worldGenSettings;
+         this.dataConfiguration = dataConfiguration;
       }
    }
 
    class GameTab extends GridLayoutTab {
       private static final Component TITLE = Component.translatable("createWorld.tab.game.title");
-      private static final Component ALLOW_CHEATS = Component.translatable("selectWorld.allowCommands");
+      private static final Component ALLOW_COMMANDS = Component.translatable("selectWorld.allowCommands.new");
       private final EditBox nameEdit;
 
       GameTab() {
@@ -556,10 +555,10 @@ public class CreateWorldScreen extends Screen {
          this.nameEdit.setResponder(CreateWorldScreen.this.uiState::setName);
          CreateWorldScreen.this.uiState
             .addListener(
-               var1x -> this.nameEdit
+               var1 -> this.nameEdit
                      .setTooltip(
                         Tooltip.create(
-                           Component.translatable("selectWorld.targetFolder", Component.literal(var1x.getTargetFolder()).withStyle(ChatFormatting.ITALIC))
+                           Component.translatable("selectWorld.targetFolder", Component.literal(var1.getTargetFolder()).withStyle(ChatFormatting.ITALIC))
                         )
                      )
             );
@@ -575,18 +574,18 @@ public class CreateWorldScreen extends Screen {
                   WorldCreationUiState.SelectedGameMode.HARDCORE,
                   WorldCreationUiState.SelectedGameMode.CREATIVE
                )
-               .create(0, 0, 210, 20, CreateWorldScreen.GAME_MODEL_LABEL, (var1x, var2x) -> CreateWorldScreen.this.uiState.setGameMode(var2x)),
+               .create(0, 0, 210, 20, CreateWorldScreen.GAME_MODEL_LABEL, (var1, var2x) -> CreateWorldScreen.this.uiState.setGameMode(var2x)),
             var3
          );
-         CreateWorldScreen.this.uiState.addListener(var1x -> {
-            var4.setValue(var1x.getGameMode());
-            var4.active = !var1x.isDebug();
-            var4.setTooltip(Tooltip.create(var1x.getGameMode().getInfo()));
+         CreateWorldScreen.this.uiState.addListener(var1 -> {
+            var4.setValue(var1.getGameMode());
+            var4.active = !var1.isDebug();
+            var4.setTooltip(Tooltip.create(var1.getGameMode().getInfo()));
          });
          CycleButton var5 = var2.addChild(
             CycleButton.builder(Difficulty::getDisplayName)
                .withValues(Difficulty.values())
-               .create(0, 0, 210, 20, Component.translatable("options.difficulty"), (var1x, var2x) -> CreateWorldScreen.this.uiState.setDifficulty(var2x)),
+               .create(0, 0, 210, 20, Component.translatable("options.difficulty"), (var1, var2x) -> CreateWorldScreen.this.uiState.setDifficulty(var2x)),
             var3
          );
          CreateWorldScreen.this.uiState.addListener(var2x -> {
@@ -596,18 +595,18 @@ public class CreateWorldScreen extends Screen {
          });
          CycleButton var6 = var2.addChild(
             CycleButton.onOffBuilder()
-               .withTooltip(var0 -> Tooltip.create(CreateWorldScreen.ALLOW_CHEATS_INFO))
-               .create(0, 0, 210, 20, ALLOW_CHEATS, (var1x, var2x) -> CreateWorldScreen.this.uiState.setAllowCheats(var2x))
+               .withTooltip(var0 -> Tooltip.create(CreateWorldScreen.ALLOW_COMMANDS_INFO))
+               .create(0, 0, 210, 20, ALLOW_COMMANDS, (var1, var2x) -> CreateWorldScreen.this.uiState.setAllowCommands(var2x))
          );
          CreateWorldScreen.this.uiState.addListener(var2x -> {
-            var6.setValue(CreateWorldScreen.this.uiState.isAllowCheats());
+            var6.setValue(CreateWorldScreen.this.uiState.isAllowCommands());
             var6.active = !CreateWorldScreen.this.uiState.isDebug() && !CreateWorldScreen.this.uiState.isHardcore();
          });
          if (!SharedConstants.getCurrentVersion().isStable()) {
             var2.addChild(
                Button.builder(
                      CreateWorldScreen.EXPERIMENTS_LABEL,
-                     var1x -> CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())
+                     var1 -> CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())
                   )
                   .width(210)
                   .build()
@@ -624,11 +623,11 @@ public class CreateWorldScreen extends Screen {
       MoreTab() {
          super(TITLE);
          GridLayout.RowHelper var2 = this.layout.rowSpacing(8).createRowHelper(1);
-         var2.addChild(Button.builder(GAME_RULES_LABEL, var1x -> this.openGameRulesScreen()).width(210).build());
+         var2.addChild(Button.builder(GAME_RULES_LABEL, var1 -> this.openGameRulesScreen()).width(210).build());
          var2.addChild(
             Button.builder(
                   CreateWorldScreen.EXPERIMENTS_LABEL,
-                  var1x -> CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())
+                  var1 -> CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())
                )
                .width(210)
                .build()
@@ -636,7 +635,7 @@ public class CreateWorldScreen extends Screen {
          var2.addChild(
             Button.builder(
                   DATA_PACKS_LABEL,
-                  var1x -> CreateWorldScreen.this.openDataPackSelectionScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())
+                  var1 -> CreateWorldScreen.this.openDataPackSelectionScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())
                )
                .width(210)
                .build()
@@ -670,13 +669,13 @@ public class CreateWorldScreen extends Screen {
             CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset)
                .withValues(this.createWorldTypeValueSupplier())
                .withCustomNarration(CreateWorldScreen.WorldTab::createTypeButtonNarration)
-               .create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (var1x, var2x) -> CreateWorldScreen.this.uiState.setWorldType(var2x))
+               .create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (var1, var2x) -> CreateWorldScreen.this.uiState.setWorldType(var2x))
          );
          var3.setValue(CreateWorldScreen.this.uiState.getWorldType());
          CreateWorldScreen.this.uiState.addListener(var2x -> {
-            WorldCreationUiState.WorldTypeEntry var3xx = var2x.getWorldType();
-            var3.setValue(var3xx);
-            if (var3xx.isAmplified()) {
+            WorldCreationUiState.WorldTypeEntry var3x = var2x.getWorldType();
+            var3.setValue(var3x);
+            if (var3x.isAmplified()) {
                var3.setTooltip(Tooltip.create(AMPLIFIED_HELP_TEXT));
             } else {
                var3.setTooltip(null);
@@ -684,10 +683,8 @@ public class CreateWorldScreen extends Screen {
 
             var3.active = CreateWorldScreen.this.uiState.getWorldType().preset() != null;
          });
-         this.customizeTypeButton = var2.addChild(
-            Button.builder(Component.translatable("selectWorld.customizeType"), var1x -> this.openPresetEditor()).build()
-         );
-         CreateWorldScreen.this.uiState.addListener(var1x -> this.customizeTypeButton.active = !var1x.isDebug() && var1x.getPresetEditor() != null);
+         this.customizeTypeButton = var2.addChild(Button.builder(Component.translatable("selectWorld.customizeType"), var1 -> this.openPresetEditor()).build());
+         CreateWorldScreen.this.uiState.addListener(var1 -> this.customizeTypeButton.active = !var1.isDebug() && var1.getPresetEditor() != null);
          this.seedEdit = new EditBox(CreateWorldScreen.this.font, 308, 20, Component.translatable("selectWorld.enterSeed")) {
             @Override
             protected MutableComponent createNarrationMessage() {
@@ -696,7 +693,7 @@ public class CreateWorldScreen extends Screen {
          };
          this.seedEdit.setHint(SEED_EMPTY_HINT);
          this.seedEdit.setValue(CreateWorldScreen.this.uiState.getSeed());
-         this.seedEdit.setResponder(var1x -> CreateWorldScreen.this.uiState.setSeed(this.seedEdit.getValue()));
+         this.seedEdit.setResponder(var1 -> CreateWorldScreen.this.uiState.setSeed(this.seedEdit.getValue()));
          var2.addChild(CommonLayouts.labeledElement(CreateWorldScreen.this.font, this.seedEdit, SEED_LABEL), 2);
          SwitchGrid.Builder var4 = SwitchGrid.builder(310);
          var4.addSwitch(GENERATE_STRUCTURES, CreateWorldScreen.this.uiState::isGenerateStructures, CreateWorldScreen.this.uiState::setGenerateStructures)
@@ -704,8 +701,8 @@ public class CreateWorldScreen extends Screen {
             .withInfo(GENERATE_STRUCTURES_INFO);
          var4.addSwitch(BONUS_CHEST, CreateWorldScreen.this.uiState::isBonusChest, CreateWorldScreen.this.uiState::setBonusChest)
             .withIsActiveCondition(() -> !CreateWorldScreen.this.uiState.isHardcore() && !CreateWorldScreen.this.uiState.isDebug());
-         SwitchGrid var5 = var4.build(var1x -> var2.addChild(var1x, 2));
-         CreateWorldScreen.this.uiState.addListener(var1x -> var5.refreshStates());
+         SwitchGrid var5 = var4.build(var1 -> var2.addChild(var1, 2));
+         CreateWorldScreen.this.uiState.addListener(var1 -> var5.refreshStates());
       }
 
       private void openPresetEditor() {

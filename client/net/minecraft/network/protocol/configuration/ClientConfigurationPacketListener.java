@@ -14,4 +14,8 @@ public interface ClientConfigurationPacketListener extends ClientCommonPacketLis
    void handleRegistryData(ClientboundRegistryDataPacket var1);
 
    void handleEnabledFeatures(ClientboundUpdateEnabledFeaturesPacket var1);
+
+   void handleSelectKnownPacks(ClientboundSelectKnownPacks var1);
+
+   void handleResetChat(ClientboundResetChatPacket var1);
 }

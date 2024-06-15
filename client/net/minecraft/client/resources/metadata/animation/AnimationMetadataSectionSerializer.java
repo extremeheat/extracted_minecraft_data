@@ -27,7 +27,7 @@ public class AnimationMetadataSectionSerializer implements MetadataSectionSerial
          try {
             JsonArray var4 = GsonHelper.getAsJsonArray(var1, "frames");
 
-            for(int var5 = 0; var5 < var4.size(); ++var5) {
+            for (int var5 = 0; var5 < var4.size(); var5++) {
                JsonElement var6 = var4.get(var5);
                AnimationFrame var7 = this.getFrame(var5, var6);
                if (var7 != null) {

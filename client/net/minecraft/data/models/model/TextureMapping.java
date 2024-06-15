@@ -46,7 +46,7 @@ public class TextureMapping {
    }
 
    public ResourceLocation get(TextureSlot var1) {
-      for(TextureSlot var2 = var1; var2 != null; var2 = var2.getParent()) {
+      for (TextureSlot var2 = var1; var2 != null; var2 = var2.getParent()) {
          ResourceLocation var3 = this.slots.get(var2);
          if (var3 != null) {
             return var3;
@@ -249,6 +249,14 @@ public class TextureMapping {
          .put(TextureSlot.SIDE, getBlockTexture(var0, var1))
          .put(TextureSlot.TOP, getBlockTexture(var0, var2))
          .put(TextureSlot.BOTTOM, getBlockTexture(var0, "_bottom"));
+   }
+
+   public static TextureMapping vault(Block var0, String var1, String var2, String var3, String var4) {
+      return new TextureMapping()
+         .put(TextureSlot.FRONT, getBlockTexture(var0, var1))
+         .put(TextureSlot.SIDE, getBlockTexture(var0, var2))
+         .put(TextureSlot.TOP, getBlockTexture(var0, var3))
+         .put(TextureSlot.BOTTOM, getBlockTexture(var0, var4));
    }
 
    public static TextureMapping particleFromItem(Item var0) {

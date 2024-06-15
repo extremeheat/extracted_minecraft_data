@@ -11,7 +11,7 @@ public class SuspendedTownParticle extends TextureSheetParticle {
       this.gCol = var14;
       this.bCol = var14;
       this.setSize(0.02F, 0.02F);
-      this.quadSize *= this.random.nextFloat() * 0.6F + 0.5F;
+      this.quadSize = this.quadSize * (this.random.nextFloat() * 0.6F + 0.5F);
       this.xd *= 0.019999999552965164;
       this.yd *= 0.019999999552965164;
       this.zd *= 0.019999999552965164;

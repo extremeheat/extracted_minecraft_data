@@ -11,9 +11,9 @@ public abstract class SectionTracker extends DynamicGraphMinFixedPoint {
    @Override
    protected void checkNeighborsAfterUpdate(long var1, int var3, boolean var4) {
       if (!var4 || var3 < this.levelCount - 2) {
-         for(int var5 = -1; var5 <= 1; ++var5) {
-            for(int var6 = -1; var6 <= 1; ++var6) {
-               for(int var7 = -1; var7 <= 1; ++var7) {
+         for (int var5 = -1; var5 <= 1; var5++) {
+            for (int var6 = -1; var6 <= 1; var6++) {
+               for (int var7 = -1; var7 <= 1; var7++) {
                   long var8 = SectionPos.offset(var1, var5, var6, var7);
                   if (var8 != var1) {
                      this.checkNeighbor(var1, var8, var3, var4);
@@ -28,9 +28,9 @@ public abstract class SectionTracker extends DynamicGraphMinFixedPoint {
    protected int getComputedLevel(long var1, long var3, int var5) {
       int var6 = var5;
 
-      for(int var7 = -1; var7 <= 1; ++var7) {
-         for(int var8 = -1; var8 <= 1; ++var8) {
-            for(int var9 = -1; var9 <= 1; ++var9) {
+      for (int var7 = -1; var7 <= 1; var7++) {
+         for (int var8 = -1; var8 <= 1; var8++) {
+            for (int var9 = -1; var9 <= 1; var9++) {
                long var10 = SectionPos.offset(var1, var7, var8, var9);
                if (var10 == var1) {
                   var10 = 9223372036854775807L;

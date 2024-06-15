@@ -29,9 +29,7 @@ public class EvokerFangsModel<T extends Entity> extends HierarchicalModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild(
-         "base", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 10.0F, 12.0F, 10.0F), PartPose.offset(-5.0F, 24.0F, -5.0F)
-      );
+      var1.addOrReplaceChild("base", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 10.0F, 12.0F, 10.0F), PartPose.offset(-5.0F, 24.0F, -5.0F));
       CubeListBuilder var2 = CubeListBuilder.create().texOffs(40, 0).addBox(0.0F, 0.0F, 0.0F, 4.0F, 14.0F, 8.0F);
       var1.addOrReplaceChild("upper_jaw", var2, PartPose.offset(1.5F, 24.0F, -4.0F));
       var1.addOrReplaceChild("lower_jaw", var2, PartPose.offsetAndRotation(-1.5F, 24.0F, 4.0F, 0.0F, 3.1415927F, 0.0F));

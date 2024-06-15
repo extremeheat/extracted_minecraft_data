@@ -1,15 +1,14 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.flag.FeatureFlag;
 import net.minecraft.world.item.armortrim.TrimPattern;
-import net.minecraft.world.level.Level;
 
 public class SmithingTemplateItem extends Item {
    private static final ChatFormatting TITLE_FORMAT = ChatFormatting.GRAY;
@@ -77,9 +76,16 @@ public class SmithingTemplateItem extends Item {
    private final List<ResourceLocation> additionalSlotEmptyIcons;
 
    public SmithingTemplateItem(
-      Component var1, Component var2, Component var3, Component var4, Component var5, List<ResourceLocation> var6, List<ResourceLocation> var7
+      Component var1,
+      Component var2,
+      Component var3,
+      Component var4,
+      Component var5,
+      List<ResourceLocation> var6,
+      List<ResourceLocation> var7,
+      FeatureFlag... var8
    ) {
-      super(new Item.Properties());
+      super(new Item.Properties().requiredFeatures(var8));
       this.appliesTo = var1;
       this.ingredients = var2;
       this.upgradeDescription = var3;
@@ -89,11 +95,11 @@ public class SmithingTemplateItem extends Item {
       this.additionalSlotEmptyIcons = var7;
    }
 
-   public static SmithingTemplateItem createArmorTrimTemplate(ResourceKey<TrimPattern> var0) {
-      return createArmorTrimTemplate(var0.location());
+   public static SmithingTemplateItem createArmorTrimTemplate(ResourceKey<TrimPattern> var0, FeatureFlag... var1) {
+      return createArmorTrimTemplate(var0.location(), var1);
    }
 
-   public static SmithingTemplateItem createArmorTrimTemplate(ResourceLocation var0) {
+   public static SmithingTemplateItem createArmorTrimTemplate(ResourceLocation var0, FeatureFlag... var1) {
       return new SmithingTemplateItem(
          ARMOR_TRIM_APPLIES_TO,
          ARMOR_TRIM_INGREDIENTS,
@@ -101,7 +107,8 @@ public class SmithingTemplateItem extends Item {
          ARMOR_TRIM_BASE_SLOT_DESCRIPTION,
          ARMOR_TRIM_ADDITIONS_SLOT_DESCRIPTION,
          createTrimmableArmorIconList(),
-         createTrimmableMaterialIconList()
+         createTrimmableMaterialIconList(),
+         var1
       );
    }
 
@@ -152,7 +159,7 @@ public class SmithingTemplateItem extends Item {
    }
 
    @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       var3.add(this.upgradeDescription);
       var3.add(CommonComponents.EMPTY);

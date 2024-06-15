@@ -49,7 +49,7 @@ public class AnimationMetadataSection {
    }
 
    public void forEachFrame(AnimationMetadataSection.FrameOutput var1) {
-      for(AnimationFrame var3 : this.frames) {
+      for (AnimationFrame var3 : this.frames) {
          var1.accept(var3.getIndex(), var3.getTime(this.defaultFrameTime));
       }
    }

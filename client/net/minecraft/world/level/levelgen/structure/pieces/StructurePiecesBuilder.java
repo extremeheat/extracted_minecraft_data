@@ -28,7 +28,7 @@ public class StructurePiecesBuilder implements StructurePieceAccessor {
 
    @Deprecated
    public void offsetPiecesVertically(int var1) {
-      for(StructurePiece var3 : this.pieces) {
+      for (StructurePiece var3 : this.pieces) {
          var3.move(0, var1, 0);
       }
    }

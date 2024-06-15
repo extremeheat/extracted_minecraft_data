@@ -1376,8 +1376,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
             Blocks.CRIMSON_ROOTS
          )
          .add(Blocks.CHORUS_PLANT, Blocks.CHORUS_FLOWER);
-      this.tag(BlockTags.NEEDS_DIAMOND_TOOL)
-         .add(Blocks.OBSIDIAN, Blocks.CRYING_OBSIDIAN, Blocks.NETHERITE_BLOCK, Blocks.RESPAWN_ANCHOR, Blocks.ANCIENT_DEBRIS);
+      this.tag(BlockTags.NEEDS_DIAMOND_TOOL).add(Blocks.OBSIDIAN, Blocks.CRYING_OBSIDIAN, Blocks.NETHERITE_BLOCK, Blocks.RESPAWN_ANCHOR, Blocks.ANCIENT_DEBRIS);
       this.tag(BlockTags.NEEDS_IRON_TOOL)
          .add(
             Blocks.DIAMOND_BLOCK,
@@ -1439,10 +1438,20 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
             Blocks.WAXED_OXIDIZED_CUT_COPPER,
             Blocks.LIGHTNING_ROD
          );
+      this.tag(BlockTags.INCORRECT_FOR_NETHERITE_TOOL);
+      this.tag(BlockTags.INCORRECT_FOR_DIAMOND_TOOL);
+      this.tag(BlockTags.INCORRECT_FOR_IRON_TOOL).addTag(BlockTags.NEEDS_DIAMOND_TOOL);
+      this.tag(BlockTags.INCORRECT_FOR_STONE_TOOL).addTag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(BlockTags.NEEDS_IRON_TOOL);
+      this.tag(BlockTags.INCORRECT_FOR_GOLD_TOOL).addTag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(BlockTags.NEEDS_IRON_TOOL).addTag(BlockTags.NEEDS_STONE_TOOL);
+      this.tag(BlockTags.INCORRECT_FOR_WOODEN_TOOL).addTag(BlockTags.NEEDS_DIAMOND_TOOL).addTag(BlockTags.NEEDS_IRON_TOOL).addTag(BlockTags.NEEDS_STONE_TOOL);
       this.tag(BlockTags.FEATURES_CANNOT_REPLACE).add(Blocks.BEDROCK, Blocks.SPAWNER, Blocks.CHEST, Blocks.END_PORTAL_FRAME, Blocks.REINFORCED_DEEPSLATE);
       this.tag(BlockTags.LAVA_POOL_STONE_CANNOT_REPLACE).addTag(BlockTags.FEATURES_CANNOT_REPLACE).addTag(BlockTags.LEAVES).addTag(BlockTags.LOGS);
       this.tag(BlockTags.GEODE_INVALID_BLOCKS).add(Blocks.BEDROCK, Blocks.WATER, Blocks.LAVA, Blocks.ICE, Blocks.PACKED_ICE, Blocks.BLUE_ICE);
       this.tag(BlockTags.ANIMALS_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK);
+      this.tag(BlockTags.ARMADILLO_SPAWNABLE_ON)
+         .addTag(BlockTags.ANIMALS_SPAWNABLE_ON)
+         .addTag(BlockTags.BADLANDS_TERRACOTTA)
+         .add(Blocks.RED_SAND, Blocks.COARSE_DIRT);
       this.tag(BlockTags.AXOLOTLS_SPAWNABLE_ON).add(Blocks.CLAY);
       this.tag(BlockTags.GOATS_SPAWNABLE_ON)
          .addTag(BlockTags.ANIMALS_SPAWNABLE_ON)
@@ -1452,7 +1461,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.POLAR_BEARS_SPAWNABLE_ON_ALTERNATE).add(Blocks.ICE);
       this.tag(BlockTags.RABBITS_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK, Blocks.SNOW, Blocks.SNOW_BLOCK, Blocks.SAND);
       this.tag(BlockTags.FOXES_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK, Blocks.SNOW, Blocks.SNOW_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT);
-      this.tag(BlockTags.WOLVES_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK, Blocks.SNOW, Blocks.SNOW_BLOCK);
+      this.tag(BlockTags.WOLVES_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK, Blocks.SNOW, Blocks.SNOW_BLOCK, Blocks.COARSE_DIRT, Blocks.PODZOL);
       this.tag(BlockTags.FROGS_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK, Blocks.MUD, Blocks.MANGROVE_ROOTS, Blocks.MUDDY_MANGROVE_ROOTS);
       this.tag(BlockTags.TERRACOTTA)
          .add(
@@ -1473,6 +1482,16 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
             Blocks.GREEN_TERRACOTTA,
             Blocks.RED_TERRACOTTA,
             Blocks.BLACK_TERRACOTTA
+         );
+      this.tag(BlockTags.BADLANDS_TERRACOTTA)
+         .add(Blocks.TERRACOTTA)
+         .add(
+            Blocks.WHITE_TERRACOTTA,
+            Blocks.YELLOW_TERRACOTTA,
+            Blocks.ORANGE_TERRACOTTA,
+            Blocks.RED_TERRACOTTA,
+            Blocks.BROWN_TERRACOTTA,
+            Blocks.LIGHT_GRAY_TERRACOTTA
          );
       this.tag(BlockTags.CONCRETE_POWDER)
          .add(
@@ -1611,5 +1630,6 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
             Blocks.WHEAT
          );
       this.tag(BlockTags.CAMEL_SAND_STEP_SOUND_BLOCKS).addTag(BlockTags.SAND).addTag(BlockTags.CONCRETE_POWDER);
+      this.tag(BlockTags.DOES_NOT_BLOCK_HOPPERS).addTag(BlockTags.BEEHIVES);
    }
 }

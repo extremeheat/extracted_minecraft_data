@@ -1,6 +1,9 @@
 package net.minecraft.world.inventory;
 
+import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -10,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 
 public class BrewingStandMenu extends AbstractContainerMenu {
    private static final int BOTTLE_SLOT_START = 0;
@@ -37,21 +40,22 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       checkContainerDataCount(var4, 2);
       this.brewingStand = var3;
       this.brewingStandData = var4;
+      PotionBrewing var5 = var2.player.level().potionBrewing();
       this.addSlot(new BrewingStandMenu.PotionSlot(var3, 0, 56, 51));
       this.addSlot(new BrewingStandMenu.PotionSlot(var3, 1, 79, 58));
       this.addSlot(new BrewingStandMenu.PotionSlot(var3, 2, 102, 51));
-      this.ingredientSlot = this.addSlot(new BrewingStandMenu.IngredientsSlot(var3, 3, 79, 17));
+      this.ingredientSlot = this.addSlot(new BrewingStandMenu.IngredientsSlot(var5, var3, 3, 79, 17));
       this.addSlot(new BrewingStandMenu.FuelSlot(var3, 4, 17, 17));
       this.addDataSlots(var4);
 
-      for(int var5 = 0; var5 < 3; ++var5) {
-         for(int var6 = 0; var6 < 9; ++var6) {
-            this.addSlot(new Slot(var2, var6 + var5 * 9 + 9, 8 + var6 * 18, 84 + var5 * 18));
+      for (int var6 = 0; var6 < 3; var6++) {
+         for (int var7 = 0; var7 < 9; var7++) {
+            this.addSlot(new Slot(var2, var7 + var6 * 9 + 9, 8 + var7 * 18, 84 + var6 * 18));
          }
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
-         this.addSlot(new Slot(var2, var7, 8 + var7 * 18, 142));
+      for (int var8 = 0; var8 < 9; var8++) {
+         this.addSlot(new Slot(var2, var8, 8 + var8 * 18, 142));
       }
    }
 
@@ -76,7 +80,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
                if (!this.moveItemStackTo(var5, 3, 4, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (BrewingStandMenu.PotionSlot.mayPlaceItem(var3) && var3.getCount() == 1) {
+            } else if (BrewingStandMenu.PotionSlot.mayPlaceItem(var3)) {
                if (!this.moveItemStackTo(var5, 0, 3, false)) {
                   return ItemStack.EMPTY;
                }
@@ -136,26 +140,19 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       public static boolean mayPlaceItem(ItemStack var0) {
          return var0.is(Items.BLAZE_POWDER);
       }
-
-      @Override
-      public int getMaxStackSize() {
-         return 64;
-      }
    }
 
    static class IngredientsSlot extends Slot {
-      public IngredientsSlot(Container var1, int var2, int var3, int var4) {
-         super(var1, var2, var3, var4);
+      private final PotionBrewing potionBrewing;
+
+      public IngredientsSlot(PotionBrewing var1, Container var2, int var3, int var4, int var5) {
+         super(var2, var3, var4, var5);
+         this.potionBrewing = var1;
       }
 
       @Override
       public boolean mayPlace(ItemStack var1) {
-         return PotionBrewing.isIngredient(var1);
-      }
-
-      @Override
-      public int getMaxStackSize() {
-         return 64;
+         return this.potionBrewing.isIngredient(var1);
       }
    }
 
@@ -176,9 +173,9 @@ public class BrewingStandMenu extends AbstractContainerMenu {
 
       @Override
       public void onTake(Player var1, ItemStack var2) {
-         Potion var3 = PotionUtils.getPotion(var2);
-         if (var1 instanceof ServerPlayer) {
-            CriteriaTriggers.BREWED_POTION.trigger((ServerPlayer)var1, var3.builtInRegistryHolder());
+         Optional var3 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion();
+         if (var3.isPresent() && var1 instanceof ServerPlayer var4) {
+            CriteriaTriggers.BREWED_POTION.trigger(var4, (Holder<Potion>)var3.get());
          }
 
          super.onTake(var1, var2);

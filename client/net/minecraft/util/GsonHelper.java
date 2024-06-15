@@ -25,8 +25,6 @@ import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.StringUtils;
@@ -76,11 +74,7 @@ public class GsonHelper {
    }
 
    public static boolean isValidNode(@Nullable JsonObject var0, String var1) {
-      if (var0 == null) {
-         return false;
-      } else {
-         return var0.get(var1) != null;
-      }
+      return var0 == null ? false : var0.get(var1) != null;
    }
 
    public static JsonElement getNonNull(JsonObject var0, String var1) {
@@ -118,7 +112,7 @@ public class GsonHelper {
       if (var0.isJsonPrimitive()) {
          String var2 = var0.getAsString();
          return BuiltInRegistries.ITEM
-            .getHolder(ResourceKey.create(Registries.ITEM, new ResourceLocation(var2)))
+            .getHolder(new ResourceLocation(var2))
             .orElseThrow(() -> new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'"));
       } else {
          throw new JsonSyntaxException("Expected " + var1 + " to be an item, was " + getType(var0));
@@ -554,7 +548,7 @@ public class GsonHelper {
       } else if (var1.isJsonArray()) {
          var0.beginArray();
 
-         for(JsonElement var4 : var1.getAsJsonArray()) {
+         for (JsonElement var4 : var1.getAsJsonArray()) {
             writeValue(var0, var4, var2);
          }
 
@@ -566,7 +560,7 @@ public class GsonHelper {
 
          var0.beginObject();
 
-         for(Entry var7 : sortByKeyIfNeeded(var1.getAsJsonObject().entrySet(), var2)) {
+         for (Entry var7 : sortByKeyIfNeeded(var1.getAsJsonObject().entrySet(), var2)) {
             var0.name((String)var7.getKey());
             writeValue(var0, (JsonElement)var7.getValue(), var2);
          }

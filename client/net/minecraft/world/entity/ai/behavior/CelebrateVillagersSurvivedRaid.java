@@ -1,22 +1,22 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.FireworkRocketItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.FireworkExplosion;
+import net.minecraft.world.item.component.Fireworks;
 
 public class CelebrateVillagersSurvivedRaid extends Behavior<Villager> {
    @Nullable
@@ -57,25 +57,13 @@ public class CelebrateVillagersSurvivedRaid extends Behavior<Villager> {
    }
 
    private ItemStack getFirework(DyeColor var1, int var2) {
-      ItemStack var3 = new ItemStack(Items.FIREWORK_ROCKET, 1);
-      ItemStack var4 = new ItemStack(Items.FIREWORK_STAR);
-      CompoundTag var5 = var4.getOrCreateTagElement("Explosion");
-      ArrayList var6 = Lists.newArrayList();
-      var6.add(var1.getFireworkColor());
-      var5.putIntArray("Colors", var6);
-      var5.putByte("Type", (byte)FireworkRocketItem.Shape.BURST.getId());
-      CompoundTag var7 = var3.getOrCreateTagElement("Fireworks");
-      ListTag var8 = new ListTag();
-      CompoundTag var9 = var4.getTagElement("Explosion");
-      if (var9 != null) {
-         var8.add(var9);
-      }
-
-      var7.putByte("Flight", (byte)var2);
-      if (!var8.isEmpty()) {
-         var7.put("Explosions", var8);
-      }
-
+      ItemStack var3 = new ItemStack(Items.FIREWORK_ROCKET);
+      var3.set(
+         DataComponents.FIREWORKS,
+         new Fireworks(
+            (byte)var2, List.of(new FireworkExplosion(FireworkExplosion.Shape.BURST, IntList.of(var1.getFireworkColor()), IntList.of(), false, false))
+         )
+      );
       return var3;
    }
 }

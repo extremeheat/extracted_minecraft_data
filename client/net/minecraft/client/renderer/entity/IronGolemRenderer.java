@@ -22,13 +22,13 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemModel<Iro
       return GOLEM_LOCATION;
    }
 
-   protected void setupRotations(IronGolem var1, PoseStack var2, float var3, float var4, float var5) {
-      super.setupRotations(var1, var2, var3, var4, var5);
+   protected void setupRotations(IronGolem var1, PoseStack var2, float var3, float var4, float var5, float var6) {
+      super.setupRotations(var1, var2, var3, var4, var5, var6);
       if (!((double)var1.walkAnimation.speed() < 0.01)) {
-         float var6 = 13.0F;
-         float var7 = var1.walkAnimation.position(var5) + 6.0F;
-         float var8 = (Math.abs(var7 % 13.0F - 6.5F) - 3.25F) / 3.25F;
-         var2.mulPose(Axis.ZP.rotationDegrees(6.5F * var8));
+         float var7 = 13.0F;
+         float var8 = var1.walkAnimation.position(var5) + 6.0F;
+         float var9 = (Math.abs(var8 % 13.0F - 6.5F) - 3.25F) / 3.25F;
+         var2.mulPose(Axis.ZP.rotationDegrees(6.5F * var9));
       }
    }
 }

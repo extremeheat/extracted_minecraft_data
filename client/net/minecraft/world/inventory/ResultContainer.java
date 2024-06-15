@@ -24,7 +24,7 @@ public class ResultContainer implements Container, RecipeCraftingHolder {
 
    @Override
    public boolean isEmpty() {
-      for(ItemStack var2 : this.itemStacks) {
+      for (ItemStack var2 : this.itemStacks) {
          if (!var2.isEmpty()) {
             return false;
          }

@@ -104,7 +104,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    private void sortContainersToTick(long var1) {
       ObjectIterator var3 = Long2LongMaps.fastIterator(this.nextTickForContainer);
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          Entry var4 = (Entry)var3.next();
          long var5 = var4.getLongKey();
          long var7 = var4.getLongValue();
@@ -129,7 +129,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
 
    private void drainContainers(long var1, int var3) {
       LevelChunkTicks var4;
-      while(this.canScheduleMoreTicks(var3) && (var4 = this.containersToTick.poll()) != null) {
+      while (this.canScheduleMoreTicks(var3) && (var4 = this.containersToTick.poll()) != null) {
          ScheduledTick var5 = var4.poll();
          this.scheduleForThisTick(var5);
          this.drainFromCurrentContainer(this.containersToTick, var4, var1, var3);
@@ -145,7 +145,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    }
 
    private void rescheduleLeftoverContainers() {
-      for(LevelChunkTicks var2 : this.containersToTick) {
+      for (LevelChunkTicks var2 : this.containersToTick) {
          this.updateContainerScheduling(var2.peek());
       }
    }
@@ -159,7 +159,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
          LevelChunkTicks var6 = (LevelChunkTicks)var1.peek();
          ScheduledTick var7 = var6 != null ? var6.peek() : null;
 
-         while(this.canScheduleMoreTicks(var5)) {
+         while (this.canScheduleMoreTicks(var5)) {
             ScheduledTick var8 = var2.peek();
             if (var8 == null || var8.triggerTick() > var3 || var7 != null && ScheduledTick.INTRA_TICK_DRAIN_ORDER.compare(var8, var7) > 0) {
                break;
@@ -180,7 +180,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    }
 
    private void runCollectedTicks(BiConsumer<BlockPos, T> var1) {
-      while(!this.toRunThisTick.isEmpty()) {
+      while (!this.toRunThisTick.isEmpty()) {
          ScheduledTick var2 = this.toRunThisTick.poll();
          if (!this.toRunThisTickSet.isEmpty()) {
             this.toRunThisTickSet.remove(var2);
@@ -222,8 +222,8 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
       int var5 = SectionPos.posToSectionCoord((double)var1.maxX());
       int var6 = SectionPos.posToSectionCoord((double)var1.maxZ());
 
-      for(int var7 = var3; var7 <= var5; ++var7) {
-         for(int var8 = var4; var8 <= var6; ++var8) {
+      for (int var7 = var3; var7 <= var5; var7++) {
+         for (int var8 = var4; var8 <= var6; var8++) {
             long var9 = ChunkPos.asLong(var7, var8);
             LevelChunkTicks var11 = (LevelChunkTicks)this.allContainers.get(var9);
             if (var11 != null) {

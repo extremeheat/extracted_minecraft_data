@@ -17,7 +17,7 @@ public class ReplaceBlockFeature extends Feature<ReplaceBlockConfiguration> {
       BlockPos var3 = var1.origin();
       ReplaceBlockConfiguration var4 = (ReplaceBlockConfiguration)var1.config();
 
-      for(OreConfiguration.TargetBlockState var6 : var4.targetStates) {
+      for (OreConfiguration.TargetBlockState var6 : var4.targetStates) {
          if (var6.target.test(var2.getBlockState(var3), var1.random())) {
             var2.setBlock(var3, var6.state, 2);
             break;

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -16,6 +15,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 
 public abstract class RenderStateShard {
    private static final float VIEW_SCALE_Z_EPSILON = 0.99975586F;
@@ -229,6 +229,9 @@ public abstract class RenderStateShard {
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_END_GATEWAY_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeEndGatewayShader
    );
+   protected static final RenderStateShard.ShaderStateShard RENDERTYPE_CLOUDS_SHADER = new RenderStateShard.ShaderStateShard(
+      GameRenderer::getRendertypeCloudsShader
+   );
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_LINES_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeLinesShader
    );
@@ -286,13 +289,13 @@ public abstract class RenderStateShard {
    );
    protected static final RenderStateShard.LayeringStateShard VIEW_OFFSET_Z_LAYERING = new RenderStateShard.LayeringStateShard(
       "view_offset_z_layering", () -> {
-         PoseStack var0 = RenderSystem.getModelViewStack();
-         var0.pushPose();
+         Matrix4fStack var0 = RenderSystem.getModelViewStack();
+         var0.pushMatrix();
          var0.scale(0.99975586F, 0.99975586F, 0.99975586F);
          RenderSystem.applyModelViewMatrix();
       }, () -> {
-         PoseStack var0 = RenderSystem.getModelViewStack();
-         var0.popPose();
+         Matrix4fStack var0 = RenderSystem.getModelViewStack();
+         var0.popMatrix();
          RenderSystem.applyModelViewMatrix();
       }
    );
@@ -513,14 +516,14 @@ public abstract class RenderStateShard {
 
       MultiTextureStateShard(ImmutableList<Triple<ResourceLocation, Boolean, Boolean>> var1) {
          super(() -> {
-            int var1xx = 0;
+            int var1x = 0;
             UnmodifiableIterator var2 = var1.iterator();
 
-            while(var2.hasNext()) {
+            while (var2.hasNext()) {
                Triple var3 = (Triple)var2.next();
                TextureManager var4 = Minecraft.getInstance().getTextureManager();
-               var4.getTexture((ResourceLocation)var3.getLeft()).setFilter(var3.getMiddle(), var3.getRight());
-               RenderSystem.setShaderTexture(var1xx++, (ResourceLocation)var3.getLeft());
+               var4.getTexture((ResourceLocation)var3.getLeft()).setFilter((Boolean)var3.getMiddle(), (Boolean)var3.getRight());
+               RenderSystem.setShaderTexture(var1x++, (ResourceLocation)var3.getLeft());
             }
          }, () -> {
          });
@@ -537,9 +540,7 @@ public abstract class RenderStateShard {
       }
 
       public static final class Builder {
-         private final com.google.common.collect.ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new com.google.common.collect.ImmutableList.Builder(
-            
-         );
+         private final com.google.common.collect.ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new com.google.common.collect.ImmutableList.Builder();
 
          public Builder() {
             super();
@@ -610,8 +611,8 @@ public abstract class RenderStateShard {
 
       public TextureStateShard(ResourceLocation var1, boolean var2, boolean var3) {
          super(() -> {
-            TextureManager var3xx = Minecraft.getInstance().getTextureManager();
-            var3xx.getTexture(var1).setFilter(var2, var3);
+            TextureManager var3x = Minecraft.getInstance().getTextureManager();
+            var3x.getTexture(var1).setFilter(var2, var3);
             RenderSystem.setShaderTexture(0, var1);
          }, () -> {
          });

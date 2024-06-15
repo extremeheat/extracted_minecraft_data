@@ -2,15 +2,13 @@ package net.minecraft.world.level.block.state;
 
 import com.google.common.collect.ArrayTable;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -23,9 +21,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 public abstract class StateHolder<O, S> {
    public static final String NAME_TAG = "Name";
    public static final String PROPERTIES_TAG = "Properties";
-   private static final Function<Entry<Property<?>, Comparable<?>>, String> PROPERTY_ENTRY_TO_STRING_FUNCTION = new Function<Entry<Property<?>, Comparable<?>>, String>(
-      
-   ) {
+   private static final Function<Entry<Property<?>, Comparable<?>>, String> PROPERTY_ENTRY_TO_STRING_FUNCTION = new Function<Entry<Property<?>, Comparable<?>>, String>() {
       public String apply(@Nullable Entry<Property<?>, Comparable<?>> var1) {
          if (var1 == null) {
             return "<NULL>";
@@ -40,11 +36,11 @@ public abstract class StateHolder<O, S> {
       }
    };
    protected final O owner;
-   private final ImmutableMap<Property<?>, Comparable<?>> values;
+   private final Reference2ObjectArrayMap<Property<?>, Comparable<?>> values;
    private Table<Property<?>, Comparable<?>, S> neighbours;
    protected final MapCodec<S> propertiesCodec;
 
-   protected StateHolder(O var1, ImmutableMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3) {
+   protected StateHolder(O var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3) {
       super();
       this.owner = (O)var1;
       this.values = var2;
@@ -58,7 +54,7 @@ public abstract class StateHolder<O, S> {
    protected static <T> T findNextInCollection(Collection<T> var0, T var1) {
       Iterator var2 = var0.iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          if (var2.next().equals(var1)) {
             if (var2.hasNext()) {
                return (T)var2.next();
@@ -141,13 +137,13 @@ public abstract class StateHolder<O, S> {
          throw new IllegalStateException();
       } else {
          HashBasedTable var2 = HashBasedTable.create();
-         UnmodifiableIterator var3 = this.values.entrySet().iterator();
+         ObjectIterator var3 = this.values.entrySet().iterator();
 
-         while(var3.hasNext()) {
+         while (var3.hasNext()) {
             Entry var4 = (Entry)var3.next();
             Property var5 = (Property)var4.getKey();
 
-            for(Comparable var7 : var5.getPossibleValues()) {
+            for (Comparable var7 : var5.getPossibleValues()) {
                if (!var7.equals(var4.getValue())) {
                   var2.put(var5, var7, var1.get(this.makeNeighbourValues(var5, var7)));
                }
@@ -159,12 +155,12 @@ public abstract class StateHolder<O, S> {
    }
 
    private Map<Property<?>, Comparable<?>> makeNeighbourValues(Property<?> var1, Comparable<?> var2) {
-      HashMap var3 = Maps.newHashMap(this.values);
+      Reference2ObjectArrayMap var3 = new Reference2ObjectArrayMap(this.values);
       var3.put(var1, var2);
       return var3;
    }
 
-   public ImmutableMap<Property<?>, Comparable<?>> getValues() {
+   public Map<Property<?>, Comparable<?>> getValues() {
       return this.values;
    }
 
@@ -175,8 +171,8 @@ public abstract class StateHolder<O, S> {
          var1x -> {
             StateHolder var2 = (StateHolder)var1.apply(var1x);
             return var2.getValues().isEmpty()
-               ? Codec.unit(var2)
-               : var2.propertiesCodec.codec().optionalFieldOf("Properties").xmap(var1xx -> var1xx.orElse(var2), Optional::of).codec();
+               ? MapCodec.unit(var2)
+               : var2.propertiesCodec.codec().lenientOptionalFieldOf("Properties").xmap(var1xx -> var1xx.orElse(var2), Optional::of);
          }
       );
    }

@@ -4,6 +4,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
@@ -38,7 +39,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
    public void setOwner(@Nullable LivingEntity var1) {
@@ -79,9 +80,9 @@ public class EvokerFangs extends Entity implements TraceableEntity {
       super.tick();
       if (this.level().isClientSide) {
          if (this.clientSideAttackStarted) {
-            --this.lifeTicks;
+            this.lifeTicks--;
             if (this.lifeTicks == 14) {
-               for(int var1 = 0; var1 < 12; ++var1) {
+               for (int var1 = 0; var1 < 12; var1++) {
                   double var2 = this.getX() + (this.random.nextDouble() * 2.0 - 1.0) * (double)this.getBbWidth() * 0.5;
                   double var4 = this.getY() + 0.05 + this.random.nextDouble();
                   double var6 = this.getZ() + (this.random.nextDouble() * 2.0 - 1.0) * (double)this.getBbWidth() * 0.5;
@@ -94,7 +95,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
          }
       } else if (--this.warmupDelayTicks < 0) {
          if (this.warmupDelayTicks == -8) {
-            for(LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(0.2, 0.0, 0.2))) {
+            for (LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(0.2, 0.0, 0.2))) {
                this.dealDamageTo(var3);
             }
          }

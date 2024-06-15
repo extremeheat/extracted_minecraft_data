@@ -28,9 +28,8 @@ public class WorldgenRandom extends LegacyRandomSource {
 
    @Override
    public int next(int var1) {
-      ++this.count;
-      RandomSource var3 = this.randomSource;
-      return var3 instanceof LegacyRandomSource var2 ? var2.next(var1) : (int)(this.randomSource.nextLong() >>> 64 - var1);
+      this.count++;
+      return this.randomSource instanceof LegacyRandomSource var2 ? var2.next(var1) : (int)(this.randomSource.nextLong() >>> 64 - var1);
    }
 
    @Override
@@ -77,8 +76,8 @@ public class WorldgenRandom extends LegacyRandomSource {
 
       private final LongFunction<RandomSource> constructor;
 
-      private Algorithm(LongFunction<RandomSource> var3) {
-         this.constructor = var3;
+      private Algorithm(final LongFunction<RandomSource> nullxx) {
+         this.constructor = nullxx;
       }
 
       public RandomSource newInstance(long var1) {

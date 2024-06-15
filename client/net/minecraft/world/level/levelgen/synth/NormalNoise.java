@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.synth;
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
@@ -53,7 +52,7 @@ public class NormalNoise {
       int var7 = -2147483648;
       DoubleListIterator var8 = var5.iterator();
 
-      while(var8.hasNext()) {
+      while (var8.hasNext()) {
          int var9 = var8.nextIndex();
          double var10 = var8.nextDouble();
          if (var10 != 0.0) {
@@ -95,9 +94,7 @@ public class NormalNoise {
       var1.append("}");
    }
 
-   public static record NoiseParameters(int c, DoubleList d) {
-      final int firstOctave;
-      final DoubleList amplitudes;
+   public static record NoiseParameters(int firstOctave, DoubleList amplitudes) {
       public static final Codec<NormalNoise.NoiseParameters> DIRECT_CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Codec.INT.fieldOf("firstOctave").forGetter(NormalNoise.NoiseParameters::firstOctave),
@@ -115,10 +112,10 @@ public class NormalNoise {
          this(var1, Util.make(new DoubleArrayList(var4), var2x -> var2x.add(0, var2)));
       }
 
-      public NoiseParameters(int var1, DoubleList var2) {
+      public NoiseParameters(int firstOctave, DoubleList amplitudes) {
          super();
-         this.firstOctave = var1;
-         this.amplitudes = var2;
+         this.firstOctave = firstOctave;
+         this.amplitudes = amplitudes;
       }
    }
 }

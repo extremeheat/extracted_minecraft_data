@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.TransferState;
 import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
@@ -25,6 +26,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.login.LoginProtocols;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import org.slf4j.Logger;
 
@@ -50,23 +52,36 @@ public class ConnectScreen extends Screen {
       this.connectFailedTitle = var2;
    }
 
-   public static void startConnecting(Screen var0, Minecraft var1, ServerAddress var2, ServerData var3, boolean var4) {
+   public static void startConnecting(Screen var0, Minecraft var1, ServerAddress var2, ServerData var3, boolean var4, @Nullable TransferState var5) {
       if (var1.screen instanceof ConnectScreen) {
          LOGGER.error("Attempt to connect while already connecting");
       } else {
-         ConnectScreen var5 = new ConnectScreen(var0, var4 ? QuickPlay.ERROR_TITLE : CommonComponents.CONNECT_FAILED);
+         Component var6;
+         if (var5 != null) {
+            var6 = CommonComponents.TRANSFER_CONNECT_FAILED;
+         } else if (var4) {
+            var6 = QuickPlay.ERROR_TITLE;
+         } else {
+            var6 = CommonComponents.CONNECT_FAILED;
+         }
+
+         ConnectScreen var7 = new ConnectScreen(var0, var6);
+         if (var5 != null) {
+            var7.updateStatus(Component.translatable("connect.transferring"));
+         }
+
          var1.disconnect();
          var1.prepareForMultiplayer();
-         var1.updateReportEnvironment(ReportEnvironment.thirdParty(var3 != null ? var3.ip : var2.getHost()));
+         var1.updateReportEnvironment(ReportEnvironment.thirdParty(var3.ip));
          var1.quickPlayLog().setWorldData(QuickPlayLog.Type.MULTIPLAYER, var3.ip, var3.name);
-         var1.setScreen(var5);
-         var5.connect(var1, var2, var3);
+         var1.setScreen(var7);
+         var7.connect(var1, var2, var3, var5);
       }
    }
 
-   private void connect(final Minecraft var1, final ServerAddress var2, @Nullable final ServerData var3) {
+   private void connect(final Minecraft var1, final ServerAddress var2, final ServerData var3, @Nullable final TransferState var4) {
       LOGGER.info("Connecting to {}, {}", var2.getHost(), var2.getPort());
-      Thread var4 = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
+      Thread var5 = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
          @Override
          public void run() {
             InetSocketAddress var1x = null;
@@ -92,7 +107,7 @@ public class ConnectScreen extends Screen {
 
                var1x = (InetSocketAddress)var2x.get();
                Connection var10;
-               synchronized(ConnectScreen.this) {
+               synchronized (ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
                      return;
                   }
@@ -103,26 +118,26 @@ public class ConnectScreen extends Screen {
                }
 
                ConnectScreen.this.channelFuture.syncUninterruptibly();
-               synchronized(ConnectScreen.this) {
+               synchronized (ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
                      var10.disconnect(ConnectScreen.ABORT_CONNECTION);
                      return;
                   }
 
                   ConnectScreen.this.connection = var10;
-                  var1.getDownloadedPackSource()
-                     .configureForServerControl(
-                        var10, var3 != null ? convertPackStatus(var3.getResourcePackStatus()) : ServerPackManager.PackPromptStatus.PENDING
-                     );
+                  var1.getDownloadedPackSource().configureForServerControl(var10, convertPackStatus(var3.getResourcePackStatus()));
                }
 
                ConnectScreen.this.connection
                   .initiateServerboundPlayConnection(
                      var1x.getHostName(),
                      var1x.getPort(),
+                     LoginProtocols.SERVERBOUND,
+                     LoginProtocols.CLIENTBOUND,
                      new ClientHandshakePacketListenerImpl(
-                        ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, null, ConnectScreen.this::updateStatus
-                     )
+                        ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, null, ConnectScreen.this::updateStatus, var4
+                     ),
+                     var4 != null
                   );
                ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), var1.getUser().getProfileId()));
             } catch (Exception var9) {
@@ -130,10 +145,9 @@ public class ConnectScreen extends Screen {
                   return;
                }
 
-               Throwable var5 = var9.getCause();
                Exception var3x;
-               if (var5 instanceof Exception var4) {
-                  var3x = (Exception)var4;
+               if (var9.getCause() instanceof Exception var4x) {
+                  var3x = var4x;
                } else {
                   var3x = var9;
                }
@@ -153,15 +167,15 @@ public class ConnectScreen extends Screen {
          }
 
          private static ServerPackManager.PackPromptStatus convertPackStatus(ServerData.ServerPackStatus var0) {
-            return switch(var0) {
+            return switch (var0) {
                case ENABLED -> ServerPackManager.PackPromptStatus.ALLOWED;
                case DISABLED -> ServerPackManager.PackPromptStatus.DECLINED;
                case PROMPT -> ServerPackManager.PackPromptStatus.PENDING;
             };
          }
       };
-      var4.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-      var4.start();
+      var5.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+      var5.start();
    }
 
    private void updateStatus(Component var1) {
@@ -187,7 +201,7 @@ public class ConnectScreen extends Screen {
    @Override
    protected void init() {
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1 -> {
-         synchronized(this) {
+         synchronized (this) {
             this.aborted = true;
             if (this.channelFuture != null) {
                this.channelFuture.cancel(true);

@@ -1,20 +1,18 @@
 package net.minecraft.data.tags;
 
 import com.google.common.collect.Maps;
-import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.data.CachedOutput;
@@ -23,7 +21,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
-import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagManager;
@@ -64,12 +61,21 @@ public abstract class TagsProvider<T> implements DataProvider {
 
    @Override
    public CompletableFuture<?> run(CachedOutput var1) {
+      record 1CombinedData<T>(HolderLookup.Provider contents, TagsProvider.TagLookup<T> parent) {
+
+         _CombinedData/* $VF was: 1CombinedData*/(HolderLookup.Provider contents, TagsProvider.TagLookup<T> parent) {
+            super();
+            this.contents = contents;
+            this.parent = parent;
+         }
+      }
+
       return this.createContentsProvider()
          .thenApply(var1x -> {
             this.contentsDone.complete(null);
-            return var1x;
+            return (HolderLookup.Provider)var1x;
          })
-         .thenCombineAsync(this.parentProvider, (var0, var1x) -> new 1CombinedData<>(var0, var1x))
+         .thenCombineAsync(this.parentProvider, (var0, var1x) -> new 1CombinedData<>(var0, (TagsProvider.TagLookup<T>)var1x), Util.backgroundExecutor())
          .thenCompose(
             var2 -> {
                HolderLookup.RegistryLookup var3 = var2.contents.lookupOrThrow(this.registryKey);
@@ -80,45 +86,30 @@ public abstract class TagsProvider<T> implements DataProvider {
                      .entrySet()
                      .stream()
                      .map(
-                        var4x -> {
-                           ResourceLocation var5xx = var4x.getKey();
-                           TagBuilder var6 = var4x.getValue();
-                           List var7 = var6.build();
-                           List var8 = var7.stream().filter(var2xx -> !var2xx.verifyIfPresent(var4, var5)).toList();
-                           if (!var8.isEmpty()) {
+                        var5x -> {
+                           ResourceLocation var6 = var5x.getKey();
+                           TagBuilder var7 = var5x.getValue();
+                           List var8 = var7.build();
+                           List var9 = var8.stream().filter(var2xx -> !var2xx.verifyIfPresent(var4, var5)).toList();
+                           if (!var9.isEmpty()) {
                               throw new IllegalArgumentException(
                                  String.format(
                                     Locale.ROOT,
                                     "Couldn't define tag %s as it is missing following references: %s",
-                                    var5xx,
-                                    var8.stream().map(Objects::toString).collect(Collectors.joining(","))
+                                    var6,
+                                    var9.stream().map(Objects::toString).collect(Collectors.joining(","))
                                  )
                               );
                            } else {
-                              JsonElement var9 = (JsonElement)TagFile.CODEC
-                                 .encodeStart(JsonOps.INSTANCE, new TagFile(var7, false))
-                                 .getOrThrow(false, LOGGER::error);
-                              Path var10 = this.pathProvider.json(var5xx);
-                              return DataProvider.saveStable(var1, var9, var10);
+                              Path var10 = this.pathProvider.json(var6);
+                              return DataProvider.saveStable(var1, var2.contents, TagFile.CODEC, new TagFile(var8, false), var10);
                            }
                         }
                      )
-                     .toArray(var0 -> new CompletableFuture[var0])
+                     .toArray(CompletableFuture[]::new)
                );
             }
          );
-
-      record 1CombinedData<T>(HolderLookup.Provider a, TagsProvider.TagLookup<T> b) {
-         final HolderLookup.Provider contents;
-         final TagsProvider.TagLookup<T> parent;
-
-         _CombinedData/* $VF was: 1CombinedData*/(HolderLookup.Provider var1, TagsProvider.TagLookup<T> var2) {
-            super();
-            this.contents = var1;
-            this.parent = var2;
-         }
-      }
-
    }
 
    protected TagsProvider.TagAppender<T> tag(TagKey<T> var1) {
@@ -138,7 +129,7 @@ public abstract class TagsProvider<T> implements DataProvider {
       return this.lookupProvider.thenApply(var1 -> {
          this.builders.clear();
          this.addTags(var1);
-         return var1;
+         return (HolderLookup.Provider)var1;
       });
    }
 
@@ -157,8 +148,16 @@ public abstract class TagsProvider<T> implements DataProvider {
 
       @SafeVarargs
       public final TagsProvider.TagAppender<T> add(ResourceKey<T>... var1) {
-         for(ResourceKey var5 : var1) {
+         for (ResourceKey var5 : var1) {
             this.builder.addElement(var5.location());
+         }
+
+         return this;
+      }
+
+      public final TagsProvider.TagAppender<T> addAll(List<ResourceKey<T>> var1) {
+         for (ResourceKey var3 : var1) {
+            this.builder.addElement(var3.location());
          }
 
          return this;
@@ -187,7 +186,7 @@ public abstract class TagsProvider<T> implements DataProvider {
       }
 
       default boolean contains(TagKey<T> var1) {
-         return this.apply((T)var1).isPresent();
+         return this.apply(var1).isPresent();
       }
    }
 }

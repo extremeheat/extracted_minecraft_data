@@ -16,7 +16,7 @@ public interface PlainTextSearchTree<T> {
       } else {
          SuffixArray var2 = new SuffixArray();
 
-         for(Object var4 : var0) {
+         for (Object var4 : var0) {
             ((Stream)var1.apply(var4)).forEach(var2x -> var2.add(var4, var2x.toLowerCase(Locale.ROOT)));
          }
 

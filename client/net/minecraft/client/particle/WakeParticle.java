@@ -35,7 +35,7 @@ public class WakeParticle extends TextureSheetParticle {
       if (this.lifetime-- <= 0) {
          this.remove();
       } else {
-         this.yd -= (double)this.gravity;
+         this.yd = this.yd - (double)this.gravity;
          this.move(this.xd, this.yd, this.zd);
          this.xd *= 0.9800000190734863;
          this.yd *= 0.9800000190734863;

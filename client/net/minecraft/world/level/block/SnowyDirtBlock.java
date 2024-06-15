@@ -27,7 +27,7 @@ public class SnowyDirtBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == Direction.UP ? var1.setValue(SNOWY, Boolean.valueOf(isSnowySetting(var3))) : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 

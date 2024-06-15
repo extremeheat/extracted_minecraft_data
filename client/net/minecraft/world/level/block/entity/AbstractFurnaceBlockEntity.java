@@ -15,6 +15,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -67,10 +68,12 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    int litDuration;
    int cookingProgress;
    int cookingTotalTime;
+   @Nullable
+   private static volatile Map<Item, Integer> fuelCache;
    protected final ContainerData dataAccess = new ContainerData() {
       @Override
       public int get(int var1) {
-         switch(var1) {
+         switch (var1) {
             case 0:
                return AbstractFurnaceBlockEntity.this.litTime;
             case 1:
@@ -86,7 +89,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
       @Override
       public void set(int var1, int var2) {
-         switch(var1) {
+         switch (var1) {
             case 0:
                AbstractFurnaceBlockEntity.this.litTime = var2;
                break;
@@ -114,68 +117,78 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       this.quickCheck = RecipeManager.createCheck(var4);
    }
 
+   public static void invalidateCache() {
+      fuelCache = null;
+   }
+
    public static Map<Item, Integer> getFuel() {
-      LinkedHashMap var0 = Maps.newLinkedHashMap();
-      add(var0, Items.LAVA_BUCKET, 20000);
-      add(var0, Blocks.COAL_BLOCK, 16000);
-      add(var0, Items.BLAZE_ROD, 2400);
-      add(var0, Items.COAL, 1600);
-      add(var0, Items.CHARCOAL, 1600);
-      add(var0, ItemTags.LOGS, 300);
-      add(var0, ItemTags.BAMBOO_BLOCKS, 300);
-      add(var0, ItemTags.PLANKS, 300);
-      add(var0, Blocks.BAMBOO_MOSAIC, 300);
-      add(var0, ItemTags.WOODEN_STAIRS, 300);
-      add(var0, Blocks.BAMBOO_MOSAIC_STAIRS, 300);
-      add(var0, ItemTags.WOODEN_SLABS, 150);
-      add(var0, Blocks.BAMBOO_MOSAIC_SLAB, 150);
-      add(var0, ItemTags.WOODEN_TRAPDOORS, 300);
-      add(var0, ItemTags.WOODEN_PRESSURE_PLATES, 300);
-      add(var0, ItemTags.WOODEN_FENCES, 300);
-      add(var0, ItemTags.FENCE_GATES, 300);
-      add(var0, Blocks.NOTE_BLOCK, 300);
-      add(var0, Blocks.BOOKSHELF, 300);
-      add(var0, Blocks.CHISELED_BOOKSHELF, 300);
-      add(var0, Blocks.LECTERN, 300);
-      add(var0, Blocks.JUKEBOX, 300);
-      add(var0, Blocks.CHEST, 300);
-      add(var0, Blocks.TRAPPED_CHEST, 300);
-      add(var0, Blocks.CRAFTING_TABLE, 300);
-      add(var0, Blocks.DAYLIGHT_DETECTOR, 300);
-      add(var0, ItemTags.BANNERS, 300);
-      add(var0, Items.BOW, 300);
-      add(var0, Items.FISHING_ROD, 300);
-      add(var0, Blocks.LADDER, 300);
-      add(var0, ItemTags.SIGNS, 200);
-      add(var0, ItemTags.HANGING_SIGNS, 800);
-      add(var0, Items.WOODEN_SHOVEL, 200);
-      add(var0, Items.WOODEN_SWORD, 200);
-      add(var0, Items.WOODEN_HOE, 200);
-      add(var0, Items.WOODEN_AXE, 200);
-      add(var0, Items.WOODEN_PICKAXE, 200);
-      add(var0, ItemTags.WOODEN_DOORS, 200);
-      add(var0, ItemTags.BOATS, 1200);
-      add(var0, ItemTags.WOOL, 100);
-      add(var0, ItemTags.WOODEN_BUTTONS, 100);
-      add(var0, Items.STICK, 100);
-      add(var0, ItemTags.SAPLINGS, 100);
-      add(var0, Items.BOWL, 100);
-      add(var0, ItemTags.WOOL_CARPETS, 67);
-      add(var0, Blocks.DRIED_KELP_BLOCK, 4001);
-      add(var0, Items.CROSSBOW, 300);
-      add(var0, Blocks.BAMBOO, 50);
-      add(var0, Blocks.DEAD_BUSH, 100);
-      add(var0, Blocks.SCAFFOLDING, 50);
-      add(var0, Blocks.LOOM, 300);
-      add(var0, Blocks.BARREL, 300);
-      add(var0, Blocks.CARTOGRAPHY_TABLE, 300);
-      add(var0, Blocks.FLETCHING_TABLE, 300);
-      add(var0, Blocks.SMITHING_TABLE, 300);
-      add(var0, Blocks.COMPOSTER, 300);
-      add(var0, Blocks.AZALEA, 100);
-      add(var0, Blocks.FLOWERING_AZALEA, 100);
-      add(var0, Blocks.MANGROVE_ROOTS, 300);
-      return var0;
+      Map var0 = fuelCache;
+      if (var0 != null) {
+         return var0;
+      } else {
+         LinkedHashMap var1 = Maps.newLinkedHashMap();
+         add(var1, Items.LAVA_BUCKET, 20000);
+         add(var1, Blocks.COAL_BLOCK, 16000);
+         add(var1, Items.BLAZE_ROD, 2400);
+         add(var1, Items.COAL, 1600);
+         add(var1, Items.CHARCOAL, 1600);
+         add(var1, ItemTags.LOGS, 300);
+         add(var1, ItemTags.BAMBOO_BLOCKS, 300);
+         add(var1, ItemTags.PLANKS, 300);
+         add(var1, Blocks.BAMBOO_MOSAIC, 300);
+         add(var1, ItemTags.WOODEN_STAIRS, 300);
+         add(var1, Blocks.BAMBOO_MOSAIC_STAIRS, 300);
+         add(var1, ItemTags.WOODEN_SLABS, 150);
+         add(var1, Blocks.BAMBOO_MOSAIC_SLAB, 150);
+         add(var1, ItemTags.WOODEN_TRAPDOORS, 300);
+         add(var1, ItemTags.WOODEN_PRESSURE_PLATES, 300);
+         add(var1, ItemTags.WOODEN_FENCES, 300);
+         add(var1, ItemTags.FENCE_GATES, 300);
+         add(var1, Blocks.NOTE_BLOCK, 300);
+         add(var1, Blocks.BOOKSHELF, 300);
+         add(var1, Blocks.CHISELED_BOOKSHELF, 300);
+         add(var1, Blocks.LECTERN, 300);
+         add(var1, Blocks.JUKEBOX, 300);
+         add(var1, Blocks.CHEST, 300);
+         add(var1, Blocks.TRAPPED_CHEST, 300);
+         add(var1, Blocks.CRAFTING_TABLE, 300);
+         add(var1, Blocks.DAYLIGHT_DETECTOR, 300);
+         add(var1, ItemTags.BANNERS, 300);
+         add(var1, Items.BOW, 300);
+         add(var1, Items.FISHING_ROD, 300);
+         add(var1, Blocks.LADDER, 300);
+         add(var1, ItemTags.SIGNS, 200);
+         add(var1, ItemTags.HANGING_SIGNS, 800);
+         add(var1, Items.WOODEN_SHOVEL, 200);
+         add(var1, Items.WOODEN_SWORD, 200);
+         add(var1, Items.WOODEN_HOE, 200);
+         add(var1, Items.WOODEN_AXE, 200);
+         add(var1, Items.WOODEN_PICKAXE, 200);
+         add(var1, ItemTags.WOODEN_DOORS, 200);
+         add(var1, ItemTags.BOATS, 1200);
+         add(var1, ItemTags.WOOL, 100);
+         add(var1, ItemTags.WOODEN_BUTTONS, 100);
+         add(var1, Items.STICK, 100);
+         add(var1, ItemTags.SAPLINGS, 100);
+         add(var1, Items.BOWL, 100);
+         add(var1, ItemTags.WOOL_CARPETS, 67);
+         add(var1, Blocks.DRIED_KELP_BLOCK, 4001);
+         add(var1, Items.CROSSBOW, 300);
+         add(var1, Blocks.BAMBOO, 50);
+         add(var1, Blocks.DEAD_BUSH, 100);
+         add(var1, Blocks.SCAFFOLDING, 50);
+         add(var1, Blocks.LOOM, 300);
+         add(var1, Blocks.BARREL, 300);
+         add(var1, Blocks.CARTOGRAPHY_TABLE, 300);
+         add(var1, Blocks.FLETCHING_TABLE, 300);
+         add(var1, Blocks.SMITHING_TABLE, 300);
+         add(var1, Blocks.COMPOSTER, 300);
+         add(var1, Blocks.AZALEA, 100);
+         add(var1, Blocks.FLOWERING_AZALEA, 100);
+         add(var1, Blocks.MANGROVE_ROOTS, 300);
+         fuelCache = var1;
+         return var1;
+      }
    }
 
    private static boolean isNeverAFurnaceFuel(Item var0) {
@@ -183,7 +196,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    private static void add(Map<Item, Integer> var0, TagKey<Item> var1, int var2) {
-      for(Holder var4 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
+      for (Holder var4 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
          if (!isNeverAFurnaceFuel((Item)var4.value())) {
             var0.put((Item)var4.value(), var2);
          }
@@ -210,38 +223,38 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-      ContainerHelper.loadAllItems(var1, this.items);
+      ContainerHelper.loadAllItems(var1, this.items, var2);
       this.litTime = var1.getShort("BurnTime");
       this.cookingProgress = var1.getShort("CookTime");
       this.cookingTotalTime = var1.getShort("CookTimeTotal");
       this.litDuration = this.getBurnDuration(this.items.get(1));
-      CompoundTag var2 = var1.getCompound("RecipesUsed");
+      CompoundTag var3 = var1.getCompound("RecipesUsed");
 
-      for(String var4 : var2.getAllKeys()) {
-         this.recipesUsed.put(new ResourceLocation(var4), var2.getInt(var4));
+      for (String var5 : var3.getAllKeys()) {
+         this.recipesUsed.put(new ResourceLocation(var5), var3.getInt(var5));
       }
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.putShort("BurnTime", (short)this.litTime);
       var1.putShort("CookTime", (short)this.cookingProgress);
       var1.putShort("CookTimeTotal", (short)this.cookingTotalTime);
-      ContainerHelper.saveAllItems(var1, this.items);
-      CompoundTag var2 = new CompoundTag();
-      this.recipesUsed.forEach((var1x, var2x) -> var2.putInt(var1x.toString(), var2x));
-      var1.put("RecipesUsed", var2);
+      ContainerHelper.saveAllItems(var1, this.items, var2);
+      CompoundTag var3 = new CompoundTag();
+      this.recipesUsed.forEach((var1x, var2x) -> var3.putInt(var1x.toString(), var2x));
+      var1.put("RecipesUsed", var3);
    }
 
    public static void serverTick(Level var0, BlockPos var1, BlockState var2, AbstractFurnaceBlockEntity var3) {
       boolean var4 = var3.isLit();
       boolean var5 = false;
       if (var3.isLit()) {
-         --var3.litTime;
+         var3.litTime--;
       }
 
       ItemStack var6 = var3.items.get(1);
@@ -273,7 +286,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          }
 
          if (var3.isLit() && canBurn(var0.registryAccess(), var9, var3.items, var10)) {
-            ++var3.cookingProgress;
+            var3.cookingProgress++;
             if (var3.cookingProgress == var3.cookingTotalTime) {
                var3.cookingProgress = 0;
                var3.cookingTotalTime = getTotalCookTime(var0, var3);
@@ -310,12 +323,10 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
             ItemStack var5 = (ItemStack)var2.get(2);
             if (var5.isEmpty()) {
                return true;
-            } else if (!ItemStack.isSameItem(var5, var4)) {
+            } else if (!ItemStack.isSameItemSameComponents(var5, var4)) {
                return false;
-            } else if (var5.getCount() < var3 && var5.getCount() < var5.getMaxStackSize()) {
-               return true;
             } else {
-               return var5.getCount() < var4.getMaxStackSize();
+               return var5.getCount() < var3 && var5.getCount() < var5.getMaxStackSize() ? true : var5.getCount() < var4.getMaxStackSize();
             }
          }
       } else {
@@ -330,7 +341,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          ItemStack var6 = (ItemStack)var2.get(2);
          if (var6.isEmpty()) {
             var2.set(2, var5.copy());
-         } else if (var6.is(var5.getItem())) {
+         } else if (ItemStack.isSameItemSameComponents(var6, var5)) {
             var6.grow(1);
          }
 
@@ -378,11 +389,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    @Override
    public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
-      if (var3 == Direction.DOWN && var1 == 1) {
-         return var2.is(Items.WATER_BUCKET) || var2.is(Items.BUCKET);
-      } else {
-         return true;
-      }
+      return var3 == Direction.DOWN && var1 == 1 ? var2.is(Items.WATER_BUCKET) || var2.is(Items.BUCKET) : true;
    }
 
    @Override
@@ -391,50 +398,26 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    @Override
-   public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
-         if (!var2.isEmpty()) {
-            return false;
-         }
-      }
-
-      return true;
+   protected NonNullList<ItemStack> getItems() {
+      return this.items;
    }
 
    @Override
-   public ItemStack getItem(int var1) {
-      return this.items.get(var1);
-   }
-
-   @Override
-   public ItemStack removeItem(int var1, int var2) {
-      return ContainerHelper.removeItem(this.items, var1, var2);
-   }
-
-   @Override
-   public ItemStack removeItemNoUpdate(int var1) {
-      return ContainerHelper.takeItem(this.items, var1);
+   protected void setItems(NonNullList<ItemStack> var1) {
+      this.items = var1;
    }
 
    @Override
    public void setItem(int var1, ItemStack var2) {
       ItemStack var3 = this.items.get(var1);
-      boolean var4 = !var2.isEmpty() && ItemStack.isSameItemSameTags(var3, var2);
+      boolean var4 = !var2.isEmpty() && ItemStack.isSameItemSameComponents(var3, var2);
       this.items.set(var1, var2);
-      if (var2.getCount() > this.getMaxStackSize()) {
-         var2.setCount(this.getMaxStackSize());
-      }
-
+      var2.limitSize(this.getMaxStackSize(var2));
       if (var1 == 0 && !var4) {
          this.cookingTotalTime = getTotalCookTime(this.level, this);
          this.cookingProgress = 0;
          this.setChanged();
       }
-   }
-
-   @Override
-   public boolean stillValid(Player var1) {
-      return Container.stillValidBlockEntity(this, var1);
    }
 
    @Override
@@ -447,11 +430,6 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          ItemStack var3 = this.items.get(1);
          return isFuel(var2) || var2.is(Items.BUCKET) && !var3.is(Items.BUCKET);
       }
-   }
-
-   @Override
-   public void clearContent() {
-      this.items.clear();
    }
 
    @Override
@@ -476,7 +454,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       List var2 = this.getRecipesToAwardAndPopExperience(var1.serverLevel(), var1.position());
       var1.awardRecipes(var2);
 
-      for(RecipeHolder var4 : var2) {
+      for (RecipeHolder var4 : var2) {
          if (var4 != null) {
             var1.triggerRecipeCrafted(var4, this.items);
          }
@@ -489,7 +467,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       ArrayList var3 = Lists.newArrayList();
       ObjectIterator var4 = this.recipesUsed.object2IntEntrySet().iterator();
 
-      while(var4.hasNext()) {
+      while (var4.hasNext()) {
          Entry var5 = (Entry)var4.next();
          var1.getRecipeManager().byKey((ResourceLocation)var5.getKey()).ifPresent(var4x -> {
             var3.add(var4x);
@@ -504,7 +482,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       int var4 = Mth.floor((float)var2 * var3);
       float var5 = Mth.frac((float)var2 * var3);
       if (var5 != 0.0F && Math.random() < (double)var5) {
-         ++var4;
+         var4++;
       }
 
       ExperienceOrb.award(var0, var1, var4);
@@ -512,7 +490,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    @Override
    public void fillStackedContents(StackedContents var1) {
-      for(ItemStack var3 : this.items) {
+      for (ItemStack var3 : this.items) {
          var1.accountStack(var3);
       }
    }

@@ -26,7 +26,7 @@ public class Stray extends AbstractSkeleton {
 
       do {
          var5 = var5.above();
-      } while(var1.getBlockState(var5).is(Blocks.POWDER_SNOW));
+      } while (var1.getBlockState(var5).is(Blocks.POWDER_SNOW));
 
       return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (MobSpawnType.isSpawner(var2) || var1.canSeeSky(var5.below()));
    }

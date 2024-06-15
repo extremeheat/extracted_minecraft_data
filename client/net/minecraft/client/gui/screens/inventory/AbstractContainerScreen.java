@@ -69,7 +69,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    public AbstractContainerScreen(T var1, Inventory var2, Component var3) {
       super(var3);
-      this.menu = var1;
+      this.menu = (T)var1;
       this.playerInventoryTitle = var2.getDisplayName();
       this.skipNextRelease = true;
       this.titleLabelX = 8;
@@ -94,7 +94,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       var1.pose().translate((float)var5, (float)var6, 0.0F);
       this.hoveredSlot = null;
 
-      for(int var7 = 0; var7 < this.menu.slots.size(); ++var7) {
+      for (int var7 = 0; var7 < this.menu.slots.size(); var7++) {
          Slot var8 = this.menu.slots.get(var7);
          if (var8.isActive()) {
             this.renderSlot(var1, var8);
@@ -113,7 +113,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       this.renderLabels(var1, var2, var3);
       ItemStack var13 = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
       if (!var13.isEmpty()) {
-         boolean var14 = true;
+         byte var14 = 8;
          int var16 = this.draggingItem.isEmpty() ? 8 : 16;
          String var18 = null;
          if (!this.draggingItem.isEmpty() && this.isSplittingStack) {
@@ -148,7 +148,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      super.renderBackground(var1, var2, var3, var4);
+      this.renderTransparentBackground(var1);
       this.renderBg(var1, var4, var2, var3);
    }
 
@@ -251,7 +251,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          } else {
             this.quickCraftingRemainder = var1.getCount();
 
-            for(Slot var3 : this.quickCraftSlots) {
+            for (Slot var3 : this.quickCraftSlots) {
                ItemStack var4 = var3.getItem();
                int var5 = var4.isEmpty() ? 0 : var4.getCount();
                int var6 = Math.min(var1.getMaxStackSize(), var3.getMaxStackSize(var1));
@@ -264,7 +264,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    @Nullable
    private Slot findSlot(double var1, double var3) {
-      for(int var5 = 0; var5 < this.menu.slots.size(); ++var5) {
+      for (int var5 = 0; var5 < this.menu.slots.size(); var5++) {
          Slot var6 = this.menu.slots.get(var5);
          if (this.isHovering(var6, var1, var3) && var6.isActive()) {
             return var6;
@@ -365,7 +365,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             return;
          }
 
-         for(int var2 = 0; var2 < 9; ++var2) {
+         for (int var2 = 0; var2 < 9; var2++) {
             if (this.minecraft.options.keyHotbarSlots[var2].matchesMouse(var1)) {
                this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, var2, ClickType.SWAP);
             }
@@ -435,7 +435,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       if (this.doubleclick && var6 != null && var5 == 0 && this.menu.canTakeItemForPickAll(ItemStack.EMPTY, var6)) {
          if (hasShiftDown()) {
             if (!this.lastQuickMoved.isEmpty()) {
-               for(Slot var16 : this.menu.slots) {
+               for (Slot var16 : this.menu.slots) {
                   if (var16 != null
                      && var16.mayPickup(this.minecraft.player)
                      && var16.hasItem()
@@ -497,7 +497,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          } else if (this.isQuickCrafting && !this.quickCraftSlots.isEmpty()) {
             this.slotClicked(null, -999, AbstractContainerMenu.getQuickcraftMask(0, this.quickCraftingType), ClickType.QUICK_CRAFT);
 
-            for(Slot var12 : this.quickCraftSlots) {
+            for (Slot var12 : this.quickCraftSlots) {
                this.slotClicked(var12, var12.index, AbstractContainerMenu.getQuickcraftMask(1, this.quickCraftingType), ClickType.QUICK_CRAFT);
             }
 
@@ -585,7 +585,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             return true;
          }
 
-         for(int var3 = 0; var3 < 9; ++var3) {
+         for (int var3 = 0; var3 < 9; var3++) {
             if (this.minecraft.options.keyHotbarSlots[var3].matches(var1, var2)) {
                this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, var3, ClickType.SWAP);
                return true;

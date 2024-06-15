@@ -11,6 +11,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public abstract class ItemStackTagFix extends DataFix {
@@ -25,18 +26,18 @@ public abstract class ItemStackTagFix extends DataFix {
 
    public final TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      OpticFinder var3 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped(
-         this.name,
-         var1,
-         var3x -> {
-            Optional var4 = var3x.getOptional(var2);
-            return var4.isPresent() && this.idFilter.test((String)((Pair)var4.get()).getSecond())
-               ? var3x.updateTyped(var3, var1xx -> var1xx.update(DSL.remainderFinder(), this::fixItemStackTag))
-               : var3x;
-         }
-      );
+      return this.fixTypeEverywhereTyped(this.name, var1, createFixer(var1, this.idFilter, this::fixItemStackTag));
+   }
+
+   public static UnaryOperator<Typed<?>> createFixer(Type<?> var0, Predicate<String> var1, UnaryOperator<Dynamic<?>> var2) {
+      OpticFinder var3 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      OpticFinder var4 = var0.findField("tag");
+      return var4x -> {
+         Optional var5 = var4x.getOptional(var3);
+         return var5.isPresent() && var1.test((String)((Pair)var5.get()).getSecond())
+            ? var4x.updateTyped(var4, var1xx -> var1xx.update(DSL.remainderFinder(), var2))
+            : var4x;
+      };
    }
 
    protected abstract <T> Dynamic<T> fixItemStackTag(Dynamic<T> var1);

@@ -90,7 +90,7 @@ public class FilledProfileResults implements ProfileResults {
 
       long var12 = 0L;
 
-      for(String var15 : this.entries.keySet()) {
+      for (String var15 : this.entries.keySet()) {
          if (isDirectChild(var1, var15)) {
             var12 += this.getEntry(var15).getDuration();
          }
@@ -105,7 +105,7 @@ public class FilledProfileResults implements ProfileResults {
          var4 = var12;
       }
 
-      for(String var16 : this.entries.keySet()) {
+      for (String var16 : this.entries.keySet()) {
          if (isDirectChild(var1, var16)) {
             ProfilerPathEntry var17 = this.getEntry(var16);
             long var18 = var17.getDuration();
@@ -220,7 +220,7 @@ public class FilledProfileResults implements ProfileResults {
    private static StringBuilder indentLine(StringBuilder var0, int var1) {
       var0.append(String.format(Locale.ROOT, "[%02d] ", var1));
 
-      for(int var2 = 0; var2 < var1; ++var2) {
+      for (int var2 = 0; var2 < var1; var2++) {
          var0.append("|   ");
       }
 
@@ -241,7 +241,7 @@ public class FilledProfileResults implements ProfileResults {
                .append('\n')
       );
       if (var4.size() >= 3) {
-         for(int var6 = 1; var6 < var4.size(); ++var6) {
+         for (int var6 = 1; var6 < var4.size(); var6++) {
             ResultField var7 = (ResultField)var4.get(var6);
             indentLine(var3, var1)
                .append(var7.name)

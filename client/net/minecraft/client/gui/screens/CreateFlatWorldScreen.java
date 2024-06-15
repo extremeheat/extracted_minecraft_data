@@ -111,7 +111,7 @@ public class CreateFlatWorldScreen extends Screen {
       public DetailsList() {
          super(CreateFlatWorldScreen.this.minecraft, CreateFlatWorldScreen.this.width, CreateFlatWorldScreen.this.height - 103, 43, 24);
 
-         for(int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); ++var2) {
+         for (int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); var2++) {
             this.addEntry(new CreateFlatWorldScreen.DetailsList.Entry());
          }
       }
@@ -121,16 +121,11 @@ public class CreateFlatWorldScreen extends Screen {
          CreateFlatWorldScreen.this.updateButtonValidity();
       }
 
-      @Override
-      protected int getScrollbarPosition() {
-         return this.width - 70;
-      }
-
       public void resetRows() {
          int var1 = this.children().indexOf(this.getSelected());
          this.clearEntries();
 
-         for(int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); ++var2) {
+         for (int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); var2++) {
             this.addEntry(new CreateFlatWorldScreen.DetailsList.Entry());
          }
 
@@ -191,7 +186,7 @@ public class CreateFlatWorldScreen extends Screen {
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
             DetailsList.this.setSelected(this);
-            return true;
+            return super.mouseClicked(var1, var3, var5);
          }
 
          private void blitSlot(GuiGraphics var1, int var2, int var3, ItemStack var4) {

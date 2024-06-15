@@ -19,7 +19,7 @@ public class BreedGoal extends Goal {
    private final double speedModifier;
 
    public BreedGoal(Animal var1, double var2) {
-      this(var1, var2, var1.getClass());
+      this(var1, var2, (Class<? extends Animal>)var1.getClass());
    }
 
    public BreedGoal(Animal var1, double var2, Class<? extends Animal> var4) {
@@ -56,7 +56,7 @@ public class BreedGoal extends Goal {
    public void tick() {
       this.animal.getLookControl().setLookAt(this.partner, 10.0F, (float)this.animal.getMaxHeadXRot());
       this.animal.getNavigation().moveTo(this.partner, this.speedModifier);
-      ++this.loveTime;
+      this.loveTime++;
       if (this.loveTime >= this.adjustedTickDelay(60) && this.animal.distanceToSqr(this.partner) < 9.0) {
          this.breed();
       }
@@ -68,7 +68,7 @@ public class BreedGoal extends Goal {
       double var2 = 1.7976931348623157E308;
       Animal var4 = null;
 
-      for(Animal var6 : var1) {
+      for (Animal var6 : var1) {
          if (this.animal.canMate(var6) && !var6.isPanicking() && this.animal.distanceToSqr(var6) < var2) {
             var4 = var6;
             var2 = this.animal.distanceToSqr(var6);

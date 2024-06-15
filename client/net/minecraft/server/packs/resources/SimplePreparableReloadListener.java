@@ -15,7 +15,7 @@ public abstract class SimplePreparableReloadListener<T> implements PreparableRel
    ) {
       return CompletableFuture.<T>supplyAsync(() -> this.prepare(var2, var3), var5)
          .thenCompose(var1::wait)
-         .thenAcceptAsync(var3x -> this.apply(var3x, var2, var4), var6);
+         .thenAcceptAsync(var3x -> this.apply((T)var3x, var2, var4), var6);
    }
 
    protected abstract T prepare(ResourceManager var1, ProfilerFiller var2);

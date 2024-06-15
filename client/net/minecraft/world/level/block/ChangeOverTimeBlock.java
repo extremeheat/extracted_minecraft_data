@@ -22,34 +22,29 @@ public interface ChangeOverTimeBlock<T extends Enum<T>> {
 
    T getAge();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    default Optional<BlockState> getNextState(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       int var5 = this.getAge().ordinal();
       int var6 = 0;
       int var7 = 0;
 
-      for(BlockPos var9 : BlockPos.withinManhattan(var3, 4, 4, 4)) {
+      for (BlockPos var9 : BlockPos.withinManhattan(var3, 4, 4, 4)) {
          int var10 = var9.distManhattan(var3);
          if (var10 > 4) {
             break;
          }
 
-         if (!var9.equals(var3)) {
-            Block var12 = var2.getBlockState(var9).getBlock();
-            if (var12 instanceof ChangeOverTimeBlock var11) {
-               Enum var16 = var11.getAge();
-               if (this.getAge().getClass() == var16.getClass()) {
-                  int var13 = var16.ordinal();
-                  if (var13 < var5) {
-                     return Optional.empty();
-                  }
+         if (!var9.equals(var3) && var2.getBlockState(var9).getBlock() instanceof ChangeOverTimeBlock var11) {
+            Enum var16 = var11.getAge();
+            if (this.getAge().getClass() == var16.getClass()) {
+               int var13 = var16.ordinal();
+               if (var13 < var5) {
+                  return Optional.empty();
+               }
 
-                  if (var13 > var5) {
-                     ++var7;
-                  } else {
-                     ++var6;
-                  }
+               if (var13 > var5) {
+                  var7++;
+               } else {
+                  var6++;
                }
             }
          }

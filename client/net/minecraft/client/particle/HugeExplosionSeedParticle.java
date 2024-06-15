@@ -12,14 +12,14 @@ public class HugeExplosionSeedParticle extends NoRenderParticle {
 
    @Override
    public void tick() {
-      for(int var1 = 0; var1 < 6; ++var1) {
+      for (int var1 = 0; var1 < 6; var1++) {
          double var2 = this.x + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
          double var4 = this.y + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
          double var6 = this.z + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
          this.level.addParticle(ParticleTypes.EXPLOSION, var2, var4, var6, (double)((float)this.age / (float)this.lifetime), 0.0, 0.0);
       }
 
-      ++this.age;
+      this.age++;
       if (this.age == this.lifetime) {
          this.remove();
       }

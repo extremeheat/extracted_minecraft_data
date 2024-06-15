@@ -2,9 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
@@ -26,7 +24,7 @@ public class GoToClosestVillage {
                   int var8 = var7.sectionsToVillage(SectionPos.of(var4.blockPosition()));
                   Vec3 var9 = null;
 
-                  for(int var10 = 0; var10 < 5; ++var10) {
+                  for (int var10 = 0; var10 < 5; var10++) {
                      Vec3 var11 = LandRandomPos.getPos(var4, 15, 7, var1xxxx -> (double)(-var7.sectionsToVillage(SectionPos.of(var1xxxx))));
                      if (var11 != null) {
                         int var12 = var7.sectionsToVillage(SectionPos.of(BlockPos.containing(var11)));

@@ -6,13 +6,11 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,12 +21,15 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.ResourceOrIdArgument;
 import net.minecraft.commands.arguments.SlotArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -37,8 +38,6 @@ import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootDataManager;
-import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -48,7 +47,7 @@ public class ItemCommands {
    static final Dynamic3CommandExceptionType ERROR_TARGET_NOT_A_CONTAINER = new Dynamic3CommandExceptionType(
       (var0, var1, var2) -> Component.translatableEscape("commands.item.target.not_a_container", var0, var1, var2)
    );
-   private static final Dynamic3CommandExceptionType ERROR_SOURCE_NOT_A_CONTAINER = new Dynamic3CommandExceptionType(
+   static final Dynamic3CommandExceptionType ERROR_SOURCE_NOT_A_CONTAINER = new Dynamic3CommandExceptionType(
       (var0, var1, var2) -> Component.translatableEscape("commands.item.source.not_a_container", var0, var1, var2)
    );
    static final DynamicCommandExceptionType ERROR_TARGET_INAPPLICABLE_SLOT = new DynamicCommandExceptionType(
@@ -64,8 +63,8 @@ public class ItemCommands {
       (var0, var1) -> Component.translatableEscape("commands.item.target.no_changed.known_item", var0, var1)
    );
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_MODIFIER = (var0, var1) -> {
-      LootDataManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
-      return SharedSuggestionProvider.suggestResource(var2.getKeys(LootDataType.MODIFIER), var1);
+      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
+      return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.ITEM_MODIFIER), var1);
    };
 
    public ItemCommands() {
@@ -96,7 +95,7 @@ public class ItemCommands {
                                                                   )
                                                             ))
                                                          .then(
-                                                            Commands.argument("count", IntegerArgumentType.integer(1, 64))
+                                                            Commands.argument("count", IntegerArgumentType.integer(1, 99))
                                                                .executes(
                                                                   var0x -> setBlockItem(
                                                                         (CommandSourceStack)var0x.getSource(),
@@ -127,7 +126,7 @@ public class ItemCommands {
                                                                               )
                                                                         ))
                                                                      .then(
-                                                                        Commands.argument("modifier", ResourceLocationArgument.id())
+                                                                        Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1))
                                                                            .suggests(SUGGEST_MODIFIER)
                                                                            .executes(
                                                                               var0x -> blockToBlock(
@@ -136,7 +135,7 @@ public class ItemCommands {
                                                                                     SlotArgument.getSlot(var0x, "sourceSlot"),
                                                                                     BlockPosArgument.getLoadedBlockPos(var0x, "pos"),
                                                                                     SlotArgument.getSlot(var0x, "slot"),
-                                                                                    ResourceLocationArgument.getItemModifier(var0x, "modifier")
+                                                                                    ResourceOrIdArgument.getLootModifier(var0x, "modifier")
                                                                                  )
                                                                            )
                                                                      )
@@ -159,7 +158,7 @@ public class ItemCommands {
                                                                            )
                                                                      ))
                                                                   .then(
-                                                                     Commands.argument("modifier", ResourceLocationArgument.id())
+                                                                     Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1))
                                                                         .suggests(SUGGEST_MODIFIER)
                                                                         .executes(
                                                                            var0x -> entityToBlock(
@@ -168,7 +167,7 @@ public class ItemCommands {
                                                                                  SlotArgument.getSlot(var0x, "sourceSlot"),
                                                                                  BlockPosArgument.getLoadedBlockPos(var0x, "pos"),
                                                                                  SlotArgument.getSlot(var0x, "slot"),
-                                                                                 ResourceLocationArgument.getItemModifier(var0x, "modifier")
+                                                                                 ResourceOrIdArgument.getLootModifier(var0x, "modifier")
                                                                               )
                                                                         )
                                                                   )
@@ -198,7 +197,7 @@ public class ItemCommands {
                                                                )
                                                          ))
                                                       .then(
-                                                         Commands.argument("count", IntegerArgumentType.integer(1, 64))
+                                                         Commands.argument("count", IntegerArgumentType.integer(1, 99))
                                                             .executes(
                                                                var0x -> setEntityItem(
                                                                      (CommandSourceStack)var0x.getSource(),
@@ -229,7 +228,7 @@ public class ItemCommands {
                                                                            )
                                                                      ))
                                                                   .then(
-                                                                     Commands.argument("modifier", ResourceLocationArgument.id())
+                                                                     Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1))
                                                                         .suggests(SUGGEST_MODIFIER)
                                                                         .executes(
                                                                            var0x -> blockToEntities(
@@ -238,7 +237,7 @@ public class ItemCommands {
                                                                                  SlotArgument.getSlot(var0x, "sourceSlot"),
                                                                                  EntityArgument.getEntities(var0x, "targets"),
                                                                                  SlotArgument.getSlot(var0x, "slot"),
-                                                                                 ResourceLocationArgument.getItemModifier(var0x, "modifier")
+                                                                                 ResourceOrIdArgument.getLootModifier(var0x, "modifier")
                                                                               )
                                                                         )
                                                                   )
@@ -261,7 +260,7 @@ public class ItemCommands {
                                                                         )
                                                                   ))
                                                                .then(
-                                                                  Commands.argument("modifier", ResourceLocationArgument.id())
+                                                                  Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1))
                                                                      .suggests(SUGGEST_MODIFIER)
                                                                      .executes(
                                                                         var0x -> entityToEntities(
@@ -270,7 +269,7 @@ public class ItemCommands {
                                                                               SlotArgument.getSlot(var0x, "sourceSlot"),
                                                                               EntityArgument.getEntities(var0x, "targets"),
                                                                               SlotArgument.getSlot(var0x, "slot"),
-                                                                              ResourceLocationArgument.getItemModifier(var0x, "modifier")
+                                                                              ResourceOrIdArgument.getLootModifier(var0x, "modifier")
                                                                            )
                                                                      )
                                                                )
@@ -291,14 +290,14 @@ public class ItemCommands {
                                  .then(
                                     Commands.argument("slot", SlotArgument.slot())
                                        .then(
-                                          Commands.argument("modifier", ResourceLocationArgument.id())
+                                          Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1))
                                              .suggests(SUGGEST_MODIFIER)
                                              .executes(
                                                 var0x -> modifyBlockItem(
                                                       (CommandSourceStack)var0x.getSource(),
                                                       BlockPosArgument.getLoadedBlockPos(var0x, "pos"),
                                                       SlotArgument.getSlot(var0x, "slot"),
-                                                      ResourceLocationArgument.getItemModifier(var0x, "modifier")
+                                                      ResourceOrIdArgument.getLootModifier(var0x, "modifier")
                                                    )
                                              )
                                        )
@@ -312,14 +311,14 @@ public class ItemCommands {
                               .then(
                                  Commands.argument("slot", SlotArgument.slot())
                                     .then(
-                                       Commands.argument("modifier", ResourceLocationArgument.id())
+                                       Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1))
                                           .suggests(SUGGEST_MODIFIER)
                                           .executes(
                                              var0x -> modifyEntityItem(
                                                    (CommandSourceStack)var0x.getSource(),
                                                    EntityArgument.getEntities(var0x, "targets"),
                                                    SlotArgument.getSlot(var0x, "slot"),
-                                                   ResourceLocationArgument.getItemModifier(var0x, "modifier")
+                                                   ResourceOrIdArgument.getLootModifier(var0x, "modifier")
                                                 )
                                           )
                                     )
@@ -330,7 +329,7 @@ public class ItemCommands {
       );
    }
 
-   private static int modifyBlockItem(CommandSourceStack var0, BlockPos var1, int var2, LootItemFunction var3) throws CommandSyntaxException {
+   private static int modifyBlockItem(CommandSourceStack var0, BlockPos var1, int var2, Holder<LootItemFunction> var3) throws CommandSyntaxException {
       Container var4 = getContainer(var0, var1, ERROR_TARGET_NOT_A_CONTAINER);
       if (var2 >= 0 && var2 < var4.getContainerSize()) {
          ItemStack var5 = applyModifier(var0, var3, var4.getItem(var2));
@@ -342,10 +341,10 @@ public class ItemCommands {
       }
    }
 
-   private static int modifyEntityItem(CommandSourceStack var0, Collection<? extends Entity> var1, int var2, LootItemFunction var3) throws CommandSyntaxException {
+   private static int modifyEntityItem(CommandSourceStack var0, Collection<? extends Entity> var1, int var2, Holder<LootItemFunction> var3) throws CommandSyntaxException {
       HashMap var4 = Maps.newHashMapWithExpectedSize(var1.size());
 
-      for(Entity var6 : var1) {
+      for (Entity var6 : var1) {
          SlotAccess var7 = var6.getSlot(var2);
          if (var7 != SlotAccess.NULL) {
             ItemStack var8 = applyModifier(var0, var3, var7.get().copy());
@@ -388,7 +387,7 @@ public class ItemCommands {
       }
    }
 
-   private static Container getContainer(CommandSourceStack var0, BlockPos var1, Dynamic3CommandExceptionType var2) throws CommandSyntaxException {
+   static Container getContainer(CommandSourceStack var0, BlockPos var1, Dynamic3CommandExceptionType var2) throws CommandSyntaxException {
       BlockEntity var3 = var0.getLevel().getBlockEntity(var1);
       if (!(var3 instanceof Container)) {
          throw var2.create(var1.getX(), var1.getY(), var1.getZ());
@@ -400,7 +399,7 @@ public class ItemCommands {
    private static int setEntityItem(CommandSourceStack var0, Collection<? extends Entity> var1, int var2, ItemStack var3) throws CommandSyntaxException {
       ArrayList var4 = Lists.newArrayListWithCapacity(var1.size());
 
-      for(Entity var6 : var1) {
+      for (Entity var6 : var1) {
          SlotAccess var7 = var6.getSlot(var2);
          if (var7 != SlotAccess.NULL && var7.set(var3.copy())) {
             var4.add(var6);
@@ -415,9 +414,7 @@ public class ItemCommands {
       } else {
          if (var4.size() == 1) {
             var0.sendSuccess(
-               () -> Component.translatable(
-                     "commands.item.entity.set.success.single", ((Entity)var4.iterator().next()).getDisplayName(), var3.getDisplayName()
-                  ),
+               () -> Component.translatable("commands.item.entity.set.success.single", ((Entity)var4.iterator().next()).getDisplayName(), var3.getDisplayName()),
                true
             );
          } else {
@@ -432,7 +429,9 @@ public class ItemCommands {
       return setEntityItem(var0, var3, var4, getBlockItem(var0, var1, var2));
    }
 
-   private static int blockToEntities(CommandSourceStack var0, BlockPos var1, int var2, Collection<? extends Entity> var3, int var4, LootItemFunction var5) throws CommandSyntaxException {
+   private static int blockToEntities(
+      CommandSourceStack var0, BlockPos var1, int var2, Collection<? extends Entity> var3, int var4, Holder<LootItemFunction> var5
+   ) throws CommandSyntaxException {
       return setEntityItem(var0, var3, var4, applyModifier(var0, var5, getBlockItem(var0, var1, var2)));
    }
 
@@ -440,7 +439,7 @@ public class ItemCommands {
       return setBlockItem(var0, var3, var4, getBlockItem(var0, var1, var2));
    }
 
-   private static int blockToBlock(CommandSourceStack var0, BlockPos var1, int var2, BlockPos var3, int var4, LootItemFunction var5) throws CommandSyntaxException {
+   private static int blockToBlock(CommandSourceStack var0, BlockPos var1, int var2, BlockPos var3, int var4, Holder<LootItemFunction> var5) throws CommandSyntaxException {
       return setBlockItem(var0, var3, var4, applyModifier(var0, var5, getBlockItem(var0, var1, var2)));
    }
 
@@ -448,7 +447,7 @@ public class ItemCommands {
       return setBlockItem(var0, var3, var4, getEntityItem(var1, var2));
    }
 
-   private static int entityToBlock(CommandSourceStack var0, Entity var1, int var2, BlockPos var3, int var4, LootItemFunction var5) throws CommandSyntaxException {
+   private static int entityToBlock(CommandSourceStack var0, Entity var1, int var2, BlockPos var3, int var4, Holder<LootItemFunction> var5) throws CommandSyntaxException {
       return setBlockItem(var0, var3, var4, applyModifier(var0, var5, getEntityItem(var1, var2)));
    }
 
@@ -456,19 +455,23 @@ public class ItemCommands {
       return setEntityItem(var0, var3, var4, getEntityItem(var1, var2));
    }
 
-   private static int entityToEntities(CommandSourceStack var0, Entity var1, int var2, Collection<? extends Entity> var3, int var4, LootItemFunction var5) throws CommandSyntaxException {
+   private static int entityToEntities(
+      CommandSourceStack var0, Entity var1, int var2, Collection<? extends Entity> var3, int var4, Holder<LootItemFunction> var5
+   ) throws CommandSyntaxException {
       return setEntityItem(var0, var3, var4, applyModifier(var0, var5, getEntityItem(var1, var2)));
    }
 
-   private static ItemStack applyModifier(CommandSourceStack var0, LootItemFunction var1, ItemStack var2) {
+   private static ItemStack applyModifier(CommandSourceStack var0, Holder<LootItemFunction> var1, ItemStack var2) {
       ServerLevel var3 = var0.getLevel();
       LootParams var4 = new LootParams.Builder(var3)
          .withParameter(LootContextParams.ORIGIN, var0.getPosition())
          .withOptionalParameter(LootContextParams.THIS_ENTITY, var0.getEntity())
          .create(LootContextParamSets.COMMAND);
       LootContext var5 = new LootContext.Builder(var4).create(Optional.empty());
-      var5.pushVisitedElement(LootContext.createVisitedEntry(var1));
-      return var1.apply(var2, var5);
+      var5.pushVisitedElement(LootContext.createVisitedEntry((LootItemFunction)var1.value()));
+      ItemStack var6 = ((LootItemFunction)var1.value()).apply(var2, var5);
+      var6.limitSize(var6.getMaxStackSize());
+      return var6;
    }
 
    private static ItemStack getEntityItem(Entity var0, int var1) throws CommandSyntaxException {

@@ -25,8 +25,8 @@ public class CreativeModeTab {
    private final CreativeModeTab.Type type;
    @Nullable
    private ItemStack iconItemStack;
-   private Collection<ItemStack> displayItems = ItemStackLinkedSet.createTypeAndTagSet();
-   private Set<ItemStack> displayItemsSearchTab = ItemStackLinkedSet.createTypeAndTagSet();
+   private Collection<ItemStack> displayItems = ItemStackLinkedSet.createTypeAndComponentsSet();
+   private Set<ItemStack> displayItemsSearchTab = ItemStackLinkedSet.createTypeAndComponentsSet();
    @Nullable
    private Consumer<List<ItemStack>> searchTreeBuilder;
    private final Supplier<ItemStack> iconGenerator;
@@ -209,8 +209,8 @@ public class CreativeModeTab {
    }
 
    static class ItemDisplayBuilder implements CreativeModeTab.Output {
-      public final Collection<ItemStack> tabContents = ItemStackLinkedSet.createTypeAndTagSet();
-      public final Set<ItemStack> searchTabContents = ItemStackLinkedSet.createTypeAndTagSet();
+      public final Collection<ItemStack> tabContents = ItemStackLinkedSet.createTypeAndComponentsSet();
+      public final Set<ItemStack> searchTabContents = ItemStackLinkedSet.createTypeAndComponentsSet();
       private final CreativeModeTab tab;
       private final FeatureFlagSet featureFlagSet;
 
@@ -235,7 +235,7 @@ public class CreativeModeTab {
                );
             } else {
                if (var1.getItem().isEnabled(this.featureFlagSet)) {
-                  switch(var2) {
+                  switch (var2) {
                      case PARENT_AND_SEARCH_TABS:
                         this.tabContents.add(var1);
                         this.searchTabContents.add(var1);
@@ -252,16 +252,13 @@ public class CreativeModeTab {
       }
    }
 
-   public static record ItemDisplayParameters(FeatureFlagSet a, boolean b, HolderLookup.Provider c) {
-      final FeatureFlagSet enabledFeatures;
-      private final boolean hasPermissions;
-      private final HolderLookup.Provider holders;
+   public static record ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
 
-      public ItemDisplayParameters(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
+      public ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
          super();
-         this.enabledFeatures = var1;
-         this.hasPermissions = var2;
-         this.holders = var3;
+         this.enabledFeatures = enabledFeatures;
+         this.hasPermissions = hasPermissions;
+         this.holders = holders;
       }
 
       public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {

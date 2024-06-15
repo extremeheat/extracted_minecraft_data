@@ -57,7 +57,7 @@ public class VibrationSignalParticle extends TextureSheetParticle {
       };
       float var12 = this.getQuadSize(var3);
 
-      for(int var13 = 0; var13 < 4; ++var13) {
+      for (int var13 = 0; var13 < 4; var13++) {
          Vector3f var14 = var11[var13];
          var14.rotate(var10);
          var14.mul(var12);

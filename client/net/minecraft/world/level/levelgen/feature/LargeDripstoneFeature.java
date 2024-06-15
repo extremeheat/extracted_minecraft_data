@@ -22,8 +22,6 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       super(var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean place(FeaturePlaceContext<LargeDripstoneConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
@@ -34,7 +32,8 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
          return false;
       } else {
          Optional var6 = Column.scan(var2, var3, var4.floorToCeilingSearchRange, DripstoneUtils::isEmptyOrWater, DripstoneUtils::isDripstoneBaseOrLava);
-         if (!var6.isEmpty() && var6.get() instanceof Column.Range var7) {
+         if (!var6.isEmpty() && var6.get() instanceof Column.Range) {
+            Column.Range var7 = (Column.Range)var6.get();
             if (var7.height() < 4) {
                return false;
             } else {
@@ -82,7 +81,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       var1.setBlock(var4.offset(var2.atY(var3.ceiling() - 1)), Blocks.DIAMOND_BLOCK.defaultBlockState(), 2);
       var1.setBlock(var4.offset(var2.atY(var3.floor() + 1)), Blocks.GOLD_BLOCK.defaultBlockState(), 2);
 
-      for(BlockPos.MutableBlockPos var5 = var2.atY(var3.floor() + 2).mutable(); var5.getY() < var3.ceiling() - 1; var5.move(Direction.UP)) {
+      for (BlockPos.MutableBlockPos var5 = var2.atY(var3.floor() + 2).mutable(); var5.getY() < var3.ceiling() - 1; var5.move(Direction.UP)) {
          BlockPos var6 = var4.offset(var5);
          if (DripstoneUtils.isEmptyOrWater(var1, var6) || var1.getBlockState(var6).is(Blocks.DRIPSTONE_BLOCK)) {
             var1.setBlock(var6, Blocks.CREEPER_HEAD.defaultBlockState(), 2);
@@ -119,11 +118,11 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       }
 
       boolean moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary(WorldGenLevel var1, LargeDripstoneFeature.WindOffsetter var2) {
-         while(this.radius > 1) {
+         while (this.radius > 1) {
             BlockPos.MutableBlockPos var3 = this.root.mutable();
             int var4 = Math.min(10, this.getHeight());
 
-            for(int var5 = 0; var5 < var4; ++var5) {
+            for (int var5 = 0; var5 < var4; var5++) {
                if (var1.getBlockState(var3).is(Blocks.LAVA)) {
                   return false;
                }
@@ -147,8 +146,8 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       }
 
       void placeBlocks(WorldGenLevel var1, RandomSource var2, LargeDripstoneFeature.WindOffsetter var3) {
-         for(int var4 = -this.radius; var4 <= this.radius; ++var4) {
-            for(int var5 = -this.radius; var5 <= this.radius; ++var5) {
+         for (int var4 = -this.radius; var4 <= this.radius; var4++) {
+            for (int var5 = -this.radius; var5 <= this.radius; var5++) {
                float var6 = Mth.sqrt((float)(var4 * var4 + var5 * var5));
                if (!(var6 > (float)this.radius)) {
                   int var7 = this.getHeightAtRadius(var6);
@@ -161,7 +160,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
                      boolean var9 = false;
                      int var10 = this.pointingUp ? var1.getHeight(Heightmap.Types.WORLD_SURFACE_WG, var8.getX(), var8.getZ()) : 2147483647;
 
-                     for(int var11 = 0; var11 < var7 && var8.getY() < var10; ++var11) {
+                     for (int var11 = 0; var11 < var7 && var8.getY() < var10; var11++) {
                         BlockPos var12 = var3.offset(var8);
                         if (DripstoneUtils.isEmptyOrWaterOrLava(var1, var12)) {
                            var9 = true;

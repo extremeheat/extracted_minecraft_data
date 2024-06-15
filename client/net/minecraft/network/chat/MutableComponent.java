@@ -97,11 +97,10 @@ public class MutableComponent implements Component {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof MutableComponent)) {
-         return false;
       } else {
-         MutableComponent var2 = (MutableComponent)var1;
-         return this.contents.equals(var2.contents) && this.style.equals(var2.style) && this.siblings.equals(var2.siblings);
+         return !(var1 instanceof MutableComponent var2)
+            ? false
+            : this.contents.equals(var2.contents) && this.style.equals(var2.style) && this.siblings.equals(var2.siblings);
       }
    }
 

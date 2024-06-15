@@ -30,7 +30,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    final PackSelectionScreen screen;
 
    public TransferableSelectionList(Minecraft var1, PackSelectionScreen var2, int var3, int var4, Component var5) {
-      super(var1, var3, var4 - 83, 32, 36);
+      super(var1, var3, var4, 33, 36);
       this.screen = var2;
       this.title = var5;
       this.centerListVertically = false;
@@ -40,7 +40,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    @Override
    protected void renderHeader(GuiGraphics var1, int var2, int var3) {
       MutableComponent var4 = Component.empty().append(this.title).withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
-      var1.drawString(this.minecraft.font, var4, var2 + this.width / 2 - this.minecraft.font.width(var4) / 2, Math.min(this.getY() + 3, var3), 16777215, false);
+      var1.drawString(this.minecraft.font, var4, var2 + this.width / 2 - this.minecraft.font.width(var4) / 2, Math.min(this.getY() + 3, var3), -1, false);
    }
 
    @Override
@@ -54,16 +54,31 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    }
 
    @Override
+   protected void renderSelection(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
+      if (this.scrollbarVisible()) {
+         byte var7 = 2;
+         int var8 = this.getRowLeft() - 2;
+         int var9 = this.getRight() - 6 - 1;
+         int var10 = var2 - 2;
+         int var11 = var2 + var4 + 2;
+         var1.fill(var8, var10, var9, var11, var5);
+         var1.fill(var8 + 1, var10 + 1, var9 - 1, var11 - 1, var6);
+      } else {
+         super.renderSelection(var1, var2, var3, var4, var5, var6);
+      }
+   }
+
+   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.getSelected() != null) {
-         switch(var1) {
+         switch (var1) {
             case 32:
             case 257:
                this.getSelected().keyboardSelection();
                return true;
             default:
                if (Screen.hasShiftDown()) {
-                  switch(var1) {
+                  switch (var1) {
                      case 264:
                         this.getSelected().keyboardMoveDown();
                         return true;
@@ -124,18 +139,19 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          PackCompatibility var11 = this.pack.getCompatibility();
          if (!var11.isCompatible()) {
-            var1.fill(var4 - 1, var3 - 1, var4 + var5 - 3, var3 + var6 + 1, -8978432);
+            int var12 = var4 + var5 - 3 - (this.parent.scrollbarVisible() ? 7 : 0);
+            var1.fill(var4 - 1, var3 - 1, var12, var3 + var6 + 1, -8978432);
          }
 
          var1.blit(this.pack.getIconTexture(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
-         FormattedCharSequence var12 = this.nameDisplayCache;
+         FormattedCharSequence var16 = this.nameDisplayCache;
          MultiLineLabel var13 = this.descriptionDisplayCache;
          if (this.showHoverOverlay() && (this.minecraft.options.touchscreen().get() || var9 || this.parent.getSelected() == this && this.parent.isFocused())) {
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
             int var14 = var7 - var4;
             int var15 = var8 - var3;
             if (!this.pack.getCompatibility().isCompatible()) {
-               var12 = this.incompatibleNameDisplayCache;
+               var16 = this.incompatibleNameDisplayCache;
                var13 = this.incompatibleDescriptionDisplayCache;
             }
 
@@ -172,7 +188,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
             }
          }
 
-         var1.drawString(this.minecraft.font, var12, var4 + 32 + 2, var3 + 1, 16777215);
+         var1.drawString(this.minecraft.font, var16, var4 + 32 + 2, var3 + 1, 16777215);
          var13.renderLeftAligned(var1, var4 + 32 + 2, var3 + 12, 10, -8355712);
       }
 
@@ -248,7 +264,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
             }
          }
 
-         return false;
+         return super.mouseClicked(var1, var3, var5);
       }
    }
 }

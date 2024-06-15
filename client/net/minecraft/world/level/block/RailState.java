@@ -34,7 +34,7 @@ public class RailState {
 
    private void updateConnections(RailShape var1) {
       this.connections.clear();
-      switch(var1) {
+      switch (var1) {
          case NORTH_SOUTH:
             this.connections.add(this.pos.north());
             this.connections.add(this.pos.south());
@@ -78,7 +78,7 @@ public class RailState {
    }
 
    private void removeSoftConnections() {
-      for(int var1 = 0; var1 < this.connections.size(); ++var1) {
+      for (int var1 = 0; var1 < this.connections.size(); var1++) {
          RailState var2 = this.getRail(this.connections.get(var1));
          if (var2 != null && var2.connectsTo(this)) {
             this.connections.set(var1, var2.pos);
@@ -115,7 +115,7 @@ public class RailState {
    }
 
    private boolean hasConnection(BlockPos var1) {
-      for(int var2 = 0; var2 < this.connections.size(); ++var2) {
+      for (int var2 = 0; var2 < this.connections.size(); var2++) {
          BlockPos var3 = this.connections.get(var2);
          if (var3.getX() == var1.getX() && var3.getZ() == var1.getZ()) {
             return true;
@@ -128,9 +128,9 @@ public class RailState {
    protected int countPotentialConnections() {
       int var1 = 0;
 
-      for(Direction var3 : Direction.Plane.HORIZONTAL) {
+      for (Direction var3 : Direction.Plane.HORIZONTAL) {
          if (this.hasRail(this.pos.relative(var3))) {
-            ++var1;
+            var1++;
          }
       }
 
@@ -333,7 +333,7 @@ public class RailState {
       if (var2 || this.level.getBlockState(this.pos) != this.state) {
          this.level.setBlock(this.pos, this.state, 3);
 
-         for(int var19 = 0; var19 < this.connections.size(); ++var19) {
+         for (int var19 = 0; var19 < this.connections.size(); var19++) {
             RailState var20 = this.getRail(this.connections.get(var19));
             if (var20 != null) {
                var20.removeSoftConnections();

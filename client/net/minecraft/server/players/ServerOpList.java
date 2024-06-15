@@ -17,7 +17,7 @@ public class ServerOpList extends StoredUserList<GameProfile, ServerOpListEntry>
 
    @Override
    public String[] getUserList() {
-      return this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray(var0 -> new String[var0]);
+      return this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray(String[]::new);
    }
 
    public boolean canBypassPlayerLimit(GameProfile var1) {

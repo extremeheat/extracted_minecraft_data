@@ -2,26 +2,33 @@ package net.minecraft.network.protocol.common;
 
 import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundResourcePackPacket(UUID a, ServerboundResourcePackPacket.Action b) implements Packet<ServerCommonPacketListener> {
-   private final UUID id;
-   private final ServerboundResourcePackPacket.Action action;
+public record ServerboundResourcePackPacket(UUID id, ServerboundResourcePackPacket.Action action) implements Packet<ServerCommonPacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundResourcePackPacket> STREAM_CODEC = Packet.codec(
+      ServerboundResourcePackPacket::write, ServerboundResourcePackPacket::new
+   );
 
-   public ServerboundResourcePackPacket(FriendlyByteBuf var1) {
+   private ServerboundResourcePackPacket(FriendlyByteBuf var1) {
       this(var1.readUUID(), var1.readEnum(ServerboundResourcePackPacket.Action.class));
    }
 
-   public ServerboundResourcePackPacket(UUID var1, ServerboundResourcePackPacket.Action var2) {
+   public ServerboundResourcePackPacket(UUID id, ServerboundResourcePackPacket.Action action) {
       super();
-      this.id = var1;
-      this.action = var2;
+      this.id = id;
+      this.action = action;
+   }
+
+   private void write(FriendlyByteBuf var1) {
+      var1.writeUUID(this.id);
+      var1.writeEnum(this.action);
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeUUID(this.id);
-      var1.writeEnum(this.action);
+   public PacketType<ServerboundResourcePackPacket> type() {
+      return CommonPacketTypes.SERVERBOUND_RESOURCE_PACK;
    }
 
    public void handle(ServerCommonPacketListener var1) {

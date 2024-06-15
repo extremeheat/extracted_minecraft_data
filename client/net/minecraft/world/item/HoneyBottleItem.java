@@ -19,14 +19,12 @@ public class HoneyBottleItem extends Item {
       super(var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
       super.finishUsingItem(var1, var2, var3);
       if (var3 instanceof ServerPlayer var4) {
-         CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer)var4, var1);
-         ((ServerPlayer)var4).awardStat(Stats.ITEM_USED.get(this));
+         CriteriaTriggers.CONSUME_ITEM.trigger(var4, var1);
+         var4.awardStat(Stats.ITEM_USED.get(this));
       }
 
       if (!var2.isClientSide) {
@@ -36,7 +34,7 @@ public class HoneyBottleItem extends Item {
       if (var1.isEmpty()) {
          return new ItemStack(Items.GLASS_BOTTLE);
       } else {
-         if (var3 instanceof Player var6 && !var6.getAbilities().instabuild) {
+         if (var3 instanceof Player var6 && !var6.hasInfiniteMaterials()) {
             ItemStack var5 = new ItemStack(Items.GLASS_BOTTLE);
             if (!var6.getInventory().add(var5)) {
                var6.drop(var5, false);

@@ -6,13 +6,13 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ColorArgument;
@@ -65,7 +65,7 @@ public class TeamCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
                                     "team"
@@ -84,7 +84,7 @@ public class TeamCommand {
                                     ((RequiredArgumentBuilder)Commands.argument("team", StringArgumentType.word())
                                           .executes(var0x -> createTeam((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "team"))))
                                        .then(
-                                          Commands.argument("displayName", ComponentArgument.textComponent())
+                                          Commands.argument("displayName", ComponentArgument.textComponent(var1))
                                              .executes(
                                                 var0x -> createTeam(
                                                       (CommandSourceStack)var0x.getSource(),
@@ -152,7 +152,7 @@ public class TeamCommand {
                                                 .then(
                                                    Commands.literal("displayName")
                                                       .then(
-                                                         Commands.argument("displayName", ComponentArgument.textComponent())
+                                                         Commands.argument("displayName", ComponentArgument.textComponent(var1))
                                                             .executes(
                                                                var0x -> setDisplayName(
                                                                      (CommandSourceStack)var0x.getSource(),
@@ -327,7 +327,7 @@ public class TeamCommand {
                            .then(
                               Commands.literal("prefix")
                                  .then(
-                                    Commands.argument("prefix", ComponentArgument.textComponent())
+                                    Commands.argument("prefix", ComponentArgument.textComponent(var1))
                                        .executes(
                                           var0x -> setPrefix(
                                                 (CommandSourceStack)var0x.getSource(),
@@ -340,7 +340,7 @@ public class TeamCommand {
                         .then(
                            Commands.literal("suffix")
                               .then(
-                                 Commands.argument("suffix", ComponentArgument.textComponent())
+                                 Commands.argument("suffix", ComponentArgument.textComponent(var1))
                                     .executes(
                                        var0x -> setSuffix(
                                              (CommandSourceStack)var0x.getSource(),
@@ -362,7 +362,7 @@ public class TeamCommand {
    private static int leaveTeam(CommandSourceStack var0, Collection<ScoreHolder> var1) {
       ServerScoreboard var2 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var4 : var1) {
+      for (ScoreHolder var4 : var1) {
          var2.removePlayerFromTeam(var4.getScoreboardName());
       }
 
@@ -378,7 +378,7 @@ public class TeamCommand {
    private static int joinTeam(CommandSourceStack var0, PlayerTeam var1, Collection<ScoreHolder> var2) {
       ServerScoreboard var3 = var0.getServer().getScoreboard();
 
-      for(ScoreHolder var5 : var2) {
+      for (ScoreHolder var5 : var2) {
          var3.addPlayerToTeam(var5.getScoreboardName(), var1);
       }
 
@@ -437,8 +437,7 @@ public class TeamCommand {
       } else {
          var1.setSeeFriendlyInvisibles(var2);
          var0.sendSuccess(
-            () -> Component.translatable("commands.team.option.seeFriendlyInvisibles." + (var2 ? "enabled" : "disabled"), var1.getFormattedDisplayName()),
-            true
+            () -> Component.translatable("commands.team.option.seeFriendlyInvisibles." + (var2 ? "enabled" : "disabled"), var1.getFormattedDisplayName()), true
          );
          return 0;
       }
@@ -486,7 +485,7 @@ public class TeamCommand {
       if (var3.isEmpty()) {
          throw ERROR_TEAM_ALREADY_EMPTY.create();
       } else {
-         for(String var5 : var3) {
+         for (String var5 : var3) {
             var2.removePlayerFromTeam(var5, var1);
          }
 

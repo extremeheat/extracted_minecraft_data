@@ -5,13 +5,11 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -79,7 +77,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       this.verticalPlacement = RuinedPortalPiece.VerticalPlacement.byName(var2.getString("VerticalPlacement"));
       this.properties = (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC
          .parse(new Dynamic(NbtOps.INSTANCE, var2.get("Properties")))
-         .getOrThrow(true, LOGGER::error);
+         .getPartialOrThrow();
    }
 
    @Override
@@ -102,9 +100,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          Rotation.valueOf(var1.getString("Rotation")),
          RuinedPortalPiece.VerticalPlacement.byName(var1.getString("VerticalPlacement")),
          var4,
-         (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties")))
-            .getOrThrow(true, LOGGER::error)
+         (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties"))).getPartialOrThrow()
       );
    }
 
@@ -191,8 +187,8 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    }
 
    private void addNetherrackDripColumnsBelowPortal(RandomSource var1, LevelAccessor var2) {
-      for(int var3 = this.boundingBox.minX() + 1; var3 < this.boundingBox.maxX(); ++var3) {
-         for(int var4 = this.boundingBox.minZ() + 1; var4 < this.boundingBox.maxZ(); ++var4) {
+      for (int var3 = this.boundingBox.minX() + 1; var3 < this.boundingBox.maxX(); var3++) {
+         for (int var4 = this.boundingBox.minZ() + 1; var4 < this.boundingBox.maxZ(); var4++) {
             BlockPos var5 = new BlockPos(var3, this.boundingBox.minY(), var4);
             if (var2.getBlockState(var5).is(Blocks.NETHERRACK)) {
                this.addNetherrackDripColumn(var1, var2, var5.below());
@@ -206,9 +202,9 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       this.placeNetherrackOrMagma(var1, var2, var4);
       int var5 = 8;
 
-      while(var5 > 0 && var1.nextFloat() < 0.5F) {
+      while (var5 > 0 && var1.nextFloat() < 0.5F) {
          var4.move(Direction.DOWN);
-         --var5;
+         var5--;
          this.placeNetherrackOrMagma(var1, var2, var4);
       }
    }
@@ -223,11 +219,11 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       int var8 = var7.length;
       int var9 = (this.boundingBox.getXSpan() + this.boundingBox.getZSpan()) / 2;
       int var10 = var1.nextInt(Math.max(1, 8 - var9 / 2));
-      boolean var11 = true;
+      byte var11 = 3;
       BlockPos.MutableBlockPos var12 = BlockPos.ZERO.mutable();
 
-      for(int var13 = var5 - var8; var13 <= var5 + var8; ++var13) {
-         for(int var14 = var6 - var8; var14 <= var6 + var8; ++var14) {
+      for (int var13 = var5 - var8; var13 <= var5 + var8; var13++) {
+         for (int var14 = var6 - var8; var14 <= var6 + var8; var14++) {
             int var15 = Math.abs(var13 - var5) + Math.abs(var14 - var6);
             int var16 = Math.max(0, var15 + var10);
             if (var16 < var8) {
@@ -329,8 +325,8 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       );
       private final String name;
 
-      private VerticalPlacement(String var3) {
-         this.name = var3;
+      private VerticalPlacement(final String nullxx) {
+         this.name = nullxx;
       }
 
       public String getName() {

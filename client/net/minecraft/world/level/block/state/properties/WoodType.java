@@ -6,18 +6,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.SoundType;
 
-public record WoodType(String m, BlockSetType n, SoundType o, SoundType p, SoundEvent q, SoundEvent r) {
-   private final String name;
-   private final BlockSetType setType;
-   private final SoundType soundType;
-   private final SoundType hangingSignSoundType;
-   private final SoundEvent fenceGateClose;
-   private final SoundEvent fenceGateOpen;
+public record WoodType(
+   String name, BlockSetType setType, SoundType soundType, SoundType hangingSignSoundType, SoundEvent fenceGateClose, SoundEvent fenceGateOpen
+) {
    private static final Map<String, WoodType> TYPES = new Object2ObjectArrayMap();
-   public static final Codec<WoodType> CODEC = ExtraCodecs.stringResolverCodec(WoodType::name, TYPES::get);
+   public static final Codec<WoodType> CODEC = Codec.stringResolver(WoodType::name, TYPES::get);
    public static final WoodType OAK = register(new WoodType("oak", BlockSetType.OAK));
    public static final WoodType SPRUCE = register(new WoodType("spruce", BlockSetType.SPRUCE));
    public static final WoodType BIRCH = register(new WoodType("birch", BlockSetType.BIRCH));
@@ -70,14 +65,14 @@ public record WoodType(String m, BlockSetType n, SoundType o, SoundType p, Sound
       this(var1, var2, SoundType.WOOD, SoundType.HANGING_SIGN, SoundEvents.FENCE_GATE_CLOSE, SoundEvents.FENCE_GATE_OPEN);
    }
 
-   public WoodType(String var1, BlockSetType var2, SoundType var3, SoundType var4, SoundEvent var5, SoundEvent var6) {
+   public WoodType(String name, BlockSetType setType, SoundType soundType, SoundType hangingSignSoundType, SoundEvent fenceGateClose, SoundEvent fenceGateOpen) {
       super();
-      this.name = var1;
-      this.setType = var2;
-      this.soundType = var3;
-      this.hangingSignSoundType = var4;
-      this.fenceGateClose = var5;
-      this.fenceGateOpen = var6;
+      this.name = name;
+      this.setType = setType;
+      this.soundType = soundType;
+      this.hangingSignSoundType = hangingSignSoundType;
+      this.fenceGateClose = fenceGateClose;
+      this.fenceGateOpen = fenceGateOpen;
    }
 
    private static WoodType register(WoodType var0) {

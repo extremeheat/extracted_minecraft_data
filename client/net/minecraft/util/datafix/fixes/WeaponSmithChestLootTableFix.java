@@ -3,7 +3,6 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 
 public class WeaponSmithChestLootTableFix extends NamedEntityFix {
    public WeaponSmithChestLootTableFix(Schema var1, boolean var2) {
@@ -15,8 +14,8 @@ public class WeaponSmithChestLootTableFix extends NamedEntityFix {
       return var1.update(
          DSL.remainderFinder(),
          var0 -> {
-            String var1xx = var0.get("LootTable").asString("");
-            return var1xx.equals("minecraft:chests/village_blacksmith")
+            String var1x = var0.get("LootTable").asString("");
+            return var1x.equals("minecraft:chests/village_blacksmith")
                ? var0.set("LootTable", var0.createString("minecraft:chests/village/village_weaponsmith"))
                : var0;
          }

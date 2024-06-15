@@ -133,7 +133,7 @@ public class Slot {
          int var4 = Math.min(Math.min(var2, var1.getCount()), this.getMaxStackSize(var1) - var3.getCount());
          if (var3.isEmpty()) {
             this.setByPlayer(var1.split(var4));
-         } else if (ItemStack.isSameItemSameTags(var3, var1)) {
+         } else if (ItemStack.isSameItemSameComponents(var3, var1)) {
             var1.shrink(var4);
             var3.grow(var4);
             this.setByPlayer(var3);

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -30,20 +29,20 @@ public class AdvancementProvider implements DataProvider {
       return this.registries.thenCompose(var2 -> {
          HashSet var3 = new HashSet();
          ArrayList var4 = new ArrayList();
-         Consumer var5 = var4x -> {
-            if (!var3.add(var4x.id())) {
-               throw new IllegalStateException("Duplicate advancement " + var4x.id());
+         Consumer var5 = var5x -> {
+            if (!var3.add(var5x.id())) {
+               throw new IllegalStateException("Duplicate advancement " + var5x.id());
             } else {
-               Path var5xx = this.pathProvider.json(var4x.id());
-               var4.add(DataProvider.saveStable(var1, Advancement.CODEC, var4x.value(), var5xx));
+               Path var6 = this.pathProvider.json(var5x.id());
+               var4.add(DataProvider.saveStable(var1, var2, Advancement.CODEC, var5x.value(), var6));
             }
          };
 
-         for(AdvancementSubProvider var7 : this.subProviders) {
+         for (AdvancementSubProvider var7 : this.subProviders) {
             var7.generate(var2, var5);
          }
 
-         return CompletableFuture.allOf(var4.toArray(var0 -> new CompletableFuture[var0]));
+         return CompletableFuture.allOf(var4.toArray(CompletableFuture[]::new));
       });
    }
 

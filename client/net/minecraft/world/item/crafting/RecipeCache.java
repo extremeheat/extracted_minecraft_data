@@ -19,13 +19,13 @@ public class RecipeCache {
       this.entries = new RecipeCache.Entry[var1];
    }
 
-   public Optional<CraftingRecipe> get(Level var1, CraftingContainer var2) {
+   public Optional<RecipeHolder<CraftingRecipe>> get(Level var1, CraftingContainer var2) {
       if (var2.isEmpty()) {
          return Optional.empty();
       } else {
          this.validateRecipeManager(var1);
 
-         for(int var3 = 0; var3 < this.entries.length; ++var3) {
+         for (int var3 = 0; var3 < this.entries.length; var3++) {
             RecipeCache.Entry var4 = this.entries[var3];
             if (var4 != null && var4.matches(var2.getItems())) {
                this.moveEntryToFront(var3);
@@ -45,10 +45,10 @@ public class RecipeCache {
       }
    }
 
-   private Optional<CraftingRecipe> compute(CraftingContainer var1, Level var2) {
+   private Optional<RecipeHolder<CraftingRecipe>> compute(CraftingContainer var1, Level var2) {
       Optional var3 = var2.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var1, var2);
-      this.insert(var1.getItems(), var3.map(RecipeHolder::value).orElse(null));
-      return var3.map(RecipeHolder::value);
+      this.insert(var1.getItems(), (RecipeHolder<CraftingRecipe>)var3.orElse(null));
+      return var3;
    }
 
    private void moveEntryToFront(int var1) {
@@ -59,10 +59,10 @@ public class RecipeCache {
       }
    }
 
-   private void insert(List<ItemStack> var1, @Nullable CraftingRecipe var2) {
+   private void insert(List<ItemStack> var1, @Nullable RecipeHolder<CraftingRecipe> var2) {
       NonNullList var3 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
 
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
+      for (int var4 = 0; var4 < var1.size(); var4++) {
          var3.set(var4, ((ItemStack)var1.get(var4)).copyWithCount(1));
       }
 
@@ -70,23 +70,19 @@ public class RecipeCache {
       this.entries[0] = new RecipeCache.Entry(var3, var2);
    }
 
-   static record Entry(NonNullList<ItemStack> a, @Nullable CraftingRecipe b) {
-      private final NonNullList<ItemStack> key;
-      @Nullable
-      private final CraftingRecipe value;
-
-      Entry(NonNullList<ItemStack> var1, @Nullable CraftingRecipe var2) {
+   static record Entry(NonNullList<ItemStack> key, @Nullable RecipeHolder<CraftingRecipe> value) {
+      Entry(NonNullList<ItemStack> key, @Nullable RecipeHolder<CraftingRecipe> value) {
          super();
-         this.key = var1;
-         this.value = var2;
+         this.key = key;
+         this.value = value;
       }
 
       public boolean matches(List<ItemStack> var1) {
          if (this.key.size() != var1.size()) {
             return false;
          } else {
-            for(int var2 = 0; var2 < this.key.size(); ++var2) {
-               if (!ItemStack.isSameItemSameTags(this.key.get(var2), (ItemStack)var1.get(var2))) {
+            for (int var2 = 0; var2 < this.key.size(); var2++) {
+               if (!ItemStack.isSameItemSameComponents(this.key.get(var2), (ItemStack)var1.get(var2))) {
                   return false;
                }
             }

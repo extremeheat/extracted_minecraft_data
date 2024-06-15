@@ -1,47 +1,32 @@
 package net.minecraft.core.particles;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import java.util.Locale;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.gameevent.BlockPositionSource;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.level.gameevent.EntityPositionSource;
 import net.minecraft.world.level.gameevent.PositionSource;
-import net.minecraft.world.level.gameevent.PositionSourceType;
-import net.minecraft.world.phys.Vec3;
 
 public class VibrationParticleOption implements ParticleOptions {
-   public static final Codec<VibrationParticleOption> CODEC = RecordCodecBuilder.create(
+   private static final Codec<PositionSource> SAFE_POSITION_SOURCE_CODEC = PositionSource.CODEC
+      .validate(var0 -> var0 instanceof EntityPositionSource ? DataResult.error(() -> "Entity position sources are not allowed") : DataResult.success(var0));
+   public static final MapCodec<VibrationParticleOption> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
-               PositionSource.CODEC.fieldOf("destination").forGetter(var0x -> var0x.destination),
-               Codec.INT.fieldOf("arrival_in_ticks").forGetter(var0x -> var0x.arrivalInTicks)
+               SAFE_POSITION_SOURCE_CODEC.fieldOf("destination").forGetter(VibrationParticleOption::getDestination),
+               Codec.INT.fieldOf("arrival_in_ticks").forGetter(VibrationParticleOption::getArrivalInTicks)
             )
             .apply(var0, VibrationParticleOption::new)
    );
-   public static final ParticleOptions.Deserializer<VibrationParticleOption> DESERIALIZER = new ParticleOptions.Deserializer<VibrationParticleOption>() {
-      public VibrationParticleOption fromCommand(ParticleType<VibrationParticleOption> var1, StringReader var2) throws CommandSyntaxException {
-         var2.expect(' ');
-         float var3 = (float)var2.readDouble();
-         var2.expect(' ');
-         float var4 = (float)var2.readDouble();
-         var2.expect(' ');
-         float var5 = (float)var2.readDouble();
-         var2.expect(' ');
-         int var6 = var2.readInt();
-         BlockPos var7 = BlockPos.containing((double)var3, (double)var4, (double)var5);
-         return new VibrationParticleOption(new BlockPositionSource(var7), var6);
-      }
-
-      public VibrationParticleOption fromNetwork(ParticleType<VibrationParticleOption> var1, FriendlyByteBuf var2) {
-         PositionSource var3 = PositionSourceType.fromNetwork(var2);
-         int var4 = var2.readVarInt();
-         return new VibrationParticleOption(var3, var4);
-      }
-   };
+   public static final StreamCodec<RegistryFriendlyByteBuf, VibrationParticleOption> STREAM_CODEC = StreamCodec.composite(
+      PositionSource.STREAM_CODEC,
+      VibrationParticleOption::getDestination,
+      ByteBufCodecs.VAR_INT,
+      VibrationParticleOption::getArrivalInTicks,
+      VibrationParticleOption::new
+   );
    private final PositionSource destination;
    private final int arrivalInTicks;
 
@@ -49,21 +34,6 @@ public class VibrationParticleOption implements ParticleOptions {
       super();
       this.destination = var1;
       this.arrivalInTicks = var2;
-   }
-
-   @Override
-   public void writeToNetwork(FriendlyByteBuf var1) {
-      PositionSourceType.toNetwork(this.destination, var1);
-      var1.writeVarInt(this.arrivalInTicks);
-   }
-
-   @Override
-   public String writeToString() {
-      Vec3 var1 = this.destination.getPosition(null).get();
-      double var2 = var1.x();
-      double var4 = var1.y();
-      double var6 = var1.z();
-      return String.format(Locale.ROOT, "%s %.2f %.2f %.2f %d", BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()), var2, var4, var6, this.arrivalInTicks);
    }
 
    @Override

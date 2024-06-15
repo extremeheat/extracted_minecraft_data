@@ -268,7 +268,7 @@ public class SurfaceRuleData {
       SurfaceRules.RuleSource var31 = SurfaceRules.ifTrue(SurfaceRules.abovePreliminarySurface(), var29);
       var30.add(var0 ? var31 : var29);
       var30.add(SurfaceRules.ifTrue(SurfaceRules.verticalGradient("deepslate", VerticalAnchor.absolute(0), VerticalAnchor.absolute(8)), DEEPSLATE));
-      return SurfaceRules.sequence((SurfaceRules.RuleSource[])var30.build().toArray(var0x -> new SurfaceRules.RuleSource[var0x]));
+      return SurfaceRules.sequence((SurfaceRules.RuleSource[])var30.build().toArray(SurfaceRules.RuleSource[]::new));
    }
 
    public static SurfaceRules.RuleSource nether() {
@@ -339,9 +339,7 @@ public class SurfaceRuleData {
                      var0,
                      SurfaceRules.ifTrue(
                         var3,
-                        SurfaceRules.ifTrue(
-                           var7, SurfaceRules.sequence(SurfaceRules.ifTrue(var1, GRAVEL), SurfaceRules.ifTrue(SurfaceRules.not(var5), GRAVEL))
-                        )
+                        SurfaceRules.ifTrue(var7, SurfaceRules.sequence(SurfaceRules.ifTrue(var1, GRAVEL), SurfaceRules.ifTrue(SurfaceRules.not(var5), GRAVEL)))
                      )
                   )
                )

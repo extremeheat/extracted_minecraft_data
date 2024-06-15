@@ -63,14 +63,12 @@ public class RealmsTextureManager {
       return null;
    }
 
-   public static record RealmsTexture(String a, ResourceLocation b) {
-      private final String image;
-      final ResourceLocation textureId;
+   public static record RealmsTexture(String image, ResourceLocation textureId) {
 
-      public RealmsTexture(String var1, ResourceLocation var2) {
+      public RealmsTexture(String image, ResourceLocation textureId) {
          super();
-         this.image = var1;
-         this.textureId = var2;
+         this.image = image;
+         this.textureId = textureId;
       }
    }
 }

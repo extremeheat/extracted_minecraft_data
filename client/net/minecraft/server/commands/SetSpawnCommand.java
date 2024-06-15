@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import java.util.Collection;
 import java.util.Collections;
 import net.minecraft.commands.CommandSourceStack;
@@ -71,7 +70,7 @@ public class SetSpawnCommand {
    private static int setSpawn(CommandSourceStack var0, Collection<ServerPlayer> var1, BlockPos var2, float var3) {
       ResourceKey var4 = var0.getLevel().dimension();
 
-      for(ServerPlayer var6 : var1) {
+      for (ServerPlayer var6 : var1) {
          var6.setRespawnPosition(var4, var2, var3, true, false);
       }
 

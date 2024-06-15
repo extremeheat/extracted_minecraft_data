@@ -26,7 +26,7 @@ public class FileUtil {
    }
 
    public static String findAvailableName(Path var0, String var1, String var2) throws IOException {
-      for(char var6 : SharedConstants.ILLEGAL_FILE_CHARACTERS) {
+      for (char var6 : SharedConstants.ILLEGAL_FILE_CHARACTERS) {
          var1 = var1.replace(var6, '_');
       }
 
@@ -46,7 +46,7 @@ public class FileUtil {
          var1 = var1.substring(0, 255 - var2.length());
       }
 
-      while(true) {
+      while (true) {
          String var12 = var1;
          if (var11 != 0) {
             String var14 = " (" + var11 + ")";
@@ -66,7 +66,7 @@ public class FileUtil {
             Files.deleteIfExists(var16);
             return var0.relativize(var16).toString();
          } catch (FileAlreadyExistsException var8) {
-            ++var11;
+            var11++;
          }
       }
    }
@@ -77,7 +77,7 @@ public class FileUtil {
    }
 
    public static boolean isPathPortable(Path var0) {
-      for(Path var2 : var0) {
+      for (Path var2 : var0) {
          if (RESERVED_WINDOWS_FILENAMES.matcher(var2.toString()).matches()) {
             return false;
          }
@@ -107,7 +107,7 @@ public class FileUtil {
    public static DataResult<List<String>> decomposePath(String var0) {
       int var1 = var0.indexOf(47);
       if (var1 == -1) {
-         return switch(var0) {
+         return switch (var0) {
             case "", ".", ".." -> DataResult.error(() -> "Invalid path '" + var0 + "'");
             default -> !isValidStrictPathSegment(var0) ? DataResult.error(() -> "Invalid path '" + var0 + "'") : DataResult.success(List.of(var0));
          };
@@ -116,9 +116,9 @@ public class FileUtil {
          int var3 = 0;
          boolean var4 = false;
 
-         while(true) {
+         while (true) {
             String var5 = var0.substring(var3, var1);
-            switch(var5) {
+            switch (var5) {
                case "":
                case ".":
                case "..":
@@ -147,13 +147,13 @@ public class FileUtil {
    public static Path resolvePath(Path var0, List<String> var1) {
       int var2 = var1.size();
 
-      return switch(var2) {
+      return switch (var2) {
          case 0 -> var0;
          case 1 -> var0.resolve((String)var1.get(0));
          default -> {
             String[] var3 = new String[var2 - 1];
 
-            for(int var4 = 1; var4 < var2; ++var4) {
+            for (int var4 = 1; var4 < var2; var4++) {
                var3[var4 - 1] = (String)var1.get(var4);
             }
 
@@ -170,7 +170,7 @@ public class FileUtil {
       if (var0.length == 0) {
          throw new IllegalArgumentException("Path must have at least one element");
       } else {
-         for(String var4 : var0) {
+         for (String var4 : var0) {
             if (var4.equals("..") || var4.equals(".") || !isValidStrictPathSegment(var4)) {
                throw new IllegalArgumentException("Illegal segment " + var4 + " in path " + Arrays.toString((Object[])var0));
             }

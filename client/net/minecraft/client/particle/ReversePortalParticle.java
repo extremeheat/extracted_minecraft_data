@@ -25,9 +25,9 @@ public class ReversePortalParticle extends PortalParticle {
          this.remove();
       } else {
          float var1 = (float)this.age / (float)this.lifetime;
-         this.x += this.xd * (double)var1;
-         this.y += this.yd * (double)var1;
-         this.z += this.zd * (double)var1;
+         this.x = this.x + this.xd * (double)var1;
+         this.y = this.y + this.yd * (double)var1;
+         this.z = this.z + this.zd * (double)var1;
       }
    }
 

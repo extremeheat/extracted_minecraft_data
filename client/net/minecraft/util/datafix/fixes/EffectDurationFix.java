@@ -31,8 +31,8 @@ public class EffectDurationFix extends DataFix {
                "EffectDurationPlayer", var1.getType(References.PLAYER), var1x -> var1x.update(DSL.remainderFinder(), this::updateEntity)
             ),
             this.fixTypeEverywhereTyped("EffectDurationItem", var2, var3x -> {
-               Optional var4xx = var3x.getOptional(var3);
-               if (var4xx.filter(ITEM_TYPES::contains).isPresent()) {
+               Optional var4x = var3x.getOptional(var3);
+               if (var4x.filter(ITEM_TYPES::contains).isPresent()) {
                   Optional var5 = var3x.getOptionalTyped(var4);
                   if (var5.isPresent()) {
                      Dynamic var6 = (Dynamic)((Typed)var5.get()).get(DSL.remainderFinder());
@@ -40,7 +40,7 @@ public class EffectDurationFix extends DataFix {
                      return var3x.set(var4, var7);
                   }
                }
-      
+
                return var3x;
             })
          }

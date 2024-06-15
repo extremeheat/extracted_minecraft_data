@@ -15,7 +15,8 @@ public class Vec3 implements Position {
    public static final Codec<Vec3> CODEC = Codec.DOUBLE
       .listOf()
       .comapFlatMap(
-         var0 -> Util.fixedSize(var0, 3).map(var0x -> new Vec3(var0x.get(0), var0x.get(1), var0x.get(2))), var0 -> List.of(var0.x(), var0.y(), var0.z())
+         var0 -> Util.fixedSize(var0, 3).map(var0x -> new Vec3((Double)var0x.get(0), (Double)var0x.get(1), (Double)var0x.get(2))),
+         var0 -> List.of(var0.x(), var0.y(), var0.z())
       );
    public static final Vec3 ZERO = new Vec3(0.0, 0.0, 0.0);
    public final double x;
@@ -165,17 +166,12 @@ public class Vec3 implements Position {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof Vec3)) {
+      } else if (!(var1 instanceof Vec3 var2)) {
+         return false;
+      } else if (Double.compare(var2.x, this.x) != 0) {
          return false;
       } else {
-         Vec3 var2 = (Vec3)var1;
-         if (Double.compare(var2.x, this.x) != 0) {
-            return false;
-         } else if (Double.compare(var2.y, this.y) != 0) {
-            return false;
-         } else {
-            return Double.compare(var2.z, this.z) == 0;
-         }
+         return Double.compare(var2.y, this.y) != 0 ? false : Double.compare(var2.z, this.z) == 0;
       }
    }
 

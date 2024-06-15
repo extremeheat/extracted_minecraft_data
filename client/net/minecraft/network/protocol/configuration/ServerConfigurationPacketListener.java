@@ -10,4 +10,6 @@ public interface ServerConfigurationPacketListener extends ServerCommonPacketLis
    }
 
    void handleConfigurationFinished(ServerboundFinishConfigurationPacket var1);
+
+   void handleSelectKnownPacks(ServerboundSelectKnownPacks var1);
 }

@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
@@ -72,7 +71,7 @@ public class MultilineTextField {
 
    public void insertText(String var1) {
       if (!var1.isEmpty() || this.hasSelection()) {
-         String var2 = this.truncateInsertionText(SharedConstants.filterText(var1, true));
+         String var2 = this.truncateInsertionText(StringUtil.filterText(var1, true));
          MultilineTextField.StringView var3 = this.getSelected();
          this.value = new StringBuilder(this.value).replace(var3.beginIndex, var3.endIndex, var2).toString();
          this.cursor = var3.beginIndex + var2.length();
@@ -106,7 +105,7 @@ public class MultilineTextField {
    }
 
    public int getLineAtCursor() {
-      for(int var1 = 0; var1 < this.displayLines.size(); ++var1) {
+      for (int var1 = 0; var1 < this.displayLines.size(); var1++) {
          MultilineTextField.StringView var2 = this.displayLines.get(var1);
          if (this.cursor >= var2.beginIndex && this.cursor <= var2.endIndex) {
             return var1;
@@ -121,7 +120,7 @@ public class MultilineTextField {
    }
 
    public void seekCursor(Whence var1, int var2) {
-      switch(var1) {
+      switch (var1) {
          case ABSOLUTE:
             this.cursor = var2;
             break;
@@ -173,7 +172,7 @@ public class MultilineTextField {
          this.insertText("");
          return true;
       } else {
-         switch(var1) {
+         switch (var1) {
             case 257:
             case 335:
                this.insertText("\n");
@@ -288,12 +287,12 @@ public class MultilineTextField {
       } else {
          int var1 = Mth.clamp(this.cursor, 0, this.value.length() - 1);
 
-         while(var1 > 0 && Character.isWhitespace(this.value.charAt(var1 - 1))) {
-            --var1;
+         while (var1 > 0 && Character.isWhitespace(this.value.charAt(var1 - 1))) {
+            var1--;
          }
 
-         while(var1 > 0 && !Character.isWhitespace(this.value.charAt(var1 - 1))) {
-            --var1;
+         while (var1 > 0 && !Character.isWhitespace(this.value.charAt(var1 - 1))) {
+            var1--;
          }
 
          return new MultilineTextField.StringView(var1, this.getWordEndPosition(var1));
@@ -307,12 +306,12 @@ public class MultilineTextField {
       } else {
          int var1 = Mth.clamp(this.cursor, 0, this.value.length() - 1);
 
-         while(var1 < this.value.length() && !Character.isWhitespace(this.value.charAt(var1))) {
-            ++var1;
+         while (var1 < this.value.length() && !Character.isWhitespace(this.value.charAt(var1))) {
+            var1++;
          }
 
-         while(var1 < this.value.length() && Character.isWhitespace(this.value.charAt(var1))) {
-            ++var1;
+         while (var1 < this.value.length() && Character.isWhitespace(this.value.charAt(var1))) {
+            var1++;
          }
 
          return new MultilineTextField.StringView(var1, this.getWordEndPosition(var1));
@@ -322,8 +321,8 @@ public class MultilineTextField {
    private int getWordEndPosition(int var1) {
       int var2 = var1;
 
-      while(var2 < this.value.length() && !Character.isWhitespace(this.value.charAt(var2))) {
-         ++var2;
+      while (var2 < this.value.length() && !Character.isWhitespace(this.value.charAt(var2))) {
+         var2++;
       }
 
       return var2;
@@ -362,15 +361,13 @@ public class MultilineTextField {
       }
    }
 
-   protected static record StringView(int a, int b) {
-      final int beginIndex;
-      final int endIndex;
+   protected static record StringView(int beginIndex, int endIndex) {
       static final MultilineTextField.StringView EMPTY = new MultilineTextField.StringView(0, 0);
 
-      protected StringView(int var1, int var2) {
+      protected StringView(int beginIndex, int endIndex) {
          super();
-         this.beginIndex = var1;
-         this.endIndex = var2;
+         this.beginIndex = beginIndex;
+         this.endIndex = endIndex;
       }
    }
 }

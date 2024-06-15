@@ -141,7 +141,7 @@ public class BlockModel implements UnbakedModel {
    public Collection<ResourceLocation> getDependencies() {
       HashSet var1 = Sets.newHashSet();
 
-      for(ItemOverride var3 : this.overrides) {
+      for (ItemOverride var3 : this.overrides) {
          var1.add(var3.getModel());
       }
 
@@ -156,7 +156,7 @@ public class BlockModel implements UnbakedModel {
    public void resolveParents(Function<ResourceLocation, UnbakedModel> var1) {
       LinkedHashSet var2 = Sets.newLinkedHashSet();
 
-      for(BlockModel var3 = this; var3.parentLocation != null && var3.parent == null; var3 = var3.parent) {
+      for (BlockModel var3 = this; var3.parentLocation != null && var3.parent == null; var3 = var3.parent) {
          var2.add(var3);
          UnbakedModel var4 = (UnbakedModel)var1.apply(var3.parentLocation);
          if (var4 == null) {
@@ -184,9 +184,9 @@ public class BlockModel implements UnbakedModel {
       }
 
       this.overrides.forEach(var2x -> {
-         UnbakedModel var3xx = (UnbakedModel)var1.apply(var2x.getModel());
-         if (!Objects.equals(var3xx, this)) {
-            var3xx.resolveParents(var1);
+         UnbakedModel var3x = (UnbakedModel)var1.apply(var2x.getModel());
+         if (!Objects.equals(var3x, this)) {
+            var3x.resolveParents(var1);
          }
       });
    }
@@ -203,16 +203,14 @@ public class BlockModel implements UnbakedModel {
       } else {
          SimpleBakedModel.Builder var8 = new SimpleBakedModel.Builder(this, this.getItemOverrides(var1, var2), var6).particle(var7);
 
-         for(BlockElement var10 : this.getElements()) {
-            for(Direction var12 : var10.faces.keySet()) {
+         for (BlockElement var10 : this.getElements()) {
+            for (Direction var12 : var10.faces.keySet()) {
                BlockElementFace var13 = var10.faces.get(var12);
                TextureAtlasSprite var14 = (TextureAtlasSprite)var3.apply(this.getMaterial(var13.texture));
                if (var13.cullForDirection == null) {
                   var8.addUnculledFace(bakeFace(var10, var13, var14, var12, var4, var5));
                } else {
-                  var8.addCulledFace(
-                     Direction.rotate(var4.getRotation().getMatrix(), var13.cullForDirection), bakeFace(var10, var13, var14, var12, var4, var5)
-                  );
+                  var8.addCulledFace(Direction.rotate(var4.getRotation().getMatrix(), var13.cullForDirection), bakeFace(var10, var13, var14, var12, var4, var5));
                }
             }
          }
@@ -236,7 +234,7 @@ public class BlockModel implements UnbakedModel {
 
       ArrayList var2 = Lists.newArrayList();
 
-      while(true) {
+      while (true) {
          Either var3 = this.findTextureEntry(var1);
          Optional var4 = var3.left();
          if (var4.isPresent()) {
@@ -254,8 +252,8 @@ public class BlockModel implements UnbakedModel {
    }
 
    private Either<Material, String> findTextureEntry(String var1) {
-      for(BlockModel var2 = this; var2 != null; var2 = var2.parent) {
-         Either var3 = (Either)var2.textureMap.get(var1);
+      for (BlockModel var2 = this; var2 != null; var2 = var2.parent) {
+         Either var3 = var2.textureMap.get(var1);
          if (var3 != null) {
             return var3;
          }
@@ -323,7 +321,7 @@ public class BlockModel implements UnbakedModel {
       protected List<ItemOverride> getOverrides(JsonDeserializationContext var1, JsonObject var2) {
          ArrayList var3 = Lists.newArrayList();
          if (var2.has("overrides")) {
-            for(JsonElement var6 : GsonHelper.getAsJsonArray(var2, "overrides")) {
+            for (JsonElement var6 : GsonHelper.getAsJsonArray(var2, "overrides")) {
                var3.add((ItemOverride)var1.deserialize(var6, ItemOverride.class));
             }
          }
@@ -337,7 +335,7 @@ public class BlockModel implements UnbakedModel {
          if (var1.has("textures")) {
             JsonObject var4 = GsonHelper.getAsJsonObject(var1, "textures");
 
-            for(Entry var6 : var4.entrySet()) {
+            for (Entry var6 : var4.entrySet()) {
                var3.put((String)var6.getKey(), parseTextureLocationOrReference(var2, ((JsonElement)var6.getValue()).getAsString()));
             }
          }
@@ -370,7 +368,7 @@ public class BlockModel implements UnbakedModel {
       protected List<BlockElement> getElements(JsonDeserializationContext var1, JsonObject var2) {
          ArrayList var3 = Lists.newArrayList();
          if (var2.has("elements")) {
-            for(JsonElement var5 : GsonHelper.getAsJsonArray(var2, "elements")) {
+            for (JsonElement var5 : GsonHelper.getAsJsonArray(var2, "elements")) {
                var3.add((BlockElement)var1.deserialize(var5, BlockElement.class));
             }
          }
@@ -385,12 +383,12 @@ public class BlockModel implements UnbakedModel {
 
       private final String name;
 
-      private GuiLight(String var3) {
-         this.name = var3;
+      private GuiLight(final String nullxx) {
+         this.name = nullxx;
       }
 
       public static BlockModel.GuiLight getByName(String var0) {
-         for(BlockModel.GuiLight var4 : values()) {
+         for (BlockModel.GuiLight var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }

@@ -1,10 +1,8 @@
 package net.minecraft.world.entity.monster.piglin;
 
 import java.util.List;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.OneShot;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 

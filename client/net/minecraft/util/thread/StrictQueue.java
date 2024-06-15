@@ -24,14 +24,14 @@ public interface StrictQueue<T, F> {
          super();
          this.queues = new Queue[var1];
 
-         for(int var2 = 0; var2 < var1; ++var2) {
+         for (int var2 = 0; var2 < var1; var2++) {
             this.queues[var2] = Queues.newConcurrentLinkedQueue();
          }
       }
 
       @Nullable
       public Runnable pop() {
-         for(Queue var4 : this.queues) {
+         for (Queue var4 : this.queues) {
             Runnable var5 = (Runnable)var4.poll();
             if (var5 != null) {
                this.size.decrementAndGet();

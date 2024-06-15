@@ -20,11 +20,11 @@ public class FoxRenderer extends MobRenderer<Fox, FoxModel<Fox>> {
       this.addLayer(new FoxHeldItemLayer(this, var1.getItemInHandRenderer()));
    }
 
-   protected void setupRotations(Fox var1, PoseStack var2, float var3, float var4, float var5) {
-      super.setupRotations(var1, var2, var3, var4, var5);
+   protected void setupRotations(Fox var1, PoseStack var2, float var3, float var4, float var5, float var6) {
+      super.setupRotations(var1, var2, var3, var4, var5, var6);
       if (var1.isPouncing() || var1.isFaceplanted()) {
-         float var6 = -Mth.lerp(var5, var1.xRotO, var1.getXRot());
-         var2.mulPose(Axis.XP.rotationDegrees(var6));
+         float var7 = -Mth.lerp(var5, var1.xRotO, var1.getXRot());
+         var2.mulPose(Axis.XP.rotationDegrees(var7));
       }
    }
 

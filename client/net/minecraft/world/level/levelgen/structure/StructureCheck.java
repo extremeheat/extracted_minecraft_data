@@ -17,7 +17,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.resources.ResourceKey;
@@ -26,12 +25,12 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.storage.ChunkScanAccess;
 import net.minecraft.world.level.chunk.storage.ChunkStorage;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.slf4j.Logger;
 
@@ -40,8 +39,6 @@ public class StructureCheck {
    private static final int NO_STRUCTURE = -1;
    private final ChunkScanAccess storageAccess;
    private final RegistryAccess registryAccess;
-   private final Registry<Biome> biomes;
-   private final Registry<Structure> structureConfigs;
    private final StructureTemplateManager structureTemplateManager;
    private final ResourceKey<Level> dimension;
    private final ChunkGenerator chunkGenerator;
@@ -76,23 +73,24 @@ public class StructureCheck {
       this.biomeSource = var8;
       this.seed = var9;
       this.fixerUpper = var11;
-      this.biomes = var2.registryOrThrow(Registries.BIOME);
-      this.structureConfigs = var2.registryOrThrow(Registries.STRUCTURE);
    }
 
-   public StructureCheckResult checkStart(ChunkPos var1, Structure var2, boolean var3) {
-      long var4 = var1.toLong();
-      Object2IntMap var6 = (Object2IntMap)this.loadedChunks.get(var4);
-      if (var6 != null) {
-         return this.checkStructureInfo(var6, var2, var3);
+   public StructureCheckResult checkStart(ChunkPos var1, Structure var2, StructurePlacement var3, boolean var4) {
+      long var5 = var1.toLong();
+      Object2IntMap var7 = (Object2IntMap)this.loadedChunks.get(var5);
+      if (var7 != null) {
+         return this.checkStructureInfo(var7, var2, var4);
       } else {
-         StructureCheckResult var7 = this.tryLoadFromStorage(var1, var2, var3, var4);
-         if (var7 != null) {
-            return var7;
+         StructureCheckResult var8 = this.tryLoadFromStorage(var1, var2, var4, var5);
+         if (var8 != null) {
+            return var8;
+         } else if (!var3.applyAdditionalChunkRestrictions(var1.x, var1.z, this.seed)) {
+            return StructureCheckResult.START_NOT_PRESENT;
          } else {
-            boolean var8 = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(var2, var0 -> new Long2BooleanOpenHashMap()))
-               .computeIfAbsent(var4, var3x -> this.canCreateStructure(var1, var2));
-            return !var8 ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.CHUNK_LOAD_NEEDED;
+            boolean var9 = this.featureChecks
+               .computeIfAbsent(var2, var0 -> new Long2BooleanOpenHashMap())
+               .computeIfAbsent(var5, var3x -> this.canCreateStructure(var1, var2));
+            return !var9 ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.CHUNK_LOAD_NEEDED;
          }
       }
    }
@@ -129,11 +127,9 @@ public class StructureCheck {
          return StructureCheckResult.CHUNK_LOAD_NEEDED;
       }
 
-      Tag var7 = var6.getResult();
-      if (!(var7 instanceof CompoundTag)) {
+      if (!(var6.getResult() instanceof CompoundTag var8)) {
          return null;
       } else {
-         CompoundTag var8 = (CompoundTag)var7;
          int var9 = ChunkStorage.getVersion(var8);
          if (var9 <= 1493) {
             return StructureCheckResult.CHUNK_LOAD_NEEDED;
@@ -175,7 +171,7 @@ public class StructureCheck {
                Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
                Registry var5 = this.registryAccess.registryOrThrow(Registries.STRUCTURE);
 
-               for(String var7 : var3.getAllKeys()) {
+               for (String var7 : var3.getAllKeys()) {
                   ResourceLocation var8 = ResourceLocation.tryParse(var7);
                   if (var8 != null) {
                      Structure var9 = (Structure)var5.get(var8);

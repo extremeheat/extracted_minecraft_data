@@ -95,11 +95,11 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
       VoxelShape var19 = Block.box((double)var9, (double)var4, (double)var9, 16.0, (double)var6, (double)var10);
       Builder var20 = ImmutableMap.builder();
 
-      for(Boolean var22 : UP.getPossibleValues()) {
-         for(WallSide var24 : EAST_WALL.getPossibleValues()) {
-            for(WallSide var26 : NORTH_WALL.getPossibleValues()) {
-               for(WallSide var28 : WEST_WALL.getPossibleValues()) {
-                  for(WallSide var30 : SOUTH_WALL.getPossibleValues()) {
+      for (Boolean var22 : UP.getPossibleValues()) {
+         for (WallSide var24 : EAST_WALL.getPossibleValues()) {
+            for (WallSide var26 : NORTH_WALL.getPossibleValues()) {
+               for (WallSide var28 : WEST_WALL.getPossibleValues()) {
+                  for (WallSide var30 : SOUTH_WALL.getPossibleValues()) {
                      VoxelShape var31 = Shapes.empty();
                      var31 = applyWallShape(var31, var24, var15, var19);
                      var31 = applyWallShape(var31, var28, var14, var18);
@@ -127,17 +127,17 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shapeByIndex.get(var1);
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.collisionShapeByIndex.get(var1);
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
@@ -171,7 +171,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -234,11 +234,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
             return true;
          } else {
             boolean var14 = var5 == WallSide.TALL && var6 == WallSide.TALL || var7 == WallSide.TALL && var8 == WallSide.TALL;
-            if (var14) {
-               return false;
-            } else {
-               return var2.is(BlockTags.WALL_POST_OVERRIDE) || isCovered(var3, POST_TEST);
-            }
+            return var14 ? false : var2.is(BlockTags.WALL_POST_OVERRIDE) || isCovered(var3, POST_TEST);
          }
       }
    }
@@ -259,12 +255,12 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return !var1.getValue(WATERLOGGED);
    }
 
@@ -274,8 +270,8 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
+      switch (var2) {
          case CLOCKWISE_180:
             return var1.setValue(NORTH_WALL, var1.getValue(SOUTH_WALL))
                .setValue(EAST_WALL, var1.getValue(WEST_WALL))
@@ -297,8 +293,8 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
-      switch(var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
+      switch (var2) {
          case LEFT_RIGHT:
             return var1.setValue(NORTH_WALL, var1.getValue(SOUTH_WALL)).setValue(SOUTH_WALL, var1.getValue(NORTH_WALL));
          case FRONT_BACK:

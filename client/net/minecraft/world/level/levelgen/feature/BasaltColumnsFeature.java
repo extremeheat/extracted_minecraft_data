@@ -51,7 +51,7 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
          int var10 = var8 ? 50 : 15;
          boolean var11 = false;
 
-         for(BlockPos var13 : BlockPos.randomBetweenClosed(
+         for (BlockPos var13 : BlockPos.randomBetweenClosed(
             var5, var10, var3.getX() - var9, var3.getY(), var3.getZ() - var9, var3.getX() + var9, var3.getY(), var3.getZ() + var9
          )) {
             int var14 = var7 - var13.distManhattan(var3);
@@ -67,13 +67,13 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
    private boolean placeColumn(LevelAccessor var1, int var2, BlockPos var3, int var4, int var5) {
       boolean var6 = false;
 
-      for(BlockPos var8 : BlockPos.betweenClosed(var3.getX() - var5, var3.getY(), var3.getZ() - var5, var3.getX() + var5, var3.getY(), var3.getZ() + var5)) {
+      for (BlockPos var8 : BlockPos.betweenClosed(var3.getX() - var5, var3.getY(), var3.getZ() - var5, var3.getX() + var5, var3.getY(), var3.getZ() + var5)) {
          int var9 = var8.distManhattan(var3);
          BlockPos var10 = isAirOrLavaOcean(var1, var2, var8) ? findSurface(var1, var2, var8.mutable(), var9) : findAir(var1, var8.mutable(), var9);
          if (var10 != null) {
             int var11 = var4 - var9 / 2;
 
-            for(BlockPos.MutableBlockPos var12 = var10.mutable(); var11 >= 0; --var11) {
+            for (BlockPos.MutableBlockPos var12 = var10.mutable(); var11 >= 0; var11--) {
                if (isAirOrLavaOcean(var1, var2, var12)) {
                   this.setBlock(var1, var12, Blocks.BASALT.defaultBlockState());
                   var12.move(Direction.UP);
@@ -94,8 +94,8 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
 
    @Nullable
    private static BlockPos findSurface(LevelAccessor var0, int var1, BlockPos.MutableBlockPos var2, int var3) {
-      while(var2.getY() > var0.getMinBuildHeight() + 1 && var3 > 0) {
-         --var3;
+      while (var2.getY() > var0.getMinBuildHeight() + 1 && var3 > 0) {
+         var3--;
          if (canPlaceAt(var0, var1, var2)) {
             return var2;
          }
@@ -118,8 +118,8 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
 
    @Nullable
    private static BlockPos findAir(LevelAccessor var0, BlockPos.MutableBlockPos var1, int var2) {
-      while(var1.getY() < var0.getMaxBuildHeight() && var2 > 0) {
-         --var2;
+      while (var1.getY() < var0.getMaxBuildHeight() && var2 > 0) {
+         var2--;
          BlockState var3 = var0.getBlockState(var1);
          if (CANNOT_PLACE_ON.contains(var3.getBlock())) {
             return null;

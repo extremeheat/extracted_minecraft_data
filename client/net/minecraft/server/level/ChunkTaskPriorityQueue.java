@@ -32,28 +32,28 @@ public class ChunkTaskPriorityQueue<T> {
 
    protected void resortChunkTasks(int var1, ChunkPos var2, int var3) {
       if (var1 < PRIORITY_LEVEL_COUNT) {
-         Long2ObjectLinkedOpenHashMap var4 = (Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var1);
+         Long2ObjectLinkedOpenHashMap var4 = this.taskQueue.get(var1);
          List var5 = (List)var4.remove(var2.toLong());
          if (var1 == this.firstQueue) {
-            while(this.hasWork() && ((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(this.firstQueue)).isEmpty()) {
-               ++this.firstQueue;
+            while (this.hasWork() && this.taskQueue.get(this.firstQueue).isEmpty()) {
+               this.firstQueue++;
             }
          }
 
          if (var5 != null && !var5.isEmpty()) {
-            ((List)((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var3)).computeIfAbsent(var2.toLong(), var0 -> Lists.newArrayList())).addAll(var5);
+            ((List)this.taskQueue.get(var3).computeIfAbsent(var2.toLong(), var0 -> Lists.newArrayList())).addAll(var5);
             this.firstQueue = Math.min(this.firstQueue, var3);
          }
       }
    }
 
    protected void submit(Optional<T> var1, long var2, int var4) {
-      ((List)((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var4)).computeIfAbsent(var2, var0 -> Lists.newArrayList())).add(var1);
+      ((List)this.taskQueue.get(var4).computeIfAbsent(var2, var0 -> Lists.newArrayList())).add(var1);
       this.firstQueue = Math.min(this.firstQueue, var4);
    }
 
    protected void release(long var1, boolean var3) {
-      for(Long2ObjectLinkedOpenHashMap var5 : this.taskQueue) {
+      for (Long2ObjectLinkedOpenHashMap var5 : this.taskQueue) {
          List var6 = (List)var5.get(var1);
          if (var6 != null) {
             if (var3) {
@@ -68,8 +68,8 @@ public class ChunkTaskPriorityQueue<T> {
          }
       }
 
-      while(this.hasWork() && ((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(this.firstQueue)).isEmpty()) {
-         ++this.firstQueue;
+      while (this.hasWork() && this.taskQueue.get(this.firstQueue).isEmpty()) {
+         this.firstQueue++;
       }
 
       this.acquired.remove(var1);
@@ -87,15 +87,15 @@ public class ChunkTaskPriorityQueue<T> {
          return null;
       } else {
          int var1 = this.firstQueue;
-         Long2ObjectLinkedOpenHashMap var2 = (Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var1);
+         Long2ObjectLinkedOpenHashMap var2 = this.taskQueue.get(var1);
          long var3 = var2.firstLongKey();
          List var5 = (List)var2.removeFirst();
 
-         while(this.hasWork() && ((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(this.firstQueue)).isEmpty()) {
-            ++this.firstQueue;
+         while (this.hasWork() && this.taskQueue.get(this.firstQueue).isEmpty()) {
+            this.firstQueue++;
          }
 
-         return var5.stream().map(var3x -> (Either)var3x.map(Either::left).orElseGet(() -> (T)Either.right(this.acquire(var3))));
+         return var5.stream().map(var3x -> var3x.map(Either::left).orElseGet(() -> Either.right(this.acquire(var3))));
       }
    }
 

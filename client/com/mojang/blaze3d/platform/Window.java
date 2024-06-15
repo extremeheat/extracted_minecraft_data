@@ -145,7 +145,7 @@ public final class Window implements AutoCloseable {
    public void setIcon(PackResources var1, IconSet var2) throws IOException {
       RenderSystem.assertInInitPhase();
       int var3 = GLFW.glfwGetPlatform();
-      switch(var3) {
+      switch (var3) {
          case 393217:
          case 393220:
             List var4 = var2.getStandardIcons(var1);
@@ -157,7 +157,7 @@ public final class Window implements AutoCloseable {
                try {
                   Buffer var7 = GLFWImage.malloc(var4.size(), var6);
 
-                  for(int var8 = 0; var8 < var4.size(); ++var8) {
+                  for (int var8 = 0; var8 < var4.size(); var8++) {
                      try (NativeImage var9 = NativeImage.read((InputStream)((IoSupplier)var4.get(var8)).get())) {
                         ByteBuffer var10 = MemoryUtil.memAlloc(var9.getWidth() * var9.getHeight() * 4);
                         var5.add(var10);
@@ -394,18 +394,18 @@ public final class Window implements AutoCloseable {
    public int calculateScale(int var1, boolean var2) {
       int var3 = 1;
 
-      while(
+      while (
          var3 != var1
             && var3 < this.framebufferWidth
             && var3 < this.framebufferHeight
             && this.framebufferWidth / (var3 + 1) >= 320
             && this.framebufferHeight / (var3 + 1) >= 240
       ) {
-         ++var3;
+         var3++;
       }
 
       if (var2 && var3 % 2 != 0) {
-         ++var3;
+         var3++;
       }
 
       return var3;

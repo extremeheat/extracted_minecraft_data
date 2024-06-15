@@ -17,13 +17,11 @@ public class ChorusFruitItem extends Item {
       super(var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
       ItemStack var4 = super.finishUsingItem(var1, var2, var3);
       if (!var2.isClientSide) {
-         for(int var5 = 0; var5 < 16; ++var5) {
+         for (int var5 = 0; var5 < 16; var5++) {
             double var6 = var3.getX() + (var3.getRandom().nextDouble() - 0.5) * 16.0;
             double var8 = Mth.clamp(
                var3.getY() + (double)(var3.getRandom().nextInt(16) - 8),

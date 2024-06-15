@@ -1,13 +1,13 @@
 package net.minecraft.network;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import net.minecraft.util.SampleLogger;
+import net.minecraft.util.debugchart.LocalSampleLogger;
 
 public class BandwidthDebugMonitor {
    private final AtomicInteger bytesReceived = new AtomicInteger();
-   private final SampleLogger bandwidthLogger;
+   private final LocalSampleLogger bandwidthLogger;
 
-   public BandwidthDebugMonitor(SampleLogger var1) {
+   public BandwidthDebugMonitor(LocalSampleLogger var1) {
       super();
       this.bandwidthLogger = var1;
    }

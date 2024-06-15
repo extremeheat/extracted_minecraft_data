@@ -21,14 +21,13 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class Animal extends AgeableMob {
    protected static final int PARENT_AGE_AFTER_BREEDING = 6000;
@@ -38,8 +37,8 @@ public abstract class Animal extends AgeableMob {
 
    protected Animal(EntityType<? extends Animal> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
 
    @Override
@@ -59,7 +58,7 @@ public abstract class Animal extends AgeableMob {
       }
 
       if (this.inLove > 0) {
-         --this.inLove;
+         this.inLove--;
          if (this.inLove % 10 == 0) {
             double var1 = this.random.nextGaussian() * 0.02;
             double var3 = this.random.nextGaussian() * 0.02;
@@ -70,13 +69,9 @@ public abstract class Animal extends AgeableMob {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else {
-         this.inLove = 0;
-         return super.hurt(var1, var2);
-      }
+   protected void actuallyHurt(DamageSource var1, float var2) {
+      this.resetLove();
+      super.actuallyHurt(var1, var2);
    }
 
    @Override
@@ -124,9 +119,7 @@ public abstract class Animal extends AgeableMob {
       return 1 + this.level().random.nextInt(3);
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(Items.WHEAT);
-   }
+   public abstract boolean isFood(ItemStack var1);
 
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
@@ -154,9 +147,7 @@ public abstract class Animal extends AgeableMob {
    }
 
    protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
-      if (!var1.getAbilities().instabuild) {
-         var3.shrink(1);
-      }
+      var3.consume(1, var1);
    }
 
    public boolean canFallInLove() {
@@ -201,10 +192,8 @@ public abstract class Animal extends AgeableMob {
    public boolean canMate(Animal var1) {
       if (var1 == this) {
          return false;
-      } else if (var1.getClass() != this.getClass()) {
-         return false;
       } else {
-         return this.isInLove() && var1.isInLove();
+         return var1.getClass() != this.getClass() ? false : this.isInLove() && var1.isInLove();
       }
    }
 
@@ -236,7 +225,7 @@ public abstract class Animal extends AgeableMob {
    @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 18) {
-         for(int var2 = 0; var2 < 7; ++var2) {
+         for (int var2 = 0; var2 < 7; var2++) {
             double var3 = this.random.nextGaussian() * 0.02;
             double var5 = this.random.nextGaussian() * 0.02;
             double var7 = this.random.nextGaussian() * 0.02;

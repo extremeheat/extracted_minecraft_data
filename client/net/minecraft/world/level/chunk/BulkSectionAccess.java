@@ -59,7 +59,7 @@ public class BulkSectionAccess implements AutoCloseable {
    public void close() {
       ObjectIterator var1 = this.acquiredSections.values().iterator();
 
-      while(var1.hasNext()) {
+      while (var1.hasNext()) {
          LevelChunkSection var2 = (LevelChunkSection)var1.next();
          var2.release();
       }

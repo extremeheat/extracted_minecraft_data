@@ -4,7 +4,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.TerrainProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -67,7 +67,7 @@ public class NoiseRouterData {
       return ResourceKey.create(Registries.DENSITY_FUNCTION, new ResourceLocation(var0));
    }
 
-   public static Holder<? extends DensityFunction> bootstrap(BootstapContext<DensityFunction> var0) {
+   public static Holder<? extends DensityFunction> bootstrap(BootstrapContext<DensityFunction> var0) {
       HolderGetter var1 = var0.lookup(Registries.NOISE);
       HolderGetter var2 = var0.lookup(Registries.DENSITY_FUNCTION);
       var0.register(ZERO, DensityFunctions.zero());
@@ -118,7 +118,7 @@ public class NoiseRouterData {
    }
 
    private static void registerTerrainNoises(
-      BootstapContext<DensityFunction> var0,
+      BootstrapContext<DensityFunction> var0,
       HolderGetter<DensityFunction> var1,
       DensityFunction var2,
       Holder<DensityFunction> var3,
@@ -156,7 +156,7 @@ public class NoiseRouterData {
       var0.register(var9, DensityFunctions.add(var20, getFunction(var1, BASE_3D_NOISE_OVERWORLD)));
    }
 
-   private static DensityFunction registerAndWrap(BootstapContext<DensityFunction> var0, ResourceKey<DensityFunction> var1, DensityFunction var2) {
+   private static DensityFunction registerAndWrap(BootstrapContext<DensityFunction> var0, ResourceKey<DensityFunction> var1, DensityFunction var2) {
       return new DensityFunctions.HolderHolder(var0.register(var1, var2));
    }
 
@@ -203,9 +203,9 @@ public class NoiseRouterData {
 
    private static DensityFunction noodle(HolderGetter<DensityFunction> var0, HolderGetter<NormalNoise.NoiseParameters> var1) {
       DensityFunction var2 = getFunction(var0, Y);
-      boolean var3 = true;
-      boolean var4 = true;
-      boolean var5 = true;
+      byte var3 = -64;
+      byte var4 = -60;
+      short var5 = 320;
       DensityFunction var6 = yLimitedInterpolatable(var2, DensityFunctions.noise(var1.getOrThrow(Noises.NOODLE), 1.0, 1.0), -60, 320, -1);
       DensityFunction var7 = yLimitedInterpolatable(
          var2, DensityFunctions.mappedNoise(var1.getOrThrow(Noises.NOODLE_THICKNESS), 1.0, 1.0, -0.05, -0.1), -60, 320, 0

@@ -8,7 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.random.SimpleWeightedRandomList;
@@ -163,7 +163,7 @@ public class TreeFeatures {
          .ignoreVines();
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
       HolderGetter var1 = var0.lookup(Registries.BLOCK);
       BlockPredicate var2 = BlockPredicate.matchesBlocks(
          Blocks.OAK_SAPLING,
@@ -505,9 +505,7 @@ public class TreeFeatures {
                      1,
                      0,
                      new RandomizedIntStateProvider(
-                        BlockStateProvider.simple(
-                           Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, Boolean.valueOf(true))
-                        ),
+                        BlockStateProvider.simple(Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, Boolean.valueOf(true))),
                         MangrovePropaguleBlock.AGE,
                         UniformInt.of(0, 4)
                      ),
@@ -556,9 +554,7 @@ public class TreeFeatures {
                      1,
                      0,
                      new RandomizedIntStateProvider(
-                        BlockStateProvider.simple(
-                           Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, Boolean.valueOf(true))
-                        ),
+                        BlockStateProvider.simple(Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(MangrovePropaguleBlock.HANGING, Boolean.valueOf(true))),
                         MangrovePropaguleBlock.AGE,
                         UniformInt.of(0, 4)
                      ),

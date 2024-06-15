@@ -1,0 +1,146 @@
+package net.minecraft.world.item.component;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapDecoder;
+import com.mojang.serialization.MapEncoder;
+import com.mojang.serialization.MapLike;
+import io.netty.buffer.ByteBuf;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+
+public final class CustomData {
+   public static final CustomData EMPTY = new CustomData(new CompoundTag());
+   public static final Codec<CustomData> CODEC = CompoundTag.CODEC.xmap(CustomData::new, var0 -> var0.tag);
+   public static final Codec<CustomData> CODEC_WITH_ID = CODEC.validate(
+      var0 -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + var0)
+   );
+   @Deprecated
+   public static final StreamCodec<ByteBuf, CustomData> STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, var0 -> var0.tag);
+   private final CompoundTag tag;
+
+   private CustomData(CompoundTag var1) {
+      super();
+      this.tag = var1;
+   }
+
+   public static CustomData of(CompoundTag var0) {
+      return new CustomData(var0.copy());
+   }
+
+   public static Predicate<ItemStack> itemMatcher(DataComponentType<CustomData> var0, CompoundTag var1) {
+      return var2 -> {
+         CustomData var3 = var2.getOrDefault(var0, EMPTY);
+         return var3.matchedBy(var1);
+      };
+   }
+
+   public boolean matchedBy(CompoundTag var1) {
+      return NbtUtils.compareNbt(var1, this.tag, true);
+   }
+
+   public static void update(DataComponentType<CustomData> var0, ItemStack var1, Consumer<CompoundTag> var2) {
+      CustomData var3 = var1.getOrDefault(var0, EMPTY).update(var2);
+      if (var3.tag.isEmpty()) {
+         var1.remove(var0);
+      } else {
+         var1.set(var0, var3);
+      }
+   }
+
+   public static void set(DataComponentType<CustomData> var0, ItemStack var1, CompoundTag var2) {
+      if (!var2.isEmpty()) {
+         var1.set(var0, of(var2));
+      } else {
+         var1.remove(var0);
+      }
+   }
+
+   public CustomData update(Consumer<CompoundTag> var1) {
+      CompoundTag var2 = this.tag.copy();
+      var1.accept(var2);
+      return new CustomData(var2);
+   }
+
+   public void loadInto(Entity var1) {
+      CompoundTag var2 = var1.saveWithoutId(new CompoundTag());
+      UUID var3 = var1.getUUID();
+      var2.merge(this.tag);
+      var1.load(var2);
+      var1.setUUID(var3);
+   }
+
+   public boolean loadInto(BlockEntity var1, HolderLookup.Provider var2) {
+      CompoundTag var3 = var1.saveCustomOnly(var2);
+      CompoundTag var4 = var3.copy();
+      var3.merge(this.tag);
+      if (!var3.equals(var4)) {
+         var1.loadCustomOnly(var3, var2);
+         var1.setChanged();
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   public <T> DataResult<CustomData> update(MapEncoder<T> var1, T var2) {
+      return var1.encode(var2, NbtOps.INSTANCE, NbtOps.INSTANCE.mapBuilder()).build(this.tag).map(var0 -> new CustomData((CompoundTag)var0));
+   }
+
+   public <T> DataResult<T> read(MapDecoder<T> var1) {
+      MapLike var2 = (MapLike)NbtOps.INSTANCE.getMap((Tag)this.tag).getOrThrow();
+      return var1.decode(NbtOps.INSTANCE, var2);
+   }
+
+   public int size() {
+      return this.tag.size();
+   }
+
+   public boolean isEmpty() {
+      return this.tag.isEmpty();
+   }
+
+   public CompoundTag copyTag() {
+      return this.tag.copy();
+   }
+
+   public boolean contains(String var1) {
+      return this.tag.contains(var1);
+   }
+
+   @Override
+   public boolean equals(Object var1) {
+      if (var1 == this) {
+         return true;
+      } else {
+         return var1 instanceof CustomData var2 ? this.tag.equals(var2.tag) : false;
+      }
+   }
+
+   @Override
+   public int hashCode() {
+      return this.tag.hashCode();
+   }
+
+   @Override
+   public String toString() {
+      return this.tag.toString();
+   }
+
+   @Deprecated
+   public CompoundTag getUnsafe() {
+      return this.tag;
+   }
+}

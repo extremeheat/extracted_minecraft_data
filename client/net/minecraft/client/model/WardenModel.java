@@ -129,7 +129,7 @@ public class WardenModel<T extends Warden> extends HierarchicalModel<T> {
       float var6 = Mth.sin(var4);
       float var7 = Math.min(0.35F, var3);
       this.head.zRot += 0.3F * var6 * var3;
-      this.head.xRot += 1.2F * Mth.cos(var4 + 1.5707964F) * var7;
+      this.head.xRot = this.head.xRot + 1.2F * Mth.cos(var4 + 1.5707964F) * var7;
       this.body.zRot = 0.1F * var6 * var3;
       this.body.xRot = 1.0F * var5 * var7;
       this.leftLeg.xRot = 1.0F * var5 * var3;

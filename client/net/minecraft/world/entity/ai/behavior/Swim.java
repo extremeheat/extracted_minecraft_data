@@ -13,8 +13,12 @@ public class Swim extends Behavior<Mob> {
       this.chance = var1;
    }
 
+   public static boolean shouldSwim(Mob var0) {
+      return var0.isInWater() && var0.getFluidHeight(FluidTags.WATER) > var0.getFluidJumpThreshold() || var0.isInLava();
+   }
+
    protected boolean checkExtraStartConditions(ServerLevel var1, Mob var2) {
-      return var2.isInWater() && var2.getFluidHeight(FluidTags.WATER) > var2.getFluidJumpThreshold() || var2.isInLava();
+      return shouldSwim(var2);
    }
 
    protected boolean canStillUse(ServerLevel var1, Mob var2, long var3) {

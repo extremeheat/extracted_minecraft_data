@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -10,9 +9,7 @@ import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 
-public record StructureSet(List<StructureSet.StructureSelectionEntry> c, StructurePlacement d) {
-   private final List<StructureSet.StructureSelectionEntry> structures;
-   private final StructurePlacement placement;
+public record StructureSet(List<StructureSet.StructureSelectionEntry> structures, StructurePlacement placement) {
    public static final Codec<StructureSet> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                StructureSet.StructureSelectionEntry.CODEC.listOf().fieldOf("structures").forGetter(StructureSet::structures),
@@ -26,10 +23,10 @@ public record StructureSet(List<StructureSet.StructureSelectionEntry> c, Structu
       this(List.of(new StructureSet.StructureSelectionEntry(var1, 1)), var2);
    }
 
-   public StructureSet(List<StructureSet.StructureSelectionEntry> var1, StructurePlacement var2) {
+   public StructureSet(List<StructureSet.StructureSelectionEntry> structures, StructurePlacement placement) {
       super();
-      this.structures = var1;
-      this.placement = var2;
+      this.structures = structures;
+      this.placement = placement;
    }
 
    public static StructureSet.StructureSelectionEntry entry(Holder<Structure> var0, int var1) {
@@ -40,9 +37,7 @@ public record StructureSet(List<StructureSet.StructureSelectionEntry> c, Structu
       return new StructureSet.StructureSelectionEntry(var0, 1);
    }
 
-   public static record StructureSelectionEntry(Holder<Structure> b, int c) {
-      private final Holder<Structure> structure;
-      private final int weight;
+   public static record StructureSelectionEntry(Holder<Structure> structure, int weight) {
       public static final Codec<StructureSet.StructureSelectionEntry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Structure.CODEC.fieldOf("structure").forGetter(StructureSet.StructureSelectionEntry::structure),
@@ -51,10 +46,10 @@ public record StructureSet(List<StructureSet.StructureSelectionEntry> c, Structu
                .apply(var0, StructureSet.StructureSelectionEntry::new)
       );
 
-      public StructureSelectionEntry(Holder<Structure> var1, int var2) {
+      public StructureSelectionEntry(Holder<Structure> structure, int weight) {
          super();
-         this.structure = var1;
-         this.weight = var2;
+         this.structure = structure;
+         this.weight = weight;
       }
    }
 }

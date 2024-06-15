@@ -41,16 +41,16 @@ public class MinecartCommandBlock extends AbstractMinecart {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.getEntityData().define(DATA_ID_COMMAND_NAME, "");
-      this.getEntityData().define(DATA_ID_LAST_OUTPUT, CommonComponents.EMPTY);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_ID_COMMAND_NAME, "");
+      var1.define(DATA_ID_LAST_OUTPUT, CommonComponents.EMPTY);
    }
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.commandBlock.load(var1);
+      this.commandBlock.load(var1, this.registryAccess());
       this.getEntityData().set(DATA_ID_COMMAND_NAME, this.getCommandBlock().getCommand());
       this.getEntityData().set(DATA_ID_LAST_OUTPUT, this.getCommandBlock().getLastOutput());
    }
@@ -58,7 +58,7 @@ public class MinecartCommandBlock extends AbstractMinecart {
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      this.commandBlock.save(var1);
+      this.commandBlock.save(var1, this.registryAccess());
    }
 
    @Override

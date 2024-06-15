@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -22,7 +23,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
@@ -39,14 +39,12 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Vector3f;
 
 public class Hoglin extends Animal implements Enemy, HoglinBase {
    private static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.defineId(Hoglin.class, EntityDataSerializers.BOOLEAN);
@@ -115,7 +113,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       } else {
          this.attackAnimationRemainingTicks = 10;
          this.level().broadcastEntityEvent(this, (byte)4);
-         this.playSound(SoundEvents.HOGLIN_ATTACK, 1.0F, this.getVoicePitch());
+         this.makeSound(SoundEvents.HOGLIN_ATTACK);
          HoglinAi.onHitTarget(this, (LivingEntity)var1);
          return HoglinBase.hurtAndThrowTarget(this, (LivingEntity)var1);
       }
@@ -154,7 +152,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    @Override
    public Brain<Hoglin> getBrain() {
-      return super.getBrain();
+      return (Brain<Hoglin>)super.getBrain();
    }
 
    @Override
@@ -164,9 +162,9 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       this.level().getProfiler().pop();
       HoglinAi.updateActivity(this);
       if (this.isConverting()) {
-         ++this.timeInOverworld;
+         this.timeInOverworld++;
          if (this.timeInOverworld > 300) {
-            this.playSoundEvent(SoundEvents.HOGLIN_CONVERTED_TO_ZOMBIFIED);
+            this.makeSound(SoundEvents.HOGLIN_CONVERTED_TO_ZOMBIFIED);
             this.finishConversion((ServerLevel)this.level());
          }
       } else {
@@ -177,7 +175,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    @Override
    public void aiStep() {
       if (this.attackAnimationRemainingTicks > 0) {
-         --this.attackAnimationRemainingTicks;
+         this.attackAnimationRemainingTicks--;
       }
 
       super.aiStep();
@@ -200,14 +198,12 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var1.getRandom().nextFloat() < 0.2F) {
          this.setBaby(true);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -225,11 +221,6 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.09375F * var3, 0.0F);
-   }
-
-   @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       InteractionResult var3 = super.mobInteract(var1, var2);
       if (var3.consumesAction()) {
@@ -243,7 +234,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    public void handleEntityEvent(byte var1) {
       if (var1 == 4) {
          this.attackAnimationRemainingTicks = 10;
-         this.playSound(SoundEvents.HOGLIN_ATTACK, 1.0F, this.getVoicePitch());
+         this.makeSound(SoundEvents.HOGLIN_ATTACK);
       } else {
          super.handleEntityEvent(var1);
       }
@@ -273,7 +264,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    @Override
    public boolean isFood(ItemStack var1) {
-      return var1.is(Items.CRIMSON_FUNGUS);
+      return var1.is(ItemTags.HOGLIN_FOOD);
    }
 
    public boolean isAdult() {
@@ -281,9 +272,9 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_IMMUNE_TO_ZOMBIFICATION, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_IMMUNE_TO_ZOMBIFICATION, false);
    }
 
    @Override
@@ -378,13 +369,15 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       this.playSound(SoundEvents.HOGLIN_STEP, 0.15F, 1.0F);
    }
 
-   protected void playSoundEvent(SoundEvent var1) {
-      this.playSound(var1, this.getSoundVolume(), this.getVoicePitch());
-   }
-
    @Override
    protected void sendDebugPackets() {
       super.sendDebugPackets();
       DebugPackets.sendEntityBrain(this);
+   }
+
+   @Nullable
+   @Override
+   public LivingEntity getTarget() {
+      return this.getTargetFromBrain();
    }
 }

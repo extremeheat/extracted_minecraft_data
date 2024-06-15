@@ -102,9 +102,7 @@ public class TraderLlama extends Llama {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var3 == MobSpawnType.EVENT) {
          this.setAge(0);
       }
@@ -113,7 +111,7 @@ public class TraderLlama extends Llama {
          var4 = new AgeableMob.AgeableMobGroupData(false);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    protected static class TraderLlamaDefendWanderingTraderGoal extends TargetGoal {
@@ -131,16 +129,12 @@ public class TraderLlama extends Llama {
       public boolean canUse() {
          if (!this.llama.isLeashed()) {
             return false;
+         } else if (!(this.llama.getLeashHolder() instanceof WanderingTrader var2)) {
+            return false;
          } else {
-            Entity var1 = this.llama.getLeashHolder();
-            if (!(var1 instanceof WanderingTrader)) {
-               return false;
-            } else {
-               WanderingTrader var2 = (WanderingTrader)var1;
-               this.ownerLastHurtBy = var2.getLastHurtByMob();
-               int var3 = var2.getLastHurtByMobTimestamp();
-               return var3 != this.timestamp && this.canAttack(this.ownerLastHurtBy, TargetingConditions.DEFAULT);
-            }
+            this.ownerLastHurtBy = var2.getLastHurtByMob();
+            int var3 = var2.getLastHurtByMobTimestamp();
+            return var3 != this.timestamp && this.canAttack(this.ownerLastHurtBy, TargetingConditions.DEFAULT);
          }
       }
 

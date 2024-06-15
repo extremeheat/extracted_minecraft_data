@@ -87,7 +87,7 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.placeBlock(var1, Blocks.AIR.defaultBlockState(), 1, 5, 9, var5);
          this.placeBlock(var1, Blocks.AIR.defaultBlockState(), 10, 5, 9, var5);
 
-         for(int var8 = 0; var8 <= 14; var8 += 14) {
+         for (byte var8 = 0; var8 <= 14; var8 += 14) {
             this.generateBox(var1, var5, 2, 4, var8, 2, 5, var8, false, var4, STONE_SELECTOR);
             this.generateBox(var1, var5, 4, 4, var8, 4, 5, var8, false, var4, STONE_SELECTOR);
             this.generateBox(var1, var5, 7, 4, var8, 7, 5, var8, false, var4, STONE_SELECTOR);
@@ -96,8 +96,8 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
 
          this.generateBox(var1, var5, 5, 6, 0, 6, 6, 0, false, var4, STONE_SELECTOR);
 
-         for(int var14 = 0; var14 <= 11; var14 += 11) {
-            for(int var9 = 2; var9 <= 12; var9 += 2) {
+         for (byte var14 = 0; var14 <= 11; var14 += 11) {
+            for (byte var9 = 2; var9 <= 12; var9 += 2) {
                this.generateBox(var1, var5, var14, 4, var9, var14, 5, var9, false, var4, STONE_SELECTOR);
             }
 
@@ -139,7 +139,7 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.placeBlock(var1, var15, 4, 4, 5, var5);
          this.placeBlock(var1, var16, 7, 4, 5, var5);
 
-         for(int var12 = 0; var12 < 4; ++var12) {
+         for (int var12 = 0; var12 < 4; var12++) {
             this.placeBlock(var1, var10, 5, 0 - var12, 6 + var12, var5);
             this.placeBlock(var1, var10, 6, 0 - var12, 6 + var12, var5);
             this.generateAirBox(var1, var5, 5, 0 - var12, 7 + var12, 6, 0 - var12, 9 + var12);
@@ -149,11 +149,11 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.generateAirBox(var1, var5, 1, -3, 1, 3, -1, 13);
          this.generateAirBox(var1, var5, 1, -3, 1, 9, -1, 5);
 
-         for(int var17 = 1; var17 <= 13; var17 += 2) {
+         for (byte var17 = 1; var17 <= 13; var17 += 2) {
             this.generateBox(var1, var5, 1, -3, var17, 1, -2, var17, false, var4, STONE_SELECTOR);
          }
 
-         for(int var18 = 2; var18 <= 12; var18 += 2) {
+         for (byte var18 = 2; var18 <= 12; var18 += 2) {
             this.generateBox(var1, var5, 1, -1, var18, 3, -1, var18, false, var4, STONE_SELECTOR);
          }
 

@@ -9,13 +9,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.util.FastBufferedInputStream;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.slf4j.Logger;
@@ -24,12 +26,14 @@ public class DimensionDataStorage {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Map<String, SavedData> cache = Maps.newHashMap();
    private final DataFixer fixerUpper;
+   private final HolderLookup.Provider registries;
    private final File dataFolder;
 
-   public DimensionDataStorage(File var1, DataFixer var2) {
+   public DimensionDataStorage(File var1, DataFixer var2, HolderLookup.Provider var3) {
       super();
       this.fixerUpper = var2;
       this.dataFolder = var1;
+      this.registries = var3;
    }
 
    private File getDataFile(String var1) {
@@ -59,12 +63,12 @@ public class DimensionDataStorage {
    }
 
    @Nullable
-   private <T extends SavedData> T readSavedData(Function<CompoundTag, T> var1, DataFixTypes var2, String var3) {
+   private <T extends SavedData> T readSavedData(BiFunction<CompoundTag, HolderLookup.Provider, T> var1, DataFixTypes var2, String var3) {
       try {
          File var4 = this.getDataFile(var3);
          if (var4.exists()) {
             CompoundTag var5 = this.readTagFromDisk(var3, var2, SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-            return (T)var1.apply(var5.getCompound("data"));
+            return (T)var1.apply(var5.getCompound("data"), this.registries);
          }
       } catch (Exception var6) {
          LOGGER.error("Error loading saved data: {}", var3, var6);
@@ -83,7 +87,7 @@ public class DimensionDataStorage {
       CompoundTag var9;
       try (
          FileInputStream var5 = new FileInputStream(var4);
-         PushbackInputStream var6 = new PushbackInputStream(var5, 2);
+         PushbackInputStream var6 = new PushbackInputStream(new FastBufferedInputStream(var5), 2);
       ) {
          CompoundTag var7;
          if (this.isGzip(var6)) {
@@ -122,7 +126,7 @@ public class DimensionDataStorage {
    public void save() {
       this.cache.forEach((var1, var2) -> {
          if (var2 != null) {
-            var2.save(this.getDataFile(var1));
+            var2.save(this.getDataFile(var1), this.registries);
          }
       });
    }

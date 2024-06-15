@@ -113,16 +113,16 @@ public abstract class Particle {
       if (this.age++ >= this.lifetime) {
          this.remove();
       } else {
-         this.yd -= 0.04 * (double)this.gravity;
+         this.yd = this.yd - 0.04 * (double)this.gravity;
          this.move(this.xd, this.yd, this.zd);
          if (this.speedUpWhenYMotionIsBlocked && this.y == this.yo) {
             this.xd *= 1.1;
             this.zd *= 1.1;
          }
 
-         this.xd *= (double)this.friction;
-         this.yd *= (double)this.friction;
-         this.zd *= (double)this.friction;
+         this.xd = this.xd * (double)this.friction;
+         this.yd = this.yd * (double)this.friction;
+         this.zd = this.zd * (double)this.friction;
          if (this.onGround) {
             this.xd *= 0.699999988079071;
             this.zd *= 0.699999988079071;
@@ -237,5 +237,30 @@ public abstract class Particle {
 
    public Optional<ParticleGroup> getParticleGroup() {
       return Optional.empty();
+   }
+
+   public static record LifetimeAlpha(float startAlpha, float endAlpha, float startAtNormalizedAge, float endAtNormalizedAge) {
+      public static final Particle.LifetimeAlpha ALWAYS_OPAQUE = new Particle.LifetimeAlpha(1.0F, 1.0F, 0.0F, 1.0F);
+
+      public LifetimeAlpha(float startAlpha, float endAlpha, float startAtNormalizedAge, float endAtNormalizedAge) {
+         super();
+         this.startAlpha = startAlpha;
+         this.endAlpha = endAlpha;
+         this.startAtNormalizedAge = startAtNormalizedAge;
+         this.endAtNormalizedAge = endAtNormalizedAge;
+      }
+
+      public boolean isOpaque() {
+         return this.startAlpha >= 1.0F && this.endAlpha >= 1.0F;
+      }
+
+      public float currentAlphaForAge(int var1, int var2, float var3) {
+         if (Mth.equal(this.startAlpha, this.endAlpha)) {
+            return this.startAlpha;
+         } else {
+            float var4 = Mth.inverseLerp(((float)var1 + var3) / (float)var2, this.startAtNormalizedAge, this.endAtNormalizedAge);
+            return Mth.clampedLerp(this.startAlpha, this.endAlpha, var4);
+         }
+      }
    }
 }

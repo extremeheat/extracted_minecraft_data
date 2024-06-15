@@ -38,7 +38,7 @@ public class DeltaFeature extends Feature<DeltaFeatureConfiguration> {
       int var12 = var5.size().sample(var3);
       int var13 = Math.max(var11, var12);
 
-      for(BlockPos var15 : BlockPos.withinManhattan(var6, var11, 0, var12)) {
+      for (BlockPos var15 : BlockPos.withinManhattan(var6, var11, 0, var12)) {
          if (var15.distManhattan(var6) > var13) {
             break;
          }
@@ -67,7 +67,7 @@ public class DeltaFeature extends Feature<DeltaFeatureConfiguration> {
       } else if (CANNOT_REPLACE.contains(var3.getBlock())) {
          return false;
       } else {
-         for(Direction var7 : DIRECTIONS) {
+         for (Direction var7 : DIRECTIONS) {
             boolean var8 = var0.getBlockState(var1.relative(var7)).isAir();
             if (var8 && var7 != Direction.UP || !var8 && var7 == Direction.UP) {
                return false;

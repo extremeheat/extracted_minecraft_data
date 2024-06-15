@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster.warden;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -48,11 +47,11 @@ public class WardenSpawnTracker {
          this.decreaseWarningLevel();
          this.ticksSinceLastWarning = 0;
       } else {
-         ++this.ticksSinceLastWarning;
+         this.ticksSinceLastWarning++;
       }
 
       if (this.cooldownTicks > 0) {
-         --this.cooldownTicks;
+         this.cooldownTicks--;
       }
    }
 

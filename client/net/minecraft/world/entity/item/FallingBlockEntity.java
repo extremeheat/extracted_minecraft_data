@@ -107,8 +107,8 @@ public class FallingBlockEntity extends Entity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.entityData.define(DATA_START_POS, BlockPos.ZERO);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_START_POS, BlockPos.ZERO);
    }
 
    @Override
@@ -117,16 +117,18 @@ public class FallingBlockEntity extends Entity {
    }
 
    @Override
+   protected double getDefaultGravity() {
+      return 0.04;
+   }
+
+   @Override
    public void tick() {
       if (this.blockState.isAir()) {
          this.discard();
       } else {
          Block var1 = this.blockState.getBlock();
-         ++this.time;
-         if (!this.isNoGravity()) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.04, 0.0));
-         }
-
+         this.time++;
+         this.applyGravity();
          this.move(MoverType.SELF, this.getDeltaMovement());
          if (!this.level().isClientSide) {
             BlockPos var2 = this.blockPosition();
@@ -168,14 +170,14 @@ public class FallingBlockEntity extends Entity {
                            if (this.blockData != null && this.blockState.hasBlockEntity()) {
                               BlockEntity var11 = this.level().getBlockEntity(var2);
                               if (var11 != null) {
-                                 CompoundTag var12 = var11.saveWithoutMetadata();
+                                 CompoundTag var12 = var11.saveWithoutMetadata(this.level().registryAccess());
 
-                                 for(String var14 : this.blockData.getAllKeys()) {
+                                 for (String var14 : this.blockData.getAllKeys()) {
                                     var12.put(var14, this.blockData.get(var14).copy());
                                  }
 
                                  try {
-                                    var11.load(var12);
+                                    var11.loadWithComponents(var12, this.level().registryAccess());
                                  } catch (Exception var15) {
                                     LOGGER.error("Failed to load block entity from falling block", var15);
                                  }
@@ -230,8 +232,7 @@ public class FallingBlockEntity extends Entity {
             return false;
          } else {
             Predicate var5 = EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(EntitySelector.LIVING_ENTITY_STILL_ALIVE);
-            Block var8 = this.blockState.getBlock();
-            DamageSource var6 = var8 instanceof Fallable var7 ? var7.getFallDamageSource(this) : this.damageSources().fallingBlock(this);
+            DamageSource var6 = this.blockState.getBlock() instanceof Fallable var7 ? var7.getFallDamageSource(this) : this.damageSources().fallingBlock(this);
             float var10 = (float)Math.min(Mth.floor((float)var4 * this.fallDamagePerDistance), this.fallDamageMax);
             this.level().getEntities(this, this.getBoundingBox(), var5).forEach(var2x -> var2x.hurt(var6, var10));
             boolean var11 = this.blockState.is(BlockTags.ANVIL);

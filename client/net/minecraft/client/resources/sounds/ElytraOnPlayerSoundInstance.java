@@ -20,7 +20,7 @@ public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
 
    @Override
    public void tick() {
-      ++this.time;
+      this.time++;
       if (!this.player.isRemoved() && (this.time <= 20 || this.player.isFallFlying())) {
          this.x = (double)((float)this.player.getX());
          this.y = (double)((float)this.player.getY());
@@ -35,7 +35,7 @@ public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
          if (this.time < 20) {
             this.volume = 0.0F;
          } else if (this.time < 40) {
-            this.volume *= (float)(this.time - 20) / 20.0F;
+            this.volume = this.volume * ((float)(this.time - 20) / 20.0F);
          }
 
          float var2 = 0.8F;

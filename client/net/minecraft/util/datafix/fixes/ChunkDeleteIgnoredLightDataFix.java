@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -21,8 +20,8 @@ public class ChunkDeleteIgnoredLightDataFix extends DataFix {
          "ChunkDeleteIgnoredLightDataFix",
          var1,
          var1x -> {
-            boolean var2xx = ((Dynamic)var1x.get(DSL.remainderFinder())).get("isLightOn").asBoolean(false);
-            return !var2xx
+            boolean var2x = ((Dynamic)var1x.get(DSL.remainderFinder())).get("isLightOn").asBoolean(false);
+            return !var2x
                ? var1x.updateTyped(var2, var0x -> var0x.update(DSL.remainderFinder(), var0xx -> var0xx.remove("BlockLight").remove("SkyLight")))
                : var1x;
          }

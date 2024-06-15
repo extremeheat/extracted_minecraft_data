@@ -19,7 +19,7 @@ public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Prope
       super(var1, var2);
       this.values = ImmutableSet.copyOf(var3);
 
-      for(Enum var5 : var3) {
+      for (Enum var5 : var3) {
          String var6 = ((StringRepresentable)var5).getSerializedName();
          if (this.names.containsKey(var6)) {
             throw new IllegalArgumentException("Multiple values have the same name '" + var6 + "'");
@@ -43,8 +43,6 @@ public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Prope
       return ((StringRepresentable)var1).getSerializedName();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean equals(Object var1) {
       if (this == var1) {

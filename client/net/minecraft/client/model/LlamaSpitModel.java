@@ -20,7 +20,7 @@ public class LlamaSpitModel<T extends Entity> extends HierarchicalModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      boolean var2 = true;
+      byte var2 = 2;
       var1.addOrReplaceChild(
          "main",
          CubeListBuilder.create()

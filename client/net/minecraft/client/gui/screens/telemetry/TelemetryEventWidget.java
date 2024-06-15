@@ -9,10 +9,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractScrollWidget;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.layouts.Layout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.narration.NarratedElementType;
@@ -44,12 +42,17 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       this.setScrollAmount(this.scrollAmount());
    }
 
+   public void updateLayout() {
+      this.content = this.buildContent(Minecraft.getInstance().telemetryOptInExtra());
+      this.setScrollAmount(this.scrollAmount());
+   }
+
    private TelemetryEventWidget.Content buildContent(boolean var1) {
       TelemetryEventWidget.ContentBuilder var2 = new TelemetryEventWidget.ContentBuilder(this.containerWidth());
       ArrayList var3 = new ArrayList<>(TelemetryEventType.values());
       var3.sort(Comparator.comparing(TelemetryEventType::isOptIn));
 
-      for(int var4 = 0; var4 < var3.size(); ++var4) {
+      for (int var4 = 0; var4 < var3.size(); var4++) {
          TelemetryEventType var5 = (TelemetryEventType)var3.get(var4);
          boolean var6 = var5.isOptIn() && !var1;
          this.addEventType(var2, var5, var6);
@@ -112,7 +115,7 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
    }
 
    private void addEventTypeProperties(TelemetryEventType var1, TelemetryEventWidget.ContentBuilder var2, boolean var3) {
-      for(TelemetryProperty var5 : var1.properties()) {
+      for (TelemetryProperty var5 : var1.properties()) {
          var2.addLine(this.font, this.grayOutIfDisabled(var5.title(), var3));
       }
    }
@@ -121,14 +124,11 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       return this.width - this.totalInnerPadding();
    }
 
-   static record Content(Layout a, Component b) {
-      private final Layout container;
-      private final Component narration;
-
-      Content(Layout var1, Component var2) {
+   static record Content(Layout container, Component narration) {
+      Content(Layout container, Component narration) {
          super();
-         this.container = var1;
-         this.narration = var2;
+         this.container = container;
+         this.narration = narration;
       }
    }
 
@@ -157,8 +157,7 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       public void addHeader(Font var1, Component var2) {
          this.layout
             .addChild(
-               new MultiLineTextWidget(var2, var1).setMaxWidth(this.width - 64).setCentered(true),
-               var0 -> var0.alignHorizontallyCenter().paddingHorizontal(32)
+               new MultiLineTextWidget(var2, var1).setMaxWidth(this.width - 64).setCentered(true), var0 -> var0.alignHorizontallyCenter().paddingHorizontal(32)
             );
          this.narration.append(var2).append("\n");
       }

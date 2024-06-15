@@ -21,7 +21,7 @@ public class UnderwaterAmbientSoundHandler implements AmbientSoundHandler {
 
    @Override
    public void tick() {
-      --this.tickDelay;
+      this.tickDelay--;
       if (this.tickDelay <= 0 && this.player.isUnderWater()) {
          float var1 = this.player.level().random.nextFloat();
          if (var1 < 1.0E-4F) {

@@ -98,9 +98,9 @@ public abstract class BossEvent {
       private final String name;
       private final ChatFormatting formatting;
 
-      private BossBarColor(String var3, ChatFormatting var4) {
-         this.name = var3;
-         this.formatting = var4;
+      private BossBarColor(final String nullxx, final ChatFormatting nullxxx) {
+         this.name = nullxx;
+         this.formatting = nullxxx;
       }
 
       public ChatFormatting getFormatting() {
@@ -112,7 +112,7 @@ public abstract class BossEvent {
       }
 
       public static BossEvent.BossBarColor byName(String var0) {
-         for(BossEvent.BossBarColor var4 : values()) {
+         for (BossEvent.BossBarColor var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }
@@ -131,8 +131,8 @@ public abstract class BossEvent {
 
       private final String name;
 
-      private BossBarOverlay(String var3) {
-         this.name = var3;
+      private BossBarOverlay(final String nullxx) {
+         this.name = nullxx;
       }
 
       public String getName() {
@@ -140,7 +140,7 @@ public abstract class BossEvent {
       }
 
       public static BossEvent.BossBarOverlay byName(String var0) {
-         for(BossEvent.BossBarOverlay var4 : values()) {
+         for (BossEvent.BossBarOverlay var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }

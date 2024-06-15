@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -10,7 +9,9 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class DarkOakFoliagePlacer extends FoliagePlacer {
-   public static final Codec<DarkOakFoliagePlacer> CODEC = RecordCodecBuilder.create(var0 -> foliagePlacerParts(var0).apply(var0, DarkOakFoliagePlacer::new));
+   public static final MapCodec<DarkOakFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> foliagePlacerParts(var0).apply(var0, DarkOakFoliagePlacer::new)
+   );
 
    public DarkOakFoliagePlacer(IntProvider var1, IntProvider var2) {
       super(var1, var2);
@@ -64,10 +65,8 @@ public class DarkOakFoliagePlacer extends FoliagePlacer {
    protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
       if (var3 == -1 && !var6) {
          return var2 == var5 && var4 == var5;
-      } else if (var3 == 1) {
-         return var2 + var4 > var5 * 2 - 2;
       } else {
-         return false;
+         return var3 == 1 ? var2 + var4 > var5 * 2 - 2 : false;
       }
    }
 }

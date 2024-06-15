@@ -22,7 +22,7 @@ public class FormattedBidiReorder {
       ArrayList var4 = Lists.newArrayList();
       int var5 = var3.countRuns();
 
-      for(int var6 = 0; var6 < var5; ++var6) {
+      for (int var6 = 0; var6 < var5; var6++) {
          BidiRun var7 = var3.getVisualRun(var6);
          var4.addAll(var2.substring(var7.getStart(), var7.getLength(), var7.isOddRun()));
       }

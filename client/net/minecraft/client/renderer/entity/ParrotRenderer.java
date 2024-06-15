@@ -22,7 +22,7 @@ public class ParrotRenderer extends MobRenderer<Parrot, ParrotModel> {
    }
 
    public static ResourceLocation getVariantTexture(Parrot.Variant var0) {
-      return switch(var0) {
+      return switch (var0) {
          case RED_BLUE -> RED_BLUE;
          case BLUE -> BLUE;
          case GREEN -> GREEN;

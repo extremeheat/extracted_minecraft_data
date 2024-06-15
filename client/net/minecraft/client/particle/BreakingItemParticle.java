@@ -55,6 +55,16 @@ public class BreakingItemParticle extends TextureSheetParticle {
       return this.sprite.getV((this.vo + 1.0F) / 4.0F);
    }
 
+   public static class CobwebProvider implements ParticleProvider<SimpleParticleType> {
+      public CobwebProvider() {
+         super();
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return new BreakingItemParticle(var2, var3, var5, var7, new ItemStack(Items.COBWEB));
+      }
+   }
+
    public static class Provider implements ParticleProvider<ItemParticleOption> {
       public Provider() {
          super();

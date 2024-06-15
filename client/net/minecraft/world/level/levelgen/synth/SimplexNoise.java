@@ -37,11 +37,11 @@ public class SimplexNoise {
       this.zo = var1.nextDouble() * 256.0;
       int var2 = 0;
 
-      while(var2 < 256) {
+      while (var2 < 256) {
          this.p[var2] = var2++;
       }
 
-      for(int var5 = 0; var5 < 256; ++var5) {
+      for (int var5 = 0; var5 < 256; var5++) {
          int var3 = var1.nextInt(256 - var5);
          int var4 = this.p[var5];
          this.p[var5] = this.p[var3 + var5];

@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -28,7 +27,7 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class FlatLevelSource extends ChunkGenerator {
-   public static final Codec<FlatLevelSource> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<FlatLevelSource> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings))
             .apply(var0, var0.stable(FlatLevelSource::new))
    );
@@ -41,12 +40,12 @@ public class FlatLevelSource extends ChunkGenerator {
 
    @Override
    public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> var1, RandomState var2, long var3) {
-      Stream var5 = this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> var1.listElements().map(var0x -> var0x));
+      Stream var5 = this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> var1.listElements().map(var0x -> (Holder)var0x));
       return ChunkGeneratorStructureState.createForFlat(var2, var3, this.biomeSource, var5);
    }
 
    @Override
-   protected Codec<? extends ChunkGenerator> codec() {
+   protected MapCodec<? extends ChunkGenerator> codec() {
       return CODEC;
    }
 
@@ -70,13 +69,13 @@ public class FlatLevelSource extends ChunkGenerator {
       Heightmap var8 = var5.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
       Heightmap var9 = var5.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
 
-      for(int var10 = 0; var10 < Math.min(var5.getHeight(), var6.size()); ++var10) {
+      for (int var10 = 0; var10 < Math.min(var5.getHeight(), var6.size()); var10++) {
          BlockState var11 = (BlockState)var6.get(var10);
          if (var11 != null) {
             int var12 = var5.getMinBuildHeight() + var10;
 
-            for(int var13 = 0; var13 < 16; ++var13) {
-               for(int var14 = 0; var14 < 16; ++var14) {
+            for (int var13 = 0; var13 < 16; var13++) {
+               for (int var14 = 0; var14 < 16; var14++) {
                   var5.setBlockState(var7.set(var13, var12, var14), var11, false);
                   var8.update(var13, var12, var14, var11);
                   var9.update(var13, var12, var14, var11);
@@ -92,7 +91,7 @@ public class FlatLevelSource extends ChunkGenerator {
    public int getBaseHeight(int var1, int var2, Heightmap.Types var3, LevelHeightAccessor var4, RandomState var5) {
       List var6 = this.settings.getLayers();
 
-      for(int var7 = Math.min(var6.size(), var4.getMaxBuildHeight()) - 1; var7 >= 0; --var7) {
+      for (int var7 = Math.min(var6.size(), var4.getMaxBuildHeight()) - 1; var7 >= 0; var7--) {
          BlockState var8 = (BlockState)var6.get(var7);
          if (var8 != null && var3.isOpaque().test(var8)) {
             return var4.getMinBuildHeight() + var7 + 1;
@@ -111,7 +110,7 @@ public class FlatLevelSource extends ChunkGenerator {
             .stream()
             .limit((long)var3.getHeight())
             .map(var0 -> var0 == null ? Blocks.AIR.defaultBlockState() : var0)
-            .toArray(var0 -> new BlockState[var0])
+            .toArray(BlockState[]::new)
       );
    }
 

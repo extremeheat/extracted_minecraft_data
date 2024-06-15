@@ -34,7 +34,7 @@ public abstract class DataLayerStorageMap<M extends DataLayerStorageMap<M>> {
    @Nullable
    public DataLayer getLayer(long var1) {
       if (this.cacheEnabled) {
-         for(int var3 = 0; var3 < 2; ++var3) {
+         for (int var3 = 0; var3 < 2; var3++) {
             if (var1 == this.lastSectionKeys[var3]) {
                return this.lastSections[var3];
             }
@@ -46,7 +46,7 @@ public abstract class DataLayerStorageMap<M extends DataLayerStorageMap<M>> {
          return null;
       } else {
          if (this.cacheEnabled) {
-            for(int var4 = 1; var4 > 0; --var4) {
+            for (int var4 = 1; var4 > 0; var4--) {
                this.lastSectionKeys[var4] = this.lastSectionKeys[var4 - 1];
                this.lastSections[var4] = this.lastSections[var4 - 1];
             }
@@ -69,7 +69,7 @@ public abstract class DataLayerStorageMap<M extends DataLayerStorageMap<M>> {
    }
 
    public void clearCache() {
-      for(int var1 = 0; var1 < 2; ++var1) {
+      for (int var1 = 0; var1 < 2; var1++) {
          this.lastSectionKeys[var1] = 9223372036854775807L;
          this.lastSections[var1] = null;
       }

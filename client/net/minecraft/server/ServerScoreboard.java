@@ -4,8 +4,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundResetScorePacket;
@@ -41,7 +43,11 @@ public class ServerScoreboard extends Scoreboard {
       if (this.trackedObjectives.contains(var2)) {
          this.server
             .getPlayerList()
-            .broadcastAll(new ClientboundSetScorePacket(var1.getScoreboardName(), var2.getName(), var3.value(), var3.display(), var3.numberFormat()));
+            .broadcastAll(
+               new ClientboundSetScorePacket(
+                  var1.getScoreboardName(), var2.getName(), var3.value(), Optional.ofNullable(var3.display()), Optional.ofNullable(var3.numberFormat())
+               )
+            );
       }
 
       this.setDirty();
@@ -163,7 +169,7 @@ public class ServerScoreboard extends Scoreboard {
    }
 
    protected void setDirty() {
-      for(Runnable var2 : this.dirtyListeners) {
+      for (Runnable var2 : this.dirtyListeners) {
          var2.run();
       }
    }
@@ -172,14 +178,18 @@ public class ServerScoreboard extends Scoreboard {
       ArrayList var2 = Lists.newArrayList();
       var2.add(new ClientboundSetObjectivePacket(var1, 0));
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
+      for (DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
             var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
          }
       }
 
-      for(PlayerScoreEntry var8 : this.listPlayerScores(var1)) {
-         var2.add(new ClientboundSetScorePacket(var8.owner(), var1.getName(), var8.value(), var8.display(), var8.numberFormatOverride()));
+      for (PlayerScoreEntry var8 : this.listPlayerScores(var1)) {
+         var2.add(
+            new ClientboundSetScorePacket(
+               var8.owner(), var1.getName(), var8.value(), Optional.ofNullable(var8.display()), Optional.ofNullable(var8.numberFormatOverride())
+            )
+         );
       }
 
       return var2;
@@ -188,8 +198,8 @@ public class ServerScoreboard extends Scoreboard {
    public void startTrackingObjective(Objective var1) {
       List var2 = this.getStartTrackingPackets(var1);
 
-      for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-         for(Packet var6 : var2) {
+      for (ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
+         for (Packet var6 : var2) {
             var4.connection.send(var6);
          }
       }
@@ -201,7 +211,7 @@ public class ServerScoreboard extends Scoreboard {
       ArrayList var2 = Lists.newArrayList();
       var2.add(new ClientboundSetObjectivePacket(var1, 1));
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
+      for (DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
             var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
          }
@@ -213,8 +223,8 @@ public class ServerScoreboard extends Scoreboard {
    public void stopTrackingObjective(Objective var1) {
       List var2 = this.getStopTrackingPackets(var1);
 
-      for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-         for(Packet var6 : var2) {
+      for (ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
+         for (Packet var6 : var2) {
             var4.connection.send(var6);
          }
       }
@@ -225,9 +235,9 @@ public class ServerScoreboard extends Scoreboard {
    public int getObjectiveDisplaySlotCount(Objective var1) {
       int var2 = 0;
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
+      for (DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
-            ++var2;
+            var2++;
          }
       }
 
@@ -244,8 +254,8 @@ public class ServerScoreboard extends Scoreboard {
       return var1;
    }
 
-   private ScoreboardSaveData createData(CompoundTag var1) {
-      return this.createData().load(var1);
+   private ScoreboardSaveData createData(CompoundTag var1, HolderLookup.Provider var2) {
+      return this.createData().load(var1, var2);
    }
 
    public static enum Method {

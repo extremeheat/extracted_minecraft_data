@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -39,12 +38,12 @@ public class JigsawBlock extends Block implements EntityBlock, GameMasterBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(ORIENTATION, var2.rotation().rotate(var1.getValue(ORIENTATION)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.setValue(ORIENTATION, var2.rotation().rotate(var1.getValue(ORIENTATION)));
    }
 
@@ -67,10 +66,10 @@ public class JigsawBlock extends Block implements EntityBlock, GameMasterBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof JigsawBlockEntity && var4.canUseGameMasterBlocks()) {
-         var4.openJigsawBlock((JigsawBlockEntity)var7);
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      BlockEntity var6 = var2.getBlockEntity(var3);
+      if (var6 instanceof JigsawBlockEntity && var4.canUseGameMasterBlocks()) {
+         var4.openJigsawBlock((JigsawBlockEntity)var6);
          return InteractionResult.sidedSuccess(var2.isClientSide);
       } else {
          return InteractionResult.PASS;

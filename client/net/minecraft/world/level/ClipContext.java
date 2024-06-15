@@ -57,8 +57,8 @@ public class ClipContext {
 
       private final ClipContext.ShapeGetter shapeGetter;
 
-      private Block(ClipContext.ShapeGetter var3) {
-         this.shapeGetter = var3;
+      private Block(final ClipContext.ShapeGetter nullxx) {
+         this.shapeGetter = nullxx;
       }
 
       @Override
@@ -75,8 +75,8 @@ public class ClipContext {
 
       private final Predicate<FluidState> canPick;
 
-      private Fluid(Predicate<FluidState> var3) {
-         this.canPick = var3;
+      private Fluid(final Predicate<FluidState> nullxx) {
+         this.canPick = nullxx;
       }
 
       public boolean canPick(FluidState var1) {

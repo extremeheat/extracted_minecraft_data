@@ -2,9 +2,14 @@ package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundJigsawGeneratePacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundJigsawGeneratePacket> STREAM_CODEC = Packet.codec(
+      ServerboundJigsawGeneratePacket::write, ServerboundJigsawGeneratePacket::new
+   );
    private final BlockPos pos;
    private final int levels;
    private final boolean keepJigsaws;
@@ -16,18 +21,22 @@ public class ServerboundJigsawGeneratePacket implements Packet<ServerGamePacketL
       this.keepJigsaws = var3;
    }
 
-   public ServerboundJigsawGeneratePacket(FriendlyByteBuf var1) {
+   private ServerboundJigsawGeneratePacket(FriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
       this.levels = var1.readVarInt();
       this.keepJigsaws = var1.readBoolean();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
       var1.writeVarInt(this.levels);
       var1.writeBoolean(this.keepJigsaws);
+   }
+
+   @Override
+   public PacketType<ServerboundJigsawGeneratePacket> type() {
+      return GamePacketTypes.SERVERBOUND_JIGSAW_GENERATE;
    }
 
    public void handle(ServerGamePacketListener var1) {

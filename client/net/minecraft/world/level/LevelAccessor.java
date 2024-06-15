@@ -3,7 +3,10 @@ package net.minecraft.world.level;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -101,17 +104,21 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
       this.levelEvent(null, var1, var2, var3);
    }
 
-   void gameEvent(GameEvent var1, Vec3 var2, GameEvent.Context var3);
+   void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3);
 
-   default void gameEvent(@Nullable Entity var1, GameEvent var2, Vec3 var3) {
+   default void gameEvent(@Nullable Entity var1, Holder<GameEvent> var2, Vec3 var3) {
       this.gameEvent(var2, var3, new GameEvent.Context(var1, null));
    }
 
-   default void gameEvent(@Nullable Entity var1, GameEvent var2, BlockPos var3) {
+   default void gameEvent(@Nullable Entity var1, Holder<GameEvent> var2, BlockPos var3) {
       this.gameEvent(var2, var3, new GameEvent.Context(var1, null));
    }
 
-   default void gameEvent(GameEvent var1, BlockPos var2, GameEvent.Context var3) {
+   default void gameEvent(Holder<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
       this.gameEvent(var1, Vec3.atCenterOf(var2), var3);
+   }
+
+   default void gameEvent(ResourceKey<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
+      this.gameEvent(this.registryAccess().registryOrThrow(Registries.GAME_EVENT).getHolderOrThrow(var1), var2, var3);
    }
 }

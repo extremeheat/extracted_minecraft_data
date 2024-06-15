@@ -13,7 +13,7 @@ public class BastionSharedPools {
       super();
    }
 
-   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
       HolderGetter var1 = var0.lookup(Registries.TEMPLATE_POOL);
       Holder.Reference var2 = var1.getOrThrow(Pools.EMPTY);
       Pools.register(

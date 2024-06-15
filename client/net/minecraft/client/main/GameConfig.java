@@ -6,9 +6,9 @@ import java.io.File;
 import java.net.Proxy;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.User;
 import net.minecraft.client.resources.IndexedAssetSource;
+import net.minecraft.util.StringUtil;
 
 public class GameConfig {
    public final GameConfig.UserData user;
@@ -63,26 +63,17 @@ public class GameConfig {
       }
    }
 
-   public static record QuickPlayData(@Nullable String a, @Nullable String b, @Nullable String c, @Nullable String d) {
-      @Nullable
-      private final String path;
-      @Nullable
-      private final String singleplayer;
-      @Nullable
-      private final String multiplayer;
-      @Nullable
-      private final String realms;
-
-      public QuickPlayData(@Nullable String var1, @Nullable String var2, @Nullable String var3, @Nullable String var4) {
+   public static record QuickPlayData(@Nullable String path, @Nullable String singleplayer, @Nullable String multiplayer, @Nullable String realms) {
+      public QuickPlayData(@Nullable String path, @Nullable String singleplayer, @Nullable String multiplayer, @Nullable String realms) {
          super();
-         this.path = var1;
-         this.singleplayer = var2;
-         this.multiplayer = var3;
-         this.realms = var4;
+         this.path = path;
+         this.singleplayer = singleplayer;
+         this.multiplayer = multiplayer;
+         this.realms = realms;
       }
 
       public boolean isEnabled() {
-         return !Util.isBlank(this.singleplayer) || !Util.isBlank(this.multiplayer) || !Util.isBlank(this.realms);
+         return !StringUtil.isBlank(this.singleplayer) || !StringUtil.isBlank(this.multiplayer) || !StringUtil.isBlank(this.realms);
       }
    }
 

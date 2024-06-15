@@ -24,7 +24,7 @@ public class DragonLandingPhase extends AbstractDragonPhaseInstance {
       double var4 = this.dragon.head.getY(0.5);
       double var6 = this.dragon.head.getZ();
 
-      for(int var8 = 0; var8 < 8; ++var8) {
+      for (int var8 = 0; var8 < 8; var8++) {
          RandomSource var9 = this.dragon.getRandom();
          double var10 = var2 + var9.nextGaussian() / 2.0;
          double var12 = var4 + var9.nextGaussian() / 2.0;

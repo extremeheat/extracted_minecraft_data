@@ -16,7 +16,6 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +26,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.slf4j.Logger;
@@ -68,12 +66,7 @@ public abstract class AbstractContainerMenu {
    }
 
    protected static boolean stillValid(ContainerLevelAccess var0, Player var1, Block var2) {
-      return var0.evaluate(
-         (var2x, var3) -> !var2x.getBlockState(var3).is(var2)
-               ? false
-               : var1.distanceToSqr((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5) <= 64.0,
-         true
-      );
+      return var0.evaluate((var2x, var3) -> !var2x.getBlockState(var3).is(var2) ? false : var1.canInteractWithBlock(var3, 4.0), true);
    }
 
    public MenuType<?> getType() {
@@ -117,7 +110,7 @@ public abstract class AbstractContainerMenu {
    }
 
    protected void addDataSlots(ContainerData var1) {
-      for(int var2 = 0; var2 < var1.getCount(); ++var2) {
+      for (int var2 = 0; var2 < var1.getCount(); var2++) {
          this.addDataSlot(DataSlot.forContainer(var1, var2));
       }
    }
@@ -137,14 +130,14 @@ public abstract class AbstractContainerMenu {
    public void sendAllDataToRemote() {
       int var1 = 0;
 
-      for(int var2 = this.slots.size(); var1 < var2; ++var1) {
+      for (int var2 = this.slots.size(); var1 < var2; var1++) {
          this.remoteSlots.set(var1, this.slots.get(var1).getItem().copy());
       }
 
       this.remoteCarried = this.getCarried().copy();
       var1 = 0;
 
-      for(int var4 = this.dataSlots.size(); var1 < var4; ++var1) {
+      for (int var4 = this.dataSlots.size(); var1 < var4; var1++) {
          this.remoteDataSlots.set(var1, this.dataSlots.get(var1).get());
       }
 
@@ -160,7 +153,7 @@ public abstract class AbstractContainerMenu {
    public NonNullList<ItemStack> getItems() {
       NonNullList var1 = NonNullList.create();
 
-      for(Slot var3 : this.slots) {
+      for (Slot var3 : this.slots) {
          var1.add(var3.getItem());
       }
 
@@ -168,7 +161,7 @@ public abstract class AbstractContainerMenu {
    }
 
    public void broadcastChanges() {
-      for(int var1 = 0; var1 < this.slots.size(); ++var1) {
+      for (int var1 = 0; var1 < this.slots.size(); var1++) {
          ItemStack var2 = this.slots.get(var1).getItem();
          Supplier var3 = Suppliers.memoize(var2::copy);
          this.triggerSlotListeners(var1, var2, var3);
@@ -177,7 +170,7 @@ public abstract class AbstractContainerMenu {
 
       this.synchronizeCarriedToRemote();
 
-      for(int var4 = 0; var4 < this.dataSlots.size(); ++var4) {
+      for (int var4 = 0; var4 < this.dataSlots.size(); var4++) {
          DataSlot var5 = this.dataSlots.get(var4);
          int var6 = var5.get();
          if (var5.checkAndClearUpdateFlag()) {
@@ -189,12 +182,12 @@ public abstract class AbstractContainerMenu {
    }
 
    public void broadcastFullState() {
-      for(int var1 = 0; var1 < this.slots.size(); ++var1) {
+      for (int var1 = 0; var1 < this.slots.size(); var1++) {
          ItemStack var2 = this.slots.get(var1).getItem();
          this.triggerSlotListeners(var1, var2, var2::copy);
       }
 
-      for(int var3 = 0; var3 < this.dataSlots.size(); ++var3) {
+      for (int var3 = 0; var3 < this.dataSlots.size(); var3++) {
          DataSlot var4 = this.dataSlots.get(var3);
          if (var4.checkAndClearUpdateFlag()) {
             this.updateDataSlotListeners(var3, var4.get());
@@ -205,7 +198,7 @@ public abstract class AbstractContainerMenu {
    }
 
    private void updateDataSlotListeners(int var1, int var2) {
-      for(ContainerListener var4 : this.containerListeners) {
+      for (ContainerListener var4 : this.containerListeners) {
          var4.dataChanged(this, var1, var2);
       }
    }
@@ -216,7 +209,7 @@ public abstract class AbstractContainerMenu {
          ItemStack var5 = (ItemStack)var3.get();
          this.lastSlots.set(var1, var5);
 
-         for(ContainerListener var7 : this.containerListeners) {
+         for (ContainerListener var7 : this.containerListeners) {
             var7.slotChanged(this, var1, var5);
          }
       }
@@ -343,7 +336,7 @@ public abstract class AbstractContainerMenu {
 
                int var28 = this.getCarried().getCount();
 
-               for(Slot var10 : this.quickcraftSlots) {
+               for (Slot var10 : this.quickcraftSlots) {
                   ItemStack var11 = this.getCarried();
                   if (var10 != null
                      && canItemQuickReplace(var10, var11, true)
@@ -391,7 +384,7 @@ public abstract class AbstractContainerMenu {
 
             ItemStack var32 = this.quickMoveStack(var4, var1);
 
-            while(!var32.isEmpty() && ItemStack.isSameItem(var26.getItem(), var32)) {
+            while (!var32.isEmpty() && ItemStack.isSameItem(var26.getItem(), var32)) {
                var32 = this.quickMoveStack(var4, var1);
             }
          } else {
@@ -418,14 +411,14 @@ public abstract class AbstractContainerMenu {
                         var27.onTake(var4, var3x);
                      });
                   } else if (var27.mayPlace(var37)) {
-                     if (ItemStack.isSameItemSameTags(var33, var37)) {
+                     if (ItemStack.isSameItemSameComponents(var33, var37)) {
                         int var41 = var19 == ClickAction.PRIMARY ? var37.getCount() : 1;
                         this.setCarried(var27.safeInsert(var37, var41));
                      } else if (var37.getCount() <= var27.getMaxStackSize(var37)) {
                         this.setCarried(var33);
                         var27.setByPlayer(var37);
                      }
-                  } else if (ItemStack.isSameItemSameTags(var33, var37)) {
+                  } else if (ItemStack.isSameItemSameComponents(var33, var37)) {
                      Optional var42 = var27.tryRemove(var33.getCount(), var37.getMaxStackSize() - var37.getCount(), var4);
                      var42.ifPresent(var3x -> {
                         var37.grow(var3x.getCount());
@@ -474,7 +467,7 @@ public abstract class AbstractContainerMenu {
                }
             }
          }
-      } else if (var3 == ClickType.CLONE && var4.getAbilities().instabuild && this.getCarried().isEmpty() && var1 >= 0) {
+      } else if (var3 == ClickType.CLONE && var4.hasInfiniteMaterials() && this.getCarried().isEmpty() && var1 >= 0) {
          Slot var17 = this.slots.get(var1);
          if (var17.hasItem()) {
             ItemStack var24 = var17.getItem();
@@ -492,8 +485,8 @@ public abstract class AbstractContainerMenu {
             int var29 = var2 == 0 ? 0 : this.slots.size() - 1;
             int var34 = var2 == 0 ? 1 : -1;
 
-            for(int var38 = 0; var38 < 2; ++var38) {
-               for(int var43 = var29; var43 >= 0 && var43 < this.slots.size() && var22.getCount() < var22.getMaxStackSize(); var43 += var34) {
+            for (int var38 = 0; var38 < 2; var38++) {
+               for (int var43 = var29; var43 >= 0 && var43 < this.slots.size() && var22.getCount() < var22.getMaxStackSize(); var43 += var34) {
                   Slot var45 = this.slots.get(var43);
                   if (var45.hasItem() && canItemQuickReplace(var45, var22, true) && var45.mayPickup(var4) && this.canTakeItemForPickAll(var22, var45)) {
                      ItemStack var46 = var45.getItem();
@@ -510,11 +503,9 @@ public abstract class AbstractContainerMenu {
 
    private boolean tryItemClickBehaviourOverride(Player var1, ClickAction var2, Slot var3, ItemStack var4, ItemStack var5) {
       FeatureFlagSet var6 = var1.level().enabledFeatures();
-      if (var5.isItemEnabled(var6) && var5.overrideStackedOnOther(var3, var2, var1)) {
-         return true;
-      } else {
-         return var4.isItemEnabled(var6) && var4.overrideOtherStackedOnMe(var5, var3, var2, var1, this.createCarriedSlotAccess());
-      }
+      return var5.isItemEnabled(var6) && var5.overrideStackedOnOther(var3, var2, var1)
+         ? true
+         : var4.isItemEnabled(var6) && var4.overrideOtherStackedOnMe(var5, var3, var2, var1, this.createCarriedSlotAccess());
    }
 
    private SlotAccess createCarriedSlotAccess() {
@@ -553,11 +544,11 @@ public abstract class AbstractContainerMenu {
 
    protected void clearContainer(Player var1, Container var2) {
       if (!var1.isAlive() || var1 instanceof ServerPlayer && ((ServerPlayer)var1).hasDisconnected()) {
-         for(int var5 = 0; var5 < var2.getContainerSize(); ++var5) {
+         for (int var5 = 0; var5 < var2.getContainerSize(); var5++) {
             var1.drop(var2.removeItemNoUpdate(var5), false);
          }
       } else {
-         for(int var3 = 0; var3 < var2.getContainerSize(); ++var3) {
+         for (int var3 = 0; var3 < var2.getContainerSize(); var3++) {
             Inventory var4 = var1.getInventory();
             if (var4.player instanceof ServerPlayer) {
                var4.placeItemBackInInventory(var2.removeItemNoUpdate(var3));
@@ -576,7 +567,7 @@ public abstract class AbstractContainerMenu {
    }
 
    public void initializeContents(int var1, List<ItemStack> var2, ItemStack var3) {
-      for(int var4 = 0; var4 < var2.size(); ++var4) {
+      for (int var4 = 0; var4 < var2.size(); var4++) {
          this.getSlot(var4).set((ItemStack)var2.get(var4));
       }
 
@@ -598,28 +589,29 @@ public abstract class AbstractContainerMenu {
       }
 
       if (var1.isStackable()) {
-         while(!var1.isEmpty() && (var4 ? var6 >= var2 : var6 < var3)) {
+         while (!var1.isEmpty() && (var4 ? var6 >= var2 : var6 < var3)) {
             Slot var7 = this.slots.get(var6);
             ItemStack var8 = var7.getItem();
-            if (!var8.isEmpty() && ItemStack.isSameItemSameTags(var1, var8)) {
+            if (!var8.isEmpty() && ItemStack.isSameItemSameComponents(var1, var8)) {
                int var9 = var8.getCount() + var1.getCount();
-               if (var9 <= var1.getMaxStackSize()) {
+               int var10 = var7.getMaxStackSize(var8);
+               if (var9 <= var10) {
                   var1.setCount(0);
                   var8.setCount(var9);
                   var7.setChanged();
                   var5 = true;
-               } else if (var8.getCount() < var1.getMaxStackSize()) {
-                  var1.shrink(var1.getMaxStackSize() - var8.getCount());
-                  var8.setCount(var1.getMaxStackSize());
+               } else if (var8.getCount() < var10) {
+                  var1.shrink(var10 - var8.getCount());
+                  var8.setCount(var10);
                   var7.setChanged();
                   var5 = true;
                }
             }
 
             if (var4) {
-               --var6;
+               var6--;
             } else {
-               ++var6;
+               var6++;
             }
          }
       }
@@ -631,25 +623,21 @@ public abstract class AbstractContainerMenu {
             var6 = var2;
          }
 
-         while(var4 ? var6 >= var2 : var6 < var3) {
-            Slot var11 = this.slots.get(var6);
-            ItemStack var12 = var11.getItem();
-            if (var12.isEmpty() && var11.mayPlace(var1)) {
-               if (var1.getCount() > var11.getMaxStackSize()) {
-                  var11.setByPlayer(var1.split(var11.getMaxStackSize()));
-               } else {
-                  var11.setByPlayer(var1.split(var1.getCount()));
-               }
-
-               var11.setChanged();
+         while (var4 ? var6 >= var2 : var6 < var3) {
+            Slot var12 = this.slots.get(var6);
+            ItemStack var13 = var12.getItem();
+            if (var13.isEmpty() && var12.mayPlace(var1)) {
+               int var14 = var12.getMaxStackSize(var1);
+               var12.setByPlayer(var1.split(Math.min(var1.getCount(), var14)));
+               var12.setChanged();
                var5 = true;
                break;
             }
 
             if (var4) {
-               --var6;
+               var6--;
             } else {
-               ++var6;
+               var6++;
             }
          }
       }
@@ -672,10 +660,8 @@ public abstract class AbstractContainerMenu {
    public static boolean isValidQuickcraftType(int var0, Player var1) {
       if (var0 == 0) {
          return true;
-      } else if (var0 == 1) {
-         return true;
       } else {
-         return var0 == 2 && var1.getAbilities().instabuild;
+         return var0 == 1 ? true : var0 == 2 && var1.hasInfiniteMaterials();
       }
    }
 
@@ -686,18 +672,16 @@ public abstract class AbstractContainerMenu {
 
    public static boolean canItemQuickReplace(@Nullable Slot var0, ItemStack var1, boolean var2) {
       boolean var3 = var0 == null || !var0.hasItem();
-      if (!var3 && ItemStack.isSameItemSameTags(var1, var0.getItem())) {
-         return var0.getItem().getCount() + (var2 ? 0 : var1.getCount()) <= var1.getMaxStackSize();
-      } else {
-         return var3;
-      }
+      return !var3 && ItemStack.isSameItemSameComponents(var1, var0.getItem())
+         ? var0.getItem().getCount() + (var2 ? 0 : var1.getCount()) <= var1.getMaxStackSize()
+         : var3;
    }
 
    public static int getQuickCraftPlaceCount(Set<Slot> var0, int var1, ItemStack var2) {
-      return switch(var1) {
+      return switch (var1) {
          case 0 -> Mth.floor((float)var2.getCount() / (float)var0.size());
          case 1 -> 1;
-         case 2 -> var2.getItem().getMaxStackSize();
+         case 2 -> var2.getMaxStackSize();
          default -> var2.getCount();
       };
    }
@@ -716,10 +700,10 @@ public abstract class AbstractContainerMenu {
       } else {
          float var1 = 0.0F;
 
-         for(int var2 = 0; var2 < var0.getContainerSize(); ++var2) {
+         for (int var2 = 0; var2 < var0.getContainerSize(); var2++) {
             ItemStack var3 = var0.getItem(var2);
             if (!var3.isEmpty()) {
-               var1 += (float)var3.getCount() / (float)Math.min(var0.getMaxStackSize(), var3.getMaxStackSize());
+               var1 += (float)var3.getCount() / (float)var0.getMaxStackSize(var3);
             }
          }
 
@@ -747,12 +731,12 @@ public abstract class AbstractContainerMenu {
    public void transferState(AbstractContainerMenu var1) {
       HashBasedTable var2 = HashBasedTable.create();
 
-      for(int var3 = 0; var3 < var1.slots.size(); ++var3) {
+      for (int var3 = 0; var3 < var1.slots.size(); var3++) {
          Slot var4 = var1.slots.get(var3);
          var2.put(var4.container, var4.getContainerSlot(), var3);
       }
 
-      for(int var6 = 0; var6 < this.slots.size(); ++var6) {
+      for (int var6 = 0; var6 < this.slots.size(); var6++) {
          Slot var7 = this.slots.get(var6);
          Integer var5 = (Integer)var2.get(var7.container, var7.getContainerSlot());
          if (var5 != null) {
@@ -763,7 +747,7 @@ public abstract class AbstractContainerMenu {
    }
 
    public OptionalInt findSlot(Container var1, int var2) {
-      for(int var3 = 0; var3 < this.slots.size(); ++var3) {
+      for (int var3 = 0; var3 < this.slots.size(); var3++) {
          Slot var4 = this.slots.get(var3);
          if (var4.container == var1 && var2 == var4.getContainerSlot()) {
             return OptionalInt.of(var3);

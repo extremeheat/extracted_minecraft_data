@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -10,7 +9,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class AcaciaFoliagePlacer extends FoliagePlacer {
-   public static final Codec<AcaciaFoliagePlacer> CODEC = RecordCodecBuilder.create(var0 -> foliagePlacerParts(var0).apply(var0, AcaciaFoliagePlacer::new));
+   public static final MapCodec<AcaciaFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(var0 -> foliagePlacerParts(var0).apply(var0, AcaciaFoliagePlacer::new));
 
    public AcaciaFoliagePlacer(IntProvider var1, IntProvider var2) {
       super(var1, var2);
@@ -47,10 +46,6 @@ public class AcaciaFoliagePlacer extends FoliagePlacer {
 
    @Override
    protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      if (var3 == 0) {
-         return (var2 > 1 || var4 > 1) && var2 != 0 && var4 != 0;
-      } else {
-         return var2 == var5 && var4 == var5 && var5 > 0;
-      }
+      return var3 == 0 ? (var2 > 1 || var4 > 1) && var2 != 0 && var4 != 0 : var2 == var5 && var4 == var5 && var5 > 0;
    }
 }

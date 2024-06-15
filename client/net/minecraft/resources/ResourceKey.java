@@ -2,10 +2,12 @@ package net.minecraft.resources;
 
 import com.google.common.collect.MapMaker;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.StreamCodec;
 
 public class ResourceKey<T> {
    private static final ConcurrentMap<ResourceKey.InternKey, ResourceKey<?>> VALUES = new MapMaker().weakValues().makeMap();
@@ -14,6 +16,10 @@ public class ResourceKey<T> {
 
    public static <T> Codec<ResourceKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {
       return ResourceLocation.CODEC.xmap(var1 -> create(var0, var1), ResourceKey::location);
+   }
+
+   public static <T> StreamCodec<ByteBuf, ResourceKey<T>> streamCodec(ResourceKey<? extends Registry<T>> var0) {
+      return ResourceLocation.STREAM_CODEC.map(var1 -> create(var0, var1), ResourceKey::location);
    }
 
    public static <T> ResourceKey<T> create(ResourceKey<? extends Registry<T>> var0, ResourceLocation var1) {
@@ -44,7 +50,7 @@ public class ResourceKey<T> {
    }
 
    public <E> Optional<ResourceKey<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-      return this.isFor(var1) ? Optional.of(this) : Optional.empty();
+      return this.isFor(var1) ? Optional.of((ResourceKey<E>)this) : Optional.empty();
    }
 
    public ResourceLocation location() {
@@ -55,14 +61,16 @@ public class ResourceKey<T> {
       return this.registryName;
    }
 
-   static record InternKey(ResourceLocation a, ResourceLocation b) {
-      final ResourceLocation registry;
-      final ResourceLocation location;
+   public ResourceKey<Registry<T>> registryKey() {
+      return createRegistryKey(this.registryName);
+   }
 
-      InternKey(ResourceLocation var1, ResourceLocation var2) {
+   static record InternKey(ResourceLocation registry, ResourceLocation location) {
+
+      InternKey(ResourceLocation registry, ResourceLocation location) {
          super();
-         this.registry = var1;
-         this.location = var2;
+         this.registry = registry;
+         this.location = location;
       }
    }
 }

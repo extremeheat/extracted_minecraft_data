@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.pools;
 
 import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Rotation;
@@ -14,7 +13,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class LegacySinglePoolElement extends SinglePoolElement {
-   public static final Codec<LegacySinglePoolElement> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<LegacySinglePoolElement> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(templateCodec(), processorsCodec(), projectionCodec()).apply(var0, LegacySinglePoolElement::new)
    );
 

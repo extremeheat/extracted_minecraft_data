@@ -54,7 +54,7 @@ public class ShriekParticle extends TextureSheetParticle {
       };
       float var11 = this.getQuadSize(var3);
 
-      for(int var12 = 0; var12 < 4; ++var12) {
+      for (int var12 = 0; var12 < 4; var12++) {
          Vector3f var13 = var10[var12];
          var13.rotate(var9);
          var13.mul(var11);
@@ -69,11 +69,7 @@ public class ShriekParticle extends TextureSheetParticle {
    }
 
    private void makeCornerVertex(VertexConsumer var1, Vector3f var2, float var3, float var4, int var5) {
-      var1.vertex((double)var2.x(), (double)var2.y(), (double)var2.z())
-         .uv(var3, var4)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var5)
-         .endVertex();
+      var1.vertex((double)var2.x(), (double)var2.y(), (double)var2.z()).uv(var3, var4).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var5).endVertex();
    }
 
    @Override
@@ -89,7 +85,7 @@ public class ShriekParticle extends TextureSheetParticle {
    @Override
    public void tick() {
       if (this.delay > 0) {
-         --this.delay;
+         this.delay--;
       } else {
          super.tick();
       }

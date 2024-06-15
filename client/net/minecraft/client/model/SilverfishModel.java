@@ -39,7 +39,7 @@ public class SilverfishModel<T extends Entity> extends HierarchicalModel<T> {
       float[] var2 = new float[7];
       float var3 = -3.5F;
 
-      for(int var4 = 0; var4 < 7; ++var4) {
+      for (int var4 = 0; var4 < 7; var4++) {
          var1.addOrReplaceChild(
             getSegmentName(var4),
             CubeListBuilder.create()
@@ -85,7 +85,7 @@ public class SilverfishModel<T extends Entity> extends HierarchicalModel<T> {
 
    @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      for(int var7 = 0; var7 < this.bodyParts.length; ++var7) {
+      for (int var7 = 0; var7 < this.bodyParts.length; var7++) {
          this.bodyParts[var7].yRot = Mth.cos(var4 * 0.9F + (float)var7 * 0.15F * 3.1415927F) * 3.1415927F * 0.05F * (float)(1 + Math.abs(var7 - 2));
          this.bodyParts[var7].x = Mth.sin(var4 * 0.9F + (float)var7 * 0.15F * 3.1415927F) * 3.1415927F * 0.2F * (float)Math.abs(var7 - 2);
       }

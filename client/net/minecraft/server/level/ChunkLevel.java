@@ -1,6 +1,6 @@
 package net.minecraft.server.level;
 
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public class ChunkLevel {
    private static final int FULL_CHUNK_LEVEL = 33;
@@ -31,7 +31,7 @@ public class ChunkLevel {
    }
 
    public static int byStatus(FullChunkStatus var0) {
-      return switch(var0) {
+      return switch (var0) {
          case INACCESSIBLE -> MAX_LEVEL;
          case FULL -> 33;
          case BLOCK_TICKING -> 32;

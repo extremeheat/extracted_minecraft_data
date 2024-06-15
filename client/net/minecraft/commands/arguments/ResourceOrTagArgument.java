@@ -43,7 +43,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
    public ResourceOrTagArgument(CommandBuildContext var1, ResourceKey<? extends Registry<T>> var2) {
       super();
       this.registryKey = var2;
-      this.registryLookup = var1.holderLookup(var2);
+      this.registryLookup = var1.lookupOrThrow(var2);
    }
 
    public static <T> ResourceOrTagArgument<T> resourceOrTag(CommandBuildContext var0, ResourceKey<? extends Registry<T>> var1) {
@@ -54,11 +54,11 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       ResourceOrTagArgument.Result var3 = (ResourceOrTagArgument.Result)var0.getArgument(var1, ResourceOrTagArgument.Result.class);
       Optional var4 = var3.cast(var2);
       return (ResourceOrTagArgument.Result<T>)var4.orElseThrow(() -> (CommandSyntaxException)var3.unwrap().map(var1xx -> {
-            ResourceKey var2xx = var1xx.key();
-            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2xx.location(), var2xx.registry(), var2.location());
+            ResourceKey var2x = var1xx.key();
+            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2x.location(), var2x.registry(), var2.location());
          }, var1xx -> {
-            TagKey var2xx = var1xx.key();
-            return ERROR_INVALID_TAG_TYPE.create(var2xx.location(), var2xx.registry(), var2.location());
+            TagKey var2x = var1xx.key();
+            return ERROR_INVALID_TAG_TYPE.create(var2x.location(), var2x.registry(), var2.location());
          }));
    }
 
@@ -70,7 +70,9 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
             var1.skip();
             ResourceLocation var8 = ResourceLocation.read(var1);
             TagKey var9 = TagKey.create(this.registryKey, var8);
-            HolderSet.Named var5 = this.registryLookup.get(var9).orElseThrow(() -> ERROR_UNKNOWN_TAG.create(var8, this.registryKey.location()));
+            HolderSet.Named var5 = this.registryLookup
+               .get(var9)
+               .orElseThrow(() -> ERROR_UNKNOWN_TAG.createWithContext(var1, var8, this.registryKey.location()));
             return new ResourceOrTagArgument.TagResult<>(var5);
          } catch (CommandSyntaxException var6) {
             var1.setCursor(var7);
@@ -81,7 +83,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
          ResourceKey var3 = ResourceKey.create(this.registryKey, var2);
          Holder.Reference var4 = this.registryLookup
             .get(var3)
-            .orElseThrow(() -> ResourceArgument.ERROR_UNKNOWN_RESOURCE.create(var2, this.registryKey.location()));
+            .orElseThrow(() -> ResourceArgument.ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location()));
          return new ResourceOrTagArgument.ResourceResult<>(var4);
       }
    }
@@ -119,9 +121,9 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       public final class Template implements ArgumentTypeInfo.Template<ResourceOrTagArgument<T>> {
          final ResourceKey<? extends Registry<T>> registryKey;
 
-         Template(ResourceKey<? extends Registry<T>> var2) {
+         Template(final ResourceKey<? extends Registry<T>> nullx) {
             super();
-            this.registryKey = var2;
+            this.registryKey = nullx;
          }
 
          public ResourceOrTagArgument<T> instantiate(CommandBuildContext var1) {
@@ -135,12 +137,10 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       }
    }
 
-   static record ResourceResult<T>(Holder.Reference<T> a) implements ResourceOrTagArgument.Result<T> {
-      private final Holder.Reference<T> value;
-
-      ResourceResult(Holder.Reference<T> var1) {
+   static record ResourceResult<T>(Holder.Reference<T> value) implements ResourceOrTagArgument.Result<T> {
+      ResourceResult(Holder.Reference<T> value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       @Override
@@ -150,7 +150,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
 
       @Override
       public <E> Optional<ResourceOrTagArgument.Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.value.key().isFor(var1) ? Optional.of(this) : Optional.empty();
+         return this.value.key().isFor(var1) ? Optional.of((ResourceOrTagArgument.Result<E>)this) : Optional.empty();
       }
 
       public boolean test(Holder<T> var1) {
@@ -171,12 +171,10 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       String asPrintable();
    }
 
-   static record TagResult<T>(HolderSet.Named<T> a) implements ResourceOrTagArgument.Result<T> {
-      private final HolderSet.Named<T> tag;
-
-      TagResult(HolderSet.Named<T> var1) {
+   static record TagResult<T>(HolderSet.Named<T> tag) implements ResourceOrTagArgument.Result<T> {
+      TagResult(HolderSet.Named<T> tag) {
          super();
-         this.tag = var1;
+         this.tag = tag;
       }
 
       @Override
@@ -186,7 +184,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
 
       @Override
       public <E> Optional<ResourceOrTagArgument.Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.tag.key().isFor(var1) ? Optional.of(this) : Optional.empty();
+         return this.tag.key().isFor(var1) ? Optional.of((ResourceOrTagArgument.Result<E>)this) : Optional.empty();
       }
 
       public boolean test(Holder<T> var1) {

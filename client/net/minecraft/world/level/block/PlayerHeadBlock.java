@@ -1,19 +1,7 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.MapCodec;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class PlayerHeadBlock extends SkullBlock {
    public static final MapCodec<PlayerHeadBlock> CODEC = simpleCodec(PlayerHeadBlock::new);
@@ -25,26 +13,5 @@ public class PlayerHeadBlock extends SkullBlock {
 
    protected PlayerHeadBlock(BlockBehaviour.Properties var1) {
       super(SkullBlock.Types.PLAYER, var1);
-   }
-
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      super.setPlacedBy(var1, var2, var3, var4, var5);
-      BlockEntity var6 = var1.getBlockEntity(var2);
-      if (var6 instanceof SkullBlockEntity var7) {
-         GameProfile var8 = null;
-         if (var5.hasTag()) {
-            CompoundTag var9 = var5.getTag();
-            if (var9.contains("SkullOwner", 10)) {
-               var8 = NbtUtils.readGameProfile(var9.getCompound("SkullOwner"));
-            } else if (var9.contains("SkullOwner", 8) && !Util.isBlank(var9.getString("SkullOwner"))) {
-               var8 = new GameProfile(Util.NIL_UUID, var9.getString("SkullOwner"));
-            }
-         }
-
-         var7.setOwner(var8);
-      }
    }
 }

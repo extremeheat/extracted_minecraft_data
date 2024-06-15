@@ -1,12 +1,13 @@
 package net.minecraft.world.item.crafting;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
+import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
 
 public class BookCloningRecipe extends CustomRecipe {
@@ -18,7 +19,7 @@ public class BookCloningRecipe extends CustomRecipe {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(Items.WRITTEN_BOOK)) {
@@ -32,19 +33,19 @@ public class BookCloningRecipe extends CustomRecipe {
                   return false;
                }
 
-               ++var3;
+               var3++;
             }
          }
       }
 
-      return !var4.isEmpty() && var4.hasTag() && var3 > 0;
+      return !var4.isEmpty() && var3 > 0;
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(Items.WRITTEN_BOOK)) {
@@ -58,17 +59,21 @@ public class BookCloningRecipe extends CustomRecipe {
                   return ItemStack.EMPTY;
                }
 
-               ++var3;
+               var3++;
             }
          }
       }
 
-      if (!var4.isEmpty() && var4.hasTag() && var3 >= 1 && WrittenBookItem.getGeneration(var4) < 2) {
-         ItemStack var7 = new ItemStack(Items.WRITTEN_BOOK, var3);
-         CompoundTag var8 = var4.getTag().copy();
-         var8.putInt("generation", WrittenBookItem.getGeneration(var4) + 1);
-         var7.setTag(var8);
-         return var7;
+      WrittenBookContent var8 = var4.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      if (!var4.isEmpty() && var3 >= 1 && var8 != null) {
+         WrittenBookContent var9 = var8.tryCraftCopy();
+         if (var9 == null) {
+            return ItemStack.EMPTY;
+         } else {
+            ItemStack var7 = var4.copyWithCount(var3);
+            var7.set(DataComponents.WRITTEN_BOOK_CONTENT, var9);
+            return var7;
+         }
       } else {
          return ItemStack.EMPTY;
       }
@@ -77,7 +82,7 @@ public class BookCloningRecipe extends CustomRecipe {
    public NonNullList<ItemStack> getRemainingItems(CraftingContainer var1) {
       NonNullList var2 = NonNullList.withSize(var1.getContainerSize(), ItemStack.EMPTY);
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
+      for (int var3 = 0; var3 < var2.size(); var3++) {
          ItemStack var4 = var1.getItem(var3);
          if (var4.getItem().hasCraftingRemainingItem()) {
             var2.set(var3, new ItemStack(var4.getItem().getCraftingRemainingItem()));

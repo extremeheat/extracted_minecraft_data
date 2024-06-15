@@ -9,8 +9,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.DragonFireball;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 public class DragonFireballRenderer extends EntityRenderer<DragonFireball> {
    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/enderdragon/dragon_fireball.png");
@@ -30,24 +28,22 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball> {
       var4.mulPose(this.entityRenderDispatcher.cameraOrientation());
       var4.mulPose(Axis.YP.rotationDegrees(180.0F));
       PoseStack.Pose var7 = var4.last();
-      Matrix4f var8 = var7.pose();
-      Matrix3f var9 = var7.normal();
-      VertexConsumer var10 = var5.getBuffer(RENDER_TYPE);
-      vertex(var10, var8, var9, var6, 0.0F, 0, 0, 1);
-      vertex(var10, var8, var9, var6, 1.0F, 0, 1, 1);
-      vertex(var10, var8, var9, var6, 1.0F, 1, 1, 0);
-      vertex(var10, var8, var9, var6, 0.0F, 1, 0, 0);
+      VertexConsumer var8 = var5.getBuffer(RENDER_TYPE);
+      vertex(var8, var7, var6, 0.0F, 0, 0, 1);
+      vertex(var8, var7, var6, 1.0F, 0, 1, 1);
+      vertex(var8, var7, var6, 1.0F, 1, 1, 0);
+      vertex(var8, var7, var6, 0.0F, 1, 0, 0);
       var4.popPose();
       super.render(var1, var2, var3, var4, var5, var6);
    }
 
-   private static void vertex(VertexConsumer var0, Matrix4f var1, Matrix3f var2, int var3, float var4, int var5, int var6, int var7) {
-      var0.vertex(var1, var4 - 0.5F, (float)var5 - 0.25F, 0.0F)
+   private static void vertex(VertexConsumer var0, PoseStack.Pose var1, int var2, float var3, int var4, int var5, int var6) {
+      var0.vertex(var1, var3 - 0.5F, (float)var4 - 0.25F, 0.0F)
          .color(255, 255, 255, 255)
-         .uv((float)var6, (float)var7)
+         .uv((float)var5, (float)var6)
          .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var3)
-         .normal(var2, 0.0F, 1.0F, 0.0F)
+         .uv2(var2)
+         .normal(var1, 0.0F, 1.0F, 0.0F)
          .endVertex();
    }
 

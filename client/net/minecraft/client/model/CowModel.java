@@ -16,7 +16,7 @@ public class CowModel<T extends Entity> extends QuadrupedModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      boolean var2 = true;
+      byte var2 = 12;
       var1.addOrReplaceChild(
          "head",
          CubeListBuilder.create()

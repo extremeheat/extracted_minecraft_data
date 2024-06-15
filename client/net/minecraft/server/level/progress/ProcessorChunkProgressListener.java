@@ -4,11 +4,12 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import net.minecraft.util.thread.ProcessorMailbox;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public class ProcessorChunkProgressListener implements ChunkProgressListener {
    private final ChunkProgressListener delegate;
    private final ProcessorMailbox<Runnable> mailbox;
+   private boolean started;
 
    private ProcessorChunkProgressListener(ChunkProgressListener var1, Executor var2) {
       super();
@@ -29,16 +30,20 @@ public class ProcessorChunkProgressListener implements ChunkProgressListener {
 
    @Override
    public void onStatusChange(ChunkPos var1, @Nullable ChunkStatus var2) {
-      this.mailbox.tell(() -> this.delegate.onStatusChange(var1, var2));
+      if (this.started) {
+         this.mailbox.tell(() -> this.delegate.onStatusChange(var1, var2));
+      }
    }
 
    @Override
    public void start() {
+      this.started = true;
       this.mailbox.tell(this.delegate::start);
    }
 
    @Override
    public void stop() {
+      this.started = false;
       this.mailbox.tell(this.delegate::stop);
    }
 }

@@ -6,8 +6,8 @@ public enum FogShape {
 
    private final int index;
 
-   private FogShape(int var3) {
-      this.index = var3;
+   private FogShape(final int nullxx) {
+      this.index = nullxx;
    }
 
    public int getIndex() {

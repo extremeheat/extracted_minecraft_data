@@ -11,9 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -25,7 +23,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
-import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
 import org.slf4j.Logger;
@@ -52,7 +49,7 @@ public class OptimizeWorldScreen extends Screen {
             WorldData var8 = var7.worldData();
             RegistryAccess.Frozen var9 = var7.registries().compositeAccess();
             var3.saveDataTag(var9, var8);
-            var10 = new OptimizeWorldScreen(var1, var2, var3, var8.getLevelSettings(), var4, var9.registryOrThrow(Registries.LEVEL_STEM));
+            var10 = new OptimizeWorldScreen(var1, var2, var3, var8.getLevelSettings(), var4, var9);
          }
 
          return var10;
@@ -63,11 +60,11 @@ public class OptimizeWorldScreen extends Screen {
    }
 
    private OptimizeWorldScreen(
-      BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, LevelSettings var4, boolean var5, Registry<LevelStem> var6
+      BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, LevelSettings var4, boolean var5, RegistryAccess var6
    ) {
       super(Component.translatable("optimizeWorld.title", var4.levelName()));
       this.callback = var1;
-      this.upgrader = new WorldUpgrader(var3, var2, var6, var5);
+      this.upgrader = new WorldUpgrader(var3, var2, var6, var5, false);
    }
 
    @Override
@@ -112,7 +109,7 @@ public class OptimizeWorldScreen extends Screen {
          var1.drawString(this.font, Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks()), var5, 40 + (9 + 3) * 2, 10526880);
          int var9 = 0;
 
-         for(ResourceKey var11 : this.upgrader.levels()) {
+         for (ResourceKey var11 : this.upgrader.levels()) {
             int var12 = Mth.floor(this.upgrader.dimensionProgress(var11) * (float)(var6 - var5));
             var1.fill(var5 + var9, var7, var5 + var9 + var12, var8, DIMENSION_COLORS.applyAsInt(var11));
             var9 += var12;

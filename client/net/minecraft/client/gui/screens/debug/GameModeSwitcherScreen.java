@@ -61,7 +61,7 @@ public class GameModeSwitcherScreen extends Screen {
       super.init();
       this.currentlyHovered = this.previousHovered;
 
-      for(int var1 = 0; var1 < GameModeSwitcherScreen.GameModeIcon.VALUES.length; ++var1) {
+      for (int var1 = 0; var1 < GameModeSwitcherScreen.GameModeIcon.VALUES.length; var1++) {
          GameModeSwitcherScreen.GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.VALUES[var1];
          this.slots.add(new GameModeSwitcherScreen.GameModeSlot(var2, this.width / 2 - ALL_SLOTS_WIDTH / 2 + var1 * 31, this.height / 2 - 31));
       }
@@ -87,7 +87,7 @@ public class GameModeSwitcherScreen extends Screen {
 
          boolean var7 = this.firstMouseX == var2 && this.firstMouseY == var3;
 
-         for(GameModeSwitcherScreen.GameModeSlot var9 : this.slots) {
+         for (GameModeSwitcherScreen.GameModeSlot var9 : this.slots) {
             var9.render(var1, var2, var3, var4);
             var9.setSelected(this.currentlyHovered == var9.icon);
             if (!var7 && var9.isHoveredOrFocused()) {
@@ -153,10 +153,10 @@ public class GameModeSwitcherScreen extends Screen {
       final String command;
       final ItemStack renderStack;
 
-      private GameModeIcon(Component var3, String var4, ItemStack var5) {
-         this.name = var3;
-         this.command = var4;
-         this.renderStack = var5;
+      private GameModeIcon(final Component nullxx, final String nullxxx, final ItemStack nullxxxx) {
+         this.name = nullxx;
+         this.command = nullxxx;
+         this.renderStack = nullxxxx;
       }
 
       void drawIcon(GuiGraphics var1, int var2, int var3) {
@@ -172,7 +172,7 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       GameModeSwitcherScreen.GameModeIcon getNext() {
-         return switch(this) {
+         return switch (this) {
             case CREATIVE -> SURVIVAL;
             case SURVIVAL -> ADVENTURE;
             case ADVENTURE -> SPECTATOR;
@@ -181,7 +181,7 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       static GameModeSwitcherScreen.GameModeIcon getFromGameType(GameType var0) {
-         return switch(var0) {
+         return switch (var0) {
             case SPECTATOR -> SPECTATOR;
             case SURVIVAL -> SURVIVAL;
             case CREATIVE -> CREATIVE;
@@ -194,9 +194,9 @@ public class GameModeSwitcherScreen extends Screen {
       final GameModeSwitcherScreen.GameModeIcon icon;
       private boolean isSelected;
 
-      public GameModeSlot(GameModeSwitcherScreen.GameModeIcon var2, int var3, int var4) {
-         super(var3, var4, 26, 26, var2.getName());
-         this.icon = var2;
+      public GameModeSlot(final GameModeSwitcherScreen.GameModeIcon nullx, final int nullxx, final int nullxxx) {
+         super(nullxx, nullxxx, 26, 26, nullx.getName());
+         this.icon = nullx;
       }
 
       @Override

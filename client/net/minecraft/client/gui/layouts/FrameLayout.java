@@ -54,12 +54,12 @@ public class FrameLayout extends AbstractLayout {
       int var1 = this.minWidth;
       int var2 = this.minHeight;
 
-      for(FrameLayout.ChildContainer var4 : this.children) {
+      for (FrameLayout.ChildContainer var4 : this.children) {
          var1 = Math.max(var1, var4.getWidth());
          var2 = Math.max(var2, var4.getHeight());
       }
 
-      for(FrameLayout.ChildContainer var6 : this.children) {
+      for (FrameLayout.ChildContainer var6 : this.children) {
          var6.setX(this.getX(), var1);
          var6.setY(this.getY(), var2);
       }

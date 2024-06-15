@@ -44,11 +44,7 @@ public class MeleeAttackGoal extends Goal {
             return false;
          } else {
             this.path = this.mob.getNavigation().createPath(var3, 0);
-            if (this.path != null) {
-               return true;
-            } else {
-               return this.mob.isWithinMeleeAttackRange(var3);
-            }
+            return this.path != null ? true : this.mob.isWithinMeleeAttackRange(var3);
          }
       }
    }
@@ -62,10 +58,8 @@ public class MeleeAttackGoal extends Goal {
          return false;
       } else if (!this.followingTargetEvenIfNotSeen) {
          return !this.mob.getNavigation().isDone();
-      } else if (!this.mob.isWithinRestriction(var1.blockPosition())) {
-         return false;
       } else {
-         return !(var1 instanceof Player) || !var1.isSpectator() && !((Player)var1).isCreative();
+         return !this.mob.isWithinRestriction(var1.blockPosition()) ? false : !(var1 instanceof Player) || !var1.isSpectator() && !((Player)var1).isCreative();
       }
    }
 

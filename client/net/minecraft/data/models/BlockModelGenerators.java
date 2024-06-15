@@ -52,7 +52,7 @@ import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.MangrovePropaguleBlock;
 import net.minecraft.world.level.block.PitcherCropBlock;
 import net.minecraft.world.level.block.SnifferEggBlock;
-import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
+import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
 import net.minecraft.world.level.block.state.properties.BellAttachType;
@@ -70,7 +70,6 @@ import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.SculkSensorPhase;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
-import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.level.block.state.properties.Tilt;
 import net.minecraft.world.level.block.state.properties.WallSide;
 
@@ -510,10 +509,7 @@ public class BlockModelGenerators {
             configureDoorHalf(
                configureDoorHalf(
                   PropertyDispatch.properties(
-                     BlockStateProperties.HORIZONTAL_FACING,
-                     BlockStateProperties.DOUBLE_BLOCK_HALF,
-                     BlockStateProperties.DOOR_HINGE,
-                     BlockStateProperties.OPEN
+                     BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.DOUBLE_BLOCK_HALF, BlockStateProperties.DOOR_HINGE, BlockStateProperties.OPEN
                   ),
                   DoubleBlockHalf.LOWER,
                   var1,
@@ -1369,10 +1365,10 @@ public class BlockModelGenerators {
       if (var3.getPossibleValues().size() != var4.length) {
          throw new IllegalArgumentException("missing values for property: " + var3);
       } else {
-         PropertyDispatch var5 = PropertyDispatch.property(var3).generate(var4x -> {
-            String var5xx = "_stage" + var4[var4x];
-            TextureMapping var6 = TextureMapping.cross(TextureMapping.getBlockTexture(var1, var5xx));
-            ResourceLocation var7 = var2.getCross().createWithSuffix(var1, var5xx, var6, this.modelOutput);
+         PropertyDispatch var5 = PropertyDispatch.<Integer>property(var3).generate(var4x -> {
+            String var5x = "_stage" + var4[var4x];
+            TextureMapping var6 = TextureMapping.cross(TextureMapping.getBlockTexture(var1, var5x));
+            ResourceLocation var7 = var2.getCross().createWithSuffix(var1, var5x, var6, this.modelOutput);
             return Variant.variant().with(VariantProperties.MODEL, var7);
          });
          this.createSimpleFlatItemModel(var1.asItem());
@@ -1435,7 +1431,7 @@ public class BlockModelGenerators {
       Block var1 = Blocks.PITCHER_CROP;
       this.createSimpleFlatItemModel(var1.asItem());
       PropertyDispatch var2 = PropertyDispatch.properties(PitcherCropBlock.AGE, BlockStateProperties.DOUBLE_BLOCK_HALF).generate((var1x, var2x) -> {
-         return switch(var2x) {
+         return switch (var2x) {
             case UPPER -> Variant.variant().with(VariantProperties.MODEL, ModelLocationUtils.getModelLocation(var1, "_top_stage_" + var1x));
             case LOWER -> Variant.variant().with(VariantProperties.MODEL, ModelLocationUtils.getModelLocation(var1, "_bottom_stage_" + var1x));
          };
@@ -1555,7 +1551,7 @@ public class BlockModelGenerators {
       ResourceLocation var6 = this.createSuffixedVariant(var1, "_on", ModelTemplates.RAIL_RAISED_NE, TextureMapping::rail);
       ResourceLocation var7 = this.createSuffixedVariant(var1, "_on", ModelTemplates.RAIL_RAISED_SW, TextureMapping::rail);
       PropertyDispatch var8 = PropertyDispatch.properties(BlockStateProperties.POWERED, BlockStateProperties.RAIL_SHAPE_STRAIGHT).generate((var6x, var7x) -> {
-         switch(var7x) {
+         switch (var7x) {
             case NORTH_SOUTH:
                return Variant.variant().with(VariantProperties.MODEL, var6x ? var5 : var2);
             case EAST_WEST:
@@ -1677,14 +1673,14 @@ public class BlockModelGenerators {
    }
 
    private void createColoredBlockWithRandomRotations(TexturedModel.Provider var1, Block... var2) {
-      for(Block var6 : var2) {
+      for (Block var6 : var2) {
          ResourceLocation var7 = var1.create(var6, this.modelOutput);
          this.blockStateOutput.accept(createRotatedVariant(var6, var7));
       }
    }
 
    private void createColoredBlockWithStateRotations(TexturedModel.Provider var1, Block... var2) {
-      for(Block var6 : var2) {
+      for (Block var6 : var2) {
          ResourceLocation var7 = var1.create(var6, this.modelOutput);
          this.blockStateOutput
             .accept(MultiVariantGenerator.multiVariant(var6, Variant.variant().with(VariantProperties.MODEL, var7)).with(createHorizontalFacingDispatchAlt()));
@@ -1819,8 +1815,8 @@ public class BlockModelGenerators {
       Variant var4 = Variant.variant().with(VariantProperties.MODEL, var2);
       Variant var5 = Variant.variant().with(VariantProperties.MODEL, var3);
       return PropertyDispatch.property(var0).generate(var3x -> {
-         boolean var4xx = var3x.compareTo(var1) >= 0;
-         return var4xx ? var4 : var5;
+         boolean var4x = var3x.compareTo(var1) >= 0;
+         return var4x ? var4 : var5;
       });
    }
 
@@ -1842,12 +1838,12 @@ public class BlockModelGenerators {
          throw new IllegalArgumentException();
       } else {
          Int2ObjectOpenHashMap var4 = new Int2ObjectOpenHashMap();
-         PropertyDispatch var5 = PropertyDispatch.property(var2)
+         PropertyDispatch var5 = PropertyDispatch.<Integer>property(var2)
             .generate(
                var4x -> {
-                  int var5xx = var3[var4x];
+                  int var5x = var3[var4x];
                   ResourceLocation var6 = (ResourceLocation)var4.computeIfAbsent(
-                     var5xx, var3xx -> this.createSuffixedVariant(var1, "_stage" + var5x, ModelTemplates.CROP, TextureMapping::crop)
+                     var5x, var3xx -> this.createSuffixedVariant(var1, "_stage" + var5x, ModelTemplates.CROP, TextureMapping::crop)
                   );
                   return Variant.variant().with(VariantProperties.MODEL, var6);
                }
@@ -2011,7 +2007,7 @@ public class BlockModelGenerators {
    private void createCampfires(Block... var1) {
       ResourceLocation var2 = ModelLocationUtils.decorateBlockModelLocation("campfire_off");
 
-      for(Block var6 : var1) {
+      for (Block var6 : var1) {
          ResourceLocation var7 = ModelTemplates.CAMPFIRE.create(var6, TextureMapping.campfire(var6), this.modelOutput);
          this.createSimpleFlatItemModel(var6.asItem());
          this.blockStateOutput
@@ -2779,11 +2775,11 @@ public class BlockModelGenerators {
       this.skipAutoItemBlock(Blocks.POINTED_DRIPSTONE);
       PropertyDispatch.C2 var1 = PropertyDispatch.properties(BlockStateProperties.VERTICAL_DIRECTION, BlockStateProperties.DRIPSTONE_THICKNESS);
 
-      for(DripstoneThickness var5 : DripstoneThickness.values()) {
+      for (DripstoneThickness var5 : DripstoneThickness.values()) {
          var1.select(Direction.UP, var5, this.createPointedDripstoneVariant(Direction.UP, var5));
       }
 
-      for(DripstoneThickness var9 : DripstoneThickness.values()) {
+      for (DripstoneThickness var9 : DripstoneThickness.values()) {
          var1.select(Direction.DOWN, var9, this.createPointedDripstoneVariant(Direction.DOWN, var9));
       }
 
@@ -2969,7 +2965,7 @@ public class BlockModelGenerators {
       PropertyDispatch.C2 var2 = PropertyDispatch.properties(MangrovePropaguleBlock.HANGING, MangrovePropaguleBlock.AGE);
       ResourceLocation var3 = ModelLocationUtils.getModelLocation(var1);
 
-      for(int var4 = 0; var4 <= 4; ++var4) {
+      for (int var4 = 0; var4 <= 4; var4++) {
          ResourceLocation var5 = ModelLocationUtils.getModelLocation(var1, "_hanging_" + var4);
          var2.select(true, var4, Variant.variant().with(VariantProperties.MODEL, var5));
          var2.select(false, var4, Variant.variant().with(VariantProperties.MODEL, var3));
@@ -3394,18 +3390,61 @@ public class BlockModelGenerators {
       TextureMapping var2 = TextureMapping.trialSpawner(var1, "_side_inactive", "_top_inactive");
       TextureMapping var3 = TextureMapping.trialSpawner(var1, "_side_active", "_top_active");
       TextureMapping var4 = TextureMapping.trialSpawner(var1, "_side_active", "_top_ejecting_reward");
-      ResourceLocation var5 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.create(var1, var2, this.modelOutput);
-      ResourceLocation var6 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_active", var3, this.modelOutput);
-      ResourceLocation var7 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_ejecting_reward", var4, this.modelOutput);
-      this.delegateItemModel(var1, var5);
+      TextureMapping var5 = TextureMapping.trialSpawner(var1, "_side_inactive_ominous", "_top_inactive_ominous");
+      TextureMapping var6 = TextureMapping.trialSpawner(var1, "_side_active_ominous", "_top_active_ominous");
+      TextureMapping var7 = TextureMapping.trialSpawner(var1, "_side_active_ominous", "_top_ejecting_reward_ominous");
+      ResourceLocation var8 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.create(var1, var2, this.modelOutput);
+      ResourceLocation var9 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_active", var3, this.modelOutput);
+      ResourceLocation var10 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_ejecting_reward", var4, this.modelOutput);
+      ResourceLocation var11 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_inactive_ominous", var5, this.modelOutput);
+      ResourceLocation var12 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_active_ominous", var6, this.modelOutput);
+      ResourceLocation var13 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_ejecting_reward_ominous", var7, this.modelOutput);
+      this.delegateItemModel(var1, var8);
       this.blockStateOutput
-         .accept(MultiVariantGenerator.multiVariant(var1).with(PropertyDispatch.property(BlockStateProperties.TRIAL_SPAWNER_STATE).generate(var3x -> {
-            return switch(var3x) {
-               case INACTIVE, COOLDOWN -> Variant.variant().with(VariantProperties.MODEL, var5);
-               case WAITING_FOR_PLAYERS, ACTIVE, WAITING_FOR_REWARD_EJECTION -> Variant.variant().with(VariantProperties.MODEL, var6);
-               case EJECTING_REWARD -> Variant.variant().with(VariantProperties.MODEL, var7);
-            };
-         })));
+         .accept(
+            MultiVariantGenerator.multiVariant(var1)
+               .with(PropertyDispatch.properties(BlockStateProperties.TRIAL_SPAWNER_STATE, BlockStateProperties.OMINOUS).generate((var6x, var7x) -> {
+                  return switch (var6x) {
+                     case INACTIVE, COOLDOWN -> Variant.variant().with(VariantProperties.MODEL, var7x ? var11 : var8);
+                     case WAITING_FOR_PLAYERS, ACTIVE, WAITING_FOR_REWARD_EJECTION -> Variant.variant().with(VariantProperties.MODEL, var7x ? var12 : var9);
+                     case EJECTING_REWARD -> Variant.variant().with(VariantProperties.MODEL, var7x ? var13 : var10);
+                  };
+               }))
+         );
+   }
+
+   private void createVault() {
+      Block var1 = Blocks.VAULT;
+      TextureMapping var2 = TextureMapping.vault(var1, "_front_off", "_side_off", "_top", "_bottom");
+      TextureMapping var3 = TextureMapping.vault(var1, "_front_on", "_side_on", "_top", "_bottom");
+      TextureMapping var4 = TextureMapping.vault(var1, "_front_ejecting", "_side_on", "_top", "_bottom");
+      TextureMapping var5 = TextureMapping.vault(var1, "_front_ejecting", "_side_on", "_top_ejecting", "_bottom");
+      ResourceLocation var6 = ModelTemplates.VAULT.create(var1, var2, this.modelOutput);
+      ResourceLocation var7 = ModelTemplates.VAULT.createWithSuffix(var1, "_active", var3, this.modelOutput);
+      ResourceLocation var8 = ModelTemplates.VAULT.createWithSuffix(var1, "_unlocking", var4, this.modelOutput);
+      ResourceLocation var9 = ModelTemplates.VAULT.createWithSuffix(var1, "_ejecting_reward", var5, this.modelOutput);
+      TextureMapping var10 = TextureMapping.vault(var1, "_front_off_ominous", "_side_off_ominous", "_top_ominous", "_bottom_ominous");
+      TextureMapping var11 = TextureMapping.vault(var1, "_front_on_ominous", "_side_on_ominous", "_top_ominous", "_bottom_ominous");
+      TextureMapping var12 = TextureMapping.vault(var1, "_front_ejecting_ominous", "_side_on_ominous", "_top_ominous", "_bottom_ominous");
+      TextureMapping var13 = TextureMapping.vault(var1, "_front_ejecting_ominous", "_side_on_ominous", "_top_ejecting_ominous", "_bottom_ominous");
+      ResourceLocation var14 = ModelTemplates.VAULT.createWithSuffix(var1, "_ominous", var10, this.modelOutput);
+      ResourceLocation var15 = ModelTemplates.VAULT.createWithSuffix(var1, "_active_ominous", var11, this.modelOutput);
+      ResourceLocation var16 = ModelTemplates.VAULT.createWithSuffix(var1, "_unlocking_ominous", var12, this.modelOutput);
+      ResourceLocation var17 = ModelTemplates.VAULT.createWithSuffix(var1, "_ejecting_reward_ominous", var13, this.modelOutput);
+      this.delegateItemModel(var1, var6);
+      this.blockStateOutput
+         .accept(
+            MultiVariantGenerator.multiVariant(var1)
+               .with(createHorizontalFacingDispatch())
+               .with(PropertyDispatch.properties(VaultBlock.STATE, VaultBlock.OMINOUS).generate((var8x, var9x) -> {
+                  return switch (var8x) {
+                     case INACTIVE -> Variant.variant().with(VariantProperties.MODEL, var9x ? var14 : var6);
+                     case ACTIVE -> Variant.variant().with(VariantProperties.MODEL, var9x ? var15 : var7);
+                     case UNLOCKING -> Variant.variant().with(VariantProperties.MODEL, var9x ? var16 : var8);
+                     case EJECTING -> Variant.variant().with(VariantProperties.MODEL, var9x ? var17 : var9);
+                  };
+               }))
+         );
    }
 
    private void createSculkSensor() {
@@ -3524,11 +3563,11 @@ public class BlockModelGenerators {
                         if (var2) {
                            var3.append("_on");
                         }
-               
+
                         if (var1) {
                            var3.append("_locked");
                         }
-               
+
                         return Variant.variant().with(VariantProperties.MODEL, TextureMapping.getBlockTexture(Blocks.REPEATER, var3.toString()));
                      })
                )
@@ -3945,8 +3984,7 @@ public class BlockModelGenerators {
                      .generate(
                         (var0, var1) -> Variant.variant()
                               .with(
-                                 VariantProperties.MODEL,
-                                 TextureMapping.getBlockTexture(Blocks.TRIPWIRE_HOOK, (var0 ? "_attached" : "") + (var1 ? "_on" : ""))
+                                 VariantProperties.MODEL, TextureMapping.getBlockTexture(Blocks.TRIPWIRE_HOOK, (var0 ? "_attached" : "") + (var1 ? "_on" : ""))
                               )
                      )
                )
@@ -3955,7 +3993,7 @@ public class BlockModelGenerators {
    }
 
    private ResourceLocation createTurtleEggModel(int var1, String var2, TextureMapping var3) {
-      switch(var1) {
+      switch (var1) {
          case 1:
             return ModelTemplates.TURTLE_EGG.create(ModelLocationUtils.decorateBlockModelLocation(var2 + "turtle_egg"), var3, this.modelOutput);
          case 2:
@@ -3972,7 +4010,7 @@ public class BlockModelGenerators {
    }
 
    private ResourceLocation createTurtleEggModel(Integer var1, Integer var2) {
-      switch(var2) {
+      switch (var2) {
          case 0:
             return this.createTurtleEggModel(var1, "", TextureMapping.cube(TextureMapping.getBlockTexture(Blocks.TURTLE_EGG)));
          case 1:
@@ -4001,7 +4039,7 @@ public class BlockModelGenerators {
    private void createSnifferEgg() {
       this.createSimpleFlatItemModel(Items.SNIFFER_EGG);
       Function var1 = var1x -> {
-         String var2 = switch(var1x) {
+         String var2 = switch (var1x) {
             case 1 -> "_slightly_cracked";
             case 2 -> "_very_cracked";
             default -> "_not_cracked";
@@ -4029,7 +4067,7 @@ public class BlockModelGenerators {
             }
          }));
 
-      for(Pair var6 : MULTIFACE_GENERATOR) {
+      for (Pair var6 : MULTIFACE_GENERATOR) {
          BooleanProperty var7 = (BooleanProperty)var6.getFirst();
          Function var8 = (Function)var6.getSecond();
          if (var1.defaultBlockState().hasProperty(var7)) {
@@ -4057,8 +4095,7 @@ public class BlockModelGenerators {
          .accept(
             MultiVariantGenerator.multiVariant(Blocks.SCULK_CATALYST)
                .with(
-                  PropertyDispatch.property(BlockStateProperties.BLOOM)
-                     .generate(var2x -> Variant.variant().with(VariantProperties.MODEL, var2x ? var5 : var4))
+                  PropertyDispatch.property(BlockStateProperties.BLOOM).generate(var2x -> Variant.variant().with(VariantProperties.MODEL, var2x ? var5 : var4))
                )
          );
       this.delegateItemModel(Items.SCULK_CATALYST, var4);
@@ -4068,20 +4105,18 @@ public class BlockModelGenerators {
       Block var1 = Blocks.CHISELED_BOOKSHELF;
       ResourceLocation var2 = ModelLocationUtils.getModelLocation(var1);
       MultiPartGenerator var3 = MultiPartGenerator.multiPart(var1);
-      Map.of(
-            Direction.NORTH,
-            VariantProperties.Rotation.R0,
-            Direction.EAST,
-            VariantProperties.Rotation.R90,
-            Direction.SOUTH,
-            VariantProperties.Rotation.R180,
-            Direction.WEST,
-            VariantProperties.Rotation.R270
+      List.of(
+            Pair.of(Direction.NORTH, VariantProperties.Rotation.R0),
+            Pair.of(Direction.EAST, VariantProperties.Rotation.R90),
+            Pair.of(Direction.SOUTH, VariantProperties.Rotation.R180),
+            Pair.of(Direction.WEST, VariantProperties.Rotation.R270)
          )
-         .forEach((var3x, var4) -> {
-            Condition.TerminalCondition var5 = Condition.condition().term(BlockStateProperties.HORIZONTAL_FACING, var3x);
-            var3.with(var5, Variant.variant().with(VariantProperties.MODEL, var2).with(VariantProperties.Y_ROT, var4).with(VariantProperties.UV_LOCK, true));
-            this.addSlotStateAndRotationVariants(var3, var5, var4);
+         .forEach(var3x -> {
+            Direction var4 = (Direction)var3x.getFirst();
+            VariantProperties.Rotation var5 = (VariantProperties.Rotation)var3x.getSecond();
+            Condition.TerminalCondition var6 = Condition.condition().term(BlockStateProperties.HORIZONTAL_FACING, var4);
+            var3.with(var6, Variant.variant().with(VariantProperties.MODEL, var2).with(VariantProperties.Y_ROT, var5).with(VariantProperties.UV_LOCK, true));
+            this.addSlotStateAndRotationVariants(var3, var6, var5);
          });
       this.blockStateOutput.accept(var3);
       this.delegateItemModel(var1, ModelLocationUtils.getModelLocation(var1, "_inventory"));
@@ -4172,7 +4207,7 @@ public class BlockModelGenerators {
       ResourceLocation var3 = TextureMapping.getBlockTexture(Blocks.RESPAWN_ANCHOR, "_top");
       ResourceLocation[] var4 = new ResourceLocation[5];
 
-      for(int var5 = 0; var5 < 5; ++var5) {
+      for (int var5 = 0; var5 < 5; var5++) {
          TextureMapping var6 = new TextureMapping()
             .put(TextureSlot.BOTTOM, var1)
             .put(TextureSlot.TOP, var5 == 0 ? var2 : var3)
@@ -4192,7 +4227,7 @@ public class BlockModelGenerators {
    }
 
    private Variant applyRotation(FrontAndTop var1, Variant var2) {
-      switch(var1) {
+      switch (var1) {
          case DOWN_NORTH:
             return var2.with(VariantProperties.X_ROT, VariantProperties.Rotation.R90);
          case DOWN_SOUTH:
@@ -4398,6 +4433,7 @@ public class BlockModelGenerators {
       this.createTrivialCube(Blocks.RAW_COPPER_BLOCK);
       this.createTrivialCube(Blocks.RAW_GOLD_BLOCK);
       this.createRotatedMirroredVariantBlock(Blocks.SCULK);
+      this.createNonTemplateModelBlock(Blocks.HEAVY_CORE);
       this.createPetrifiedOakSlab();
       this.createTrivialCube(Blocks.COPPER_ORE);
       this.createTrivialCube(Blocks.DEEPSLATE_COPPER_ORE);
@@ -4493,6 +4529,7 @@ public class BlockModelGenerators {
       this.createMangrovePropagule();
       this.createMuddyMangroveRoots();
       this.createTrialSpawner();
+      this.createVault();
       this.createNonTemplateHorizontalBlock(Blocks.LADDER);
       this.createSimpleFlatItemModel(Blocks.LADDER);
       this.createNonTemplateHorizontalBlock(Blocks.LECTERN);
@@ -4958,7 +4995,7 @@ public class BlockModelGenerators {
       this.skipAutoItemBlock(Blocks.LIGHT);
       PropertyDispatch.C1 var1 = PropertyDispatch.property(BlockStateProperties.LEVEL);
 
-      for(int var2 = 0; var2 < 16; ++var2) {
+      for (int var2 = 0; var2 < 16; var2++) {
          String var3 = String.format(Locale.ROOT, "_%02d", var2);
          ResourceLocation var4 = TextureMapping.getItemTexture(Items.LIGHT, var3);
          var1.select(
@@ -5009,13 +5046,13 @@ public class BlockModelGenerators {
    class BlockEntityModelGenerator {
       private final ResourceLocation baseModel;
 
-      public BlockEntityModelGenerator(ResourceLocation var2, Block var3) {
+      public BlockEntityModelGenerator(final ResourceLocation nullx, final Block nullxx) {
          super();
-         this.baseModel = ModelTemplates.PARTICLE_ONLY.create(var2, TextureMapping.particle(var3), BlockModelGenerators.this.modelOutput);
+         this.baseModel = ModelTemplates.PARTICLE_ONLY.create(nullx, TextureMapping.particle(nullxx), BlockModelGenerators.this.modelOutput);
       }
 
       public BlockModelGenerators.BlockEntityModelGenerator create(Block... var1) {
-         for(Block var5 : var1) {
+         for (Block var5 : var1) {
             BlockModelGenerators.this.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(var5, this.baseModel));
          }
 
@@ -5023,7 +5060,7 @@ public class BlockModelGenerators {
       }
 
       public BlockModelGenerators.BlockEntityModelGenerator createWithoutBlockItem(Block... var1) {
-         for(Block var5 : var1) {
+         for (Block var5 : var1) {
             BlockModelGenerators.this.skipAutoItemBlock(var5);
          }
 
@@ -5031,7 +5068,7 @@ public class BlockModelGenerators {
       }
 
       public BlockModelGenerators.BlockEntityModelGenerator createWithCustomBlockItemModel(ModelTemplate var1, Block... var2) {
-         for(Block var6 : var2) {
+         for (Block var6 : var2) {
             var1.create(ModelLocationUtils.getModelLocation(var6.asItem()), TextureMapping.particle(var6), BlockModelGenerators.this.modelOutput);
          }
 
@@ -5048,9 +5085,9 @@ public class BlockModelGenerators {
       private ResourceLocation fullBlock;
       private final Set<Block> skipGeneratingModelsFor = new HashSet<>();
 
-      public BlockFamilyProvider(TextureMapping var2) {
+      public BlockFamilyProvider(final TextureMapping nullx) {
          super();
-         this.mapping = var2;
+         this.mapping = nullx;
       }
 
       public BlockModelGenerators.BlockFamilyProvider fullBlock(Block var1, ModelTemplate var2) {
@@ -5222,14 +5259,11 @@ public class BlockModelGenerators {
       BlockStateGenerator create(Block var1, ResourceLocation var2, TextureMapping var3, BiConsumer<ResourceLocation, Supplier<JsonElement>> var4);
    }
 
-   static record BookSlotModelCacheKey(ModelTemplate a, String b) {
-      private final ModelTemplate template;
-      private final String modelSuffix;
-
-      BookSlotModelCacheKey(ModelTemplate var1, String var2) {
+   static record BookSlotModelCacheKey(ModelTemplate template, String modelSuffix) {
+      BookSlotModelCacheKey(ModelTemplate template, String modelSuffix) {
          super();
-         this.template = var1;
-         this.modelSuffix = var2;
+         this.template = template;
+         this.modelSuffix = modelSuffix;
       }
    }
 
@@ -5252,9 +5286,9 @@ public class BlockModelGenerators {
    class WoodProvider {
       private final TextureMapping logMapping;
 
-      public WoodProvider(TextureMapping var2) {
+      public WoodProvider(final TextureMapping nullx) {
          super();
-         this.logMapping = var2;
+         this.logMapping = nullx;
       }
 
       public BlockModelGenerators.WoodProvider wood(Block var1) {

@@ -1,6 +1,6 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -15,7 +15,7 @@ public class MapCloningRecipe extends CustomRecipe {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(Items.FILLED_MAP)) {
@@ -29,7 +29,7 @@ public class MapCloningRecipe extends CustomRecipe {
                   return false;
                }
 
-               ++var3;
+               var3++;
             }
          }
       }
@@ -37,11 +37,11 @@ public class MapCloningRecipe extends CustomRecipe {
       return !var4.isEmpty() && var3 > 0;
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(Items.FILLED_MAP)) {
@@ -55,7 +55,7 @@ public class MapCloningRecipe extends CustomRecipe {
                   return ItemStack.EMPTY;
                }
 
-               ++var3;
+               var3++;
             }
          }
       }

@@ -1,10 +1,10 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.ClientPongPacketListener;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
+import net.minecraft.network.protocol.ping.ClientPongPacketListener;
 
-public interface ClientGamePacketListener extends ClientPongPacketListener, ClientCommonPacketListener {
+public interface ClientGamePacketListener extends ClientCommonPacketListener, ClientPongPacketListener {
    @Override
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
@@ -223,4 +223,8 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleChunkBatchStart(ClientboundChunkBatchStartPacket var1);
 
    void handleChunkBatchFinished(ClientboundChunkBatchFinishedPacket var1);
+
+   void handleDebugSample(ClientboundDebugSamplePacket var1);
+
+   void handleProjectilePowerPacket(ClientboundProjectilePowerPacket var1);
 }

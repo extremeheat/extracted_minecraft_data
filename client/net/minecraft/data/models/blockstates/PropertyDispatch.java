@@ -35,7 +35,7 @@ public abstract class PropertyDispatch {
       List var1 = this.getDefinedProperties();
       Stream var2 = Stream.of(Selector.empty());
 
-      for(Property var4 : var1) {
+      for (Property var4 : var1) {
          var2 = var2.flatMap(var1x -> var4.getAllValues().map(var1x::extend));
       }
 
@@ -97,12 +97,12 @@ public abstract class PropertyDispatch {
       }
 
       public PropertyDispatch generate(Function<T1, Variant> var1) {
-         this.property1.getPossibleValues().forEach(var2 -> this.select(var2, (Variant)var1.apply(var2)));
+         this.property1.getPossibleValues().forEach(var2 -> this.select((T1)var2, (Variant)var1.apply(var2)));
          return this;
       }
 
       public PropertyDispatch generateList(Function<T1, List<Variant>> var1) {
-         this.property1.getPossibleValues().forEach(var2 -> this.select(var2, (List<Variant>)var1.apply(var2)));
+         this.property1.getPossibleValues().forEach(var2 -> this.select((T1)var2, (List<Variant>)var1.apply(var2)));
          return this;
       }
    }
@@ -135,14 +135,14 @@ public abstract class PropertyDispatch {
       public PropertyDispatch generate(BiFunction<T1, T2, Variant> var1) {
          this.property1
             .getPossibleValues()
-            .forEach(var2 -> this.property2.getPossibleValues().forEach(var3 -> this.select((T1)var2, var3, (Variant)var1.apply(var2, var3))));
+            .forEach(var2 -> this.property2.getPossibleValues().forEach(var3 -> this.select((T1)var2, (T2)var3, (Variant)var1.apply(var2, var3))));
          return this;
       }
 
       public PropertyDispatch generateList(BiFunction<T1, T2, List<Variant>> var1) {
          this.property1
             .getPossibleValues()
-            .forEach(var2 -> this.property2.getPossibleValues().forEach(var3 -> this.select((T1)var2, var3, (List<Variant>)var1.apply(var2, var3))));
+            .forEach(var2 -> this.property2.getPossibleValues().forEach(var3 -> this.select((T1)var2, (T2)var3, (List<Variant>)var1.apply(var2, var3))));
          return this;
       }
    }
@@ -183,7 +183,7 @@ public abstract class PropertyDispatch {
                      .forEach(
                         var3 -> this.property3
                               .getPossibleValues()
-                              .forEach(var4 -> this.select((T1)var2, (T2)var3, var4, (Variant)var1.apply(var2, (T3)var3, var4)))
+                              .forEach(var4 -> this.select((T1)var2, (T2)var3, (T3)var4, (Variant)var1.apply(var2, var3, var4)))
                      )
             );
          return this;
@@ -198,7 +198,7 @@ public abstract class PropertyDispatch {
                      .forEach(
                         var3 -> this.property3
                               .getPossibleValues()
-                              .forEach(var4 -> this.select((T1)var2, (T2)var3, var4, (List<Variant>)var1.apply(var2, (T3)var3, var4)))
+                              .forEach(var4 -> this.select((T1)var2, (T2)var3, (T3)var4, (List<Variant>)var1.apply(var2, var3, var4)))
                      )
             );
          return this;
@@ -248,7 +248,7 @@ public abstract class PropertyDispatch {
                               .forEach(
                                  var4 -> this.property4
                                        .getPossibleValues()
-                                       .forEach(var5 -> this.select((T1)var2, (T2)var3, (T3)var4, var5, (Variant)var1.apply(var2, var3, (T4)var4, var5)))
+                                       .forEach(var5 -> this.select((T1)var2, (T2)var3, (T3)var4, (T4)var5, (Variant)var1.apply(var2, var3, var4, var5)))
                               )
                      )
             );
@@ -267,7 +267,7 @@ public abstract class PropertyDispatch {
                               .forEach(
                                  var4 -> this.property4
                                        .getPossibleValues()
-                                       .forEach(var5 -> this.select((T1)var2, (T2)var3, (T3)var4, var5, (List<Variant>)var1.apply(var2, var3, (T4)var4, var5)))
+                                       .forEach(var5 -> this.select((T1)var2, (T2)var3, (T3)var4, (T4)var5, (List<Variant>)var1.apply(var2, var3, var4, var5)))
                               )
                      )
             );
@@ -330,7 +330,7 @@ public abstract class PropertyDispatch {
                                                 .getPossibleValues()
                                                 .forEach(
                                                    var6 -> this.select(
-                                                         (T1)var2, (T2)var3, (T3)var4, (T4)var5, var6, (Variant)var1.apply(var2, var3, var4, (T5)var5, var6)
+                                                         (T1)var2, (T2)var3, (T3)var4, (T4)var5, (T5)var6, (Variant)var1.apply(var2, var3, var4, var5, var6)
                                                       )
                                                 )
                                        )
@@ -361,8 +361,8 @@ public abstract class PropertyDispatch {
                                                          (T2)var3,
                                                          (T3)var4,
                                                          (T4)var5,
-                                                         var6,
-                                                         (List<Variant>)var1.apply(var2, var3, var4, (T5)var5, var6)
+                                                         (T5)var6,
+                                                         (List<Variant>)var1.apply(var2, var3, var4, var5, var6)
                                                       )
                                                 )
                                        )

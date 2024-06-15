@@ -20,8 +20,8 @@ public enum BanReason {
 
    private final Component title;
 
-   private BanReason(String var3) {
-      this.title = Component.translatable("gui.banned.reason." + var3);
+   private BanReason(final String nullxx) {
+      this.title = Component.translatable("gui.banned.reason." + nullxx);
    }
 
    public Component title() {
@@ -30,7 +30,7 @@ public enum BanReason {
 
    @Nullable
    public static BanReason byId(int var0) {
-      return switch(var0) {
+      return switch (var0) {
          case 2 -> FALSE_REPORTING;
          default -> null;
          case 5 -> HATE_SPEECH;

@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 
 public abstract class IntProvider {
@@ -23,22 +22,21 @@ public abstract class IntProvider {
    }
 
    public static Codec<IntProvider> codec(int var0, int var1) {
-      return codec(var0, var1, CODEC);
+      return validateCodec(var0, var1, CODEC);
    }
 
-   public static <T extends IntProvider> Codec<T> codec(int var0, int var1, Codec<T> var2) {
-      return ExtraCodecs.validate(
-         var2,
-         var2x -> {
-            if (var2x.getMinValue() < var0) {
-               return DataResult.error(() -> "Value provider too low: " + var0 + " [" + var2x.getMinValue() + "-" + var2x.getMaxValue() + "]");
-            } else {
-               return var2x.getMaxValue() > var1
-                  ? DataResult.error(() -> "Value provider too high: " + var1 + " [" + var2x.getMinValue() + "-" + var2x.getMaxValue() + "]")
-                  : DataResult.success(var2x);
-            }
-         }
-      );
+   public static <T extends IntProvider> Codec<T> validateCodec(int var0, int var1, Codec<T> var2) {
+      return var2.validate(var2x -> validate(var0, var1, var2x));
+   }
+
+   private static <T extends IntProvider> DataResult<T> validate(int var0, int var1, T var2) {
+      if (var2.getMinValue() < var0) {
+         return DataResult.error(() -> "Value provider too low: " + var0 + " [" + var2.getMinValue() + "-" + var2.getMaxValue() + "]");
+      } else {
+         return var2.getMaxValue() > var1
+            ? DataResult.error(() -> "Value provider too high: " + var1 + " [" + var2.getMinValue() + "-" + var2.getMaxValue() + "]")
+            : DataResult.success(var2);
+      }
    }
 
    public abstract int sample(RandomSource var1);

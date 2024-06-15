@@ -29,10 +29,8 @@ public class LeapAtTargetGoal extends Goal {
             double var1 = this.mob.distanceToSqr(this.target);
             if (var1 < 4.0 || var1 > 16.0) {
                return false;
-            } else if (!this.mob.onGround()) {
-               return false;
             } else {
-               return this.mob.getRandom().nextInt(reducedTickDelay(5)) == 0;
+               return !this.mob.onGround() ? false : this.mob.getRandom().nextInt(reducedTickDelay(5)) == 0;
             }
          }
       }

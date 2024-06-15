@@ -72,12 +72,14 @@ enum AdvancementTabType {
    private final int height;
    private final int max;
 
-   private AdvancementTabType(AdvancementTabType.Sprites var3, AdvancementTabType.Sprites var4, int var5, int var6, int var7) {
-      this.selectedSprites = var3;
-      this.unselectedSprites = var4;
-      this.width = var5;
-      this.height = var6;
-      this.max = var7;
+   private AdvancementTabType(
+      final AdvancementTabType.Sprites nullxx, final AdvancementTabType.Sprites nullxxx, final int nullxxxx, final int nullxxxxx, final int nullxxxxxx
+   ) {
+      this.selectedSprites = nullxx;
+      this.unselectedSprites = nullxxx;
+      this.width = nullxxxx;
+      this.height = nullxxxxx;
+      this.max = nullxxxxxx;
    }
 
    public int getMax() {
@@ -101,7 +103,7 @@ enum AdvancementTabType {
    public void drawIcon(GuiGraphics var1, int var2, int var3, int var4, ItemStack var5) {
       int var6 = var2 + this.getX(var4);
       int var7 = var3 + this.getY(var4);
-      switch(this) {
+      switch (this) {
          case ABOVE:
             var6 += 6;
             var7 += 9;
@@ -123,7 +125,7 @@ enum AdvancementTabType {
    }
 
    public int getX(int var1) {
-      switch(this) {
+      switch (this) {
          case ABOVE:
             return (this.width + 4) * var1;
          case BELOW:
@@ -138,7 +140,7 @@ enum AdvancementTabType {
    }
 
    public int getY(int var1) {
-      switch(this) {
+      switch (this) {
          case ABOVE:
             return -this.height + 4;
          case BELOW:
@@ -158,16 +160,12 @@ enum AdvancementTabType {
       return var4 > (double)var8 && var4 < (double)(var8 + this.width) && var6 > (double)var9 && var6 < (double)(var9 + this.height);
    }
 
-   static record Sprites(ResourceLocation a, ResourceLocation b, ResourceLocation c) {
-      private final ResourceLocation first;
-      private final ResourceLocation middle;
-      private final ResourceLocation last;
-
-      Sprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
+   static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
+      Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
          super();
-         this.first = var1;
-         this.middle = var2;
-         this.last = var3;
+         this.first = first;
+         this.middle = middle;
+         this.last = last;
       }
    }
 }

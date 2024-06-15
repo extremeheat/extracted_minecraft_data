@@ -93,8 +93,8 @@ public class AdvancementTab {
       int var7 = var5 % 16;
       int var8 = var6 % 16;
 
-      for(int var9 = -1; var9 <= 15; ++var9) {
-         for(int var10 = -1; var10 <= 8; ++var10) {
+      for (int var9 = -1; var9 <= 15; var9++) {
+         for (int var10 = -1; var10 <= 8; var10++) {
             var1.blit(var4, var7 + 16 * var9, var8 + 16 * var10, 0.0F, 0.0F, 16, 16, 16, 16);
          }
       }
@@ -114,7 +114,7 @@ public class AdvancementTab {
       int var7 = Mth.floor(this.scrollX);
       int var8 = Mth.floor(this.scrollY);
       if (var2 > 0 && var2 < 234 && var3 > 0 && var3 < 113) {
-         for(AdvancementWidget var10 : this.widgets.values()) {
+         for (AdvancementWidget var10 : this.widgets.values()) {
             if (var10.isMouseOver(var7, var8, var2, var3)) {
                var6 = true;
                var10.drawHover(var1, var7, var8, this.fade, var4, var5);
@@ -141,7 +141,7 @@ public class AdvancementTab {
       if (var4.isEmpty()) {
          return null;
       } else {
-         for(AdvancementTabType var8 : AdvancementTabType.values()) {
+         for (AdvancementTabType var8 : AdvancementTabType.values()) {
             if (var2 < var8.getMax()) {
                return new AdvancementTab(var0, var1, var8, var2, var3, (DisplayInfo)var4.get());
             }
@@ -182,7 +182,7 @@ public class AdvancementTab {
       this.minY = Math.min(this.minY, var5);
       this.maxY = Math.max(this.maxY, var6);
 
-      for(AdvancementWidget var8 : this.widgets.values()) {
+      for (AdvancementWidget var8 : this.widgets.values()) {
          var8.attachToParent();
       }
    }

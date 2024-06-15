@@ -17,8 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class TradeWithVillager extends Behavior<Villager> {
-   private static final int INTERACT_DIST_SQR = 5;
-   private static final float SPEED_MODIFIER = 0.5F;
    private Set<Item> trades = ImmutableSet.of();
 
    public TradeWithVillager() {
@@ -39,21 +37,21 @@ public class TradeWithVillager extends Behavior<Villager> {
 
    protected void start(ServerLevel var1, Villager var2, long var3) {
       Villager var5 = (Villager)var2.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F);
+      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
       this.trades = figureOutWhatIAmWillingToTrade(var2, var5);
    }
 
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       Villager var5 = (Villager)var2.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
       if (!(var2.distanceToSqr(var5) > 5.0)) {
-         BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F);
+         BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
          var2.gossip(var1, var5, var3);
          if (var2.hasExcessFood() && (var2.getVillagerData().getProfession() == VillagerProfession.FARMER || var5.wantsMoreFood())) {
             throwHalfStack(var2, Villager.FOOD_POINTS.keySet(), var5);
          }
 
          if (var5.getVillagerData().getProfession() == VillagerProfession.FARMER
-            && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getMaxStackSize() / 2) {
+            && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getDefaultMaxStackSize() / 2) {
             throwHalfStack(var2, ImmutableSet.of(Items.WHEAT), var5);
          }
 
@@ -78,7 +76,7 @@ public class TradeWithVillager extends Behavior<Villager> {
       ItemStack var4 = ItemStack.EMPTY;
       int var5 = 0;
 
-      while(var5 < var3.getContainerSize()) {
+      while (var5 < var3.getContainerSize()) {
          ItemStack var6;
          Item var7;
          int var8;
@@ -99,7 +97,7 @@ public class TradeWithVillager extends Behavior<Villager> {
                }
             }
 
-            ++var5;
+            var5++;
             continue;
          }
 

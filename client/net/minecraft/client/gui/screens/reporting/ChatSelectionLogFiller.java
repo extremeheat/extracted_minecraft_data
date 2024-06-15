@@ -34,27 +34,27 @@ public class ChatSelectionLogFiller {
    public void fillNextPage(int var1, ChatSelectionLogFiller.Output var2) {
       int var3 = 0;
 
-      while(var3 < var1) {
+      while (var3 < var1) {
          LoggedChatEvent var4 = this.log.lookup(this.eventId);
          if (var4 == null) {
             break;
          }
 
          int var5 = this.eventId--;
-         if (var4 instanceof LoggedChatMessage.Player var6 && !((LoggedChatMessage.Player)var6).message().equals(this.lastMessage)) {
-            if (this.acceptMessage(var2, (LoggedChatMessage.Player)var6)) {
+         if (var4 instanceof LoggedChatMessage.Player var6 && !var6.message().equals(this.lastMessage)) {
+            if (this.acceptMessage(var2, var6)) {
                if (this.missedCount > 0) {
                   var2.acceptDivider(Component.translatable("gui.chatSelection.fold", this.missedCount));
                   this.missedCount = 0;
                }
 
-               var2.acceptMessage(var5, (LoggedChatMessage.Player)var6);
-               ++var3;
+               var2.acceptMessage(var5, var6);
+               var3++;
             } else {
-               ++this.missedCount;
+               this.missedCount++;
             }
 
-            this.lastMessage = ((LoggedChatMessage.Player)var6).message();
+            this.lastMessage = var6.message();
          }
       }
    }

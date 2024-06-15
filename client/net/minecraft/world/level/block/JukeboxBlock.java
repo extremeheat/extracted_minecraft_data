@@ -4,15 +4,13 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.InteractionHand;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.RecordItem;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -43,34 +41,26 @@ public class JukeboxBlock extends BaseEntityBlock {
    @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       super.setPlacedBy(var1, var2, var3, var4, var5);
-      CompoundTag var6 = BlockItem.getBlockEntityData(var5);
-      if (var6 != null && var6.contains("RecordItem")) {
+      CustomData var6 = var5.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+      if (var6.contains("RecordItem")) {
          var1.setBlock(var2, var3.setValue(HAS_RECORD, Boolean.valueOf(true)), 2);
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (var1.getValue(HAS_RECORD)) {
-         BlockEntity var8 = var2.getBlockEntity(var3);
-         if (var8 instanceof JukeboxBlockEntity var7) {
-            var7.popOutRecord();
-            return InteractionResult.sidedSuccess(var2.isClientSide);
-         }
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      if (var1.getValue(HAS_RECORD) && var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var6) {
+         var6.popOutRecord();
+         return InteractionResult.sidedSuccess(var2.isClientSide);
+      } else {
+         return InteractionResult.PASS;
       }
-
-      return InteractionResult.PASS;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof JukeboxBlockEntity var6) {
+         if (var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var6) {
             var6.popOutRecord();
          }
 
@@ -90,8 +80,7 @@ public class JukeboxBlock extends BaseEntityBlock {
 
    @Override
    public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof JukeboxBlockEntity var5 && var5.isRecordPlaying()) {
+      if (var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var5 && var5.isRecordPlaying()) {
          return 15;
       }
 
@@ -99,27 +88,21 @@ public class JukeboxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof JukeboxBlockEntity var4) {
-         Item var7 = var4.getTheItem().getItem();
-         if (var7 instanceof RecordItem var5) {
-            return var5.getAnalogOutput();
-         }
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+      if (var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var4 && var4.getTheItem().getItem() instanceof RecordItem var5) {
+         return var5.getAnalogOutput();
       }
 
       return 0;
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 

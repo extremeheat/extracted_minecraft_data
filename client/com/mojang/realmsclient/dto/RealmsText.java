@@ -43,7 +43,7 @@ public class RealmsText {
          JsonArray var4 = var2.getAsJsonArray();
          var3 = new String[var4.size()];
 
-         for(int var5 = 0; var5 < var4.size(); ++var5) {
+         for (int var5 = 0; var5 < var4.size(); var5++) {
             var3[var5] = var4.get(var5).getAsString();
          }
       } else {

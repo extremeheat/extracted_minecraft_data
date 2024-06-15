@@ -38,7 +38,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -64,7 +64,7 @@ public class WanderingTrader extends AbstractVillager {
             0,
             new UseItemGoal<>(
                this,
-               PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.INVISIBILITY),
+               PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY),
                SoundEvents.WANDERING_TRADER_DISAPPEARED,
                var1 -> this.level().isNight() && !var1.isInvisible()
             )
@@ -150,9 +150,9 @@ public class WanderingTrader extends AbstractVillager {
    private void experimentalUpdateTrades() {
       MerchantOffers var1 = this.getOffers();
 
-      for(Pair var3 : VillagerTrades.EXPERIMENTAL_WANDERING_TRADER_TRADES) {
+      for (Pair var3 : VillagerTrades.EXPERIMENTAL_WANDERING_TRADER_TRADES) {
          VillagerTrades.ItemListing[] var4 = (VillagerTrades.ItemListing[])var3.getLeft();
-         this.addOffersFromItemListings(var1, var4, var3.getRight());
+         this.addOffersFromItemListings(var1, var4, (Integer)var3.getRight());
       }
    }
 
@@ -161,7 +161,7 @@ public class WanderingTrader extends AbstractVillager {
       super.addAdditionalSaveData(var1);
       var1.putInt("DespawnDelay", this.despawnDelay);
       if (this.wanderTarget != null) {
-         var1.put("WanderTarget", NbtUtils.writeBlockPos(this.wanderTarget));
+         var1.put("wander_target", NbtUtils.writeBlockPos(this.wanderTarget));
       }
    }
 
@@ -172,10 +172,7 @@ public class WanderingTrader extends AbstractVillager {
          this.despawnDelay = var1.getInt("DespawnDelay");
       }
 
-      if (var1.contains("WanderTarget")) {
-         this.wanderTarget = NbtUtils.readBlockPos(var1.getCompound("WanderTarget"));
-      }
-
+      NbtUtils.readBlockPos(var1, "wander_target").ifPresent(var1x -> this.wanderTarget = var1x);
       this.setAge(Math.max(0, this.getAge()));
    }
 
@@ -258,11 +255,11 @@ public class WanderingTrader extends AbstractVillager {
       final double stopDistance;
       final double speedModifier;
 
-      WanderToPositionGoal(WanderingTrader var2, double var3, double var5) {
+      WanderToPositionGoal(final WanderingTrader nullx, final double nullxx, final double nullxxx) {
          super();
-         this.trader = var2;
-         this.stopDistance = var3;
-         this.speedModifier = var5;
+         this.trader = nullx;
+         this.stopDistance = nullxx;
+         this.speedModifier = nullxxx;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 

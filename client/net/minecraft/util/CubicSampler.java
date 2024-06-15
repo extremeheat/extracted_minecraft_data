@@ -21,15 +21,15 @@ public class CubicSampler {
       double var11 = 0.0;
       Vec3 var13 = Vec3.ZERO;
 
-      for(int var14 = 0; var14 < 6; ++var14) {
+      for (int var14 = 0; var14 < 6; var14++) {
          double var15 = Mth.lerp(var5, GAUSSIAN_SAMPLE_KERNEL[var14 + 1], GAUSSIAN_SAMPLE_KERNEL[var14]);
          int var17 = var2 - 2 + var14;
 
-         for(int var18 = 0; var18 < 6; ++var18) {
+         for (int var18 = 0; var18 < 6; var18++) {
             double var19 = Mth.lerp(var7, GAUSSIAN_SAMPLE_KERNEL[var18 + 1], GAUSSIAN_SAMPLE_KERNEL[var18]);
             int var21 = var3 - 2 + var18;
 
-            for(int var22 = 0; var22 < 6; ++var22) {
+            for (int var22 = 0; var22 < 6; var22++) {
                double var23 = Mth.lerp(var9, GAUSSIAN_SAMPLE_KERNEL[var22 + 1], GAUSSIAN_SAMPLE_KERNEL[var22]);
                int var25 = var4 - 2 + var22;
                double var26 = var15 * var19 * var23;

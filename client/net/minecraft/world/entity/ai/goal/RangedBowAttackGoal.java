@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
@@ -23,7 +22,7 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
 
    public RangedBowAttackGoal(T var1, double var2, int var4, float var5) {
       super();
-      this.mob = var1;
+      this.mob = (T)var1;
       this.speedModifier = var2;
       this.attackIntervalMin = var4;
       this.attackRadiusSqr = var5 * var5;
@@ -68,8 +67,6 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
       return true;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void tick() {
       LivingEntity var1 = this.mob.getTarget();
@@ -82,14 +79,14 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
          }
 
          if (var4) {
-            ++this.seeTime;
+            this.seeTime++;
          } else {
-            --this.seeTime;
+            this.seeTime--;
          }
 
          if (!(var2 > (double)this.attackRadiusSqr) && this.seeTime >= 20) {
             this.mob.getNavigation().stop();
-            ++this.strafingTime;
+            this.strafingTime++;
          } else {
             this.mob.getNavigation().moveTo(var1, this.speedModifier);
             this.strafingTime = -1;
@@ -115,8 +112,7 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
             }
 
             this.mob.getMoveControl().strafe(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
-            Entity var7 = this.mob.getControlledVehicle();
-            if (var7 instanceof Mob var6) {
+            if (this.mob.getControlledVehicle() instanceof Mob var6) {
                var6.lookAt(var1, 30.0F, 30.0F);
             }
 

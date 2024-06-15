@@ -38,7 +38,7 @@ public abstract class GenericThread implements Runnable {
       if (null != this.thread) {
          int var1 = 0;
 
-         while(this.thread.isAlive()) {
+         while (this.thread.isAlive()) {
             try {
                this.thread.join(1000L);
                if (++var1 >= 5) {

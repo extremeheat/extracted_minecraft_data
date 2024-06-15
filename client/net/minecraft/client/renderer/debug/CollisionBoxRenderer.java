@@ -34,7 +34,7 @@ public class CollisionBoxRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       VertexConsumer var14 = var2.getBuffer(RenderType.lines());
 
-      for(VoxelShape var13 : this.shapes) {
+      for (VoxelShape var13 : this.shapes) {
          LevelRenderer.renderVoxelShape(var1, var14, var13, -var3, -var5, -var7, 1.0F, 1.0F, 1.0F, 1.0F, true);
       }
    }

@@ -44,18 +44,16 @@ public abstract class GrowingPlantBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.relative(this.growthDirection.getOpposite());
       BlockState var5 = var2.getBlockState(var4);
-      if (!this.canAttachTo(var5)) {
-         return false;
-      } else {
-         return var5.is(this.getHeadBlock()) || var5.is(this.getBodyBlock()) || var5.isFaceSturdy(var2, var4, this.growthDirection);
-      }
+      return !this.canAttachTo(var5)
+         ? false
+         : var5.is(this.getHeadBlock()) || var5.is(this.getBodyBlock()) || var5.isFaceSturdy(var2, var4, this.growthDirection);
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
       }
@@ -66,7 +64,7 @@ public abstract class GrowingPlantBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shape;
    }
 

@@ -22,7 +22,7 @@ public class WaterDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       BlockPos var9 = this.minecraft.player.blockPosition();
       Level var10 = this.minecraft.player.level();
 
-      for(BlockPos var12 : BlockPos.betweenClosed(var9.offset(-10, -10, -10), var9.offset(10, 10, 10))) {
+      for (BlockPos var12 : BlockPos.betweenClosed(var9.offset(-10, -10, -10), var9.offset(10, 10, 10))) {
          FluidState var13 = var10.getFluidState(var12);
          if (var13.is(FluidTags.WATER)) {
             double var14 = (double)((float)var12.getY() + var13.getHeight(var10, var12));
@@ -46,7 +46,7 @@ public class WaterDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
       }
 
-      for(BlockPos var17 : BlockPos.betweenClosed(var9.offset(-10, -10, -10), var9.offset(10, 10, 10))) {
+      for (BlockPos var17 : BlockPos.betweenClosed(var9.offset(-10, -10, -10), var9.offset(10, 10, 10))) {
          FluidState var18 = var10.getFluidState(var17);
          if (var18.is(FluidTags.WATER)) {
             DebugRenderer.renderFloatingText(

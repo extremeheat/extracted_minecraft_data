@@ -11,7 +11,6 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DynamicOps;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -52,30 +51,29 @@ public class EntityRidingToPassengersFix extends DataFix {
                var6,
                var7,
                var5x -> var6x -> {
-                     Optional var7xx = Optional.empty();
-                     Pair var8xx = var6x;
-      
-                     while(true) {
-                        Either var9xx = (Either)DataFixUtils.orElse(
-                           var7xx.map(
+                     Optional var7x = Optional.empty();
+                     Pair var8x = var6x;
+
+                     while (true) {
+                        Either var9x = (Either)DataFixUtils.orElse(
+                           var7x.map(
                               var4xxx -> {
-                                 Typed var5xxxx = (Typed)var4.pointTyped(var5x)
-                                    .orElseThrow(() -> new IllegalStateException("Could not create new entity tree"));
-                                 Object var6xxx = var5xxxx.set(var11, var4xxx)
+                                 Typed var5xxx = (Typed)var4.pointTyped(var5x).orElseThrow(() -> new IllegalStateException("Could not create new entity tree"));
+                                 Object var6xx = var5xxx.set(var11, var4xxx)
                                     .getOptional(var12)
                                     .orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
-                                 return Either.left(ImmutableList.of(var6xxx));
+                                 return Either.left(ImmutableList.of(var6xx));
                               }
                            ),
                            Either.right(DSL.unit())
                         );
-                        var7xx = Optional.of(Pair.of(References.ENTITY_TREE.typeName(), Pair.of(var9xx, ((Pair)var8xx.getSecond()).getSecond())));
-                        Optional var10xx = ((Either)((Pair)var8xx.getSecond()).getFirst()).left();
-                        if (var10xx.isEmpty()) {
-                           return (Pair)var7xx.orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
+                        var7x = Optional.of(Pair.of(References.ENTITY_TREE.typeName(), Pair.of(var9x, ((Pair)var8x.getSecond()).getSecond())));
+                        Optional var10x = ((Either)((Pair)var8x.getSecond()).getFirst()).left();
+                        if (var10x.isEmpty()) {
+                           return (Pair)var7x.orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
                         }
-      
-                        var8xx = (Pair)new Typed(var3, var5x, var10xx.get())
+
+                        var8x = (Pair)new Typed(var3, var5x, var10x.get())
                            .getOptional(var10)
                            .orElseThrow(() -> new IllegalStateException("Should always have an entity here"));
                      }

@@ -2,14 +2,13 @@ package net.minecraft.world.level.gameevent.vibrations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class VibrationSelector {
    public static final Codec<VibrationSelector> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               VibrationInfo.CODEC.optionalFieldOf("event").forGetter(var0x -> var0x.currentVibrationData.map(Pair::getLeft)),
+               VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter(var0x -> var0x.currentVibrationData.map(Pair::getLeft)),
                Codec.LONG.fieldOf("tick").forGetter(var0x -> var0x.currentVibrationData.<Long>map(Pair::getRight).orElse(-1L))
             )
             .apply(var0, VibrationSelector::new)
@@ -36,18 +35,18 @@ public class VibrationSelector {
       if (this.currentVibrationData.isEmpty()) {
          return true;
       } else {
-         Pair var4 = (Pair)this.currentVibrationData.get();
-         long var5 = var4.getRight();
+         Pair var4 = this.currentVibrationData.get();
+         long var5 = (Long)var4.getRight();
          if (var2 != var5) {
             return false;
          } else {
             VibrationInfo var7 = (VibrationInfo)var4.getLeft();
             if (var1.distance() < var7.distance()) {
                return true;
-            } else if (var1.distance() > var7.distance()) {
-               return false;
             } else {
-               return VibrationSystem.getGameEventFrequency(var1.gameEvent()) > VibrationSystem.getGameEventFrequency(var7.gameEvent());
+               return var1.distance() > var7.distance()
+                  ? false
+                  : VibrationSystem.getGameEventFrequency(var1.gameEvent()) > VibrationSystem.getGameEventFrequency(var7.gameEvent());
             }
          }
       }
@@ -57,9 +56,7 @@ public class VibrationSelector {
       if (this.currentVibrationData.isEmpty()) {
          return Optional.empty();
       } else {
-         return ((Pair)this.currentVibrationData.get()).getRight() < var1
-            ? Optional.of((VibrationInfo)((Pair)this.currentVibrationData.get()).getLeft())
-            : Optional.empty();
+         return this.currentVibrationData.get().getRight() < var1 ? Optional.of((VibrationInfo)this.currentVibrationData.get().getLeft()) : Optional.empty();
       }
    }
 

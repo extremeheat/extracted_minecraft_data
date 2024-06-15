@@ -2,11 +2,13 @@ package net.minecraft.world.level;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicLike;
 import java.util.Comparator;
@@ -22,6 +24,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
@@ -77,8 +80,8 @@ public class GameRules {
    public static final GameRules.Key<GameRules.BooleanValue> RULE_REDUCEDDEBUGINFO = register(
       "reducedDebugInfo", GameRules.Category.MISC, GameRules.BooleanValue.create(false, (var0, var1) -> {
          int var2 = var1.get() ? 22 : 23;
-   
-         for(ServerPlayer var4 : var0.getPlayerList().getPlayers()) {
+
+         for (ServerPlayer var4 : var0.getPlayerList().getPlayers()) {
             var4.connection.send(new ClientboundEntityEventPacket(var4, (byte)var2));
          }
       })
@@ -100,7 +103,7 @@ public class GameRules {
    );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_LIMITED_CRAFTING = register(
       "doLimitedCrafting", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
-         for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
+         for (ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.LIMITED_CRAFTING, var1.get() ? 1.0F : 0.0F));
          }
       })
@@ -125,7 +128,7 @@ public class GameRules {
    );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_DO_IMMEDIATE_RESPAWN = register(
       "doImmediateRespawn", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
-         for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
+         for (ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.IMMEDIATE_RESPAWN, var1.get() ? 1.0F : 0.0F));
          }
       })
@@ -193,6 +196,12 @@ public class GameRules {
    public static final GameRules.Key<GameRules.BooleanValue> RULE_ENDER_PEARLS_VANISH_ON_DEATH = register(
       "enderPearlsVanishOnDeath", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true)
    );
+   public static final GameRules.Key<GameRules.IntegerValue> RULE_SPAWN_CHUNK_RADIUS = register(
+      "spawnChunkRadius", GameRules.Category.MISC, GameRules.IntegerValue.create(2, 0, 32, (var0, var1) -> {
+         ServerLevel var2 = var0.overworld();
+         var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
+      })
+   );
    private final Map<GameRules.Key<?>, GameRules.Value<?>> rules;
 
    private static <T extends GameRules.Value<T>> GameRules.Key<T> register(String var0, GameRules.Category var1, GameRules.Type<T> var2) {
@@ -233,7 +242,7 @@ public class GameRules {
    }
 
    private void loadFromTag(DynamicLike<?> var1) {
-      this.rules.forEach((var1x, var2) -> var1.get(var1x.id).asString().result().ifPresent(var2::deserialize));
+      this.rules.forEach((var1x, var2) -> var1.get(var1x.id).asString().ifSuccess(var2::deserialize));
    }
 
    public GameRules copy() {
@@ -243,7 +252,7 @@ public class GameRules {
    }
 
    public static void visitGameRuleTypes(GameRules.GameRuleTypeVisitor var0) {
-      GAME_RULE_TYPES.forEach((var1, var2) -> callVisitorCap(var0, var1, var2));
+      GAME_RULE_TYPES.forEach((var1, var2) -> callVisitorCap(var0, (GameRules.Key<?>)var1, (GameRules.Type<?>)var2));
    }
 
    private static <T extends GameRules.Value<T>> void callVisitorCap(GameRules.GameRuleTypeVisitor var0, GameRules.Key<?> var1, GameRules.Type<?> var2) {
@@ -252,7 +261,7 @@ public class GameRules {
    }
 
    public void assignFrom(GameRules var1, @Nullable MinecraftServer var2) {
-      var1.rules.keySet().forEach(var3 -> this.assignCap(var3, var1, var2));
+      var1.rules.keySet().forEach(var3 -> this.assignCap((GameRules.Key<?>)var3, var1, var2));
    }
 
    private <T extends GameRules.Value<T>> void assignCap(GameRules.Key<T> var1, GameRules var2, @Nullable MinecraftServer var3) {
@@ -341,8 +350,8 @@ public class GameRules {
 
       private final String descriptionId;
 
-      private Category(String var3) {
-         this.descriptionId = var3;
+      private Category(final String nullxx) {
+         this.descriptionId = nullxx;
       }
 
       public String getDescriptionId() {
@@ -367,6 +376,12 @@ public class GameRules {
       private static GameRules.Type<GameRules.IntegerValue> create(int var0, BiConsumer<MinecraftServer, GameRules.IntegerValue> var1) {
          return new GameRules.Type<>(
             IntegerArgumentType::integer, var1x -> new GameRules.IntegerValue(var1x, var0), var1, GameRules.GameRuleTypeVisitor::visitInteger
+         );
+      }
+
+      static GameRules.Type<GameRules.IntegerValue> create(int var0, int var1, int var2, BiConsumer<MinecraftServer, GameRules.IntegerValue> var3) {
+         return new GameRules.Type<>(
+            () -> IntegerArgumentType.integer(var1, var2), var1x -> new GameRules.IntegerValue(var1x, var0), var3, GameRules.GameRuleTypeVisitor::visitInteger
          );
       }
 
@@ -406,9 +421,10 @@ public class GameRules {
 
       public boolean tryDeserialize(String var1) {
          try {
-            this.value = Integer.parseInt(var1);
-            return true;
-         } catch (NumberFormatException var3) {
+            StringReader var2 = new StringReader(var1);
+            this.value = (Integer)this.type.argument.get().parse(var2);
+            return !var2.canRead();
+         } catch (CommandSyntaxException var3) {
             return false;
          }
       }
@@ -461,11 +477,7 @@ public class GameRules {
 
       @Override
       public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else {
-            return var1 instanceof GameRules.Key && ((GameRules.Key)var1).id.equals(this.id);
-         }
+         return this == var1 ? true : var1 instanceof GameRules.Key && ((GameRules.Key)var1).id.equals(this.id);
       }
 
       @Override
@@ -487,7 +499,7 @@ public class GameRules {
    }
 
    public static class Type<T extends GameRules.Value<T>> {
-      private final Supplier<ArgumentType<?>> argument;
+      final Supplier<ArgumentType<?>> argument;
       private final Function<GameRules.Type<T>, T> constructor;
       final BiConsumer<MinecraftServer, T> callback;
       private final GameRules.VisitorCaller<T> visitorCaller;

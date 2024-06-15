@@ -29,13 +29,11 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.multiplayer.SafetyScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
-import net.minecraft.client.renderer.CubeMap;
 import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.WorldOptions;
@@ -45,17 +43,17 @@ import org.slf4j.Logger;
 
 public class TitleScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component TITLE = Component.translatable("narrator.screen.title");
+   private static final Component COPYRIGHT_TEXT = Component.translatable("title.credits");
    private static final String DEMO_LEVEL_ID = "Demo_World";
-   public static final Component COPYRIGHT_TEXT = Component.translatable("title.credits");
-   public static final CubeMap CUBE_MAP = new CubeMap(new ResourceLocation("textures/gui/title/background/panorama"));
-   private static final ResourceLocation PANORAMA_OVERLAY = new ResourceLocation("textures/gui/title/background/panorama_overlay.png");
+   private static final float FADE_IN_TIME = 2000.0F;
    @Nullable
    private SplashRenderer splash;
    private Button resetDemoButton;
    @Nullable
    private RealmsNotificationsScreen realmsNotificationsScreen;
-   private final PanoramaRenderer panorama = new PanoramaRenderer(CUBE_MAP);
-   private final boolean fading;
+   private float panoramaFade = 1.0F;
+   private boolean fading;
    private long fadeInStart;
    @Nullable
    private TitleScreen.WarningLabel warningLabel;
@@ -70,7 +68,7 @@ public class TitleScreen extends Screen {
    }
 
    public TitleScreen(boolean var1, @Nullable LogoRenderer var2) {
-      super(Component.translatable("narrator.screen.title"));
+      super(TITLE);
       this.fading = var1;
       this.logoRenderer = Objects.requireNonNullElseGet(var2, () -> new LogoRenderer(false));
    }
@@ -84,15 +82,13 @@ public class TitleScreen extends Screen {
       if (this.realmsNotificationsEnabled()) {
          this.realmsNotificationsScreen.tick();
       }
-
-      this.minecraft.getRealms32BitWarningStatus().showRealms32BitWarningIfNeeded(this);
    }
 
    public static CompletableFuture<Void> preloadResources(TextureManager var0, Executor var1) {
       return CompletableFuture.allOf(
          var0.preload(LogoRenderer.MINECRAFT_LOGO, var1),
          var0.preload(LogoRenderer.MINECRAFT_EDITION, var1),
-         var0.preload(PANORAMA_OVERLAY, var1),
+         var0.preload(PanoramaRenderer.PANORAMA_OVERLAY, var1),
          CUBE_MAP.preload(var0, var1)
       );
    }
@@ -115,7 +111,7 @@ public class TitleScreen extends Screen {
 
       int var1 = this.font.width(COPYRIGHT_TEXT);
       int var2 = this.width - var1 - 2;
-      boolean var3 = true;
+      byte var3 = 24;
       int var4 = this.height / 4 + 48;
       if (this.minecraft.isDemo()) {
          this.createDemoMenuOptions(var4, 24);
@@ -153,12 +149,6 @@ public class TitleScreen extends Screen {
       if (this.realmsNotificationsEnabled()) {
          this.realmsNotificationsScreen.init(this.minecraft, this.width, this.height);
       }
-
-      if (!this.minecraft.is64Bit()) {
-         this.warningLabel = new TitleScreen.WarningLabel(
-            this.font, MultiLineLabel.create(this.font, Component.translatable("title.32bit.deprecation"), 350, 2), this.width / 2, var4 - 24
-         );
-      }
    }
 
    private void createNormalMenuOptions(int var1, int var2) {
@@ -171,11 +161,11 @@ public class TitleScreen extends Screen {
       boolean var4 = var3 == null;
       Tooltip var5 = var3 != null ? Tooltip.create(var3) : null;
       this.addRenderableWidget(Button.builder(Component.translatable("menu.multiplayer"), var1x -> {
-         Object var2xx = this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this);
-         this.minecraft.setScreen((Screen)var2xx);
+         Object var2x = this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this);
+         this.minecraft.setScreen((Screen)var2x);
       }).bounds(this.width / 2 - 100, var1 + var2 * 1, 200, 20).tooltip(var5).build()).active = var4;
       this.addRenderableWidget(
-            Button.builder(Component.translatable("menu.online"), var1x -> this.realmsButtonClicked())
+            Button.builder(Component.translatable("menu.online"), var1x -> this.minecraft.setScreen(new RealmsMainScreen(this)))
                .bounds(this.width / 2 - 100, var1 + var2 * 2, 200, 20)
                .tooltip(var5)
                .build()
@@ -208,7 +198,7 @@ public class TitleScreen extends Screen {
                Component.translatable("menu.playdemo"),
                var2x -> {
                   if (var3) {
-                     this.minecraft.createWorldOpenFlows().checkForBackupAndLoad("Demo_World", () -> this.minecraft.setScreen(this));
+                     this.minecraft.createWorldOpenFlows().openWorld("Demo_World", () -> this.minecraft.setScreen(this));
                   } else {
                      this.minecraft
                         .createWorldOpenFlows()
@@ -225,10 +215,10 @@ public class TitleScreen extends Screen {
          Button.builder(
                Component.translatable("menu.resetdemo"),
                var1x -> {
-                  LevelStorageSource var2xx = this.minecraft.getLevelSource();
-         
-                  try (LevelStorageSource.LevelStorageAccess var3xx = var2xx.createAccess("Demo_World")) {
-                     if (var3xx.hasWorldData()) {
+                  LevelStorageSource var2x = this.minecraft.getLevelSource();
+
+                  try (LevelStorageSource.LevelStorageAccess var3x = var2x.createAccess("Demo_World")) {
+                     if (var3x.hasWorldData()) {
                         this.minecraft
                            .setScreen(
                               new ConfirmScreen(
@@ -267,57 +257,63 @@ public class TitleScreen extends Screen {
       }
    }
 
-   private void realmsButtonClicked() {
-      this.minecraft.setScreen(new RealmsMainScreen(this));
-   }
-
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.fadeInStart == 0L && this.fading) {
          this.fadeInStart = Util.getMillis();
       }
 
-      float var5 = this.fading ? (float)(Util.getMillis() - this.fadeInStart) / 1000.0F : 1.0F;
-      this.panorama.render(var4, Mth.clamp(var5, 0.0F, 1.0F));
-      RenderSystem.enableBlend();
-      var1.setColor(1.0F, 1.0F, 1.0F, this.fading ? (float)Mth.ceil(Mth.clamp(var5, 0.0F, 1.0F)) : 1.0F);
-      var1.blit(PANORAMA_OVERLAY, 0, 0, this.width, this.height, 0.0F, 0.0F, 16, 128, 16, 128);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-      float var6 = this.fading ? Mth.clamp(var5 - 1.0F, 0.0F, 1.0F) : 1.0F;
-      this.logoRenderer.renderLogo(var1, this.width, var6);
-      int var7 = Mth.ceil(var6 * 255.0F) << 24;
-      if ((var7 & -67108864) != 0) {
+      float var5 = 1.0F;
+      if (this.fading) {
+         float var6 = (float)(Util.getMillis() - this.fadeInStart) / 2000.0F;
+         if (var6 > 1.0F) {
+            this.fading = false;
+            this.panoramaFade = 1.0F;
+         } else {
+            var6 = Mth.clamp(var6, 0.0F, 1.0F);
+            var5 = Mth.clampedMap(var6, 0.5F, 1.0F, 0.0F, 1.0F);
+            this.panoramaFade = Mth.clampedMap(var6, 0.0F, 0.5F, 0.0F, 1.0F);
+         }
+
+         this.fadeWidgets(var5);
+      }
+
+      this.renderPanorama(var1, var4);
+      int var9 = Mth.ceil(var5 * 255.0F) << 24;
+      if ((var9 & -67108864) != 0) {
+         super.render(var1, var2, var3, var4);
+         this.logoRenderer.renderLogo(var1, this.width, var5);
          if (this.warningLabel != null) {
-            this.warningLabel.render(var1, var7);
+            this.warningLabel.render(var1, var9);
          }
 
          if (this.splash != null && !this.minecraft.options.hideSplashTexts().get()) {
-            this.splash.render(var1, this.width, this.font, var7);
+            this.splash.render(var1, this.width, this.font, var9);
          }
 
-         String var8 = "Minecraft " + SharedConstants.getCurrentVersion().getName();
+         String var7 = "Minecraft " + SharedConstants.getCurrentVersion().getName();
          if (this.minecraft.isDemo()) {
-            var8 = var8 + " Demo";
+            var7 = var7 + " Demo";
          } else {
-            var8 = var8 + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType());
+            var7 = var7 + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType());
          }
 
          if (Minecraft.checkModStatus().shouldReportAsModified()) {
-            var8 = var8 + I18n.get("menu.modded");
+            var7 = var7 + I18n.get("menu.modded");
          }
 
-         var1.drawString(this.font, var8, 2, this.height - 10, 16777215 | var7);
-
-         for(GuiEventListener var10 : this.children()) {
-            if (var10 instanceof AbstractWidget) {
-               ((AbstractWidget)var10).setAlpha(var6);
-            }
-         }
-
-         super.render(var1, var2, var3, var4);
-         if (this.realmsNotificationsEnabled() && var6 >= 1.0F) {
+         var1.drawString(this.font, var7, 2, this.height - 10, 16777215 | var9);
+         if (this.realmsNotificationsEnabled() && var5 >= 1.0F) {
             RenderSystem.enableDepthTest();
             this.realmsNotificationsScreen.render(var1, var2, var3, var4);
+         }
+      }
+   }
+
+   private void fadeWidgets(float var1) {
+      for (GuiEventListener var3 : this.children()) {
+         if (var3 instanceof AbstractWidget var4) {
+            var4.setAlpha(var1);
          }
       }
    }
@@ -327,12 +323,13 @@ public class TitleScreen extends Screen {
    }
 
    @Override
+   protected void renderPanorama(GuiGraphics var1, float var2) {
+      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, this.advancePanoramaTime());
+   }
+
+   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
-      if (super.mouseClicked(var1, var3, var5)) {
-         return true;
-      } else {
-         return this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var3, var5);
-      }
+      return super.mouseClicked(var1, var3, var5) ? true : this.realmsNotificationsEnabled() && this.realmsNotificationsScreen.mouseClicked(var1, var3, var5);
    }
 
    @Override
@@ -363,18 +360,13 @@ public class TitleScreen extends Screen {
       this.minecraft.setScreen(this);
    }
 
-   static record WarningLabel(Font a, MultiLineLabel b, int c, int d) {
-      private final Font font;
-      private final MultiLineLabel label;
-      private final int x;
-      private final int y;
-
-      WarningLabel(Font var1, MultiLineLabel var2, int var3, int var4) {
+   static record WarningLabel(Font font, MultiLineLabel label, int x, int y) {
+      private WarningLabel(Font font, MultiLineLabel label, int x, int y) {
          super();
-         this.font = var1;
-         this.label = var2;
-         this.x = var3;
-         this.y = var4;
+         this.font = font;
+         this.label = label;
+         this.x = x;
+         this.y = y;
       }
 
       public void render(GuiGraphics var1, int var2) {

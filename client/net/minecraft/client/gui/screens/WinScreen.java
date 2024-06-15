@@ -17,6 +17,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.LogoRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
@@ -29,7 +30,7 @@ import org.slf4j.Logger;
 
 public class WinScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/vignette.png");
+   private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/credits_vignette.png");
    private static final Component SECTION_HEADING = Component.literal("============").withStyle(ChatFormatting.WHITE);
    private static final String NAME_PREFIX = "           ";
    private static final String OBFUSCATE_TOKEN = "" + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + ChatFormatting.GREEN + ChatFormatting.AQUA;
@@ -148,29 +149,27 @@ public class WinScreen extends Screen {
       RandomSource var3 = RandomSource.create(8124371L);
 
       String var4;
-      while((var4 = var2.readLine()) != null) {
+      while ((var4 = var2.readLine()) != null) {
+         var4 = var4.replaceAll("PLAYERNAME", this.minecraft.getUser().getName());
+
          int var5;
-         String var6;
-         String var7;
-         for(var4 = var4.replaceAll("PLAYERNAME", this.minecraft.getUser().getName());
-            (var5 = var4.indexOf(OBFUSCATE_TOKEN)) != -1;
-            var4 = var6 + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + "XXXXXXXX".substring(0, var3.nextInt(4) + 3) + var7
-         ) {
-            var6 = var4.substring(0, var5);
-            var7 = var4.substring(var5 + OBFUSCATE_TOKEN.length());
+         while ((var5 = var4.indexOf(OBFUSCATE_TOKEN)) != -1) {
+            Object var6 = var4.substring(0, var5);
+            String var7 = var4.substring(var5 + OBFUSCATE_TOKEN.length());
+            var4 = var6 + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + "XXXXXXXX".substring(0, var3.nextInt(4) + 3) + var7;
          }
 
          this.addPoemLines(var4);
          this.addEmptyLine();
       }
 
-      for(int var9 = 0; var9 < 8; ++var9) {
+      for (int var9 = 0; var9 < 8; var9++) {
          this.addEmptyLine();
       }
    }
 
    private void addCreditsFile(Reader var1) {
-      for(JsonElement var4 : GsonHelper.parseArray(var1)) {
+      for (JsonElement var4 : GsonHelper.parseArray(var1)) {
          JsonObject var5 = var4.getAsJsonObject();
          String var6 = var5.get("section").getAsString();
          this.addCreditsLine(SECTION_HEADING, true);
@@ -179,7 +178,7 @@ public class WinScreen extends Screen {
          this.addEmptyLine();
          this.addEmptyLine();
 
-         for(JsonElement var9 : var5.getAsJsonArray("disciplines")) {
+         for (JsonElement var9 : var5.getAsJsonArray("disciplines")) {
             JsonObject var10 = var9.getAsJsonObject();
             String var11 = var10.get("discipline").getAsString();
             if (StringUtils.isNotEmpty(var11)) {
@@ -188,13 +187,13 @@ public class WinScreen extends Screen {
                this.addEmptyLine();
             }
 
-            for(JsonElement var14 : var10.getAsJsonArray("titles")) {
+            for (JsonElement var14 : var10.getAsJsonArray("titles")) {
                JsonObject var15 = var14.getAsJsonObject();
                String var16 = var15.get("title").getAsString();
                JsonArray var17 = var15.getAsJsonArray("names");
                this.addCreditsLine(Component.literal(var16).withStyle(ChatFormatting.GRAY), false);
 
-               for(JsonElement var19 : var17) {
+               for (JsonElement var19 : var17) {
                   String var20 = var19.getAsString();
                   this.addCreditsLine(Component.literal("           ").append(var20).withStyle(ChatFormatting.WHITE), false);
                }
@@ -224,8 +223,9 @@ public class WinScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.scroll = Math.max(0.0F, this.scroll + var4 * this.scrollSpeed);
       super.render(var1, var2, var3, var4);
+      this.renderVignette(var1);
+      this.scroll = Math.max(0.0F, this.scroll + var4 * this.scrollSpeed);
       int var5 = this.width / 2 - 128;
       int var6 = this.height + 50;
       float var7 = -this.scroll;
@@ -234,7 +234,7 @@ public class WinScreen extends Screen {
       this.logoRenderer.renderLogo(var1, this.width, 1.0F, var6);
       int var8 = var6 + 100;
 
-      for(int var9 = 0; var9 < this.lines.size(); ++var9) {
+      for (int var9 = 0; var9 < this.lines.size(); var9++) {
          if (var9 == this.lines.size() - 1) {
             float var10 = (float)var8 + var7 - (float)(this.height / 2 - 6);
             if (var10 < 0.0F) {
@@ -245,9 +245,9 @@ public class WinScreen extends Screen {
          if ((float)var8 + var7 + 12.0F + 8.0F > 0.0F && (float)var8 + var7 < (float)this.height) {
             FormattedCharSequence var11 = this.lines.get(var9);
             if (this.centeredLines.contains(var9)) {
-               var1.drawCenteredString(this.font, var11, var5 + 128, var8, 16777215);
+               var1.drawCenteredString(this.font, var11, var5 + 128, var8, -1);
             } else {
-               var1.drawString(this.font, var11, var5, var8, 16777215);
+               var1.drawString(this.font, var11, var5, var8, -1);
             }
          }
 
@@ -255,6 +255,9 @@ public class WinScreen extends Screen {
       }
 
       var1.pose().popPose();
+   }
+
+   private void renderVignette(GuiGraphics var1) {
       RenderSystem.enableBlend();
       RenderSystem.blendFunc(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR);
       var1.blit(VIGNETTE_LOCATION, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
@@ -264,26 +267,22 @@ public class WinScreen extends Screen {
 
    @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      int var5 = this.width;
+      if (this.poem) {
+         var1.fillRenderType(RenderType.endPortal(), 0, 0, this.width, this.height, 0);
+      } else {
+         super.renderBackground(var1, var2, var3, var4);
+      }
+   }
+
+   @Override
+   protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       float var6 = this.scroll * 0.5F;
-      boolean var7 = true;
-      float var8 = this.scroll / this.unmodifiedScrollSpeed;
-      float var9 = var8 * 0.02F;
-      float var10 = (float)(this.totalScrollLength + this.height + this.height + 24) / this.unmodifiedScrollSpeed;
-      float var11 = (var10 - 20.0F - var8) * 0.005F;
-      if (var11 < var9) {
-         var9 = var11;
-      }
+      Screen.renderMenuBackgroundTexture(var1, Screen.MENU_BACKGROUND, 0, 0, 0.0F, var6, var4, var5);
+   }
 
-      if (var9 > 1.0F) {
-         var9 = 1.0F;
-      }
-
-      var9 *= var9;
-      var9 = var9 * 96.0F / 255.0F;
-      var1.setColor(var9, var9, var9, 1.0F);
-      var1.blit(BACKGROUND_LOCATION, 0, 0, 0, 0.0F, var6, var5, this.height, 64, 64);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+   @Override
+   public boolean isPauseScreen() {
+      return !this.poem;
    }
 
    @Override

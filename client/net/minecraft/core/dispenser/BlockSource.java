@@ -6,18 +6,13 @@ import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public record BlockSource(ServerLevel a, BlockPos b, BlockState c, DispenserBlockEntity d) {
-   private final ServerLevel level;
-   private final BlockPos pos;
-   private final BlockState state;
-   private final DispenserBlockEntity blockEntity;
-
-   public BlockSource(ServerLevel var1, BlockPos var2, BlockState var3, DispenserBlockEntity var4) {
+public record BlockSource(ServerLevel level, BlockPos pos, BlockState state, DispenserBlockEntity blockEntity) {
+   public BlockSource(ServerLevel level, BlockPos pos, BlockState state, DispenserBlockEntity blockEntity) {
       super();
-      this.level = var1;
-      this.pos = var2;
-      this.state = var3;
-      this.blockEntity = var4;
+      this.level = level;
+      this.pos = pos;
+      this.state = state;
+      this.blockEntity = blockEntity;
    }
 
    public Vec3 center() {

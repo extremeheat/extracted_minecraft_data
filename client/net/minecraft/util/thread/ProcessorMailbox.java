@@ -43,7 +43,7 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
          if ((var1 & 3) != 0) {
             return false;
          }
-      } while(!this.status.compareAndSet(var1, var1 | 2));
+      } while (!this.status.compareAndSet(var1, var1 | 2));
 
       return true;
    }
@@ -52,15 +52,11 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
       int var1;
       do {
          var1 = this.status.get();
-      } while(!this.status.compareAndSet(var1, var1 & -3));
+      } while (!this.status.compareAndSet(var1, var1 & -3));
    }
 
    private boolean canBeScheduled() {
-      if ((this.status.get() & 1) != 0) {
-         return false;
-      } else {
-         return !this.queue.isEmpty();
-      }
+      return (this.status.get() & 1) != 0 ? false : !this.queue.isEmpty();
    }
 
    @Override
@@ -68,7 +64,7 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
       int var1;
       do {
          var1 = this.status.get();
-      } while(!this.status.compareAndSet(var1, var1 | 1));
+      } while (!this.status.compareAndSet(var1, var1 | 1));
    }
 
    private boolean shouldProcess() {
@@ -131,8 +127,8 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
    private int pollUntil(Int2BooleanFunction var1) {
       int var2 = 0;
 
-      while(var1.get(var2) && this.pollTask()) {
-         ++var2;
+      while (var1.get(var2) && this.pollTask()) {
+         var2++;
       }
 
       return var2;

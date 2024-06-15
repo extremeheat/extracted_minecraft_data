@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +28,7 @@ public class SignText {
    public static final Codec<SignText> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                LINES_CODEC.fieldOf("messages").forGetter(var0x -> var0x.messages),
-               LINES_CODEC.optionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages),
+               LINES_CODEC.lenientOptionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages),
                DyeColor.CODEC.fieldOf("color").orElse(DyeColor.BLACK).forGetter(var0x -> var0x.color),
                Codec.BOOL.fieldOf("has_glowing_text").orElse(false).forGetter(var0x -> var0x.hasGlowingText)
             )
@@ -109,7 +108,7 @@ public class SignText {
          this.renderMessagedFiltered = var1;
          this.renderMessages = new FormattedCharSequence[4];
 
-         for(int var3 = 0; var3 < 4; ++var3) {
+         for (int var3 = 0; var3 < 4; var3++) {
             this.renderMessages[var3] = (FormattedCharSequence)var2.apply(this.getMessage(var3, var1));
          }
       }
@@ -118,7 +117,7 @@ public class SignText {
    }
 
    private Optional<Component[]> filteredMessages() {
-      for(int var1 = 0; var1 < 4; ++var1) {
+      for (int var1 = 0; var1 < 4; var1++) {
          if (!this.filteredMessages[var1].equals(this.messages[var1])) {
             return Optional.of(this.filteredMessages);
          }
@@ -128,7 +127,7 @@ public class SignText {
    }
 
    public boolean hasAnyClickCommands(Player var1) {
-      for(Component var5 : this.getMessages(var1.isTextFilteringEnabled())) {
+      for (Component var5 : this.getMessages(var1.isTextFilteringEnabled())) {
          Style var6 = var5.getStyle();
          ClickEvent var7 = var6.getClickEvent();
          if (var7 != null && var7.getAction() == ClickEvent.Action.RUN_COMMAND) {

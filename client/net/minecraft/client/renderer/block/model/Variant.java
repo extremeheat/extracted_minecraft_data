@@ -55,14 +55,13 @@ public class Variant implements ModelState {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof Variant)) {
-         return false;
       } else {
-         Variant var2 = (Variant)var1;
-         return this.modelLocation.equals(var2.modelLocation)
-            && Objects.equals(this.rotation, var2.rotation)
-            && this.uvLock == var2.uvLock
-            && this.weight == var2.weight;
+         return !(var1 instanceof Variant var2)
+            ? false
+            : this.modelLocation.equals(var2.modelLocation)
+               && Objects.equals(this.rotation, var2.rotation)
+               && this.uvLock == var2.uvLock
+               && this.weight == var2.weight;
       }
    }
 

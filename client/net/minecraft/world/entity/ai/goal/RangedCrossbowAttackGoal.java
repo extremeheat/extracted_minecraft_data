@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ChargedProjectiles;
 
 public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & CrossbowAttackMob> extends Goal {
    public static final UniformInt PATHFINDING_DELAY_RANGE = TimeUtil.rangeOfSeconds(1, 2);
@@ -24,7 +26,7 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
 
    public RangedCrossbowAttackGoal(T var1, double var2, float var4) {
       super();
-      this.mob = var1;
+      this.mob = (T)var1;
       this.speedModifier = var2;
       this.attackRadiusSqr = var4 * var4;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
@@ -57,7 +59,7 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
       if (this.mob.isUsingItem()) {
          this.mob.stopUsingItem();
          this.mob.setChargingCrossbow(false);
-         CrossbowItem.setCharged(this.mob.getUseItem(), false);
+         this.mob.getUseItem().set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
       }
    }
 
@@ -77,15 +79,15 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
          }
 
          if (var2) {
-            ++this.seeTime;
+            this.seeTime++;
          } else {
-            --this.seeTime;
+            this.seeTime--;
          }
 
          double var4 = this.mob.distanceToSqr(var1);
          boolean var6 = (var4 > (double)this.attackRadiusSqr || this.seeTime < 5) && this.attackDelay == 0;
          if (var6) {
-            --this.updatePathDelay;
+            this.updatePathDelay--;
             if (this.updatePathDelay <= 0) {
                this.mob.getNavigation().moveTo(var1, this.canRun() ? this.speedModifier : this.speedModifier * 0.5);
                this.updatePathDelay = PATHFINDING_DELAY_RANGE.sample(this.mob.getRandom());
@@ -116,14 +118,12 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
                this.mob.setChargingCrossbow(false);
             }
          } else if (this.crossbowState == RangedCrossbowAttackGoal.CrossbowState.CHARGED) {
-            --this.attackDelay;
+            this.attackDelay--;
             if (this.attackDelay == 0) {
                this.crossbowState = RangedCrossbowAttackGoal.CrossbowState.READY_TO_ATTACK;
             }
          } else if (this.crossbowState == RangedCrossbowAttackGoal.CrossbowState.READY_TO_ATTACK && var2) {
             this.mob.performRangedAttack(var1, 1.0F);
-            ItemStack var9 = this.mob.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this.mob, Items.CROSSBOW));
-            CrossbowItem.setCharged(var9, false);
             this.crossbowState = RangedCrossbowAttackGoal.CrossbowState.UNCHARGED;
          }
       }

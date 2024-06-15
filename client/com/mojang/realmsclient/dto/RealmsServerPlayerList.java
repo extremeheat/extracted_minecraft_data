@@ -47,7 +47,7 @@ public class RealmsServerPlayerList extends ValueObject {
    private static List<UUID> parsePlayers(JsonArray var0) {
       ArrayList var1 = new ArrayList(var0.size());
 
-      for(JsonElement var3 : var0) {
+      for (JsonElement var3 : var0) {
          if (var3.isJsonObject()) {
             UUID var4 = JsonUtils.getUuidOr("playerId", var3.getAsJsonObject(), null);
             if (var4 != null) {

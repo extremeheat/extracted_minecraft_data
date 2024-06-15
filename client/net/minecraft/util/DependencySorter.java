@@ -45,10 +45,10 @@ public class DependencySorter<K, V extends DependencySorter.Entry<K>> {
 
    public void orderByDependencies(BiConsumer<K, V> var1) {
       HashMultimap var2 = HashMultimap.create();
-      this.contents.forEach((var1x, var2x) -> var2x.visitRequiredDependencies(var2xx -> addDependencyIfNotCyclic(var2, var1x, var2xx)));
-      this.contents.forEach((var1x, var2x) -> var2x.visitOptionalDependencies(var2xx -> addDependencyIfNotCyclic(var2, var1x, var2xx)));
+      this.contents.forEach((var1x, var2x) -> var2x.visitRequiredDependencies(var2xx -> addDependencyIfNotCyclic(var2, (K)var1x, var2xx)));
+      this.contents.forEach((var1x, var2x) -> var2x.visitOptionalDependencies(var2xx -> addDependencyIfNotCyclic(var2, (K)var1x, var2xx)));
       HashSet var3 = new HashSet();
-      this.contents.keySet().forEach(var4 -> this.visitDependenciesAndElement(var2, var3, var4, var1));
+      this.contents.keySet().forEach(var4 -> this.visitDependenciesAndElement(var2, var3, (K)var4, var1));
    }
 
    public interface Entry<K> {

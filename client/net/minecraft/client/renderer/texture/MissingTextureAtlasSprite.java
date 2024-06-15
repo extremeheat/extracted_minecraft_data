@@ -30,8 +30,8 @@ public final class MissingTextureAtlasSprite {
       int var3 = -16777216;
       int var4 = -524040;
 
-      for(int var5 = 0; var5 < var1; ++var5) {
-         for(int var6 = 0; var6 < var0; ++var6) {
+      for (int var5 = 0; var5 < var1; var5++) {
+         for (int var6 = 0; var6 < var0; var6++) {
             if (var5 < var1 / 2 ^ var6 < var0 / 2) {
                var2.setPixelRGBA(var6, var5, -524040);
             } else {

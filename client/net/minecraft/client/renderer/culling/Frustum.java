@@ -36,7 +36,7 @@ public class Frustum {
       double var8 = Math.ceil(this.camX / (double)var1) * (double)var1;
       double var10 = Math.ceil(this.camY / (double)var1) * (double)var1;
 
-      for(double var12 = Math.ceil(this.camZ / (double)var1) * (double)var1;
+      for (double var12 = Math.ceil(this.camZ / (double)var1) * (double)var1;
          this.intersection
                .intersectAab(
                   (float)(var2 - this.camX),
@@ -47,10 +47,10 @@ public class Frustum {
                   (float)(var12 - this.camZ)
                )
             != -2;
-         this.camZ -= (double)(this.viewVector.z() * 4.0F)
+         this.camZ = this.camZ - (double)(this.viewVector.z() * 4.0F)
       ) {
-         this.camX -= (double)(this.viewVector.x() * 4.0F);
-         this.camY -= (double)(this.viewVector.y() * 4.0F);
+         this.camX = this.camX - (double)(this.viewVector.x() * 4.0F);
+         this.camY = this.camY - (double)(this.viewVector.y() * 4.0F);
       }
 
       return this;

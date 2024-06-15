@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 

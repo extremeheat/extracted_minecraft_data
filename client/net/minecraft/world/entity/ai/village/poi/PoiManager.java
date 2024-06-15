@@ -31,9 +31,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SectionStorage;
+import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 
 public class PoiManager extends SectionStorage<PoiSection> {
    public static final int MAX_VILLAGE_DISTANCE = 6;
@@ -41,8 +43,8 @@ public class PoiManager extends SectionStorage<PoiSection> {
    private final PoiManager.DistanceTracker distanceTracker;
    private final LongSet loadedChunks = new LongOpenHashSet();
 
-   public PoiManager(Path var1, DataFixer var2, boolean var3, RegistryAccess var4, LevelHeightAccessor var5) {
-      super(var1, PoiSection::codec, PoiSection::new, var2, DataFixTypes.POI_CHUNK, var3, var4, var5);
+   public PoiManager(RegionStorageInfo var1, Path var2, DataFixer var3, boolean var4, RegistryAccess var5, LevelHeightAccessor var6) {
+      super(new SimpleRegionStorage(var1, var2, var3, var4, DataFixTypes.POI_CHUNK), PoiSection::codec, PoiSection::new, var5, var6);
       this.distanceTracker = new PoiManager.DistanceTracker();
    }
 
@@ -65,8 +67,8 @@ public class PoiManager extends SectionStorage<PoiSection> {
    public Stream<PoiRecord> getInSquare(Predicate<Holder<PoiType>> var1, BlockPos var2, int var3, PoiManager.Occupancy var4) {
       int var5 = Math.floorDiv(var3, 16) + 1;
       return ChunkPos.rangeClosed(new ChunkPos(var2), var5).flatMap(var3x -> this.getInChunk(var1, var3x, var4)).filter(var2x -> {
-         BlockPos var3xx = var2x.getPos();
-         return Math.abs(var3xx.getX() - var2.getX()) <= var3 && Math.abs(var3xx.getZ() - var2.getZ()) <= var3;
+         BlockPos var3x = var2x.getPos();
+         return Math.abs(var3x.getX() - var2.getX()) <= var3 && Math.abs(var3x.getZ() - var2.getZ()) <= var3;
       });
    }
 
@@ -206,10 +208,10 @@ public class PoiManager extends SectionStorage<PoiSection> {
       var2.blocksInside()
          .forEach(
             var2x -> {
-               BlockState var3xx = var1.getBlockState(
+               BlockState var3x = var1.getBlockState(
                   SectionPos.sectionRelative(var2x.getX()), SectionPos.sectionRelative(var2x.getY()), SectionPos.sectionRelative(var2x.getZ())
                );
-               PoiTypes.forState(var3xx).ifPresent(var2xx -> var3.accept(var2x, var2xx));
+               PoiTypes.forState(var3x).ifPresent(var2xx -> var3.accept(var2x, var2xx));
             }
          );
    }
@@ -262,8 +264,8 @@ public class PoiManager extends SectionStorage<PoiSection> {
 
       private final Predicate<? super PoiRecord> test;
 
-      private Occupancy(Predicate<? super PoiRecord> var3) {
-         this.test = var3;
+      private Occupancy(final Predicate<? super PoiRecord> nullxx) {
+         this.test = nullxx;
       }
 
       public Predicate<? super PoiRecord> getTest() {

@@ -25,7 +25,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
 
    @Override
    public void doClientTick() {
-      ++this.flameTicks;
+      this.flameTicks++;
       if (this.flameTicks % 2 == 0 && this.flameTicks < 10) {
          Vec3 var1 = this.dragon.getHeadLookVector(1.0F).normalize();
          var1.yRot(-0.7853982F);
@@ -33,12 +33,12 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
          double var4 = this.dragon.head.getY(0.5);
          double var6 = this.dragon.head.getZ();
 
-         for(int var8 = 0; var8 < 8; ++var8) {
+         for (int var8 = 0; var8 < 8; var8++) {
             double var9 = var2 + this.dragon.getRandom().nextGaussian() / 2.0;
             double var11 = var4 + this.dragon.getRandom().nextGaussian() / 2.0;
             double var13 = var6 + this.dragon.getRandom().nextGaussian() / 2.0;
 
-            for(int var15 = 0; var15 < 6; ++var15) {
+            for (int var15 = 0; var15 < 6; var15++) {
                this.dragon
                   .level()
                   .addParticle(
@@ -59,7 +59,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
 
    @Override
    public void doServerTick() {
-      ++this.flameTicks;
+      this.flameTicks++;
       if (this.flameTicks >= 200) {
          if (this.flameCount >= 4) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.TAKEOFF);
@@ -75,7 +75,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
          double var9 = var7;
          BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos(var3, var7, var5);
 
-         while(this.dragon.level().isEmptyBlock(var11)) {
+         while (this.dragon.level().isEmptyBlock(var11)) {
             if (--var9 < 0.0) {
                var9 = var7;
                break;
@@ -98,7 +98,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
    @Override
    public void begin() {
       this.flameTicks = 0;
-      ++this.flameCount;
+      this.flameCount++;
    }
 
    @Override

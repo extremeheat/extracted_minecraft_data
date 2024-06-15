@@ -45,7 +45,7 @@ public class FlyingPathNavigation extends PathNavigation {
 
    @Override
    public void tick() {
-      ++this.tick;
+      this.tick++;
       if (this.hasDelayedRecomputation) {
          this.recomputePath();
       }

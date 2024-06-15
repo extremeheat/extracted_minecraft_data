@@ -10,7 +10,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,14 +19,17 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.ResourceOrIdArgument;
 import net.minecraft.commands.arguments.SlotArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -40,8 +42,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.LootDataManager;
-import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -50,8 +50,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class LootCommand {
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_LOOT_TABLE = (var0, var1) -> {
-      LootDataManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
-      return SharedSuggestionProvider.suggestResource(var2.getKeys(LootDataType.TABLE), var1);
+      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
+      return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.LOOT_TABLE), var1);
    };
    private static final DynamicCommandExceptionType ERROR_NO_HELD_ITEMS = new DynamicCommandExceptionType(
       var0 -> Component.translatableEscape("commands.drop.no_held_items", var0)
@@ -71,7 +71,7 @@ public class LootCommand {
             (var1x, var2) -> var1x.then(
                      Commands.literal("fish")
                         .then(
-                           Commands.argument("loot_table", ResourceLocationArgument.id())
+                           Commands.argument("loot_table", ResourceOrIdArgument.lootTable(var1))
                               .suggests(SUGGEST_LOOT_TABLE)
                               .then(
                                  ((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument(
@@ -80,7 +80,7 @@ public class LootCommand {
                                              .executes(
                                                 var1xx -> dropFishingLoot(
                                                       var1xx,
-                                                      ResourceLocationArgument.getId(var1xx, "loot_table"),
+                                                      ResourceOrIdArgument.getLootTable(var1xx, "loot_table"),
                                                       BlockPosArgument.getLoadedBlockPos(var1xx, "pos"),
                                                       ItemStack.EMPTY,
                                                       var2
@@ -91,7 +91,7 @@ public class LootCommand {
                                                 .executes(
                                                    var1xx -> dropFishingLoot(
                                                          var1xx,
-                                                         ResourceLocationArgument.getId(var1xx, "loot_table"),
+                                                         ResourceOrIdArgument.getLootTable(var1xx, "loot_table"),
                                                          BlockPosArgument.getLoadedBlockPos(var1xx, "pos"),
                                                          ItemArgument.getItem(var1xx, "tool").createItemStack(1, false),
                                                          var2
@@ -103,7 +103,7 @@ public class LootCommand {
                                              .executes(
                                                 var1xx -> dropFishingLoot(
                                                       var1xx,
-                                                      ResourceLocationArgument.getId(var1xx, "loot_table"),
+                                                      ResourceOrIdArgument.getLootTable(var1xx, "loot_table"),
                                                       BlockPosArgument.getLoadedBlockPos(var1xx, "pos"),
                                                       getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.MAINHAND),
                                                       var2
@@ -115,7 +115,7 @@ public class LootCommand {
                                           .executes(
                                              var1xx -> dropFishingLoot(
                                                    var1xx,
-                                                   ResourceLocationArgument.getId(var1xx, "loot_table"),
+                                                   ResourceOrIdArgument.getLootTable(var1xx, "loot_table"),
                                                    BlockPosArgument.getLoadedBlockPos(var1xx, "pos"),
                                                    getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.OFFHAND),
                                                    var2
@@ -128,9 +128,9 @@ public class LootCommand {
                   .then(
                      Commands.literal("loot")
                         .then(
-                           Commands.argument("loot_table", ResourceLocationArgument.id())
+                           Commands.argument("loot_table", ResourceOrIdArgument.lootTable(var1))
                               .suggests(SUGGEST_LOOT_TABLE)
-                              .executes(var1xx -> dropChestLoot(var1xx, ResourceLocationArgument.getId(var1xx, "loot_table"), var2))
+                              .executes(var1xx -> dropChestLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), var2))
                         )
                   )
                   .then(
@@ -290,7 +290,7 @@ public class LootCommand {
       Container var4 = getContainer(var0, var1);
       ArrayList var5 = Lists.newArrayListWithCapacity(var2.size());
 
-      for(ItemStack var7 : var2) {
+      for (ItemStack var7 : var2) {
          if (distributeToContainer(var4, var7.copy())) {
             var4.setChanged();
             var5.add(var7);
@@ -304,7 +304,7 @@ public class LootCommand {
    private static boolean distributeToContainer(Container var0, ItemStack var1) {
       boolean var2 = false;
 
-      for(int var3 = 0; var3 < var0.getContainerSize() && !var1.isEmpty(); ++var3) {
+      for (int var3 = 0; var3 < var0.getContainerSize() && !var1.isEmpty(); var3++) {
          ItemStack var4 = var0.getItem(var3);
          if (var0.canPlaceItem(var3, var1)) {
             if (var4.isEmpty()) {
@@ -332,7 +332,7 @@ public class LootCommand {
       if (var2 >= 0 && var2 < var7) {
          ArrayList var8 = Lists.newArrayListWithCapacity(var4.size());
 
-         for(int var9 = 0; var9 < var3; ++var9) {
+         for (int var9 = 0; var9 < var3; var9++) {
             int var10 = var2 + var9;
             ItemStack var11 = var9 < var4.size() ? (ItemStack)var4.get(var9) : ItemStack.EMPTY;
             if (var6.canPlaceItem(var10, var11)) {
@@ -349,14 +349,14 @@ public class LootCommand {
    }
 
    private static boolean canMergeItems(ItemStack var0, ItemStack var1) {
-      return var0.getCount() <= var0.getMaxStackSize() && ItemStack.isSameItemSameTags(var0, var1);
+      return var0.getCount() <= var0.getMaxStackSize() && ItemStack.isSameItemSameComponents(var0, var1);
    }
 
    private static int playerGive(Collection<ServerPlayer> var0, List<ItemStack> var1, LootCommand.Callback var2) throws CommandSyntaxException {
       ArrayList var3 = Lists.newArrayListWithCapacity(var1.size());
 
-      for(ItemStack var5 : var1) {
-         for(ServerPlayer var7 : var0) {
+      for (ItemStack var5 : var1) {
+         for (ServerPlayer var7 : var0) {
             if (var7.getInventory().add(var5.copy())) {
                var3.add(var5);
             }
@@ -368,7 +368,7 @@ public class LootCommand {
    }
 
    private static void setSlots(Entity var0, List<ItemStack> var1, int var2, int var3, List<ItemStack> var4) {
-      for(int var5 = 0; var5 < var3; ++var5) {
+      for (int var5 = 0; var5 < var3; var5++) {
          ItemStack var6 = var5 < var1.size() ? (ItemStack)var1.get(var5) : ItemStack.EMPTY;
          SlotAccess var7 = var0.getSlot(var2 + var5);
          if (var7 != SlotAccess.NULL && var7.set(var6.copy())) {
@@ -377,12 +377,10 @@ public class LootCommand {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static int entityReplace(Collection<? extends Entity> var0, int var1, int var2, List<ItemStack> var3, LootCommand.Callback var4) throws CommandSyntaxException {
       ArrayList var5 = Lists.newArrayListWithCapacity(var3.size());
 
-      for(Entity var7 : var0) {
+      for (Entity var7 : var0) {
          if (var7 instanceof ServerPlayer var8) {
             setSlots(var7, var3, var1, var2, var5);
             var8.containerMenu.broadcastChanges();
@@ -398,9 +396,9 @@ public class LootCommand {
    private static int dropInWorld(CommandSourceStack var0, Vec3 var1, List<ItemStack> var2, LootCommand.Callback var3) throws CommandSyntaxException {
       ServerLevel var4 = var0.getLevel();
       var2.forEach(var2x -> {
-         ItemEntity var3xx = new ItemEntity(var4, var1.x, var1.y, var1.z, var2x.copy());
-         var3xx.setDefaultPickUpDelay();
-         var4.addFreshEntity(var3xx);
+         ItemEntity var3x = new ItemEntity(var4, var1.x, var1.y, var1.z, var2x.copy());
+         var3x.setDefaultPickUpDelay();
+         var4.addFreshEntity(var3x);
       });
       var3.accept(var2);
       return var2.size();
@@ -415,15 +413,19 @@ public class LootCommand {
       }
    }
 
-   private static void callback(CommandSourceStack var0, List<ItemStack> var1, ResourceLocation var2) {
+   private static void callback(CommandSourceStack var0, List<ItemStack> var1, ResourceKey<LootTable> var2) {
       if (var1.size() == 1) {
          ItemStack var3 = (ItemStack)var1.get(0);
          var0.sendSuccess(
-            () -> Component.translatable("commands.drop.success.single_with_table", var3.getCount(), var3.getDisplayName(), Component.translationArg(var2)),
+            () -> Component.translatable(
+                  "commands.drop.success.single_with_table", var3.getCount(), var3.getDisplayName(), Component.translationArg(var2.location())
+               ),
             false
          );
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.drop.success.multiple_with_table", var1.size(), Component.translationArg(var2)), false);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.drop.success.multiple_with_table", var1.size(), Component.translationArg(var2.location())), false
+         );
       }
    }
 
@@ -455,7 +457,7 @@ public class LootCommand {
       if (!(var1 instanceof LivingEntity)) {
          throw ERROR_NO_LOOT_TABLE.create(var1.getDisplayName());
       } else {
-         ResourceLocation var3 = ((LivingEntity)var1).getLootTable();
+         ResourceKey var3 = ((LivingEntity)var1).getLootTable();
          CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
          LootParams.Builder var5 = new LootParams.Builder(var4.getLevel());
          Entity var6 = var4.getEntity();
@@ -469,13 +471,13 @@ public class LootCommand {
          var5.withParameter(LootContextParams.THIS_ENTITY, var1);
          var5.withParameter(LootContextParams.ORIGIN, var4.getPosition());
          LootParams var10 = var5.create(LootContextParamSets.ENTITY);
-         LootTable var8 = var4.getServer().getLootData().getLootTable(var3);
+         LootTable var8 = var4.getServer().reloadableRegistries().getLootTable(var3);
          ObjectArrayList var9 = var8.getRandomItems(var10);
          return var2.accept(var0, var9, var2x -> callback(var4, var2x, var3));
       }
    }
 
-   private static int dropChestLoot(CommandContext<CommandSourceStack> var0, ResourceLocation var1, LootCommand.DropConsumer var2) throws CommandSyntaxException {
+   private static int dropChestLoot(CommandContext<CommandSourceStack> var0, Holder<LootTable> var1, LootCommand.DropConsumer var2) throws CommandSyntaxException {
       CommandSourceStack var3 = (CommandSourceStack)var0.getSource();
       LootParams var4 = new LootParams.Builder(var3.getLevel())
          .withOptionalParameter(LootContextParams.THIS_ENTITY, var3.getEntity())
@@ -485,7 +487,7 @@ public class LootCommand {
    }
 
    private static int dropFishingLoot(
-      CommandContext<CommandSourceStack> var0, ResourceLocation var1, BlockPos var2, ItemStack var3, LootCommand.DropConsumer var4
+      CommandContext<CommandSourceStack> var0, Holder<LootTable> var1, BlockPos var2, ItemStack var3, LootCommand.DropConsumer var4
    ) throws CommandSyntaxException {
       CommandSourceStack var5 = (CommandSourceStack)var0.getSource();
       LootParams var6 = new LootParams.Builder(var5.getLevel())
@@ -496,11 +498,10 @@ public class LootCommand {
       return drop(var0, var1, var6, var4);
    }
 
-   private static int drop(CommandContext<CommandSourceStack> var0, ResourceLocation var1, LootParams var2, LootCommand.DropConsumer var3) throws CommandSyntaxException {
+   private static int drop(CommandContext<CommandSourceStack> var0, Holder<LootTable> var1, LootParams var2, LootCommand.DropConsumer var3) throws CommandSyntaxException {
       CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
-      LootTable var5 = var4.getServer().getLootData().getLootTable(var1);
-      ObjectArrayList var6 = var5.getRandomItems(var2);
-      return var3.accept(var0, var6, var1x -> callback(var4, var1x));
+      ObjectArrayList var5 = ((LootTable)var1.value()).getRandomItems(var2);
+      return var3.accept(var0, var5, var1x -> callback(var4, var1x));
    }
 
    @FunctionalInterface

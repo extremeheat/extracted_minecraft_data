@@ -51,7 +51,7 @@ public class BanNoticeScreens {
             if (var1x) {
                Util.getPlatform().openUri("https://aka.ms/mcjavamoderation");
             }
-   
+
             var1.run();
          },
          NAME_BAN_TITLE,

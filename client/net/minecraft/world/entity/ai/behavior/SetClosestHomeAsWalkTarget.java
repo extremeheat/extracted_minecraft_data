@@ -1,18 +1,14 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2LongMap.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.DebugPackets;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -48,13 +44,13 @@ public class SetClosestHomeAsWalkTarget {
                               MutableInt var10 = new MutableInt(0);
                               var2.setValue(var4x.getGameTime() + (long)var4x.getRandom().nextInt(20));
                               Predicate var11 = var3xxx -> {
-                                 long var4xxx = var3xxx.asLong();
-                                 if (var1.containsKey(var4xxx)) {
+                                 long var4xx = var3xxx.asLong();
+                                 if (var1.containsKey(var4xx)) {
                                     return false;
                                  } else if (var10.incrementAndGet() >= 5) {
                                     return false;
                                  } else {
-                                    var1.put(var4xxx, var2.getValue() + 40L);
+                                    var1.put(var4xx, var2.getValue() + 40L);
                                     return true;
                                  }
                               };
@@ -73,7 +69,7 @@ public class SetClosestHomeAsWalkTarget {
                               } else if (var10.getValue() < 5) {
                                  var1.long2LongEntrySet().removeIf(var1xxxx -> var1xxxx.getLongValue() < var2.getValue());
                               }
-         
+
                               return true;
                            } else {
                               return false;

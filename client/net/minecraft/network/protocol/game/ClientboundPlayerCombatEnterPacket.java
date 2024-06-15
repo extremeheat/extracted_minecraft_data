@@ -1,19 +1,21 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundPlayerCombatEnterPacket implements Packet<ClientGamePacketListener> {
-   public ClientboundPlayerCombatEnterPacket() {
-      super();
-   }
+   public static final ClientboundPlayerCombatEnterPacket INSTANCE = new ClientboundPlayerCombatEnterPacket();
+   public static final StreamCodec<ByteBuf, ClientboundPlayerCombatEnterPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
-   public ClientboundPlayerCombatEnterPacket(FriendlyByteBuf var1) {
+   private ClientboundPlayerCombatEnterPacket() {
       super();
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
+   public PacketType<ClientboundPlayerCombatEnterPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_PLAYER_COMBAT_ENTER;
    }
 
    public void handle(ClientGamePacketListener var1) {

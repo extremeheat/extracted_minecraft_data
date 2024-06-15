@@ -36,7 +36,7 @@ class RenderChunk {
          LevelChunkSection[] var2 = var1.getSections();
          this.sections = new ArrayList<>(var2.length);
 
-         for(LevelChunkSection var6 : var2) {
+         for (LevelChunkSection var6 : var2) {
             this.sections.add(var6.hasOnlyAir() ? null : var6.getStates().copy());
          }
       }

@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,7 +41,7 @@ public class PressurePlateBlock extends BasePressurePlateBlock {
 
    @Override
    protected int getSignalStrength(Level var1, BlockPos var2) {
-      Class<Entity> var3 = switch(this.type.pressurePlateSensitivity()) {
+      Class<Entity> var3 = switch (this.type.pressurePlateSensitivity()) {
          case EVERYTHING -> Entity.class;
          case MOBS -> LivingEntity.class;
       };

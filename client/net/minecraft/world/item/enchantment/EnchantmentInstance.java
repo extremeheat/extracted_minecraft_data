@@ -7,7 +7,7 @@ public class EnchantmentInstance extends WeightedEntry.IntrusiveBase {
    public final int level;
 
    public EnchantmentInstance(Enchantment var1, int var2) {
-      super(var1.getRarity().getWeight());
+      super(var1.getWeight());
       this.enchantment = var1;
       this.level = var2;
    }

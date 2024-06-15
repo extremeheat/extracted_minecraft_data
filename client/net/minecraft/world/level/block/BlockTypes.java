@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.function.Function;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
@@ -8,14 +9,14 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.piston.PistonHeadBlock;
 
 public class BlockTypes {
-   public static final MapCodec<Block> CODEC = BuiltInRegistries.BLOCK_TYPE.byNameCodec().dispatchMap(Block::codec, MapCodec::codec);
+   public static final MapCodec<Block> CODEC = BuiltInRegistries.BLOCK_TYPE.byNameCodec().dispatchMap(Block::codec, Function.identity());
 
    public BlockTypes() {
       super();
    }
 
    public static MapCodec<? extends Block> bootstrap(Registry<MapCodec<? extends Block>> var0) {
-      MapCodec var1 = Registry.register(var0, "block", Block.CODEC);
+      Registry.register(var0, "block", Block.CODEC);
       Registry.register(var0, "air", AirBlock.CODEC);
       Registry.register(var0, "amethyst", AmethystBlock.CODEC);
       Registry.register(var0, "amethyst_cluster", AmethystClusterBlock.CODEC);
@@ -90,7 +91,7 @@ public class BlockTypes {
       Registry.register(var0, "dragon_egg", DragonEggBlock.CODEC);
       Registry.register(var0, "drop_experience", DropExperienceBlock.CODEC);
       Registry.register(var0, "dropper", DropperBlock.CODEC);
-      Registry.register(var0, "enchantment_table", EnchantmentTableBlock.CODEC);
+      Registry.register(var0, "enchantment_table", EnchantingTableBlock.CODEC);
       Registry.register(var0, "ender_chest", EnderChestBlock.CODEC);
       Registry.register(var0, "end_gateway", EndGatewayBlock.CODEC);
       Registry.register(var0, "end_portal", EndPortalBlock.CODEC);
@@ -114,6 +115,7 @@ public class BlockTypes {
       Registry.register(var0, "half_transparent", HalfTransparentBlock.CODEC);
       Registry.register(var0, "hanging_roots", HangingRootsBlock.CODEC);
       Registry.register(var0, "hay", HayBlock.CODEC);
+      Registry.register(var0, "heavy_core", HeavyCoreBlock.CODEC);
       Registry.register(var0, "honey", HoneyBlock.CODEC);
       Registry.register(var0, "hopper", HopperBlock.CODEC);
       Registry.register(var0, "huge_mushroom", HugeMushroomBlock.CODEC);
@@ -229,6 +231,7 @@ public class BlockTypes {
       Registry.register(var0, "turtle_egg", TurtleEggBlock.CODEC);
       Registry.register(var0, "twisting_vines_plant", TwistingVinesPlantBlock.CODEC);
       Registry.register(var0, "twisting_vines", TwistingVinesBlock.CODEC);
+      Registry.register(var0, "vault", VaultBlock.CODEC);
       Registry.register(var0, "vine", VineBlock.CODEC);
       Registry.register(var0, "wall_banner", WallBannerBlock.CODEC);
       Registry.register(var0, "wall_hanging_sign", WallHangingSignBlock.CODEC);
@@ -253,7 +256,6 @@ public class BlockTypes {
       Registry.register(var0, "wither_rose", WitherRoseBlock.CODEC);
       Registry.register(var0, "wither_skull", WitherSkullBlock.CODEC);
       Registry.register(var0, "wither_wall_skull", WitherWallSkullBlock.CODEC);
-      Registry.register(var0, "wool_carpet", WoolCarpetBlock.CODEC);
-      return var1;
+      return Registry.register(var0, "wool_carpet", WoolCarpetBlock.CODEC);
    }
 }

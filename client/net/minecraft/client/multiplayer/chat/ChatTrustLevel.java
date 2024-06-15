@@ -18,8 +18,8 @@ public enum ChatTrustLevel implements StringRepresentable {
    public static final Codec<ChatTrustLevel> CODEC = StringRepresentable.fromEnum(ChatTrustLevel::values);
    private final String serializedName;
 
-   private ChatTrustLevel(String var3) {
-      this.serializedName = var3;
+   private ChatTrustLevel(final String nullxx) {
+      this.serializedName = nullxx;
    }
 
    public static ChatTrustLevel evaluate(PlayerChatMessage var0, Component var1, Instant var2) {
@@ -53,7 +53,7 @@ public enum ChatTrustLevel implements StringRepresentable {
 
    @Nullable
    public GuiMessageTag createTag(PlayerChatMessage var1) {
-      return switch(this) {
+      return switch (this) {
          case MODIFIED -> GuiMessageTag.chatModified(var1.signedContent());
          case NOT_SECURE -> GuiMessageTag.chatNotSecure();
          default -> null;

@@ -37,7 +37,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    public StonecutterScreen(StonecutterMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);
       var1.registerUpdateListener(this::containerChanged);
-      --this.titleLabelY;
+      this.titleLabelY--;
    }
 
    @Override
@@ -70,7 +70,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var6 = this.startIndex + 12;
          List var7 = this.menu.getRecipes();
 
-         for(int var8 = this.startIndex; var8 < var6 && var8 < this.menu.getNumRecipes(); ++var8) {
+         for (int var8 = this.startIndex; var8 < var6 && var8 < this.menu.getNumRecipes(); var8++) {
             int var9 = var8 - this.startIndex;
             int var10 = var4 + var9 % 4 * 16;
             int var11 = var5 + var9 / 4 * 18 + 2;
@@ -84,7 +84,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    private void renderButtons(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
-      for(int var7 = this.startIndex; var7 < var6 && var7 < this.menu.getNumRecipes(); ++var7) {
+      for (int var7 = this.startIndex; var7 < var6 && var7 < this.menu.getNumRecipes(); var7++) {
          int var8 = var7 - this.startIndex;
          int var9 = var4 + var8 % 4 * 16;
          int var10 = var8 / 4;
@@ -105,7 +105,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    private void renderRecipes(GuiGraphics var1, int var2, int var3, int var4) {
       List var5 = this.menu.getRecipes();
 
-      for(int var6 = this.startIndex; var6 < var4 && var6 < this.menu.getNumRecipes(); ++var6) {
+      for (int var6 = this.startIndex; var6 < var4 && var6 < this.menu.getNumRecipes(); var6++) {
          int var7 = var6 - this.startIndex;
          int var8 = var2 + var7 % 4 * 16;
          int var9 = var7 / 4;
@@ -122,7 +122,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var7 = this.topPos + 14;
          int var8 = this.startIndex + 12;
 
-         for(int var9 = this.startIndex; var9 < var8; ++var9) {
+         for (int var9 = this.startIndex; var9 < var8; var9++) {
             int var10 = var9 - this.startIndex;
             double var11 = var1 - (double)(var6 + var10 % 4 * 16);
             double var13 = var3 - (double)(var7 + var10 / 4 * 18);

@@ -3,14 +3,13 @@ package net.minecraft.server.level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.DataFixer;
-import com.mojang.datafixers.util.Either;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -36,9 +35,9 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.chunk.ChunkSource;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LightChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.chunk.storage.ChunkScanAccess;
 import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -86,7 +85,7 @@ public class ServerChunkCache extends ChunkSource {
       this.mainThread = Thread.currentThread();
       File var13 = var2.getDimensionPath(var1.dimension()).resolve("data").toFile();
       var13.mkdirs();
-      this.dataStorage = new DimensionDataStorage(var13, var3);
+      this.dataStorage = new DimensionDataStorage(var13, var3, var1.registryAccess());
       this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, var12, var7, var9);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
@@ -107,8 +106,8 @@ public class ServerChunkCache extends ChunkSource {
       return this.chunkMap.getTickingGenerated();
    }
 
-   private void storeInCache(long var1, ChunkAccess var3, ChunkStatus var4) {
-      for(int var5 = 3; var5 > 0; --var5) {
+   private void storeInCache(long var1, @Nullable ChunkAccess var3, ChunkStatus var4) {
+      for (int var5 = 3; var5 > 0; var5--) {
          this.lastChunkPos[var5] = this.lastChunkPos[var5 - 1];
          this.lastChunkStatus[var5] = this.lastChunkStatus[var5 - 1];
          this.lastChunk[var5] = this.lastChunk[var5 - 1];
@@ -129,7 +128,7 @@ public class ServerChunkCache extends ChunkSource {
          var5.incrementCounter("getChunk");
          long var6 = ChunkPos.asLong(var1, var2);
 
-         for(int var8 = 0; var8 < 4; ++var8) {
+         for (int var8 = 0; var8 < 4; var8++) {
             if (var6 == this.lastChunkPos[var8] && var3 == this.lastChunkStatus[var8]) {
                ChunkAccess var9 = this.lastChunk[var8];
                if (var9 != null || !var4) {
@@ -139,17 +138,16 @@ public class ServerChunkCache extends ChunkSource {
          }
 
          var5.incrementCounter("getChunkCacheMiss");
-         CompletableFuture var10 = this.getChunkFutureMainThread(var1, var2, var3, var4);
-         this.mainThreadProcessor.managedBlock(var10::isDone);
-         ChunkAccess var11 = (ChunkAccess)((Either)var10.join()).map(var0 -> var0, var1x -> {
-            if (var4) {
-               throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Chunk not there when requested: " + var1x));
-            } else {
-               return null;
-            }
-         });
-         this.storeInCache(var6, var11, var3);
-         return var11;
+         CompletableFuture var11 = this.getChunkFutureMainThread(var1, var2, var3, var4);
+         this.mainThreadProcessor.managedBlock(var11::isDone);
+         ChunkResult var12 = (ChunkResult)var11.join();
+         ChunkAccess var10 = (ChunkAccess)var12.orElse(null);
+         if (var10 == null && var4) {
+            throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Chunk not there when requested: " + var12.getError()));
+         } else {
+            this.storeInCache(var6, var10, var3);
+            return var10;
+         }
       }
    }
 
@@ -162,7 +160,7 @@ public class ServerChunkCache extends ChunkSource {
          this.level.getProfiler().incrementCounter("getChunkNow");
          long var3 = ChunkPos.asLong(var1, var2);
 
-         for(int var5 = 0; var5 < 4; ++var5) {
+         for (int var5 = 0; var5 < 4; var5++) {
             if (var3 == this.lastChunkPos[var5] && this.lastChunkStatus[var5] == ChunkStatus.FULL) {
                ChunkAccess var6 = this.lastChunk[var5];
                return var6 instanceof LevelChunk ? (LevelChunk)var6 : null;
@@ -173,11 +171,11 @@ public class ServerChunkCache extends ChunkSource {
          if (var8 == null) {
             return null;
          } else {
-            Either var9 = (Either)var8.getFutureIfPresent(ChunkStatus.FULL).getNow(null);
+            ChunkResult var9 = var8.getFutureIfPresent(ChunkStatus.FULL).getNow(null);
             if (var9 == null) {
                return null;
             } else {
-               ChunkAccess var7 = (ChunkAccess)var9.left().orElse(null);
+               ChunkAccess var7 = (ChunkAccess)var9.orElse(null);
                if (var7 != null) {
                   this.storeInCache(var3, var7, ChunkStatus.FULL);
                   if (var7 instanceof LevelChunk) {
@@ -197,23 +195,23 @@ public class ServerChunkCache extends ChunkSource {
       Arrays.fill(this.lastChunk, null);
    }
 
-   public CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> getChunkFuture(int var1, int var2, ChunkStatus var3, boolean var4) {
+   public CompletableFuture<ChunkResult<ChunkAccess>> getChunkFuture(int var1, int var2, ChunkStatus var3, boolean var4) {
       boolean var5 = Thread.currentThread() == this.mainThread;
       CompletableFuture var6;
       if (var5) {
          var6 = this.getChunkFutureMainThread(var1, var2, var3, var4);
          this.mainThreadProcessor.managedBlock(var6::isDone);
       } else {
-         var6 = CompletableFuture.<CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>>>supplyAsync(
+         var6 = CompletableFuture.<CompletableFuture<ChunkResult<ChunkAccess>>>supplyAsync(
                () -> this.getChunkFutureMainThread(var1, var2, var3, var4), this.mainThreadProcessor
             )
-            .thenCompose(var0 -> var0);
+            .thenCompose(var0 -> (CompletionStage<ChunkResult<ChunkAccess>>)var0);
       }
 
       return var6;
    }
 
-   private CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> getChunkFutureMainThread(int var1, int var2, ChunkStatus var3, boolean var4) {
+   private CompletableFuture<ChunkResult<ChunkAccess>> getChunkFutureMainThread(int var1, int var2, ChunkStatus var3, boolean var4) {
       ChunkPos var5 = new ChunkPos(var1, var2);
       long var6 = var5.toLong();
       int var8 = ChunkLevel.byStatus(var3);
@@ -256,18 +254,18 @@ public class ServerChunkCache extends ChunkSource {
       } else {
          int var6 = CHUNK_STATUSES.size() - 1;
 
-         while(true) {
+         while (true) {
             ChunkStatus var7 = CHUNK_STATUSES.get(var6);
-            Optional var8 = ((Either)var5.getFutureIfPresentUnchecked(var7).getNow(ChunkHolder.UNLOADED_CHUNK)).left();
-            if (var8.isPresent()) {
-               return (LightChunk)var8.get();
+            ChunkAccess var8 = var5.getFutureIfPresentUnchecked(var7).getNow(ChunkHolder.UNLOADED_CHUNK).orElse(null);
+            if (var8 != null) {
+               return var8;
             }
 
             if (var7 == ChunkStatus.INITIALIZE_LIGHT.getParent()) {
                return null;
             }
 
-            --var6;
+            var6--;
          }
       }
    }
@@ -295,11 +293,8 @@ public class ServerChunkCache extends ChunkSource {
       ChunkHolder var3 = this.getVisibleChunkIfPresent(var1);
       if (var3 == null) {
          return false;
-      } else if (!this.level.shouldTickBlocksAt(var1)) {
-         return false;
       } else {
-         Either var4 = (Either)var3.getTickingChunkFuture().getNow(null);
-         return var4 != null && var4.left().isPresent();
+         return !this.level.shouldTickBlocksAt(var1) ? false : var3.getTickingChunkFuture().getNow(ChunkHolder.UNLOADED_LEVEL_CHUNK).isSuccess();
       }
    }
 
@@ -318,7 +313,10 @@ public class ServerChunkCache extends ChunkSource {
    @Override
    public void tick(BooleanSupplier var1, boolean var2) {
       this.level.getProfiler().push("purge");
-      this.distanceManager.purgeStaleTickets();
+      if (this.level.tickRateManager().runsNormally() || !var2) {
+         this.distanceManager.purgeStaleTickets();
+      }
+
       this.runDistanceManagerUpdates();
       this.level.getProfiler().popPush("chunks");
       if (var2) {
@@ -342,14 +340,14 @@ public class ServerChunkCache extends ChunkSource {
          var5.push("filteringLoadedChunks");
          ArrayList var6 = Lists.newArrayListWithCapacity(this.chunkMap.size());
 
-         for(ChunkHolder var8 : this.chunkMap.getChunks()) {
+         for (ChunkHolder var8 : this.chunkMap.getChunks()) {
             LevelChunk var9 = var8.getTickingChunk();
             if (var9 != null) {
                var6.add(new ServerChunkCache.ChunkAndHolder(var9, var8));
             }
          }
 
-         if (this.level.getServer().tickRateManager().runsNormally()) {
+         if (this.level.tickRateManager().runsNormally()) {
             var5.popPush("naturalSpawnCount");
             int var16 = this.distanceManager.getNaturalSpawnChunkCount();
             NaturalSpawner.SpawnState var17 = NaturalSpawner.createState(
@@ -362,7 +360,7 @@ public class ServerChunkCache extends ChunkSource {
             int var10 = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
             boolean var11 = this.level.getLevelData().getGameTime() % 400L == 0L;
 
-            for(ServerChunkCache.ChunkAndHolder var13 : var6) {
+            for (ServerChunkCache.ChunkAndHolder var13 : var6) {
                LevelChunk var14 = var13.chunk;
                ChunkPos var15 = var14.getPos();
                if (this.level.isNaturalSpawningAllowed(var15) && this.chunkMap.anyPlayerCloseEnoughForSpawning(var15)) {
@@ -393,7 +391,7 @@ public class ServerChunkCache extends ChunkSource {
    private void getFullChunk(long var1, Consumer<LevelChunk> var3) {
       ChunkHolder var4 = this.getVisibleChunkIfPresent(var1);
       if (var4 != null) {
-         ((Either)var4.getFullChunkFuture().getNow(ChunkHolder.UNLOADED_LEVEL_CHUNK)).left().ifPresent(var3);
+         var4.getFullChunkFuture().getNow(ChunkHolder.UNLOADED_LEVEL_CHUNK).ifSuccess(var3);
       }
    }
 
@@ -518,20 +516,18 @@ public class ServerChunkCache extends ChunkSource {
       this.distanceManager.removeTicketsOnClosing();
    }
 
-   static record ChunkAndHolder(LevelChunk a, ChunkHolder b) {
-      final LevelChunk chunk;
-      final ChunkHolder holder;
+   static record ChunkAndHolder(LevelChunk chunk, ChunkHolder holder) {
 
-      ChunkAndHolder(LevelChunk var1, ChunkHolder var2) {
+      ChunkAndHolder(LevelChunk chunk, ChunkHolder holder) {
          super();
-         this.chunk = var1;
-         this.holder = var2;
+         this.chunk = chunk;
+         this.holder = holder;
       }
    }
 
    final class MainThreadExecutor extends BlockableEventLoop<Runnable> {
-      MainThreadExecutor(Level var2) {
-         super("Chunk source main thread executor for " + var2.dimension().location());
+      MainThreadExecutor(final Level nullx) {
+         super("Chunk source main thread executor for " + nullx.dimension().location());
       }
 
       @Override

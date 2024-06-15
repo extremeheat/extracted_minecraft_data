@@ -70,7 +70,7 @@ public class SpectatorMenu {
    public List<SpectatorMenuItem> getItems() {
       ArrayList var1 = Lists.newArrayList();
 
-      for(int var2 = 0; var2 <= 8; ++var2) {
+      for (int var2 = 0; var2 <= 8; var2++) {
          var1.add(this.getItem(var2));
       }
 
@@ -152,7 +152,7 @@ public class SpectatorMenu {
 
       @Override
       public void selectItem(SpectatorMenu var1) {
-         var1.page += this.direction;
+         var1.page = var1.page + this.direction;
       }
 
       @Override

@@ -101,7 +101,7 @@ public class ObjectiveCriteria {
             ? Optional.empty()
             : BuiltInRegistries.STAT_TYPE
                .getOptional(ResourceLocation.of(var0.substring(0, var2), '.'))
-               .flatMap(var2x -> getStat(var2x, ResourceLocation.of(var0.substring(var2 + 1), '.')));
+               .flatMap(var2x -> getStat((StatType<?>)var2x, ResourceLocation.of(var0.substring(var2 + 1), '.')));
       }
    }
 
@@ -126,12 +126,10 @@ public class ObjectiveCriteria {
       HEARTS("hearts");
 
       private final String id;
-      public static final StringRepresentable.EnumCodec<ObjectiveCriteria.RenderType> CODEC = StringRepresentable.fromEnum(
-         ObjectiveCriteria.RenderType::values
-      );
+      public static final StringRepresentable.EnumCodec<ObjectiveCriteria.RenderType> CODEC = StringRepresentable.fromEnum(ObjectiveCriteria.RenderType::values);
 
-      private RenderType(String var3) {
-         this.id = var3;
+      private RenderType(final String nullxx) {
+         this.id = nullxx;
       }
 
       public String getId() {

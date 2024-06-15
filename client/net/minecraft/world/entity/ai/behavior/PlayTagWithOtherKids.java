@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -54,14 +53,14 @@ public class PlayTagWithOtherKids {
                               return true;
                            }
                         } else {
-                           for(int var11 = 0; var11 < 10; ++var11) {
+                           for (int var11 = 0; var11 < 10; var11++) {
                               Vec3 var12 = LandRandomPos.getPos(var6, 20, 8);
                               if (var12 != null && var5.isVillage(BlockPos.containing(var12))) {
                                  var2.set(new WalkTarget(var12, 0.6F, 0));
                                  break;
                               }
                            }
-      
+
                            return true;
                         }
                      }
@@ -82,7 +81,7 @@ public class PlayTagWithOtherKids {
       return var1.entrySet()
          .stream()
          .sorted(Comparator.comparingInt(Entry::getValue))
-         .filter(var0x -> var0x.getValue() > 0 && var0x.getValue() <= 5)
+         .filter(var0x -> (Integer)var0x.getValue() > 0 && (Integer)var0x.getValue() <= 5)
          .map(Entry::getKey)
          .findFirst();
    }

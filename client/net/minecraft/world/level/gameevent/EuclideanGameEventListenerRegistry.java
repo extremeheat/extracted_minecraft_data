@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
@@ -58,14 +59,14 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
    }
 
    @Override
-   public boolean visitInRangeListeners(GameEvent var1, Vec3 var2, GameEvent.Context var3, GameEventListenerRegistry.ListenerVisitor var4) {
+   public boolean visitInRangeListeners(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3, GameEventListenerRegistry.ListenerVisitor var4) {
       this.processing = true;
       boolean var5 = false;
 
       try {
          Iterator var6 = this.listeners.iterator();
 
-         while(var6.hasNext()) {
+         while (var6.hasNext()) {
             GameEventListener var7 = (GameEventListener)var6.next();
             if (this.listenersToRemove.remove(var7)) {
                var6.remove();

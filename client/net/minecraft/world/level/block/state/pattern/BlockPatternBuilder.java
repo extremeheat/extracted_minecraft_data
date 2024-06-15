@@ -34,14 +34,14 @@ public class BlockPatternBuilder {
          if (var1.length != this.height) {
             throw new IllegalArgumentException("Expected aisle with height of " + this.height + ", but was given one with a height of " + var1.length + ")");
          } else {
-            for(String var5 : var1) {
+            for (String var5 : var1) {
                if (var5.length() != this.width) {
                   throw new IllegalArgumentException(
                      "Not all rows in the given aisle are the correct width (expected " + this.width + ", found one with " + var5.length() + ")"
                   );
                }
 
-               for(char var9 : var5.toCharArray()) {
+               for (char var9 : var5.toCharArray()) {
                   if (!this.lookup.containsKey(var9)) {
                      this.lookup.put(var9, null);
                   }
@@ -73,9 +73,9 @@ public class BlockPatternBuilder {
       this.ensureAllCharactersMatched();
       Predicate[][][] var1 = (Predicate[][][])Array.newInstance(Predicate.class, this.pattern.size(), this.height, this.width);
 
-      for(int var2 = 0; var2 < this.pattern.size(); ++var2) {
-         for(int var3 = 0; var3 < this.height; ++var3) {
-            for(int var4 = 0; var4 < this.width; ++var4) {
+      for (int var2 = 0; var2 < this.pattern.size(); var2++) {
+         for (int var3 = 0; var3 < this.height; var3++) {
+            for (int var4 = 0; var4 < this.width; var4++) {
                var1[var2][var3][var4] = this.lookup.get(this.pattern.get(var2)[var3].charAt(var4));
             }
          }
@@ -87,7 +87,7 @@ public class BlockPatternBuilder {
    private void ensureAllCharactersMatched() {
       ArrayList var1 = Lists.newArrayList();
 
-      for(Entry var3 : this.lookup.entrySet()) {
+      for (Entry var3 : this.lookup.entrySet()) {
          if (var3.getValue() == null) {
             var1.add((Character)var3.getKey());
          }

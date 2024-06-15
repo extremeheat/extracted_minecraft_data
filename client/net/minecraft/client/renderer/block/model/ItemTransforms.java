@@ -66,7 +66,7 @@ public class ItemTransforms {
    }
 
    public ItemTransform getTransform(ItemDisplayContext var1) {
-      return switch(var1) {
+      return switch (var1) {
          case THIRD_PERSON_LEFT_HAND -> this.thirdPersonLeftHand;
          case THIRD_PERSON_RIGHT_HAND -> this.thirdPersonRightHand;
          case FIRST_PERSON_LEFT_HAND -> this.firstPersonLeftHand;

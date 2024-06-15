@@ -107,7 +107,7 @@ public abstract class RenderTarget {
             GlStateManager._texImage2D(3553, 0, 6402, this.width, this.height, 0, 6402, 5126, null);
          }
 
-         this.setFilterMode(9728);
+         this.setFilterMode(9728, true);
          GlStateManager._bindTexture(this.colorTextureId);
          GlStateManager._texParameter(3553, 10242, 33071);
          GlStateManager._texParameter(3553, 10243, 33071);
@@ -127,12 +127,18 @@ public abstract class RenderTarget {
    }
 
    public void setFilterMode(int var1) {
+      this.setFilterMode(var1, false);
+   }
+
+   private void setFilterMode(int var1, boolean var2) {
       RenderSystem.assertOnRenderThreadOrInit();
-      this.filterMode = var1;
-      GlStateManager._bindTexture(this.colorTextureId);
-      GlStateManager._texParameter(3553, 10241, var1);
-      GlStateManager._texParameter(3553, 10240, var1);
-      GlStateManager._bindTexture(0);
+      if (var2 || var1 != this.filterMode) {
+         this.filterMode = var1;
+         GlStateManager._bindTexture(this.colorTextureId);
+         GlStateManager._texParameter(3553, 10241, var1);
+         GlStateManager._texParameter(3553, 10240, var1);
+         GlStateManager._bindTexture(0);
+      }
    }
 
    public void checkStatus() {
@@ -256,7 +262,7 @@ public abstract class RenderTarget {
       RenderSystem.assertOnRenderThreadOrInit();
       this.bindWrite(true);
       GlStateManager._clearColor(this.clearChannels[0], this.clearChannels[1], this.clearChannels[2], this.clearChannels[3]);
-      int var2 = 16384;
+      short var2 = 16384;
       if (this.useDepth) {
          GlStateManager._clearDepth(1.0);
          var2 |= 256;

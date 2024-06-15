@@ -1,6 +1,7 @@
 package net.minecraft.world.damagesource;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class CombatRules {
    public static final float MAX_ARMOR = 20.0F;
@@ -13,10 +14,13 @@ public class CombatRules {
       super();
    }
 
-   public static float getDamageAfterAbsorb(float var0, float var1, float var2) {
-      float var3 = 2.0F + var2 / 4.0F;
-      float var4 = Mth.clamp(var1 - var0 / var3, var1 * 0.2F, 20.0F);
-      return var0 * (1.0F - var4 / 25.0F);
+   public static float getDamageAfterAbsorb(float var0, DamageSource var1, float var2, float var3) {
+      float var4 = 2.0F + var3 / 4.0F;
+      float var5 = Mth.clamp(var2 - var0 / var4, var2 * 0.2F, 20.0F);
+      float var6 = var5 / 25.0F;
+      float var7 = EnchantmentHelper.calculateArmorBreach(var1.getEntity(), var6);
+      float var8 = 1.0F - var7;
+      return var0 * var8;
    }
 
    public static float getDamageAfterMagicAbsorb(float var0, float var1) {

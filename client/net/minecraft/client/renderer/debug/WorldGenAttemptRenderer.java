@@ -34,7 +34,7 @@ public class WorldGenAttemptRenderer implements DebugRenderer.SimpleDebugRendere
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       VertexConsumer var9 = var2.getBuffer(RenderType.debugFilledBox());
 
-      for(int var10 = 0; var10 < this.toRender.size(); ++var10) {
+      for (int var10 = 0; var10 < this.toRender.size(); var10++) {
          BlockPos var11 = this.toRender.get(var10);
          Float var12 = this.scales.get(var10);
          float var13 = var12 / 2.0F;

@@ -48,7 +48,7 @@ public class IceBlock extends HalfTransparentBlock {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.getBrightness(LightLayer.BLOCK, var3) > 11 - var1.getLightBlock(var2, var3)) {
          this.melt(var1, var2, var3);
       }

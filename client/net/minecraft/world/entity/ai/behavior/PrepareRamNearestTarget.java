@@ -18,7 +18,6 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -122,10 +121,10 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
          ArrayList var4 = Lists.newArrayList();
          BlockPos.MutableBlockPos var5 = var3.mutable();
 
-         for(Direction var7 : Direction.Plane.HORIZONTAL) {
+         for (Direction var7 : Direction.Plane.HORIZONTAL) {
             var5.set(var3);
 
-            for(int var8 = 0; var8 < this.maxRamDistance; ++var8) {
+            for (int var8 = 0; var8 < this.maxRamDistance; var8++) {
                if (!this.isWalkableBlock(var1, var5.move(var7))) {
                   var5.move(var7.getOpposite());
                   break;
@@ -139,15 +138,14 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
 
          PathNavigation var9 = var1.getNavigation();
          return var4.stream().sorted(Comparator.comparingDouble(var1.blockPosition()::distSqr)).filter(var1x -> {
-            Path var2xx = var9.createPath(var1x, 0);
-            return var2xx != null && var2xx.canReach();
+            Path var2x = var9.createPath(var1x, 0);
+            return var2x != null && var2x.canReach();
          }).findFirst();
       }
    }
 
    private boolean isWalkableBlock(PathfinderMob var1, BlockPos var2) {
-      return var1.getNavigation().isStableDestination(var2)
-         && var1.getPathfindingMalus(WalkNodeEvaluator.getBlockPathTypeStatic(var1.level(), var2.mutable())) == 0.0F;
+      return var1.getNavigation().isStableDestination(var2) && var1.getPathfindingMalus(WalkNodeEvaluator.getPathTypeStatic(var1, var2)) == 0.0F;
    }
 
    private void chooseRamPosition(PathfinderMob var1, LivingEntity var2) {

@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
@@ -58,7 +57,7 @@ public class InfestedBlock extends Block {
    }
 
    @Override
-   public void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
+   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
       super.spawnAfterBreak(var1, var2, var3, var4, var5);
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS) && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, var4) == 0) {
          this.spawnInfestation(var2, var3);
@@ -75,13 +74,13 @@ public class InfestedBlock extends Block {
 
    private static BlockState getNewStateWithProperties(Map<BlockState, BlockState> var0, BlockState var1, Supplier<BlockState> var2) {
       return var0.computeIfAbsent(var1, var1x -> {
-         BlockState var2xx = (BlockState)var2.get();
+         BlockState var2x = (BlockState)var2.get();
 
-         for(Property var4 : var1x.getProperties()) {
-            var2xx = var2xx.hasProperty(var4) ? var2xx.setValue(var4, var1x.getValue(var4)) : var2xx;
+         for (Property var4 : var1x.getProperties()) {
+            var2x = var2x.hasProperty(var4) ? var2x.setValue(var4, var1x.getValue(var4)) : var2x;
          }
 
-         return var2xx;
+         return var2x;
       });
    }
 }

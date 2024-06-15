@@ -18,7 +18,7 @@ public final class Graph {
       } else {
          var2.add(var4);
 
-         for(Object var6 : (Set)var0.getOrDefault(var4, ImmutableSet.of())) {
+         for (Object var6 : (Set)var0.getOrDefault(var4, ImmutableSet.of())) {
             if (depthFirstSearch(var0, var1, var2, var3, var6)) {
                return true;
             }

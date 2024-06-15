@@ -18,7 +18,7 @@ public class PlayerListComponent extends JList<String> {
       if (this.tickCount++ % 20 == 0) {
          Vector var1 = new Vector();
 
-         for(int var2 = 0; var2 < this.server.getPlayerList().getPlayers().size(); ++var2) {
+         for (int var2 = 0; var2 < this.server.getPlayerList().getPlayers().size(); var2++) {
             var1.add(this.server.getPlayerList().getPlayers().get(var2).getGameProfile().getName());
          }
 

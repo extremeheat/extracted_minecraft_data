@@ -1,20 +1,21 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundConfigurationAcknowledgedPacket() implements Packet<ServerGamePacketListener> {
-   public ServerboundConfigurationAcknowledgedPacket(FriendlyByteBuf var1) {
-      this();
-   }
+public class ServerboundConfigurationAcknowledgedPacket implements Packet<ServerGamePacketListener> {
+   public static final ServerboundConfigurationAcknowledgedPacket INSTANCE = new ServerboundConfigurationAcknowledgedPacket();
+   public static final StreamCodec<ByteBuf, ServerboundConfigurationAcknowledgedPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
-   public ServerboundConfigurationAcknowledgedPacket() {
+   private ServerboundConfigurationAcknowledgedPacket() {
       super();
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
+   public PacketType<ServerboundConfigurationAcknowledgedPacket> type() {
+      return GamePacketTypes.SERVERBOUND_CONFIGURATION_ACKNOWLEDGED;
    }
 
    public void handle(ServerGamePacketListener var1) {
@@ -22,7 +23,7 @@ public record ServerboundConfigurationAcknowledgedPacket() implements Packet<Ser
    }
 
    @Override
-   public ConnectionProtocol nextProtocol() {
-      return ConnectionProtocol.CONFIGURATION;
+   public boolean isTerminal() {
+      return true;
    }
 }

@@ -69,7 +69,7 @@ public abstract class BaseSpawner {
          var1.addParticle(ParticleTypes.SMOKE, var4, var6, var8, 0.0, 0.0, 0.0);
          var1.addParticle(ParticleTypes.FLAME, var4, var6, var8, 0.0, 0.0, 0.0);
          if (this.spawnDelay > 0) {
-            --this.spawnDelay;
+            this.spawnDelay--;
          }
 
          this.oSpin = this.spin;
@@ -84,13 +84,13 @@ public abstract class BaseSpawner {
          }
 
          if (this.spawnDelay > 0) {
-            --this.spawnDelay;
+            this.spawnDelay--;
          } else {
             boolean var3 = false;
             RandomSource var4 = var1.getRandom();
             SpawnData var5 = this.getOrCreateNextSpawnData(var1, var4, var2);
 
-            for(int var6 = 0; var6 < this.spawnCount; ++var6) {
+            for (int var6 = 0; var6 < this.spawnCount; var6++) {
                CompoundTag var7 = var5.getEntityToSpawn();
                Optional var8 = EntityType.by(var7);
                if (var8.isEmpty()) {
@@ -103,7 +103,7 @@ public abstract class BaseSpawner {
                double var11 = var10 >= 1 ? var9.getDouble(0) : (double)var2.getX() + (var4.nextDouble() - var4.nextDouble()) * (double)this.spawnRange + 0.5;
                double var13 = var10 >= 2 ? var9.getDouble(1) : (double)(var2.getY() + var4.nextInt(3) - 1);
                double var15 = var10 >= 3 ? var9.getDouble(2) : (double)var2.getZ() + (var4.nextDouble() - var4.nextDouble()) * (double)this.spawnRange + 0.5;
-               if (var1.noCollision(((EntityType)var8.get()).getAABB(var11, var13, var15))) {
+               if (var1.noCollision(((EntityType)var8.get()).getSpawnAABB(var11, var13, var15))) {
                   BlockPos var17 = BlockPos.containing(var11, var13, var15);
                   if (var5.getCustomSpawnRules().isPresent()) {
                      if (!((EntityType)var8.get()).getCategory().isFriendly() && var1.getDifficulty() == Difficulty.PEACEFUL) {
@@ -111,25 +111,24 @@ public abstract class BaseSpawner {
                      }
 
                      SpawnData.CustomSpawnRules var18 = var5.getCustomSpawnRules().get();
-                     if (!var18.blockLightLimit().isValueInRange(var1.getBrightness(LightLayer.BLOCK, var17))
-                        || !var18.skyLightLimit().isValueInRange(var1.getBrightness(LightLayer.SKY, var17))) {
+                     if (!var18.isValidPosition(var17, var1)) {
                         continue;
                      }
                   } else if (!SpawnPlacements.checkSpawnRules((EntityType)var8.get(), var1, MobSpawnType.SPAWNER, var17, var1.getRandom())) {
                      continue;
                   }
 
-                  Entity var21 = EntityType.loadEntityRecursive(var7, var1, var6x -> {
+                  Entity var22 = EntityType.loadEntityRecursive(var7, var1, var6x -> {
                      var6x.moveTo(var11, var13, var15, var6x.getYRot(), var6x.getXRot());
                      return var6x;
                   });
-                  if (var21 == null) {
+                  if (var22 == null) {
                      this.delay(var1, var2);
                      return;
                   }
 
                   int var19 = var1.getEntities(
-                        EntityTypeTest.forExactClass(var21.getClass()),
+                        EntityTypeTest.forExactClass(var22.getClass()),
                         new AABB(
                               (double)var2.getX(),
                               (double)var2.getY(),
@@ -147,26 +146,29 @@ public abstract class BaseSpawner {
                      return;
                   }
 
-                  var21.moveTo(var21.getX(), var21.getY(), var21.getZ(), var4.nextFloat() * 360.0F, 0.0F);
-                  if (var21 instanceof Mob var20) {
+                  var22.moveTo(var22.getX(), var22.getY(), var22.getZ(), var4.nextFloat() * 360.0F, 0.0F);
+                  if (var22 instanceof Mob var20) {
                      if (var5.getCustomSpawnRules().isEmpty() && !var20.checkSpawnRules(var1, MobSpawnType.SPAWNER) || !var20.checkSpawnObstruction(var1)) {
                         continue;
                      }
 
-                     if (var5.getEntityToSpawn().size() == 1 && var5.getEntityToSpawn().contains("id", 8)) {
-                        ((Mob)var21).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var21.blockPosition()), MobSpawnType.SPAWNER, null, null);
+                     boolean var21 = var5.getEntityToSpawn().size() == 1 && var5.getEntityToSpawn().contains("id", 8);
+                     if (var21) {
+                        ((Mob)var22).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var22.blockPosition()), MobSpawnType.SPAWNER, null);
                      }
+
+                     var5.getEquipment().ifPresent(var20::equip);
                   }
 
-                  if (!var1.tryAddFreshEntityWithPassengers(var21)) {
+                  if (!var1.tryAddFreshEntityWithPassengers(var22)) {
                      this.delay(var1, var2);
                      return;
                   }
 
                   var1.levelEvent(2004, var2, 0);
-                  var1.gameEvent(var21, GameEvent.ENTITY_PLACE, var17);
-                  if (var21 instanceof Mob) {
-                     ((Mob)var21).spawnAnim();
+                  var1.gameEvent(var22, GameEvent.ENTITY_PLACE, var17);
+                  if (var22 instanceof Mob) {
+                     ((Mob)var22).spawnAnim();
                   }
 
                   var3 = true;
@@ -188,7 +190,7 @@ public abstract class BaseSpawner {
          this.spawnDelay = this.minSpawnDelay + var3.nextInt(this.maxSpawnDelay - this.minSpawnDelay);
       }
 
-      this.spawnPotentials.getRandom(var3).ifPresent(var3x -> this.setNextSpawnData(var1, var2, var3x.getData()));
+      this.spawnPotentials.getRandom(var3).ifPresent(var3x -> this.setNextSpawnData(var1, var2, var3x.data()));
       this.broadcastEvent(var1, var2, 1);
    }
 
@@ -206,7 +208,7 @@ public abstract class BaseSpawner {
       boolean var7 = var3.contains("SpawnPotentials", 9);
       if (var7) {
          ListTag var6 = var3.getList("SpawnPotentials", 10);
-         this.spawnPotentials = (SimpleWeightedRandomList)SpawnData.LIST_CODEC
+         this.spawnPotentials = SpawnData.LIST_CODEC
             .parse(NbtOps.INSTANCE, var6)
             .resultOrPartial(var0 -> LOGGER.warn("Invalid SpawnPotentials list: {}", var0))
             .orElseGet(SimpleWeightedRandomList::empty);
@@ -243,11 +245,11 @@ public abstract class BaseSpawner {
       if (this.nextSpawnData != null) {
          var1.put(
             "SpawnData",
-            (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).result().orElseThrow(() -> new IllegalStateException("Invalid SpawnData"))
+            (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).getOrThrow(var0 -> new IllegalStateException("Invalid SpawnData: " + var0))
          );
       }
 
-      var1.put("SpawnPotentials", (Tag)SpawnData.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPotentials).result().orElseThrow());
+      var1.put("SpawnPotentials", (Tag)SpawnData.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPotentials).getOrThrow());
       return var1;
    }
 
@@ -287,7 +289,7 @@ public abstract class BaseSpawner {
       if (this.nextSpawnData != null) {
          return this.nextSpawnData;
       } else {
-         this.setNextSpawnData(var1, var3, this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::getData).orElseGet(SpawnData::new));
+         this.setNextSpawnData(var1, var3, this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::data).orElseGet(SpawnData::new));
          return this.nextSpawnData;
       }
    }

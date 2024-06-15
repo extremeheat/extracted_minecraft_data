@@ -25,7 +25,7 @@ public class SingleValuePalette<T> implements Palette<T> {
    }
 
    public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new SingleValuePalette<>(var1, var2, var3);
+      return new SingleValuePalette(var1, var2, var3);
    }
 
    @Override

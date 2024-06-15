@@ -1,13 +1,14 @@
 package net.minecraft.world.level.levelgen.blockpredicates;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.state.BlockState;
 
 class ReplaceablePredicate extends StateTestingPredicate {
-   public static final Codec<ReplaceablePredicate> CODEC = RecordCodecBuilder.create(var0 -> stateTestingCodec(var0).apply(var0, ReplaceablePredicate::new));
+   public static final MapCodec<ReplaceablePredicate> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> stateTestingCodec(var0).apply(var0, ReplaceablePredicate::new)
+   );
 
    public ReplaceablePredicate(Vec3i var1) {
       super(var1);

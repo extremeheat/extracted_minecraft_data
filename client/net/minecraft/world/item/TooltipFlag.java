@@ -8,14 +8,11 @@ public interface TooltipFlag {
 
    boolean isCreative();
 
-   public static record Default(boolean c, boolean d) implements TooltipFlag {
-      private final boolean advanced;
-      private final boolean creative;
-
-      public Default(boolean var1, boolean var2) {
+   public static record Default(boolean advanced, boolean creative) implements TooltipFlag {
+      public Default(boolean advanced, boolean creative) {
          super();
-         this.advanced = var1;
-         this.creative = var2;
+         this.advanced = advanced;
+         this.creative = creative;
       }
 
       @Override

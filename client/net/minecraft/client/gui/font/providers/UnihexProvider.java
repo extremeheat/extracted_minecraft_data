@@ -12,7 +12,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -64,7 +63,7 @@ public class UnihexProvider implements GlyphProvider {
       int var4 = 32 - var2 - 1;
       int var5 = 32 - var3 - 1;
 
-      for(int var6 = var4; var6 >= var5; --var6) {
+      for (int var6 = var4; var6 >= var5; var6--) {
          if (var6 < 32 && var6 >= 0) {
             boolean var7 = (var1 >> var6 & 1) != 0;
             var0.put(var7 ? -1 : 0);
@@ -75,7 +74,7 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    static void unpackBitsToBytes(IntBuffer var0, UnihexProvider.LineData var1, int var2, int var3) {
-      for(int var4 = 0; var4 < 16; ++var4) {
+      for (int var4 = 0; var4 < 16; var4++) {
          int var5 = var1.line(var4);
          unpackBitsToBytes(var0, var5, var2, var3);
       }
@@ -86,7 +85,7 @@ public class UnihexProvider implements GlyphProvider {
       int var2 = 0;
       ByteArrayList var3 = new ByteArrayList(128);
 
-      while(true) {
+      while (true) {
          boolean var4 = copyUntil(var0, var3, 58);
          int var5 = var3.size();
          if (var5 == 0 && !var4) {
@@ -99,7 +98,7 @@ public class UnihexProvider implements GlyphProvider {
 
          int var6 = 0;
 
-         for(int var7 = 0; var7 < var5; ++var7) {
+         for (int var7 = 0; var7 < var5; var7++) {
             var6 = var6 << 4 | decodeHex(var2, var3.getByte(var7));
          }
 
@@ -107,7 +106,7 @@ public class UnihexProvider implements GlyphProvider {
          copyUntil(var0, var3, 10);
          int var9 = var3.size();
 
-         UnihexProvider.LineData var8 = switch(var9) {
+         UnihexProvider.LineData var8 = switch (var9) {
             case 32 -> UnihexProvider.ByteContents.read(var2, var3);
             case 64 -> UnihexProvider.ShortContents.read(var2, var3);
             case 96 -> UnihexProvider.IntContents.read24(var2, var3);
@@ -117,7 +116,7 @@ public class UnihexProvider implements GlyphProvider {
          );
          };
          var1.accept(var6, var8);
-         ++var2;
+         var2++;
          var3.clear();
       }
    }
@@ -127,7 +126,7 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    private static int decodeHex(int var0, byte var1) {
-      return switch(var1) {
+      return switch (var1) {
          case 48 -> 0;
          case 49 -> 1;
          case 50 -> 2;
@@ -149,7 +148,7 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    private static boolean copyUntil(InputStream var0, ByteList var1, int var2) throws IOException {
-      while(true) {
+      while (true) {
          int var3 = var0.read();
          if (var3 == -1) {
             return false;
@@ -163,12 +162,10 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record ByteContents(byte[] a) implements UnihexProvider.LineData {
-      private final byte[] contents;
-
-      private ByteContents(byte[] var1) {
+   static record ByteContents(byte[] contents) implements UnihexProvider.LineData {
+      private ByteContents(byte[] contents) {
          super();
-         this.contents = var1;
+         this.contents = contents;
       }
 
       @Override
@@ -180,7 +177,7 @@ public class UnihexProvider implements GlyphProvider {
          byte[] var2 = new byte[16];
          int var3 = 0;
 
-         for(int var4 = 0; var4 < 16; ++var4) {
+         for (int var4 = 0; var4 < 16; var4++) {
             int var5 = UnihexProvider.decodeHex(var0, var1, var3++);
             int var6 = UnihexProvider.decodeHex(var0, var1, var3++);
             byte var7 = (byte)(var5 << 4 | var6);
@@ -233,13 +230,13 @@ public class UnihexProvider implements GlyphProvider {
       }
 
       private UnihexProvider loadData(InputStream var1) throws IOException {
-         CodepointMap var2 = new CodepointMap<>(var0 -> new UnihexProvider.LineData[var0], var0 -> new UnihexProvider.LineData[var0][]);
+         CodepointMap var2 = new CodepointMap<>(UnihexProvider.LineData[]::new, UnihexProvider.LineData[][]::new);
          UnihexProvider.ReaderOutput var3 = var2::put;
 
          UnihexProvider var17;
          try (ZipInputStream var4 = new ZipInputStream(var1)) {
             ZipEntry var5;
-            while((var5 = var4.getNextEntry()) != null) {
+            while ((var5 = var4.getNextEntry()) != null) {
                String var6 = var5.getName();
                if (var6.endsWith(".hex")) {
                   UnihexProvider.LOGGER.info("Found {}, loading", var6);
@@ -247,14 +244,14 @@ public class UnihexProvider implements GlyphProvider {
                }
             }
 
-            CodepointMap var16 = new CodepointMap<>(var0 -> new UnihexProvider.Glyph[var0], var0 -> new UnihexProvider.Glyph[var0][]);
+            CodepointMap var16 = new CodepointMap<>(UnihexProvider.Glyph[]::new, UnihexProvider.Glyph[][]::new);
 
-            for(UnihexProvider.OverrideRange var8 : this.sizeOverrides) {
+            for (UnihexProvider.OverrideRange var8 : this.sizeOverrides) {
                int var9 = var8.from;
                int var10 = var8.to;
                UnihexProvider.Dimensions var11 = var8.dimensions;
 
-               for(int var12 = var9; var12 <= var10; ++var12) {
+               for (int var12 = var9; var12 <= var10; var12++) {
                   UnihexProvider.LineData var13 = (UnihexProvider.LineData)var2.remove(var12);
                   if (var13 != null) {
                      var16.put(var12, new UnihexProvider.Glyph(var13, var11.left, var11.right));
@@ -263,10 +260,10 @@ public class UnihexProvider implements GlyphProvider {
             }
 
             var2.forEach((var1x, var2x) -> {
-               int var3xx = var2x.calculateWidth();
-               int var4xx = UnihexProvider.Dimensions.left(var3xx);
-               int var5xx = UnihexProvider.Dimensions.right(var3xx);
-               var16.put(var1x, new UnihexProvider.Glyph(var2x, var4xx, var5xx));
+               int var3x = var2x.calculateWidth();
+               int var4x = UnihexProvider.Dimensions.left(var3x);
+               int var5x = UnihexProvider.Dimensions.right(var3x);
+               var16.put(var1x, new UnihexProvider.Glyph(var2x, var4x, var5x));
             });
             var17 = new UnihexProvider(var16);
          }
@@ -275,9 +272,7 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   public static record Dimensions(int c, int d) {
-      final int left;
-      final int right;
+   public static record Dimensions(int left, int right) {
       public static final MapCodec<UnihexProvider.Dimensions> MAP_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   Codec.INT.fieldOf("left").forGetter(UnihexProvider.Dimensions::left), Codec.INT.fieldOf("right").forGetter(UnihexProvider.Dimensions::right)
@@ -286,10 +281,10 @@ public class UnihexProvider implements GlyphProvider {
       );
       public static final Codec<UnihexProvider.Dimensions> CODEC = MAP_CODEC.codec();
 
-      public Dimensions(int var1, int var2) {
+      public Dimensions(int left, int right) {
          super();
-         this.left = var1;
-         this.right = var2;
+         this.left = left;
+         this.right = right;
       }
 
       public int pack() {
@@ -309,16 +304,13 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record Glyph(UnihexProvider.LineData a, int b, int c) implements GlyphInfo {
-      final UnihexProvider.LineData contents;
-      final int left;
-      final int right;
+   static record Glyph(UnihexProvider.LineData contents, int left, int right) implements GlyphInfo {
 
-      Glyph(UnihexProvider.LineData var1, int var2, int var3) {
+      Glyph(UnihexProvider.LineData contents, int left, int right) {
          super();
-         this.contents = var1;
-         this.left = var2;
-         this.right = var3;
+         this.contents = contents;
+         this.left = left;
+         this.right = right;
       }
 
       public int width() {
@@ -374,15 +366,13 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record IntContents(int[] a, int b) implements UnihexProvider.LineData {
-      private final int[] contents;
-      private final int bitWidth;
+   static record IntContents(int[] contents, int bitWidth) implements UnihexProvider.LineData {
       private static final int SIZE_24 = 24;
 
-      private IntContents(int[] var1, int var2) {
+      private IntContents(int[] contents, int bitWidth) {
          super();
-         this.contents = var1;
-         this.bitWidth = var2;
+         this.contents = contents;
+         this.bitWidth = bitWidth;
       }
 
       @Override
@@ -395,7 +385,7 @@ public class UnihexProvider implements GlyphProvider {
          int var3 = 0;
          int var4 = 0;
 
-         for(int var5 = 0; var5 < 16; ++var5) {
+         for (int var5 = 0; var5 < 16; var5++) {
             int var6 = UnihexProvider.decodeHex(var0, var1, var4++);
             int var7 = UnihexProvider.decodeHex(var0, var1, var4++);
             int var8 = UnihexProvider.decodeHex(var0, var1, var4++);
@@ -415,7 +405,7 @@ public class UnihexProvider implements GlyphProvider {
          int var3 = 0;
          int var4 = 0;
 
-         for(int var5 = 0; var5 < 16; ++var5) {
+         for (int var5 = 0; var5 < 16; var5++) {
             int var6 = UnihexProvider.decodeHex(var0, var1, var4++);
             int var7 = UnihexProvider.decodeHex(var0, var1, var4++);
             int var8 = UnihexProvider.decodeHex(var0, var1, var4++);
@@ -441,7 +431,7 @@ public class UnihexProvider implements GlyphProvider {
       default int mask() {
          int var1 = 0;
 
-         for(int var2 = 0; var2 < 16; ++var2) {
+         for (int var2 = 0; var2 < 16; var2++) {
             var1 |= this.line(var2);
          }
 
@@ -465,10 +455,7 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record OverrideRange(int b, int c, UnihexProvider.Dimensions d) {
-      final int from;
-      final int to;
-      final UnihexProvider.Dimensions dimensions;
+   static record OverrideRange(int from, int to, UnihexProvider.Dimensions dimensions) {
       private static final Codec<UnihexProvider.OverrideRange> RAW_CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   ExtraCodecs.CODEPOINT.fieldOf("from").forGetter(UnihexProvider.OverrideRange::from),
@@ -477,15 +464,15 @@ public class UnihexProvider implements GlyphProvider {
                )
                .apply(var0, UnihexProvider.OverrideRange::new)
       );
-      public static final Codec<UnihexProvider.OverrideRange> CODEC = ExtraCodecs.validate(
-         RAW_CODEC, var0 -> var0.from >= var0.to ? DataResult.error(() -> "Invalid range: [" + var0.from + ";" + var0.to + "]") : DataResult.success(var0)
+      public static final Codec<UnihexProvider.OverrideRange> CODEC = RAW_CODEC.validate(
+         var0 -> var0.from >= var0.to ? DataResult.error(() -> "Invalid range: [" + var0.from + ";" + var0.to + "]") : DataResult.success(var0)
       );
 
-      private OverrideRange(int var1, int var2, UnihexProvider.Dimensions var3) {
+      private OverrideRange(int from, int to, UnihexProvider.Dimensions dimensions) {
          super();
-         this.from = var1;
-         this.to = var2;
-         this.dimensions = var3;
+         this.from = from;
+         this.to = to;
+         this.dimensions = dimensions;
       }
    }
 
@@ -494,12 +481,10 @@ public class UnihexProvider implements GlyphProvider {
       void accept(int var1, UnihexProvider.LineData var2);
    }
 
-   static record ShortContents(short[] a) implements UnihexProvider.LineData {
-      private final short[] contents;
-
-      private ShortContents(short[] var1) {
+   static record ShortContents(short[] contents) implements UnihexProvider.LineData {
+      private ShortContents(short[] contents) {
          super();
-         this.contents = var1;
+         this.contents = contents;
       }
 
       @Override
@@ -511,7 +496,7 @@ public class UnihexProvider implements GlyphProvider {
          short[] var2 = new short[16];
          int var3 = 0;
 
-         for(int var4 = 0; var4 < 16; ++var4) {
+         for (int var4 = 0; var4 < 16; var4++) {
             int var5 = UnihexProvider.decodeHex(var0, var1, var3++);
             int var6 = UnihexProvider.decodeHex(var0, var1, var3++);
             int var7 = UnihexProvider.decodeHex(var0, var1, var3++);

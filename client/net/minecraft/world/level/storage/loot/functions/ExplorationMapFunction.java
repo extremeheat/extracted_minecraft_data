@@ -2,21 +2,22 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.world.level.saveddata.maps.MapDecorationType;
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
@@ -26,31 +27,30 @@ import net.minecraft.world.phys.Vec3;
 
 public class ExplorationMapFunction extends LootItemConditionalFunction {
    public static final TagKey<Structure> DEFAULT_DESTINATION = StructureTags.ON_TREASURE_MAPS;
-   public static final MapDecoration.Type DEFAULT_DECORATION = MapDecoration.Type.MANSION;
+   public static final Holder<MapDecorationType> DEFAULT_DECORATION = MapDecorationTypes.WOODLAND_MANSION;
    public static final byte DEFAULT_ZOOM = 2;
    public static final int DEFAULT_SEARCH_RADIUS = 50;
    public static final boolean DEFAULT_SKIP_EXISTING = true;
-   public static final Codec<ExplorationMapFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<ExplorationMapFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  ExtraCodecs.strictOptionalField(TagKey.codec(Registries.STRUCTURE), "destination", DEFAULT_DESTINATION)
-                     .forGetter(var0x -> var0x.destination),
-                  MapDecoration.Type.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter(var0x -> var0x.mapDecoration),
-                  ExtraCodecs.strictOptionalField(Codec.BYTE, "zoom", (byte)2).forGetter(var0x -> var0x.zoom),
-                  ExtraCodecs.strictOptionalField(Codec.INT, "search_radius", 50).forGetter(var0x -> var0x.searchRadius),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "skip_existing_chunks", true).forGetter(var0x -> var0x.skipKnownStructures)
+                  TagKey.codec(Registries.STRUCTURE).optionalFieldOf("destination", DEFAULT_DESTINATION).forGetter(var0x -> var0x.destination),
+                  MapDecorationType.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter(var0x -> var0x.mapDecoration),
+                  Codec.BYTE.optionalFieldOf("zoom", (byte)2).forGetter(var0x -> var0x.zoom),
+                  Codec.INT.optionalFieldOf("search_radius", 50).forGetter(var0x -> var0x.searchRadius),
+                  Codec.BOOL.optionalFieldOf("skip_existing_chunks", true).forGetter(var0x -> var0x.skipKnownStructures)
                )
             )
             .apply(var0, ExplorationMapFunction::new)
    );
    private final TagKey<Structure> destination;
-   private final MapDecoration.Type mapDecoration;
+   private final Holder<MapDecorationType> mapDecoration;
    private final byte zoom;
    private final int searchRadius;
    private final boolean skipKnownStructures;
 
-   ExplorationMapFunction(List<LootItemCondition> var1, TagKey<Structure> var2, MapDecoration.Type var3, byte var4, int var5, boolean var6) {
+   ExplorationMapFunction(List<LootItemCondition> var1, TagKey<Structure> var2, Holder<MapDecorationType> var3, byte var4, int var5, boolean var6) {
       super(var1);
       this.destination = var2;
       this.mapDecoration = var3;
@@ -60,7 +60,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<ExplorationMapFunction> getType() {
       return LootItemFunctions.EXPLORATION_MAP;
    }
 
@@ -96,7 +96,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
 
    public static class Builder extends LootItemConditionalFunction.Builder<ExplorationMapFunction.Builder> {
       private TagKey<Structure> destination = ExplorationMapFunction.DEFAULT_DESTINATION;
-      private MapDecoration.Type mapDecoration = ExplorationMapFunction.DEFAULT_DECORATION;
+      private Holder<MapDecorationType> mapDecoration = ExplorationMapFunction.DEFAULT_DECORATION;
       private byte zoom = 2;
       private int searchRadius = 50;
       private boolean skipKnownStructures = true;
@@ -114,7 +114,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public ExplorationMapFunction.Builder setMapDecoration(MapDecoration.Type var1) {
+      public ExplorationMapFunction.Builder setMapDecoration(Holder<MapDecorationType> var1) {
          this.mapDecoration = var1;
          return this;
       }

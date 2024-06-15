@@ -10,6 +10,7 @@ import net.minecraft.world.entity.monster.Strider;
 public class StriderRenderer extends MobRenderer<Strider, StriderModel<Strider>> {
    private static final ResourceLocation STRIDER_LOCATION = new ResourceLocation("textures/entity/strider/strider.png");
    private static final ResourceLocation COLD_LOCATION = new ResourceLocation("textures/entity/strider/strider_cold.png");
+   private static final float SHADOW_RADIUS = 0.5F;
 
    public StriderRenderer(EntityRendererProvider.Context var1) {
       super(var1, new StriderModel<>(var1.bakeLayer(ModelLayers.STRIDER)), 0.5F);
@@ -24,13 +25,14 @@ public class StriderRenderer extends MobRenderer<Strider, StriderModel<Strider>>
       return var1.isSuffocating() ? COLD_LOCATION : STRIDER_LOCATION;
    }
 
+   protected float getShadowRadius(Strider var1) {
+      float var2 = super.getShadowRadius(var1);
+      return var1.isBaby() ? var2 * 0.5F : var2;
+   }
+
    protected void scale(Strider var1, PoseStack var2, float var3) {
-      if (var1.isBaby()) {
-         var2.scale(0.5F, 0.5F, 0.5F);
-         this.shadowRadius = 0.25F;
-      } else {
-         this.shadowRadius = 0.5F;
-      }
+      float var4 = var1.getAgeScale();
+      var2.scale(var4, var4, var4);
    }
 
    protected boolean isShaking(Strider var1) {

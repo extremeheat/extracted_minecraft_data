@@ -3,46 +3,44 @@ package net.minecraft.advancements;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.CacheableFunction;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record AdvancementRewards(int c, List<ResourceLocation> d, List<ResourceLocation> e, Optional<CacheableFunction> f) {
-   private final int experience;
-   private final List<ResourceLocation> loot;
-   private final List<ResourceLocation> recipes;
-   private final Optional<CacheableFunction> function;
+public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceLocation> recipes, Optional<CacheableFunction> function) {
    public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(Codec.INT, "experience", 0).forGetter(AdvancementRewards::experience),
-               ExtraCodecs.strictOptionalField(ResourceLocation.CODEC.listOf(), "loot", List.of()).forGetter(AdvancementRewards::loot),
-               ExtraCodecs.strictOptionalField(ResourceLocation.CODEC.listOf(), "recipes", List.of()).forGetter(AdvancementRewards::recipes),
-               ExtraCodecs.strictOptionalField(CacheableFunction.CODEC, "function").forGetter(AdvancementRewards::function)
+               Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience),
+               ResourceKey.codec(Registries.LOOT_TABLE).listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot),
+               ResourceLocation.CODEC.listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes),
+               CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)
             )
             .apply(var0, AdvancementRewards::new)
    );
    public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
 
-   public AdvancementRewards(int var1, List<ResourceLocation> var2, List<ResourceLocation> var3, Optional<CacheableFunction> var4) {
+   public AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceLocation> recipes, Optional<CacheableFunction> function) {
       super();
-      this.experience = var1;
-      this.loot = var2;
-      this.recipes = var3;
-      this.function = var4;
+      this.experience = experience;
+      this.loot = loot;
+      this.recipes = recipes;
+      this.function = function;
    }
 
    public void grant(ServerPlayer var1) {
@@ -53,10 +51,10 @@ public record AdvancementRewards(int c, List<ResourceLocation> d, List<ResourceL
          .create(LootContextParamSets.ADVANCEMENT_REWARD);
       boolean var3 = false;
 
-      for(ResourceLocation var5 : this.loot) {
-         ObjectListIterator var6 = var1.server.getLootData().getLootTable(var5).getRandomItems(var2).iterator();
+      for (ResourceKey var5 : this.loot) {
+         ObjectListIterator var6 = var1.server.reloadableRegistries().getLootTable(var5).getRandomItems(var2).iterator();
 
-         while(var6.hasNext()) {
+         while (var6.hasNext()) {
             ItemStack var7 = (ItemStack)var6.next();
             if (var1.addItem(var7)) {
                var1.level()
@@ -92,12 +90,15 @@ public record AdvancementRewards(int c, List<ResourceLocation> d, List<ResourceL
       MinecraftServer var9 = var1.server;
       this.function
          .flatMap(var1x -> var1x.get(var9.getFunctions()))
-         .ifPresent(var2x -> var9.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
+         .ifPresent(
+            var2x -> var9.getFunctions()
+                  .execute((CommandFunction<CommandSourceStack>)var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2))
+         );
    }
 
    public static class Builder {
       private int experience;
-      private final com.google.common.collect.ImmutableList.Builder<ResourceLocation> loot = ImmutableList.builder();
+      private final com.google.common.collect.ImmutableList.Builder<ResourceKey<LootTable>> loot = ImmutableList.builder();
       private final com.google.common.collect.ImmutableList.Builder<ResourceLocation> recipes = ImmutableList.builder();
       private Optional<ResourceLocation> function = Optional.empty();
 
@@ -114,11 +115,11 @@ public record AdvancementRewards(int c, List<ResourceLocation> d, List<ResourceL
          return this;
       }
 
-      public static AdvancementRewards.Builder loot(ResourceLocation var0) {
+      public static AdvancementRewards.Builder loot(ResourceKey<LootTable> var0) {
          return new AdvancementRewards.Builder().addLootTable(var0);
       }
 
-      public AdvancementRewards.Builder addLootTable(ResourceLocation var1) {
+      public AdvancementRewards.Builder addLootTable(ResourceKey<LootTable> var1) {
          this.loot.add(var1);
          return this;
       }

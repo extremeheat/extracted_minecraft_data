@@ -3,9 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -18,8 +16,7 @@ public class TorchBlock extends BaseTorchBlock {
    protected static final MapCodec<SimpleParticleType> PARTICLE_OPTIONS_FIELD = BuiltInRegistries.PARTICLE_TYPE
       .byNameCodec()
       .comapFlatMap(
-         var0 -> var0 instanceof SimpleParticleType var1 ? DataResult.success(var1) : DataResult.error(() -> "Not a SimpleParticleType: " + var0),
-         var0 -> var0
+         var0 -> var0 instanceof SimpleParticleType var1 ? DataResult.success(var1) : DataResult.error(() -> "Not a SimpleParticleType: " + var0), var0 -> var0
       )
       .fieldOf("particle_options");
    public static final MapCodec<TorchBlock> CODEC = RecordCodecBuilder.mapCodec(

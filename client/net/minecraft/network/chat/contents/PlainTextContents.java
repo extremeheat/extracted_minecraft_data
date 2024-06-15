@@ -3,7 +3,6 @@ package net.minecraft.network.chat.contents;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.FormattedText;
@@ -37,12 +36,10 @@ public interface PlainTextContents extends ComponentContents {
       return TYPE;
    }
 
-   public static record LiteralContents(String d) implements PlainTextContents {
-      private final String text;
-
-      public LiteralContents(String var1) {
+   public static record LiteralContents(String text) implements PlainTextContents {
+      public LiteralContents(String text) {
          super();
-         this.text = var1;
+         this.text = text;
       }
 
       @Override

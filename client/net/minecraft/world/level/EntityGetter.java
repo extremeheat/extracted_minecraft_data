@@ -38,7 +38,7 @@ public interface EntityGetter {
       if (var2.isEmpty()) {
          return true;
       } else {
-         for(Entity var4 : this.getEntities(var1, var2.bounds())) {
+         for (Entity var4 : this.getEntities(var1, var2.bounds())) {
             if (!var4.isRemoved()
                && var4.blocksBuilding
                && (var1 == null || !var4.isPassengerOfSameVehicle(var1))
@@ -66,7 +66,7 @@ public interface EntityGetter {
          } else {
             Builder var5 = ImmutableList.builderWithExpectedSize(var4.size());
 
-            for(Entity var7 : var4) {
+            for (Entity var7 : var4) {
                var5.add(Shapes.create(var7.getBoundingBox()));
             }
 
@@ -80,7 +80,7 @@ public interface EntityGetter {
       double var10 = -1.0;
       Player var12 = null;
 
-      for(Player var14 : this.players()) {
+      for (Player var14 : this.players()) {
          if (var9 == null || var9.test(var14)) {
             double var15 = var14.distanceToSqr(var1, var3, var5);
             if ((var7 < 0.0 || var15 < var7 * var7) && (var10 == -1.0 || var15 < var10)) {
@@ -105,7 +105,7 @@ public interface EntityGetter {
    }
 
    default boolean hasNearbyAlivePlayer(double var1, double var3, double var5, double var7) {
-      for(Player var10 : this.players()) {
+      for (Player var10 : this.players()) {
          if (EntitySelector.NO_SPECTATORS.test(var10) && EntitySelector.LIVING_ENTITY_STILL_ALIVE.test(var10)) {
             double var11 = var10.distanceToSqr(var1, var3, var5);
             if (var7 < 0.0 || var11 < var7 * var7) {
@@ -146,7 +146,7 @@ public interface EntityGetter {
       double var10 = -1.0;
       LivingEntity var12 = null;
 
-      for(LivingEntity var14 : var1) {
+      for (LivingEntity var14 : var1) {
          if (var2.test(var3, var14)) {
             double var15 = var14.distanceToSqr(var4, var6, var8);
             if (var10 == -1.0 || var15 < var10) {
@@ -162,7 +162,7 @@ public interface EntityGetter {
    default List<Player> getNearbyPlayers(TargetingConditions var1, LivingEntity var2, AABB var3) {
       ArrayList var4 = Lists.newArrayList();
 
-      for(Player var6 : this.players()) {
+      for (Player var6 : this.players()) {
          if (var3.contains(var6.getX(), var6.getY(), var6.getZ()) && var1.test(var2, var6)) {
             var4.add(var6);
          }
@@ -175,7 +175,7 @@ public interface EntityGetter {
       List var5 = this.getEntitiesOfClass(var1, var4, var0 -> true);
       ArrayList var6 = Lists.newArrayList();
 
-      for(LivingEntity var8 : var5) {
+      for (LivingEntity var8 : var5) {
          if (var2.test(var3, var8)) {
             var6.add(var8);
          }
@@ -186,7 +186,7 @@ public interface EntityGetter {
 
    @Nullable
    default Player getPlayerByUUID(UUID var1) {
-      for(int var2 = 0; var2 < this.players().size(); ++var2) {
+      for (int var2 = 0; var2 < this.players().size(); var2++) {
          Player var3 = this.players().get(var2);
          if (var1.equals(var3.getUUID())) {
             return var3;

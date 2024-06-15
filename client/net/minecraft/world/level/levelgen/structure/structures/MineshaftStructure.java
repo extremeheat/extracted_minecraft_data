@@ -2,8 +2,8 @@ package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
@@ -22,7 +22,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class MineshaftStructure extends Structure {
-   public static final Codec<MineshaftStructure> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<MineshaftStructure> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(settingsCodec(var0), MineshaftStructure.Type.CODEC.fieldOf("mineshaft_type").forGetter(var0x -> var0x.type))
             .apply(var0, MineshaftStructure::new)
    );
@@ -79,11 +79,11 @@ public class MineshaftStructure extends Structure {
       private final BlockState planksState;
       private final BlockState fenceState;
 
-      private Type(String var3, Block var4, Block var5, Block var6) {
-         this.name = var3;
-         this.woodState = var4.defaultBlockState();
-         this.planksState = var5.defaultBlockState();
-         this.fenceState = var6.defaultBlockState();
+      private Type(final String nullxx, final Block nullxxx, final Block nullxxxx, final Block nullxxxxx) {
+         this.name = nullxx;
+         this.woodState = nullxxx.defaultBlockState();
+         this.planksState = nullxxxx.defaultBlockState();
+         this.fenceState = nullxxxxx.defaultBlockState();
       }
 
       public String getName() {

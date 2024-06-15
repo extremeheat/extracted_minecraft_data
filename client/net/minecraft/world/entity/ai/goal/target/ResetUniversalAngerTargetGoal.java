@@ -18,7 +18,7 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
 
    public ResetUniversalAngerTargetGoal(T var1, boolean var2) {
       super();
-      this.mob = var1;
+      this.mob = (T)var1;
       this.alertOthersOfSameType = var2;
    }
 
@@ -51,6 +51,6 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
    private List<? extends Mob> getNearbyMobsOfSameType() {
       double var1 = this.mob.getAttributeValue(Attributes.FOLLOW_RANGE);
       AABB var3 = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(var1, 10.0, var1);
-      return this.mob.level().getEntitiesOfClass(this.mob.getClass(), var3, EntitySelector.NO_SPECTATORS);
+      return this.mob.level().getEntitiesOfClass((Class<? extends Mob>)this.mob.getClass(), var3, EntitySelector.NO_SPECTATORS);
    }
 }

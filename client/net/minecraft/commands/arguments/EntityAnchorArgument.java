@@ -10,7 +10,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
@@ -65,16 +64,16 @@ public class EntityAnchorArgument implements ArgumentType<EntityAnchorArgument.A
       EYES("eyes", (var0, var1) -> new Vec3(var0.x, var0.y + (double)var1.getEyeHeight(), var0.z));
 
       static final Map<String, EntityAnchorArgument.Anchor> BY_NAME = Util.make(Maps.newHashMap(), var0 -> {
-         for(EntityAnchorArgument.Anchor var4 : values()) {
+         for (EntityAnchorArgument.Anchor var4 : values()) {
             var0.put(var4.name, var4);
          }
       });
       private final String name;
       private final BiFunction<Vec3, Entity, Vec3> transform;
 
-      private Anchor(String var3, BiFunction<Vec3, Entity, Vec3> var4) {
-         this.name = var3;
-         this.transform = var4;
+      private Anchor(final String nullxx, final BiFunction<Vec3, Entity, Vec3> nullxxx) {
+         this.name = nullxx;
+         this.transform = nullxxx;
       }
 
       @Nullable

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -47,6 +47,8 @@ public class BannerPatterns {
    public static final ResourceKey<BannerPattern> FLOWER = create("flower");
    public static final ResourceKey<BannerPattern> MOJANG = create("mojang");
    public static final ResourceKey<BannerPattern> PIGLIN = create("piglin");
+   public static final ResourceKey<BannerPattern> FLOW = create("flow");
+   public static final ResourceKey<BannerPattern> GUSTER = create("guster");
 
    public BannerPatterns() {
       super();
@@ -56,47 +58,51 @@ public class BannerPatterns {
       return ResourceKey.create(Registries.BANNER_PATTERN, new ResourceLocation(var0));
    }
 
-   public static BannerPattern bootstrap(Registry<BannerPattern> var0) {
-      Registry.register(var0, BASE, new BannerPattern("b"));
-      Registry.register(var0, SQUARE_BOTTOM_LEFT, new BannerPattern("bl"));
-      Registry.register(var0, SQUARE_BOTTOM_RIGHT, new BannerPattern("br"));
-      Registry.register(var0, SQUARE_TOP_LEFT, new BannerPattern("tl"));
-      Registry.register(var0, SQUARE_TOP_RIGHT, new BannerPattern("tr"));
-      Registry.register(var0, STRIPE_BOTTOM, new BannerPattern("bs"));
-      Registry.register(var0, STRIPE_TOP, new BannerPattern("ts"));
-      Registry.register(var0, STRIPE_LEFT, new BannerPattern("ls"));
-      Registry.register(var0, STRIPE_RIGHT, new BannerPattern("rs"));
-      Registry.register(var0, STRIPE_CENTER, new BannerPattern("cs"));
-      Registry.register(var0, STRIPE_MIDDLE, new BannerPattern("ms"));
-      Registry.register(var0, STRIPE_DOWNRIGHT, new BannerPattern("drs"));
-      Registry.register(var0, STRIPE_DOWNLEFT, new BannerPattern("dls"));
-      Registry.register(var0, STRIPE_SMALL, new BannerPattern("ss"));
-      Registry.register(var0, CROSS, new BannerPattern("cr"));
-      Registry.register(var0, STRAIGHT_CROSS, new BannerPattern("sc"));
-      Registry.register(var0, TRIANGLE_BOTTOM, new BannerPattern("bt"));
-      Registry.register(var0, TRIANGLE_TOP, new BannerPattern("tt"));
-      Registry.register(var0, TRIANGLES_BOTTOM, new BannerPattern("bts"));
-      Registry.register(var0, TRIANGLES_TOP, new BannerPattern("tts"));
-      Registry.register(var0, DIAGONAL_LEFT, new BannerPattern("ld"));
-      Registry.register(var0, DIAGONAL_RIGHT, new BannerPattern("rd"));
-      Registry.register(var0, DIAGONAL_LEFT_MIRROR, new BannerPattern("lud"));
-      Registry.register(var0, DIAGONAL_RIGHT_MIRROR, new BannerPattern("rud"));
-      Registry.register(var0, CIRCLE_MIDDLE, new BannerPattern("mc"));
-      Registry.register(var0, RHOMBUS_MIDDLE, new BannerPattern("mr"));
-      Registry.register(var0, HALF_VERTICAL, new BannerPattern("vh"));
-      Registry.register(var0, HALF_HORIZONTAL, new BannerPattern("hh"));
-      Registry.register(var0, HALF_VERTICAL_MIRROR, new BannerPattern("vhr"));
-      Registry.register(var0, HALF_HORIZONTAL_MIRROR, new BannerPattern("hhb"));
-      Registry.register(var0, BORDER, new BannerPattern("bo"));
-      Registry.register(var0, CURLY_BORDER, new BannerPattern("cbo"));
-      Registry.register(var0, GRADIENT, new BannerPattern("gra"));
-      Registry.register(var0, GRADIENT_UP, new BannerPattern("gru"));
-      Registry.register(var0, BRICKS, new BannerPattern("bri"));
-      Registry.register(var0, GLOBE, new BannerPattern("glb"));
-      Registry.register(var0, CREEPER, new BannerPattern("cre"));
-      Registry.register(var0, SKULL, new BannerPattern("sku"));
-      Registry.register(var0, FLOWER, new BannerPattern("flo"));
-      Registry.register(var0, MOJANG, new BannerPattern("moj"));
-      return Registry.register(var0, PIGLIN, new BannerPattern("pig"));
+   public static void bootstrap(BootstrapContext<BannerPattern> var0) {
+      register(var0, BASE);
+      register(var0, SQUARE_BOTTOM_LEFT);
+      register(var0, SQUARE_BOTTOM_RIGHT);
+      register(var0, SQUARE_TOP_LEFT);
+      register(var0, SQUARE_TOP_RIGHT);
+      register(var0, STRIPE_BOTTOM);
+      register(var0, STRIPE_TOP);
+      register(var0, STRIPE_LEFT);
+      register(var0, STRIPE_RIGHT);
+      register(var0, STRIPE_CENTER);
+      register(var0, STRIPE_MIDDLE);
+      register(var0, STRIPE_DOWNRIGHT);
+      register(var0, STRIPE_DOWNLEFT);
+      register(var0, STRIPE_SMALL);
+      register(var0, CROSS);
+      register(var0, STRAIGHT_CROSS);
+      register(var0, TRIANGLE_BOTTOM);
+      register(var0, TRIANGLE_TOP);
+      register(var0, TRIANGLES_BOTTOM);
+      register(var0, TRIANGLES_TOP);
+      register(var0, DIAGONAL_LEFT);
+      register(var0, DIAGONAL_RIGHT);
+      register(var0, DIAGONAL_LEFT_MIRROR);
+      register(var0, DIAGONAL_RIGHT_MIRROR);
+      register(var0, CIRCLE_MIDDLE);
+      register(var0, RHOMBUS_MIDDLE);
+      register(var0, HALF_VERTICAL);
+      register(var0, HALF_HORIZONTAL);
+      register(var0, HALF_VERTICAL_MIRROR);
+      register(var0, HALF_HORIZONTAL_MIRROR);
+      register(var0, BORDER);
+      register(var0, CURLY_BORDER);
+      register(var0, GRADIENT);
+      register(var0, GRADIENT_UP);
+      register(var0, BRICKS);
+      register(var0, GLOBE);
+      register(var0, CREEPER);
+      register(var0, SKULL);
+      register(var0, FLOWER);
+      register(var0, MOJANG);
+      register(var0, PIGLIN);
+   }
+
+   public static void register(BootstrapContext<BannerPattern> var0, ResourceKey<BannerPattern> var1) {
+      var0.register(var1, new BannerPattern(var1.location(), "block.minecraft.banner." + var1.location().toShortLanguageKey()));
    }
 }

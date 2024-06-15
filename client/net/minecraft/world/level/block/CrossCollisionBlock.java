@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,7 +41,7 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
       this.shapeByIndex = this.makeShapes(var1, var2, var3, 0.0F, var4);
       UnmodifiableIterator var7 = this.stateDefinition.getPossibleStates().iterator();
 
-      while(var7.hasNext()) {
+      while (var7.hasNext()) {
          BlockState var8 = (BlockState)var7.next();
          this.getAABBIndex(var8);
       }
@@ -82,7 +81,7 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
          Shapes.or(var16, var15)
       };
 
-      for(int var18 = 0; var18 < 16; ++var18) {
+      for (int var18 = 0; var18 < 16; var18++) {
          var17[var18] = Shapes.or(var10, var17[var18]);
       }
 
@@ -90,17 +89,17 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return !var1.getValue(WATERLOGGED);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shapeByIndex[this.getAABBIndex(var1)];
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.collisionShapeByIndex[this.getAABBIndex(var1)];
    }
 
@@ -110,40 +109,40 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
 
    protected int getAABBIndex(BlockState var1) {
       return this.stateToIndex.computeIntIfAbsent(var1, var0 -> {
-         int var1xx = 0;
+         int var1x = 0;
          if (var0.getValue(NORTH)) {
-            var1xx |= indexFor(Direction.NORTH);
+            var1x |= indexFor(Direction.NORTH);
          }
 
          if (var0.getValue(EAST)) {
-            var1xx |= indexFor(Direction.EAST);
+            var1x |= indexFor(Direction.EAST);
          }
 
          if (var0.getValue(SOUTH)) {
-            var1xx |= indexFor(Direction.SOUTH);
+            var1x |= indexFor(Direction.SOUTH);
          }
 
          if (var0.getValue(WEST)) {
-            var1xx |= indexFor(Direction.WEST);
+            var1x |= indexFor(Direction.WEST);
          }
 
-         return var1xx;
+         return var1x;
       });
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      switch(var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
+      switch (var2) {
          case CLOCKWISE_180:
             return var1.setValue(NORTH, var1.getValue(SOUTH))
                .setValue(EAST, var1.getValue(WEST))
@@ -165,8 +164,8 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
-      switch(var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
+      switch (var2) {
          case LEFT_RIGHT:
             return var1.setValue(NORTH, var1.getValue(SOUTH)).setValue(SOUTH, var1.getValue(NORTH));
          case FRONT_BACK:

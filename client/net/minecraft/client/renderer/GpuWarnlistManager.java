@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -148,10 +147,10 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnli
       private static String matchAny(List<Pattern> var0, String var1) {
          ArrayList var2 = Lists.newArrayList();
 
-         for(Pattern var4 : var0) {
+         for (Pattern var4 : var0) {
             Matcher var5 = var4.matcher(var1);
 
-            while(var5.find()) {
+            while (var5.find()) {
                var2.add(var5.group());
             }
          }

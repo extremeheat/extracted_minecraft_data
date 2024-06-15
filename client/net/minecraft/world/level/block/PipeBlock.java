@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
-import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -51,7 +50,7 @@ public abstract class PipeBlock extends Block {
       );
       VoxelShape[] var5 = new VoxelShape[DIRECTIONS.length];
 
-      for(int var6 = 0; var6 < DIRECTIONS.length; ++var6) {
+      for (int var6 = 0; var6 < DIRECTIONS.length; var6++) {
          Direction var7 = DIRECTIONS[var6];
          var5[var6] = Shapes.box(
             0.5 + Math.min((double)(-var1), (double)var7.getStepX() * 0.5),
@@ -65,10 +64,10 @@ public abstract class PipeBlock extends Block {
 
       VoxelShape[] var10 = new VoxelShape[64];
 
-      for(int var11 = 0; var11 < 64; ++var11) {
+      for (int var11 = 0; var11 < 64; var11++) {
          VoxelShape var8 = var4;
 
-         for(int var9 = 0; var9 < DIRECTIONS.length; ++var9) {
+         for (int var9 = 0; var9 < DIRECTIONS.length; var9++) {
             if ((var11 & 1 << var9) != 0) {
                var8 = Shapes.or(var8, var5[var9]);
             }
@@ -81,19 +80,19 @@ public abstract class PipeBlock extends Block {
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return false;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shapeByIndex[this.getAABBIndex(var1)];
    }
 
    protected int getAABBIndex(BlockState var1) {
       int var2 = 0;
 
-      for(int var3 = 0; var3 < DIRECTIONS.length; ++var3) {
+      for (int var3 = 0; var3 < DIRECTIONS.length; var3++) {
          if (var1.getValue(PROPERTY_BY_DIRECTION.get(DIRECTIONS[var3]))) {
             var2 |= 1 << var3;
          }

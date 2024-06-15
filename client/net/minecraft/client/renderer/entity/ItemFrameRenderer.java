@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
@@ -13,6 +12,7 @@ import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 
@@ -68,25 +69,25 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
       }
 
       if (!var12.isEmpty()) {
-         OptionalInt var18 = var1.getFramedMapId();
+         MapId var18 = var1.getFramedMapId();
          if (var11) {
             var4.translate(0.0F, 0.0F, 0.5F);
          } else {
             var4.translate(0.0F, 0.0F, 0.4375F);
          }
 
-         int var19 = var18.isPresent() ? var1.getRotation() % 4 * 2 : var1.getRotation();
+         int var19 = var18 != null ? var1.getRotation() % 4 * 2 : var1.getRotation();
          var4.mulPose(Axis.ZP.rotationDegrees((float)var19 * 360.0F / 8.0F));
-         if (var18.isPresent()) {
+         if (var18 != null) {
             var4.mulPose(Axis.ZP.rotationDegrees(180.0F));
             float var15 = 0.0078125F;
             var4.scale(0.0078125F, 0.0078125F, 0.0078125F);
             var4.translate(-64.0F, -64.0F, 0.0F);
-            MapItemSavedData var16 = MapItem.getSavedData(var18.getAsInt(), var1.level());
+            MapItemSavedData var16 = MapItem.getSavedData(var18, var1.level());
             var4.translate(0.0F, 0.0F, -1.0F);
             if (var16 != null) {
                int var17 = this.getLightVal((T)var1, 15728850, var6);
-               Minecraft.getInstance().gameRenderer.getMapRenderer().render(var4, var5, var18.getAsInt(), var16, true, var17);
+               Minecraft.getInstance().gameRenderer.getMapRenderer().render(var4, var5, var18, var16, true, var17);
             }
          } else {
             int var20 = this.getLightVal((T)var1, 15728880, var6);
@@ -122,7 +123,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
    protected boolean shouldShowName(T var1) {
       if (Minecraft.renderNames()
          && !var1.getItem().isEmpty()
-         && var1.getItem().hasCustomHoverName()
+         && var1.getItem().has(DataComponents.CUSTOM_NAME)
          && this.entityRenderDispatcher.crosshairPickEntity == var1) {
          double var2 = this.entityRenderDispatcher.distanceToSqr(var1);
          float var4 = var1.isDiscrete() ? 32.0F : 64.0F;
@@ -132,7 +133,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
       }
    }
 
-   protected void renderNameTag(T var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5) {
-      super.renderNameTag((T)var1, var1.getItem().getHoverName(), var3, var4, var5);
+   protected void renderNameTag(T var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5, float var6) {
+      super.renderNameTag((T)var1, var1.getItem().getHoverName(), var3, var4, var5, var6);
    }
 }

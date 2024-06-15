@@ -34,7 +34,7 @@ public class PerlinSimplexNoise {
                this.noiseLevels[var4] = var6;
             }
 
-            for(int var8 = var4 + 1; var8 < var5; ++var8) {
+            for (int var8 = var4 + 1; var8 < var5; var8++) {
                if (var8 >= 0 && var2.contains(var7 - var8)) {
                   this.noiseLevels[var8] = new SimplexNoise(var1);
                } else {
@@ -46,7 +46,7 @@ public class PerlinSimplexNoise {
                long var12 = (long)(var6.getValue(var6.xo, var6.yo, var6.zo) * 9.223372036854776E18);
                WorldgenRandom var10 = new WorldgenRandom(new LegacyRandomSource(var12));
 
-               for(int var11 = var7 - 1; var11 >= 0; --var11) {
+               for (int var11 = var7 - 1; var11 >= 0; var11--) {
                   if (var11 < var5 && var2.contains(var7 - var11)) {
                      this.noiseLevels[var11] = new SimplexNoise(var10);
                   } else {
@@ -66,7 +66,7 @@ public class PerlinSimplexNoise {
       double var8 = this.highestFreqInputFactor;
       double var10 = this.highestFreqValueFactor;
 
-      for(SimplexNoise var15 : this.noiseLevels) {
+      for (SimplexNoise var15 : this.noiseLevels) {
          if (var15 != null) {
             var6 += var15.getValue(var1 * var8 + (var5 ? var15.xo : 0.0), var3 * var8 + (var5 ? var15.yo : 0.0)) * var10;
          }

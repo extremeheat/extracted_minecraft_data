@@ -14,7 +14,6 @@ public class RemotePlayer extends AbstractClientPlayer {
 
    public RemotePlayer(ClientLevel var1, GameProfile var2) {
       super(var1, var2);
-      this.setMaxUpStep(1.0F);
       this.noPhysics = true;
    }
 
@@ -44,12 +43,12 @@ public class RemotePlayer extends AbstractClientPlayer {
    public void aiStep() {
       if (this.lerpSteps > 0) {
          this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
-         --this.lerpSteps;
+         this.lerpSteps--;
       }
 
       if (this.lerpHeadSteps > 0) {
          this.lerpHeadRotationStep(this.lerpHeadSteps, this.lerpYHeadRot);
-         --this.lerpHeadSteps;
+         this.lerpHeadSteps--;
       }
 
       if (this.lerpDeltaMovementSteps > 0) {
@@ -60,7 +59,7 @@ public class RemotePlayer extends AbstractClientPlayer {
                (this.lerpDeltaMovement.z - this.getDeltaMovement().z) / (double)this.lerpDeltaMovementSteps
             )
          );
-         --this.lerpDeltaMovementSteps;
+         this.lerpDeltaMovementSteps--;
       }
 
       this.oBob = this.bob;
@@ -72,7 +71,7 @@ public class RemotePlayer extends AbstractClientPlayer {
          var1 = 0.0F;
       }
 
-      this.bob += (var1 - this.bob) * 0.4F;
+      this.bob = this.bob + (var1 - this.bob) * 0.4F;
       this.level().getProfiler().push("push");
       this.pushEntities();
       this.level().getProfiler().pop();

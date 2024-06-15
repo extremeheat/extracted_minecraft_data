@@ -16,16 +16,12 @@ public interface CriterionTrigger<T extends CriterionTriggerInstance> {
       return new Criterion<>(this, (T)var1);
    }
 
-   public static record Listener<T extends CriterionTriggerInstance>(T a, AdvancementHolder b, String c) {
-      private final T trigger;
-      private final AdvancementHolder advancement;
-      private final String criterion;
-
-      public Listener(T var1, AdvancementHolder var2, String var3) {
+   public static record Listener<T extends CriterionTriggerInstance>(T trigger, AdvancementHolder advancement, String criterion) {
+      public Listener(T trigger, AdvancementHolder advancement, String criterion) {
          super();
-         this.trigger = var1;
-         this.advancement = var2;
-         this.criterion = var3;
+         this.trigger = (T)trigger;
+         this.advancement = advancement;
+         this.criterion = criterion;
       }
 
       public void run(PlayerAdvancements var1) {

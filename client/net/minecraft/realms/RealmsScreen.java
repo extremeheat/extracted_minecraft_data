@@ -17,7 +17,7 @@ public abstract class RealmsScreen extends Screen {
    protected static final int COLOR_LINK = 3368635;
    protected static final int COLOR_LINK_HOVER = 7107012;
    protected static final int COLOR_INFO = 8226750;
-   protected static final int SKIN_FACE_SIZE = 8;
+   protected static final int SKIN_FACE_SIZE = 32;
    private final List<RealmsLabel> labels = Lists.newArrayList();
 
    public RealmsScreen(Component var1) {

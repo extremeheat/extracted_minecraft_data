@@ -44,7 +44,7 @@ public class RecipeBookPage {
    public RecipeBookPage() {
       super();
 
-      for(int var1 = 0; var1 < 20; ++var1) {
+      for (int var1 = 0; var1 < 20; var1++) {
          this.buttons.add(new RecipeButton());
       }
    }
@@ -53,7 +53,7 @@ public class RecipeBookPage {
       this.minecraft = var1;
       this.recipeBook = var1.player.getRecipeBook();
 
-      for(int var4 = 0; var4 < this.buttons.size(); ++var4) {
+      for (int var4 = 0; var4 < this.buttons.size(); var4++) {
          this.buttons.get(var4).setPosition(var2 + 11 + 25 * (var4 % 5), var3 + 31 + 25 * (var4 / 5));
       }
 
@@ -81,7 +81,7 @@ public class RecipeBookPage {
    private void updateButtonsForPage() {
       int var1 = 20 * this.currentPage;
 
-      for(int var2 = 0; var2 < this.buttons.size(); ++var2) {
+      for (int var2 = 0; var2 < this.buttons.size(); var2++) {
          RecipeButton var3 = this.buttons.get(var2);
          if (var1 + var2 < this.recipeCollections.size()) {
             RecipeCollection var4 = this.recipeCollections.get(var1 + var2);
@@ -109,7 +109,7 @@ public class RecipeBookPage {
 
       this.hoveredButton = null;
 
-      for(RecipeButton var10 : this.buttons) {
+      for (RecipeButton var10 : this.buttons) {
          var10.render(var1, var4, var5, var6);
          if (var10.visible && var10.isHoveredOrFocused()) {
             this.hoveredButton = var10;
@@ -154,15 +154,15 @@ public class RecipeBookPage {
 
          return true;
       } else if (this.forwardButton.mouseClicked(var1, var3, var5)) {
-         ++this.currentPage;
+         this.currentPage++;
          this.updateButtonsForPage();
          return true;
       } else if (this.backButton.mouseClicked(var1, var3, var5)) {
-         --this.currentPage;
+         this.currentPage--;
          this.updateButtonsForPage();
          return true;
       } else {
-         for(RecipeButton var11 : this.buttons) {
+         for (RecipeButton var11 : this.buttons) {
             if (var11.mouseClicked(var1, var3, var5)) {
                if (var5 == 0) {
                   this.lastClickedRecipe = var11.getRecipe();
@@ -181,7 +181,7 @@ public class RecipeBookPage {
    }
 
    public void recipesShown(List<RecipeHolder<?>> var1) {
-      for(RecipeShownListener var3 : this.showListeners) {
+      for (RecipeShownListener var3 : this.showListeners) {
          var3.recipesShown(var1);
       }
    }

@@ -21,13 +21,14 @@ import net.minecraft.data.worldgen.biome.BiomeData;
 import net.minecraft.data.worldgen.features.FeatureUtils;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.network.chat.ChatType;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.animal.WolfVariants;
 import net.minecraft.world.item.armortrim.TrimMaterials;
 import net.minecraft.world.item.armortrim.TrimPatterns;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterLists;
+import net.minecraft.world.level.block.entity.BannerPatterns;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPresets;
@@ -55,7 +56,9 @@ public class VanillaRegistries {
       .add(Registries.CHAT_TYPE, ChatType::bootstrap)
       .add(Registries.TRIM_PATTERN, TrimPatterns::bootstrap)
       .add(Registries.TRIM_MATERIAL, TrimMaterials::bootstrap)
-      .add(Registries.DAMAGE_TYPE, DamageTypes::bootstrap);
+      .add(Registries.WOLF_VARIANT, WolfVariants::bootstrap)
+      .add(Registries.DAMAGE_TYPE, DamageTypes::bootstrap)
+      .add(Registries.BANNER_PATTERN, BannerPatterns::bootstrap);
 
    public VanillaRegistries() {
       super();
@@ -70,8 +73,8 @@ public class VanillaRegistries {
          ResourceLocation var2 = var1x.key().location();
          List var3 = ((Biome)var1x.value()).getGenerationSettings().features();
          var3.stream().flatMap(HolderSet::stream).forEach(var3x -> var3x.unwrap().ifLeft(var2xx -> {
-               Holder.Reference var3xxx = var0.getOrThrow(var2xx);
-               if (!validatePlacedFeature((PlacedFeature)var3xxx.value())) {
+               Holder.Reference var3xx = var0.getOrThrow(var2xx);
+               if (!validatePlacedFeature((PlacedFeature)var3xx.value())) {
                   Util.logAndPauseIfInIde("Placed feature " + var2xx.location() + " in biome " + var2 + " is missing BiomeFilter.biome()");
                }
             }).ifRight(var1xxx -> {

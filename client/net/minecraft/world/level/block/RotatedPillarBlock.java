@@ -24,15 +24,15 @@ public class RotatedPillarBlock extends Block {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return rotatePillar(var1, var2);
    }
 
    public static BlockState rotatePillar(BlockState var0, Rotation var1) {
-      switch(var1) {
+      switch (var1) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
-            switch((Direction.Axis)var0.getValue(AXIS)) {
+            switch ((Direction.Axis)var0.getValue(AXIS)) {
                case X:
                   return var0.setValue(AXIS, Direction.Axis.Z);
                case Z:

@@ -13,7 +13,7 @@ public class LavaParticle extends TextureSheetParticle {
       this.yd *= 0.800000011920929;
       this.zd *= 0.800000011920929;
       this.yd = (double)(this.random.nextFloat() * 0.4F + 0.05F);
-      this.quadSize *= this.random.nextFloat() * 2.0F + 0.2F;
+      this.quadSize = this.quadSize * (this.random.nextFloat() * 2.0F + 0.2F);
       this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
    }
 
@@ -25,7 +25,7 @@ public class LavaParticle extends TextureSheetParticle {
    @Override
    public int getLightColor(float var1) {
       int var2 = super.getLightColor(var1);
-      boolean var3 = true;
+      short var3 = 240;
       int var4 = var2 >> 16 & 0xFF;
       return 240 | var4 << 16;
    }

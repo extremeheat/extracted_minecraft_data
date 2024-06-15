@@ -160,11 +160,11 @@ public class HorseModel<T extends AbstractHorse> extends AgeableListModel<T> {
       boolean var7 = var1.isSaddled();
       boolean var8 = var1.isVehicle();
 
-      for(ModelPart var12 : this.saddleParts) {
+      for (ModelPart var12 : this.saddleParts) {
          var12.visible = var7;
       }
 
-      for(ModelPart var16 : this.ridingParts) {
+      for (ModelPart var16 : this.ridingParts) {
          var16.visible = var8 && var7;
       }
 
@@ -192,7 +192,7 @@ public class HorseModel<T extends AbstractHorse> extends AgeableListModel<T> {
    }
 
    public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      super.prepareMobModel((T)var1, var2, var3, var4);
+      super.prepareMobModel(var1, var2, var3, var4);
       float var5 = Mth.rotLerp(var4, var1.yBodyRotO, var1.yBodyRot);
       float var6 = Mth.rotLerp(var4, var1.yHeadRotO, var1.yHeadRot);
       float var7 = Mth.lerp(var4, var1.xRotO, var1.getXRot());

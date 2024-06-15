@@ -6,7 +6,6 @@ import com.mojang.logging.LogUtils;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
@@ -111,9 +110,9 @@ public class MinecraftServerGui extends JComponent {
       var2.setFont(MONOSPACED);
       JTextField var4 = new JTextField();
       var4.addActionListener(var2x -> {
-         String var3xx = var4.getText().trim();
-         if (!var3xx.isEmpty()) {
-            this.server.handleConsoleInput(var3xx, this.server.createCommandSourceStack());
+         String var3x = var4.getText().trim();
+         if (!var3x.isEmpty()) {
+            this.server.handleConsoleInput(var3x, this.server.createCommandSourceStack());
          }
 
          var4.setText("");
@@ -128,7 +127,7 @@ public class MinecraftServerGui extends JComponent {
       var1.setBorder(new TitledBorder(new EtchedBorder(), "Log and chat"));
       this.logAppenderThread = new Thread(() -> {
          String var3x;
-         while((var3x = LogQueues.getNextLogEvent("ServerGuiConsole")) != null) {
+         while ((var3x = LogQueues.getNextLogEvent("ServerGuiConsole")) != null) {
             this.print(var2, var3, var3x);
          }
       });

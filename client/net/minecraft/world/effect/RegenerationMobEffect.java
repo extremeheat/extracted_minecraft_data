@@ -8,20 +8,17 @@ class RegenerationMobEffect extends MobEffect {
    }
 
    @Override
-   public void applyEffectTick(LivingEntity var1, int var2) {
-      super.applyEffectTick(var1, var2);
+   public boolean applyEffectTick(LivingEntity var1, int var2) {
       if (var1.getHealth() < var1.getMaxHealth()) {
          var1.heal(1.0F);
       }
+
+      return true;
    }
 
    @Override
    public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
       int var3 = 50 >> var2;
-      if (var3 > 0) {
-         return var1 % var3 == 0;
-      } else {
-         return true;
-      }
+      return var3 > 0 ? var1 % var3 == 0 : true;
    }
 }

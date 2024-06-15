@@ -61,9 +61,9 @@ public class BlockPattern {
 
    @Nullable
    private BlockPattern.BlockPatternMatch matches(BlockPos var1, Direction var2, Direction var3, LoadingCache<BlockPos, BlockInWorld> var4) {
-      for(int var5 = 0; var5 < this.width; ++var5) {
-         for(int var6 = 0; var6 < this.height; ++var6) {
-            for(int var7 = 0; var7 < this.depth; ++var7) {
+      for (int var5 = 0; var5 < this.width; var5++) {
+         for (int var6 = 0; var6 < this.height; var6++) {
+            for (int var7 = 0; var7 < this.depth; var7++) {
                if (!this.pattern[var7][var6][var5].test((BlockInWorld)var4.getUnchecked(translateAndRotate(var1, var2, var3, var5, var6, var7)))) {
                   return null;
                }
@@ -79,9 +79,9 @@ public class BlockPattern {
       LoadingCache var3 = createLevelCache(var1, false);
       int var4 = Math.max(Math.max(this.width, this.height), this.depth);
 
-      for(BlockPos var6 : BlockPos.betweenClosed(var2, var2.offset(var4 - 1, var4 - 1, var4 - 1))) {
-         for(Direction var10 : Direction.values()) {
-            for(Direction var14 : Direction.values()) {
+      for (BlockPos var6 : BlockPos.betweenClosed(var2, var2.offset(var4 - 1, var4 - 1, var4 - 1))) {
+         for (Direction var10 : Direction.values()) {
+            for (Direction var14 : Direction.values()) {
                if (var14 != var10 && var14 != var10.getOpposite()) {
                   BlockPattern.BlockPatternMatch var15 = this.matches(var6, var10, var14, var3);
                   if (var15 != null) {

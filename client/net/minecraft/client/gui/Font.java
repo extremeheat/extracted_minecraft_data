@@ -108,19 +108,19 @@ public class Font {
       int var9 = adjustColor(var5);
       Font.StringRenderOutput var10 = new Font.StringRenderOutput(var7, 0.0F, 0.0F, var9, false, var6, Font.DisplayMode.NORMAL, var8);
 
-      for(int var11 = -1; var11 <= 1; ++var11) {
-         for(int var12 = -1; var12 <= 1; ++var12) {
+      for (int var11 = -1; var11 <= 1; var11++) {
+         for (int var12 = -1; var12 <= 1; var12++) {
             if (var11 != 0 || var12 != 0) {
                float[] var13 = new float[]{var2};
                int var14 = var11;
                int var15 = var12;
                var1.accept((var7x, var8x, var9x) -> {
-                  boolean var10xx = var8x.isBold();
-                  FontSet var11xx = this.getFontSet(var8x.getFont());
-                  GlyphInfo var12xx = var11xx.getGlyphInfo(var9x, this.filterFishyGlyphs);
-                  var10.x = var13[0] + (float)var14 * var12xx.getShadowOffset();
-                  var10.y = var3 + (float)var15 * var12xx.getShadowOffset();
-                  var13[0] += var12xx.getAdvance(var10xx);
+                  boolean var10x = var8x.isBold();
+                  FontSet var11x = this.getFontSet(var8x.getFont());
+                  GlyphInfo var12x = var11x.getGlyphInfo(var9x, this.filterFishyGlyphs);
+                  var10.x = var13[0] + (float)var14 * var12x.getShadowOffset();
+                  var10.y = var3 + (float)var15 * var12x.getShadowOffset();
+                  var13[0] += var12x.getAdvance(var10x);
                   return var10.accept(var7x, var8x.withColor(var9), var9x);
                });
             }
@@ -310,20 +310,29 @@ public class Font {
          this.effects.add(var1);
       }
 
-      public StringRenderOutput(MultiBufferSource var2, float var3, float var4, int var5, boolean var6, Matrix4f var7, Font.DisplayMode var8, int var9) {
+      public StringRenderOutput(
+         final MultiBufferSource nullx,
+         final float nullxx,
+         final float nullxxx,
+         final int nullxxxx,
+         final boolean nullxxxxx,
+         final Matrix4f nullxxxxxx,
+         final Font.DisplayMode nullxxxxxxx,
+         final int nullxxxxxxxx
+      ) {
          super();
-         this.bufferSource = var2;
-         this.x = var3;
-         this.y = var4;
-         this.dropShadow = var6;
-         this.dimFactor = var6 ? 0.25F : 1.0F;
-         this.r = (float)(var5 >> 16 & 0xFF) / 255.0F * this.dimFactor;
-         this.g = (float)(var5 >> 8 & 0xFF) / 255.0F * this.dimFactor;
-         this.b = (float)(var5 & 0xFF) / 255.0F * this.dimFactor;
-         this.a = (float)(var5 >> 24 & 0xFF) / 255.0F;
-         this.pose = var7;
-         this.mode = var8;
-         this.packedLightCoords = var9;
+         this.bufferSource = nullx;
+         this.x = nullxx;
+         this.y = nullxxx;
+         this.dropShadow = nullxxxxx;
+         this.dimFactor = nullxxxxx ? 0.25F : 1.0F;
+         this.r = (float)(nullxxxx >> 16 & 0xFF) / 255.0F * this.dimFactor;
+         this.g = (float)(nullxxxx >> 8 & 0xFF) / 255.0F * this.dimFactor;
+         this.b = (float)(nullxxxx & 0xFF) / 255.0F * this.dimFactor;
+         this.a = (float)(nullxxxx >> 24 & 0xFF) / 255.0F;
+         this.pose = nullxxxxxx;
+         this.mode = nullxxxxxxx;
+         this.packedLightCoords = nullxxxxxxxx;
       }
 
       @Override
@@ -392,7 +401,7 @@ public class Font {
             BakedGlyph var7 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
             VertexConsumer var8 = this.bufferSource.getBuffer(var7.renderType(this.mode));
 
-            for(BakedGlyph.Effect var10 : this.effects) {
+            for (BakedGlyph.Effect var10 : this.effects) {
                var7.renderEffect(var10, this.pose, var8, this.packedLightCoords);
             }
          }

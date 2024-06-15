@@ -26,7 +26,7 @@ public class BackupList extends ValueObject {
          if (var3.isJsonArray()) {
             Iterator var4 = var3.getAsJsonArray().iterator();
 
-            while(var4.hasNext()) {
+            while (var4.hasNext()) {
                var2.backups.add(Backup.parse((JsonElement)var4.next()));
             }
          }

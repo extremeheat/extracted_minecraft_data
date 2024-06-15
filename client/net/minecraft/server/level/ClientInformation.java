@@ -5,15 +5,16 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.Player;
 
-public record ClientInformation(String b, int c, ChatVisiblity d, boolean e, int f, HumanoidArm g, boolean h, boolean i) {
-   private final String language;
-   private final int viewDistance;
-   private final ChatVisiblity chatVisibility;
-   private final boolean chatColors;
-   private final int modelCustomisation;
-   private final HumanoidArm mainHand;
-   private final boolean textFilteringEnabled;
-   private final boolean allowsListing;
+public record ClientInformation(
+   String language,
+   int viewDistance,
+   ChatVisiblity chatVisibility,
+   boolean chatColors,
+   int modelCustomisation,
+   HumanoidArm mainHand,
+   boolean textFilteringEnabled,
+   boolean allowsListing
+) {
    public static final int MAX_LANGUAGE_LENGTH = 16;
 
    public ClientInformation(FriendlyByteBuf var1) {
@@ -29,16 +30,25 @@ public record ClientInformation(String b, int c, ChatVisiblity d, boolean e, int
       );
    }
 
-   public ClientInformation(String var1, int var2, ChatVisiblity var3, boolean var4, int var5, HumanoidArm var6, boolean var7, boolean var8) {
+   public ClientInformation(
+      String language,
+      int viewDistance,
+      ChatVisiblity chatVisibility,
+      boolean chatColors,
+      int modelCustomisation,
+      HumanoidArm mainHand,
+      boolean textFilteringEnabled,
+      boolean allowsListing
+   ) {
       super();
-      this.language = var1;
-      this.viewDistance = var2;
-      this.chatVisibility = var3;
-      this.chatColors = var4;
-      this.modelCustomisation = var5;
-      this.mainHand = var6;
-      this.textFilteringEnabled = var7;
-      this.allowsListing = var8;
+      this.language = language;
+      this.viewDistance = viewDistance;
+      this.chatVisibility = chatVisibility;
+      this.chatColors = chatColors;
+      this.modelCustomisation = modelCustomisation;
+      this.mainHand = mainHand;
+      this.textFilteringEnabled = textFilteringEnabled;
+      this.allowsListing = allowsListing;
    }
 
    public void write(FriendlyByteBuf var1) {

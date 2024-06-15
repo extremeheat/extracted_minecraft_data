@@ -4,11 +4,16 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.List;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.RecipeBookSettings;
 
 public class ClientboundRecipePacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundRecipePacket> STREAM_CODEC = Packet.codec(
+      ClientboundRecipePacket::write, ClientboundRecipePacket::new
+   );
    private final ClientboundRecipePacket.State state;
    private final List<ResourceLocation> recipes;
    private final List<ResourceLocation> toHighlight;
@@ -24,7 +29,7 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
       this.bookSettings = var4;
    }
 
-   public ClientboundRecipePacket(FriendlyByteBuf var1) {
+   private ClientboundRecipePacket(FriendlyByteBuf var1) {
       super();
       this.state = var1.readEnum(ClientboundRecipePacket.State.class);
       this.bookSettings = RecipeBookSettings.read(var1);
@@ -36,14 +41,18 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
       }
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeEnum(this.state);
       this.bookSettings.write(var1);
       var1.writeCollection(this.recipes, FriendlyByteBuf::writeResourceLocation);
       if (this.state == ClientboundRecipePacket.State.INIT) {
          var1.writeCollection(this.toHighlight, FriendlyByteBuf::writeResourceLocation);
       }
+   }
+
+   @Override
+   public PacketType<ClientboundRecipePacket> type() {
+      return GamePacketTypes.CLIENTBOUND_RECIPE;
    }
 
    public void handle(ClientGamePacketListener var1) {

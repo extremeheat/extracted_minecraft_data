@@ -17,8 +17,8 @@ public class WalkAnimationState {
 
    public void update(float var1, float var2) {
       this.speedOld = this.speed;
-      this.speed += (var1 - this.speed) * var2;
-      this.position += this.speed;
+      this.speed = this.speed + (var1 - this.speed) * var2;
+      this.position = this.position + this.speed;
    }
 
    public float speed() {

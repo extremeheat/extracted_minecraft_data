@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.boss.enderdragon.phases;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +22,7 @@ public class DragonSittingScanningPhase extends AbstractDragonSittingPhase {
 
    @Override
    public void doServerTick() {
-      ++this.scanningTime;
+      this.scanningTime++;
       Player var1 = this.dragon.level().getNearestPlayer(this.scanTargeting, this.dragon, this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
       if (var1 != null) {
          if (this.scanningTime > 25) {

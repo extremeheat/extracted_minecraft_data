@@ -87,7 +87,7 @@ public class ServerBossEvent extends BossEvent {
       if (this.visible) {
          ClientboundBossEventPacket var2 = (ClientboundBossEventPacket)var1.apply(this);
 
-         for(ServerPlayer var4 : this.players) {
+         for (ServerPlayer var4 : this.players) {
             var4.connection.send(var2);
          }
       }
@@ -107,7 +107,7 @@ public class ServerBossEvent extends BossEvent {
 
    public void removeAllPlayers() {
       if (!this.players.isEmpty()) {
-         for(ServerPlayer var2 : Lists.newArrayList(this.players)) {
+         for (ServerPlayer var2 : Lists.newArrayList(this.players)) {
             this.removePlayer(var2);
          }
       }
@@ -121,7 +121,7 @@ public class ServerBossEvent extends BossEvent {
       if (var1 != this.visible) {
          this.visible = var1;
 
-         for(ServerPlayer var3 : this.players) {
+         for (ServerPlayer var3 : this.players) {
             var3.connection.send(var1 ? ClientboundBossEventPacket.createAddPacket(this) : ClientboundBossEventPacket.createRemovePacket(this.getId()));
          }
       }

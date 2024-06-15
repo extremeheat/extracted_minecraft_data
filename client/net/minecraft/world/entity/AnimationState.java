@@ -44,8 +44,14 @@ public class AnimationState {
    public void updateTime(float var1, float var2) {
       if (this.isStarted()) {
          long var3 = Mth.lfloor((double)(var1 * 1000.0F / 20.0F));
-         this.accumulatedTime += (long)((float)(var3 - this.lastTime) * var2);
+         this.accumulatedTime = this.accumulatedTime + (long)((float)(var3 - this.lastTime) * var2);
          this.lastTime = var3;
+      }
+   }
+
+   public void fastForward(int var1, float var2) {
+      if (this.isStarted()) {
+         this.accumulatedTime += (long)((float)(var1 * 1000) * var2) / 20L;
       }
    }
 

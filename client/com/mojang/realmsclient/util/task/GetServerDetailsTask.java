@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.network.chat.Component;
@@ -49,7 +49,7 @@ public class GetServerDetailsTask extends LongRunningTask {
          LOGGER.info("User aborted connecting to realms");
          return;
       } catch (RealmsServiceException var5) {
-         switch(var5.realmsError.errorCode()) {
+         switch (var5.realmsError.errorCode()) {
             case 6002:
                setScreen(new RealmsTermsScreen(this.lastScreen, this.server));
                return;
@@ -96,7 +96,7 @@ public class GetServerDetailsTask extends LongRunningTask {
    private RealmsServerAddress fetchServerAddress() throws RealmsServiceException, TimeoutException, CancellationException {
       RealmsClient var1 = RealmsClient.create();
 
-      for(int var2 = 0; var2 < 40; ++var2) {
+      for (int var2 = 0; var2 < 40; var2++) {
          if (this.aborted()) {
             throw new CancellationException();
          }
@@ -120,7 +120,7 @@ public class GetServerDetailsTask extends LongRunningTask {
          if (!var4x) {
             setScreen(this.lastScreen);
          } else {
-            setScreen(new GenericDirtMessageScreen(APPLYING_PACK_TEXT));
+            setScreen(new GenericMessageScreen(APPLYING_PACK_TEXT));
             this.scheduleResourcePackDownload(var1, var2).thenRun(() -> setScreen((Screen)var3.apply(var1))).exceptionally(var2xx -> {
                Minecraft.getInstance().getDownloadedPackSource().cleanupAfterDisconnect();
                LOGGER.error("Failed to download resource pack from {}", var1, var2xx);

@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
@@ -18,15 +17,15 @@ public class BlockEntityUUIDFix extends AbstractUUIDFix {
    }
 
    private Dynamic<?> updateSkull(Dynamic<?> var1) {
-      return (Dynamic<?>)var1.get("Owner")
+      return var1.get("Owner")
          .get()
-         .map(var0 -> (Dynamic)replaceUUIDString(var0, "Id", "Id").orElse(var0))
+         .map(var0 -> replaceUUIDString(var0, "Id", "Id").orElse(var0))
          .map(var1x -> var1.remove("Owner").set("SkullOwner", var1x))
          .result()
          .orElse(var1);
    }
 
    private Dynamic<?> updateConduit(Dynamic<?> var1) {
-      return (Dynamic<?>)replaceUUIDMLTag(var1, "target_uuid", "Target").orElse(var1);
+      return replaceUUIDMLTag(var1, "target_uuid", "Target").orElse(var1);
    }
 }

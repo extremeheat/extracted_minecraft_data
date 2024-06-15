@@ -209,7 +209,7 @@ public class LiquidBlockRenderer {
 
          int var77 = this.getLightColor(var1, var2);
 
-         for(Direction var83 : Direction.Plane.HORIZONTAL) {
+         for (Direction var83 : Direction.Plane.HORIZONTAL) {
             float var86;
             float var89;
             double var92;
@@ -217,7 +217,7 @@ public class LiquidBlockRenderer {
             double var100;
             double var103;
             boolean var106;
-            switch(var83) {
+            switch (var83) {
                case NORTH:
                   var86 = var36;
                   var89 = var35;

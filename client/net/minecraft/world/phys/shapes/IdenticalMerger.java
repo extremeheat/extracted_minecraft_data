@@ -14,7 +14,7 @@ public class IdenticalMerger implements IndexMerger {
    public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
       int var2 = this.coords.size() - 1;
 
-      for(int var3 = 0; var3 < var2; ++var3) {
+      for (int var3 = 0; var3 < var2; var3++) {
          if (!var1.merge(var3, var3, var3)) {
             return false;
          }

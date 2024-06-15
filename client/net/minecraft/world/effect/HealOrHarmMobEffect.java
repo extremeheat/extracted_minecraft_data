@@ -13,13 +13,14 @@ class HealOrHarmMobEffect extends InstantenousMobEffect {
    }
 
    @Override
-   public void applyEffectTick(LivingEntity var1, int var2) {
-      super.applyEffectTick(var1, var2);
+   public boolean applyEffectTick(LivingEntity var1, int var2) {
       if (this.isHarm == var1.isInvertedHealAndHarm()) {
          var1.heal((float)Math.max(4 << var2, 0));
       } else {
          var1.hurt(var1.damageSources().magic(), (float)(6 << var2));
       }
+
+      return true;
    }
 
    @Override

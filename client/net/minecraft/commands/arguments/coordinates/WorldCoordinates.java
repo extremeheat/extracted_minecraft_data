@@ -49,15 +49,12 @@ public class WorldCoordinates implements Coordinates {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof WorldCoordinates)) {
+      } else if (!(var1 instanceof WorldCoordinates var2)) {
+         return false;
+      } else if (!this.x.equals(var2.x)) {
          return false;
       } else {
-         WorldCoordinates var2 = (WorldCoordinates)var1;
-         if (!this.x.equals(var2.x)) {
-            return false;
-         } else {
-            return !this.y.equals(var2.y) ? false : this.z.equals(var2.z);
-         }
+         return !this.y.equals(var2.y) ? false : this.z.equals(var2.z);
       }
    }
 

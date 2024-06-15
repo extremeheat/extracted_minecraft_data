@@ -1,8 +1,8 @@
 package net.minecraft.world.level.storage.loot.entries;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class TagEntry extends LootPoolSingletonContainer {
-   public static final Codec<TagEntry> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<TagEntry> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                TagKey.codec(Registries.ITEM).fieldOf("name").forGetter(var0x -> var0x.tag), Codec.BOOL.fieldOf("expand").forGetter(var0x -> var0x.expand)
             )
@@ -39,14 +39,14 @@ public class TagEntry extends LootPoolSingletonContainer {
 
    @Override
    public void createItemStack(Consumer<ItemStack> var1, LootContext var2) {
-      BuiltInRegistries.ITEM.getTagOrEmpty(this.tag).forEach(var1x -> var1.accept(new ItemStack(var1x)));
+      BuiltInRegistries.ITEM.getTagOrEmpty(this.tag).forEach(var1x -> var1.accept(new ItemStack((Holder<Item>)var1x)));
    }
 
    private boolean expandTag(LootContext var1, Consumer<LootPoolEntry> var2) {
       if (!this.canRun(var1)) {
          return false;
       } else {
-         for(final Holder var4 : BuiltInRegistries.ITEM.getTagOrEmpty(this.tag)) {
+         for (final Holder var4 : BuiltInRegistries.ITEM.getTagOrEmpty(this.tag)) {
             var2.accept(new LootPoolSingletonContainer.EntryBase() {
                @Override
                public void createItemStack(Consumer<ItemStack> var1, LootContext var2) {

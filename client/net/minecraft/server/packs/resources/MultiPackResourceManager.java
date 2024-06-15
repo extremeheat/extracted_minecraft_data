@@ -27,12 +27,12 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       HashMap var3 = new HashMap();
       List var4 = var2.stream().flatMap(var1x -> var1x.getNamespaces(var1).stream()).distinct().toList();
 
-      for(PackResources var6 : var2) {
+      for (PackResources var6 : var2) {
          ResourceFilterSection var7 = this.getPackFilterSection(var6);
          Set var8 = var6.getNamespaces(var1);
          Predicate var9 = var7 != null ? var1x -> var7.isPathFiltered(var1x.getPath()) : null;
 
-         for(String var11 : var4) {
+         for (String var11 : var4) {
             boolean var12 = var8.contains(var11);
             boolean var13 = var7 != null && var7.isNamespaceFiltered(var11);
             if (var12 || var13) {
@@ -88,7 +88,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       checkTrailingDirectoryPath(var1);
       TreeMap var3 = new TreeMap();
 
-      for(FallbackResourceManager var5 : this.namespacedManagers.values()) {
+      for (FallbackResourceManager var5 : this.namespacedManagers.values()) {
          var3.putAll(var5.listResources(var1, var2));
       }
 
@@ -100,7 +100,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       checkTrailingDirectoryPath(var1);
       TreeMap var3 = new TreeMap();
 
-      for(FallbackResourceManager var5 : this.namespacedManagers.values()) {
+      for (FallbackResourceManager var5 : this.namespacedManagers.values()) {
          var3.putAll(var5.listResourceStacks(var1, var2));
       }
 

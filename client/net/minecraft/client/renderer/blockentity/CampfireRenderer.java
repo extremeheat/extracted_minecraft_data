@@ -25,7 +25,7 @@ public class CampfireRenderer implements BlockEntityRenderer<CampfireBlockEntity
       NonNullList var8 = var1.getItems();
       int var9 = (int)var1.getBlockPos().asLong();
 
-      for(int var10 = 0; var10 < var8.size(); ++var10) {
+      for (int var10 = 0; var10 < var8.size(); var10++) {
          ItemStack var11 = (ItemStack)var8.get(var10);
          if (var11 != ItemStack.EMPTY) {
             var3.pushPose();

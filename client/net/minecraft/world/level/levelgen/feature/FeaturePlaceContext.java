@@ -22,7 +22,7 @@ public class FeaturePlaceContext<FC extends FeatureConfiguration> {
       this.chunkGenerator = var3;
       this.random = var4;
       this.origin = var5;
-      this.config = var6;
+      this.config = (FC)var6;
    }
 
    public Optional<ConfiguredFeature<?, ?>> topFeature() {

@@ -4,8 +4,8 @@ import com.google.gson.JsonObject;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.util.StringUtil;
 
 public class RealmsWorldOptions extends ValueObject {
    public final boolean pvp;
@@ -103,7 +103,7 @@ public class RealmsWorldOptions extends ValueObject {
    }
 
    public String getSlotName(int var1) {
-      if (Util.isBlank(this.slotName)) {
+      if (StringUtil.isBlank(this.slotName)) {
          return this.empty ? I18n.get("mco.configure.world.slot.empty") : this.getDefaultSlotName(var1);
       } else {
          return this.slotName;

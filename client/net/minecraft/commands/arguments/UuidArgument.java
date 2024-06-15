@@ -44,7 +44,7 @@ public class UuidArgument implements ArgumentType<UUID> {
          }
       }
 
-      throw ERROR_INVALID_UUID.create();
+      throw ERROR_INVALID_UUID.createWithContext(var1);
    }
 
    public Collection<String> getExamples() {

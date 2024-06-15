@@ -37,7 +37,7 @@ public class SeagrassBlock extends BushBlock implements BonemealableBlock, Liqui
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
@@ -54,7 +54,7 @@ public class SeagrassBlock extends BushBlock implements BonemealableBlock, Liqui
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       BlockState var7 = super.updateShape(var1, var2, var3, var4, var5, var6);
       if (!var7.isAir()) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
@@ -74,7 +74,7 @@ public class SeagrassBlock extends BushBlock implements BonemealableBlock, Liqui
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return Fluids.WATER.getSource(false);
    }
 

@@ -18,7 +18,7 @@ import net.minecraft.world.level.GameType;
 public class ShareToLanScreen extends Screen {
    private static final int PORT_LOWER_BOUND = 1024;
    private static final int PORT_HIGHER_BOUND = 65535;
-   private static final Component ALLOW_COMMANDS_LABEL = Component.translatable("selectWorld.allowCommands");
+   private static final Component ALLOW_COMMANDS_LABEL = Component.translatable("selectWorld.allowCommands.new");
    private static final Component GAME_MODE_LABEL = Component.translatable("selectWorld.gameMode");
    private static final Component INFO_TEXT = Component.translatable("lanServer.otherPlayers");
    private static final Component PORT_INFO_TEXT = Component.translatable("lanServer.port");
@@ -41,7 +41,7 @@ public class ShareToLanScreen extends Screen {
    protected void init() {
       IntegratedServer var1 = this.minecraft.getSingleplayerServer();
       this.gameMode = var1.getDefaultGameType();
-      this.commands = var1.getWorldData().getAllowCommands();
+      this.commands = var1.getWorldData().isAllowCommands();
       this.addRenderableWidget(
          CycleButton.builder(GameType::getShortDisplayName)
             .withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE)
@@ -81,10 +81,13 @@ public class ShareToLanScreen extends Screen {
       this.addRenderableWidget(this.portEdit);
       this.addRenderableWidget(var2);
       this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.minecraft.setScreen(this.lastScreen))
-            .bounds(this.width / 2 + 5, this.height - 28, 150, 20)
-            .build()
+         Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build()
       );
+   }
+
+   @Override
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    @Nullable

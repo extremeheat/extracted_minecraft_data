@@ -1,8 +1,8 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -14,11 +14,8 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
 
-public record ScoreboardValue(ScoreboardNameProvider b, String c, float d) implements NumberProvider {
-   private final ScoreboardNameProvider target;
-   private final String score;
-   private final float scale;
-   public static final Codec<ScoreboardValue> CODEC = RecordCodecBuilder.create(
+public record ScoreboardValue(ScoreboardNameProvider target, String score, float scale) implements NumberProvider {
+   public static final MapCodec<ScoreboardValue> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                ScoreboardNameProviders.CODEC.fieldOf("target").forGetter(ScoreboardValue::target),
                Codec.STRING.fieldOf("score").forGetter(ScoreboardValue::score),
@@ -27,11 +24,11 @@ public record ScoreboardValue(ScoreboardNameProvider b, String c, float d) imple
             .apply(var0, ScoreboardValue::new)
    );
 
-   public ScoreboardValue(ScoreboardNameProvider var1, String var2, float var3) {
+   public ScoreboardValue(ScoreboardNameProvider target, String score, float scale) {
       super();
-      this.target = var1;
-      this.score = var2;
-      this.scale = var3;
+      this.target = target;
+      this.score = score;
+      this.scale = scale;
    }
 
    @Override

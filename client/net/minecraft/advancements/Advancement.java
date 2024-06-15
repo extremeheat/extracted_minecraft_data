@@ -4,63 +4,54 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.critereon.CriterionValidator;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.storage.loot.LootDataResolver;
 
 public record Advancement(
-   Optional<ResourceLocation> b,
-   Optional<DisplayInfo> c,
-   AdvancementRewards d,
-   Map<String, Criterion<?>> e,
-   AdvancementRequirements f,
-   boolean g,
-   Optional<Component> h
+   Optional<ResourceLocation> parent,
+   Optional<DisplayInfo> display,
+   AdvancementRewards rewards,
+   Map<String, Criterion<?>> criteria,
+   AdvancementRequirements requirements,
+   boolean sendsTelemetryEvent,
+   Optional<Component> name
 ) {
-   private final Optional<ResourceLocation> parent;
-   private final Optional<DisplayInfo> display;
-   private final AdvancementRewards rewards;
-   private final Map<String, Criterion<?>> criteria;
-   private final AdvancementRequirements requirements;
-   private final boolean sendsTelemetryEvent;
-   private final Optional<Component> name;
-   private static final Codec<Map<String, Criterion<?>>> CRITERIA_CODEC = ExtraCodecs.validate(
-      Codec.unboundedMap(Codec.STRING, Criterion.CODEC),
-      var0 -> var0.isEmpty() ? DataResult.error(() -> "Advancement criteria cannot be empty") : DataResult.success(var0)
-   );
-   public static final Codec<Advancement> CODEC = ExtraCodecs.validate(
-      RecordCodecBuilder.create(
+   private static final Codec<Map<String, Criterion<?>>> CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, Criterion.CODEC)
+      .validate(var0 -> var0.isEmpty() ? DataResult.error(() -> "Advancement criteria cannot be empty") : DataResult.success(var0));
+   public static final Codec<Advancement> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "parent").forGetter(Advancement::parent),
-                  ExtraCodecs.strictOptionalField(DisplayInfo.CODEC, "display").forGetter(Advancement::display),
-                  ExtraCodecs.strictOptionalField(AdvancementRewards.CODEC, "rewards", AdvancementRewards.EMPTY).forGetter(Advancement::rewards),
+                  ResourceLocation.CODEC.optionalFieldOf("parent").forGetter(Advancement::parent),
+                  DisplayInfo.CODEC.optionalFieldOf("display").forGetter(Advancement::display),
+                  AdvancementRewards.CODEC.optionalFieldOf("rewards", AdvancementRewards.EMPTY).forGetter(Advancement::rewards),
                   CRITERIA_CODEC.fieldOf("criteria").forGetter(Advancement::criteria),
-                  ExtraCodecs.strictOptionalField(AdvancementRequirements.CODEC, "requirements").forGetter(var0x -> Optional.of(var0x.requirements())),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "sends_telemetry_event", false).forGetter(Advancement::sendsTelemetryEvent)
+                  AdvancementRequirements.CODEC.optionalFieldOf("requirements").forGetter(var0x -> Optional.of(var0x.requirements())),
+                  Codec.BOOL.optionalFieldOf("sends_telemetry_event", false).forGetter(Advancement::sendsTelemetryEvent)
                )
                .apply(var0, (var0x, var1, var2, var3, var4, var5) -> {
                   AdvancementRequirements var6 = var4.orElseGet(() -> AdvancementRequirements.allOf(var3.keySet()));
                   return new Advancement(var0x, var1, var2, var3, var6, var5);
                })
-      ),
-      Advancement::validate
-   );
+      )
+      .validate(Advancement::validate);
+   public static final StreamCodec<RegistryFriendlyByteBuf, Advancement> STREAM_CODEC = StreamCodec.ofMember(Advancement::write, Advancement::read);
 
    public Advancement(
       Optional<ResourceLocation> var1,
@@ -74,22 +65,22 @@ public record Advancement(
    }
 
    public Advancement(
-      Optional<ResourceLocation> var1,
-      Optional<DisplayInfo> var2,
-      AdvancementRewards var3,
-      Map<String, Criterion<?>> var4,
-      AdvancementRequirements var5,
-      boolean var6,
-      Optional<Component> var7
+      Optional<ResourceLocation> parent,
+      Optional<DisplayInfo> display,
+      AdvancementRewards rewards,
+      Map<String, Criterion<?>> criteria,
+      AdvancementRequirements requirements,
+      boolean sendsTelemetryEvent,
+      Optional<Component> name
    ) {
       super();
-      this.parent = var1;
-      this.display = var2;
-      this.rewards = var3;
-      this.criteria = var4;
-      this.requirements = var5;
-      this.sendsTelemetryEvent = var6;
-      this.name = var7;
+      this.parent = parent;
+      this.display = display;
+      this.rewards = rewards;
+      this.criteria = criteria;
+      this.requirements = requirements;
+      this.sendsTelemetryEvent = sendsTelemetryEvent;
+      this.name = name;
    }
 
    private static DataResult<Advancement> validate(Advancement var0) {
@@ -108,17 +99,17 @@ public record Advancement(
       return var0.value().name().orElseGet(() -> Component.literal(var0.id().toString()));
    }
 
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeOptional(this.parent, FriendlyByteBuf::writeResourceLocation);
-      var1.writeOptional(this.display, (var0, var1x) -> var1x.serializeToNetwork(var0));
+      DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).encode(var1, this.display);
       this.requirements.write(var1);
       var1.writeBoolean(this.sendsTelemetryEvent);
    }
 
-   public static Advancement read(FriendlyByteBuf var0) {
+   private static Advancement read(RegistryFriendlyByteBuf var0) {
       return new Advancement(
          var0.readOptional(FriendlyByteBuf::readResourceLocation),
-         var0.readOptional(DisplayInfo::fromNetwork),
+         (Optional<DisplayInfo>)DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).decode(var0),
          AdvancementRewards.EMPTY,
          Map.of(),
          new AdvancementRequirements(var0),
@@ -130,7 +121,7 @@ public record Advancement(
       return this.parent.isEmpty();
    }
 
-   public void validate(ProblemReporter var1, LootDataResolver var2) {
+   public void validate(ProblemReporter var1, HolderGetter.Provider var2) {
       this.criteria.forEach((var2x, var3) -> {
          CriterionValidator var4 = new CriterionValidator(var1.forChild(var2x), var2);
          var3.triggerInstance().validate(var4);

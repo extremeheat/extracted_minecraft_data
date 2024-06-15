@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConnectScreen;
@@ -37,6 +37,7 @@ public class ServerReconfigScreen extends Screen {
       this.disconnectButton.active = false;
       this.layout.arrangeElements();
       this.layout.visitWidgets(var1 -> {
+         AbstractWidget var10000 = this.addRenderableWidget(var1);
       });
       this.repositionElements();
    }
@@ -49,7 +50,7 @@ public class ServerReconfigScreen extends Screen {
    @Override
    public void tick() {
       super.tick();
-      ++this.delayTicker;
+      this.delayTicker++;
       if (this.delayTicker == 600) {
          this.disconnectButton.active = true;
       }

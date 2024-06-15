@@ -31,17 +31,17 @@ public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
    public EnumSet<Direction.Axis> parse(StringReader var1) throws CommandSyntaxException {
       EnumSet var2 = EnumSet.noneOf(Direction.Axis.class);
 
-      while(var1.canRead() && var1.peek() != ' ') {
+      while (var1.canRead() && var1.peek() != ' ') {
          char var3 = var1.read();
 
-         Direction.Axis var4 = switch(var3) {
+         Direction.Axis var4 = switch (var3) {
             case 'x' -> Direction.Axis.X;
             case 'y' -> Direction.Axis.Y;
             case 'z' -> Direction.Axis.Z;
-            default -> throw ERROR_INVALID.create();
+            default -> throw ERROR_INVALID.createWithContext(var1);
          };
          if (var2.contains(var4)) {
-            throw ERROR_INVALID.create();
+            throw ERROR_INVALID.createWithContext(var1);
          }
 
          var2.add(var4);

@@ -19,6 +19,7 @@ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
+import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.util.VisibleForDebug;
@@ -27,12 +28,17 @@ import org.slf4j.Logger;
 public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int LATENCY_CHECK_INTERVAL = 15000;
+   private static final int CLOSED_LISTENER_TIMEOUT = 15000;
    private static final Component TIMEOUT_DISCONNECTION_MESSAGE = Component.translatable("disconnect.timeout");
+   static final Component DISCONNECT_UNEXPECTED_QUERY = Component.translatable("multiplayer.disconnect.unexpected_query_response");
    protected final MinecraftServer server;
    protected final Connection connection;
+   private final boolean transferred;
    private long keepAliveTime;
    private boolean keepAlivePending;
    private long keepAliveChallenge;
+   private long closedListenerTime;
+   private boolean closed = false;
    private int latency;
    private volatile boolean suspendFlushingOnServerThread = false;
 
@@ -42,6 +48,14 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       this.connection = var2;
       this.keepAliveTime = Util.getMillis();
       this.latency = var3.latency();
+      this.transferred = var3.transferred();
+   }
+
+   private void close() {
+      if (!this.closed) {
+         this.closedListenerTime = Util.getMillis();
+         this.closed = true;
+      }
    }
 
    @Override
@@ -80,13 +94,18 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       }
    }
 
+   @Override
+   public void handleCookieResponse(ServerboundCookieResponsePacket var1) {
+      this.disconnect(DISCONNECT_UNEXPECTED_QUERY);
+   }
+
    protected void keepConnectionAlive() {
       this.server.getProfiler().push("keepAlive");
       long var1 = Util.getMillis();
-      if (var1 - this.keepAliveTime >= 15000L) {
+      if (!this.isSingleplayerOwner() && var1 - this.keepAliveTime >= 15000L) {
          if (this.keepAlivePending) {
             this.disconnect(TIMEOUT_DISCONNECTION_MESSAGE);
-         } else {
+         } else if (this.checkIfClosed(var1)) {
             this.keepAlivePending = true;
             this.keepAliveTime = var1;
             this.keepAliveChallenge = var1;
@@ -95,6 +114,18 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       }
 
       this.server.getProfiler().pop();
+   }
+
+   private boolean checkIfClosed(long var1) {
+      if (this.closed) {
+         if (var1 - this.closedListenerTime >= 15000L) {
+            this.disconnect(TIMEOUT_DISCONNECTION_MESSAGE);
+         }
+
+         return false;
+      } else {
+         return true;
+      }
    }
 
    public void suspendFlushing() {
@@ -111,6 +142,10 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    public void send(Packet<?> var1, @Nullable PacketSendListener var2) {
+      if (var1.isTerminal()) {
+         this.close();
+      }
+
       boolean var3 = !this.suspendFlushingOnServerThread || !this.server.isSameThread();
 
       try {
@@ -145,6 +180,6 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    protected CommonListenerCookie createCookie(ClientInformation var1) {
-      return new CommonListenerCookie(this.playerProfile(), this.latency, var1);
+      return new CommonListenerCookie(this.playerProfile(), this.latency, var1, this.transferred);
    }
 }

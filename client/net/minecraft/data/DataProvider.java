@@ -17,6 +17,8 @@ import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.ToIntFunction;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.GsonHelper;
 import org.slf4j.Logger;
 
@@ -26,16 +28,17 @@ public interface DataProvider {
       var0.put("parent", 1);
       var0.defaultReturnValue(2);
    });
-   Comparator<String> KEY_COMPARATOR = Comparator.comparingInt(FIXED_ORDER_FIELDS).thenComparing(var0 -> var0);
+   Comparator<String> KEY_COMPARATOR = Comparator.comparingInt(FIXED_ORDER_FIELDS).thenComparing(var0 -> (String)var0);
    Logger LOGGER = LogUtils.getLogger();
 
    CompletableFuture<?> run(CachedOutput var1);
 
    String getName();
 
-   static <T> CompletableFuture<?> saveStable(CachedOutput var0, Codec<T> var1, T var2, Path var3) {
-      JsonElement var4 = Util.getOrThrow(var1.encodeStart(JsonOps.INSTANCE, var2), IllegalStateException::new);
-      return saveStable(var0, var4, var3);
+   static <T> CompletableFuture<?> saveStable(CachedOutput var0, HolderLookup.Provider var1, Codec<T> var2, T var3, Path var4) {
+      RegistryOps var5 = var1.createSerializationContext(JsonOps.INSTANCE);
+      JsonElement var6 = (JsonElement)var2.encodeStart(var5, var3).getOrThrow();
+      return saveStable(var0, var6, var4);
    }
 
    static CompletableFuture<?> saveStable(CachedOutput var0, JsonElement var1, Path var2) {

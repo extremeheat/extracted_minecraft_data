@@ -30,8 +30,8 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       ClientRecipeBook var2 = var1.player.getRecipeBook();
       List var3 = var2.getCollection(this.category);
       if (var1.player.containerMenu instanceof RecipeBookMenu) {
-         for(RecipeCollection var5 : var3) {
-            for(RecipeHolder var7 : var5.getRecipes(var2.isFiltering((RecipeBookMenu<?>)var1.player.containerMenu))) {
+         for (RecipeCollection var5 : var3) {
+            for (RecipeHolder var7 : var5.getRecipes(var2.isFiltering((RecipeBookMenu<?>)var1.player.containerMenu))) {
                if (var2.willHighlight(var7)) {
                   this.animationTime = 15.0F;
                   return;
@@ -89,7 +89,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       List var2 = var1.getCollection(this.category);
       this.visible = false;
       if (var2 != null) {
-         for(RecipeCollection var4 : var2) {
+         for (RecipeCollection var4 : var2) {
             if (var4.hasKnownRecipes() && var4.hasFitting()) {
                this.visible = true;
                break;

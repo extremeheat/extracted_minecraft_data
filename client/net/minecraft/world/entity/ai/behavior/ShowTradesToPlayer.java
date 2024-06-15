@@ -61,7 +61,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
          this.lookTime = Math.min(this.lookTime, 40);
       }
 
-      --this.lookTime;
+      this.lookTime--;
    }
 
    public void stop(ServerLevel var1, Villager var2, long var3) {
@@ -94,7 +94,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
    }
 
    private void updateDisplayItems(Villager var1) {
-      for(MerchantOffer var3 : var1.getOffers()) {
+      for (MerchantOffer var3 : var1.getOffers()) {
          if (!var3.isOutOfStock() && this.playerItemStackMatchesCostOfOffer(var3)) {
             this.displayItems.add(var3.assemble());
          }
@@ -124,7 +124,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
 
    private void displayCyclingItems(Villager var1) {
       if (this.displayItems.size() >= 2 && ++this.cycleCounter >= 40) {
-         ++this.displayIndex;
+         this.displayIndex++;
          this.cycleCounter = 0;
          if (this.displayIndex > this.displayItems.size() - 1) {
             this.displayIndex = 0;

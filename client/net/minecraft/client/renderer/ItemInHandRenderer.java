@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -22,6 +23,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Matrix4f;
 
@@ -196,7 +198,7 @@ public class ItemInHandRenderer {
       var1.scale(0.38F, 0.38F, 0.38F);
       var1.translate(-0.5F, -0.5F, 0.0F);
       var1.scale(0.0078125F, 0.0078125F, 0.0078125F);
-      Integer var5 = MapItem.getMapId(var4);
+      MapId var5 = var4.get(DataComponents.MAP_ID);
       MapItemSavedData var6 = MapItem.getSavedData(var5, this.minecraft.level);
       VertexConsumer var7 = var2.getBuffer(var6 == null ? MAP_BACKGROUND : MAP_BACKGROUND_CHECKERBOARD);
       Matrix4f var8 = var1.last().pose();
@@ -261,7 +263,7 @@ public class ItemInHandRenderer {
       float var10 = 60.0F;
       float var11 = 150.0F;
       float var12 = -15.0F;
-      boolean var13 = true;
+      byte var13 = 2;
       float var14 = -15.0F + 75.0F * Mth.cos(var8 * 2.0F * 3.1415927F);
       if (var3 != HumanoidArm.RIGHT) {
          var1.translate(0.1, 0.83, 0.35);
@@ -422,7 +424,7 @@ public class ItemInHandRenderer {
             boolean var21 = var12 == HumanoidArm.RIGHT;
             if (var1.isUsingItem() && var1.getUseItemRemainingTicks() > 0 && var1.getUsedItemHand() == var4) {
                int var24 = var21 ? 1 : -1;
-               switch(var6.getUseAnimation()) {
+               switch (var6.getUseAnimation()) {
                   case NONE:
                      this.applyItemArmTransform(var8, var12, var7);
                      break;
@@ -528,8 +530,8 @@ public class ItemInHandRenderer {
          this.offHandHeight = Mth.clamp(this.offHandHeight - 0.4F, 0.0F, 1.0F);
       } else {
          float var4 = var1.getAttackStrengthScale(1.0F);
-         this.mainHandHeight += Mth.clamp((this.mainHandItem == var2 ? var4 * var4 * var4 : 0.0F) - this.mainHandHeight, -0.4F, 0.4F);
-         this.offHandHeight += Mth.clamp((float)(this.offHandItem == var3 ? 1 : 0) - this.offHandHeight, -0.4F, 0.4F);
+         this.mainHandHeight = this.mainHandHeight + Mth.clamp((this.mainHandItem == var2 ? var4 * var4 * var4 : 0.0F) - this.mainHandHeight, -0.4F, 0.4F);
+         this.offHandHeight = this.offHandHeight + Mth.clamp((float)(this.offHandItem == var3 ? 1 : 0) - this.offHandHeight, -0.4F, 0.4F);
       }
 
       if (this.mainHandHeight < 0.1F) {
@@ -558,9 +560,9 @@ public class ItemInHandRenderer {
       final boolean renderMainHand;
       final boolean renderOffHand;
 
-      private HandRenderSelection(boolean var3, boolean var4) {
-         this.renderMainHand = var3;
-         this.renderOffHand = var4;
+      private HandRenderSelection(final boolean nullxx, final boolean nullxxx) {
+         this.renderMainHand = nullxx;
+         this.renderOffHand = nullxxx;
       }
 
       public static ItemInHandRenderer.HandRenderSelection onlyForHand(InteractionHand var0) {

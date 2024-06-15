@@ -8,8 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
@@ -26,7 +25,6 @@ import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.RailBlock;
 import net.minecraft.world.level.block.WallTorchBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
@@ -37,6 +35,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.slf4j.Logger;
 
 public class MineshaftPieces {
@@ -133,10 +132,10 @@ public class MineshaftPieces {
 
       @Nullable
       public static BoundingBox findCorridorSize(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
-         for(int var6 = var1.nextInt(3) + 2; var6 > 0; --var6) {
+         for (int var6 = var1.nextInt(3) + 2; var6 > 0; var6--) {
             int var8 = var6 * 5;
 
-            BoundingBox var7 = switch(var5) {
+            BoundingBox var7 = switch (var5) {
                default -> new BoundingBox(0, 0, -(var8 - 1), 2, 2, 0);
                case SOUTH -> new BoundingBox(0, 0, 0, 2, 2, var8 - 1);
                case WEST -> new BoundingBox(-(var8 - 1), 0, 0, 0, 2, 2);
@@ -157,7 +156,7 @@ public class MineshaftPieces {
          int var5 = var3.nextInt(4);
          Direction var6 = this.getOrientation();
          if (var6 != null) {
-            switch(var6) {
+            switch (var6) {
                case NORTH:
                default:
                   if (var5 <= 1) {
@@ -279,7 +278,7 @@ public class MineshaftPieces {
 
          if (var4 < 8) {
             if (var6 != Direction.NORTH && var6 != Direction.SOUTH) {
-               for(int var9 = this.boundingBox.minX() + 3; var9 + 3 <= this.boundingBox.maxX(); var9 += 5) {
+               for (int var9 = this.boundingBox.minX() + 3; var9 + 3 <= this.boundingBox.maxX(); var9 += 5) {
                   int var10 = var3.nextInt(5);
                   if (var10 == 0) {
                      MineshaftPieces.generateAndAddPiece(
@@ -292,16 +291,12 @@ public class MineshaftPieces {
                   }
                }
             } else {
-               for(int var7 = this.boundingBox.minZ() + 3; var7 + 3 <= this.boundingBox.maxZ(); var7 += 5) {
+               for (int var7 = this.boundingBox.minZ() + 3; var7 + 3 <= this.boundingBox.maxZ(); var7 += 5) {
                   int var8 = var3.nextInt(5);
                   if (var8 == 0) {
-                     MineshaftPieces.generateAndAddPiece(
-                        var1, var2, var3, this.boundingBox.minX() - 1, this.boundingBox.minY(), var7, Direction.WEST, var4 + 1
-                     );
+                     MineshaftPieces.generateAndAddPiece(var1, var2, var3, this.boundingBox.minX() - 1, this.boundingBox.minY(), var7, Direction.WEST, var4 + 1);
                   } else if (var8 == 1) {
-                     MineshaftPieces.generateAndAddPiece(
-                        var1, var2, var3, this.boundingBox.maxX() + 1, this.boundingBox.minY(), var7, Direction.EAST, var4 + 1
-                     );
+                     MineshaftPieces.generateAndAddPiece(var1, var2, var3, this.boundingBox.maxX() + 1, this.boundingBox.minY(), var7, Direction.EAST, var4 + 1);
                   }
                }
             }
@@ -309,7 +304,7 @@ public class MineshaftPieces {
       }
 
       @Override
-      protected boolean createChest(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, ResourceLocation var7) {
+      protected boolean createChest(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, ResourceKey<LootTable> var7) {
          BlockPos.MutableBlockPos var8 = this.getWorldPos(var4, var5, var6);
          if (var2.isInside(var8) && var1.getBlockState(var8).isAir() && !var1.getBlockState(var8.below()).isAir()) {
             BlockState var9 = Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, var3.nextBoolean() ? RailShape.NORTH_SOUTH : RailShape.EAST_WEST);
@@ -323,17 +318,13 @@ public class MineshaftPieces {
          }
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (!this.isInInvalidLocation(var1, var5)) {
             boolean var8 = false;
-            boolean var9 = true;
+            byte var9 = 2;
             boolean var10 = false;
-            boolean var11 = true;
+            byte var11 = 2;
             int var12 = this.numSections * 5 - 1;
             BlockState var13 = this.type.getPlanksState();
             this.generateBox(var1, var5, 0, 0, 0, 2, 1, var12, CAVE_AIR, CAVE_AIR, false);
@@ -342,7 +333,7 @@ public class MineshaftPieces {
                this.generateMaybeBox(var1, var5, var4, 0.6F, 0, 0, 0, 2, 1, var12, Blocks.COBWEB.defaultBlockState(), CAVE_AIR, false, true);
             }
 
-            for(int var14 = 0; var14 < this.numSections; ++var14) {
+            for (int var14 = 0; var14 < this.numSections; var14++) {
                int var15 = 2 + var14 * 5;
                this.placeSupport(var1, var5, 0, 0, var15, 2, 2, var4);
                this.maybePlaceCobWeb(var1, var5, var4, 0.1F, 0, 2, var15 - 1);
@@ -368,21 +359,20 @@ public class MineshaftPieces {
                   if (var5.isInside(var18) && this.isInterior(var1, 1, 0, var17, var5)) {
                      this.hasPlacedSpider = true;
                      var1.setBlock(var18, Blocks.SPAWNER.defaultBlockState(), 2);
-                     BlockEntity var19 = var1.getBlockEntity(var18);
-                     if (var19 instanceof SpawnerBlockEntity var20) {
+                     if (var1.getBlockEntity(var18) instanceof SpawnerBlockEntity var20) {
                         var20.setEntityId(EntityType.CAVE_SPIDER, var4);
                      }
                   }
                }
             }
 
-            for(int var21 = 0; var21 <= 2; ++var21) {
-               for(int var23 = 0; var23 <= var12; ++var23) {
+            for (int var21 = 0; var21 <= 2; var21++) {
+               for (int var23 = 0; var23 <= var12; var23++) {
                   this.setPlanksBlock(var1, var5, var13, var21, -1, var23);
                }
             }
 
-            boolean var22 = true;
+            byte var22 = 2;
             this.placeDoubleLowerOrUpperSupport(var1, var5, 0, -1, 2);
             if (this.numSections > 1) {
                int var24 = var12 - 2;
@@ -392,7 +382,7 @@ public class MineshaftPieces {
             if (this.hasRails) {
                BlockState var25 = Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, RailShape.NORTH_SOUTH);
 
-               for(int var26 = 0; var26 <= var12; ++var26) {
+               for (int var26 = 0; var26 <= var12; var26++) {
                   BlockState var27 = this.getBlock(var1, 1, -1, var26, var5);
                   if (!var27.isAir() && var27.isSolidRender(var1, this.getWorldPos(1, -1, var26))) {
                      float var28 = this.isInterior(var1, 1, 0, var26, var5) ? 0.7F : 0.9F;
@@ -421,12 +411,12 @@ public class MineshaftPieces {
          if (var6.isInside(var7)) {
             int var8 = var7.getY();
 
-            while(this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinBuildHeight() + 1) {
+            while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinBuildHeight() + 1) {
                var7.move(Direction.DOWN);
             }
 
             if (this.canPlaceColumnOnTopOf(var1, var7, var1.getBlockState(var7))) {
-               while(var7.getY() < var8) {
+               while (var7.getY() < var8) {
                   var7.move(Direction.UP);
                   var1.setBlock(var7, var2, 2);
                }
@@ -441,7 +431,7 @@ public class MineshaftPieces {
             int var9 = 1;
             boolean var10 = true;
 
-            for(boolean var11 = true; var10 || var11; ++var9) {
+            for (boolean var11 = true; var10 || var11; var9++) {
                if (var10) {
                   var7.setY(var8 - var9);
                   BlockState var12 = var1.getBlockState(var7);
@@ -471,7 +461,7 @@ public class MineshaftPieces {
       }
 
       private static void fillColumnBetween(WorldGenLevel var0, BlockState var1, BlockPos.MutableBlockPos var2, int var3, int var4) {
-         for(int var5 = var3; var5 < var4; ++var5) {
+         for (int var5 = var3; var5 < var4; var5++) {
             var0.setBlock(var2.setY(var5), var1, 2);
          }
       }
@@ -515,7 +505,7 @@ public class MineshaftPieces {
          BlockPos.MutableBlockPos var7 = this.getWorldPos(var3, var4, var5);
          int var8 = 0;
 
-         for(Direction var12 : Direction.values()) {
+         for (Direction var12 : Direction.values()) {
             var7.move(var12);
             if (var2.isInside(var7) && var1.getBlockState(var7).isFaceSturdy(var1, var7, var12.getOpposite())) {
                if (++var8 >= var6) {
@@ -561,7 +551,7 @@ public class MineshaftPieces {
          } else {
             var6 = 2;
          }
-         BoundingBox var7 = switch(var5) {
+         BoundingBox var7 = switch (var5) {
             default -> new BoundingBox(-1, 0, -4, 3, var6, 0);
             case SOUTH -> new BoundingBox(-1, 0, 0, 3, var6, 4);
             case WEST -> new BoundingBox(-4, 0, -1, 0, var6, 3);
@@ -574,7 +564,7 @@ public class MineshaftPieces {
       @Override
       public void addChildren(StructurePiece var1, StructurePieceAccessor var2, RandomSource var3) {
          int var4 = this.getGenDepth();
-         switch(this.direction) {
+         switch (this.direction) {
             case NORTH:
             default:
                MineshaftPieces.generateAndAddPiece(
@@ -649,9 +639,7 @@ public class MineshaftPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (!this.isInInvalidLocation(var1, var5)) {
             BlockState var8 = this.type.getPlanksState();
             if (this.isTwoFloored) {
@@ -755,8 +743,8 @@ public class MineshaftPieces {
             this.placeSupportPillar(var1, var5, this.boundingBox.maxX() - 1, this.boundingBox.minY(), this.boundingBox.maxZ() - 1, this.boundingBox.maxY());
             int var9 = this.boundingBox.minY() - 1;
 
-            for(int var10 = this.boundingBox.minX(); var10 <= this.boundingBox.maxX(); ++var10) {
-               for(int var11 = this.boundingBox.minZ(); var11 <= this.boundingBox.maxZ(); ++var11) {
+            for (int var10 = this.boundingBox.minX(); var10 <= this.boundingBox.maxX(); var10++) {
+               for (int var11 = this.boundingBox.minZ(); var11 <= this.boundingBox.maxZ(); var11++) {
                   this.setPlanksBlock(var1, var5, var8, var10, var9, var11);
                }
             }
@@ -798,7 +786,7 @@ public class MineshaftPieces {
       }
 
       protected boolean isSupportingBox(BlockGetter var1, BoundingBox var2, int var3, int var4, int var5, int var6) {
-         for(int var7 = var3; var7 <= var4; ++var7) {
+         for (int var7 = var3; var7 <= var4; var7++) {
             if (this.getBlock(var1, var7, var5 + 1, var6, var2).isAir()) {
                return false;
             }
@@ -818,8 +806,8 @@ public class MineshaftPieces {
          if (var1.getBiome(var9).is(BiomeTags.MINESHAFT_BLOCKING)) {
             return true;
          } else {
-            for(int var10 = var3; var10 <= var6; ++var10) {
-               for(int var11 = var5; var11 <= var8; ++var11) {
+            for (int var10 = var3; var10 <= var6; var10++) {
+               for (int var11 = var5; var11 <= var8; var11++) {
                   if (var1.getBlockState(var9.set(var10, var4, var11)).liquid()) {
                      return true;
                   }
@@ -830,8 +818,8 @@ public class MineshaftPieces {
                }
             }
 
-            for(int var12 = var3; var12 <= var6; ++var12) {
-               for(int var14 = var4; var14 <= var7; ++var14) {
+            for (int var12 = var3; var12 <= var6; var12++) {
+               for (int var14 = var4; var14 <= var7; var14++) {
                   if (var1.getBlockState(var9.set(var12, var14, var5)).liquid()) {
                      return true;
                   }
@@ -842,8 +830,8 @@ public class MineshaftPieces {
                }
             }
 
-            for(int var13 = var5; var13 <= var8; ++var13) {
-               for(int var15 = var4; var15 <= var7; ++var15) {
+            for (int var13 = var5; var13 <= var8; var13++) {
+               for (int var15 = var4; var15 <= var7; var15++) {
                   if (var1.getBlockState(var9.set(var3, var15, var13)).liquid()) {
                      return true;
                   }
@@ -899,10 +887,11 @@ public class MineshaftPieces {
             var6 = 1;
          }
 
-         int var9;
-         for(var9 = 0; var9 < this.boundingBox.getXSpan(); var9 += 4) {
-            var9 += var3.nextInt(this.boundingBox.getXSpan());
-            if (var9 + 3 > this.boundingBox.getXSpan()) {
+         int var5 = 0;
+
+         while (var5 < this.boundingBox.getXSpan()) {
+            var5 += var3.nextInt(this.boundingBox.getXSpan());
+            if (var5 + 3 > this.boundingBox.getXSpan()) {
                break;
             }
 
@@ -910,7 +899,7 @@ public class MineshaftPieces {
                var1,
                var2,
                var3,
-               this.boundingBox.minX() + var9,
+               this.boundingBox.minX() + var5,
                this.boundingBox.minY() + var3.nextInt(var6) + 1,
                this.boundingBox.minZ() - 1,
                Direction.NORTH,
@@ -921,11 +910,15 @@ public class MineshaftPieces {
                this.childEntranceBoxes
                   .add(new BoundingBox(var8.minX(), var8.minY(), this.boundingBox.minZ(), var8.maxX(), var8.maxY(), this.boundingBox.minZ() + 1));
             }
+
+            var5 += 4;
          }
 
-         for(var9 = 0; var9 < this.boundingBox.getXSpan(); var9 += 4) {
-            var9 += var3.nextInt(this.boundingBox.getXSpan());
-            if (var9 + 3 > this.boundingBox.getXSpan()) {
+         var5 = 0;
+
+         while (var5 < this.boundingBox.getXSpan()) {
+            var5 += var3.nextInt(this.boundingBox.getXSpan());
+            if (var5 + 3 > this.boundingBox.getXSpan()) {
                break;
             }
 
@@ -933,7 +926,7 @@ public class MineshaftPieces {
                var1,
                var2,
                var3,
-               this.boundingBox.minX() + var9,
+               this.boundingBox.minX() + var5,
                this.boundingBox.minY() + var3.nextInt(var6) + 1,
                this.boundingBox.maxZ() + 1,
                Direction.SOUTH,
@@ -944,11 +937,15 @@ public class MineshaftPieces {
                this.childEntranceBoxes
                   .add(new BoundingBox(var19.minX(), var19.minY(), this.boundingBox.maxZ() - 1, var19.maxX(), var19.maxY(), this.boundingBox.maxZ()));
             }
+
+            var5 += 4;
          }
 
-         for(var9 = 0; var9 < this.boundingBox.getZSpan(); var9 += 4) {
-            var9 += var3.nextInt(this.boundingBox.getZSpan());
-            if (var9 + 3 > this.boundingBox.getZSpan()) {
+         var5 = 0;
+
+         while (var5 < this.boundingBox.getZSpan()) {
+            var5 += var3.nextInt(this.boundingBox.getZSpan());
+            if (var5 + 3 > this.boundingBox.getZSpan()) {
                break;
             }
 
@@ -958,7 +955,7 @@ public class MineshaftPieces {
                var3,
                this.boundingBox.minX() - 1,
                this.boundingBox.minY() + var3.nextInt(var6) + 1,
-               this.boundingBox.minZ() + var9,
+               this.boundingBox.minZ() + var5,
                Direction.WEST,
                var4
             );
@@ -967,11 +964,15 @@ public class MineshaftPieces {
                this.childEntranceBoxes
                   .add(new BoundingBox(this.boundingBox.minX(), var20.minY(), var20.minZ(), this.boundingBox.minX() + 1, var20.maxY(), var20.maxZ()));
             }
+
+            var5 += 4;
          }
 
-         for(var9 = 0; var9 < this.boundingBox.getZSpan(); var9 += 4) {
-            var9 += var3.nextInt(this.boundingBox.getZSpan());
-            if (var9 + 3 > this.boundingBox.getZSpan()) {
+         var5 = 0;
+
+         while (var5 < this.boundingBox.getZSpan()) {
+            var5 += var3.nextInt(this.boundingBox.getZSpan());
+            if (var5 + 3 > this.boundingBox.getZSpan()) {
                break;
             }
 
@@ -981,7 +982,7 @@ public class MineshaftPieces {
                var3,
                this.boundingBox.maxX() + 1,
                this.boundingBox.minY() + var3.nextInt(var6) + 1,
-               this.boundingBox.minZ() + var9,
+               this.boundingBox.minZ() + var5,
                Direction.EAST,
                var4
             );
@@ -990,13 +991,13 @@ public class MineshaftPieces {
                this.childEntranceBoxes
                   .add(new BoundingBox(this.boundingBox.maxX() - 1, var21.minY(), var21.minZ(), this.boundingBox.maxX(), var21.maxY(), var21.maxZ()));
             }
+
+            var5 += 4;
          }
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (!this.isInInvalidLocation(var1, var5)) {
             this.generateBox(
                var1,
@@ -1012,7 +1013,7 @@ public class MineshaftPieces {
                false
             );
 
-            for(BoundingBox var9 : this.childEntranceBoxes) {
+            for (BoundingBox var9 : this.childEntranceBoxes) {
                this.generateBox(var1, var5, var9.minX(), var9.maxY() - 2, var9.minZ(), var9.maxX(), var9.maxY(), var9.maxZ(), CAVE_AIR, CAVE_AIR, false);
             }
 
@@ -1035,7 +1036,7 @@ public class MineshaftPieces {
       public void move(int var1, int var2, int var3) {
          super.move(var1, var2, var3);
 
-         for(BoundingBox var5 : this.childEntranceBoxes) {
+         for (BoundingBox var5 : this.childEntranceBoxes) {
             var5.move(var1, var2, var3);
          }
       }
@@ -1063,7 +1064,7 @@ public class MineshaftPieces {
 
       @Nullable
       public static BoundingBox findStairs(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5) {
-         BoundingBox var6 = switch(var5) {
+         BoundingBox var6 = switch (var5) {
             default -> new BoundingBox(0, -5, -8, 2, 2, 0);
             case SOUTH -> new BoundingBox(0, -5, 0, 2, 2, 8);
             case WEST -> new BoundingBox(-8, -5, 0, 0, 2, 2);
@@ -1078,7 +1079,7 @@ public class MineshaftPieces {
          int var4 = this.getGenDepth();
          Direction var5 = this.getOrientation();
          if (var5 != null) {
-            switch(var5) {
+            switch (var5) {
                case NORTH:
                default:
                   MineshaftPieces.generateAndAddPiece(
@@ -1104,14 +1105,12 @@ public class MineshaftPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (!this.isInInvalidLocation(var1, var5)) {
             this.generateBox(var1, var5, 0, 5, 0, 2, 7, 1, CAVE_AIR, CAVE_AIR, false);
             this.generateBox(var1, var5, 0, 0, 7, 2, 2, 8, CAVE_AIR, CAVE_AIR, false);
 
-            for(int var8 = 0; var8 < 5; ++var8) {
+            for (int var8 = 0; var8 < 5; var8++) {
                this.generateBox(var1, var5, 0, 5 - var8 - (var8 < 4 ? 1 : 0), 2 + var8, 2, 7 - var8, 2 + var8, CAVE_AIR, CAVE_AIR, false);
             }
          }

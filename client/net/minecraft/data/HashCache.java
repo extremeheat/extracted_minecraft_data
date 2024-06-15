@@ -10,8 +10,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -25,7 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.WorldVersion;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -39,7 +41,7 @@ public class HashCache {
    private final String versionId;
    private final Map<String, HashCache.ProviderCache> caches;
    private final Set<String> cachesToWrite = new HashSet<>();
-   private final Set<Path> cachePaths = new HashSet<>();
+   final Set<Path> cachePaths = new HashSet<>();
    private final int initialCount;
    private int writes;
 
@@ -56,7 +58,7 @@ public class HashCache {
       HashMap var4 = new HashMap();
       int var5 = 0;
 
-      for(String var7 : var2) {
+      for (String var7 : var2) {
          Path var8 = this.getProviderCachePath(var7);
          this.cachePaths.add(var8);
          HashCache.ProviderCache var9 = readCache(var1, var8);
@@ -98,42 +100,43 @@ public class HashCache {
    public void applyUpdate(HashCache.UpdateResult var1) {
       this.caches.put(var1.providerId(), var1.cache());
       this.cachesToWrite.add(var1.providerId());
-      this.writes += var1.writes();
+      this.writes = this.writes + var1.writes();
    }
 
    public void purgeStaleAndWrite() throws IOException {
-      HashSet var1 = new HashSet();
+      final HashSet var1 = new HashSet();
       this.caches.forEach((var2x, var3x) -> {
          if (this.cachesToWrite.contains(var2x)) {
-            Path var4xx = this.getProviderCachePath(var2x);
-            var3x.save(this.rootDir, var4xx, DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()) + "\t" + var2x);
+            Path var4 = this.getProviderCachePath(var2x);
+            var3x.save(this.rootDir, var4, DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()) + "\t" + var2x);
          }
 
          var1.addAll(var3x.data().keySet());
       });
       var1.add(this.rootDir.resolve("version.json"));
-      MutableInt var2 = new MutableInt();
-      MutableInt var3 = new MutableInt();
-
-      try (Stream var4 = Files.walk(this.rootDir)) {
-         var4.forEach(var4x -> {
-            if (!Files.isDirectory(var4x)) {
-               if (!this.cachePaths.contains(var4x)) {
-                  var2.increment();
-                  if (!var1.contains(var4x)) {
-                     try {
-                        Files.delete(var4x);
-                     } catch (IOException var6) {
-                        LOGGER.warn("Failed to delete file {}", var4x, var6);
-                     }
-
-                     var3.increment();
+      final MutableInt var2 = new MutableInt();
+      final MutableInt var3 = new MutableInt();
+      Files.walkFileTree(this.rootDir, new SimpleFileVisitor<Path>() {
+         public FileVisitResult visitFile(Path var1x, BasicFileAttributes var2x) {
+            if (HashCache.this.cachePaths.contains(var1x)) {
+               return FileVisitResult.CONTINUE;
+            } else {
+               var2.increment();
+               if (var1.contains(var1x)) {
+                  return FileVisitResult.CONTINUE;
+               } else {
+                  try {
+                     Files.delete(var1x);
+                  } catch (IOException var4) {
+                     HashCache.LOGGER.warn("Failed to delete file {}", var1x, var4);
                   }
+
+                  var3.increment();
+                  return FileVisitResult.CONTINUE;
                }
             }
-         });
-      }
-
+         }
+      });
       LOGGER.info(
          "Caching: total files: {}, old count: {}, new count: {}, removed stale: {}, written: {}",
          new Object[]{var2, this.initialCount, var1.size(), var3, this.writes}
@@ -147,11 +150,11 @@ public class HashCache {
       private final AtomicInteger writes = new AtomicInteger();
       private volatile boolean closed;
 
-      CacheUpdater(String var2, String var3, HashCache.ProviderCache var4) {
+      CacheUpdater(final String nullx, final String nullxx, final HashCache.ProviderCache nullxxx) {
          super();
-         this.provider = var2;
-         this.oldCache = var4;
-         this.newCache = new HashCache.ProviderCacheBuilder(var3);
+         this.provider = nullx;
+         this.oldCache = nullxxx;
+         this.newCache = new HashCache.ProviderCacheBuilder(nullxx);
       }
 
       private boolean shouldWrite(Path var1, HashCode var2) {
@@ -179,14 +182,12 @@ public class HashCache {
       }
    }
 
-   static record ProviderCache(String a, ImmutableMap<Path, HashCode> b) {
-      final String version;
-      private final ImmutableMap<Path, HashCode> data;
+   static record ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
 
-      ProviderCache(String var1, ImmutableMap<Path, HashCode> var2) {
+      ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
          super();
-         this.version = var1;
-         this.data = var2;
+         this.version = version;
+         this.data = data;
       }
 
       @Nullable
@@ -210,8 +211,8 @@ public class HashCache {
             String var5 = var4[0];
             Builder var6 = ImmutableMap.builder();
             var2.lines().forEach(var2x -> {
-               int var3xx = var2x.indexOf(32);
-               var6.put(var0.resolve(var2x.substring(var3xx + 1)), HashCode.fromString(var2x.substring(0, var3xx)));
+               int var3x = var2x.indexOf(32);
+               var6.put(var0.resolve(var2x.substring(var3x + 1)), HashCode.fromString(var2x.substring(0, var3x)));
             });
             var7 = new HashCache.ProviderCache(var5, var6.build());
          }
@@ -228,7 +229,7 @@ public class HashCache {
             var4.newLine();
             UnmodifiableIterator var5 = this.data.entrySet().iterator();
 
-            while(var5.hasNext()) {
+            while (var5.hasNext()) {
                Entry var6 = (Entry)var5.next();
                var4.write(((HashCode)var6.getValue()).toString());
                var4.write(32);
@@ -241,18 +242,15 @@ public class HashCache {
       }
    }
 
-   static record ProviderCacheBuilder(String a, ConcurrentMap<Path, HashCode> b) {
-      private final String version;
-      private final ConcurrentMap<Path, HashCode> data;
-
+   static record ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
       ProviderCacheBuilder(String var1) {
          this(var1, new ConcurrentHashMap<>());
       }
 
-      private ProviderCacheBuilder(String var1, ConcurrentMap<Path, HashCode> var2) {
+      private ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
          super();
-         this.version = var1;
-         this.data = var2;
+         this.version = version;
+         this.data = data;
       }
 
       public void put(Path var1, HashCode var2) {
@@ -269,16 +267,12 @@ public class HashCache {
       CompletableFuture<?> update(CachedOutput var1);
    }
 
-   public static record UpdateResult(String a, HashCache.ProviderCache b, int c) {
-      private final String providerId;
-      private final HashCache.ProviderCache cache;
-      private final int writes;
-
-      public UpdateResult(String var1, HashCache.ProviderCache var2, int var3) {
+   public static record UpdateResult(String providerId, HashCache.ProviderCache cache, int writes) {
+      public UpdateResult(String providerId, HashCache.ProviderCache cache, int writes) {
          super();
-         this.providerId = var1;
-         this.cache = var2;
-         this.writes = var3;
+         this.providerId = providerId;
+         this.cache = cache;
+         this.writes = writes;
       }
    }
 }

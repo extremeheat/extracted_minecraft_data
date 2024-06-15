@@ -2,10 +2,15 @@ package net.minecraft.network.protocol.game;
 
 import java.util.Set;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.RelativeMovement;
 
 public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerPositionPacket> STREAM_CODEC = Packet.codec(
+      ClientboundPlayerPositionPacket::write, ClientboundPlayerPositionPacket::new
+   );
    private final double x;
    private final double y;
    private final double z;
@@ -25,7 +30,7 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
       this.id = var10;
    }
 
-   public ClientboundPlayerPositionPacket(FriendlyByteBuf var1) {
+   private ClientboundPlayerPositionPacket(FriendlyByteBuf var1) {
       super();
       this.x = var1.readDouble();
       this.y = var1.readDouble();
@@ -36,8 +41,7 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
       this.id = var1.readVarInt();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
       var1.writeDouble(this.z);
@@ -45,6 +49,11 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
       var1.writeFloat(this.xRot);
       var1.writeByte(RelativeMovement.pack(this.relativeArguments));
       var1.writeVarInt(this.id);
+   }
+
+   @Override
+   public PacketType<ClientboundPlayerPositionPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_PLAYER_POSITION;
    }
 
    public void handle(ClientGamePacketListener var1) {

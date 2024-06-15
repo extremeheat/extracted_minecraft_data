@@ -7,8 +7,11 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,7 +47,7 @@ public class BrushableBlockEntity extends BlockEntity {
    @Nullable
    private Direction hitDirection;
    @Nullable
-   private ResourceLocation lootTable;
+   private ResourceKey<LootTable> lootTable;
    private long lootTableSeed;
 
    public BrushableBlockEntity(BlockPos var1, BlockState var2) {
@@ -82,9 +85,9 @@ public class BrushableBlockEntity extends BlockEntity {
 
    public void unpackLootTable(Player var1) {
       if (this.lootTable != null && this.level != null && !this.level.isClientSide() && this.level.getServer() != null) {
-         LootTable var2 = this.level.getServer().getLootData().getLootTable(this.lootTable);
+         LootTable var2 = this.level.getServer().reloadableRegistries().getLootTable(this.lootTable);
          if (var1 instanceof ServerPlayer var3) {
-            CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var3, this.lootTable);
+            CriteriaTriggers.GENERATE_LOOT.trigger(var3, this.lootTable);
          }
 
          LootParams var5 = new LootParams.Builder((ServerLevel)this.level)
@@ -94,11 +97,11 @@ public class BrushableBlockEntity extends BlockEntity {
             .create(LootContextParamSets.CHEST);
          ObjectArrayList var4 = var2.getRandomItems(var5, this.lootTableSeed);
 
-         this.item = switch(var4.size()) {
+         this.item = switch (var4.size()) {
             case 0 -> ItemStack.EMPTY;
             case 1 -> (ItemStack)var4.get(0);
             default -> {
-               LOGGER.warn("Expected max 1 loot from loot table " + this.lootTable + " got " + var4.size());
+               LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.location(), var4.size());
                yield (ItemStack)var4.get(0);
             }
          };
@@ -107,16 +110,13 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void brushingCompleted(Player var1) {
       if (this.level != null && this.level.getServer() != null) {
          this.dropContent(var1);
          BlockState var2 = this.getBlockState();
          this.level.levelEvent(3008, this.getBlockPos(), Block.getId(var2));
-         Block var3 = this.getBlockState().getBlock();
          Block var4;
-         if (var3 instanceof BrushableBlock var5) {
+         if (this.getBlockState().getBlock() instanceof BrushableBlock var5) {
             var4 = var5.getTurnsInto();
          } else {
             var4 = Blocks.AIR;
@@ -156,7 +156,7 @@ public class BrushableBlockEntity extends BlockEntity {
                this.level.setBlock(this.getBlockPos(), this.getBlockState().setValue(BlockStateProperties.DUSTED, Integer.valueOf(var2)), 3);
             }
 
-            boolean var3 = true;
+            byte var3 = 4;
             this.brushCountResetsAtTick = this.level.getGameTime() + 4L;
          }
 
@@ -172,7 +172,7 @@ public class BrushableBlockEntity extends BlockEntity {
 
    private boolean tryLoadLootTable(CompoundTag var1) {
       if (var1.contains("LootTable", 8)) {
-         this.lootTable = new ResourceLocation(var1.getString("LootTable"));
+         this.lootTable = ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var1.getString("LootTable")));
          this.lootTableSeed = var1.getLong("LootTableSeed");
          return true;
       } else {
@@ -184,7 +184,7 @@ public class BrushableBlockEntity extends BlockEntity {
       if (this.lootTable == null) {
          return false;
       } else {
-         var1.putString("LootTable", this.lootTable.toString());
+         var1.putString("LootTable", this.lootTable.location().toString());
          if (this.lootTableSeed != 0L) {
             var1.putLong("LootTableSeed", this.lootTableSeed);
          }
@@ -194,14 +194,17 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      CompoundTag var1 = super.getUpdateTag();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      CompoundTag var2 = super.getUpdateTag(var1);
       if (this.hitDirection != null) {
-         var1.putInt("hit_direction", this.hitDirection.ordinal());
+         var2.putInt("hit_direction", this.hitDirection.ordinal());
       }
 
-      var1.put("item", this.item.save(new CompoundTag()));
-      return var1;
+      if (!this.item.isEmpty()) {
+         var2.put("item", this.item.save(var1));
+      }
+
+      return var2;
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -209,9 +212,12 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (!this.tryLoadLootTable(var1) && var1.contains("item")) {
-         this.item = ItemStack.of(var1.getCompound("item"));
+         this.item = ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);
+      } else {
+         this.item = ItemStack.EMPTY;
       }
 
       if (var1.contains("hit_direction")) {
@@ -220,13 +226,14 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      if (!this.trySaveLootTable(var1)) {
-         var1.put("item", this.item.save(new CompoundTag()));
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
+      if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
+         var1.put("item", this.item.save(var2));
       }
    }
 
-   public void setLootTable(ResourceLocation var1, long var2) {
+   public void setLootTable(ResourceKey<LootTable> var1, long var2) {
       this.lootTable = var1;
       this.lootTableSeed = var2;
    }

@@ -1,8 +1,9 @@
 package net.minecraft.data.loot.packs;
 
 import java.util.function.BiConsumer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.LootTableSubProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.InstrumentTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
@@ -28,8 +29,8 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
    }
 
    @Override
-   public void generate(BiConsumer<ResourceLocation, LootTable.Builder> var1) {
-      var1.accept(
+   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
+      var2.accept(
          BuiltInLootTables.ABANDONED_MINESHAFT,
          LootTable.lootTable()
             .withPool(
@@ -70,17 +71,13 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                LootPool.lootPool()
                   .setRolls(ConstantValue.exactly(1.0F))
                   .add(EmptyLootItem.emptyItem().setWeight(4))
-                  .add(
-                     LootItem.lootTableItem(Items.BOOK)
-                        .setWeight(1)
-                        .apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.BLOCK_EFFICIENCY))
-                  )
+                  .add(LootItem.lootTableItem(Items.BOOK).setWeight(1).apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.EFFICIENCY)))
             )
       );
-      var1.accept(BuiltInLootTables.ANCIENT_CITY, ancientCityLootTable());
-      var1.accept(BuiltInLootTables.DESERT_PYRAMID, desertPyramidLootTable());
-      var1.accept(BuiltInLootTables.JUNGLE_TEMPLE, jungleTempleLootTable());
-      var1.accept(BuiltInLootTables.PILLAGER_OUTPOST, pillagerOutpostLootTable());
+      var2.accept(BuiltInLootTables.ANCIENT_CITY, ancientCityLootTable());
+      var2.accept(BuiltInLootTables.DESERT_PYRAMID, desertPyramidLootTable());
+      var2.accept(BuiltInLootTables.JUNGLE_TEMPLE, jungleTempleLootTable());
+      var2.accept(BuiltInLootTables.PILLAGER_OUTPOST, pillagerOutpostLootTable());
    }
 
    public static LootTable.Builder pillagerOutpostLootTable() {

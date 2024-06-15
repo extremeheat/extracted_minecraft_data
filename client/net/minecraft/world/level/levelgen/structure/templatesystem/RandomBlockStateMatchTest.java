@@ -1,13 +1,13 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class RandomBlockStateMatchTest extends RuleTest {
-   public static final Codec<RandomBlockStateMatchTest> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<RandomBlockStateMatchTest> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                BlockState.CODEC.fieldOf("block_state").forGetter(var0x -> var0x.blockState),
                Codec.FLOAT.fieldOf("probability").forGetter(var0x -> var0x.probability)

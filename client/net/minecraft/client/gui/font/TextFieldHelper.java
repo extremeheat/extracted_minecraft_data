@@ -4,12 +4,12 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringUtil;
 
 public class TextFieldHelper {
    private final Supplier<String> getMessageFn;
@@ -47,7 +47,7 @@ public class TextFieldHelper {
    }
 
    public boolean charTyped(char var1) {
-      if (SharedConstants.isAllowedChatCharacter(var1)) {
+      if (StringUtil.isAllowedChatCharacter(var1)) {
          this.insertText(this.getMessageFn.get(), Character.toString(var1));
       }
 
@@ -130,7 +130,7 @@ public class TextFieldHelper {
    }
 
    public void moveBy(int var1, boolean var2, TextFieldHelper.CursorStep var3) {
-      switch(var3) {
+      switch (var3) {
          case CHARACTER:
             this.moveByChars(var1, var2);
             break;
@@ -158,7 +158,7 @@ public class TextFieldHelper {
    }
 
    public void removeFromCursor(int var1, TextFieldHelper.CursorStep var2) {
-      switch(var2) {
+      switch (var2) {
          case CHARACTER:
             this.removeCharsFromCursor(var1);
             break;

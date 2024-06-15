@@ -51,7 +51,7 @@ class SwitchGrid {
       }
 
       void increaseRow() {
-         ++this.rowCount;
+         this.rowCount++;
       }
 
       public SwitchGrid.SwitchBuilder addSwitch(Component var1, BooleanSupplier var2, Consumer<Boolean> var3) {
@@ -77,7 +77,7 @@ class SwitchGrid {
          ArrayList var3 = new ArrayList();
          this.rowCount = 0;
 
-         for(SwitchGrid.SwitchBuilder var5 : this.switchBuilders) {
+         for (SwitchGrid.SwitchBuilder var5 : this.switchBuilders) {
             var3.add(var5.build(this, var2, 0));
          }
 
@@ -94,28 +94,21 @@ class SwitchGrid {
       }
    }
 
-   static record InfoUnderneathSettings(int a, boolean b) {
-      final int maxInfoRows;
-      final boolean alwaysMaxHeight;
+   static record InfoUnderneathSettings(int maxInfoRows, boolean alwaysMaxHeight) {
 
-      InfoUnderneathSettings(int var1, boolean var2) {
+      InfoUnderneathSettings(int maxInfoRows, boolean alwaysMaxHeight) {
          super();
-         this.maxInfoRows = var1;
-         this.alwaysMaxHeight = var2;
+         this.maxInfoRows = maxInfoRows;
+         this.alwaysMaxHeight = alwaysMaxHeight;
       }
    }
 
-   static record LabeledSwitch(CycleButton<Boolean> a, BooleanSupplier b, @Nullable BooleanSupplier c) {
-      private final CycleButton<Boolean> button;
-      private final BooleanSupplier stateSupplier;
-      @Nullable
-      private final BooleanSupplier isActiveCondition;
-
-      LabeledSwitch(CycleButton<Boolean> var1, BooleanSupplier var2, @Nullable BooleanSupplier var3) {
+   static record LabeledSwitch(CycleButton<Boolean> button, BooleanSupplier stateSupplier, @Nullable BooleanSupplier isActiveCondition) {
+      LabeledSwitch(CycleButton<Boolean> button, BooleanSupplier stateSupplier, @Nullable BooleanSupplier isActiveCondition) {
          super();
-         this.button = var1;
-         this.stateSupplier = var2;
-         this.isActiveCondition = var3;
+         this.button = button;
+         this.stateSupplier = stateSupplier;
+         this.isActiveCondition = isActiveCondition;
       }
 
       public void refreshState() {
@@ -181,14 +174,14 @@ class SwitchGrid {
          var2.addChild(var9, var1.rowCount, var3 + 1, var2.newCellSettings().alignHorizontallyRight());
          if (this.info != null) {
             var5.ifPresent(var4x -> {
-               MutableComponent var5xx = this.info.copy().withStyle(ChatFormatting.GRAY);
-               Font var6xx = Minecraft.getInstance().font;
-               MultiLineTextWidget var7xx = new MultiLineTextWidget(var5xx, var6xx);
-               var7xx.setMaxWidth(var1.width - var1.paddingLeft - this.buttonWidth);
-               var7xx.setMaxRows(var4x.maxInfoRows());
+               MutableComponent var5x = this.info.copy().withStyle(ChatFormatting.GRAY);
+               Font var6x = Minecraft.getInstance().font;
+               MultiLineTextWidget var7x = new MultiLineTextWidget(var5x, var6x);
+               var7x.setMaxWidth(var1.width - var1.paddingLeft - this.buttonWidth);
+               var7x.setMaxRows(var4x.maxInfoRows());
                var1.increaseRow();
-               int var8xx = var4x.alwaysMaxHeight ? 9 * var4x.maxInfoRows - var7xx.getHeight() : 0;
-               var2.addChild(var7xx, var1.rowCount, var3, var2.newCellSettings().paddingTop(-var1.rowSpacing).paddingBottom(var8xx));
+               int var8x = var4x.alwaysMaxHeight ? 9 * var4x.maxInfoRows - var7x.getHeight() : 0;
+               var2.addChild(var7x, var1.rowCount, var3, var2.newCellSettings().paddingTop(-var1.rowSpacing).paddingBottom(var8x));
             });
          }
 

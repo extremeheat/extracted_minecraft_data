@@ -28,50 +28,50 @@ public class SpringFeature extends Feature<SpringConfiguration> {
             int var6 = 0;
             int var7 = 0;
             if (var3.getBlockState(var4.west()).is(var2.validBlocks)) {
-               ++var7;
+               var7++;
             }
 
             if (var3.getBlockState(var4.east()).is(var2.validBlocks)) {
-               ++var7;
+               var7++;
             }
 
             if (var3.getBlockState(var4.north()).is(var2.validBlocks)) {
-               ++var7;
+               var7++;
             }
 
             if (var3.getBlockState(var4.south()).is(var2.validBlocks)) {
-               ++var7;
+               var7++;
             }
 
             if (var3.getBlockState(var4.below()).is(var2.validBlocks)) {
-               ++var7;
+               var7++;
             }
 
             int var8 = 0;
             if (var3.isEmptyBlock(var4.west())) {
-               ++var8;
+               var8++;
             }
 
             if (var3.isEmptyBlock(var4.east())) {
-               ++var8;
+               var8++;
             }
 
             if (var3.isEmptyBlock(var4.north())) {
-               ++var8;
+               var8++;
             }
 
             if (var3.isEmptyBlock(var4.south())) {
-               ++var8;
+               var8++;
             }
 
             if (var3.isEmptyBlock(var4.below())) {
-               ++var8;
+               var8++;
             }
 
             if (var7 == var2.rockCount && var8 == var2.holeCount) {
                var3.setBlock(var4, var2.state.createLegacyBlock(), 2);
                var3.scheduleTick(var4, var2.state.getType(), 0);
-               ++var6;
+               var6++;
             }
 
             return var6 > 0;

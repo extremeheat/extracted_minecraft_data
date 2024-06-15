@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.Item;
@@ -47,7 +46,7 @@ public class MinecartTNT extends AbstractMinecart {
    public void tick() {
       super.tick();
       if (this.fuse > 0) {
-         --this.fuse;
+         this.fuse--;
          this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5, this.getZ(), 0.0, 0.0, 0.0);
       } else if (this.fuse == 0) {
          this.explode(this.getDeltaMovement().horizontalDistanceSqr());
@@ -61,12 +60,9 @@ public class MinecartTNT extends AbstractMinecart {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean hurt(DamageSource var1, float var2) {
-      Entity var3 = var1.getDirectEntity();
-      if (var3 instanceof AbstractArrow var4 && var4.isOnFire()) {
+      if (var1.getDirectEntity() instanceof AbstractArrow var4 && var4.isOnFire()) {
          DamageSource var5 = this.damageSources().explosion(this, var1.getEntity());
          this.explode(var5, var4.getDeltaMovement().lengthSqr());
       }

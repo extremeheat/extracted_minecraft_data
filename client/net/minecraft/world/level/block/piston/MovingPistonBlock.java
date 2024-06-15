@@ -6,7 +6,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -67,7 +66,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof PistonMovingBlockEntity) {
@@ -86,7 +85,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!var2.isClientSide && var2.getBlockEntity(var3) == null) {
          var2.removeBlock(var3, false);
          return InteractionResult.CONSUME;
@@ -96,18 +95,18 @@ public class MovingPistonBlock extends BaseEntityBlock {
    }
 
    @Override
-   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
+   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       PistonMovingBlockEntity var3 = this.getBlockEntity(var2.getLevel(), BlockPos.containing(var2.getParameter(LootContextParams.ORIGIN)));
       return var3 == null ? Collections.emptyList() : var3.getMovedState().getDrops(var2);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.empty();
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       PistonMovingBlockEntity var5 = this.getBlockEntity(var2, var3);
       return var5 != null ? var5.getCollisionShape(var2, var3) : Shapes.empty();
    }
@@ -124,12 +123,12 @@ public class MovingPistonBlock extends BaseEntityBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
@@ -139,7 +138,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

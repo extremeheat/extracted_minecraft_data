@@ -36,7 +36,7 @@ public class DoublePlantBlock extends BushBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       DoubleBlockHalf var7 = var1.getValue(HALF);
       if (var2.getAxis() != Direction.Axis.Y || var7 == DoubleBlockHalf.LOWER != (var2 == Direction.UP) || var3.is(this) && var3.getValue(HALF) != var7) {
          return var7 == DoubleBlockHalf.LOWER && var2 == Direction.DOWN && !var1.canSurvive(var4, var5)
@@ -62,7 +62,7 @@ public class DoublePlantBlock extends BushBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       if (var1.getValue(HALF) != DoubleBlockHalf.UPPER) {
          return super.canSurvive(var1, var2, var3);
       } else {
@@ -78,9 +78,7 @@ public class DoublePlantBlock extends BushBlock {
    }
 
    public static BlockState copyWaterloggedFrom(LevelReader var0, BlockPos var1, BlockState var2) {
-      return var2.hasProperty(BlockStateProperties.WATERLOGGED)
-         ? var2.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var0.isWaterAt(var1)))
-         : var2;
+      return var2.hasProperty(BlockStateProperties.WATERLOGGED) ? var2.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var0.isWaterAt(var1))) : var2;
    }
 
    @Override
@@ -120,7 +118,7 @@ public class DoublePlantBlock extends BushBlock {
    }
 
    @Override
-   public long getSeed(BlockState var1, BlockPos var2) {
+   protected long getSeed(BlockState var1, BlockPos var2) {
       return Mth.getSeed(var2.getX(), var2.below(var1.getValue(HALF) == DoubleBlockHalf.LOWER ? 0 : 1).getY(), var2.getZ());
    }
 }

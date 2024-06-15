@@ -52,8 +52,6 @@ public class BoatRenderer extends EntityRenderer<Boat> {
       return var1 ? "textures/entity/chest_boat/" + var0.getName() + ".png" : "textures/entity/boat/" + var0.getName() + ".png";
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(Boat var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
       var4.translate(0.0F, 0.375F, 0.0F);
@@ -73,7 +71,7 @@ public class BoatRenderer extends EntityRenderer<Boat> {
          var4.mulPose(new Quaternionf().setAngleAxis(var1.getBubbleAngle(var3) * 0.017453292F, 1.0F, 0.0F, 1.0F));
       }
 
-      Pair var10 = (Pair)this.boatResources.get(var1.getVariant());
+      Pair var10 = this.boatResources.get(var1.getVariant());
       ResourceLocation var11 = (ResourceLocation)var10.getFirst();
       ListModel var12 = (ListModel)var10.getSecond();
       var4.scale(-1.0F, -1.0F, 1.0F);
@@ -93,6 +91,6 @@ public class BoatRenderer extends EntityRenderer<Boat> {
    }
 
    public ResourceLocation getTextureLocation(Boat var1) {
-      return (ResourceLocation)((Pair)this.boatResources.get(var1.getVariant())).getFirst();
+      return (ResourceLocation)this.boatResources.get(var1.getVariant()).getFirst();
    }
 }

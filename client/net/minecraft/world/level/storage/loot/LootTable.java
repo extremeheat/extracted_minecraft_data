@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
@@ -14,9 +13,11 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import net.minecraft.Util;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
@@ -32,15 +33,17 @@ public class LootTable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final LootTable EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
    public static final LootContextParamSet DEFAULT_PARAM_SET = LootContextParamSets.ALL_PARAMS;
-   public static final Codec<LootTable> CODEC = RecordCodecBuilder.create(
+   public static final long RANDOMIZE_SEED = 0L;
+   public static final Codec<LootTable> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               LootContextParamSets.CODEC.optionalFieldOf("type", DEFAULT_PARAM_SET).forGetter(var0x -> var0x.paramSet),
-               ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "random_sequence").forGetter(var0x -> var0x.randomSequence),
-               ExtraCodecs.strictOptionalField(LootPool.CODEC.listOf(), "pools", List.of()).forGetter(var0x -> var0x.pools),
-               ExtraCodecs.strictOptionalField(LootItemFunctions.CODEC.listOf(), "functions", List.of()).forGetter(var0x -> var0x.functions)
+               LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter(var0x -> var0x.paramSet),
+               ResourceLocation.CODEC.optionalFieldOf("random_sequence").forGetter(var0x -> var0x.randomSequence),
+               LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter(var0x -> var0x.pools),
+               LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter(var0x -> var0x.functions)
             )
             .apply(var0, LootTable::new)
    );
+   public static final Codec<Holder<LootTable>> CODEC = RegistryFileCodec.create(Registries.LOOT_TABLE, DIRECT_CODEC);
    private final LootContextParamSet paramSet;
    private final Optional<ResourceLocation> randomSequence;
    private final List<LootPool> pools;
@@ -64,7 +67,7 @@ public class LootTable {
             } else {
                int var3 = var2.getCount();
 
-               while(var3 > 0) {
+               while (var3 > 0) {
                   ItemStack var4 = var2.copyWithCount(Math.min(var2.getMaxStackSize(), var3));
                   var3 -= var4.getCount();
                   var1.accept(var4);
@@ -83,7 +86,7 @@ public class LootTable {
       if (var1.pushVisitedElement(var3)) {
          Consumer var4 = LootItemFunction.decorate(this.compositeFunction, var2, var1);
 
-         for(LootPool var6 : this.pools) {
+         for (LootPool var6 : this.pools) {
             var6.addRandomItems(var4, var1);
          }
 
@@ -94,9 +97,7 @@ public class LootTable {
    }
 
    public void getRandomItems(LootParams var1, long var2, Consumer<ItemStack> var4) {
-      this.getRandomItemsRaw(
-         new LootContext.Builder(var1).withOptionalRandomSeed(var2).create(this.randomSequence), createStackSplitter(var1.getLevel(), var4)
-      );
+      this.getRandomItemsRaw(new LootContext.Builder(var1).withOptionalRandomSeed(var2).create(this.randomSequence), createStackSplitter(var1.getLevel(), var4));
    }
 
    public void getRandomItems(LootParams var1, Consumer<ItemStack> var2) {
@@ -126,11 +127,11 @@ public class LootTable {
    }
 
    public void validate(ValidationContext var1) {
-      for(int var2 = 0; var2 < this.pools.size(); ++var2) {
+      for (int var2 = 0; var2 < this.pools.size(); var2++) {
          this.pools.get(var2).validate(var1.forChild(".pools[" + var2 + "]"));
       }
 
-      for(int var3 = 0; var3 < this.functions.size(); ++var3) {
+      for (int var3 = 0; var3 < this.functions.size(); var3++) {
          this.functions.get(var3).validate(var1.forChild(".functions[" + var3 + "]"));
       }
    }
@@ -143,7 +144,7 @@ public class LootTable {
       this.shuffleAndSplitItems(var6, var8.size(), var7);
       ObjectListIterator var9 = var6.iterator();
 
-      while(var9.hasNext()) {
+      while (var9.hasNext()) {
          ItemStack var10 = (ItemStack)var9.next();
          if (var8.isEmpty()) {
             LOGGER.warn("Tried to over-fill a container");
@@ -151,9 +152,9 @@ public class LootTable {
          }
 
          if (var10.isEmpty()) {
-            var1.setItem(var8.remove(var8.size() - 1), ItemStack.EMPTY);
+            var1.setItem((Integer)var8.remove(var8.size() - 1), ItemStack.EMPTY);
          } else {
-            var1.setItem(var8.remove(var8.size() - 1), var10);
+            var1.setItem((Integer)var8.remove(var8.size() - 1), var10);
          }
       }
    }
@@ -162,7 +163,7 @@ public class LootTable {
       ArrayList var4 = Lists.newArrayList();
       ObjectListIterator var5 = var1.iterator();
 
-      while(var5.hasNext()) {
+      while (var5.hasNext()) {
          ItemStack var6 = (ItemStack)var5.next();
          if (var6.isEmpty()) {
             var5.remove();
@@ -172,7 +173,7 @@ public class LootTable {
          }
       }
 
-      while(var2 - var1.size() - var4.size() > 0 && !var4.isEmpty()) {
+      while (var2 - var1.size() - var4.size() > 0 && !var4.isEmpty()) {
          ItemStack var8 = (ItemStack)var4.remove(Mth.nextInt(var3, 0, var4.size() - 1));
          int var9 = Mth.nextInt(var3, 1, var8.getCount() / 2);
          ItemStack var7 = var8.split(var9);
@@ -196,7 +197,7 @@ public class LootTable {
    private List<Integer> getAvailableSlots(Container var1, RandomSource var2) {
       ObjectArrayList var3 = new ObjectArrayList();
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
+      for (int var4 = 0; var4 < var1.getContainerSize(); var4++) {
          if (var1.getItem(var4).isEmpty()) {
             var3.add(var4);
          }

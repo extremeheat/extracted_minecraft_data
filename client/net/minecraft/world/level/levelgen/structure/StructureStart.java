@@ -86,7 +86,7 @@ public final class StructureStart {
          BlockPos var9 = var8.getCenter();
          BlockPos var10 = new BlockPos(var9.getX(), var8.minY(), var9.getZ());
 
-         for(StructurePiece var12 : var7) {
+         for (StructurePiece var12 : var7) {
             if (var12.getBoundingBox().intersects(var5)) {
                var12.postProcess(var1, var2, var3, var4, var5, var6, var10);
             }
@@ -124,7 +124,7 @@ public final class StructureStart {
    }
 
    public void addReference() {
-      ++this.references;
+      this.references++;
    }
 
    public int getReferences() {

@@ -68,7 +68,7 @@ public class MetricsPersister {
          throw new IllegalArgumentException("Expected at least one sampler to persist");
       } else {
          Map var3 = var1.stream().collect(Collectors.groupingBy(MetricSampler::getCategory));
-         var3.forEach((var2x, var3x) -> this.saveCategory(var2x, var3x, var2));
+         var3.forEach((var2x, var3x) -> this.saveCategory(var2x, (List<MetricSampler>)var3x, var2));
       }
    }
 
@@ -82,7 +82,7 @@ public class MetricsPersister {
          CsvOutput.Builder var6 = CsvOutput.builder();
          var6.addColumn("@tick");
 
-         for(MetricSampler var8 : var2) {
+         for (MetricSampler var8 : var2) {
             var6.addColumn(var8.getName());
          }
 
@@ -91,10 +91,10 @@ public class MetricsPersister {
          int var9 = var21.stream().mapToInt(MetricSampler.SamplerResult::getFirstTick).summaryStatistics().getMin();
          int var10 = var21.stream().mapToInt(MetricSampler.SamplerResult::getLastTick).summaryStatistics().getMax();
 
-         for(int var11 = var9; var11 <= var10; ++var11) {
+         for (int var11 = var9; var11 <= var10; var11++) {
             int var12 = var11;
             Stream var13 = var21.stream().map(var1x -> String.valueOf(var1x.valueAtTick(var12)));
-            Object[] var14 = Stream.concat(Stream.of(String.valueOf(var11)), var13).toArray(var0 -> new String[var0]);
+            Object[] var14 = Stream.concat(Stream.of(String.valueOf(var11)), var13).toArray(String[]::new);
             var20.writeRow(var14);
          }
 

@@ -1,6 +1,5 @@
 package net.minecraft.server.packs.repository;
 
-import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -16,6 +15,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.world.flag.FeatureFlagSet;
 
@@ -29,6 +29,10 @@ public class PackRepository {
       this.sources = ImmutableSet.copyOf(var1);
    }
 
+   public static String displayPackList(Collection<Pack> var0) {
+      return var0.stream().map(var0x -> var0x.getId() + (var0x.getCompatibility().isCompatible() ? "" : " (incompatible)")).collect(Collectors.joining(", "));
+   }
+
    public void reload() {
       List var1 = this.selected.stream().map(Pack::getId).collect(ImmutableList.toImmutableList());
       this.available = this.discoverAvailable();
@@ -38,7 +42,7 @@ public class PackRepository {
    private Map<String, Pack> discoverAvailable() {
       TreeMap var1 = Maps.newTreeMap();
 
-      for(RepositorySource var3 : this.sources) {
+      for (RepositorySource var3 : this.sources) {
          var3.loadPacks(var1x -> var1.put(var1x.getId(), var1x));
       }
 
@@ -74,11 +78,11 @@ public class PackRepository {
    }
 
    private List<Pack> rebuildSelected(Collection<String> var1) {
-      List var2 = this.getAvailablePacks(var1).collect(Collectors.toList());
+      List var2 = this.getAvailablePacks(var1).collect(Util.toMutableList());
 
-      for(Pack var4 : this.available.values()) {
+      for (Pack var4 : this.available.values()) {
          if (var4.isRequired() && !var2.contains(var4)) {
-            var4.getDefaultPosition().insert(var2, var4, Functions.identity(), false);
+            var4.getDefaultPosition().insert(var2, var4, Pack::selectionConfig, false);
          }
       }
 

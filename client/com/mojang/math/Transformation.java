@@ -2,7 +2,6 @@ package com.mojang.math;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -26,7 +25,7 @@ public final class Transformation {
             )
             .apply(var0, Transformation::new)
    );
-   public static final Codec<Transformation> EXTENDED_CODEC = ExtraCodecs.withAlternative(
+   public static final Codec<Transformation> EXTENDED_CODEC = Codec.withAlternative(
       CODEC, ExtraCodecs.MATRIX4F.xmap(Transformation::new, Transformation::getMatrix)
    );
    private boolean decomposed;

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -20,7 +20,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class WoodlandMansionStructure extends Structure {
-   public static final Codec<WoodlandMansionStructure> CODEC = simpleCodec(WoodlandMansionStructure::new);
+   public static final MapCodec<WoodlandMansionStructure> CODEC = simpleCodec(WoodlandMansionStructure::new);
 
    public WoodlandMansionStructure(Structure.StructureSettings var1) {
       super(var1);
@@ -50,11 +50,11 @@ public class WoodlandMansionStructure extends Structure {
       BoundingBox var10 = var7.calculateBoundingBox();
       int var11 = var10.minY();
 
-      for(int var12 = var5.minX(); var12 <= var5.maxX(); ++var12) {
-         for(int var13 = var5.minZ(); var13 <= var5.maxZ(); ++var13) {
+      for (int var12 = var5.minX(); var12 <= var5.maxX(); var12++) {
+         for (int var13 = var5.minZ(); var13 <= var5.maxZ(); var13++) {
             var8.set(var12, var11, var13);
             if (!var1.isEmptyBlock(var8) && var10.isInside(var8) && var7.isInsidePiece(var8)) {
-               for(int var14 = var11 - 1; var14 > var9; --var14) {
+               for (int var14 = var11 - 1; var14 > var9; var14--) {
                   var8.setY(var14);
                   if (!var1.isEmptyBlock(var8) && !var1.getBlockState(var8).liquid()) {
                      break;

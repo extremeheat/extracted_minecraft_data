@@ -48,7 +48,7 @@ public class MultiPart implements UnbakedModel {
    public Set<MultiVariant> getMultiVariants() {
       HashSet var1 = Sets.newHashSet();
 
-      for(Selector var3 : this.selectors) {
+      for (Selector var3 : this.selectors) {
          var1.add(var3.getVariant());
       }
 
@@ -59,11 +59,8 @@ public class MultiPart implements UnbakedModel {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof MultiPart)) {
-         return false;
       } else {
-         MultiPart var2 = (MultiPart)var1;
-         return Objects.equals(this.definition, var2.definition) && Objects.equals(this.selectors, var2.selectors);
+         return !(var1 instanceof MultiPart var2) ? false : Objects.equals(this.definition, var2.definition) && Objects.equals(this.selectors, var2.selectors);
       }
    }
 
@@ -87,7 +84,7 @@ public class MultiPart implements UnbakedModel {
    public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
       MultiPartBakedModel.Builder var5 = new MultiPartBakedModel.Builder();
 
-      for(Selector var7 : this.getSelectors()) {
+      for (Selector var7 : this.getSelectors()) {
          BakedModel var8 = var7.getVariant().bake(var1, var2, var3, var4);
          if (var8 != null) {
             var5.add(var7.getPredicate(this.definition), var8);
@@ -112,7 +109,7 @@ public class MultiPart implements UnbakedModel {
       private List<Selector> getSelectors(JsonDeserializationContext var1, JsonArray var2) {
          ArrayList var3 = Lists.newArrayList();
 
-         for(JsonElement var5 : var2) {
+         for (JsonElement var5 : var2) {
             var3.add((Selector)var1.deserialize(var5, Selector.class));
          }
 

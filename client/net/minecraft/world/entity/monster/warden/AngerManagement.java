@@ -5,7 +5,6 @@ import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -78,7 +77,7 @@ public class AngerManagement {
    }
 
    public void tick(ServerLevel var1, Predicate<Entity> var2) {
-      --this.conversionDelay;
+      this.conversionDelay--;
       if (this.conversionDelay <= 0) {
          this.convertFromUuids(var1);
          this.conversionDelay = 2;
@@ -86,7 +85,7 @@ public class AngerManagement {
 
       ObjectIterator var3 = this.angerByUuid.object2IntEntrySet().iterator();
 
-      while(var3.hasNext()) {
+      while (var3.hasNext()) {
          Entry var4 = (Entry)var3.next();
          int var5 = var4.getIntValue();
          if (var5 <= 1) {
@@ -98,7 +97,7 @@ public class AngerManagement {
 
       ObjectIterator var9 = this.angerBySuspect.object2IntEntrySet().iterator();
 
-      while(var9.hasNext()) {
+      while (var9.hasNext()) {
          Entry var10 = (Entry)var9.next();
          int var6 = var10.getIntValue();
          Entity var7 = (Entity)var10.getKey();
@@ -109,7 +108,7 @@ public class AngerManagement {
             this.suspects.remove(var7);
             var9.remove();
             if (var6 > 1 && var8 != null) {
-               switch(var8) {
+               switch (var8) {
                   case CHANGED_DIMENSION:
                   case UNLOADED_TO_CHUNK:
                   case UNLOADED_WITH_PLAYER:
@@ -133,7 +132,7 @@ public class AngerManagement {
    private void convertFromUuids(ServerLevel var1) {
       ObjectIterator var2 = this.angerByUuid.object2IntEntrySet().iterator();
 
-      while(var2.hasNext()) {
+      while (var2.hasNext()) {
          Entry var3 = (Entry)var2.next();
          int var4 = var3.getIntValue();
          Entity var5 = var1.getEntity((UUID)var3.getKey());
@@ -179,12 +178,10 @@ public class AngerManagement {
    }
 
    @VisibleForTesting
-   protected static record Sorter(AngerManagement a) implements Comparator<Entity> {
-      private final AngerManagement angerManagement;
-
-      protected Sorter(AngerManagement var1) {
+   protected static record Sorter(AngerManagement angerManagement) implements Comparator<Entity> {
+      protected Sorter(AngerManagement angerManagement) {
          super();
-         this.angerManagement = var1;
+         this.angerManagement = angerManagement;
       }
 
       public int compare(Entity var1, Entity var2) {

@@ -36,12 +36,12 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getValue(AGE) < 25;
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(AGE) < 25 && var4.nextDouble() < this.growPerTickProbability) {
          BlockPos var5 = var3.relative(this.growthDirection);
          if (this.canGrowInto(var2.getBlockState(var5))) {
@@ -67,7 +67,7 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == this.growthDirection.getOpposite() && !var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -104,7 +104,7 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
       int var6 = Math.min(var4.getValue(AGE) + 1, 25);
       int var7 = this.getBlocksToGrowWhenBonemealed(var2);
 
-      for(int var8 = 0; var8 < var7 && this.canGrowInto(var1.getBlockState(var5)); ++var8) {
+      for (int var8 = 0; var8 < var7 && this.canGrowInto(var1.getBlockState(var5)); var8++) {
          var1.setBlockAndUpdate(var5, var4.setValue(AGE, Integer.valueOf(var6)));
          var5 = var5.relative(this.growthDirection);
          var6 = Math.min(var6 + 1, 25);

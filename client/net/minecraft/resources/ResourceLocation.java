@@ -12,17 +12,21 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import io.netty.buffer.ByteBuf;
 import java.lang.reflect.Type;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.GsonHelper;
 import org.apache.commons.lang3.StringUtils;
 
 public class ResourceLocation implements Comparable<ResourceLocation> {
    public static final Codec<ResourceLocation> CODEC = Codec.STRING.comapFlatMap(ResourceLocation::read, ResourceLocation::toString).stable();
-   private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
+   public static final StreamCodec<ByteBuf, ResourceLocation> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(ResourceLocation::new, ResourceLocation::toString);
+   public static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
    public static final char NAMESPACE_SEPARATOR = ':';
    public static final String DEFAULT_NAMESPACE = "minecraft";
    public static final String REALMS_NAMESPACE = "realms";
@@ -123,11 +127,8 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof ResourceLocation)) {
-         return false;
       } else {
-         ResourceLocation var2 = (ResourceLocation)var1;
-         return this.namespace.equals(var2.namespace) && this.path.equals(var2.path);
+         return !(var1 instanceof ResourceLocation var2) ? false : this.namespace.equals(var2.namespace) && this.path.equals(var2.path);
       }
    }
 
@@ -165,14 +166,19 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       return var1 + "." + this.toLanguageKey() + "." + var2;
    }
 
-   public static ResourceLocation read(StringReader var0) throws CommandSyntaxException {
+   private static String readGreedy(StringReader var0) {
       int var1 = var0.getCursor();
 
-      while(var0.canRead() && isAllowedInResourceLocation(var0.peek())) {
+      while (var0.canRead() && isAllowedInResourceLocation(var0.peek())) {
          var0.skip();
       }
 
-      String var2 = var0.getString().substring(var1, var0.getCursor());
+      return var0.getString().substring(var1, var0.getCursor());
+   }
+
+   public static ResourceLocation read(StringReader var0) throws CommandSyntaxException {
+      int var1 = var0.getCursor();
+      String var2 = readGreedy(var0);
 
       try {
          return new ResourceLocation(var2);
@@ -182,12 +188,27 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       }
    }
 
+   public static ResourceLocation readNonEmpty(StringReader var0) throws CommandSyntaxException {
+      int var1 = var0.getCursor();
+      String var2 = readGreedy(var0);
+      if (var2.isEmpty()) {
+         throw ERROR_INVALID.createWithContext(var0);
+      } else {
+         try {
+            return new ResourceLocation(var2);
+         } catch (ResourceLocationException var4) {
+            var0.setCursor(var1);
+            throw ERROR_INVALID.createWithContext(var0);
+         }
+      }
+   }
+
    public static boolean isAllowedInResourceLocation(char var0) {
       return var0 >= '0' && var0 <= '9' || var0 >= 'a' && var0 <= 'z' || var0 == '_' || var0 == ':' || var0 == '/' || var0 == '.' || var0 == '-';
    }
 
    public static boolean isValidPath(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
+      for (int var1 = 0; var1 < var0.length(); var1++) {
          if (!validPathChar(var0.charAt(var1))) {
             return false;
          }
@@ -197,7 +218,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    }
 
    public static boolean isValidNamespace(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
+      for (int var1 = 0; var1 < var0.length(); var1++) {
          if (!validNamespaceChar(var0.charAt(var1))) {
             return false;
          }

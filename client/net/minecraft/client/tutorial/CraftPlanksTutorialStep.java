@@ -26,7 +26,7 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
 
    @Override
    public void tick() {
-      ++this.timeWaiting;
+      this.timeWaiting++;
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
@@ -68,7 +68,7 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
    }
 
    public static boolean hasCraftedPlanksPreviously(LocalPlayer var0, TagKey<Item> var1) {
-      for(Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
+      for (Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
          if (var0.getStats().getValue(Stats.ITEM_CRAFTED.get((Item)var3.value())) > 0) {
             return true;
          }

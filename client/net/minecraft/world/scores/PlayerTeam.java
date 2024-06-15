@@ -158,7 +158,7 @@ public class PlayerTeam extends Team {
    }
 
    public int packOptions() {
-      int var1 = 0;
+      byte var1 = 0;
       if (this.isAllowFriendlyFire()) {
          var1 |= 1;
       }

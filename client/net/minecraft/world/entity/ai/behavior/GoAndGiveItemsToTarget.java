@@ -68,7 +68,7 @@ public class GoAndGiveItemsToTarget<E extends LivingEntity & InventoryCarrier> e
             if (!var9.isEmpty()) {
                throwItem(var2, var9, getThrowPosition(var6));
                if (var2 instanceof Allay var10) {
-                  AllayAi.getLikedPlayer((LivingEntity)var10).ifPresent(var3x -> this.triggerDropItemOnBlock(var6, var9, var3x));
+                  AllayAi.getLikedPlayer(var10).ifPresent(var3x -> this.triggerDropItemOnBlock(var6, var9, var3x));
                }
 
                var2.getBrain().setMemory(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, 60);

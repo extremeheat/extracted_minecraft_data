@@ -8,11 +8,11 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -63,13 +63,12 @@ import net.minecraft.world.level.gameevent.EntityPositionSource;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 public class Warden extends Monster implements VibrationSystem {
@@ -118,12 +117,12 @@ public class Warden extends Monster implements VibrationSystem {
       this.dynamicGameEventListener = new DynamicGameEventListener<>(new VibrationSystem.Listener(this));
       this.xpReward = 5;
       this.getNavigation().setCanFloat(true);
-      this.setPathfindingMalus(BlockPathTypes.UNPASSABLE_RAIL, 0.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_OTHER, 8.0F);
-      this.setPathfindingMalus(BlockPathTypes.POWDER_SNOW, 8.0F);
-      this.setPathfindingMalus(BlockPathTypes.LAVA, 8.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, 0.0F);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.UNPASSABLE_RAIL, 0.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_OTHER, 8.0F);
+      this.setPathfindingMalus(PathType.POWDER_SNOW, 8.0F);
+      this.setPathfindingMalus(PathType.LAVA, 8.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
    }
 
    @Override
@@ -222,9 +221,9 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(CLIENT_ANGER_LEVEL, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(CLIENT_ANGER_LEVEL, 0);
    }
 
    public int getClientAngerLevel() {
@@ -237,9 +236,8 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Override
    public void tick() {
-      Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
-         VibrationSystem.Ticker.tick((Level)var1, this.vibrationData, this.vibrationUser);
+      if (this.level() instanceof ServerLevel var1) {
+         VibrationSystem.Ticker.tick(var1, this.vibrationData, this.vibrationUser);
          if (this.isPersistenceRequired() || this.requiresCustomPersistence()) {
             WardenAi.setDigCooldown(this);
          }
@@ -251,23 +249,21 @@ public class Warden extends Monster implements VibrationSystem {
             this.heartAnimation = 10;
             if (!this.isSilent()) {
                this.level()
-                  .playLocalSound(
-                     this.getX(), this.getY(), this.getZ(), SoundEvents.WARDEN_HEARTBEAT, this.getSoundSource(), 5.0F, this.getVoicePitch(), false
-                  );
+                  .playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.WARDEN_HEARTBEAT, this.getSoundSource(), 5.0F, this.getVoicePitch(), false);
             }
          }
 
          this.tendrilAnimationO = this.tendrilAnimation;
          if (this.tendrilAnimation > 0) {
-            --this.tendrilAnimation;
+            this.tendrilAnimation--;
          }
 
          this.heartAnimationO = this.heartAnimation;
          if (this.heartAnimation > 0) {
-            --this.heartAnimation;
+            this.heartAnimation--;
          }
 
-         switch(this.getPose()) {
+         switch (this.getPose()) {
             case EMERGING:
                this.clientDiggingParticles(this.emergeAnimationState);
                break;
@@ -328,7 +324,7 @@ public class Warden extends Monster implements VibrationSystem {
          RandomSource var2 = this.getRandom();
          BlockState var3 = this.getBlockStateOn();
          if (var3.getRenderShape() != RenderShape.INVISIBLE) {
-            for(int var4 = 0; var4 < 30; ++var4) {
+            for (int var4 = 0; var4 < 30; var4++) {
                double var5 = this.getX() + (double)Mth.randomBetween(var2, -0.7F, 0.7F);
                double var7 = this.getY();
                double var9 = this.getZ() + (double)Mth.randomBetween(var2, -0.7F, 0.7F);
@@ -341,7 +337,7 @@ public class Warden extends Monster implements VibrationSystem {
    @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (DATA_POSE.equals(var1)) {
-         switch(this.getPose()) {
+         switch (this.getPose()) {
             case EMERGING:
                this.emergeAnimationState.start(this.tickCount);
                break;
@@ -371,7 +367,7 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Override
    public Brain<Warden> getBrain() {
-      return super.getBrain();
+      return (Brain<Warden>)super.getBrain();
    }
 
    @Override
@@ -382,8 +378,7 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Override
    public void updateDynamicGameEventListener(BiConsumer<DynamicGameEventListener<?>, ServerLevel> var1) {
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
+      if (this.level() instanceof ServerLevel var2) {
          var1.accept(this.dynamicGameEventListener, var2);
       }
    }
@@ -468,7 +463,7 @@ public class Warden extends Monster implements VibrationSystem {
    public void increaseAngerAt(@Nullable Entity var1, int var2, boolean var3) {
       if (!this.isNoAi() && this.canTargetEntity(var1)) {
          WardenAi.setDigCooldown(this);
-         boolean var4 = !(this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null) instanceof Player);
+         boolean var4 = !(this.getTarget() instanceof Player);
          int var5 = this.angerManagement.increaseAnger(var1, var2);
          if (var1 instanceof Player && var4 && AngerLevel.byAnger(var5).isAngry()) {
             this.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
@@ -487,7 +482,7 @@ public class Warden extends Monster implements VibrationSystem {
    @Nullable
    @Override
    public LivingEntity getTarget() {
-      return this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
+      return this.getTargetFromBrain();
    }
 
    @Override
@@ -497,9 +492,7 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.getBrain().setMemoryWithExpiry(MemoryModuleType.DIG_COOLDOWN, Unit.INSTANCE, 1200L);
       if (var3 == MobSpawnType.TRIGGERED) {
          this.setPose(Pose.EMERGING);
@@ -507,7 +500,7 @@ public class Warden extends Monster implements VibrationSystem {
          this.playSound(SoundEvents.WARDEN_AGITATED, 5.0F, 1.0F);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -518,8 +511,8 @@ public class Warden extends Monster implements VibrationSystem {
          this.increaseAngerAt(var4, AngerLevel.ANGRY.getMinimumAnger() + 20, false);
          if (this.brain.getMemory(MemoryModuleType.ATTACK_TARGET).isEmpty()
             && var4 instanceof LivingEntity var5
-            && (!var1.isIndirect() || this.closerThan((Entity)var5, 5.0))) {
-            this.setAttackTarget((LivingEntity)var5);
+            && (!var1.isIndirect() || this.closerThan(var5, 5.0))) {
+            this.setAttackTarget(var5);
          }
       }
 
@@ -534,9 +527,9 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    @Override
-   public EntityDimensions getDimensions(Pose var1) {
-      EntityDimensions var2 = super.getDimensions(var1);
-      return this.isDiggingOrEmerging() ? EntityDimensions.fixed(var2.width, 1.0F) : var2;
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      EntityDimensions var2 = super.getDefaultDimensions(var1);
+      return this.isDiggingOrEmerging() ? EntityDimensions.fixed(var2.width(), 1.0F) : var2;
    }
 
    @Override
@@ -578,11 +571,6 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.25F * var3, 0.0F);
-   }
-
-   @Override
    public VibrationSystem.Data getVibrationData() {
       return this.vibrationData;
    }
@@ -621,14 +609,13 @@ public class Warden extends Monster implements VibrationSystem {
       }
 
       @Override
-      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, GameEvent.Context var4) {
+      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.Context var4) {
          if (!Warden.this.isNoAi()
             && !Warden.this.isDeadOrDying()
             && !Warden.this.getBrain().hasMemoryValue(MemoryModuleType.VIBRATION_COOLDOWN)
             && !Warden.this.isDiggingOrEmerging()
             && var1.getWorldBorder().isWithinBounds(var2)) {
-            Entity var6 = var4.sourceEntity();
-            if (var6 instanceof LivingEntity var5 && !Warden.this.canTargetEntity((Entity)var5)) {
+            if (var4.sourceEntity() instanceof LivingEntity var5 && !Warden.this.canTargetEntity(var5)) {
                return false;
             }
 
@@ -639,7 +626,7 @@ public class Warden extends Monster implements VibrationSystem {
       }
 
       @Override
-      public void onReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, @Nullable Entity var4, @Nullable Entity var5, float var6) {
+      public void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6) {
          if (!Warden.this.isDeadOrDying()) {
             Warden.this.brain.setMemoryWithExpiry(MemoryModuleType.VIBRATION_COOLDOWN, Unit.INSTANCE, 40L);
             var1.broadcastEntityEvent(Warden.this, (byte)61);

@@ -8,7 +8,8 @@ public enum EquipmentSlot implements StringRepresentable {
    FEET(EquipmentSlot.Type.ARMOR, 0, 1, "feet"),
    LEGS(EquipmentSlot.Type.ARMOR, 1, 2, "legs"),
    CHEST(EquipmentSlot.Type.ARMOR, 2, 3, "chest"),
-   HEAD(EquipmentSlot.Type.ARMOR, 3, 4, "head");
+   HEAD(EquipmentSlot.Type.ARMOR, 3, 4, "head"),
+   BODY(EquipmentSlot.Type.BODY, 0, 6, "body");
 
    public static final StringRepresentable.EnumCodec<EquipmentSlot> CODEC = StringRepresentable.fromEnum(EquipmentSlot::values);
    private final EquipmentSlot.Type type;
@@ -16,11 +17,11 @@ public enum EquipmentSlot implements StringRepresentable {
    private final int filterFlag;
    private final String name;
 
-   private EquipmentSlot(EquipmentSlot.Type var3, int var4, int var5, String var6) {
-      this.type = var3;
-      this.index = var4;
-      this.filterFlag = var5;
-      this.name = var6;
+   private EquipmentSlot(final EquipmentSlot.Type nullxx, final int nullxxx, final int nullxxxx, final String nullxxxxx) {
+      this.type = nullxx;
+      this.index = nullxxx;
+      this.filterFlag = nullxxxx;
+      this.name = nullxxxxx;
    }
 
    public EquipmentSlot.Type getType() {
@@ -62,7 +63,7 @@ public enum EquipmentSlot implements StringRepresentable {
    }
 
    public static EquipmentSlot byTypeAndIndex(EquipmentSlot.Type var0, int var1) {
-      for(EquipmentSlot var5 : values()) {
+      for (EquipmentSlot var5 : values()) {
          if (var5.getType() == var0 && var5.getIndex() == var1) {
             return var5;
          }
@@ -73,7 +74,8 @@ public enum EquipmentSlot implements StringRepresentable {
 
    public static enum Type {
       HAND,
-      ARMOR;
+      ARMOR,
+      BODY;
 
       private Type() {
       }

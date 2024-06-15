@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -12,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -19,7 +21,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,8 +41,6 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -49,13 +48,11 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Ocelot extends Animal {
    public static final double CROUCH_SPEED_MOD = 0.6;
    public static final double WALK_SPEED_MOD = 0.8;
    public static final double SPRINT_SPEED_MOD = 1.33;
-   private static final Ingredient TEMPT_INGREDIENT = Ingredient.of(Items.COD, Items.SALMON);
    private static final EntityDataAccessor<Boolean> DATA_TRUSTING = SynchedEntityData.defineId(Ocelot.class, EntityDataSerializers.BOOLEAN);
    @Nullable
    private Ocelot.OcelotAvoidEntityGoal<Player> ocelotAvoidPlayersGoal;
@@ -89,14 +86,14 @@ public class Ocelot extends Animal {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_TRUSTING, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_TRUSTING, false);
    }
 
    @Override
    protected void registerGoals() {
-      this.temptGoal = new Ocelot.OcelotTemptGoal(this, 0.6, TEMPT_INGREDIENT, true);
+      this.temptGoal = new Ocelot.OcelotTemptGoal(this, 0.6, var0 -> var0.is(ItemTags.OCELOT_FOOD), true);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(3, this.temptGoal);
       this.goalSelector.addGoal(7, new LeapAtTargetGoal(this, 0.3F));
@@ -206,7 +203,7 @@ public class Ocelot extends Animal {
          var2 = ParticleTypes.SMOKE;
       }
 
-      for(int var3 = 0; var3 < 7; ++var3) {
+      for (int var3 = 0; var3 < 7; var3++) {
          double var4 = this.random.nextGaussian() * 0.02;
          double var6 = this.random.nextGaussian() * 0.02;
          double var8 = this.random.nextGaussian() * 0.02;
@@ -232,7 +229,7 @@ public class Ocelot extends Animal {
 
    @Override
    public boolean isFood(ItemStack var1) {
-      return TEMPT_INGREDIENT.test(var1);
+      return var1.is(ItemTags.OCELOT_FOOD);
    }
 
    public static boolean checkOcelotSpawnRules(EntityType<Ocelot> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
@@ -258,14 +255,12 @@ public class Ocelot extends Animal {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    @Override
@@ -276,11 +271,6 @@ public class Ocelot extends Animal {
    @Override
    public boolean isSteppingCarefully() {
       return this.isCrouching() || super.isSteppingCarefully();
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 
    static class OcelotAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
@@ -305,7 +295,7 @@ public class Ocelot extends Animal {
    static class OcelotTemptGoal extends TemptGoal {
       private final Ocelot ocelot;
 
-      public OcelotTemptGoal(Ocelot var1, double var2, Ingredient var4, boolean var5) {
+      public OcelotTemptGoal(Ocelot var1, double var2, Predicate<ItemStack> var4, boolean var5) {
          super(var1, var2, var4, var5);
          this.ocelot = var1;
       }

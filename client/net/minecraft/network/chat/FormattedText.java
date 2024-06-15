@@ -59,7 +59,7 @@ public interface FormattedText {
       return new FormattedText() {
          @Override
          public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
-            for(FormattedText var3 : var0) {
+            for (FormattedText var3 : var0) {
                Optional var4 = var3.visit(var1);
                if (var4.isPresent()) {
                   return var4;
@@ -71,7 +71,7 @@ public interface FormattedText {
 
          @Override
          public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
-            for(FormattedText var4 : var0) {
+            for (FormattedText var4 : var0) {
                Optional var5 = var4.visit(var1, var2);
                if (var5.isPresent()) {
                   return var5;

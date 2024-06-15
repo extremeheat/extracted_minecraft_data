@@ -27,9 +27,7 @@ public class DatapackLoadFailureScreen extends Screen {
             .build()
       );
       this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_BACK, var1 -> this.cancelCallback.run())
-            .bounds(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20)
-            .build()
+         Button.builder(CommonComponents.GUI_BACK, var1 -> this.cancelCallback.run()).bounds(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20).build()
       );
    }
 

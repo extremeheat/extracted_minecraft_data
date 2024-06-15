@@ -88,7 +88,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       this.isVisible = true;
       this.recipeButtons.clear();
 
-      for(int var21 = 0; var21 < var12; ++var21) {
+      for (int var21 = 0; var21 < var12; var21++) {
          boolean var22 = var21 < var11;
          RecipeHolder var23 = var22 ? (RecipeHolder)var9.get(var21) : (RecipeHolder)var10.get(var21 - var11);
          int var24 = this.x + 4 + 25 * (var21 % var13);
@@ -117,7 +117,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       if (var5 != 0) {
          return false;
       } else {
-         for(OverlayRecipeComponent.OverlayRecipeButton var7 : this.recipeButtons) {
+         for (OverlayRecipeComponent.OverlayRecipeButton var7 : this.recipeButtons) {
             if (var7.mouseClicked(var1, var3, var5)) {
                this.lastRecipeClicked = var7.recipe;
                return true;
@@ -143,11 +143,11 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          int var5 = this.recipeButtons.size() <= 16 ? 4 : 5;
          int var6 = Math.min(this.recipeButtons.size(), var5);
          int var7 = Mth.ceil((float)this.recipeButtons.size() / (float)var5);
-         boolean var8 = true;
+         byte var8 = 4;
          var1.blitSprite(OVERLAY_RECIPE_SPRITE, this.x, this.y, var6 * 25 + 8, var7 * 25 + 8);
          RenderSystem.disableBlend();
 
-         for(OverlayRecipeComponent.OverlayRecipeButton var10 : this.recipeButtons) {
+         for (OverlayRecipeComponent.OverlayRecipeButton var10 : this.recipeButtons) {
             var10.render(var1, var2, var3, var4);
          }
 
@@ -177,13 +177,13 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       private final boolean isCraftable;
       protected final List<OverlayRecipeComponent.OverlayRecipeButton.Pos> ingredientPos = Lists.newArrayList();
 
-      public OverlayRecipeButton(int var2, int var3, RecipeHolder<?> var4, boolean var5) {
-         super(var2, var3, 200, 20, CommonComponents.EMPTY);
+      public OverlayRecipeButton(final int nullx, final int nullxx, final RecipeHolder<?> nullxxx, final boolean nullxxxx) {
+         super(nullx, nullxx, 200, 20, CommonComponents.EMPTY);
          this.width = 24;
          this.height = 24;
-         this.recipe = var4;
-         this.isCraftable = var5;
-         this.calculateIngredientsPositions(var4);
+         this.recipe = nullxxx;
+         this.isCraftable = nullxxxx;
+         this.calculateIngredientsPositions(nullxxx);
       }
 
       protected void calculateIngredientsPositions(RecipeHolder<?> var1) {
@@ -226,7 +226,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          var1.pose().pushPose();
          var1.pose().translate((double)(this.getX() + 2), (double)(this.getY() + 2), 150.0);
 
-         for(OverlayRecipeComponent.OverlayRecipeButton.Pos var7 : this.ingredientPos) {
+         for (OverlayRecipeComponent.OverlayRecipeButton.Pos var7 : this.ingredientPos) {
             var1.pose().pushPose();
             var1.pose().translate((double)var7.x, (double)var7.y, 0.0);
             var1.pose().scale(0.375F, 0.375F, 1.0F);
@@ -246,18 +246,18 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          public final int x;
          public final int y;
 
-         public Pos(int var2, int var3, ItemStack[] var4) {
+         public Pos(final int nullx, final int nullxx, final ItemStack[] nullxxx) {
             super();
-            this.x = var2;
-            this.y = var3;
-            this.ingredients = var4;
+            this.x = nullx;
+            this.y = nullxx;
+            this.ingredients = nullxxx;
          }
       }
    }
 
    class OverlaySmeltingRecipeButton extends OverlayRecipeComponent.OverlayRecipeButton {
-      public OverlaySmeltingRecipeButton(int var2, int var3, RecipeHolder<?> var4, boolean var5) {
-         super(var2, var3, var4, var5);
+      public OverlaySmeltingRecipeButton(final int nullx, final int nullxx, final RecipeHolder<?> nullxxx, final boolean nullxxxx) {
+         super(nullx, nullxx, nullxxx, nullxxxx);
       }
 
       @Override

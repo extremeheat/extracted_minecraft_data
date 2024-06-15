@@ -90,13 +90,13 @@ public class Sound implements Weighted<Sound> {
 
       private final String name;
 
-      private Type(String var3) {
-         this.name = var3;
+      private Type(final String nullxx) {
+         this.name = nullxx;
       }
 
       @Nullable
       public static Sound.Type getByName(String var0) {
-         for(Sound.Type var4 : values()) {
+         for (Sound.Type var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }

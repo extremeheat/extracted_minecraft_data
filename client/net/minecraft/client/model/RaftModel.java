@@ -42,9 +42,9 @@ public class RaftModel extends ListModel<Boat> {
             .addBox(-14.0F, -9.0F, -8.0F, 28.0F, 16.0F, 4.0F),
          PartPose.offsetAndRotation(0.0F, -2.1F, 1.0F, 1.5708F, 0.0F, 0.0F)
       );
-      boolean var1 = true;
-      boolean var2 = true;
-      boolean var3 = true;
+      byte var1 = 20;
+      byte var2 = 7;
+      byte var3 = 6;
       float var4 = -5.0F;
       var0.addOrReplaceChild(
          "left_paddle",

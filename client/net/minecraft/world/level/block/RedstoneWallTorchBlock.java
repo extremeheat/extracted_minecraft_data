@@ -40,18 +40,18 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return WallTorchBlock.getShape(var1);
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return Blocks.WALL_TORCH.canSurvive(var1, var2, var3);
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+      return WallTorchBlock.canSurvive(var2, var3, var1.getValue(FACING));
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return Blocks.WALL_TORCH.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+      return var2.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : var1;
    }
 
    @Nullable
@@ -80,18 +80,18 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(LIT) && var1.getValue(FACING) != var4 ? 15 : 0;
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      return Blocks.WALL_TORCH.rotate(var1, var2);
+   protected BlockState rotate(BlockState var1, Rotation var2) {
+      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
-      return Blocks.WALL_TORCH.mirror(var1, var2);
+   protected BlockState mirror(BlockState var1, Mirror var2) {
+      return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
    @Override

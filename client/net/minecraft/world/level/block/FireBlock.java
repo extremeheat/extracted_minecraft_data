@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.minecraft.Util;
@@ -113,12 +112,12 @@ public class FireBlock extends BaseFireBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return this.canSurvive(var1, var4, var5) ? this.getStateWithAge(var4, var5, var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shapesCache.get(var1.setValue(AGE, Integer.valueOf(0)));
    }
 
@@ -133,7 +132,7 @@ public class FireBlock extends BaseFireBlock {
       if (!this.canBurn(var4) && !var4.isFaceSturdy(var1, var3, Direction.UP)) {
          BlockState var5 = this.defaultBlockState();
 
-         for(Direction var9 : Direction.values()) {
+         for (Direction var9 : Direction.values()) {
             BooleanProperty var10 = PROPERTY_BY_DIRECTION.get(var9);
             if (var10 != null) {
                var5 = var5.setValue(var10, Boolean.valueOf(this.canBurn(var1.getBlockState(var2.relative(var9)))));
@@ -147,13 +146,13 @@ public class FireBlock extends BaseFireBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       return var2.getBlockState(var4).isFaceSturdy(var2, var4, Direction.UP) || this.isValidFireLocation(var2, var3);
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
          if (!var1.canSurvive(var2, var3)) {
@@ -198,9 +197,9 @@ public class FireBlock extends BaseFireBlock {
             this.checkBurnOut(var2, var3.south(), 300 + var10, var4, var7);
             BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
 
-            for(int var12 = -1; var12 <= 1; ++var12) {
-               for(int var13 = -1; var13 <= 1; ++var13) {
-                  for(int var14 = -1; var14 <= 4; ++var14) {
+            for (int var12 = -1; var12 <= 1; var12++) {
+               for (int var13 = -1; var13 <= 1; var13++) {
+                  for (int var14 = -1; var14 <= 4; var14++) {
                      if (var12 != 0 || var14 != 0 || var13 != 0) {
                         int var15 = 100;
                         if (var14 > 1) {
@@ -270,7 +269,7 @@ public class FireBlock extends BaseFireBlock {
    }
 
    private boolean isValidFireLocation(BlockGetter var1, BlockPos var2) {
-      for(Direction var6 : Direction.values()) {
+      for (Direction var6 : Direction.values()) {
          if (this.canBurn(var1.getBlockState(var2.relative(var6)))) {
             return true;
          }
@@ -285,7 +284,7 @@ public class FireBlock extends BaseFireBlock {
       } else {
          int var3 = 0;
 
-         for(Direction var7 : Direction.values()) {
+         for (Direction var7 : Direction.values()) {
             BlockState var8 = var1.getBlockState(var2.relative(var7));
             var3 = Math.max(this.getIgniteOdds(var8), var3);
          }
@@ -300,7 +299,7 @@ public class FireBlock extends BaseFireBlock {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       super.onPlace(var1, var2, var3, var4, var5);
       var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
    }

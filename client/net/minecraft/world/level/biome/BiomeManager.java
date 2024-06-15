@@ -42,7 +42,7 @@ public class BiomeManager {
       int var14 = 0;
       double var15 = 1.0 / 0.0;
 
-      for(int var17 = 0; var17 < 8; ++var17) {
+      for (int var17 = 0; var17 < 8; var17++) {
          boolean var18 = (var17 & 4) == 0;
          boolean var19 = (var17 & 2) == 0;
          boolean var20 = (var17 & 1) == 0;

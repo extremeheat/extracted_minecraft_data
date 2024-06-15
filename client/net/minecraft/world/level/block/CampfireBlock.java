@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -17,7 +16,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -88,32 +87,29 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       );
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof CampfireBlockEntity var8) {
-         ItemStack var9 = var4.getItemInHand(var5);
-         Optional var10 = var8.getCookableRecipe(var9);
-         if (var10.isPresent()) {
-            if (!var2.isClientSide
-               && var8.placeFood(
-                  var4, var4.getAbilities().instabuild ? var9.copy() : var9, ((CampfireCookingRecipe)((RecipeHolder)var10.get()).value()).getCookingTime()
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      if (var3.getBlockEntity(var4) instanceof CampfireBlockEntity var9) {
+         ItemStack var10 = var5.getItemInHand(var6);
+         Optional var11 = var9.getCookableRecipe(var10);
+         if (var11.isPresent()) {
+            if (!var3.isClientSide
+               && var9.placeFood(
+                  var5, var5.hasInfiniteMaterials() ? var10.copy() : var10, ((CampfireCookingRecipe)((RecipeHolder)var11.get()).value()).getCookingTime()
                )) {
-               var4.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
-               return InteractionResult.SUCCESS;
+               var5.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
+               return ItemInteractionResult.SUCCESS;
             }
 
-            return InteractionResult.CONSUME;
+            return ItemInteractionResult.CONSUME;
          }
       }
 
-      return InteractionResult.PASS;
+      return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var1.getValue(LIT) && var4 instanceof LivingEntity && !EnchantmentHelper.hasFrostWalker((LivingEntity)var4)) {
          var4.hurt(var2.damageSources().inFire(), (float)this.fireDamage);
       }
@@ -122,7 +118,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof CampfireBlockEntity) {
@@ -147,7 +143,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -162,12 +158,12 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
@@ -188,7 +184,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          }
 
          if (this.spawnParticles && var4.nextInt(5) == 0) {
-            for(int var5 = 0; var5 < var4.nextInt(1) + 1; ++var5) {
+            for (int var5 = 0; var5 < var4.nextInt(1) + 1; var5++) {
                var2.addParticle(
                   ParticleTypes.LAVA,
                   (double)var3.getX() + 0.5,
@@ -205,7 +201,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
    public static void dowse(@Nullable Entity var0, LevelAccessor var1, BlockPos var2, BlockState var3) {
       if (var1.isClientSide()) {
-         for(int var4 = 0; var4 < 20; ++var4) {
+         for (int var4 = 0; var4 < 20; var4++) {
             makeParticles((Level)var1, var2, var3.getValue(SIGNAL_FIRE), true);
          }
       }
@@ -239,7 +235,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    @Override
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       BlockPos var5 = var3.getBlockPos();
       if (!var1.isClientSide && var4.isOnFire() && var4.mayInteract(var1, var5) && !var2.getValue(LIT) && !var2.getValue(WATERLOGGED)) {
          var1.setBlock(var5, var2.setValue(BlockStateProperties.LIT, Boolean.valueOf(true)), 11);
@@ -273,7 +269,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    public static boolean isSmokeyPos(Level var0, BlockPos var1) {
-      for(int var2 = 1; var2 <= 5; ++var2) {
+      for (int var2 = 1; var2 <= 5; var2++) {
          BlockPos var3 = var1.below(var2);
          BlockState var4 = var0.getBlockState(var3);
          if (isLitCampfire(var4)) {
@@ -295,17 +291,17 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
@@ -332,7 +328,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 

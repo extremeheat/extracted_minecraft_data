@@ -52,7 +52,7 @@ public class BeetrootBlock extends CropBlock {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(3) != 0) {
          super.randomTick(var1, var2, var3, var4);
       }
@@ -69,7 +69,7 @@ public class BeetrootBlock extends CropBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE_BY_AGE[this.getAge(var1)];
    }
 }

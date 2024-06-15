@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -50,7 +49,7 @@ public class MetricsRegistry {
       }
 
       private static void beforeTick(List<MetricSampler> var0) {
-         for(MetricSampler var2 : var0) {
+         for (MetricSampler var2 : var0) {
             var2.onStartTick();
          }
       }
@@ -58,7 +57,7 @@ public class MetricsRegistry {
       private static double averageValueFromDelegates(List<MetricSampler> var0) {
          double var1 = 0.0;
 
-         for(MetricSampler var4 : var0) {
+         for (MetricSampler var4 : var0) {
             var1 += var4.getSampler().getAsDouble();
          }
 

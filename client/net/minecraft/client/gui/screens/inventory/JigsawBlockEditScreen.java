@@ -159,8 +159,17 @@ public class JigsawBlockEditScreen extends Screen {
          Button.builder(CommonComponents.GUI_DONE, var1x -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build()
       );
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
-      this.setInitialFocus(this.poolEdit);
       this.updateValidity();
+   }
+
+   @Override
+   protected void setInitialFocus() {
+      this.setInitialFocus(this.poolEdit);
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderTransparentBackground(var1);
    }
 
    private void updateValidity() {
