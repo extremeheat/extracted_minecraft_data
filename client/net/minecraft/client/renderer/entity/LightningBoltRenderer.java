@@ -101,10 +101,10 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt> {
       boolean var14,
       boolean var15
    ) {
-      var1.vertex(var0, var2 + (var12 ? var11 : -var11), (float)(var4 * 16), var3 + (var13 ? var11 : -var11)).color(var7, var8, var9, 0.3F).endVertex();
-      var1.vertex(var0, var5 + (var12 ? var10 : -var10), (float)((var4 + 1) * 16), var6 + (var13 ? var10 : -var10)).color(var7, var8, var9, 0.3F).endVertex();
-      var1.vertex(var0, var5 + (var14 ? var10 : -var10), (float)((var4 + 1) * 16), var6 + (var15 ? var10 : -var10)).color(var7, var8, var9, 0.3F).endVertex();
-      var1.vertex(var0, var2 + (var14 ? var11 : -var11), (float)(var4 * 16), var3 + (var15 ? var11 : -var11)).color(var7, var8, var9, 0.3F).endVertex();
+      var1.addVertex(var0, var2 + (var12 ? var11 : -var11), (float)(var4 * 16), var3 + (var13 ? var11 : -var11)).setColor(var7, var8, var9, 0.3F);
+      var1.addVertex(var0, var5 + (var12 ? var10 : -var10), (float)((var4 + 1) * 16), var6 + (var13 ? var10 : -var10)).setColor(var7, var8, var9, 0.3F);
+      var1.addVertex(var0, var5 + (var14 ? var10 : -var10), (float)((var4 + 1) * 16), var6 + (var15 ? var10 : -var10)).setColor(var7, var8, var9, 0.3F);
+      var1.addVertex(var0, var2 + (var14 ? var11 : -var11), (float)(var4 * 16), var3 + (var15 ? var11 : -var11)).setColor(var7, var8, var9, 0.3F);
    }
 
    public ResourceLocation getTextureLocation(LightningBolt var1) {

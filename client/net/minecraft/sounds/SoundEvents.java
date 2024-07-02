@@ -386,12 +386,12 @@ public class SoundEvents {
    public static final SoundEvent CROP_BREAK = register("block.crop.break");
    public static final SoundEvent CROP_PLANTED = register("item.crop.plant");
    public static final SoundEvent CROSSBOW_HIT = register("item.crossbow.hit");
-   public static final SoundEvent CROSSBOW_LOADING_END = register("item.crossbow.loading_end");
-   public static final SoundEvent CROSSBOW_LOADING_MIDDLE = register("item.crossbow.loading_middle");
-   public static final SoundEvent CROSSBOW_LOADING_START = register("item.crossbow.loading_start");
-   public static final SoundEvent CROSSBOW_QUICK_CHARGE_1 = register("item.crossbow.quick_charge_1");
-   public static final SoundEvent CROSSBOW_QUICK_CHARGE_2 = register("item.crossbow.quick_charge_2");
-   public static final SoundEvent CROSSBOW_QUICK_CHARGE_3 = register("item.crossbow.quick_charge_3");
+   public static final Holder<SoundEvent> CROSSBOW_LOADING_END = registerForHolder("item.crossbow.loading_end");
+   public static final Holder<SoundEvent> CROSSBOW_LOADING_MIDDLE = registerForHolder("item.crossbow.loading_middle");
+   public static final Holder<SoundEvent> CROSSBOW_LOADING_START = registerForHolder("item.crossbow.loading_start");
+   public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_1 = registerForHolder("item.crossbow.quick_charge_1");
+   public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_2 = registerForHolder("item.crossbow.quick_charge_2");
+   public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_3 = registerForHolder("item.crossbow.quick_charge_3");
    public static final SoundEvent CROSSBOW_SHOOT = register("item.crossbow.shoot");
    public static final SoundEvent DECORATED_POT_BREAK = register("block.decorated_pot.break");
    public static final SoundEvent DECORATED_POT_FALL = register("block.decorated_pot.fall");
@@ -691,9 +691,9 @@ public class SoundEvents {
    public static final SoundEvent TRIAL_SPAWNER_SPAWN_ITEM = register("block.trial_spawner.spawn_item");
    public static final SoundEvent TRIAL_SPAWNER_SPAWN_ITEM_BEGIN = register("block.trial_spawner.spawn_item_begin");
    public static final SoundEvent TRIAL_SPAWNER_DETECT_PLAYER = register("block.trial_spawner.detect_player");
-   public static final SoundEvent TRIAL_SPAWNER_OMINOUS_ACTIVATE = register("block.trial_spawner.charge_activate");
+   public static final SoundEvent TRIAL_SPAWNER_OMINOUS_ACTIVATE = register("block.trial_spawner.ominous_activate");
    public static final SoundEvent TRIAL_SPAWNER_AMBIENT = register("block.trial_spawner.ambient");
-   public static final SoundEvent TRIAL_SPAWNER_AMBIENT_OMINOUS = register("block.trial_spawner.ambient_charged");
+   public static final SoundEvent TRIAL_SPAWNER_AMBIENT_OMINOUS = register("block.trial_spawner.ambient_ominous");
    public static final SoundEvent TRIAL_SPAWNER_OPEN_SHUTTER = register("block.trial_spawner.open_shutter");
    public static final SoundEvent TRIAL_SPAWNER_CLOSE_SHUTTER = register("block.trial_spawner.close_shutter");
    public static final SoundEvent TRIAL_SPAWNER_EJECT_ITEM = register("block.trial_spawner.eject_item");
@@ -872,22 +872,25 @@ public class SoundEvents {
    public static final SoundEvent MULE_JUMP = register("entity.mule.jump");
    public static final Holder.Reference<SoundEvent> MUSIC_CREATIVE = registerForHolder("music.creative");
    public static final Holder.Reference<SoundEvent> MUSIC_CREDITS = registerForHolder("music.credits");
-   public static final SoundEvent MUSIC_DISC_5 = register("music_disc.5");
-   public static final SoundEvent MUSIC_DISC_11 = register("music_disc.11");
-   public static final SoundEvent MUSIC_DISC_13 = register("music_disc.13");
-   public static final SoundEvent MUSIC_DISC_BLOCKS = register("music_disc.blocks");
-   public static final SoundEvent MUSIC_DISC_CAT = register("music_disc.cat");
-   public static final SoundEvent MUSIC_DISC_CHIRP = register("music_disc.chirp");
-   public static final SoundEvent MUSIC_DISC_FAR = register("music_disc.far");
-   public static final SoundEvent MUSIC_DISC_MALL = register("music_disc.mall");
-   public static final SoundEvent MUSIC_DISC_MELLOHI = register("music_disc.mellohi");
-   public static final SoundEvent MUSIC_DISC_PIGSTEP = register("music_disc.pigstep");
-   public static final SoundEvent MUSIC_DISC_STAL = register("music_disc.stal");
-   public static final SoundEvent MUSIC_DISC_STRAD = register("music_disc.strad");
-   public static final SoundEvent MUSIC_DISC_WAIT = register("music_disc.wait");
-   public static final SoundEvent MUSIC_DISC_WARD = register("music_disc.ward");
-   public static final SoundEvent MUSIC_DISC_OTHERSIDE = register("music_disc.otherside");
-   public static final SoundEvent MUSIC_DISC_RELIC = register("music_disc.relic");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_5 = registerForHolder("music_disc.5");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_11 = registerForHolder("music_disc.11");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_13 = registerForHolder("music_disc.13");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_BLOCKS = registerForHolder("music_disc.blocks");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_CAT = registerForHolder("music_disc.cat");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_CHIRP = registerForHolder("music_disc.chirp");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_FAR = registerForHolder("music_disc.far");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_MALL = registerForHolder("music_disc.mall");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_MELLOHI = registerForHolder("music_disc.mellohi");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_PIGSTEP = registerForHolder("music_disc.pigstep");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_STAL = registerForHolder("music_disc.stal");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_STRAD = registerForHolder("music_disc.strad");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_WAIT = registerForHolder("music_disc.wait");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_WARD = registerForHolder("music_disc.ward");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_OTHERSIDE = registerForHolder("music_disc.otherside");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_RELIC = registerForHolder("music_disc.relic");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_CREATOR = registerForHolder("music_disc.creator");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_CREATOR_MUSIC_BOX = registerForHolder("music_disc.creator_music_box");
+   public static final Holder.Reference<SoundEvent> MUSIC_DISC_PRECIPICE = registerForHolder("music_disc.precipice");
    public static final Holder.Reference<SoundEvent> MUSIC_DRAGON = registerForHolder("music.dragon");
    public static final Holder.Reference<SoundEvent> MUSIC_END = registerForHolder("music.end");
    public static final Holder.Reference<SoundEvent> MUSIC_GAME = registerForHolder("music.game");
@@ -939,7 +942,7 @@ public class SoundEvents {
    public static final SoundEvent NETHER_WOOD_PRESSURE_PLATE_CLICK_ON = register("block.nether_wood_pressure_plate.click_on");
    public static final SoundEvent NETHER_WOOD_FENCE_GATE_CLOSE = register("block.nether_wood_fence_gate.close");
    public static final SoundEvent NETHER_WOOD_FENCE_GATE_OPEN = register("block.nether_wood_fence_gate.open");
-   public static final SoundEvent EMPTY = register("minecraft:intentionally_empty");
+   public static final SoundEvent EMPTY = register("intentionally_empty");
    public static final SoundEvent PACKED_MUD_BREAK = register("block.packed_mud.break");
    public static final SoundEvent PACKED_MUD_FALL = register("block.packed_mud.fall");
    public static final SoundEvent PACKED_MUD_HIT = register("block.packed_mud.hit");
@@ -1295,7 +1298,7 @@ public class SoundEvents {
    public static final SoundEvent SOUL_SOIL_PLACE = register("block.soul_soil.place");
    public static final SoundEvent SOUL_SOIL_HIT = register("block.soul_soil.hit");
    public static final SoundEvent SOUL_SOIL_FALL = register("block.soul_soil.fall");
-   public static final SoundEvent SOUL_ESCAPE = register("particle.soul_escape");
+   public static final Holder.Reference<SoundEvent> SOUL_ESCAPE = registerForHolder("particle.soul_escape");
    public static final SoundEvent SPORE_BLOSSOM_BREAK = register("block.spore_blossom.break");
    public static final SoundEvent SPORE_BLOSSOM_FALL = register("block.spore_blossom.fall");
    public static final SoundEvent SPORE_BLOSSOM_HIT = register("block.spore_blossom.hit");
@@ -1386,11 +1389,11 @@ public class SoundEvents {
    public static final SoundEvent TRIDENT_HIT = register("item.trident.hit");
    public static final SoundEvent TRIDENT_HIT_GROUND = register("item.trident.hit_ground");
    public static final SoundEvent TRIDENT_RETURN = register("item.trident.return");
-   public static final SoundEvent TRIDENT_RIPTIDE_1 = register("item.trident.riptide_1");
-   public static final SoundEvent TRIDENT_RIPTIDE_2 = register("item.trident.riptide_2");
-   public static final SoundEvent TRIDENT_RIPTIDE_3 = register("item.trident.riptide_3");
-   public static final SoundEvent TRIDENT_THROW = register("item.trident.throw");
-   public static final SoundEvent TRIDENT_THUNDER = register("item.trident.thunder");
+   public static final Holder<SoundEvent> TRIDENT_RIPTIDE_1 = registerForHolder("item.trident.riptide_1");
+   public static final Holder<SoundEvent> TRIDENT_RIPTIDE_2 = registerForHolder("item.trident.riptide_2");
+   public static final Holder<SoundEvent> TRIDENT_RIPTIDE_3 = registerForHolder("item.trident.riptide_3");
+   public static final Holder<SoundEvent> TRIDENT_THROW = registerForHolder("item.trident.throw");
+   public static final Holder<SoundEvent> TRIDENT_THUNDER = registerForHolder("item.trident.thunder");
    public static final SoundEvent TRIPWIRE_ATTACH = register("block.tripwire.attach");
    public static final SoundEvent TRIPWIRE_CLICK_OFF = register("block.tripwire.click_off");
    public static final SoundEvent TRIPWIRE_CLICK_ON = register("block.tripwire.click_on");
@@ -1441,6 +1444,7 @@ public class SoundEvents {
    public static final SoundEvent VAULT_CLOSE_SHUTTER = register("block.vault.close_shutter");
    public static final SoundEvent VAULT_DEACTIVATE = register("block.vault.deactivate");
    public static final SoundEvent VAULT_EJECT_ITEM = register("block.vault.eject_item");
+   public static final SoundEvent VAULT_REJECT_REWARDED_PLAYER = register("block.vault.reject_rewarded_player");
    public static final SoundEvent VAULT_FALL = register("block.vault.fall");
    public static final SoundEvent VAULT_HIT = register("block.vault.hit");
    public static final SoundEvent VAULT_INSERT_ITEM = register("block.vault.insert_item");
@@ -1619,7 +1623,7 @@ public class SoundEvents {
    }
 
    private static SoundEvent register(String var0) {
-      return register(new ResourceLocation(var0));
+      return register(ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static SoundEvent register(ResourceLocation var0) {
@@ -1627,7 +1631,7 @@ public class SoundEvents {
    }
 
    private static Holder.Reference<SoundEvent> registerForHolder(String var0) {
-      return registerForHolder(new ResourceLocation(var0));
+      return registerForHolder(ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static Holder.Reference<SoundEvent> registerForHolder(ResourceLocation var0) {

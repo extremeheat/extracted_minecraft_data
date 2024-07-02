@@ -1,8 +1,6 @@
 package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -23,23 +21,16 @@ public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<UsedEnderEyeTrig
       this.trigger(var1, var2x -> var2x.matches(var7));
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Doubles distance) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<UsedEnderEyeTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(UsedEnderEyeTrigger.TriggerInstance::player),
-                  MinMaxBounds.Doubles.CODEC.optionalFieldOf("distance", MinMaxBounds.Doubles.ANY).forGetter(UsedEnderEyeTrigger.TriggerInstance::distance)
-               )
-               .apply(var0, UsedEnderEyeTrigger.TriggerInstance::new)
-      );
-
-      public TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Doubles distance) {
-         super();
-         this.player = player;
-         this.distance = distance;
-      }
-
-      public boolean matches(double var1) {
-         return this.distance.matchesSqr(var1);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

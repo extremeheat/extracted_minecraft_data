@@ -1,36 +1,13 @@
 package net.minecraft.world.item.component;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
-import java.util.function.Consumer;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.TooltipFlag;
-
-public record Unbreakable(boolean showInTooltip) implements TooltipProvider {
-   public static final Codec<Unbreakable> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(Unbreakable::showInTooltip)).apply(var0, Unbreakable::new)
-   );
-   public static final StreamCodec<ByteBuf, Unbreakable> STREAM_CODEC = ByteBufCodecs.BOOL.map(Unbreakable::new, Unbreakable::showInTooltip);
-   private static final Component TOOLTIP = Component.translatable("item.unbreakable").withStyle(ChatFormatting.BLUE);
-
-   public Unbreakable(boolean showInTooltip) {
-      super();
-      this.showInTooltip = showInTooltip;
-   }
-
-   @Override
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
-      if (this.showInTooltip) {
-         var2.accept(TOOLTIP);
-      }
-   }
-
-   public Unbreakable withTooltip(boolean var1) {
-      return new Unbreakable(var1);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

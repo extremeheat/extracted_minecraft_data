@@ -3,7 +3,6 @@ package net.minecraft.world.item.crafting;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -18,11 +17,11 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
       super(var1);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
+   public boolean matches(CraftingInput var1, Level var2) {
       boolean var3 = false;
       boolean var4 = false;
 
-      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
+      for (int var5 = 0; var5 < var1.size(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.getItem() instanceof DyeItem) {
@@ -44,11 +43,11 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
       return var4 && var3;
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
       IntArrayList var3 = new IntArrayList();
       ItemStack var4 = null;
 
-      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
+      for (int var5 = 0; var5 < var1.size(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          Item var7 = var6.getItem();
          if (var7 instanceof DyeItem) {

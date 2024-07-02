@@ -1,12 +1,7 @@
 package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -28,56 +23,16 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<FallAfterE
       this.trigger(var1, var4x -> var4x.matches(var1.serverLevel(), var2, var4, var5));
    }
 
-   public static record TriggerInstance(
-      Optional<ContextAwarePredicate> player,
-      Optional<LocationPredicate> startPosition,
-      Optional<DistancePredicate> distance,
-      Optional<ContextAwarePredicate> cause
-   ) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<FallAfterExplosionTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(FallAfterExplosionTrigger.TriggerInstance::player),
-                  LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(FallAfterExplosionTrigger.TriggerInstance::startPosition),
-                  DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(FallAfterExplosionTrigger.TriggerInstance::distance),
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("cause").forGetter(FallAfterExplosionTrigger.TriggerInstance::cause)
-               )
-               .apply(var0, FallAfterExplosionTrigger.TriggerInstance::new)
-      );
-
-      public TriggerInstance(
-         Optional<ContextAwarePredicate> player,
-         Optional<LocationPredicate> startPosition,
-         Optional<DistancePredicate> distance,
-         Optional<ContextAwarePredicate> cause
-      ) {
-         super();
-         this.player = player;
-         this.startPosition = startPosition;
-         this.distance = distance;
-         this.cause = cause;
-      }
-
-      public static Criterion<FallAfterExplosionTrigger.TriggerInstance> fallAfterExplosion(DistancePredicate var0, EntityPredicate.Builder var1) {
-         return CriteriaTriggers.FALL_AFTER_EXPLOSION
-            .createCriterion(
-               new FallAfterExplosionTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(var0), Optional.of(EntityPredicate.wrap(var1)))
-            );
-      }
-
-      @Override
-      public void validate(CriterionValidator var1) {
-         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.cause(), ".cause");
-      }
-
-      public boolean matches(ServerLevel var1, Vec3 var2, Vec3 var3, @Nullable LootContext var4) {
-         if (this.startPosition.isPresent() && !this.startPosition.get().matches(var1, var2.x, var2.y, var2.z)) {
-            return false;
-         } else {
-            return this.distance.isPresent() && !this.distance.get().matches(var2.x, var2.y, var2.z, var3.x, var3.y, var3.z)
-               ? false
-               : !this.cause.isPresent() || var4 != null && this.cause.get().matches(var4);
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

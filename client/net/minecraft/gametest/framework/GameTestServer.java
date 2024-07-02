@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
+import net.minecraft.ReportType;
 import net.minecraft.SystemReport;
 import net.minecraft.Util;
 import net.minecraft.commands.Commands;
@@ -60,6 +61,7 @@ public class GameTestServer extends MinecraftServer {
       var0.getRule(GameRules.RULE_DOMOBSPAWNING).set(false, null);
       var0.getRule(GameRules.RULE_WEATHER_CYCLE).set(false, null);
       var0.getRule(GameRules.RULE_RANDOMTICKING).set(0, null);
+      var0.getRule(GameRules.RULE_DOFIRETICK).set(false, null);
    });
    private static final WorldOptions WORLD_OPTIONS = new WorldOptions(0L, false, false);
    @Nullable
@@ -200,13 +202,13 @@ public class GameTestServer extends MinecraftServer {
    @Override
    public void onServerCrash(CrashReport var1) {
       super.onServerCrash(var1);
-      LOGGER.error("Game test server crashed\n{}", var1.getFriendlyReport());
+      LOGGER.error("Game test server crashed\n{}", var1.getFriendlyReport(ReportType.CRASH));
       System.exit(1);
    }
 
    private void startTests(ServerLevel var1) {
       BlockPos var2 = new BlockPos(var1.random.nextIntBetweenInclusive(-14999992, 14999992), -59, var1.random.nextIntBetweenInclusive(-14999992, 14999992));
-      GameTestRunner var3 = GameTestRunner.Builder.fromBatches(this.testBatches, var1).newStructureSpawner(new StructureGridSpawner(var2, 8)).build();
+      GameTestRunner var3 = GameTestRunner.Builder.fromBatches(this.testBatches, var1).newStructureSpawner(new StructureGridSpawner(var2, 8, false)).build();
       List var4 = var3.getTestInfos();
       this.testTracker = new MultipleTestTracker(var4);
       LOGGER.info("{} tests are now running at position {}!", this.testTracker.getTotalCount(), var2.toShortString());

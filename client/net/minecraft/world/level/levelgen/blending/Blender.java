@@ -381,13 +381,18 @@ public class Blender {
       return Mth.length(Math.max(0.0, var12), Math.max(0.0, var14), Math.max(0.0, var16));
    }
 
-   public static record BlendingOutput(double alpha, double blendingOffset) {
-      public BlendingOutput(double alpha, double blendingOffset) {
-         super();
-         this.alpha = alpha;
-         this.blendingOffset = blendingOffset;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface CellValueGetter {
       double get(BlendingData var1, int var2, int var3, int var4);

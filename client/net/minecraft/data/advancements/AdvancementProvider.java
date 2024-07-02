@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
@@ -19,7 +20,7 @@ public class AdvancementProvider implements DataProvider {
 
    public AdvancementProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2, List<AdvancementSubProvider> var3) {
       super();
-      this.pathProvider = var1.createPathProvider(PackOutput.Target.DATA_PACK, "advancements");
+      this.pathProvider = var1.createRegistryElementsPathProvider(Registries.ADVANCEMENT);
       this.subProviders = var3;
       this.registries = var2;
    }

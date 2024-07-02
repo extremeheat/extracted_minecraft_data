@@ -2,9 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -15,24 +12,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.CampfireBlock;
@@ -366,74 +357,16 @@ public class BeehiveBlockEntity extends BlockEntity {
       }
    }
 
-   public static record Occupant(CustomData entityData, int ticksInHive, int minTicksInHive) {
-      public static final Codec<BeehiveBlockEntity.Occupant> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  CustomData.CODEC.optionalFieldOf("entity_data", CustomData.EMPTY).forGetter(BeehiveBlockEntity.Occupant::entityData),
-                  Codec.INT.fieldOf("ticks_in_hive").forGetter(BeehiveBlockEntity.Occupant::ticksInHive),
-                  Codec.INT.fieldOf("min_ticks_in_hive").forGetter(BeehiveBlockEntity.Occupant::minTicksInHive)
-               )
-               .apply(var0, BeehiveBlockEntity.Occupant::new)
-      );
-      public static final Codec<List<BeehiveBlockEntity.Occupant>> LIST_CODEC = CODEC.listOf();
-      public static final StreamCodec<ByteBuf, BeehiveBlockEntity.Occupant> STREAM_CODEC = StreamCodec.composite(
-         CustomData.STREAM_CODEC,
-         BeehiveBlockEntity.Occupant::entityData,
-         ByteBufCodecs.VAR_INT,
-         BeehiveBlockEntity.Occupant::ticksInHive,
-         ByteBufCodecs.VAR_INT,
-         BeehiveBlockEntity.Occupant::minTicksInHive,
-         BeehiveBlockEntity.Occupant::new
-      );
-
-      public Occupant(CustomData entityData, int ticksInHive, int minTicksInHive) {
-         super();
-         this.entityData = entityData;
-         this.ticksInHive = ticksInHive;
-         this.minTicksInHive = minTicksInHive;
-      }
-
-      public static BeehiveBlockEntity.Occupant of(Entity var0) {
-         CompoundTag var1 = new CompoundTag();
-         var0.save(var1);
-         BeehiveBlockEntity.IGNORED_BEE_TAGS.forEach(var1::remove);
-         boolean var2 = var1.getBoolean("HasNectar");
-         return new BeehiveBlockEntity.Occupant(CustomData.of(var1), 0, var2 ? 2400 : 600);
-      }
-
-      public static BeehiveBlockEntity.Occupant create(int var0) {
-         CompoundTag var1 = new CompoundTag();
-         var1.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.BEE).toString());
-         return new BeehiveBlockEntity.Occupant(CustomData.of(var1), var0, 600);
-      }
-
-      @Nullable
-      public Entity createEntity(Level var1, BlockPos var2) {
-         CompoundTag var3 = this.entityData.copyTag();
-         BeehiveBlockEntity.IGNORED_BEE_TAGS.forEach(var3::remove);
-         Entity var4 = EntityType.loadEntityRecursive(var3, var1, var0 -> var0);
-         if (var4 != null && var4.getType().is(EntityTypeTags.BEEHIVE_INHABITORS)) {
-            var4.setNoGravity(true);
-            if (var4 instanceof Bee var5) {
-               var5.setHivePos(var2);
-               setBeeReleaseData(this.ticksInHive, var5);
-            }
-
-            return var4;
-         } else {
-            return null;
-         }
-      }
-
-      private static void setBeeReleaseData(int var0, Bee var1) {
-         int var2 = var1.getAge();
-         if (var2 < 0) {
-            var1.setAge(Math.min(0, var2 + var0));
-         } else if (var2 > 0) {
-            var1.setAge(Math.max(0, var2 - var0));
-         }
-
-         var1.setInLoveTime(Math.max(0, var1.getInLoveTime() - var0));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

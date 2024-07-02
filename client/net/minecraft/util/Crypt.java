@@ -1,9 +1,7 @@
 package net.minecraft.util;
 
-import com.google.common.primitives.Longs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -22,7 +20,6 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import net.minecraft.network.FriendlyByteBuf;
 
 public class Crypt {
    private static final String SYMMETRIC_ALGORITHM = "AES";
@@ -201,32 +198,18 @@ public class Crypt {
       T apply(byte[] var1) throws CryptException;
    }
 
-   public static record SaltSignaturePair(long salt, byte[] signature) {
-      public static final Crypt.SaltSignaturePair EMPTY = new Crypt.SaltSignaturePair(0L, ByteArrays.EMPTY_ARRAY);
-
-      public SaltSignaturePair(FriendlyByteBuf var1) {
-         this(var1.readLong(), var1.readByteArray());
-      }
-
-      public SaltSignaturePair(long salt, byte[] signature) {
-         super();
-         this.salt = salt;
-         this.signature = signature;
-      }
-
-      public boolean isValid() {
-         return this.signature.length > 0;
-      }
-
-      public static void write(FriendlyByteBuf var0, Crypt.SaltSignaturePair var1) {
-         var0.writeLong(var1.salt);
-         var0.writeByteArray(var1.signature);
-      }
-
-      public byte[] saltAsBytes() {
-         return Longs.toByteArray(this.salt);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class SaltSupplier {
       private static final SecureRandom secureRandom = new SecureRandom();

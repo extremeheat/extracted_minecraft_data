@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
-import com.mojang.realmsclient.gui.screens.RealmsPopupScreen;
+import com.mojang.realmsclient.gui.screens.AddRealmPopupScreen;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 
 public class TextureManager implements PreparableReloadListener, Tickable, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final ResourceLocation INTENTIONAL_MISSING_TEXTURE = new ResourceLocation("");
+   public static final ResourceLocation INTENTIONAL_MISSING_TEXTURE = ResourceLocation.withDefaultNamespace("");
    private final Map<ResourceLocation, AbstractTexture> byPath = Maps.newHashMap();
    private final Set<Tickable> tickableTextures = Sets.newHashSet();
    private final Map<String, Integer> prefixRegister = Maps.newHashMap();
@@ -127,7 +127,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       }
 
       this.prefixRegister.put(var1, var3);
-      ResourceLocation var4 = new ResourceLocation(String.format(Locale.ROOT, "dynamic/%s_%d", var1, var3));
+      ResourceLocation var4 = ResourceLocation.withDefaultNamespace(String.format(Locale.ROOT, "dynamic/%s_%d", var1, var3));
       this.register(var4, var2);
       return var4;
    }
@@ -175,7 +175,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       CompletableFuture var7 = new CompletableFuture();
       TitleScreen.preloadResources(this, var5).thenCompose(var1::wait).thenAcceptAsync(var4x -> {
          MissingTextureAtlasSprite.getTexture();
-         RealmsPopupScreen.updateCarouselImages(this.resourceManager);
+         AddRealmPopupScreen.updateCarouselImages(this.resourceManager);
          Iterator var5x = this.byPath.entrySet().iterator();
 
          while (var5x.hasNext()) {

@@ -35,7 +35,7 @@ public class SlimeOuterLayer<T extends LivingEntity> extends RenderLayer<T, Slim
          this.getParentModel().copyPropertiesTo(this.model);
          this.model.prepareMobModel((T)var4, var5, var6, var7);
          this.model.setupAnim((T)var4, var5, var6, var8, var9, var10);
-         this.model.renderToBuffer(var1, var13, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), 1.0F, 1.0F, 1.0F, 1.0F);
+         this.model.renderToBuffer(var1, var13, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F));
       }
    }
 }

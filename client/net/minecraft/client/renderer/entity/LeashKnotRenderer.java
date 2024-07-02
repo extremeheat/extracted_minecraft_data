@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 
 public class LeashKnotRenderer extends EntityRenderer<LeashFenceKnotEntity> {
-   private static final ResourceLocation KNOT_LOCATION = new ResourceLocation("textures/entity/lead_knot.png");
+   private static final ResourceLocation KNOT_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/lead_knot.png");
    private final LeashKnotModel<LeashFenceKnotEntity> model;
 
    public LeashKnotRenderer(EntityRendererProvider.Context var1) {
@@ -23,7 +23,7 @@ public class LeashKnotRenderer extends EntityRenderer<LeashFenceKnotEntity> {
       var4.scale(-1.0F, -1.0F, 1.0F);
       this.model.setupAnim(var1, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
       VertexConsumer var7 = var5.getBuffer(this.model.renderType(KNOT_LOCATION));
-      this.model.renderToBuffer(var4, var7, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.model.renderToBuffer(var4, var7, var6, OverlayTexture.NO_OVERLAY);
       var4.popPose();
       super.render(var1, var2, var3, var4, var5, var6);
    }

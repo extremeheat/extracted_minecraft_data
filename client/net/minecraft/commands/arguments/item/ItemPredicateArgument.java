@@ -9,14 +9,10 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Decoder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -62,7 +58,7 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
    static final Dynamic2CommandExceptionType ERROR_MALFORMED_PREDICATE = new Dynamic2CommandExceptionType(
       (var0, var1) -> Component.translatableEscape("arguments.item.predicate.malformed", var0, var1)
    );
-   private static final ResourceLocation COUNT_ID = new ResourceLocation("count");
+   private static final ResourceLocation COUNT_ID = ResourceLocation.withDefaultNamespace("count");
    static final Map<ResourceLocation, ItemPredicateArgument.ComponentWrapper> PSEUDO_COMPONENTS = Stream.of(
          new ItemPredicateArgument.ComponentWrapper(COUNT_ID, var0 -> true, MinMaxBounds.Ints.CODEC.map(var0 -> var1 -> var0.matches(var1.getCount())))
       )
@@ -99,34 +95,18 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
       return EXAMPLES;
    }
 
-   static record ComponentWrapper(ResourceLocation id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
-
-      ComponentWrapper(ResourceLocation id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
-         super();
-         this.id = id;
-         this.presenceChecker = presenceChecker;
-         this.valueChecker = valueChecker;
-      }
-
-      public static <T> ItemPredicateArgument.ComponentWrapper create(ImmutableStringReader var0, ResourceLocation var1, DataComponentType<T> var2) throws CommandSyntaxException {
-         Codec var3 = var2.codec();
-         if (var3 == null) {
-            throw ItemPredicateArgument.ERROR_UNKNOWN_COMPONENT.createWithContext(var0, var1);
-         } else {
-            return new ItemPredicateArgument.ComponentWrapper(var1, var1x -> var1x.has(var2), var3.map(var1x -> var2x -> {
-                  Object var3x = var2x.get(var2);
-                  return Objects.equals(var1x, var3x);
-               }));
-         }
-      }
-
-      public Predicate<ItemStack> decode(ImmutableStringReader var1, RegistryOps<Tag> var2, Tag var3) throws CommandSyntaxException {
-         DataResult var4 = this.valueChecker.parse(var2, var3);
-         return (Predicate<ItemStack>)var4.getOrThrow(
-            var2x -> ItemPredicateArgument.ERROR_MALFORMED_COMPONENT.createWithContext(var1, this.id.toString(), var2x)
-         );
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class Context
       implements ComponentPredicateParser.Context<Predicate<ItemStack>, ItemPredicateArgument.ComponentWrapper, ItemPredicateArgument.PredicateWrapper> {
@@ -224,24 +204,18 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
       }
    }
 
-   static record PredicateWrapper(ResourceLocation id, Decoder<? extends Predicate<ItemStack>> type) {
-      public PredicateWrapper(Holder.Reference<ItemSubPredicate.Type<?>> var1) {
-         this(var1.key().location(), ((ItemSubPredicate.Type)var1.value()).codec().map(var0 -> var0::matches));
-      }
-
-      PredicateWrapper(ResourceLocation id, Decoder<? extends Predicate<ItemStack>> type) {
-         super();
-         this.id = id;
-         this.type = type;
-      }
-
-      public Predicate<ItemStack> decode(ImmutableStringReader var1, RegistryOps<Tag> var2, Tag var3) throws CommandSyntaxException {
-         DataResult var4 = this.type.parse(var2, var3);
-         return (Predicate<ItemStack>)var4.getOrThrow(
-            var2x -> ItemPredicateArgument.ERROR_MALFORMED_PREDICATE.createWithContext(var1, this.id.toString(), var2x)
-         );
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface Result extends Predicate<ItemStack> {
    }

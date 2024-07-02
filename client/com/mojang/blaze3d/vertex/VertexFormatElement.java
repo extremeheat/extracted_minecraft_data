@@ -1,24 +1,46 @@
 package com.mojang.blaze3d.vertex;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 
-public class VertexFormatElement {
-   private final VertexFormatElement.Type type;
-   private final VertexFormatElement.Usage usage;
-   private final int index;
-   private final int count;
-   private final int byteSize;
+public record VertexFormatElement(int id, int index, VertexFormatElement.Type type, VertexFormatElement.Usage usage, int count) {
+   public static final int MAX_COUNT = 32;
+   private static final VertexFormatElement[] BY_ID = new VertexFormatElement[32];
+   private static final List<VertexFormatElement> ELEMENTS = new ArrayList<>(32);
+   public static final VertexFormatElement POSITION = register(0, 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
+   public static final VertexFormatElement COLOR = register(1, 0, VertexFormatElement.Type.UBYTE, VertexFormatElement.Usage.COLOR, 4);
+   public static final VertexFormatElement UV0 = register(2, 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.UV, 2);
+   public static final VertexFormatElement UV = UV0;
+   public static final VertexFormatElement UV1 = register(3, 1, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
+   public static final VertexFormatElement UV2 = register(4, 2, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
+   public static final VertexFormatElement NORMAL = register(5, 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.NORMAL, 3);
 
-   public VertexFormatElement(int var1, VertexFormatElement.Type var2, VertexFormatElement.Usage var3, int var4) {
+   public VertexFormatElement(int id, int index, VertexFormatElement.Type type, VertexFormatElement.Usage usage, int count) {
       super();
-      if (this.supportsUsage(var1, var3)) {
-         this.usage = var3;
-         this.type = var2;
-         this.index = var1;
-         this.count = var4;
-         this.byteSize = var2.getSize() * this.count;
-      } else {
+      if (id < 0 || id >= BY_ID.length) {
+         throw new IllegalArgumentException("Element ID must be in range [0; " + BY_ID.length + ")");
+      } else if (!this.supportsUsage(index, usage)) {
          throw new IllegalStateException("Multiple vertex elements of the same type other than UVs are not supported");
+      } else {
+         this.id = id;
+         this.index = index;
+         this.type = type;
+         this.usage = usage;
+         this.count = count;
+      }
+   }
+
+   public static VertexFormatElement register(int var0, int var1, VertexFormatElement.Type var2, VertexFormatElement.Usage var3, int var4) {
+      VertexFormatElement var5 = new VertexFormatElement(var0, var1, var2, var3, var4);
+      if (BY_ID[var0] != null) {
+         throw new IllegalArgumentException("Duplicate element registration for: " + var0);
+      } else {
+         BY_ID[var0] = var5;
+         ELEMENTS.add(var5);
+         return var5;
       }
    }
 
@@ -26,67 +48,29 @@ public class VertexFormatElement {
       return var1 == 0 || var2 == VertexFormatElement.Usage.UV;
    }
 
-   public final VertexFormatElement.Type getType() {
-      return this.type;
-   }
-
-   public final VertexFormatElement.Usage getUsage() {
-      return this.usage;
-   }
-
-   public final int getCount() {
-      return this.count;
-   }
-
-   public final int getIndex() {
-      return this.index;
-   }
-
-   @Override
    public String toString() {
-      return this.count + "," + this.usage.getName() + "," + this.type.getName();
+      return this.count + "," + this.usage + "," + this.type + " (" + this.id + ")";
    }
 
-   public final int getByteSize() {
-      return this.byteSize;
+   public int mask() {
+      return 1 << this.id;
    }
 
-   public final boolean isPosition() {
-      return this.usage == VertexFormatElement.Usage.POSITION;
-   }
-
-   @Override
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         VertexFormatElement var2 = (VertexFormatElement)var1;
-         if (this.count != var2.count) {
-            return false;
-         } else if (this.index != var2.index) {
-            return false;
-         } else {
-            return this.type != var2.type ? false : this.usage == var2.usage;
-         }
-      } else {
-         return false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int var1 = this.type.hashCode();
-      var1 = 31 * var1 + this.usage.hashCode();
-      var1 = 31 * var1 + this.index;
-      return 31 * var1 + this.count;
+   public int byteSize() {
+      return this.type.size() * this.count;
    }
 
    public void setupBufferState(int var1, long var2, int var4) {
-      this.usage.setupBufferState(this.count, this.type.getGlType(), var4, var2, this.index, var1);
+      this.usage.setupState.setupBufferState(this.count, this.type.glType(), var4, var2, var1);
    }
 
-   public void clearBufferState(int var1) {
-      this.usage.clearBufferState(this.index, var1);
+   @Nullable
+   public static VertexFormatElement byId(int var0) {
+      return BY_ID[var0];
+   }
+
+   public static Stream<VertexFormatElement> elementsFromMask(int var0) {
+      return ELEMENTS.stream().filter(var1 -> var1 != null && (var0 & var1.mask()) != 0);
    }
 
    public static enum Type {
@@ -108,78 +92,49 @@ public class VertexFormatElement {
          this.glType = nullxxxx;
       }
 
-      public int getSize() {
+      public int size() {
          return this.size;
       }
 
-      public String getName() {
-         return this.name;
+      public int glType() {
+         return this.glType;
       }
 
-      public int getGlType() {
-         return this.glType;
+      @Override
+      public String toString() {
+         return this.name;
       }
    }
 
    public static enum Usage {
-      POSITION("Position", (var0, var1, var2, var3, var5, var6) -> {
-         GlStateManager._enableVertexAttribArray(var6);
-         GlStateManager._vertexAttribPointer(var6, var0, var1, false, var2, var3);
-      }, (var0, var1) -> GlStateManager._disableVertexAttribArray(var1)),
-      NORMAL("Normal", (var0, var1, var2, var3, var5, var6) -> {
-         GlStateManager._enableVertexAttribArray(var6);
-         GlStateManager._vertexAttribPointer(var6, var0, var1, true, var2, var3);
-      }, (var0, var1) -> GlStateManager._disableVertexAttribArray(var1)),
-      COLOR("Vertex Color", (var0, var1, var2, var3, var5, var6) -> {
-         GlStateManager._enableVertexAttribArray(var6);
-         GlStateManager._vertexAttribPointer(var6, var0, var1, true, var2, var3);
-      }, (var0, var1) -> GlStateManager._disableVertexAttribArray(var1)),
-      UV("UV", (var0, var1, var2, var3, var5, var6) -> {
-         GlStateManager._enableVertexAttribArray(var6);
+      POSITION("Position", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3)),
+      NORMAL("Normal", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, true, var2, var3)),
+      COLOR("Vertex Color", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, true, var2, var3)),
+      UV("UV", (var0, var1, var2, var3, var5) -> {
          if (var1 == 5126) {
-            GlStateManager._vertexAttribPointer(var6, var0, var1, false, var2, var3);
+            GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3);
          } else {
-            GlStateManager._vertexAttribIPointer(var6, var0, var1, var2, var3);
+            GlStateManager._vertexAttribIPointer(var5, var0, var1, var2, var3);
          }
-      }, (var0, var1) -> GlStateManager._disableVertexAttribArray(var1)),
-      PADDING("Padding", (var0, var1, var2, var3, var5, var6) -> {
-      }, (var0, var1) -> {
       }),
-      GENERIC("Generic", (var0, var1, var2, var3, var5, var6) -> {
-         GlStateManager._enableVertexAttribArray(var6);
-         GlStateManager._vertexAttribPointer(var6, var0, var1, false, var2, var3);
-      }, (var0, var1) -> GlStateManager._disableVertexAttribArray(var1));
+      GENERIC("Generic", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3));
 
       private final String name;
-      private final VertexFormatElement.Usage.SetupState setupState;
-      private final VertexFormatElement.Usage.ClearState clearState;
+      final VertexFormatElement.Usage.SetupState setupState;
 
-      private Usage(final String nullxx, final VertexFormatElement.Usage.SetupState nullxxx, final VertexFormatElement.Usage.ClearState nullxxxx) {
+      private Usage(final String nullxx, final VertexFormatElement.Usage.SetupState nullxxx) {
          this.name = nullxx;
          this.setupState = nullxxx;
-         this.clearState = nullxxxx;
       }
 
-      void setupBufferState(int var1, int var2, int var3, long var4, int var6, int var7) {
-         this.setupState.setupBufferState(var1, var2, var3, var4, var6, var7);
-      }
-
-      public void clearBufferState(int var1, int var2) {
-         this.clearState.clearBufferState(var1, var2);
-      }
-
-      public String getName() {
+      @Override
+      public String toString() {
          return this.name;
       }
 
       @FunctionalInterface
-      interface ClearState {
-         void clearBufferState(int var1, int var2);
-      }
-
-      @FunctionalInterface
       interface SetupState {
-         void setupBufferState(int var1, int var2, int var3, long var4, int var6, int var7);
+         void setupBufferState(int var1, int var2, int var3, long var4, int var6);
       }
    }
 }

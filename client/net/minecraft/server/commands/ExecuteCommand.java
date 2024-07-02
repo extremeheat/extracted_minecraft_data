@@ -95,7 +95,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.Attackable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.Targeting;
@@ -1036,7 +1036,7 @@ public class ExecuteCommand {
                                  .fork(
                                     var0,
                                     expandOneToOneEntityRelation(
-                                       var0x -> var0x instanceof Mob var1x ? Optional.ofNullable(var1x.getLeashHolder()) : Optional.empty()
+                                       var0x -> var0x instanceof Leashable var1x ? Optional.ofNullable(var1x.getLeashHolder()) : Optional.empty()
                                     )
                                  )
                            ))

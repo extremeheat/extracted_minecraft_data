@@ -25,10 +25,10 @@ import net.minecraft.util.Mth;
 
 public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entry<E>> extends AbstractContainerWidget {
    protected static final int SCROLLBAR_WIDTH = 6;
-   private static final ResourceLocation SCROLLER_SPRITE = new ResourceLocation("widget/scroller");
-   private static final ResourceLocation SCROLLER_BACKGROUND_SPRITE = new ResourceLocation("widget/scroller_background");
-   private static final ResourceLocation MENU_LIST_BACKGROUND = new ResourceLocation("textures/gui/menu_list_background.png");
-   private static final ResourceLocation INWORLD_MENU_LIST_BACKGROUND = new ResourceLocation("textures/gui/inworld_menu_list_background.png");
+   private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("widget/scroller");
+   private static final ResourceLocation SCROLLER_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("widget/scroller_background");
+   private static final ResourceLocation MENU_LIST_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_list_background.png");
+   private static final ResourceLocation INWORLD_MENU_LIST_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_list_background.png");
    protected final Minecraft minecraft;
    protected final int itemHeight;
    private final List<E> children = new AbstractSelectionList.TrackedList();
@@ -141,6 +141,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    public void updateSizeAndPosition(int var1, int var2, int var3) {
       this.setSize(var1, var2);
       this.setPosition(0, var3);
+      this.clampScrollAmount();
    }
 
    protected int getMaxPosition() {
@@ -249,8 +250,16 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return this.scrollAmount;
    }
 
-   public void setScrollAmount(double var1) {
+   public void setClampedScrollAmount(double var1) {
       this.scrollAmount = Mth.clamp(var1, 0.0, (double)this.getMaxScroll());
+   }
+
+   public void setScrollAmount(double var1) {
+      this.setClampedScrollAmount(var1);
+   }
+
+   public void clampScrollAmount() {
+      this.setClampedScrollAmount(this.getScrollAmount());
    }
 
    public int getMaxScroll() {
@@ -312,11 +321,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    @Override
    public boolean mouseReleased(double var1, double var3, int var5) {
-      if (this.getFocused() != null) {
-         this.getFocused().mouseReleased(var1, var3, var5);
-      }
-
-      return false;
+      return this.getFocused() != null ? this.getFocused().mouseReleased(var1, var3, var5) : false;
    }
 
    @Override

@@ -172,9 +172,9 @@ public class Creeper extends Monster implements PowerableMob {
    }
 
    @Override
-   protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var1.getEntity();
+      Entity var4 = var2.getEntity();
       if (var4 != this && var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
          var5.increaseDroppedSkulls();
          this.spawnAtLocation(Items.CREEPER_HEAD);
@@ -235,8 +235,9 @@ public class Creeper extends Monster implements PowerableMob {
          float var1 = this.isPowered() ? 2.0F : 1.0F;
          this.dead = true;
          this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * var1, Level.ExplosionInteraction.MOB);
-         this.discard();
          this.spawnLingeringCloud();
+         this.triggerOnDeathMobEffects(Entity.RemovalReason.KILLED);
+         this.discard();
       }
    }
 

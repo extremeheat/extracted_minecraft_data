@@ -1,30 +1,13 @@
 package net.minecraft.world.item.component;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import java.util.Map;
-import net.minecraft.Util;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.properties.Property;
-
-public record DebugStickState(Map<Holder<Block>, Property<?>> properties) {
-   public static final DebugStickState EMPTY = new DebugStickState(Map.of());
-   public static final Codec<DebugStickState> CODEC = Codec.dispatchedMap(
-         BuiltInRegistries.BLOCK.holderByNameCodec(), var0 -> Codec.STRING.comapFlatMap(var1 -> {
-               Property var2 = ((Block)var0.value()).getStateDefinition().getProperty(var1);
-               return var2 != null ? DataResult.success(var2) : DataResult.error(() -> "No property on " + var0.getRegisteredName() + " with name: " + var1);
-            }, Property::getName)
-      )
-      .xmap(DebugStickState::new, DebugStickState::properties);
-
-   public DebugStickState(Map<Holder<Block>, Property<?>> properties) {
-      super();
-      this.properties = properties;
-   }
-
-   public DebugStickState withProperty(Holder<Block> var1, Property<?> var2) {
-      return new DebugStickState(Util.copyAndPut(this.properties, var1, var2));
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

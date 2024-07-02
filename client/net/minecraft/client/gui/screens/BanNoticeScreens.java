@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import com.mojang.authlib.minecraft.BanDetails;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import net.minecraft.ChatFormatting;
@@ -12,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.CommonLinks;
 import org.apache.commons.lang3.StringUtils;
 
 public class BanNoticeScreens {
@@ -20,7 +22,7 @@ public class BanNoticeScreens {
    public static final Component NAME_BAN_TITLE = Component.translatable("gui.banned.name.title").withStyle(ChatFormatting.BOLD);
    private static final Component SKIN_BAN_TITLE = Component.translatable("gui.banned.skin.title").withStyle(ChatFormatting.BOLD);
    private static final Component SKIN_BAN_DESCRIPTION = Component.translatable(
-      "gui.banned.skin.description", Component.literal("https://aka.ms/mcjavamoderation")
+      "gui.banned.skin.description", Component.translationArg(CommonLinks.SUSPENSION_HELP)
    );
 
    public BanNoticeScreens() {
@@ -28,35 +30,35 @@ public class BanNoticeScreens {
    }
 
    public static ConfirmLinkScreen create(BooleanConsumer var0, BanDetails var1) {
-      return new ConfirmLinkScreen(
-         var0, getBannedTitle(var1), getBannedScreenText(var1), "https://aka.ms/mcjavamoderation", CommonComponents.GUI_ACKNOWLEDGE, true
-      );
+      return new ConfirmLinkScreen(var0, getBannedTitle(var1), getBannedScreenText(var1), CommonLinks.SUSPENSION_HELP, CommonComponents.GUI_ACKNOWLEDGE, true);
    }
 
    public static ConfirmLinkScreen createSkinBan(Runnable var0) {
-      String var1 = "https://aka.ms/mcjavamoderation";
-      return new ConfirmLinkScreen(var1x -> {
-         if (var1x) {
-            Util.getPlatform().openUri("https://aka.ms/mcjavamoderation");
+      URI var1 = CommonLinks.SUSPENSION_HELP;
+      return new ConfirmLinkScreen(var2 -> {
+         if (var2) {
+            Util.getPlatform().openUri(var1);
          }
 
          var0.run();
-      }, SKIN_BAN_TITLE, SKIN_BAN_DESCRIPTION, "https://aka.ms/mcjavamoderation", CommonComponents.GUI_ACKNOWLEDGE, true);
+      }, SKIN_BAN_TITLE, SKIN_BAN_DESCRIPTION, var1, CommonComponents.GUI_ACKNOWLEDGE, true);
    }
 
    public static ConfirmLinkScreen createNameBan(String var0, Runnable var1) {
-      String var2 = "https://aka.ms/mcjavamoderation";
+      URI var2 = CommonLinks.SUSPENSION_HELP;
       return new ConfirmLinkScreen(
-         var1x -> {
-            if (var1x) {
-               Util.getPlatform().openUri("https://aka.ms/mcjavamoderation");
+         var2x -> {
+            if (var2x) {
+               Util.getPlatform().openUri(var2);
             }
 
             var1.run();
          },
          NAME_BAN_TITLE,
-         Component.translatable("gui.banned.name.description", Component.literal(var0).withStyle(ChatFormatting.YELLOW), "https://aka.ms/mcjavamoderation"),
-         "https://aka.ms/mcjavamoderation",
+         Component.translatable(
+            "gui.banned.name.description", Component.literal(var0).withStyle(ChatFormatting.YELLOW), Component.translationArg(CommonLinks.SUSPENSION_HELP)
+         ),
+         var2,
          CommonComponents.GUI_ACKNOWLEDGE,
          true
       );
@@ -68,7 +70,7 @@ public class BanNoticeScreens {
 
    private static Component getBannedScreenText(BanDetails var0) {
       return Component.translatable(
-         "gui.banned.description", getBanReasonText(var0), getBanStatusText(var0), Component.literal("https://aka.ms/mcjavamoderation")
+         "gui.banned.description", getBanReasonText(var0), getBanStatusText(var0), Component.translationArg(CommonLinks.SUSPENSION_HELP)
       );
    }
 

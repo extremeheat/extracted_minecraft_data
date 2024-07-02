@@ -208,57 +208,31 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
    }
 
-   static record UpdateNameOperation(Component name) implements ClientboundBossEventPacket.Operation {
-      private UpdateNameOperation(RegistryFriendlyByteBuf var1) {
-         this(ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1));
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      UpdateNameOperation(Component name) {
-         super();
-         this.name = name;
-      }
-
-      @Override
-      public ClientboundBossEventPacket.OperationType getType() {
-         return ClientboundBossEventPacket.OperationType.UPDATE_NAME;
-      }
-
-      @Override
-      public void dispatch(UUID var1, ClientboundBossEventPacket.Handler var2) {
-         var2.updateName(var1, this.name);
-      }
-
-      @Override
-      public void write(RegistryFriendlyByteBuf var1) {
-         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.name);
-      }
-   }
-
-   static record UpdateProgressOperation(float progress) implements ClientboundBossEventPacket.Operation {
-      private UpdateProgressOperation(RegistryFriendlyByteBuf var1) {
-         this(var1.readFloat());
-      }
-
-      UpdateProgressOperation(float progress) {
-         super();
-         this.progress = progress;
-      }
-
-      @Override
-      public ClientboundBossEventPacket.OperationType getType() {
-         return ClientboundBossEventPacket.OperationType.UPDATE_PROGRESS;
-      }
-
-      @Override
-      public void dispatch(UUID var1, ClientboundBossEventPacket.Handler var2) {
-         var2.updateProgress(var1, this.progress);
-      }
-
-      @Override
-      public void write(RegistryFriendlyByteBuf var1) {
-         var1.writeFloat(this.progress);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class UpdatePropertiesOperation implements ClientboundBossEventPacket.Operation {
       private final boolean darkenScreen;

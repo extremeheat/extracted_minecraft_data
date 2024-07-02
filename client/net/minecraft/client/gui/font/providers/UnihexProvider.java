@@ -3,13 +3,8 @@ package net.minecraft.client.gui.font.providers;
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
-import com.mojang.blaze3d.font.SheetGlyphInfo;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
@@ -19,17 +14,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.List;
-import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.CodepointMap;
-import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.FastBufferedInputStream;
-import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 public class UnihexProvider implements GlyphProvider {
@@ -162,36 +153,18 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record ByteContents(byte[] contents) implements UnihexProvider.LineData {
-      private ByteContents(byte[] contents) {
-         super();
-         this.contents = contents;
-      }
-
-      @Override
-      public int line(int var1) {
-         return this.contents[var1] << 24;
-      }
-
-      static UnihexProvider.LineData read(int var0, ByteList var1) {
-         byte[] var2 = new byte[16];
-         int var3 = 0;
-
-         for (int var4 = 0; var4 < 16; var4++) {
-            int var5 = UnihexProvider.decodeHex(var0, var1, var3++);
-            int var6 = UnihexProvider.decodeHex(var0, var1, var3++);
-            byte var7 = (byte)(var5 << 4 | var6);
-            var2[var4] = var7;
-         }
-
-         return new UnihexProvider.ByteContents(var2);
-      }
-
-      @Override
-      public int bitWidth() {
-         return 8;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class Definition implements GlyphProviderDefinition {
       public static final MapCodec<UnihexProvider.Definition> CODEC = RecordCodecBuilder.mapCodec(
@@ -272,156 +245,44 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   public static record Dimensions(int left, int right) {
-      public static final MapCodec<UnihexProvider.Dimensions> MAP_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  Codec.INT.fieldOf("left").forGetter(UnihexProvider.Dimensions::left), Codec.INT.fieldOf("right").forGetter(UnihexProvider.Dimensions::right)
-               )
-               .apply(var0, UnihexProvider.Dimensions::new)
-      );
-      public static final Codec<UnihexProvider.Dimensions> CODEC = MAP_CODEC.codec();
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public Dimensions(int left, int right) {
-         super();
-         this.left = left;
-         this.right = right;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public int pack() {
-         return pack(this.left, this.right);
-      }
-
-      public static int pack(int var0, int var1) {
-         return (var0 & 0xFF) << 8 | var1 & 0xFF;
-      }
-
-      public static int left(int var0) {
-         return (byte)(var0 >> 8);
-      }
-
-      public static int right(int var0) {
-         return (byte)var0;
-      }
-   }
-
-   static record Glyph(UnihexProvider.LineData contents, int left, int right) implements GlyphInfo {
-
-      Glyph(UnihexProvider.LineData contents, int left, int right) {
-         super();
-         this.contents = contents;
-         this.left = left;
-         this.right = right;
-      }
-
-      public int width() {
-         return this.right - this.left + 1;
-      }
-
-      @Override
-      public float getAdvance() {
-         return (float)(this.width() / 2 + 1);
-      }
-
-      @Override
-      public float getShadowOffset() {
-         return 0.5F;
-      }
-
-      @Override
-      public float getBoldOffset() {
-         return 0.5F;
-      }
-
-      @Override
-      public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
-         return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
-            @Override
-            public float getOversample() {
-               return 2.0F;
-            }
-
-            @Override
-            public int getPixelWidth() {
-               return Glyph.this.width();
-            }
-
-            @Override
-            public int getPixelHeight() {
-               return 16;
-            }
-
-            @Override
-            public void upload(int var1, int var2) {
-               IntBuffer var3 = MemoryUtil.memAllocInt(Glyph.this.width() * 16);
-               UnihexProvider.unpackBitsToBytes(var3, Glyph.this.contents, Glyph.this.left, Glyph.this.right);
-               var3.rewind();
-               GlStateManager.upload(0, var1, var2, Glyph.this.width(), 16, NativeImage.Format.RGBA, var3, MemoryUtil::memFree);
-            }
-
-            @Override
-            public boolean isColored() {
-               return true;
-            }
-         });
-      }
-   }
-
-   static record IntContents(int[] contents, int bitWidth) implements UnihexProvider.LineData {
-      private static final int SIZE_24 = 24;
-
-      private IntContents(int[] contents, int bitWidth) {
-         super();
-         this.contents = contents;
-         this.bitWidth = bitWidth;
-      }
-
-      @Override
-      public int line(int var1) {
-         return this.contents[var1];
-      }
-
-      static UnihexProvider.LineData read24(int var0, ByteList var1) {
-         int[] var2 = new int[16];
-         int var3 = 0;
-         int var4 = 0;
-
-         for (int var5 = 0; var5 < 16; var5++) {
-            int var6 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var7 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var8 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var9 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var10 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var11 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var12 = var6 << 20 | var7 << 16 | var8 << 12 | var9 << 8 | var10 << 4 | var11;
-            var2[var5] = var12 << 8;
-            var3 |= var12;
-         }
-
-         return new UnihexProvider.IntContents(var2, 24);
-      }
-
-      public static UnihexProvider.LineData read32(int var0, ByteList var1) {
-         int[] var2 = new int[16];
-         int var3 = 0;
-         int var4 = 0;
-
-         for (int var5 = 0; var5 < 16; var5++) {
-            int var6 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var7 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var8 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var9 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var10 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var11 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var12 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var13 = UnihexProvider.decodeHex(var0, var1, var4++);
-            int var14 = var6 << 28 | var7 << 24 | var8 << 20 | var9 << 16 | var10 << 12 | var11 << 8 | var12 << 4 | var13;
-            var2[var5] = var14;
-            var3 |= var14;
-         }
-
-         return new UnihexProvider.IntContents(var2, 32);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface LineData {
       int line(int var1);
@@ -455,62 +316,34 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
-   static record OverrideRange(int from, int to, UnihexProvider.Dimensions dimensions) {
-      private static final Codec<UnihexProvider.OverrideRange> RAW_CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.CODEPOINT.fieldOf("from").forGetter(UnihexProvider.OverrideRange::from),
-                  ExtraCodecs.CODEPOINT.fieldOf("to").forGetter(UnihexProvider.OverrideRange::to),
-                  UnihexProvider.Dimensions.MAP_CODEC.forGetter(UnihexProvider.OverrideRange::dimensions)
-               )
-               .apply(var0, UnihexProvider.OverrideRange::new)
-      );
-      public static final Codec<UnihexProvider.OverrideRange> CODEC = RAW_CODEC.validate(
-         var0 -> var0.from >= var0.to ? DataResult.error(() -> "Invalid range: [" + var0.from + ";" + var0.to + "]") : DataResult.success(var0)
-      );
-
-      private OverrideRange(int from, int to, UnihexProvider.Dimensions dimensions) {
-         super();
-         this.from = from;
-         this.to = to;
-         this.dimensions = dimensions;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    @FunctionalInterface
    public interface ReaderOutput {
       void accept(int var1, UnihexProvider.LineData var2);
    }
 
-   static record ShortContents(short[] contents) implements UnihexProvider.LineData {
-      private ShortContents(short[] contents) {
-         super();
-         this.contents = contents;
-      }
-
-      @Override
-      public int line(int var1) {
-         return this.contents[var1] << 16;
-      }
-
-      static UnihexProvider.LineData read(int var0, ByteList var1) {
-         short[] var2 = new short[16];
-         int var3 = 0;
-
-         for (int var4 = 0; var4 < 16; var4++) {
-            int var5 = UnihexProvider.decodeHex(var0, var1, var3++);
-            int var6 = UnihexProvider.decodeHex(var0, var1, var3++);
-            int var7 = UnihexProvider.decodeHex(var0, var1, var3++);
-            int var8 = UnihexProvider.decodeHex(var0, var1, var3++);
-            short var9 = (short)(var5 << 12 | var6 << 8 | var7 << 4 | var8);
-            var2[var4] = var9;
-         }
-
-         return new UnihexProvider.ShortContents(var2);
-      }
-
-      @Override
-      public int bitWidth() {
-         return 16;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

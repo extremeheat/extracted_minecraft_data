@@ -180,10 +180,10 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
          var15.translate(1.0F - (float)var18 / 2.0F, (float)(-var19), 0.0F);
          if (var13 != 0) {
             VertexConsumer var20 = var4.getBuffer(var8 ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground());
-            var20.vertex(var15, -1.0F, -1.0F, 0.0F).color(var13).uv2(var5).endVertex();
-            var20.vertex(var15, -1.0F, (float)var19, 0.0F).color(var13).uv2(var5).endVertex();
-            var20.vertex(var15, (float)var18, (float)var19, 0.0F).color(var13).uv2(var5).endVertex();
-            var20.vertex(var15, (float)var18, -1.0F, 0.0F).color(var13).uv2(var5).endVertex();
+            var20.addVertex(var15, -1.0F, -1.0F, 0.0F).setColor(var13).setLight(var5);
+            var20.addVertex(var15, -1.0F, (float)var19, 0.0F).setColor(var13).setLight(var5);
+            var20.addVertex(var15, (float)var18, (float)var19, 0.0F).setColor(var13).setLight(var5);
+            var20.addVertex(var15, (float)var18, -1.0F, 0.0F).setColor(var13).setLight(var5);
          }
 
          for (Display.TextDisplay.CachedLine var21 : var16.lines()) {

@@ -20,7 +20,6 @@ public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity>
    public void render(FireworkRocketEntity var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
       var4.mulPose(this.entityRenderDispatcher.cameraOrientation());
-      var4.mulPose(Axis.YP.rotationDegrees(180.0F));
       if (var1.isShotAtAngle()) {
          var4.mulPose(Axis.ZP.rotationDegrees(180.0F));
          var4.mulPose(Axis.YP.rotationDegrees(180.0F));

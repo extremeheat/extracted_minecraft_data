@@ -2,10 +2,10 @@ package net.minecraft.world.entity.ai.attributes;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 
 public class AttributeSupplier {
    private final Map<Holder<Attribute>, AttributeInstance> instances;
@@ -32,7 +32,7 @@ public class AttributeSupplier {
       return this.getAttributeInstance(var1).getBaseValue();
    }
 
-   public double getModifierValue(Holder<Attribute> var1, UUID var2) {
+   public double getModifierValue(Holder<Attribute> var1, ResourceLocation var2) {
       AttributeModifier var3 = this.getAttributeInstance(var1).getModifier(var2);
       if (var3 == null) {
          throw new IllegalArgumentException("Can't find modifier " + var2 + " on attribute " + var1.getRegisteredName());
@@ -61,7 +61,7 @@ public class AttributeSupplier {
       return this.instances.containsKey(var1);
    }
 
-   public boolean hasModifier(Holder<Attribute> var1, UUID var2) {
+   public boolean hasModifier(Holder<Attribute> var1, ResourceLocation var2) {
       AttributeInstance var3 = this.instances.get(var1);
       return var3 != null && var3.getModifier(var2) != null;
    }

@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.projectile;
 
 import com.google.common.base.MoreObjects;
+import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -8,11 +9,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
@@ -31,6 +35,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private Entity cachedOwner;
    private boolean leftOwner;
    private boolean hasBeenShot;
+   @Nullable
+   private Entity lastDeflectedBy;
 
    Projectile(EntityType<? extends Projectile> var1, Level var2) {
       super(var1, var2);
@@ -138,6 +144,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    public void shoot(double var1, double var3, double var5, float var7, float var8) {
       Vec3 var9 = this.getMovementToShoot(var1, var3, var5, var7, var8);
       this.setDeltaMovement(var9);
+      this.hasImpulse = true;
       double var10 = var9.horizontalDistance();
       this.setYRot((float)(Mth.atan2(var9.x, var9.z) * 57.2957763671875));
       this.setXRot((float)(Mth.atan2(var9.y, var10) * 57.2957763671875));
@@ -150,17 +157,21 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       float var8 = -Mth.sin((var2 + var4) * 0.017453292F);
       float var9 = Mth.cos(var3 * 0.017453292F) * Mth.cos(var2 * 0.017453292F);
       this.shoot((double)var7, (double)var8, (double)var9, var5, var6);
-      Vec3 var10 = var1.getDeltaMovement();
+      Vec3 var10 = var1.getKnownMovement();
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
    }
 
    protected ProjectileDeflection hitTargetOrDeflectSelf(HitResult var1) {
       if (var1.getType() == HitResult.Type.ENTITY) {
          EntityHitResult var2 = (EntityHitResult)var1;
-         ProjectileDeflection var3 = var2.getEntity().deflection(this);
-         if (var3 != ProjectileDeflection.NONE) {
-            this.deflect(var3, var2.getEntity(), this.getOwner(), false);
-            return var3;
+         Entity var3 = var2.getEntity();
+         ProjectileDeflection var4 = var3.deflection(this);
+         if (var4 != ProjectileDeflection.NONE) {
+            if (var3 != this.lastDeflectedBy && this.deflect(var4, var3, this.getOwner(), false)) {
+               this.lastDeflectedBy = var3;
+            }
+
+            return var4;
          }
       }
 
@@ -168,12 +179,14 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return ProjectileDeflection.NONE;
    }
 
-   public void deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {
+   public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {
       if (!this.level().isClientSide) {
          var1.deflect(this, var2, this.random);
          this.setOwner(var3);
          this.onDeflection(var2, var4);
       }
+
+      return true;
    }
 
    protected void onDeflection(@Nullable Entity var1, boolean var2) {
@@ -248,9 +261,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    @Override
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      Entity var1 = this.getOwner();
-      return new ClientboundAddEntityPacket(this, var1 == null ? 0 : var1.getId());
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      Entity var2 = this.getOwner();
+      return new ClientboundAddEntityPacket(this, var1, var2 == null ? 0 : var2.getId());
    }
 
    @Override
@@ -280,5 +293,11 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    @Override
    public float getPickRadius() {
       return this.isPickable() ? 1.0F : 0.0F;
+   }
+
+   public DoubleDoubleImmutablePair calculateHorizontalHurtKnockbackDirection(LivingEntity var1, DamageSource var2) {
+      double var3 = this.getDeltaMovement().x;
+      double var5 = this.getDeltaMovement().z;
+      return DoubleDoubleImmutablePair.of(var3, var5);
    }
 }

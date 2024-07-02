@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 public class RealmsTextureManager {
    private static final Map<String, RealmsTextureManager.RealmsTexture> TEXTURES = Maps.newHashMap();
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation TEMPLATE_ICON_LOCATION = new ResourceLocation("textures/gui/presets/isles.png");
+   private static final ResourceLocation TEMPLATE_ICON_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/presets/isles.png");
 
    public RealmsTextureManager() {
       super();
@@ -39,7 +39,7 @@ public class RealmsTextureManager {
             TEXTURES.put(var0, new RealmsTextureManager.RealmsTexture(var1, var5));
             return var5;
          } else {
-            ResourceLocation var4 = new ResourceLocation("realms", "dynamic/" + var0);
+            ResourceLocation var4 = ResourceLocation.fromNamespaceAndPath("realms", "dynamic/" + var0);
             Minecraft.getInstance().getTextureManager().register(var4, new DynamicTexture(var3));
             TEXTURES.put(var0, new RealmsTextureManager.RealmsTexture(var1, var4));
             return var4;
@@ -63,12 +63,16 @@ public class RealmsTextureManager {
       return null;
    }
 
-   public static record RealmsTexture(String image, ResourceLocation textureId) {
-
-      public RealmsTexture(String image, ResourceLocation textureId) {
-         super();
-         this.image = image;
-         this.textureId = textureId;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

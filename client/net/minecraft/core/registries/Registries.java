@@ -1,6 +1,7 @@
 package net.minecraft.core.registries;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.critereon.EntitySubPredicate;
 import net.minecraft.advancements.critereon.ItemSubPredicate;
@@ -36,12 +37,19 @@ import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.armortrim.TrimMaterial;
 import net.minecraft.world.item.armortrim.TrimPattern;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.LevelBasedValue;
+import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
+import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffect;
+import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
+import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
@@ -49,6 +57,7 @@ import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -101,7 +110,7 @@ import net.minecraft.world.level.storage.loot.providers.number.LootNumberProvide
 import net.minecraft.world.level.storage.loot.providers.score.LootScoreProviderType;
 
 public class Registries {
-   public static final ResourceLocation ROOT_REGISTRY_NAME = new ResourceLocation("root");
+   public static final ResourceLocation ROOT_REGISTRY_NAME = ResourceLocation.withDefaultNamespace("root");
    public static final ResourceKey<Registry<Activity>> ACTIVITY = createRegistryKey("activity");
    public static final ResourceKey<Registry<Attribute>> ATTRIBUTE = createRegistryKey("attribute");
    public static final ResourceKey<Registry<BannerPattern>> BANNER_PATTERN = createRegistryKey("banner_pattern");
@@ -121,7 +130,19 @@ public class Registries {
    public static final ResourceKey<Registry<ResourceLocation>> CUSTOM_STAT = createRegistryKey("custom_stat");
    public static final ResourceKey<Registry<DamageType>> DAMAGE_TYPE = createRegistryKey("damage_type");
    public static final ResourceKey<Registry<MapCodec<? extends DensityFunction>>> DENSITY_FUNCTION_TYPE = createRegistryKey("worldgen/density_function_type");
-   public static final ResourceKey<Registry<Enchantment>> ENCHANTMENT = createRegistryKey("enchantment");
+   public static final ResourceKey<Registry<MapCodec<? extends EnchantmentEntityEffect>>> ENCHANTMENT_ENTITY_EFFECT_TYPE = createRegistryKey(
+      "enchantment_entity_effect_type"
+   );
+   public static final ResourceKey<Registry<MapCodec<? extends LevelBasedValue>>> ENCHANTMENT_LEVEL_BASED_VALUE_TYPE = createRegistryKey(
+      "enchantment_level_based_value_type"
+   );
+   public static final ResourceKey<Registry<MapCodec<? extends EnchantmentLocationBasedEffect>>> ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE = createRegistryKey(
+      "enchantment_location_based_effect_type"
+   );
+   public static final ResourceKey<Registry<MapCodec<? extends EnchantmentProvider>>> ENCHANTMENT_PROVIDER_TYPE = createRegistryKey("enchantment_provider_type");
+   public static final ResourceKey<Registry<MapCodec<? extends EnchantmentValueEffect>>> ENCHANTMENT_VALUE_EFFECT_TYPE = createRegistryKey(
+      "enchantment_value_effect_type"
+   );
    public static final ResourceKey<Registry<EntityType<?>>> ENTITY_TYPE = createRegistryKey("entity_type");
    public static final ResourceKey<Registry<Feature<?>>> FEATURE = createRegistryKey("worldgen/feature");
    public static final ResourceKey<Registry<FeatureSizeType<?>>> FEATURE_SIZE_TYPE = createRegistryKey("worldgen/feature_size_type");
@@ -134,6 +155,7 @@ public class Registries {
    public static final ResourceKey<Registry<Instrument>> INSTRUMENT = createRegistryKey("instrument");
    public static final ResourceKey<Registry<IntProviderType<?>>> INT_PROVIDER_TYPE = createRegistryKey("int_provider_type");
    public static final ResourceKey<Registry<Item>> ITEM = createRegistryKey("item");
+   public static final ResourceKey<Registry<JukeboxSong>> JUKEBOX_SONG = createRegistryKey("jukebox_song");
    public static final ResourceKey<Registry<LootItemConditionType>> LOOT_CONDITION_TYPE = createRegistryKey("loot_condition_type");
    public static final ResourceKey<Registry<LootItemFunctionType<?>>> LOOT_FUNCTION_TYPE = createRegistryKey("loot_function_type");
    public static final ResourceKey<Registry<LootNbtProviderType>> LOOT_NBT_PROVIDER_TYPE = createRegistryKey("loot_nbt_provider_type");
@@ -173,19 +195,22 @@ public class Registries {
    public static final ResourceKey<Registry<TrunkPlacerType<?>>> TRUNK_PLACER_TYPE = createRegistryKey("worldgen/trunk_placer_type");
    public static final ResourceKey<Registry<VillagerProfession>> VILLAGER_PROFESSION = createRegistryKey("villager_profession");
    public static final ResourceKey<Registry<VillagerType>> VILLAGER_TYPE = createRegistryKey("villager_type");
-   public static final ResourceKey<Registry<String>> DECORATED_POT_PATTERNS = createRegistryKey("decorated_pot_patterns");
+   public static final ResourceKey<Registry<DecoratedPotPattern>> DECORATED_POT_PATTERN = createRegistryKey("decorated_pot_pattern");
    public static final ResourceKey<Registry<NumberFormatType<?>>> NUMBER_FORMAT_TYPE = createRegistryKey("number_format_type");
    public static final ResourceKey<Registry<ArmorMaterial>> ARMOR_MATERIAL = createRegistryKey("armor_material");
    public static final ResourceKey<Registry<DataComponentType<?>>> DATA_COMPONENT_TYPE = createRegistryKey("data_component_type");
    public static final ResourceKey<Registry<MapCodec<? extends EntitySubPredicate>>> ENTITY_SUB_PREDICATE_TYPE = createRegistryKey("entity_sub_predicate_type");
    public static final ResourceKey<Registry<ItemSubPredicate.Type<?>>> ITEM_SUB_PREDICATE_TYPE = createRegistryKey("item_sub_predicate_type");
    public static final ResourceKey<Registry<MapDecorationType>> MAP_DECORATION_TYPE = createRegistryKey("map_decoration_type");
+   public static final ResourceKey<Registry<DataComponentType<?>>> ENCHANTMENT_EFFECT_COMPONENT_TYPE = createRegistryKey("enchantment_effect_component_type");
    public static final ResourceKey<Registry<Biome>> BIOME = createRegistryKey("worldgen/biome");
    public static final ResourceKey<Registry<ChatType>> CHAT_TYPE = createRegistryKey("chat_type");
    public static final ResourceKey<Registry<ConfiguredWorldCarver<?>>> CONFIGURED_CARVER = createRegistryKey("worldgen/configured_carver");
    public static final ResourceKey<Registry<ConfiguredFeature<?, ?>>> CONFIGURED_FEATURE = createRegistryKey("worldgen/configured_feature");
    public static final ResourceKey<Registry<DensityFunction>> DENSITY_FUNCTION = createRegistryKey("worldgen/density_function");
    public static final ResourceKey<Registry<DimensionType>> DIMENSION_TYPE = createRegistryKey("dimension_type");
+   public static final ResourceKey<Registry<Enchantment>> ENCHANTMENT = createRegistryKey("enchantment");
+   public static final ResourceKey<Registry<EnchantmentProvider>> ENCHANTMENT_PROVIDER = createRegistryKey("enchantment_provider");
    public static final ResourceKey<Registry<FlatLevelGeneratorPreset>> FLAT_LEVEL_GENERATOR_PRESET = createRegistryKey("worldgen/flat_level_generator_preset");
    public static final ResourceKey<Registry<NoiseGeneratorSettings>> NOISE_SETTINGS = createRegistryKey("worldgen/noise_settings");
    public static final ResourceKey<Registry<NormalNoise.NoiseParameters>> NOISE = createRegistryKey("worldgen/noise");
@@ -206,6 +231,8 @@ public class Registries {
    public static final ResourceKey<Registry<LootTable>> LOOT_TABLE = createRegistryKey("loot_table");
    public static final ResourceKey<Registry<LootItemFunction>> ITEM_MODIFIER = createRegistryKey("item_modifier");
    public static final ResourceKey<Registry<LootItemCondition>> PREDICATE = createRegistryKey("predicate");
+   public static final ResourceKey<Registry<Advancement>> ADVANCEMENT = createRegistryKey("advancement");
+   public static final ResourceKey<Registry<Recipe<?>>> RECIPE = createRegistryKey("recipe");
 
    public Registries() {
       super();
@@ -220,6 +247,14 @@ public class Registries {
    }
 
    private static <T> ResourceKey<Registry<T>> createRegistryKey(String var0) {
-      return ResourceKey.createRegistryKey(new ResourceLocation(var0));
+      return ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace(var0));
+   }
+
+   public static String elementsDirPath(ResourceKey<? extends Registry<?>> var0) {
+      return var0.location().getPath();
+   }
+
+   public static String tagsDirPath(ResourceKey<? extends Registry<?>> var0) {
+      return "tags/" + var0.location().getPath();
    }
 }

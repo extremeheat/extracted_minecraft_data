@@ -38,30 +38,16 @@ public class EncoderCache {
       };
    }
 
-   static record Key<A, T>(Codec<A> codec, A value, DynamicOps<T> ops) {
-      Key(Codec<A> codec, A value, DynamicOps<T> ops) {
-         super();
-         this.codec = codec;
-         this.value = (A)value;
-         this.ops = ops;
-      }
-
-      public DataResult<T> resolve() {
-         return this.codec.encodeStart(this.ops, this.value);
-      }
-
-      public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else {
-            return !(var1 instanceof EncoderCache.Key var2) ? false : this.codec == var2.codec && this.value.equals(var2.value) && this.ops.equals(var2.ops);
-         }
-      }
-
-      public int hashCode() {
-         int var1 = System.identityHashCode(this.codec);
-         var1 = 31 * var1 + this.value.hashCode();
-         return 31 * var1 + this.ops.hashCode();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

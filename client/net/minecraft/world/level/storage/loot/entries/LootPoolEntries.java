@@ -24,6 +24,6 @@ public class LootPoolEntries {
    }
 
    private static LootPoolEntryType register(String var0, MapCodec<? extends LootPoolEntryContainer> var1) {
-      return Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, new ResourceLocation(var0), new LootPoolEntryType(var1));
+      return Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, ResourceLocation.withDefaultNamespace(var0), new LootPoolEntryType(var1));
    }
 }

@@ -78,6 +78,8 @@ public interface Registry<T> extends Keyable, IdMap<T> {
       return Optional.ofNullable(this.get(var1));
    }
 
+   Optional<Holder.Reference<T>> getAny();
+
    default T getOrThrow(ResourceKey<T> var1) {
       Object var2 = this.get(var1);
       if (var2 == null) {
@@ -104,7 +106,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    boolean containsKey(ResourceKey<T> var1);
 
    static <T> T register(Registry<? super T> var0, String var1, T var2) {
-      return register(var0, new ResourceLocation(var1), (T)var2);
+      return register(var0, ResourceLocation.parse(var1), (T)var2);
    }
 
    static <V, T extends V> T register(Registry<V> var0, ResourceLocation var1, T var2) {

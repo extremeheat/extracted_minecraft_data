@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.util.StringRepresentable;
+import org.jetbrains.annotations.Contract;
 
 public enum ChatFormatting implements StringRepresentable {
    BLACK("BLACK", '0', 0, 0),
@@ -101,6 +102,7 @@ public enum ChatFormatting implements StringRepresentable {
    }
 
    @Nullable
+   @Contract("!null->!null;_->_")
    public static String stripFormatting(@Nullable String var0) {
       return var0 == null ? null : STRIP_FORMATTING_PATTERN.matcher(var0).replaceAll("");
    }

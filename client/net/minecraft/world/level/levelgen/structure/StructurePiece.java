@@ -72,10 +72,7 @@ public abstract class StructurePiece {
       this(
          var1,
          var2.getInt("GD"),
-         (BoundingBox)BoundingBox.CODEC
-            .parse(NbtOps.INSTANCE, var2.get("BB"))
-            .resultOrPartial(LOGGER::error)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid boundingbox"))
+         (BoundingBox)BoundingBox.CODEC.parse(NbtOps.INSTANCE, var2.get("BB")).getOrThrow(var0 -> new IllegalArgumentException("Invalid boundingbox: " + var0))
       );
       int var3 = var2.getInt("O");
       this.setOrientation(var3 == -1 ? null : Direction.from2DDataValue(var3));

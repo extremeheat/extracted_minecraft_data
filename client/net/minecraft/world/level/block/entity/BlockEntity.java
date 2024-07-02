@@ -15,6 +15,7 @@ import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
@@ -283,6 +284,16 @@ public abstract class BlockEntity {
 
    public void setComponents(DataComponentMap var1) {
       this.components = var1;
+   }
+
+   @Nullable
+   public static Component parseCustomNameSafe(String var0, HolderLookup.Provider var1) {
+      try {
+         return Component.Serializer.fromJson(var0, var1);
+      } catch (Exception var3) {
+         LOGGER.warn("Failed to parse custom name from string '{}', discarding", var0, var3);
+         return null;
+      }
    }
 
    static class ComponentHelper {

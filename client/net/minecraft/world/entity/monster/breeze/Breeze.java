@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
@@ -51,7 +51,7 @@ public class Breeze extends Monster {
    private int jumpTrailStartedTick = 0;
    private int soundTick = 0;
    private static final ProjectileDeflection PROJECTILE_DEFLECTION = (var0, var1, var2) -> {
-      var1.level().playLocalSound(var1, SoundEvents.BREEZE_DEFLECT, var1.getSoundSource(), 1.0F, 1.0F);
+      var1.level().playSound(null, var1, SoundEvents.BREEZE_DEFLECT, var1.getSoundSource(), 1.0F, 1.0F);
       ProjectileDeflection.REVERSE.deflect(var0, var1, var2);
    };
 
@@ -72,7 +72,7 @@ public class Breeze extends Monster {
 
    @Override
    protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return BreezeAi.makeBrain(this.brainProvider().makeBrain(var1));
+      return BreezeAi.makeBrain(this, this.brainProvider().makeBrain(var1));
    }
 
    @Override
@@ -186,7 +186,11 @@ public class Breeze extends Monster {
 
    @Override
    public ProjectileDeflection deflection(Projectile var1) {
-      return var1.getType() != EntityType.BREEZE_WIND_CHARGE && var1.getType() != EntityType.WIND_CHARGE ? PROJECTILE_DEFLECTION : ProjectileDeflection.NONE;
+      if (var1.getType() != EntityType.BREEZE_WIND_CHARGE && var1.getType() != EntityType.WIND_CHARGE) {
+         return this.getType().is(EntityTypeTags.DEFLECTS_PROJECTILES) ? PROJECTILE_DEFLECTION : ProjectileDeflection.NONE;
+      } else {
+         return ProjectileDeflection.NONE;
+      }
    }
 
    @Override
@@ -260,7 +264,7 @@ public class Breeze extends Monster {
 
    @Override
    public boolean isInvulnerableTo(DamageSource var1) {
-      return var1.is(DamageTypeTags.BREEZE_IMMUNE_TO) || var1.getEntity() instanceof Breeze || super.isInvulnerableTo(var1);
+      return var1.getEntity() instanceof Breeze || super.isInvulnerableTo(var1);
    }
 
    @Override

@@ -63,14 +63,14 @@ import org.slf4j.Logger;
 
 public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.Entry> {
    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withZone(ZoneId.systemDefault());
-   static final ResourceLocation ERROR_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/error_highlighted");
-   static final ResourceLocation ERROR_SPRITE = new ResourceLocation("world_list/error");
-   static final ResourceLocation MARKED_JOIN_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/marked_join_highlighted");
-   static final ResourceLocation MARKED_JOIN_SPRITE = new ResourceLocation("world_list/marked_join");
-   static final ResourceLocation WARNING_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/warning_highlighted");
-   static final ResourceLocation WARNING_SPRITE = new ResourceLocation("world_list/warning");
-   static final ResourceLocation JOIN_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/join_highlighted");
-   static final ResourceLocation JOIN_SPRITE = new ResourceLocation("world_list/join");
+   static final ResourceLocation ERROR_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/error_highlighted");
+   static final ResourceLocation ERROR_SPRITE = ResourceLocation.withDefaultNamespace("world_list/error");
+   static final ResourceLocation MARKED_JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/marked_join_highlighted");
+   static final ResourceLocation MARKED_JOIN_SPRITE = ResourceLocation.withDefaultNamespace("world_list/marked_join");
+   static final ResourceLocation WARNING_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/warning_highlighted");
+   static final ResourceLocation WARNING_SPRITE = ResourceLocation.withDefaultNamespace("world_list/warning");
+   static final ResourceLocation JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/join_highlighted");
+   static final ResourceLocation JOIN_SPRITE = ResourceLocation.withDefaultNamespace("world_list/join");
    static final Logger LOGGER = LogUtils.getLogger();
    static final Component FROM_NEWER_TOOLTIP_1 = Component.translatable("selectWorld.tooltip.fromNewerVersion1").withStyle(ChatFormatting.RED);
    static final Component FROM_NEWER_TOOLTIP_2 = Component.translatable("selectWorld.tooltip.fromNewerVersion2").withStyle(ChatFormatting.RED);
@@ -210,7 +210,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
    }
 
    private void notifyListUpdated() {
-      this.setScrollAmount(this.getScrollAmount());
+      this.clampScrollAmount();
       this.screen.triggerImmediateNarration(true);
    }
 
@@ -542,6 +542,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
             LevelSettings var3 = (LevelSettings)var2.getFirst();
             WorldCreationContext var4 = (WorldCreationContext)var2.getSecond();
             Path var5 = CreateWorldScreen.createTempDataPackDirFromExistingWorld(var1.getLevelPath(LevelResource.DATAPACK_DIR), this.minecraft);
+            var4.validate();
             if (var4.options().isOldCustomizedWorld()) {
                this.minecraft
                   .setScreen(

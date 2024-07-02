@@ -50,7 +50,7 @@ public interface RandomizableContainer extends Container {
 
    default boolean tryLoadLootTable(CompoundTag var1) {
       if (var1.contains("LootTable", 8)) {
-         this.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var1.getString("LootTable"))));
+         this.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("LootTable"))));
          if (var1.contains("LootTableSeed", 4)) {
             this.setLootTableSeed(var1.getLong("LootTableSeed"));
          } else {

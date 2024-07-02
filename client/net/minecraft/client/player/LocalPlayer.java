@@ -12,6 +12,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
@@ -63,6 +64,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
@@ -71,9 +73,9 @@ import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
@@ -95,7 +97,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    private static final float WATER_VISION_QUICK_PERCENT = 0.6F;
    private static final double SUFFOCATING_COLLISION_CHECK_SCALE = 0.35;
    private static final double MINOR_COLLISION_ANGLE_THRESHOLD_RADIAN = 0.13962633907794952;
-   private static final float DEFAULT_SNEAKING_MOVEMENT_FACTOR = 0.3F;
    public final ClientPacketListener connection;
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
@@ -357,11 +358,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public boolean canSpawnSprintParticle() {
       return !this.getAbilities().flying && super.canSpawnSprintParticle();
-   }
-
-   @Override
-   public boolean canSpawnSoulSpeedParticle() {
-      return !this.getAbilities().flying && super.canSpawnSoulSpeedParticle();
    }
 
    protected void sendRidingJump() {
@@ -654,7 +650,8 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       if (!(this.minecraft.screen instanceof ReceivingLevelScreen)) {
-         this.handleNetherPortalClient();
+         this.handleConfusionTransitionEffect(this.getActivePortalLocalTransition() == Portal.Transition.CONFUSION);
+         this.processPortalCooldown();
       }
 
       boolean var1 = this.input.jumping;
@@ -666,7 +663,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          && !this.isPassenger()
          && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING)
          && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
-      float var5 = Mth.clamp(0.3F + EnchantmentHelper.getSneakingSpeedBonus(this), 0.0F, 1.0F);
+      float var5 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
       this.input.tick(this.isMovingSlowly(), var5);
       this.minecraft.getTutorial().onInput(this.input);
       if (this.isUsingItem() && !this.isPassenger()) {
@@ -814,6 +811,10 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
    }
 
+   public Portal.Transition getActivePortalLocalTransition() {
+      return this.portalProcess == null ? Portal.Transition.NONE : this.portalProcess.getPortalLocalTransition();
+   }
+
    @Override
    protected void tickDeath() {
       this.deathTime++;
@@ -822,11 +823,14 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
    }
 
-   private void handleNetherPortalClient() {
+   private void handleConfusionTransitionEffect(boolean var1) {
       this.oSpinningEffectIntensity = this.spinningEffectIntensity;
-      float var1 = 0.0F;
-      if (this.isInsidePortal) {
-         if (this.minecraft.screen != null && !this.minecraft.screen.isPauseScreen() && !(this.minecraft.screen instanceof DeathScreen)) {
+      float var2 = 0.0F;
+      if (var1 && this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
+         if (this.minecraft.screen != null
+            && !this.minecraft.screen.isPauseScreen()
+            && !(this.minecraft.screen instanceof DeathScreen)
+            && !(this.minecraft.screen instanceof WinScreen)) {
             if (this.minecraft.screen instanceof AbstractContainerScreen) {
                this.closeContainer();
             }
@@ -840,16 +844,15 @@ public class LocalPlayer extends AbstractClientPlayer {
                .play(SimpleSoundInstance.forLocalAmbience(SoundEvents.PORTAL_TRIGGER, this.random.nextFloat() * 0.4F + 0.8F, 0.25F));
          }
 
-         var1 = 0.0125F;
-         this.isInsidePortal = false;
+         var2 = 0.0125F;
+         this.portalProcess.setAsInsidePortalThisTick(false);
       } else if (this.hasEffect(MobEffects.CONFUSION) && !this.getEffect(MobEffects.CONFUSION).endsWithin(60)) {
-         var1 = 0.006666667F;
+         var2 = 0.006666667F;
       } else if (this.spinningEffectIntensity > 0.0F) {
-         var1 = -0.05F;
+         var2 = -0.05F;
       }
 
-      this.spinningEffectIntensity = Mth.clamp(this.spinningEffectIntensity + var1, 0.0F, 1.0F);
-      this.processPortalCooldown();
+      this.spinningEffectIntensity = Mth.clamp(this.spinningEffectIntensity + var2, 0.0F, 1.0F);
    }
 
    @Override

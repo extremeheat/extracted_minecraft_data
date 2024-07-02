@@ -7,7 +7,6 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -19,6 +18,8 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -26,6 +27,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -57,8 +59,8 @@ import org.slf4j.Logger;
 public class Item implements FeatureElement, ItemLike {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Map<Block, Item> BY_BLOCK = Maps.newHashMap();
-   public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
-   public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+   public static final ResourceLocation BASE_ATTACK_DAMAGE_ID = ResourceLocation.withDefaultNamespace("base_attack_damage");
+   public static final ResourceLocation BASE_ATTACK_SPEED_ID = ResourceLocation.withDefaultNamespace("base_attack_speed");
    public static final int DEFAULT_MAX_STACK_SIZE = 64;
    public static final int ABSOLUTE_MAX_STACK_SIZE = 99;
    public static final int MAX_BAR_WIDTH = 13;
@@ -152,7 +154,8 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      return var1.has(DataComponents.FOOD) ? var3.eat(var2, var1) : var1;
+      FoodProperties var4 = var1.get(DataComponents.FOOD);
+      return var4 != null ? var3.eat(var2, var1, var4) : var1;
    }
 
    public boolean isBarVisible(ItemStack var1) {
@@ -177,12 +180,15 @@ public class Item implements FeatureElement, ItemLike {
       return false;
    }
 
-   public float getAttackDamageBonus(Player var1, float var2) {
+   public float getAttackDamageBonus(Entity var1, float var2, DamageSource var3) {
       return 0.0F;
    }
 
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
       return false;
+   }
+
+   public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
    }
 
    public boolean mineBlock(ItemStack var1, Level var2, BlockState var3, BlockPos var4, LivingEntity var5) {
@@ -213,7 +219,7 @@ public class Item implements FeatureElement, ItemLike {
 
    @Override
    public String toString() {
-      return BuiltInRegistries.ITEM.getKey(this).getPath();
+      return BuiltInRegistries.ITEM.wrapAsHolder(this).getRegisteredName();
    }
 
    protected String getOrCreateDescriptionId() {
@@ -259,9 +265,9 @@ public class Item implements FeatureElement, ItemLike {
       return var1.has(DataComponents.FOOD) ? UseAnim.EAT : UseAnim.NONE;
    }
 
-   public int getUseDuration(ItemStack var1) {
-      FoodProperties var2 = var1.get(DataComponents.FOOD);
-      return var2 != null ? var2.eatDurationTicks() : 0;
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+      FoodProperties var3 = var1.get(DataComponents.FOOD);
+      return var3 != null ? var3.eatDurationTicks() : 0;
    }
 
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
@@ -372,6 +378,10 @@ public class Item implements FeatureElement, ItemLike {
 
       public Item.Properties fireResistant() {
          return this.component(DataComponents.FIRE_RESISTANT, Unit.INSTANCE);
+      }
+
+      public Item.Properties jukeboxPlayable(ResourceKey<JukeboxSong> var1) {
+         return this.component(DataComponents.JUKEBOX_PLAYABLE, new JukeboxPlayable(new EitherHolder<>(var1), true));
       }
 
       public Item.Properties requiredFeatures(FeatureFlag... var1) {

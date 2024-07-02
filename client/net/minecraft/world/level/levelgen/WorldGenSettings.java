@@ -1,29 +1,13 @@
 package net.minecraft.world.level.levelgen;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
-
-public record WorldGenSettings(WorldOptions options, WorldDimensions dimensions) {
-   public static final Codec<WorldGenSettings> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(WorldOptions.CODEC.forGetter(WorldGenSettings::options), WorldDimensions.CODEC.forGetter(WorldGenSettings::dimensions))
-            .apply(var0, var0.stable(WorldGenSettings::new))
-   );
-
-   public WorldGenSettings(WorldOptions options, WorldDimensions dimensions) {
-      super();
-      this.options = options;
-      this.dimensions = dimensions;
-   }
-
-   public static <T> DataResult<T> encode(DynamicOps<T> var0, WorldOptions var1, WorldDimensions var2) {
-      return CODEC.encodeStart(var0, new WorldGenSettings(var1, var2));
-   }
-
-   public static <T> DataResult<T> encode(DynamicOps<T> var0, WorldOptions var1, RegistryAccess var2) {
-      return encode(var0, var1, new WorldDimensions(var2.registryOrThrow(Registries.LEVEL_STEM)));
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

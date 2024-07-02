@@ -63,7 +63,7 @@ public class DropperBlock extends DispenserBlock {
                if (var9 == null) {
                   var10 = DISPENSE_BEHAVIOUR.dispense(var5, var7);
                } else {
-                  var10 = HopperBlockEntity.addItem(var4, var9, var7.copy().split(1), var8.getOpposite());
+                  var10 = HopperBlockEntity.addItem(var4, var9, var7.copyWithCount(1), var8.getOpposite());
                   if (var10.isEmpty()) {
                      var10 = var7.copy();
                      var10.shrink(1);

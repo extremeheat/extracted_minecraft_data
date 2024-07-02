@@ -15,6 +15,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Saddleable;
@@ -126,8 +127,7 @@ public interface DispenseItemBehavior {
                      LivingEntity.class, new AABB(var3), var0 -> !(var0 instanceof Saddleable var1x) ? false : !var1x.isSaddled() && var1x.isSaddleable()
                   );
                if (!var4.isEmpty()) {
-                  ((Saddleable)var4.get(0)).equipSaddle(SoundSource.BLOCKS);
-                  var2.shrink(1);
+                  ((Saddleable)var4.get(0)).equipSaddle(var2.split(1), SoundSource.BLOCKS);
                   this.setSuccess(true);
                   return var2;
                } else {
@@ -141,7 +141,8 @@ public interface DispenseItemBehavior {
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
 
-            for (AbstractHorse var6 : var1.level().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canWearBodyArmor())) {
+            for (AbstractHorse var6 : var1.level()
+               .getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canUseSlot(EquipmentSlot.BODY))) {
                if (var6.isBodyArmorItem(var2) && !var6.isWearingBodyArmor() && var6.isTamed()) {
                   var6.setBodyArmorItem(var2.split(1));
                   this.setSuccess(true);
@@ -220,7 +221,7 @@ public interface DispenseItemBehavior {
             ServerLevel var5 = var1.level();
             if (var3.emptyContents(null, var5, var4, null)) {
                var3.checkExtraContent(null, var5, var2, var4);
-               return new ItemStack(Items.BUCKET);
+               return this.consumeWithRemainder(var1, var2, new ItemStack(Items.BUCKET));
             } else {
                return this.defaultDispenseItemBehavior.dispense(var1, var2);
             }
@@ -236,8 +237,6 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, var9);
       DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, var9);
       DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
-         private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             ServerLevel var3 = var1.level();
@@ -250,16 +249,7 @@ public interface DispenseItemBehavior {
                } else {
                   var3.gameEvent(null, GameEvent.FLUID_PICKUP, var4);
                   Item var7 = var9.getItem();
-                  var2.shrink(1);
-                  if (var2.isEmpty()) {
-                     return new ItemStack(var7);
-                  } else {
-                     if (var1.blockEntity().addItem(new ItemStack(var7)) < 0) {
-                        this.defaultDispenseItemBehavior.dispense(var1, new ItemStack(var7));
-                     }
-
-                     return var2;
-                  }
+                  return this.consumeWithRemainder(var1, var2, new ItemStack(var7));
                }
             } else {
                return super.execute(var1, var2);
@@ -288,7 +278,8 @@ public interface DispenseItemBehavior {
             }
 
             if (this.isSuccess()) {
-               var2.hurtAndBreak(1, var3.getRandom(), null, () -> var2.setCount(0));
+               var2.hurtAndBreak(1, var3, null, var0 -> {
+               });
             }
 
             return var2;
@@ -395,20 +386,9 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(
          Items.GLASS_BOTTLE.asItem(),
          new OptionalDispenseItemBehavior() {
-            private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-
             private ItemStack takeLiquid(BlockSource var1, ItemStack var2, ItemStack var3) {
-               var2.shrink(1);
-               if (var2.isEmpty()) {
-                  var1.level().gameEvent(null, GameEvent.FLUID_PICKUP, var1.pos());
-                  return var3.copy();
-               } else {
-                  if (var1.blockEntity().addItem(var3.copy()) < 0) {
-                     this.defaultDispenseItemBehavior.dispense(var1, var3.copy());
-                  }
-
-                  return var2;
-               }
+               var1.level().gameEvent(null, GameEvent.FLUID_PICKUP, var1.pos());
+               return this.consumeWithRemainder(var1, var2, var3);
             }
 
             @Override
@@ -466,9 +446,7 @@ public interface DispenseItemBehavior {
             } else {
                for (Armadillo var7 : var5) {
                   if (var7.brushOffScute()) {
-                     var2.hurtAndBreak(16, var3.getRandom(), null, () -> {
-                        var2.shrink(1);
-                        var2.setDamageValue(0);
+                     var2.hurtAndBreak(16, var3, null, var0 -> {
                      });
                      return var2;
                   }
@@ -533,7 +511,7 @@ public interface DispenseItemBehavior {
                      var4.playSound(null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
                      var4.gameEvent(null, GameEvent.FLUID_PLACE, var5);
                      var4.setBlockAndUpdate(var6, Blocks.MUD.defaultBlockState());
-                     return new ItemStack(Items.GLASS_BOTTLE);
+                     return this.consumeWithRemainder(var1, var2, new ItemStack(Items.GLASS_BOTTLE));
                   }
                }
             }

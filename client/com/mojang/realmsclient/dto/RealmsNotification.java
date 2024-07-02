@@ -109,7 +109,7 @@ public class RealmsNotification {
       public static RealmsNotification.InfoPopup parse(RealmsNotification var0, JsonObject var1) {
          RealmsText var2 = JsonUtils.getRequired("title", var1, RealmsText::parse);
          RealmsText var3 = JsonUtils.getRequired("message", var1, RealmsText::parse);
-         ResourceLocation var4 = new ResourceLocation(JsonUtils.getRequiredString("image", var1));
+         ResourceLocation var4 = ResourceLocation.parse(JsonUtils.getRequiredString("image", var1));
          RealmsNotification.UrlButton var5 = JsonUtils.getOptional("urlButton", var1, RealmsNotification.UrlButton::parse);
          return new RealmsNotification.InfoPopup(var0, var2, var3, var4, var5);
       }
@@ -149,22 +149,18 @@ public class RealmsNotification {
       }
    }
 
-   static record UrlButton(String url, RealmsText urlText) {
-      private static final String URL = "url";
-      private static final String URL_TEXT = "urlText";
-
-      private UrlButton(String url, RealmsText urlText) {
-         super();
-         this.url = url;
-         this.urlText = urlText;
-      }
-
-      public static RealmsNotification.UrlButton parse(JsonObject var0) {
-         String var1 = JsonUtils.getRequiredString("url", var0);
-         RealmsText var2 = JsonUtils.getRequired("urlText", var0, RealmsText::parse);
-         return new RealmsNotification.UrlButton(var1, var2);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class VisitUrl extends RealmsNotification {
       private static final String URL = "url";

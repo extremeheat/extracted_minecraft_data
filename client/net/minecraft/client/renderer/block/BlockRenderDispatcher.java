@@ -53,11 +53,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
 
    public void renderBatched(BlockState var1, BlockPos var2, BlockAndTintGetter var3, PoseStack var4, VertexConsumer var5, boolean var6, RandomSource var7) {
       try {
-         RenderShape var8 = var1.getRenderShape();
-         if (var8 == RenderShape.MODEL) {
-            this.modelRenderer
-               .tesselateBlock(var3, this.getBlockModel(var1), var1, var2, var4, var5, var6, var7, var1.getSeed(var2), OverlayTexture.NO_OVERLAY);
-         }
+         this.modelRenderer.tesselateBlock(var3, this.getBlockModel(var1), var1, var2, var4, var5, var6, var7, var1.getSeed(var2), OverlayTexture.NO_OVERLAY);
       } catch (Throwable var11) {
          CrashReport var9 = CrashReport.forThrowable(var11, "Tesselating block in world");
          CrashReportCategory var10 = var9.addCategory("Block being tesselated");

@@ -12,5 +12,5 @@ public interface UnbakedModel {
    void resolveParents(Function<ResourceLocation, UnbakedModel> var1);
 
    @Nullable
-   BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4);
+   BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3);
 }

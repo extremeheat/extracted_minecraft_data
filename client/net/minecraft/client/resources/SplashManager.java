@@ -20,7 +20,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public class SplashManager extends SimplePreparableReloadListener<List<String>> {
-   private static final ResourceLocation SPLASHES_LOCATION = new ResourceLocation("texts/splashes.txt");
+   private static final ResourceLocation SPLASHES_LOCATION = ResourceLocation.withDefaultNamespace("texts/splashes.txt");
    private static final RandomSource RANDOM = RandomSource.create();
    private final List<String> splashes = Lists.newArrayList();
    private final User user;

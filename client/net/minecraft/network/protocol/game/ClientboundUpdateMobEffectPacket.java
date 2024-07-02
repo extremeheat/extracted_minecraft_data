@@ -1,9 +1,7 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
@@ -53,7 +51,7 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
    private ClientboundUpdateMobEffectPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.entityId = var1.readVarInt();
-      this.effect = ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).decode(var1);
+      this.effect = MobEffect.STREAM_CODEC.decode(var1);
       this.effectAmplifier = var1.readVarInt();
       this.effectDurationTicks = var1.readVarInt();
       this.flags = var1.readByte();
@@ -61,7 +59,7 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
 
    private void write(RegistryFriendlyByteBuf var1) {
       var1.writeVarInt(this.entityId);
-      ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).encode(var1, this.effect);
+      MobEffect.STREAM_CODEC.encode(var1, this.effect);
       var1.writeVarInt(this.effectAmplifier);
       var1.writeVarInt(this.effectDurationTicks);
       var1.writeByte(this.flags);

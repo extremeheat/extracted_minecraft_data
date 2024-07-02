@@ -59,7 +59,6 @@ import net.minecraft.client.resources.sounds.GuardianAttackSoundInstance;
 import net.minecraft.client.resources.sounds.MinecartSoundInstance;
 import net.minecraft.client.resources.sounds.SnifferSoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
-import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ArgumentSignatures;
@@ -234,6 +233,7 @@ import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.ServerLinks;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stat;
@@ -251,8 +251,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -274,6 +274,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionBrewing;
@@ -344,6 +345,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private boolean seenInsecureChatWarning = false;
    private volatile boolean closed;
    private final Scoreboard scoreboard = new Scoreboard();
+   private final SessionSearchTrees searchTrees = new SessionSearchTrees();
 
    public ClientPacketListener(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
@@ -516,7 +518,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       Entity var2 = this.level.getEntity(var1.getId());
       if (var2 != null) {
-         var2.lerpMotion((double)var1.getXa() / 8000.0, (double)var1.getYa() / 8000.0, (double)var1.getZa() / 8000.0);
+         var2.lerpMotion(var1.getXa(), var1.getYa(), var1.getZa());
       }
    }
 
@@ -804,7 +806,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   this.postDisconnectScreen,
                   this.serverCookies,
                   var2,
-                  this.strictErrorHandling
+                  this.strictErrorHandling,
+                  this.customReportDetails,
+                  this.serverLinks
                )
             )
          );
@@ -1003,9 +1007,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Override
    public void handleEntityLinkPacket(ClientboundSetEntityLinkPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      Entity var2 = this.level.getEntity(var1.getSourceId());
-      if (var2 instanceof Mob) {
-         ((Mob)var2).setDelayedLeashHolderId(var1.getDestId());
+      if (this.level.getEntity(var1.getSourceId()) instanceof Leashable var3) {
+         var3.setDelayedLeashHolderId(var1.getDestId());
       }
    }
 
@@ -1129,7 +1132,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       if (var1.shouldKeep((byte)1)) {
-         var13.getAttributes().assignValues(var5.getAttributes());
+         var13.getAttributes().assignAllValues(var5.getAttributes());
+      } else {
+         var13.getAttributes().assignBaseValues(var5.getAttributes());
       }
 
       var13.resetPos();
@@ -1192,10 +1197,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       if (this.level.getEntity(var1.getEntityId()) instanceof AbstractHorse var3) {
          LocalPlayer var4 = this.minecraft.player;
-         SimpleContainer var5 = new SimpleContainer(var1.getSize());
-         HorseInventoryMenu var6 = new HorseInventoryMenu(var1.getContainerId(), var4.getInventory(), var5, var3);
-         var4.containerMenu = var6;
-         this.minecraft.setScreen(new HorseInventoryScreen(var6, var4.getInventory(), var3));
+         int var5 = var1.getInventoryColumns();
+         SimpleContainer var6 = new SimpleContainer(AbstractHorse.getInventorySize(var5));
+         HorseInventoryMenu var7 = new HorseInventoryMenu(var1.getContainerId(), var4.getInventory(), var6, var3, var5);
+         var4.containerMenu = var7;
+         this.minecraft.setScreen(new HorseInventoryScreen(var7, var4.getInventory(), var3, var5));
       }
    }
 
@@ -1333,15 +1339,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else if (var3 == ClientboundGameEventPacket.CHANGE_GAME_MODE) {
          this.minecraft.gameMode.setLocalMode(GameType.byId(var5));
       } else if (var3 == ClientboundGameEventPacket.WIN_GAME) {
-         if (var5 == 0) {
+         this.minecraft.setScreen(new WinScreen(true, () -> {
             this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-            this.minecraft.setScreen(new ReceivingLevelScreen(() -> false, ReceivingLevelScreen.Reason.END_PORTAL));
-         } else if (var5 == 1) {
-            this.minecraft.setScreen(new WinScreen(true, () -> {
-               this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-               this.minecraft.setScreen(null);
-            }));
-         }
+            this.minecraft.setScreen(null);
+         }));
       } else if (var3 == ClientboundGameEventPacket.DEMO_EVENT) {
          Options var6 = this.minecraft.options;
          if (var4 == 0.0F) {
@@ -1460,7 +1461,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.recipeManager.replaceRecipes(var1.getRecipes());
       ClientRecipeBook var2 = this.minecraft.player.getRecipeBook();
       var2.setupCollections(this.recipeManager.getOrderedRecipes(), this.minecraft.level.registryAccess());
-      this.minecraft.populateSearchTree(SearchRegistry.RECIPE_COLLECTIONS, var2.getCollections());
+      this.searchTrees.updateRecipes(var2, this.registryAccess);
    }
 
    @Override
@@ -1559,6 +1560,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       TagCollector var2 = new TagCollector();
       var1.getTags().forEach(var2::append);
       var2.updateTags(this.registryAccess, this.connection.isMemoryConnection());
+      List var3 = List.copyOf(CreativeModeTabs.searchTab().getDisplayItems());
+      this.searchTrees.updateCreativeTags(var3);
    }
 
    @Override
@@ -2180,9 +2183,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleProjectilePowerPacket(ClientboundProjectilePowerPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       if (this.level.getEntity(var1.getId()) instanceof AbstractHurtingProjectile var3) {
-         var3.xPower = var1.getXPower();
-         var3.yPower = var1.getYPower();
-         var3.zPower = var1.getZPower();
+         var3.accelerationPower = var1.getAccelerationPower();
       }
    }
 
@@ -2389,5 +2390,17 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public PotionBrewing potionBrewing() {
       return this.potionBrewing;
+   }
+
+   public void updateSearchTrees() {
+      this.searchTrees.rebuildAfterLanguageChange();
+   }
+
+   public SessionSearchTrees searchTrees() {
+      return this.searchTrees;
+   }
+
+   public ServerLinks serverLinks() {
+      return this.serverLinks;
    }
 }

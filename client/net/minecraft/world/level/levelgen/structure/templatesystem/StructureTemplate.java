@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -212,8 +211,8 @@ public class StructureTemplate {
             && this.size.getY() >= 1
             && this.size.getZ() >= 1) {
             BoundingBox var8 = var4.getBoundingBox();
-            ArrayList var9 = Lists.newArrayListWithCapacity(var4.shouldKeepLiquids() ? var7.size() : 0);
-            ArrayList var10 = Lists.newArrayListWithCapacity(var4.shouldKeepLiquids() ? var7.size() : 0);
+            ArrayList var9 = Lists.newArrayListWithCapacity(var4.shouldApplyWaterlogging() ? var7.size() : 0);
+            ArrayList var10 = Lists.newArrayListWithCapacity(var4.shouldApplyWaterlogging() ? var7.size() : 0);
             ArrayList var11 = Lists.newArrayListWithCapacity(var7.size());
             int var12 = 2147483647;
             int var13 = 2147483647;
@@ -225,7 +224,7 @@ public class StructureTemplate {
             for (StructureTemplate.StructureBlockInfo var20 : processBlockInfos(var1, var2, var3, var4, var7)) {
                BlockPos var21 = var20.pos;
                if (var8 == null || var8.isInside(var21)) {
-                  FluidState var22 = var4.shouldKeepLiquids() ? var1.getFluidState(var21) : null;
+                  FluidState var22 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var21) : null;
                   BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
                   if (var20.nbt != null) {
                      BlockEntity var24 = var1.getBlockEntity(var21);
@@ -757,19 +756,18 @@ public class StructureTemplate {
       }
    }
 
-   public static record StructureBlockInfo(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
-
-      public StructureBlockInfo(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
-         super();
-         this.pos = pos;
-         this.state = state;
-         this.nbt = nbt;
-      }
-
-      public String toString() {
-         return String.format(Locale.ROOT, "<StructureBlockInfo | %s | %s | %s>", this.pos, this.state, this.nbt);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class StructureEntityInfo {
       public final Vec3 pos;

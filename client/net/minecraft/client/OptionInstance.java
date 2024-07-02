@@ -3,20 +3,14 @@ package net.minecraft.client;
 import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
-import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
@@ -157,77 +151,35 @@ public final class OptionInstance<T> {
       return this.values;
    }
 
-   public static record AltEnum<T>(
-      List<T> values, List<T> altValues, BooleanSupplier altCondition, OptionInstance.CycleableValueSet.ValueSetter<T> valueSetter, Codec<T> codec
-   ) implements OptionInstance.CycleableValueSet<T> {
-      public AltEnum(
-         List<T> values, List<T> altValues, BooleanSupplier altCondition, OptionInstance.CycleableValueSet.ValueSetter<T> valueSetter, Codec<T> codec
-      ) {
-         super();
-         this.values = values;
-         this.altValues = altValues;
-         this.altCondition = altCondition;
-         this.valueSetter = valueSetter;
-         this.codec = codec;
-      }
-
-      @Override
-      public CycleButton.ValueListSupplier<T> valueListSupplier() {
-         return CycleButton.ValueListSupplier.create(this.altCondition, this.values, this.altValues);
-      }
-
-      @Override
-      public Optional<T> validateValue(T var1) {
-         return (this.altCondition.getAsBoolean() ? this.altValues : this.values).contains(var1) ? Optional.of((T)var1) : Optional.empty();
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface CaptionBasedToString<T> {
       Component toString(Component var1, T var2);
    }
 
-   public static record ClampingLazyMaxIntRange(int minInclusive, IntSupplier maxSupplier, int encodableMaxInclusive)
-      implements OptionInstance.IntRangeBase,
-      OptionInstance.SliderableOrCyclableValueSet<Integer> {
-      public ClampingLazyMaxIntRange(int minInclusive, IntSupplier maxSupplier, int encodableMaxInclusive) {
-         super();
-         this.minInclusive = minInclusive;
-         this.maxSupplier = maxSupplier;
-         this.encodableMaxInclusive = encodableMaxInclusive;
-      }
-
-      public Optional<Integer> validateValue(Integer var1) {
-         return Optional.of(Mth.clamp(var1, this.minInclusive(), this.maxInclusive()));
-      }
-
-      @Override
-      public int maxInclusive() {
-         return this.maxSupplier.getAsInt();
-      }
-
-      @Override
-      public Codec<Integer> codec() {
-         return Codec.INT
-            .validate(
-               var1 -> {
-                  int var2 = this.encodableMaxInclusive + 1;
-                  return var1.compareTo(this.minInclusive) >= 0 && var1.compareTo(var2) <= 0
-                     ? DataResult.success(var1)
-                     : DataResult.error(() -> "Value " + var1 + " outside of range [" + this.minInclusive + ":" + var2 + "]", var1);
-               }
-            );
-      }
-
-      @Override
-      public boolean createCycleButton() {
-         return true;
-      }
-
-      @Override
-      public CycleButton.ValueListSupplier<Integer> valueListSupplier() {
-         return CycleButton.ValueListSupplier.create(IntStream.range(this.minInclusive, this.maxInclusive() + 1).boxed().toList());
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface CycleableValueSet<T> extends OptionInstance.ValueSet<T> {
       CycleButton.ValueListSupplier<T> valueListSupplier();
@@ -256,45 +208,31 @@ public final class OptionInstance<T> {
       }
    }
 
-   public static record Enum<T>(List<T> values, Codec<T> codec) implements OptionInstance.CycleableValueSet<T> {
-      public Enum(List<T> values, Codec<T> codec) {
-         super();
-         this.values = values;
-         this.codec = codec;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      @Override
-      public Optional<T> validateValue(T var1) {
-         return this.values.contains(var1) ? Optional.of((T)var1) : Optional.empty();
-      }
-
-      @Override
-      public CycleButton.ValueListSupplier<T> valueListSupplier() {
-         return CycleButton.ValueListSupplier.create(this.values);
-      }
-   }
-
-   public static record IntRange(int minInclusive, int maxInclusive, boolean applyValueImmediately) implements OptionInstance.IntRangeBase {
-      public IntRange(int var1, int var2) {
-         this(var1, var2, true);
-      }
-
-      public IntRange(int minInclusive, int maxInclusive, boolean applyValueImmediately) {
-         super();
-         this.minInclusive = minInclusive;
-         this.maxInclusive = maxInclusive;
-         this.applyValueImmediately = applyValueImmediately;
-      }
-
-      public Optional<Integer> validateValue(Integer var1) {
-         return var1.compareTo(this.minInclusive()) >= 0 && var1.compareTo(this.maxInclusive()) <= 0 ? Optional.of(var1) : Optional.empty();
-      }
-
-      @Override
-      public Codec<Integer> codec() {
-         return Codec.intRange(this.minInclusive, this.maxInclusive + 1);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    interface IntRangeBase extends OptionInstance.SliderableValueSet<Integer> {
       int minInclusive();
@@ -344,25 +282,18 @@ public final class OptionInstance<T> {
       }
    }
 
-   public static record LazyEnum<T>(Supplier<List<T>> values, Function<T, Optional<T>> validateValue, Codec<T> codec)
-      implements OptionInstance.CycleableValueSet<T> {
-      public LazyEnum(Supplier<List<T>> values, Function<T, Optional<T>> validateValue, Codec<T> codec) {
-         super();
-         this.values = values;
-         this.validateValue = validateValue;
-         this.codec = codec;
-      }
-
-      @Override
-      public Optional<T> validateValue(T var1) {
-         return this.validateValue.apply((T)var1);
-      }
-
-      @Override
-      public CycleButton.ValueListSupplier<T> valueListSupplier() {
-         return CycleButton.ValueListSupplier.create(this.values.get());
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static final class OptionInstanceSliderButton<N> extends AbstractOptionSliderButton {
       private final OptionInstance<N> instance;

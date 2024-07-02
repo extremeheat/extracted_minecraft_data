@@ -13,10 +13,14 @@ public interface PacketListener {
 
    ConnectionProtocol protocol();
 
-   void onDisconnect(Component var1);
+   void onDisconnect(DisconnectionDetails var1);
 
    default void onPacketError(Packet var1, Exception var2) throws ReportedException {
       throw PacketUtils.makeReportedException(var2, var1, this);
+   }
+
+   default DisconnectionDetails createDisconnectionInfo(Component var1, Throwable var2) {
+      return new DisconnectionDetails(var1);
    }
 
    boolean isAcceptingMessages();
@@ -29,9 +33,9 @@ public interface PacketListener {
       CrashReportCategory var2 = var1.addCategory("Connection");
       var2.setDetail("Protocol", () -> this.protocol().id());
       var2.setDetail("Flow", () -> this.flow().toString());
-      this.fillListenerSpecificCrashDetails(var2);
+      this.fillListenerSpecificCrashDetails(var1, var2);
    }
 
-   default void fillListenerSpecificCrashDetails(CrashReportCategory var1) {
+   default void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
    }
 }

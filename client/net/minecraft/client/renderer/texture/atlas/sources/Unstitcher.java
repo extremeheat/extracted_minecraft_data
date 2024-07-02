@@ -66,27 +66,18 @@ public class Unstitcher implements SpriteSource {
       return SpriteSources.UNSTITCHER;
    }
 
-   static record Region(ResourceLocation sprite, double x, double y, double width, double height) {
-      public static final Codec<Unstitcher.Region> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ResourceLocation.CODEC.fieldOf("sprite").forGetter(Unstitcher.Region::sprite),
-                  Codec.DOUBLE.fieldOf("x").forGetter(Unstitcher.Region::x),
-                  Codec.DOUBLE.fieldOf("y").forGetter(Unstitcher.Region::y),
-                  Codec.DOUBLE.fieldOf("width").forGetter(Unstitcher.Region::width),
-                  Codec.DOUBLE.fieldOf("height").forGetter(Unstitcher.Region::height)
-               )
-               .apply(var0, Unstitcher.Region::new)
-      );
-
-      private Region(ResourceLocation sprite, double x, double y, double width, double height) {
-         super();
-         this.sprite = sprite;
-         this.x = x;
-         this.y = y;
-         this.width = width;
-         this.height = height;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class RegionInstance implements SpriteSource.SpriteSupplier {
       private final LazyLoadedImage image;

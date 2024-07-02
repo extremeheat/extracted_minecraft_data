@@ -13,9 +13,9 @@ public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, Ho
    private static final Map<EntityType<?>, ResourceLocation> MAP = Maps.newHashMap(
       ImmutableMap.of(
          EntityType.ZOMBIE_HORSE,
-         new ResourceLocation("textures/entity/horse/horse_zombie.png"),
+         ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_zombie.png"),
          EntityType.SKELETON_HORSE,
-         new ResourceLocation("textures/entity/horse/horse_skeleton.png")
+         ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_skeleton.png")
       )
    );
 

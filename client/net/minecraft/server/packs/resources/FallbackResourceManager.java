@@ -4,14 +4,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,15 +152,21 @@ public class FallbackResourceManager implements ResourceManager {
       HashMap var4 = new HashMap();
       int var5 = this.fallbacks.size();
 
-      record 1ResourceWithSourceAndIndex(PackResources packResources, IoSupplier<InputStream> resource, int packIndex) {
-
-         _ResourceWithSourceAndIndex/* $VF was: 1ResourceWithSourceAndIndex*/(PackResources packResources, IoSupplier<InputStream> resource, int packIndex) {
-            super();
-            this.packResources = packResources;
-            this.resource = resource;
-            this.packIndex = packIndex;
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent.toJava(VarExprent.java:124)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.listToJava(ExprProcessor.java:895)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.DoStatement.toJava(DoStatement.java:94)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.jmpWrapper(ExprProcessor.java:833)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.SequenceStatement.toJava(SequenceStatement.java:107)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.RootStatement.toJava(RootStatement.java:36)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeMethod(ClassWriter.java:1283)
 
       for (int var6 = 0; var6 < var5; var6++) {
          FallbackResourceManager.PackEntry var7 = this.fallbacks.get(var6);
@@ -312,30 +316,18 @@ public class FallbackResourceManager implements ResourceManager {
       return this.fallbacks.stream().map(var0 -> var0.resources).filter(Objects::nonNull);
    }
 
-   static record EntryStack(
-      ResourceLocation fileLocation,
-      ResourceLocation metadataLocation,
-      List<FallbackResourceManager.ResourceWithSource> fileSources,
-      Map<PackResources, IoSupplier<InputStream>> metaSources
-   ) {
-
-      EntryStack(ResourceLocation var1) {
-         this(var1, FallbackResourceManager.getMetadataLocation(var1), new ArrayList<>(), new Object2ObjectArrayMap());
-      }
-
-      private EntryStack(
-         ResourceLocation fileLocation,
-         ResourceLocation metadataLocation,
-         List<FallbackResourceManager.ResourceWithSource> fileSources,
-         Map<PackResources, IoSupplier<InputStream>> metaSources
-      ) {
-         super();
-         this.fileLocation = fileLocation;
-         this.metadataLocation = metadataLocation;
-         this.fileSources = fileSources;
-         this.metaSources = metaSources;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class LeakedResourceWarningInputStream extends FilterInputStream {
       private final Supplier<String> message;
@@ -367,32 +359,29 @@ public class FallbackResourceManager implements ResourceManager {
       }
    }
 
-   static record PackEntry(String name, @Nullable PackResources resources, @Nullable Predicate<ResourceLocation> filter) {
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      PackEntry(String name, @Nullable PackResources resources, @Nullable Predicate<ResourceLocation> filter) {
-         super();
-         this.name = name;
-         this.resources = resources;
-         this.filter = filter;
-      }
-
-      public void filterAll(Collection<ResourceLocation> var1) {
-         if (this.filter != null) {
-            var1.removeIf(this.filter);
-         }
-      }
-
-      public boolean isFiltered(ResourceLocation var1) {
-         return this.filter != null && this.filter.test(var1);
-      }
-   }
-
-   static record ResourceWithSource(PackResources source, IoSupplier<InputStream> resource) {
-
-      ResourceWithSource(PackResources source, IoSupplier<InputStream> resource) {
-         super();
-         this.source = source;
-         this.resource = resource;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

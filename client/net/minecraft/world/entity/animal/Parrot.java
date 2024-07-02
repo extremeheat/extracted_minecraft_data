@@ -40,6 +40,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -49,7 +50,6 @@ import net.minecraft.world.entity.ai.goal.FollowMobGoal;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.LandOnOwnersShoulderGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
@@ -147,11 +147,11 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
 
    @Override
    protected void registerGoals() {
-      this.goalSelector.addGoal(0, new PanicGoal(this, 1.25));
+      this.goalSelector.addGoal(0, new TamableAnimal.TamableAnimalPanicGoal(1.25));
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 8.0F));
       this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
-      this.goalSelector.addGoal(2, new FollowOwnerGoal(this, 1.0, 5.0F, 1.0F, true));
+      this.goalSelector.addGoal(2, new FollowOwnerGoal(this, 1.0, 5.0F, 1.0F));
       this.goalSelector.addGoal(2, new Parrot.ParrotWanderGoal(this, 1.0));
       this.goalSelector.addGoal(3, new LandOnOwnersShoulderGoal(this));
       this.goalSelector.addGoal(3, new FollowMobGoal(this, 1.0, 3.0F, 7.0F));
@@ -161,7 +161,8 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       return Mob.createMobAttributes()
          .add(Attributes.MAX_HEALTH, 6.0)
          .add(Attributes.FLYING_SPEED, 0.4000000059604645)
-         .add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
+         .add(Attributes.MOVEMENT_SPEED, 0.20000000298023224)
+         .add(Attributes.ATTACK_DAMAGE, 3.0);
    }
 
    @Override
@@ -308,11 +309,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       return null;
    }
 
-   @Override
-   public boolean doHurtTarget(Entity var1) {
-      return var1.hurt(this.damageSources().mobAttack(this), 3.0F);
-   }
-
    @Nullable
    @Override
    public SoundEvent getAmbientSound() {
@@ -426,6 +422,11 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    @Override
    public boolean isFlying() {
       return !this.onGround();
+   }
+
+   @Override
+   protected boolean canFlyToOwner() {
+      return true;
    }
 
    @Override

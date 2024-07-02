@@ -2,7 +2,6 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -12,16 +11,16 @@ public class TippedArrowRecipe extends CustomRecipe {
       super(var1);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
-      if (var1.getWidth() == 3 && var1.getHeight() == 3) {
-         for (int var3 = 0; var3 < var1.getWidth(); var3++) {
-            for (int var4 = 0; var4 < var1.getHeight(); var4++) {
-               ItemStack var5 = var1.getItem(var3 + var4 * var1.getWidth());
+   public boolean matches(CraftingInput var1, Level var2) {
+      if (var1.width() == 3 && var1.height() == 3) {
+         for (int var3 = 0; var3 < var1.height(); var3++) {
+            for (int var4 = 0; var4 < var1.width(); var4++) {
+               ItemStack var5 = var1.getItem(var4, var3);
                if (var5.isEmpty()) {
                   return false;
                }
 
-               if (var3 == 1 && var4 == 1) {
+               if (var4 == 1 && var3 == 1) {
                   if (!var5.is(Items.LINGERING_POTION)) {
                      return false;
                   }
@@ -37,8 +36,8 @@ public class TippedArrowRecipe extends CustomRecipe {
       }
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
-      ItemStack var3 = var1.getItem(1 + var1.getWidth());
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
+      ItemStack var3 = var1.getItem(1, 1);
       if (!var3.is(Items.LINGERING_POTION)) {
          return ItemStack.EMPTY;
       } else {
@@ -50,7 +49,7 @@ public class TippedArrowRecipe extends CustomRecipe {
 
    @Override
    public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 >= 2 && var2 >= 2;
+      return var1 >= 3 && var2 >= 3;
    }
 
    @Override

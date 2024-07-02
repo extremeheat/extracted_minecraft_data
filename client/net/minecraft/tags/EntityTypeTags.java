@@ -41,6 +41,6 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> REDIRECTABLE_PROJECTILE = create("redirectable_projectile");
 
    private static TagKey<EntityType<?>> create(String var0) {
-      return TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation(var0));
+      return TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.withDefaultNamespace(var0));
    }
 }

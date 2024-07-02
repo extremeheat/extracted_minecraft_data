@@ -36,7 +36,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       super.loadAdditional(var1, var2);
       this.lockKey = LockCode.fromTag(var1);
       if (var1.contains("CustomName", 8)) {
-         this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
+         this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
       }
    }
 

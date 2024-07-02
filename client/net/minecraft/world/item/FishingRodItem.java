@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -48,10 +49,10 @@ public class FishingRodItem extends Item {
             0.5F,
             0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
          );
-         if (!var1.isClientSide) {
-            int var7 = EnchantmentHelper.getFishingSpeedBonus(var4);
-            int var6 = EnchantmentHelper.getFishingLuckBonus(var4);
-            var1.addFreshEntity(new FishingHook(var2, var1, var6, var7));
+         if (var1 instanceof ServerLevel var8) {
+            int var6 = (int)(EnchantmentHelper.getFishingTimeReduction(var8, var4, var2) * 20.0F);
+            int var7 = EnchantmentHelper.getFishingLuckBonus(var8, var4, var2);
+            var1.addFreshEntity(new FishingHook(var2, var1, var7, var6));
          }
 
          var2.awardStat(Stats.ITEM_USED.get(this));

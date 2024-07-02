@@ -4,7 +4,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.phys.Vec3;
 
 public class ClientboundAddExperienceOrbPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundAddExperienceOrbPacket> STREAM_CODEC = Packet.codec(
@@ -16,12 +18,13 @@ public class ClientboundAddExperienceOrbPacket implements Packet<ClientGamePacke
    private final double z;
    private final int value;
 
-   public ClientboundAddExperienceOrbPacket(ExperienceOrb var1) {
+   public ClientboundAddExperienceOrbPacket(ExperienceOrb var1, ServerEntity var2) {
       super();
       this.id = var1.getId();
-      this.x = var1.getX();
-      this.y = var1.getY();
-      this.z = var1.getZ();
+      Vec3 var3 = var2.getPositionBase();
+      this.x = var3.x();
+      this.y = var3.y();
+      this.z = var3.z();
       this.value = var1.getValue();
    }
 

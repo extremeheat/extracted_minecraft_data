@@ -64,6 +64,7 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -211,20 +212,24 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    @Override
    public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(this.damageSources().sting(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
-      if (var2) {
-         this.doEnchantDamageEffects(this, var1);
-         if (var1 instanceof LivingEntity) {
-            ((LivingEntity)var1).setStingerCount(((LivingEntity)var1).getStingerCount() + 1);
-            byte var3 = 0;
+      DamageSource var2 = this.damageSources().sting(this);
+      boolean var3 = var1.hurt(var2, (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
+      if (var3) {
+         if (this.level() instanceof ServerLevel var4) {
+            EnchantmentHelper.doPostAttackEffects(var4, var1, var2);
+         }
+
+         if (var1 instanceof LivingEntity var6) {
+            var6.setStingerCount(var6.getStingerCount() + 1);
+            byte var7 = 0;
             if (this.level().getDifficulty() == Difficulty.NORMAL) {
-               var3 = 10;
+               var7 = 10;
             } else if (this.level().getDifficulty() == Difficulty.HARD) {
-               var3 = 18;
+               var7 = 18;
             }
 
-            if (var3 > 0) {
-               ((LivingEntity)var1).addEffect(new MobEffectInstance(MobEffects.POISON, var3 * 20, 0), this);
+            if (var7 > 0) {
+               var6.addEffect(new MobEffectInstance(MobEffects.POISON, var7 * 20, 0), this);
             }
          }
 
@@ -233,7 +238,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
          this.playSound(SoundEvents.BEE_STING, 1.0F, 1.0F);
       }
 
-      return var2;
+      return var3;
    }
 
    @Override

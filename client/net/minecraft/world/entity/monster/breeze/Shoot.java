@@ -88,7 +88,7 @@ public class Shoot extends Behavior<Breeze> {
             var5.setMemoryWithExpiry(MemoryModuleType.BREEZE_SHOOT_RECOVERING, Unit.INSTANCE, (long)SHOOT_RECOVER_DELAY_TICKS);
             if (isFacingTarget(var2, var6)) {
                double var7 = var6.getX() - var2.getX();
-               double var9 = var6.getY(0.3) - var2.getY(0.5);
+               double var9 = var6.getY(var6.isPassenger() ? 0.8 : 0.3) - var2.getY(0.5);
                double var11 = var6.getZ() - var2.getZ();
                BreezeWindCharge var13 = new BreezeWindCharge(var2, var1);
                var2.playSound(SoundEvents.BREEZE_SHOOT, 1.5F, 1.0F);

@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
@@ -82,7 +83,8 @@ public class FeaturePoolElement extends StructurePoolElement {
       Rotation var7,
       BoundingBox var8,
       RandomSource var9,
-      boolean var10
+      LiquidSettings var10,
+      boolean var11
    ) {
       return this.feature.value().place(var2, var4, var9, var5);
    }

@@ -1,7 +1,10 @@
 package net.minecraft.world.entity.monster.hoglin;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
 
 public interface HoglinBase {
@@ -18,15 +21,19 @@ public interface HoglinBase {
          var2 = var3;
       }
 
-      boolean var4 = var1.hurt(var0.damageSources().mobAttack(var0), var2);
-      if (var4) {
-         var0.doEnchantDamageEffects(var0, var1);
+      DamageSource var4 = var0.damageSources().mobAttack(var0);
+      boolean var5 = var1.hurt(var4, var2);
+      if (var5) {
+         if (var0.level() instanceof ServerLevel var6) {
+            EnchantmentHelper.doPostAttackEffects(var6, var1, var4);
+         }
+
          if (!var0.isBaby()) {
             throwTarget(var0, var1);
          }
       }
 
-      return var4;
+      return var5;
    }
 
    static void throwTarget(LivingEntity var0, LivingEntity var1) {

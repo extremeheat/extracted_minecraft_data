@@ -21,7 +21,6 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
@@ -31,7 +30,7 @@ public class LootPool {
    public static final Codec<LootPool> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter(var0x -> var0x.entries),
-               LootItemConditions.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter(var0x -> var0x.conditions),
+               LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter(var0x -> var0x.conditions),
                LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter(var0x -> var0x.functions),
                NumberProviders.CODEC.fieldOf("rolls").forGetter(var0x -> var0x.rolls),
                NumberProviders.CODEC.fieldOf("bonus_rolls").orElse(ConstantValue.exactly(0.0F)).forGetter(var0x -> var0x.bonusRolls)

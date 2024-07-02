@@ -64,7 +64,8 @@ public interface CauldronInteraction {
          return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
       } else {
          if (!var1.isClientSide) {
-            var3.setItemInHand(var4, var5.transmuteCopy(Blocks.SHULKER_BOX, 1));
+            ItemStack var7 = var5.transmuteCopy(Blocks.SHULKER_BOX, 1);
+            var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var7, false));
             var3.awardStat(Stats.CLEAN_SHULKER_BOX);
             LayeredCauldronBlock.lowerFillLevel(var0, var1, var2);
          }
@@ -80,15 +81,7 @@ public interface CauldronInteraction {
          if (!var1.isClientSide) {
             ItemStack var7 = var5.copyWithCount(1);
             var7.set(DataComponents.BANNER_PATTERNS, var6.removeLast());
-            var5.consume(1, var3);
-            if (var5.isEmpty()) {
-               var3.setItemInHand(var4, var7);
-            } else if (var3.getInventory().add(var7)) {
-               var3.inventoryMenu.sendAllDataToRemote();
-            } else {
-               var3.drop(var7, false);
-            }
-
+            var3.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3, var7, false));
             var3.awardStat(Stats.CLEAN_BANNER);
             LayeredCauldronBlock.lowerFillLevel(var0, var1, var2);
          }
@@ -305,11 +298,16 @@ public interface CauldronInteraction {
       return ItemInteractionResult.sidedSuccess(var0.isClientSide);
    }
 
-   public static record InteractionMap(String name, Map<Item, CauldronInteraction> map) {
-      public InteractionMap(String name, Map<Item, CauldronInteraction> map) {
-         super();
-         this.name = name;
-         this.map = map;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

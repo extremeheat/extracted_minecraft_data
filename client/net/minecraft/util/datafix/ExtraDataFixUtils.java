@@ -4,6 +4,7 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 public class ExtraDataFixUtils {
@@ -22,5 +23,16 @@ public class ExtraDataFixUtils {
 
    public static <T, R> Typed<R> cast(Type<R> var0, Typed<T> var1) {
       return new Typed(var0, var1.getOps(), var1.getValue());
+   }
+
+   @SafeVarargs
+   public static <T> Function<Typed<?>, Typed<?>> chainAllFilters(Function<Typed<?>, Typed<?>>... var0) {
+      return var1 -> {
+         for (Function var5 : var0) {
+            var1 = (Typed<?>)var5.apply(var1);
+         }
+
+         return var1;
+      };
    }
 }

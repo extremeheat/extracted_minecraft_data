@@ -1,35 +1,13 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.PacketType;
-import net.minecraft.world.level.ChunkPos;
-
-public record ClientboundForgetLevelChunkPacket(ChunkPos pos) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundForgetLevelChunkPacket> STREAM_CODEC = Packet.codec(
-      ClientboundForgetLevelChunkPacket::write, ClientboundForgetLevelChunkPacket::new
-   );
-
-   private ClientboundForgetLevelChunkPacket(FriendlyByteBuf var1) {
-      this(var1.readChunkPos());
-   }
-
-   public ClientboundForgetLevelChunkPacket(ChunkPos pos) {
-      super();
-      this.pos = pos;
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeChunkPos(this.pos);
-   }
-
-   @Override
-   public PacketType<ClientboundForgetLevelChunkPacket> type() {
-      return GamePacketTypes.CLIENTBOUND_FORGET_LEVEL_CHUNK;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleForgetLevelChunk(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

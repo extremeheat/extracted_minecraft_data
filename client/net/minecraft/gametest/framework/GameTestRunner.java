@@ -30,6 +30,7 @@ public class GameTestRunner {
    GameTestBatch currentBatch;
    private final GameTestRunner.StructureSpawner existingStructureSpawner;
    private final GameTestRunner.StructureSpawner newStructureSpawner;
+   final boolean haltOnError;
 
    protected GameTestRunner(
       GameTestRunner.GameTestBatcher var1,
@@ -37,7 +38,8 @@ public class GameTestRunner {
       ServerLevel var3,
       GameTestTicker var4,
       GameTestRunner.StructureSpawner var5,
-      GameTestRunner.StructureSpawner var6
+      GameTestRunner.StructureSpawner var6,
+      boolean var7
    ) {
       super();
       this.level = var3;
@@ -46,6 +48,7 @@ public class GameTestRunner {
       this.existingStructureSpawner = var5;
       this.newStructureSpawner = var6;
       this.batches = ImmutableList.copyOf(var2);
+      this.haltOnError = var7;
       this.allTestInfos = this.batches.stream().flatMap(var0 -> var0.gameTestInfos().stream()).collect(Util.toMutableList());
       var4.setRunner(this);
       this.allTestInfos.forEach(var0 -> var0.addListener(new ReportGameListener()));
@@ -82,6 +85,8 @@ public class GameTestRunner {
          this.runScheduledRerunTests();
       } else {
          this.currentBatch = (GameTestBatch)this.batches.get(var1);
+         this.existingStructureSpawner.onBatchStart(this.level);
+         this.newStructureSpawner.onBatchStart(this.level);
          Collection var2 = this.createStructuresForBatch(this.currentBatch.gameTestInfos());
          String var3 = this.currentBatch.name();
          LOGGER.info("Running test batch '{}' ({} tests)...", var3, var2.size());
@@ -111,7 +116,14 @@ public class GameTestRunner {
 
             @Override
             public void testFailed(GameTestInfo var1x, GameTestRunner var2) {
-               this.testCompleted();
+               if (GameTestRunner.this.haltOnError) {
+                  GameTestRunner.this.currentBatch.afterBatchFunction().accept(GameTestRunner.this.level);
+                  LongArraySet var3 = new LongArraySet(GameTestRunner.this.level.getForcedChunks());
+                  var3.forEach(var1xxx -> GameTestRunner.this.level.setChunkForced(ChunkPos.getX(var1xxx), ChunkPos.getZ(var1xxx), false));
+                  GameTestTicker.SINGLETON.clear();
+               } else {
+                  this.testCompleted();
+               }
             }
 
             @Override
@@ -156,10 +168,11 @@ public class GameTestRunner {
    public static class Builder {
       private final ServerLevel level;
       private final GameTestTicker testTicker = GameTestTicker.SINGLETON;
-      private final GameTestRunner.GameTestBatcher batcher = GameTestBatchFactory.fromGameTestInfo();
-      private final GameTestRunner.StructureSpawner existingStructureSpawner = GameTestRunner.StructureSpawner.IN_PLACE;
+      private GameTestRunner.GameTestBatcher batcher = GameTestBatchFactory.fromGameTestInfo();
+      private GameTestRunner.StructureSpawner existingStructureSpawner = GameTestRunner.StructureSpawner.IN_PLACE;
       private GameTestRunner.StructureSpawner newStructureSpawner = GameTestRunner.StructureSpawner.NOT_SET;
       private final Collection<GameTestBatch> batches;
+      private boolean haltOnError = false;
 
       private Builder(Collection<GameTestBatch> var1, ServerLevel var2) {
          super();
@@ -175,13 +188,30 @@ public class GameTestRunner {
          return fromBatches(GameTestBatchFactory.fromGameTestInfo().batch(var0), var1);
       }
 
+      public GameTestRunner.Builder haltOnError(boolean var1) {
+         this.haltOnError = var1;
+         return this;
+      }
+
       public GameTestRunner.Builder newStructureSpawner(GameTestRunner.StructureSpawner var1) {
          this.newStructureSpawner = var1;
          return this;
       }
 
+      public GameTestRunner.Builder existingStructureSpawner(StructureGridSpawner var1) {
+         this.existingStructureSpawner = var1;
+         return this;
+      }
+
+      public GameTestRunner.Builder batcher(GameTestRunner.GameTestBatcher var1) {
+         this.batcher = var1;
+         return this;
+      }
+
       public GameTestRunner build() {
-         return new GameTestRunner(this.batcher, this.batches, this.level, this.testTicker, this.existingStructureSpawner, this.newStructureSpawner);
+         return new GameTestRunner(
+            this.batcher, this.batches, this.level, this.testTicker, this.existingStructureSpawner, this.newStructureSpawner, this.haltOnError
+         );
       }
    }
 
@@ -194,5 +224,8 @@ public class GameTestRunner {
       GameTestRunner.StructureSpawner NOT_SET = var0 -> Optional.empty();
 
       Optional<GameTestInfo> spawnStructure(GameTestInfo var1);
+
+      default void onBatchStart(ServerLevel var1) {
+      }
    }
 }

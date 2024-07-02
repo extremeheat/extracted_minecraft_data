@@ -45,23 +45,16 @@ public final class RandomSupport {
       return SEED_UNIQUIFIER.updateAndGet(var0 -> var0 * 1181783497276652981L) ^ System.nanoTime();
    }
 
-   public static record Seed128bit(long seedLo, long seedHi) {
-      public Seed128bit(long seedLo, long seedHi) {
-         super();
-         this.seedLo = seedLo;
-         this.seedHi = seedHi;
-      }
-
-      public RandomSupport.Seed128bit xor(long var1, long var3) {
-         return new RandomSupport.Seed128bit(this.seedLo ^ var1, this.seedHi ^ var3);
-      }
-
-      public RandomSupport.Seed128bit xor(RandomSupport.Seed128bit var1) {
-         return this.xor(var1.seedLo, var1.seedHi);
-      }
-
-      public RandomSupport.Seed128bit mixed() {
-         return new RandomSupport.Seed128bit(RandomSupport.mixStafford13(this.seedLo), RandomSupport.mixStafford13(this.seedHi));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

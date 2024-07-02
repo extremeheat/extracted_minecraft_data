@@ -18,6 +18,6 @@ public class Blocks {
    }
 
    private static ResourceKey<Block> createKey(String var0) {
-      return ResourceKey.create(Registries.BLOCK, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.BLOCK, ResourceLocation.withDefaultNamespace(var0));
    }
 }

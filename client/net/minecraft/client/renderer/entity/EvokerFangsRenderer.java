@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.EvokerFangs;
 
 public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs> {
-   private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/illager/evoker_fangs.png");
+   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/illager/evoker_fangs.png");
    private final EvokerFangsModel<EvokerFangs> model;
 
    public EvokerFangsRenderer(EntityRendererProvider.Context var1) {
@@ -35,7 +35,7 @@ public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs> {
          var4.scale(0.5F, 0.5F, 0.5F);
          this.model.setupAnim(var1, var7, 0.0F, 0.0F, var1.getYRot(), var1.getXRot());
          VertexConsumer var10 = var5.getBuffer(this.model.renderType(TEXTURE_LOCATION));
-         this.model.renderToBuffer(var4, var10, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+         this.model.renderToBuffer(var4, var10, var6, OverlayTexture.NO_OVERLAY);
          var4.popPose();
          super.render(var1, var2, var3, var4, var5, var6);
       }

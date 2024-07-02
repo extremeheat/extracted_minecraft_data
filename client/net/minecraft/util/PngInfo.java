@@ -1,53 +1,13 @@
 package net.minecraft.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
-public record PngInfo(int width, int height) {
-   private static final long PNG_HEADER = -8552249625308161526L;
-   private static final int IHDR_TYPE = 1229472850;
-   private static final int IHDR_SIZE = 13;
-
-   public PngInfo(int width, int height) {
-      super();
-      this.width = width;
-      this.height = height;
-   }
-
-   public static PngInfo fromStream(InputStream var0) throws IOException {
-      DataInputStream var1 = new DataInputStream(var0);
-      if (var1.readLong() != -8552249625308161526L) {
-         throw new IOException("Bad PNG Signature");
-      } else if (var1.readInt() != 13) {
-         throw new IOException("Bad length for IHDR chunk!");
-      } else if (var1.readInt() != 1229472850) {
-         throw new IOException("Bad type for IHDR chunk!");
-      } else {
-         int var2 = var1.readInt();
-         int var3 = var1.readInt();
-         return new PngInfo(var2, var3);
-      }
-   }
-
-   public static PngInfo fromBytes(byte[] var0) throws IOException {
-      return fromStream(new ByteArrayInputStream(var0));
-   }
-
-   public static void validateHeader(ByteBuffer var0) throws IOException {
-      ByteOrder var1 = var0.order();
-      var0.order(ByteOrder.BIG_ENDIAN);
-      if (var0.getLong(0) != -8552249625308161526L) {
-         throw new IOException("Bad PNG Signature");
-      } else if (var0.getInt(8) != 13) {
-         throw new IOException("Bad length for IHDR chunk!");
-      } else if (var0.getInt(12) != 1229472850) {
-         throw new IOException("Bad type for IHDR chunk!");
-      } else {
-         var0.order(var1);
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

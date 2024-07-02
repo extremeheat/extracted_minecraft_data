@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
-import io.netty.buffer.ByteBuf;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -21,9 +20,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.resources.RegistryOps;
@@ -49,6 +46,7 @@ public class MapItemSavedData extends SavedData {
    private static final int HALF_MAP_SIZE = 64;
    public static final int MAX_SCALE = 4;
    public static final int TRACKED_DECORATION_LIMIT = 256;
+   private static final String FRAME_PREFIX = "frame-";
    public final int centerX;
    public final int centerZ;
    public final ResourceKey<Level> dimension;
@@ -132,7 +130,7 @@ public class MapItemSavedData extends SavedData {
             var9.addDecoration(
                MapDecorationTypes.FRAME,
                null,
-               "frame-" + var15.getEntityId(),
+               getFrameKey(var15.getEntityId()),
                (double)var15.getPos().getX(),
                (double)var15.getPos().getZ(),
                (double)var15.getRotation(),
@@ -223,14 +221,14 @@ public class MapItemSavedData extends SavedData {
          BlockPos var11 = var9.getPos();
          MapFrame var12 = this.frameMarkers.get(MapFrame.frameId(var11));
          if (var12 != null && var9.getId() != var12.getEntityId() && this.frameMarkers.containsKey(var12.getId())) {
-            this.removeDecoration("frame-" + var12.getEntityId());
+            this.removeDecoration(getFrameKey(var12.getEntityId()));
          }
 
          MapFrame var7 = new MapFrame(var11, var9.getDirection().get2DDataValue() * 90, var9.getId());
          this.addDecoration(
             MapDecorationTypes.FRAME,
             var1.level(),
-            "frame-" + var9.getId(),
+            getFrameKey(var9.getId()),
             (double)var11.getX(),
             (double)var11.getZ(),
             (double)(var9.getDirection().get2DDataValue() * 90),
@@ -412,7 +410,7 @@ public class MapItemSavedData extends SavedData {
    }
 
    public void removedFromFrame(BlockPos var1, int var2) {
-      this.removeDecoration("frame-" + var2);
+      this.removeDecoration(getFrameKey(var2));
       this.frameMarkers.remove(MapFrame.frameId(var1));
    }
 
@@ -460,6 +458,10 @@ public class MapItemSavedData extends SavedData {
 
    public boolean isTrackedCountOverLimit(int var1) {
       return this.trackedDecorationCount >= var1;
+   }
+
+   private static String getFrameKey(int var0) {
+      return "frame-" + var0;
    }
 
    public class HoldingPlayer {
@@ -537,52 +539,16 @@ public class MapItemSavedData extends SavedData {
       }
    }
 
-   public static record MapPatch(int startX, int startY, int width, int height, byte[] mapColors) {
-      public static final StreamCodec<ByteBuf, Optional<MapItemSavedData.MapPatch>> STREAM_CODEC = StreamCodec.of(
-         MapItemSavedData.MapPatch::write, MapItemSavedData.MapPatch::read
-      );
-
-      public MapPatch(int startX, int startY, int width, int height, byte[] mapColors) {
-         super();
-         this.startX = startX;
-         this.startY = startY;
-         this.width = width;
-         this.height = height;
-         this.mapColors = mapColors;
-      }
-
-      private static void write(ByteBuf var0, Optional<MapItemSavedData.MapPatch> var1) {
-         if (var1.isPresent()) {
-            MapItemSavedData.MapPatch var2 = var1.get();
-            var0.writeByte(var2.width);
-            var0.writeByte(var2.height);
-            var0.writeByte(var2.startX);
-            var0.writeByte(var2.startY);
-            FriendlyByteBuf.writeByteArray(var0, var2.mapColors);
-         } else {
-            var0.writeByte(0);
-         }
-      }
-
-      private static Optional<MapItemSavedData.MapPatch> read(ByteBuf var0) {
-         short var1 = var0.readUnsignedByte();
-         if (var1 > 0) {
-            short var2 = var0.readUnsignedByte();
-            short var3 = var0.readUnsignedByte();
-            short var4 = var0.readUnsignedByte();
-            byte[] var5 = FriendlyByteBuf.readByteArray(var0);
-            return Optional.of(new MapItemSavedData.MapPatch(var3, var4, var1, var2, var5));
-         } else {
-            return Optional.empty();
-         }
-      }
-
-      public void applyToMap(MapItemSavedData var1) {
-         for (int var2 = 0; var2 < this.width; var2++) {
-            for (int var3 = 0; var3 < this.height; var3++) {
-               var1.setColor(this.startX + var2, this.startY + var3, this.mapColors[var2 + var3 * this.width]);
-            }
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

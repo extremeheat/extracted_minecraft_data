@@ -51,7 +51,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       var11.setPos(0.0F, 24.0F - var1.getProgress(var2) * 0.5F * 16.0F, 0.0F);
       var11.yRot = 270.0F * var1.getProgress(var2) * 0.017453292F;
       VertexConsumer var12 = var13.buffer(var4, RenderType::entityCutoutNoCull);
-      this.model.renderToBuffer(var3, var12, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.model.renderToBuffer(var3, var12, var5, var6);
       var3.popPose();
    }
 }

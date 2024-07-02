@@ -13,6 +13,6 @@ public class HandshakePacketTypes {
    }
 
    private static <T extends Packet<ServerHandshakePacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<>(PacketFlow.SERVERBOUND, new ResourceLocation(var0));
+      return new PacketType<>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 }

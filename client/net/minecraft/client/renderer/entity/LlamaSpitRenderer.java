@@ -12,7 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.LlamaSpit;
 
 public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit> {
-   private static final ResourceLocation LLAMA_SPIT_LOCATION = new ResourceLocation("textures/entity/llama/spit.png");
+   private static final ResourceLocation LLAMA_SPIT_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/llama/spit.png");
    private final LlamaSpitModel<LlamaSpit> model;
 
    public LlamaSpitRenderer(EntityRendererProvider.Context var1) {
@@ -27,7 +27,7 @@ public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit> {
       var4.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(var3, var1.xRotO, var1.getXRot())));
       this.model.setupAnim(var1, var3, 0.0F, -0.1F, 0.0F, 0.0F);
       VertexConsumer var7 = var5.getBuffer(this.model.renderType(LLAMA_SPIT_LOCATION));
-      this.model.renderToBuffer(var4, var7, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.model.renderToBuffer(var4, var7, var6, OverlayTexture.NO_OVERLAY);
       var4.popPose();
       super.render(var1, var2, var3, var4, var5, var6);
    }

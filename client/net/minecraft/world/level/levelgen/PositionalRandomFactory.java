@@ -16,6 +16,8 @@ public interface PositionalRandomFactory {
 
    RandomSource fromHashOf(String var1);
 
+   RandomSource fromSeed(long var1);
+
    RandomSource at(int var1, int var2, int var3);
 
    @VisibleForTesting

@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.npc.Villager;
 
 public class VillagerRenderer extends MobRenderer<Villager, VillagerModel<Villager>> {
-   private static final ResourceLocation VILLAGER_BASE_SKIN = new ResourceLocation("textures/entity/villager/villager.png");
+   private static final ResourceLocation VILLAGER_BASE_SKIN = ResourceLocation.withDefaultNamespace("textures/entity/villager/villager.png");
 
    public VillagerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new VillagerModel<>(var1.bakeLayer(ModelLayers.VILLAGER)), 0.5F);

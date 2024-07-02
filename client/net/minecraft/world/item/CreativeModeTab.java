@@ -1,22 +1,20 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.Lists;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.ItemLike;
 
 public class CreativeModeTab {
+   static final ResourceLocation DEFAULT_BACKGROUND = createTextureLocation("items");
    private final Component displayName;
-   String backgroundSuffix = "items.png";
+   ResourceLocation backgroundTexture = DEFAULT_BACKGROUND;
    boolean canScroll = true;
    boolean showTitle = true;
    boolean alignedRight = false;
@@ -27,8 +25,6 @@ public class CreativeModeTab {
    private ItemStack iconItemStack;
    private Collection<ItemStack> displayItems = ItemStackLinkedSet.createTypeAndComponentsSet();
    private Set<ItemStack> displayItemsSearchTab = ItemStackLinkedSet.createTypeAndComponentsSet();
-   @Nullable
-   private Consumer<List<ItemStack>> searchTreeBuilder;
    private final Supplier<ItemStack> iconGenerator;
    private final CreativeModeTab.DisplayItemsGenerator displayItemsGenerator;
 
@@ -42,6 +38,10 @@ public class CreativeModeTab {
       this.iconGenerator = var5;
       this.displayItemsGenerator = var6;
       this.type = var3;
+   }
+
+   public static ResourceLocation createTextureLocation(String var0) {
+      return ResourceLocation.withDefaultNamespace("textures/gui/container/creative_inventory/tab_" + var0 + ".png");
    }
 
    public static CreativeModeTab.Builder builder(CreativeModeTab.Row var0, int var1) {
@@ -60,8 +60,8 @@ public class CreativeModeTab {
       return this.iconItemStack;
    }
 
-   public String getBackgroundSuffix() {
-      return this.backgroundSuffix;
+   public ResourceLocation getBackgroundTexture() {
+      return this.backgroundTexture;
    }
 
    public boolean showTitle() {
@@ -104,7 +104,6 @@ public class CreativeModeTab {
       this.displayItemsGenerator.accept(var1, var2);
       this.displayItems = var2.tabContents;
       this.displayItemsSearchTab = var2.searchTabContents;
-      this.rebuildSearchTree();
    }
 
    public Collection<ItemStack> getDisplayItems() {
@@ -119,16 +118,6 @@ public class CreativeModeTab {
       return this.displayItemsSearchTab.contains(var1);
    }
 
-   public void setSearchTreeBuilder(Consumer<List<ItemStack>> var1) {
-      this.searchTreeBuilder = var1;
-   }
-
-   public void rebuildSearchTree() {
-      if (this.searchTreeBuilder != null) {
-         this.searchTreeBuilder.accept(Lists.newArrayList(this.displayItemsSearchTab));
-      }
-   }
-
    public static class Builder {
       private static final CreativeModeTab.DisplayItemsGenerator EMPTY_GENERATOR = (var0, var1) -> {
       };
@@ -141,7 +130,7 @@ public class CreativeModeTab {
       private boolean showTitle = true;
       private boolean alignedRight = false;
       private CreativeModeTab.Type type = CreativeModeTab.Type.CATEGORY;
-      private String backgroundSuffix = "items.png";
+      private ResourceLocation backgroundTexture = CreativeModeTab.DEFAULT_BACKGROUND;
 
       public Builder(CreativeModeTab.Row var1, int var2) {
          super();
@@ -184,8 +173,8 @@ public class CreativeModeTab {
          return this;
       }
 
-      public CreativeModeTab.Builder backgroundSuffix(String var1) {
-         this.backgroundSuffix = var1;
+      public CreativeModeTab.Builder backgroundTexture(ResourceLocation var1) {
+         this.backgroundTexture = var1;
          return this;
       }
 
@@ -197,7 +186,7 @@ public class CreativeModeTab {
             var1.alignedRight = this.alignedRight;
             var1.showTitle = this.showTitle;
             var1.canScroll = this.canScroll;
-            var1.backgroundSuffix = this.backgroundSuffix;
+            var1.backgroundTexture = this.backgroundTexture;
             return var1;
          }
       }
@@ -252,19 +241,18 @@ public class CreativeModeTab {
       }
    }
 
-   public static record ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
-
-      public ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
-         super();
-         this.enabledFeatures = enabledFeatures;
-         this.hasPermissions = hasPermissions;
-         this.holders = holders;
-      }
-
-      public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
-         return !this.enabledFeatures.equals(var1) || this.hasPermissions != var2 || this.holders != var3;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public interface Output {
       void accept(ItemStack var1, CreativeModeTab.TabVisibility var2);

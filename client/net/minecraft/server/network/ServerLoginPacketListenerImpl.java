@@ -15,10 +15,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
@@ -102,8 +104,8 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    }
 
    @Override
-   public void onDisconnect(Component var1) {
-      LOGGER.info("{} lost connection: {}", this.getUserName(), var1.getString());
+   public void onDisconnect(DisconnectionDetails var1) {
+      LOGGER.info("{} lost connection: {}", this.getUserName(), var1.reason().getString());
    }
 
    public String getUserName() {
@@ -241,8 +243,8 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    }
 
    @Override
-   public void fillListenerSpecificCrashDetails(CrashReportCategory var1) {
-      var1.setDetail("Login phase", () -> this.state.toString());
+   public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
+      var2.setDetail("Login phase", () -> this.state.toString());
    }
 
    @Override

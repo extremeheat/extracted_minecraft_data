@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Wolf;
 
 public class WolfCollarLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
-   private static final ResourceLocation WOLF_COLLAR_LOCATION = new ResourceLocation("textures/entity/wolf/wolf_collar.png");
+   private static final ResourceLocation WOLF_COLLAR_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf_collar.png");
 
    public WolfCollarLayer(RenderLayerParent<Wolf, WolfModel<Wolf>> var1) {
       super(var1);
@@ -19,9 +19,9 @@ public class WolfCollarLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, Wolf var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       if (var4.isTame() && !var4.isInvisible()) {
-         float[] var11 = var4.getCollarColor().getTextureDiffuseColors();
+         int var11 = var4.getCollarColor().getTextureDiffuseColor();
          VertexConsumer var12 = var2.getBuffer(RenderType.entityCutoutNoCull(WOLF_COLLAR_LOCATION));
-         this.getParentModel().renderToBuffer(var1, var12, var3, OverlayTexture.NO_OVERLAY, var11[0], var11[1], var11[2], 1.0F);
+         this.getParentModel().renderToBuffer(var1, var12, var3, OverlayTexture.NO_OVERLAY, var11);
       }
    }
 }

@@ -1,63 +1,13 @@
 package net.minecraft.util.profiling.jfr.stats;
 
-import com.mojang.datafixers.util.Pair;
-import java.time.Duration;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
-public record FileIOStat(Duration duration, @Nullable String path, long bytes) {
-   public FileIOStat(Duration duration, @Nullable String path, long bytes) {
-      super();
-      this.duration = duration;
-      this.path = path;
-      this.bytes = bytes;
-   }
-
-   public static FileIOStat.Summary summary(Duration var0, List<FileIOStat> var1) {
-      long var2 = var1.stream().mapToLong(var0x -> var0x.bytes).sum();
-      return new FileIOStat.Summary(
-         var2,
-         (double)var2 / (double)var0.getSeconds(),
-         (long)var1.size(),
-         (double)var1.size() / (double)var0.getSeconds(),
-         var1.stream().map(FileIOStat::duration).reduce(Duration.ZERO, Duration::plus),
-         var1.stream()
-            .filter(var0x -> var0x.path != null)
-            .collect(Collectors.groupingBy(var0x -> var0x.path, Collectors.summingLong(var0x -> var0x.bytes)))
-            .entrySet()
-            .stream()
-            .sorted(Entry.<String, Long>comparingByValue().reversed())
-            .map(var0x -> Pair.of(var0x.getKey(), var0x.getValue()))
-            .limit(10L)
-            .toList()
-      );
-   }
-
-   public static record Summary(
-      long totalBytes,
-      double bytesPerSecond,
-      long counts,
-      double countsPerSecond,
-      Duration timeSpentInIO,
-      List<Pair<String, Long>> topTenContributorsByTotalBytes
-   ) {
-      public Summary(
-         long totalBytes,
-         double bytesPerSecond,
-         long counts,
-         double countsPerSecond,
-         Duration timeSpentInIO,
-         List<Pair<String, Long>> topTenContributorsByTotalBytes
-      ) {
-         super();
-         this.totalBytes = totalBytes;
-         this.bytesPerSecond = bytesPerSecond;
-         this.counts = counts;
-         this.countsPerSecond = countsPerSecond;
-         this.timeSpentInIO = timeSpentInIO;
-         this.topTenContributorsByTotalBytes = topTenContributorsByTotalBytes;
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

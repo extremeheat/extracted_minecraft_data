@@ -1,7 +1,7 @@
 package net.minecraft.server.network;
 
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.protocol.handshake.ClientIntent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.handshake.ServerHandshakePacketListener;
@@ -29,7 +29,7 @@ public class MemoryServerHandshakePacketListenerImpl implements ServerHandshakeP
    }
 
    @Override
-   public void onDisconnect(Component var1) {
+   public void onDisconnect(DisconnectionDetails var1) {
    }
 
    @Override

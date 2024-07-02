@@ -41,7 +41,7 @@ public class BreezeDebugRenderer {
                Optional var11 = Optional.ofNullable(this.perEntity.get(var10.getId()));
                var11.map(BreezeDebugPayload.BreezeInfo::attackTarget)
                   .map(var1xx -> var9.level().getEntity(var1xx))
-                  .map(var1xx -> var1xx.getPosition(this.minecraft.getFrameTime()))
+                  .map(var1xx -> var1xx.getPosition(this.minecraft.getTimer().getGameTimeDeltaPartialTick(true)))
                   .ifPresent(var9x -> {
                      drawLine(var1, var2, var3, var5, var7, var10.position(), var9x, TARGET_LINE_COLOR);
                      Vec3 var10x = var9x.add(0.0, 0.009999999776482582, 0.0);
@@ -64,8 +64,8 @@ public class BreezeDebugRenderer {
 
    private static void drawLine(PoseStack var0, MultiBufferSource var1, double var2, double var4, double var6, Vec3 var8, Vec3 var9, int var10) {
       VertexConsumer var11 = var1.getBuffer(RenderType.debugLineStrip(2.0));
-      var11.vertex(var0.last(), (float)(var8.x - var2), (float)(var8.y - var4), (float)(var8.z - var6)).color(var10).endVertex();
-      var11.vertex(var0.last(), (float)(var9.x - var2), (float)(var9.y - var4), (float)(var9.z - var6)).color(var10).endVertex();
+      var11.addVertex(var0.last(), (float)(var8.x - var2), (float)(var8.y - var4), (float)(var8.z - var6)).setColor(var10);
+      var11.addVertex(var0.last(), (float)(var9.x - var2), (float)(var9.y - var4), (float)(var9.z - var6)).setColor(var10);
    }
 
    private static void drawCircle(Matrix4f var0, double var1, double var3, double var5, VertexConsumer var7, Vec3 var8, float var9, int var10) {
@@ -79,7 +79,7 @@ public class BreezeDebugRenderer {
    private static void drawCircleVertex(int var0, Matrix4f var1, double var2, double var4, double var6, VertexConsumer var8, Vec3 var9, float var10, int var11) {
       float var12 = (float)var0 * 0.31415927F;
       Vec3 var13 = var9.add((double)var10 * Math.cos((double)var12), 0.0, (double)var10 * Math.sin((double)var12));
-      var8.vertex(var1, (float)(var13.x - var2), (float)(var13.y - var4), (float)(var13.z - var6)).color(var11).endVertex();
+      var8.addVertex(var1, (float)(var13.x - var2), (float)(var13.y - var4), (float)(var13.z - var6)).setColor(var11);
    }
 
    public void clear() {

@@ -1,9 +1,9 @@
 package net.minecraft.world.effect;
 
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -14,7 +14,12 @@ import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -31,6 +36,8 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 
 public class MobEffect implements FeatureElement {
+   public static final Codec<Holder<MobEffect>> CODEC = BuiltInRegistries.MOB_EFFECT.holderByNameCodec();
+   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<MobEffect>> STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT);
    private static final int AMBIENT_ALPHA = Mth.floor(38.25F);
    private final Map<Holder<Attribute>, MobEffect.AttributeTemplate> attributeModifiers = new Object2ObjectOpenHashMap();
    private final MobEffectCategory category;
@@ -116,8 +123,8 @@ public class MobEffect implements FeatureElement {
       return this.color;
    }
 
-   public MobEffect addAttributeModifier(Holder<Attribute> var1, String var2, double var3, AttributeModifier.Operation var5) {
-      this.attributeModifiers.put(var1, new MobEffect.AttributeTemplate(UUID.fromString(var2), var3, var5));
+   public MobEffect addAttributeModifier(Holder<Attribute> var1, ResourceLocation var2, double var3, AttributeModifier.Operation var5) {
+      this.attributeModifiers.put(var1, new MobEffect.AttributeTemplate(var2, var3, var5));
       return this;
    }
 
@@ -127,7 +134,7 @@ public class MobEffect implements FeatureElement {
    }
 
    public void createModifiers(int var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
-      this.attributeModifiers.forEach((var3, var4) -> var2.accept(var3, var4.create(this.getDescriptionId(), var1)));
+      this.attributeModifiers.forEach((var2x, var3) -> var2.accept(var2x, var3.create(var1)));
    }
 
    public void removeAttributeModifiers(AttributeMap var1) {
@@ -144,7 +151,7 @@ public class MobEffect implements FeatureElement {
          AttributeInstance var5 = var1.getInstance((Holder<Attribute>)var4.getKey());
          if (var5 != null) {
             var5.removeModifier(((MobEffect.AttributeTemplate)var4.getValue()).id());
-            var5.addPermanentModifier(((MobEffect.AttributeTemplate)var4.getValue()).create(this.getDescriptionId(), var2));
+            var5.addPermanentModifier(((MobEffect.AttributeTemplate)var4.getValue()).create(var2));
          }
       }
    }
@@ -172,16 +179,16 @@ public class MobEffect implements FeatureElement {
       return this.requiredFeatures;
    }
 
-   static record AttributeTemplate(UUID id, double amount, AttributeModifier.Operation operation) {
-      AttributeTemplate(UUID id, double amount, AttributeModifier.Operation operation) {
-         super();
-         this.id = id;
-         this.amount = amount;
-         this.operation = operation;
-      }
-
-      public AttributeModifier create(String var1, int var2) {
-         return new AttributeModifier(this.id, var1 + " " + var2, this.amount * (double)(var2 + 1), this.operation);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

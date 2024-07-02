@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -356,62 +355,31 @@ public class LevelStorageSource {
       return this.worldDirValidator;
    }
 
-   public static record LevelCandidates(List<LevelStorageSource.LevelDirectory> levels) implements Iterable<LevelStorageSource.LevelDirectory> {
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public LevelCandidates(List<LevelStorageSource.LevelDirectory> levels) {
-         super();
-         this.levels = levels;
-      }
-
-      public boolean isEmpty() {
-         return this.levels.isEmpty();
-      }
-
-      @Override
-      public Iterator<LevelStorageSource.LevelDirectory> iterator() {
-         return this.levels.iterator();
-      }
-   }
-
-   public static record LevelDirectory(Path path) {
-
-      public LevelDirectory(Path path) {
-         super();
-         this.path = path;
-      }
-
-      public String directoryName() {
-         return this.path.getFileName().toString();
-      }
-
-      public Path dataFile() {
-         return this.resourcePath(LevelResource.LEVEL_DATA_FILE);
-      }
-
-      public Path oldDataFile() {
-         return this.resourcePath(LevelResource.OLD_LEVEL_DATA_FILE);
-      }
-
-      public Path corruptedDataFile(LocalDateTime var1) {
-         return this.path.resolve(LevelResource.LEVEL_DATA_FILE.getId() + "_corrupted_" + var1.format(LevelStorageSource.FORMATTER));
-      }
-
-      public Path rawDataFile(LocalDateTime var1) {
-         return this.path.resolve(LevelResource.LEVEL_DATA_FILE.getId() + "_raw_" + var1.format(LevelStorageSource.FORMATTER));
-      }
-
-      public Path iconFile() {
-         return this.resourcePath(LevelResource.ICON_FILE);
-      }
-
-      public Path lockFile() {
-         return this.resourcePath(LevelResource.LOCK_FILE);
-      }
-
-      public Path resourcePath(LevelResource var1) {
-         return this.path.resolve(var1.getId());
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public class LevelStorageAccess implements AutoCloseable {
       final DirectoryLock lock;

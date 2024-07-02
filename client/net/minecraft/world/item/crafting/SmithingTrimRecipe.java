@@ -10,7 +10,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.armortrim.ArmorTrim;
@@ -32,17 +31,15 @@ public class SmithingTrimRecipe implements SmithingRecipe {
       this.addition = var3;
    }
 
-   @Override
-   public boolean matches(Container var1, Level var2) {
-      return this.template.test(var1.getItem(0)) && this.base.test(var1.getItem(1)) && this.addition.test(var1.getItem(2));
+   public boolean matches(SmithingRecipeInput var1, Level var2) {
+      return this.template.test(var1.template()) && this.base.test(var1.base()) && this.addition.test(var1.addition());
    }
 
-   @Override
-   public ItemStack assemble(Container var1, HolderLookup.Provider var2) {
-      ItemStack var3 = var1.getItem(1);
+   public ItemStack assemble(SmithingRecipeInput var1, HolderLookup.Provider var2) {
+      ItemStack var3 = var1.base();
       if (this.base.test(var3)) {
-         Optional var4 = TrimMaterials.getFromIngredient(var2, var1.getItem(2));
-         Optional var5 = TrimPatterns.getFromTemplate(var2, var1.getItem(0));
+         Optional var4 = TrimMaterials.getFromIngredient(var2, var1.addition());
+         Optional var5 = TrimPatterns.getFromTemplate(var2, var1.template());
          if (var4.isPresent() && var5.isPresent()) {
             ArmorTrim var6 = var3.get(DataComponents.TRIM);
             if (var6 != null && var6.hasPatternAndMaterial((Holder<TrimPattern>)var5.get(), (Holder<TrimMaterial>)var4.get())) {

@@ -11,6 +11,7 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.function.Function;
 import net.minecraft.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class FixProjectileStoredItem extends DataFix {
    private static final String EMPTY_POTION = "minecraft:empty";
@@ -26,23 +27,12 @@ public class FixProjectileStoredItem extends DataFix {
          "Fix AbstractArrow item type",
          var1,
          var2,
-         this.chainAllFilters(
+         ExtraDataFixUtils.chainAllFilters(
             this.fixChoice("minecraft:trident", FixProjectileStoredItem::castUnchecked),
             this.fixChoice("minecraft:arrow", FixProjectileStoredItem::fixArrow),
             this.fixChoice("minecraft:spectral_arrow", FixProjectileStoredItem::fixSpectralArrow)
          )
       );
-   }
-
-   @SafeVarargs
-   private <T> Function<Typed<?>, Typed<?>> chainAllFilters(Function<Typed<?>, Typed<?>>... var1) {
-      return var1x -> {
-         for (Function var5 : var1) {
-            var1x = (Typed<?>)var5.apply(var1x);
-         }
-
-         return var1x;
-      };
    }
 
    private Function<Typed<?>, Typed<?>> fixChoice(String var1, FixProjectileStoredItem.SubFixer<?> var2) {

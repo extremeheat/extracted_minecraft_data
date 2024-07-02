@@ -2,16 +2,21 @@ package net.minecraft.client;
 
 import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.logging.LogUtils;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SmoothDouble;
 import org.lwjgl.glfw.GLFWDropCallback;
+import org.slf4j.Logger;
 
 public class MouseHandler {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private final Minecraft minecraft;
    private boolean isLeftPressed;
    private boolean isMiddlePressed;
@@ -163,9 +168,13 @@ public class MouseHandler {
       }
    }
 
-   private void onDrop(long var1, List<Path> var3) {
+   private void onDrop(long var1, List<Path> var3, int var4) {
       if (this.minecraft.screen != null) {
          this.minecraft.screen.onFilesDrop(var3);
+      }
+
+      if (var4 > 0) {
+         SystemToast.onFileDropFailure(this.minecraft, var4);
       }
    }
 
@@ -176,13 +185,24 @@ public class MouseHandler {
          (var1x, var3, var4, var5) -> this.minecraft.execute(() -> this.onPress(var1x, var3, var4, var5)),
          (var1x, var3, var5) -> this.minecraft.execute(() -> this.onScroll(var1x, var3, var5)),
          (var1x, var3, var4) -> {
-            Path[] var6 = new Path[var3];
+            ArrayList var6 = new ArrayList(var3);
+            int var7 = 0;
 
-            for (int var7 = 0; var7 < var3; var7++) {
-               var6[var7] = Paths.get(GLFWDropCallback.getName(var4, var7));
+            for (int var8 = 0; var8 < var3; var8++) {
+               String var9 = GLFWDropCallback.getName(var4, var8);
+
+               try {
+                  var6.add(Paths.get(var9));
+               } catch (InvalidPathException var11) {
+                  var7++;
+                  LOGGER.error("Failed to parse path '{}'", var9, var11);
+               }
             }
 
-            this.minecraft.execute(() -> this.onDrop(var1x, Arrays.asList(var6)));
+            if (!var6.isEmpty()) {
+               int var12 = var7;
+               this.minecraft.execute(() -> this.onDrop(var1x, var6, var12));
+            }
          }
       );
    }

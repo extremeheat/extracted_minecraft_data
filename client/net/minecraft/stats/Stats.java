@@ -100,7 +100,7 @@ public class Stats {
    }
 
    private static ResourceLocation makeCustomStat(String var0, StatFormatter var1) {
-      ResourceLocation var2 = new ResourceLocation(var0);
+      ResourceLocation var2 = ResourceLocation.withDefaultNamespace(var0);
       Registry.register(BuiltInRegistries.CUSTOM_STAT, var0, var2);
       CUSTOM.get(var2, var1);
       return var2;

@@ -1,11 +1,9 @@
 package net.minecraft.world.level.biome;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
@@ -13,7 +11,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -84,64 +81,18 @@ public class Climate {
       long distance(Climate.RTree.Node<T> var1, long[] var2);
    }
 
-   public static record Parameter(long min, long max) {
-      public static final Codec<Climate.Parameter> CODEC = ExtraCodecs.intervalCodec(
-         Codec.floatRange(-2.0F, 2.0F),
-         "min",
-         "max",
-         (var0, var1) -> var0.compareTo(var1) > 0
-               ? DataResult.error(() -> "Cannon construct interval, min > max (" + var0 + " > " + var1 + ")")
-               : DataResult.success(new Climate.Parameter(Climate.quantizeCoord(var0), Climate.quantizeCoord(var1))),
-         var0 -> Climate.unquantizeCoord(var0.min()),
-         var0 -> Climate.unquantizeCoord(var0.max())
-      );
-
-      public Parameter(long min, long max) {
-         super();
-         this.min = min;
-         this.max = max;
-      }
-
-      public static Climate.Parameter point(float var0) {
-         return span(var0, var0);
-      }
-
-      public static Climate.Parameter span(float var0, float var1) {
-         if (var0 > var1) {
-            throw new IllegalArgumentException("min > max: " + var0 + " " + var1);
-         } else {
-            return new Climate.Parameter(Climate.quantizeCoord(var0), Climate.quantizeCoord(var1));
-         }
-      }
-
-      public static Climate.Parameter span(Climate.Parameter var0, Climate.Parameter var1) {
-         if (var0.min() > var1.max()) {
-            throw new IllegalArgumentException("min > max: " + var0 + " " + var1);
-         } else {
-            return new Climate.Parameter(var0.min(), var1.max());
-         }
-      }
-
-      public String toString() {
-         return this.min == this.max ? String.format(Locale.ROOT, "%d", this.min) : String.format(Locale.ROOT, "[%d-%d]", this.min, this.max);
-      }
-
-      public long distance(long var1) {
-         long var3 = var1 - this.max;
-         long var5 = this.min - var1;
-         return var3 > 0L ? var3 : Math.max(var5, 0L);
-      }
-
-      public long distance(Climate.Parameter var1) {
-         long var2 = var1.min() - this.max;
-         long var4 = this.min - var1.max();
-         return var2 > 0L ? var2 : Math.max(var4, 0L);
-      }
-
-      public Climate.Parameter span(@Nullable Climate.Parameter var1) {
-         return var1 == null ? this : new Climate.Parameter(Math.min(this.min, var1.min()), Math.max(this.max, var1.max()));
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class ParameterList<T> {
       private final List<Pair<Climate.ParameterPoint, T>> values;
@@ -200,63 +151,18 @@ public class Climate {
       }
    }
 
-   public static record ParameterPoint(
-      Climate.Parameter temperature,
-      Climate.Parameter humidity,
-      Climate.Parameter continentalness,
-      Climate.Parameter erosion,
-      Climate.Parameter depth,
-      Climate.Parameter weirdness,
-      long offset
-   ) {
-      public static final Codec<Climate.ParameterPoint> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  Climate.Parameter.CODEC.fieldOf("temperature").forGetter(var0x -> var0x.temperature),
-                  Climate.Parameter.CODEC.fieldOf("humidity").forGetter(var0x -> var0x.humidity),
-                  Climate.Parameter.CODEC.fieldOf("continentalness").forGetter(var0x -> var0x.continentalness),
-                  Climate.Parameter.CODEC.fieldOf("erosion").forGetter(var0x -> var0x.erosion),
-                  Climate.Parameter.CODEC.fieldOf("depth").forGetter(var0x -> var0x.depth),
-                  Climate.Parameter.CODEC.fieldOf("weirdness").forGetter(var0x -> var0x.weirdness),
-                  Codec.floatRange(0.0F, 1.0F).fieldOf("offset").xmap(Climate::quantizeCoord, Climate::unquantizeCoord).forGetter(var0x -> var0x.offset)
-               )
-               .apply(var0, Climate.ParameterPoint::new)
-      );
-
-      public ParameterPoint(
-         Climate.Parameter temperature,
-         Climate.Parameter humidity,
-         Climate.Parameter continentalness,
-         Climate.Parameter erosion,
-         Climate.Parameter depth,
-         Climate.Parameter weirdness,
-         long offset
-      ) {
-         super();
-         this.temperature = temperature;
-         this.humidity = humidity;
-         this.continentalness = continentalness;
-         this.erosion = erosion;
-         this.depth = depth;
-         this.weirdness = weirdness;
-         this.offset = offset;
-      }
-
-      long fitness(Climate.TargetPoint var1) {
-         return Mth.square(this.temperature.distance(var1.temperature))
-            + Mth.square(this.humidity.distance(var1.humidity))
-            + Mth.square(this.continentalness.distance(var1.continentalness))
-            + Mth.square(this.erosion.distance(var1.erosion))
-            + Mth.square(this.depth.distance(var1.depth))
-            + Mth.square(this.weirdness.distance(var1.weirdness))
-            + Mth.square(this.offset);
-      }
-
-      protected List<Climate.Parameter> parameterSpace() {
-         return ImmutableList.of(
-            this.temperature, this.humidity, this.continentalness, this.erosion, this.depth, this.weirdness, new Climate.Parameter(this.offset, this.offset)
-         );
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    protected static final class RTree<T> {
       private static final int CHILDREN_PER_NODE = 6;
@@ -477,53 +383,18 @@ public class Climate {
       }
    }
 
-   public static record Sampler(
-      DensityFunction temperature,
-      DensityFunction humidity,
-      DensityFunction continentalness,
-      DensityFunction erosion,
-      DensityFunction depth,
-      DensityFunction weirdness,
-      List<Climate.ParameterPoint> spawnTarget
-   ) {
-      public Sampler(
-         DensityFunction temperature,
-         DensityFunction humidity,
-         DensityFunction continentalness,
-         DensityFunction erosion,
-         DensityFunction depth,
-         DensityFunction weirdness,
-         List<Climate.ParameterPoint> spawnTarget
-      ) {
-         super();
-         this.temperature = temperature;
-         this.humidity = humidity;
-         this.continentalness = continentalness;
-         this.erosion = erosion;
-         this.depth = depth;
-         this.weirdness = weirdness;
-         this.spawnTarget = spawnTarget;
-      }
-
-      public Climate.TargetPoint sample(int var1, int var2, int var3) {
-         int var4 = QuartPos.toBlock(var1);
-         int var5 = QuartPos.toBlock(var2);
-         int var6 = QuartPos.toBlock(var3);
-         DensityFunction.SinglePointContext var7 = new DensityFunction.SinglePointContext(var4, var5, var6);
-         return Climate.target(
-            (float)this.temperature.compute(var7),
-            (float)this.humidity.compute(var7),
-            (float)this.continentalness.compute(var7),
-            (float)this.erosion.compute(var7),
-            (float)this.depth.compute(var7),
-            (float)this.weirdness.compute(var7)
-         );
-      }
-
-      public BlockPos findSpawnPosition() {
-         return this.spawnTarget.isEmpty() ? BlockPos.ZERO : Climate.findSpawnPosition(this.spawnTarget, this);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class SpawnFinder {
       Climate.SpawnFinder.Result result;
@@ -571,30 +442,31 @@ public class Climate {
          return new Climate.SpawnFinder.Result(new BlockPos(var2, 0, var3), var7 + var11);
       }
 
-      static record Result(BlockPos location, long fitness) {
-         Result(BlockPos location, long fitness) {
-            super();
-            this.location = location;
-            this.fitness = fitness;
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
    }
 
-   public static record TargetPoint(long temperature, long humidity, long continentalness, long erosion, long depth, long weirdness) {
-
-      public TargetPoint(long temperature, long humidity, long continentalness, long erosion, long depth, long weirdness) {
-         super();
-         this.temperature = temperature;
-         this.humidity = humidity;
-         this.continentalness = continentalness;
-         this.erosion = erosion;
-         this.depth = depth;
-         this.weirdness = weirdness;
-      }
-
-      @VisibleForTesting
-      protected long[] toParameterArray() {
-         return new long[]{this.temperature, this.humidity, this.continentalness, this.erosion, this.depth, this.weirdness, 0L};
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

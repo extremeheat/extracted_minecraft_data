@@ -4,11 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -17,16 +15,13 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.WritableBookContent;
-import net.minecraft.world.item.component.WrittenBookContent;
 
 public class BookViewScreen extends Screen {
    public static final int PAGE_INDICATOR_TEXT_Y_OFFSET = 16;
    public static final int PAGE_TEXT_X_OFFSET = 36;
    public static final int PAGE_TEXT_Y_OFFSET = 30;
    public static final BookViewScreen.BookAccess EMPTY_ACCESS = new BookViewScreen.BookAccess(List.of());
-   public static final ResourceLocation BOOK_LOCATION = new ResourceLocation("textures/gui/book.png");
+   public static final ResourceLocation BOOK_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/book.png");
    protected static final int TEXT_WIDTH = 114;
    protected static final int TEXT_HEIGHT = 128;
    protected static final int IMAGE_WIDTH = 192;
@@ -237,30 +232,16 @@ public class BookViewScreen extends Screen {
       }
    }
 
-   public static record BookAccess(List<Component> pages) {
-      public BookAccess(List<Component> pages) {
-         super();
-         this.pages = pages;
-      }
-
-      public int getPageCount() {
-         return this.pages.size();
-      }
-
-      public FormattedText getPage(int var1) {
-         return var1 >= 0 && var1 < this.getPageCount() ? this.pages.get(var1) : FormattedText.EMPTY;
-      }
-
-      @Nullable
-      public static BookViewScreen.BookAccess fromItem(ItemStack var0) {
-         boolean var1 = Minecraft.getInstance().isTextFilteringEnabled();
-         WrittenBookContent var2 = var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
-         if (var2 != null) {
-            return new BookViewScreen.BookAccess(var2.getPages(var1));
-         } else {
-            WritableBookContent var3 = var0.get(DataComponents.WRITABLE_BOOK_CONTENT);
-            return var3 != null ? new BookViewScreen.BookAccess(var3.getPages(var1).map(Component::literal).toList()) : null;
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

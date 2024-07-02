@@ -69,7 +69,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
       }
 
       if (!var12.isEmpty()) {
-         MapId var18 = var1.getFramedMapId();
+         MapId var18 = var1.getFramedMapId(var12);
          if (var11) {
             var4.translate(0.0F, 0.0F, 0.5F);
          } else {

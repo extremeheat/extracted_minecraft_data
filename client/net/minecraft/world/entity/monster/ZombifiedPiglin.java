@@ -4,6 +4,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -42,9 +43,9 @@ import net.minecraft.world.phys.AABB;
 
 public class ZombifiedPiglin extends Zombie implements NeutralMob {
    private static final EntityDimensions BABY_DIMENSIONS = EntityType.ZOMBIFIED_PIGLIN.getDimensions().scale(0.5F).withEyeHeight(0.97F);
-   private static final UUID SPEED_MODIFIER_ATTACKING_UUID = UUID.fromString("49455A49-7EC5-45BA-B886-3B90B23A1718");
+   private static final ResourceLocation SPEED_MODIFIER_ATTACKING_ID = ResourceLocation.withDefaultNamespace("attacking");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING = new AttributeModifier(
-      SPEED_MODIFIER_ATTACKING_UUID, "Attacking speed boost", 0.05, AttributeModifier.Operation.ADD_VALUE
+      SPEED_MODIFIER_ATTACKING_ID, 0.05, AttributeModifier.Operation.ADD_VALUE
    );
    private static final UniformInt FIRST_ANGER_SOUND_DELAY = TimeUtil.rangeOfSeconds(0, 1);
    private int playFirstAngerSoundIn;
@@ -96,13 +97,13 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    protected void customServerAiStep() {
       AttributeInstance var1 = this.getAttribute(Attributes.MOVEMENT_SPEED);
       if (this.isAngry()) {
-         if (!this.isBaby() && !var1.hasModifier(SPEED_MODIFIER_ATTACKING)) {
+         if (!this.isBaby() && !var1.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
             var1.addTransientModifier(SPEED_MODIFIER_ATTACKING);
          }
 
          this.maybePlayFirstAngerSound();
-      } else if (var1.hasModifier(SPEED_MODIFIER_ATTACKING)) {
-         var1.removeModifier(SPEED_MODIFIER_ATTACKING.id());
+      } else if (var1.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
+         var1.removeModifier(SPEED_MODIFIER_ATTACKING_ID);
       }
 
       this.updatePersistentAnger((ServerLevel)this.level(), true);

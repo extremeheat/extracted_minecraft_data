@@ -17,6 +17,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -41,6 +43,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -57,6 +60,7 @@ public class FallingBlockEntity extends Entity {
    private float fallDamagePerDistance;
    @Nullable
    public CompoundTag blockData;
+   public boolean forceTickAfterTeleportToDuplicate;
    protected static final EntityDataAccessor<BlockPos> DATA_START_POS = SynchedEntityData.defineId(FallingBlockEntity.class, EntityDataSerializers.BLOCK_POS);
 
    public FallingBlockEntity(EntityType<? extends FallingBlockEntity> var1, Level var2) {
@@ -130,7 +134,8 @@ public class FallingBlockEntity extends Entity {
          this.time++;
          this.applyGravity();
          this.move(MoverType.SELF, this.getDeltaMovement());
-         if (!this.level().isClientSide) {
+         this.handlePortal();
+         if (!this.level().isClientSide && (this.isAlive() || this.forceTickAfterTeleportToDuplicate)) {
             BlockPos var2 = this.blockPosition();
             boolean var3 = this.blockState.getBlock() instanceof ConcretePowderBlock;
             boolean var4 = var3 && this.level().getFluidState(var2).is(FluidTags.WATER);
@@ -327,8 +332,8 @@ public class FallingBlockEntity extends Entity {
    }
 
    @Override
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this, Block.getId(this.getBlockState()));
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      return new ClientboundAddEntityPacket(this, var1, Block.getId(this.getBlockState()));
    }
 
    @Override
@@ -341,5 +346,16 @@ public class FallingBlockEntity extends Entity {
       double var6 = var1.getZ();
       this.setPos(var2, var4, var6);
       this.setStartPos(this.blockPosition());
+   }
+
+   @Nullable
+   @Override
+   public Entity changeDimension(DimensionTransition var1) {
+      ResourceKey var2 = var1.newLevel().dimension();
+      ResourceKey var3 = this.level().dimension();
+      boolean var4 = (var3 == Level.END || var2 == Level.END) && var3 != var2;
+      Entity var5 = super.changeDimension(var1);
+      this.forceTickAfterTeleportToDuplicate = var5 != null && var4;
+      return var5;
    }
 }

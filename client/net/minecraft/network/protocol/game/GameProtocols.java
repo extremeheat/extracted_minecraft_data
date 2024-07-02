@@ -5,11 +5,13 @@ import net.minecraft.network.ProtocolInfo;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.ProtocolInfoBuilder;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ClientboundCustomReportDetailsPacket;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
+import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.network.protocol.common.ClientboundTransferPacket;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
@@ -27,7 +29,7 @@ import net.minecraft.network.protocol.ping.PingPacketTypes;
 import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
 
 public class GameProtocols {
-   public static final ProtocolInfo.Unbound<ServerGamePacketListener, RegistryFriendlyByteBuf> SERVERBOUND = ProtocolInfoBuilder.serverboundProtocolUnbound(
+   public static final ProtocolInfo.Unbound<ServerGamePacketListener, RegistryFriendlyByteBuf> SERVERBOUND_TEMPLATE = ProtocolInfoBuilder.serverboundProtocol(
       ConnectionProtocol.PLAY,
       var0 -> var0.addPacket(GamePacketTypes.SERVERBOUND_ACCEPT_TELEPORTATION, ServerboundAcceptTeleportationPacket.STREAM_CODEC)
             .addPacket(GamePacketTypes.SERVERBOUND_BLOCK_ENTITY_TAG_QUERY, ServerboundBlockEntityTagQueryPacket.STREAM_CODEC)
@@ -88,7 +90,7 @@ public class GameProtocols {
             .addPacket(GamePacketTypes.SERVERBOUND_USE_ITEM_ON, ServerboundUseItemOnPacket.STREAM_CODEC)
             .addPacket(GamePacketTypes.SERVERBOUND_USE_ITEM, ServerboundUseItemPacket.STREAM_CODEC)
    );
-   public static final ProtocolInfo.Unbound<ClientGamePacketListener, RegistryFriendlyByteBuf> CLIENTBOUND = ProtocolInfoBuilder.clientboundProtocolUnbound(
+   public static final ProtocolInfo.Unbound<ClientGamePacketListener, RegistryFriendlyByteBuf> CLIENTBOUND_TEMPLATE = ProtocolInfoBuilder.clientboundProtocol(
       ConnectionProtocol.PLAY,
       var0 -> var0.withBundlePacket(GamePacketTypes.CLIENTBOUND_BUNDLE, ClientboundBundlePacket::new, new ClientboundBundleDelimiterPacket())
             .addPacket(GamePacketTypes.CLIENTBOUND_ADD_ENTITY, ClientboundAddEntityPacket.STREAM_CODEC)
@@ -212,6 +214,8 @@ public class GameProtocols {
             .addPacket(GamePacketTypes.CLIENTBOUND_UPDATE_RECIPES, ClientboundUpdateRecipesPacket.STREAM_CODEC)
             .addPacket(CommonPacketTypes.CLIENTBOUND_UPDATE_TAGS, ClientboundUpdateTagsPacket.STREAM_CODEC)
             .addPacket(GamePacketTypes.CLIENTBOUND_PROJECTILE_POWER, ClientboundProjectilePowerPacket.STREAM_CODEC)
+            .addPacket(CommonPacketTypes.CLIENTBOUND_CUSTOM_REPORT_DETAILS, ClientboundCustomReportDetailsPacket.STREAM_CODEC)
+            .addPacket(CommonPacketTypes.CLIENTBOUND_SERVER_LINKS, ClientboundServerLinksPacket.STREAM_CODEC)
    );
 
    public GameProtocols() {

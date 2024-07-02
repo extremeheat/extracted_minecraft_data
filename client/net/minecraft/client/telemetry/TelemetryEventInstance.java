@@ -10,8 +10,8 @@ public record TelemetryEventInstance(TelemetryEventType type, TelemetryPropertyM
    public TelemetryEventInstance(TelemetryEventType type, TelemetryPropertyMap properties) {
       super();
       properties.propertySet().forEach(var1 -> {
-         if (!typex.contains((TelemetryProperty<?>)var1)) {
-            throw new IllegalArgumentException("Property '" + var1.id() + "' not expected for event: '" + typex.id() + "'");
+         if (!var0.contains((TelemetryProperty<?>)var1)) {
+            throw new IllegalArgumentException("Property '" + var1.id() + "' not expected for event: '" + var0.id() + "'");
          }
       });
       this.type = type;

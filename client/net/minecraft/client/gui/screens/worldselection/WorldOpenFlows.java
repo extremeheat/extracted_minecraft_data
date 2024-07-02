@@ -143,15 +143,19 @@ public class WorldOpenFlows {
       Dynamic var3 = var1.getDataTag();
       WorldLoader.PackConfig var4 = LevelStorageSource.getPackConfig(var3, var2, false);
 
-      record 1Data(LevelSettings levelSettings, WorldOptions options, Registry<LevelStem> existingDimensions) {
-
-         _Data/* $VF was: 1Data*/(LevelSettings levelSettings, WorldOptions options, Registry<LevelStem> existingDimensions) {
-            super();
-            this.levelSettings = levelSettings;
-            this.options = options;
-            this.existingDimensions = existingDimensions;
-         }
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent.toJava(VarExprent.java:124)
+//   at org.jetbrains.java.decompiler.modules.decompiler.ExprProcessor.listToJava(ExprProcessor.java:895)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.BasicBlockStatement.toJava(BasicBlockStatement.java:90)
+//   at org.jetbrains.java.decompiler.modules.decompiler.stats.RootStatement.toJava(RootStatement.java:36)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeMethod(ClassWriter.java:1283)
 
       return this.loadWorldDataBlocking(
          var4,

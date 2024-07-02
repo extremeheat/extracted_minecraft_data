@@ -62,9 +62,9 @@ public class JigsawBlockEditScreen extends Screen {
          .send(
             new ServerboundSetJigsawBlockPacket(
                this.jigsawEntity.getBlockPos(),
-               new ResourceLocation(this.nameEdit.getValue()),
-               new ResourceLocation(this.targetEdit.getValue()),
-               new ResourceLocation(this.poolEdit.getValue()),
+               ResourceLocation.parse(this.nameEdit.getValue()),
+               ResourceLocation.parse(this.targetEdit.getValue()),
+               ResourceLocation.parse(this.poolEdit.getValue()),
                this.finalStateEdit.getValue(),
                this.joint,
                this.parseAsInt(this.selectionPriorityEdit.getValue()),
@@ -172,10 +172,14 @@ public class JigsawBlockEditScreen extends Screen {
       this.renderTransparentBackground(var1);
    }
 
+   public static boolean isValidResourceLocation(String var0) {
+      return ResourceLocation.tryParse(var0) != null;
+   }
+
    private void updateValidity() {
-      boolean var1 = ResourceLocation.isValidResourceLocation(this.nameEdit.getValue())
-         && ResourceLocation.isValidResourceLocation(this.targetEdit.getValue())
-         && ResourceLocation.isValidResourceLocation(this.poolEdit.getValue());
+      boolean var1 = isValidResourceLocation(this.nameEdit.getValue())
+         && isValidResourceLocation(this.targetEdit.getValue())
+         && isValidResourceLocation(this.poolEdit.getValue());
       this.doneButton.active = var1;
       this.generateButton.active = var1;
    }

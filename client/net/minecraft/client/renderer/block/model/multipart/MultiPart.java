@@ -81,17 +81,17 @@ public class MultiPart implements UnbakedModel {
 
    @Nullable
    @Override
-   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
-      MultiPartBakedModel.Builder var5 = new MultiPartBakedModel.Builder();
+   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
+      MultiPartBakedModel.Builder var4 = new MultiPartBakedModel.Builder();
 
-      for (Selector var7 : this.getSelectors()) {
-         BakedModel var8 = var7.getVariant().bake(var1, var2, var3, var4);
-         if (var8 != null) {
-            var5.add(var7.getPredicate(this.definition), var8);
+      for (Selector var6 : this.getSelectors()) {
+         BakedModel var7 = var6.getVariant().bake(var1, var2, var3);
+         if (var7 != null) {
+            var4.add(var6.getPredicate(this.definition), var7);
          }
       }
 
-      return var5.build();
+      return var4.build();
    }
 
    public static class Deserializer implements JsonDeserializer<MultiPart> {

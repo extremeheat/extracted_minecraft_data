@@ -4,27 +4,18 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JsonOps;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
@@ -32,11 +23,8 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.levelgen.FlatLevelSource;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
-import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import org.slf4j.Logger;
 
@@ -52,6 +40,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean pvp = this.get("pvp", true);
    public final boolean allowFlight = this.get("allow-flight", false);
    public final String motd = this.get("motd", "A Minecraft Server");
+   public final String bugReportLink = this.get("bug-report-link", "");
    public final boolean forceGameMode = this.get("force-gamemode", false);
    public final boolean enforceWhitelist = this.get("enforce-whitelist", false);
    public final Difficulty difficulty = this.get(
@@ -202,42 +191,16 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       return this.worldDimensionData.create(var1);
    }
 
-   static record WorldDimensionData(JsonObject generatorSettings, String levelType) {
-      private static final Map<String, ResourceKey<WorldPreset>> LEGACY_PRESET_NAMES = Map.of(
-         "default", WorldPresets.NORMAL, "largebiomes", WorldPresets.LARGE_BIOMES
-      );
-
-      WorldDimensionData(JsonObject generatorSettings, String levelType) {
-         super();
-         this.generatorSettings = generatorSettings;
-         this.levelType = levelType;
-      }
-
-      public WorldDimensions create(RegistryAccess var1) {
-         Registry var2 = var1.registryOrThrow(Registries.WORLD_PRESET);
-         Holder.Reference var3 = var2.getHolder(WorldPresets.NORMAL)
-            .or(() -> var2.holders().findAny())
-            .orElseThrow(() -> new IllegalStateException("Invalid datapack contents: can't find default preset"));
-         Holder var4 = Optional.ofNullable(ResourceLocation.tryParse(this.levelType))
-            .map(var0 -> ResourceKey.create(Registries.WORLD_PRESET, var0))
-            .or(() -> Optional.ofNullable(LEGACY_PRESET_NAMES.get(this.levelType)))
-            .flatMap(var2::getHolder)
-            .orElseGet(() -> {
-               DedicatedServerProperties.LOGGER.warn("Failed to parse level-type {}, defaulting to {}", this.levelType, var3.key().location());
-               return var3;
-            });
-         WorldDimensions var5 = ((WorldPreset)var4.value()).createWorldDimensions();
-         if (var4.is(WorldPresets.FLAT)) {
-            RegistryOps var6 = var1.createSerializationContext(JsonOps.INSTANCE);
-            Optional var7 = FlatLevelGeneratorSettings.CODEC
-               .parse(new Dynamic(var6, this.generatorSettings()))
-               .resultOrPartial(DedicatedServerProperties.LOGGER::error);
-            if (var7.isPresent()) {
-               return var5.replaceOverworldGenerator(var1, new FlatLevelSource((FlatLevelGeneratorSettings)var7.get()));
-            }
-         }
-
-         return var5;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

@@ -3,13 +3,13 @@ package net.minecraft.world.entity.monster.piglin;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -25,7 +25,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -46,6 +45,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -58,9 +58,9 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Boolean> DATA_IS_DANCING = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
-   private static final UUID SPEED_MODIFIER_BABY_UUID = UUID.fromString("766bfa64-11f3-11ea-8d71-362b9e155667");
+   private static final ResourceLocation SPEED_MODIFIER_BABY_ID = ResourceLocation.withDefaultNamespace("baby");
    private static final AttributeModifier SPEED_MODIFIER_BABY = new AttributeModifier(
-      SPEED_MODIFIER_BABY_UUID, "Baby speed boost", 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_BASE
+      SPEED_MODIFIER_BABY_ID, 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_BASE
    );
    private static final int MAX_HEALTH = 16;
    private static final float MOVEMENT_SPEED_WHEN_FIGHTING = 0.35F;
@@ -153,9 +153,9 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    @Override
-   protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      if (var1.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
+      if (var2.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
          var5.increaseDroppedSkulls();
          this.spawnAtLocation(var6);
@@ -213,7 +213,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
       PiglinAi.initMemories(this, var1.getRandom());
       this.populateDefaultEquipmentSlots(var5, var2);
-      this.populateDefaultEquipmentEnchantments(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var1, var5, var2);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
@@ -312,7 +312,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    @Override
-   public int getExperienceReward() {
+   protected int getBaseExperienceReward() {
       return this.xpReward;
    }
 
@@ -407,14 +407,14 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    protected boolean canReplaceCurrentItem(ItemStack var1) {
-      EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       ItemStack var3 = this.getItemBySlot(var2);
       return this.canReplaceCurrentItem(var1, var3);
    }
 
    @Override
    protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2) {
-      if (EnchantmentHelper.hasBindingCurse(var2)) {
+      if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
          return false;
       } else {
          boolean var3 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);

@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -55,7 +56,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<DecoratedPotBlock> CODEC = simpleCodec(DecoratedPotBlock::new);
-   public static final ResourceLocation SHERDS_DYNAMIC_DROP_ID = new ResourceLocation("sherds");
+   public static final ResourceLocation SHERDS_DYNAMIC_DROP_ID = ResourceLocation.withDefaultNamespace("sherds");
    private static final VoxelShape BOUNDING_BOX = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
    private static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
    public static final BooleanProperty CRACKED = BlockStateProperties.CRACKED;
@@ -105,7 +106,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
             if (!var1.isEmpty() && (var13.isEmpty() || ItemStack.isSameItemSameComponents(var13, var1) && var13.getCount() < var13.getMaxStackSize())) {
                var8.wobble(DecoratedPotBlockEntity.WobbleStyle.POSITIVE);
                var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
-               ItemStack var10 = var5.isCreative() ? var1.copyWithCount(1) : var1.split(1);
+               ItemStack var10 = var1.consumeAndReturn(1, var5);
                float var11;
                if (var8.isEmpty()) {
                   var8.setTheItem(var10);
@@ -191,7 +192,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       ItemStack var5 = var4.getMainHandItem();
       BlockState var6 = var3;
-      if (var5.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasSilkTouch(var5)) {
+      if (var5.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasTag(var5, EnchantmentTags.PREVENTS_DECORATED_POT_SHATTERING)) {
          var6 = var3.setValue(CRACKED, Boolean.valueOf(true));
          var1.setBlock(var2, var6, 4);
       }

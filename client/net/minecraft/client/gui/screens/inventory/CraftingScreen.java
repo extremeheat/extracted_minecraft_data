@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.Slot;
 
 public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implements RecipeUpdateListener {
-   private static final ResourceLocation CRAFTING_TABLE_LOCATION = new ResourceLocation("textures/gui/container/crafting_table.png");
+   private static final ResourceLocation CRAFTING_TABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/crafting_table.png");
    private final RecipeBookComponent recipeBookComponent = new RecipeBookComponent();
    private boolean widthTooNarrow;
 

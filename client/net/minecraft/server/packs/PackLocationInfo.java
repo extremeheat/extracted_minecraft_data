@@ -1,29 +1,13 @@
 package net.minecraft.server.packs;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
-import java.util.Optional;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.server.packs.repository.KnownPack;
-import net.minecraft.server.packs.repository.PackSource;
-
-public record PackLocationInfo(String id, Component title, PackSource source, Optional<KnownPack> knownPackInfo) {
-   public PackLocationInfo(String id, Component title, PackSource source, Optional<KnownPack> knownPackInfo) {
-      super();
-      this.id = id;
-      this.title = title;
-      this.source = source;
-      this.knownPackInfo = knownPackInfo;
-   }
-
-   public Component createChatLink(boolean var1, Component var2) {
-      return ComponentUtils.wrapInSquareBrackets(this.source.decorate(Component.literal(this.id)))
-         .withStyle(
-            var3 -> var3.withColor(var1 ? ChatFormatting.GREEN : ChatFormatting.RED)
-                  .withInsertion(StringArgumentType.escapeIfRequired(this.id))
-                  .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.empty().append(this.title).append("\n").append(var2)))
-         );
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

@@ -1,88 +1,13 @@
 package net.minecraft.util.profiling.jfr.parse;
 
-import com.mojang.datafixers.util.Pair;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import net.minecraft.util.profiling.jfr.serialize.JfrResultJsonSerializer;
-import net.minecraft.util.profiling.jfr.stats.ChunkGenStat;
-import net.minecraft.util.profiling.jfr.stats.ChunkIdentification;
-import net.minecraft.util.profiling.jfr.stats.CpuLoadStat;
-import net.minecraft.util.profiling.jfr.stats.FileIOStat;
-import net.minecraft.util.profiling.jfr.stats.GcHeapStat;
-import net.minecraft.util.profiling.jfr.stats.IoSummary;
-import net.minecraft.util.profiling.jfr.stats.PacketIdentification;
-import net.minecraft.util.profiling.jfr.stats.ThreadAllocationStat;
-import net.minecraft.util.profiling.jfr.stats.TickTimeStat;
-import net.minecraft.util.profiling.jfr.stats.TimedStatSummary;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
-
-public record JfrStatsResult(
-   Instant recordingStarted,
-   Instant recordingEnded,
-   Duration recordingDuration,
-   @Nullable Duration worldCreationDuration,
-   List<TickTimeStat> tickTimes,
-   List<CpuLoadStat> cpuLoadStats,
-   GcHeapStat.Summary heapSummary,
-   ThreadAllocationStat.Summary threadAllocationSummary,
-   IoSummary<PacketIdentification> receivedPacketsSummary,
-   IoSummary<PacketIdentification> sentPacketsSummary,
-   IoSummary<ChunkIdentification> writtenChunks,
-   IoSummary<ChunkIdentification> readChunks,
-   FileIOStat.Summary fileWrites,
-   FileIOStat.Summary fileReads,
-   List<ChunkGenStat> chunkGenStats
-) {
-   public JfrStatsResult(
-      Instant recordingStarted,
-      Instant recordingEnded,
-      Duration recordingDuration,
-      @Nullable Duration worldCreationDuration,
-      List<TickTimeStat> tickTimes,
-      List<CpuLoadStat> cpuLoadStats,
-      GcHeapStat.Summary heapSummary,
-      ThreadAllocationStat.Summary threadAllocationSummary,
-      IoSummary<PacketIdentification> receivedPacketsSummary,
-      IoSummary<PacketIdentification> sentPacketsSummary,
-      IoSummary<ChunkIdentification> writtenChunks,
-      IoSummary<ChunkIdentification> readChunks,
-      FileIOStat.Summary fileWrites,
-      FileIOStat.Summary fileReads,
-      List<ChunkGenStat> chunkGenStats
-   ) {
-      super();
-      this.recordingStarted = recordingStarted;
-      this.recordingEnded = recordingEnded;
-      this.recordingDuration = recordingDuration;
-      this.worldCreationDuration = worldCreationDuration;
-      this.tickTimes = tickTimes;
-      this.cpuLoadStats = cpuLoadStats;
-      this.heapSummary = heapSummary;
-      this.threadAllocationSummary = threadAllocationSummary;
-      this.receivedPacketsSummary = receivedPacketsSummary;
-      this.sentPacketsSummary = sentPacketsSummary;
-      this.writtenChunks = writtenChunks;
-      this.readChunks = readChunks;
-      this.fileWrites = fileWrites;
-      this.fileReads = fileReads;
-      this.chunkGenStats = chunkGenStats;
-   }
-
-   public List<Pair<ChunkStatus, TimedStatSummary<ChunkGenStat>>> chunkGenSummary() {
-      Map var1 = this.chunkGenStats.stream().collect(Collectors.groupingBy(ChunkGenStat::status));
-      return var1.entrySet()
-         .stream()
-         .map(var0 -> Pair.of((ChunkStatus)var0.getKey(), TimedStatSummary.summary((List)var0.getValue())))
-         .sorted(Comparator.<Pair, Duration>comparing(var0 -> ((TimedStatSummary)var0.getSecond()).totalDuration()).reversed())
-         .toList();
-   }
-
-   public String asJson() {
-      return new JfrResultJsonSerializer().format(this);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

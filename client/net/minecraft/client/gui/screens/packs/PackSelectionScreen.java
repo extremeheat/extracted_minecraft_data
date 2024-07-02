@@ -60,7 +60,7 @@ public class PackSelectionScreen extends Screen {
    private static final Component DRAG_AND_DROP = Component.translatable("pack.dropInfo").withStyle(ChatFormatting.GRAY);
    private static final Component DIRECTORY_BUTTON_TOOLTIP = Component.translatable("pack.folderInfo");
    private static final int RELOAD_COOLDOWN = 20;
-   private static final ResourceLocation DEFAULT_ICON = new ResourceLocation("textures/misc/unknown_pack.png");
+   private static final ResourceLocation DEFAULT_ICON = ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png");
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final PackSelectionModel model;
    @Nullable
@@ -105,9 +105,7 @@ public class PackSelectionScreen extends Screen {
       this.selectedPackList = this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
       LinearLayout var2 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var2.addChild(
-         Button.builder(OPEN_PACK_FOLDER_TITLE, var1x -> Util.getPlatform().openUri(this.packDir.toUri()))
-            .tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP))
-            .build()
+         Button.builder(OPEN_PACK_FOLDER_TITLE, var1x -> Util.getPlatform().openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build()
       );
       this.doneButton = var2.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).build());
       this.reload();
@@ -284,8 +282,8 @@ public class PackSelectionScreen extends Screen {
             }
 
             String var5 = var2.getId();
-            ResourceLocation var6 = new ResourceLocation(
-               "minecraft", "pack/" + Util.sanitizeName(var5, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var5) + "/icon"
+            ResourceLocation var6 = ResourceLocation.withDefaultNamespace(
+               "pack/" + Util.sanitizeName(var5, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var5) + "/icon"
             );
 
             try (InputStream var7 = (InputStream)var4.get()) {

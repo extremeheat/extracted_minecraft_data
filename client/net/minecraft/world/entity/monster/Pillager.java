@@ -6,6 +6,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -39,7 +41,8 @@ import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -141,7 +144,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);
-      this.populateDefaultEquipmentEnchantments(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var1, var5, var2);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
@@ -151,13 +154,12 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    @Override
-   protected void enchantSpawnedWeapon(RandomSource var1, float var2) {
-      super.enchantSpawnedWeapon(var1, var2);
-      if (var1.nextInt(300) == 0) {
-         ItemStack var3 = this.getMainHandItem();
-         if (var3.is(Items.CROSSBOW)) {
-            var3.enchant(Enchantments.PIERCING, 1);
-            this.setItemSlot(EquipmentSlot.MAINHAND, var3);
+   protected void enchantSpawnedWeapon(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
+      super.enchantSpawnedWeapon(var1, var2, var3);
+      if (var2.nextInt(300) == 0) {
+         ItemStack var4 = this.getMainHandItem();
+         if (var4.is(Items.CROSSBOW)) {
+            EnchantmentHelper.enchantItemFromProvider(var4, var1.registryAccess(), VanillaEnchantmentProviders.PILLAGER_SPAWN_CROSSBOW, var3, var2);
          }
       }
    }
@@ -214,19 +216,24 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    @Override
-   public void applyRaidBuffs(int var1, boolean var2) {
-      Raid var3 = this.getCurrentRaid();
-      boolean var4 = this.random.nextFloat() <= var3.getEnchantOdds();
-      if (var4) {
-         ItemStack var5 = new ItemStack(Items.CROSSBOW);
-         if (var1 > var3.getNumGroups(Difficulty.NORMAL)) {
-            var5.enchant(Enchantments.QUICK_CHARGE, 2);
-         } else if (var1 > var3.getNumGroups(Difficulty.EASY)) {
-            var5.enchant(Enchantments.QUICK_CHARGE, 1);
+   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
+      Raid var4 = this.getCurrentRaid();
+      boolean var5 = this.random.nextFloat() <= var4.getEnchantOdds();
+      if (var5) {
+         ItemStack var6 = new ItemStack(Items.CROSSBOW);
+         ResourceKey var7;
+         if (var2 > var4.getNumGroups(Difficulty.NORMAL)) {
+            var7 = VanillaEnchantmentProviders.RAID_PILLAGER_POST_WAVE_5;
+         } else if (var2 > var4.getNumGroups(Difficulty.EASY)) {
+            var7 = VanillaEnchantmentProviders.RAID_PILLAGER_POST_WAVE_3;
+         } else {
+            var7 = null;
          }
 
-         var5.enchant(Enchantments.MULTISHOT, 1);
-         this.setItemSlot(EquipmentSlot.MAINHAND, var5);
+         if (var7 != null) {
+            EnchantmentHelper.enchantItemFromProvider(var6, var1.registryAccess(), var7, var1.getCurrentDifficultyAt(this.blockPosition()), this.getRandom());
+            this.setItemSlot(EquipmentSlot.MAINHAND, var6);
+         }
       }
    }
 

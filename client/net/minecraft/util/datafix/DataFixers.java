@@ -7,11 +7,13 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.DSL.TypeReference;
+import com.mojang.datafixers.DataFixerBuilder.Result;
 import com.mojang.datafixers.schemas.Schema;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
@@ -27,6 +29,7 @@ import net.minecraft.util.datafix.fixes.AddNewChoices;
 import net.minecraft.util.datafix.fixes.AdvancementsFix;
 import net.minecraft.util.datafix.fixes.AdvancementsRenameFix;
 import net.minecraft.util.datafix.fixes.AreaEffectCloudPotionFix;
+import net.minecraft.util.datafix.fixes.AttributeModifierIdFix;
 import net.minecraft.util.datafix.fixes.AttributesRename;
 import net.minecraft.util.datafix.fixes.BannerEntityCustomNameToOverrideComponentFix;
 import net.minecraft.util.datafix.fixes.BannerPatternFormatFix;
@@ -142,6 +145,7 @@ import net.minecraft.util.datafix.fixes.ItemWaterPotionFix;
 import net.minecraft.util.datafix.fixes.ItemWrittenBookPagesStrictJsonFix;
 import net.minecraft.util.datafix.fixes.JigsawPropertiesFix;
 import net.minecraft.util.datafix.fixes.JigsawRotationFix;
+import net.minecraft.util.datafix.fixes.JukeboxTicksSinceSongStartedFix;
 import net.minecraft.util.datafix.fixes.LeavesFix;
 import net.minecraft.util.datafix.fixes.LegacyDragonFightFix;
 import net.minecraft.util.datafix.fixes.LevelDataGeneratorOptionsFix;
@@ -169,6 +173,7 @@ import net.minecraft.util.datafix.fixes.OptionsForceVBOFix;
 import net.minecraft.util.datafix.fixes.OptionsKeyLwjgl3Fix;
 import net.minecraft.util.datafix.fixes.OptionsKeyTranslationFix;
 import net.minecraft.util.datafix.fixes.OptionsLowerCaseLanguageFix;
+import net.minecraft.util.datafix.fixes.OptionsMenuBlurrinessFix;
 import net.minecraft.util.datafix.fixes.OptionsProgrammerArtFix;
 import net.minecraft.util.datafix.fixes.OptionsRenameFieldFix;
 import net.minecraft.util.datafix.fixes.OverreachingTickFix;
@@ -178,6 +183,7 @@ import net.minecraft.util.datafix.fixes.PlayerUUIDFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRemoveFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRenameFix;
 import net.minecraft.util.datafix.fixes.PrimedTntBlockStateFixer;
+import net.minecraft.util.datafix.fixes.ProjectileStoredWeaponFix;
 import net.minecraft.util.datafix.fixes.RandomSequenceSettingsFix;
 import net.minecraft.util.datafix.fixes.RecipesFix;
 import net.minecraft.util.datafix.fixes.RecipesRenameningFix;
@@ -288,12 +294,14 @@ import net.minecraft.util.datafix.schemas.V3799;
 import net.minecraft.util.datafix.schemas.V3807;
 import net.minecraft.util.datafix.schemas.V3808;
 import net.minecraft.util.datafix.schemas.V3808_1;
+import net.minecraft.util.datafix.schemas.V3808_2;
 import net.minecraft.util.datafix.schemas.V3816;
 import net.minecraft.util.datafix.schemas.V3818;
 import net.minecraft.util.datafix.schemas.V3818_3;
 import net.minecraft.util.datafix.schemas.V3818_4;
 import net.minecraft.util.datafix.schemas.V3818_5;
 import net.minecraft.util.datafix.schemas.V3825;
+import net.minecraft.util.datafix.schemas.V3938;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -307,7 +315,7 @@ import net.minecraft.util.datafix.schemas.V99;
 public class DataFixers {
    private static final BiFunction<Integer, Schema, Schema> SAME = Schema::new;
    private static final BiFunction<Integer, Schema, Schema> SAME_NAMESPACED = NamespacedSchema::new;
-   private static final DataFixer dataFixer = createFixerUpper(SharedConstants.DATA_FIX_TYPES_TO_OPTIMIZE);
+   private static final Result DATA_FIXER = createFixerUpper();
    public static final int BLENDING_VERSION = 3441;
 
    private DataFixers() {
@@ -315,19 +323,23 @@ public class DataFixers {
    }
 
    public static DataFixer getDataFixer() {
-      return dataFixer;
+      return DATA_FIXER.fixer();
    }
 
-   private static synchronized DataFixer createFixerUpper(Set<TypeReference> var0) {
-      DataFixerBuilder var1 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-      addFixers(var1);
+   private static Result createFixerUpper() {
+      DataFixerBuilder var0 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+      addFixers(var0);
+      return var0.build();
+   }
+
+   public static CompletableFuture<?> optimize(Set<TypeReference> var0) {
       if (var0.isEmpty()) {
-         return var1.buildUnoptimized();
+         return CompletableFuture.completedFuture(null);
       } else {
-         ExecutorService var2 = Executors.newSingleThreadExecutor(
+         ExecutorService var1 = Executors.newSingleThreadExecutor(
             new ThreadFactoryBuilder().setNameFormat("Datafixer Bootstrap").setDaemon(true).setPriority(1).build()
          );
-         return var1.buildOptimized(var0, var2);
+         return DATA_FIXER.optimize(var0, var1);
       }
    }
 
@@ -1267,45 +1279,56 @@ public class DataFixers {
       var0.addFixer(new HorseBodyArmorItemFix(var212, "minecraft:horse", "ArmorItem", true));
       Schema var213 = var0.addSchema(3808, 1, V3808_1::new);
       var0.addFixer(new HorseBodyArmorItemFix(var213, "minecraft:llama", "DecorItem", false));
-      Schema var214 = var0.addSchema(3809, SAME_NAMESPACED);
-      var0.addFixer(new ChestedHorsesInventoryZeroIndexingFix(var214));
-      Schema var215 = var0.addSchema(3812, SAME_NAMESPACED);
-      var0.addFixer(new FixWolfHealth(var215));
-      Schema var216 = var0.addSchema(3813, SAME_NAMESPACED);
-      var0.addFixer(new BlockPosFormatAndRenamesFix(var216));
-      Schema var217 = var0.addSchema(3814, SAME_NAMESPACED);
+      Schema var214 = var0.addSchema(3808, 2, V3808_2::new);
+      var0.addFixer(new HorseBodyArmorItemFix(var214, "minecraft:trader_llama", "DecorItem", false));
+      Schema var215 = var0.addSchema(3809, SAME_NAMESPACED);
+      var0.addFixer(new ChestedHorsesInventoryZeroIndexingFix(var215));
+      Schema var216 = var0.addSchema(3812, SAME_NAMESPACED);
+      var0.addFixer(new FixWolfHealth(var216));
+      Schema var217 = var0.addSchema(3813, SAME_NAMESPACED);
+      var0.addFixer(new BlockPosFormatAndRenamesFix(var217));
+      Schema var218 = var0.addSchema(3814, SAME_NAMESPACED);
       var0.addFixer(
-         new AttributesRename(var217, "Rename jump strength attribute", createRenamer("minecraft:horse.jump_strength", "minecraft:generic.jump_strength"))
+         new AttributesRename(var218, "Rename jump strength attribute", createRenamer("minecraft:horse.jump_strength", "minecraft:generic.jump_strength"))
       );
-      Schema var218 = var0.addSchema(3816, V3816::new);
-      var0.addFixer(new AddNewChoices(var218, "Added Bogged", References.ENTITY));
-      Schema var219 = var0.addSchema(3818, V3818::new);
-      var0.addFixer(new BeehiveFieldRenameFix(var219));
-      var0.addFixer(new EmptyItemInHotbarFix(var219));
-      Schema var220 = var0.addSchema(3818, 1, SAME_NAMESPACED);
-      var0.addFixer(new BannerPatternFormatFix(var220));
-      Schema var221 = var0.addSchema(3818, 2, SAME_NAMESPACED);
-      var0.addFixer(new TippedArrowPotionToItemFix(var221));
-      Schema var222 = var0.addSchema(3818, 3, V3818_3::new);
-      var0.addFixer(new WriteAndReadFix(var222, "Inject data component types", References.DATA_COMPONENTS));
-      Schema var223 = var0.addSchema(3818, 4, V3818_4::new);
-      var0.addFixer(new ParticleUnflatteningFix(var223));
-      Schema var224 = var0.addSchema(3818, 5, V3818_5::new);
-      var0.addFixer(new ItemStackComponentizationFix(var224));
-      Schema var225 = var0.addSchema(3818, 6, SAME_NAMESPACED);
-      var0.addFixer(new AreaEffectCloudPotionFix(var225));
-      Schema var226 = var0.addSchema(3820, SAME_NAMESPACED);
-      var0.addFixer(new PlayerHeadBlockProfileFix(var226));
-      var0.addFixer(new LodestoneCompassComponentFix(var226));
-      Schema var227 = var0.addSchema(3825, V3825::new);
-      var0.addFixer(new ItemStackCustomNameToOverrideComponentFix(var227));
-      var0.addFixer(new BannerEntityCustomNameToOverrideComponentFix(var227));
-      var0.addFixer(new TrialSpawnerConfigFix(var227));
-      var0.addFixer(new AddNewChoices(var227, "Added Ominous Item Spawner", References.ENTITY));
-      Schema var228 = var0.addSchema(3828, SAME_NAMESPACED);
-      var0.addFixer(new EmptyItemInVillagerTradeFix(var228));
-      Schema var229 = var0.addSchema(3833, SAME_NAMESPACED);
-      var0.addFixer(new RemoveEmptyItemInBrushableBlockFix(var229));
+      Schema var219 = var0.addSchema(3816, V3816::new);
+      var0.addFixer(new AddNewChoices(var219, "Added Bogged", References.ENTITY));
+      Schema var220 = var0.addSchema(3818, V3818::new);
+      var0.addFixer(new BeehiveFieldRenameFix(var220));
+      var0.addFixer(new EmptyItemInHotbarFix(var220));
+      Schema var221 = var0.addSchema(3818, 1, SAME_NAMESPACED);
+      var0.addFixer(new BannerPatternFormatFix(var221));
+      Schema var222 = var0.addSchema(3818, 2, SAME_NAMESPACED);
+      var0.addFixer(new TippedArrowPotionToItemFix(var222));
+      Schema var223 = var0.addSchema(3818, 3, V3818_3::new);
+      var0.addFixer(new WriteAndReadFix(var223, "Inject data component types", References.DATA_COMPONENTS));
+      Schema var224 = var0.addSchema(3818, 4, V3818_4::new);
+      var0.addFixer(new ParticleUnflatteningFix(var224));
+      Schema var225 = var0.addSchema(3818, 5, V3818_5::new);
+      var0.addFixer(new ItemStackComponentizationFix(var225));
+      Schema var226 = var0.addSchema(3818, 6, SAME_NAMESPACED);
+      var0.addFixer(new AreaEffectCloudPotionFix(var226));
+      Schema var227 = var0.addSchema(3820, SAME_NAMESPACED);
+      var0.addFixer(new PlayerHeadBlockProfileFix(var227));
+      var0.addFixer(new LodestoneCompassComponentFix(var227));
+      Schema var228 = var0.addSchema(3825, V3825::new);
+      var0.addFixer(new ItemStackCustomNameToOverrideComponentFix(var228));
+      var0.addFixer(new BannerEntityCustomNameToOverrideComponentFix(var228));
+      var0.addFixer(new TrialSpawnerConfigFix(var228));
+      var0.addFixer(new AddNewChoices(var228, "Added Ominous Item Spawner", References.ENTITY));
+      Schema var229 = var0.addSchema(3828, SAME_NAMESPACED);
+      var0.addFixer(new EmptyItemInVillagerTradeFix(var229));
+      Schema var230 = var0.addSchema(3833, SAME_NAMESPACED);
+      var0.addFixer(new RemoveEmptyItemInBrushableBlockFix(var230));
+      Schema var231 = var0.addSchema(3938, V3938::new);
+      var0.addFixer(new ProjectileStoredWeaponFix(var231));
+      Schema var232 = var0.addSchema(3939, SAME_NAMESPACED);
+      var0.addFixer(new FeatureFlagRemoveFix(var232, "Remove 1.21 feature toggle", Set.of("minecraft:update_1_21")));
+      Schema var233 = var0.addSchema(3943, SAME_NAMESPACED);
+      var0.addFixer(new OptionsMenuBlurrinessFix(var233));
+      Schema var234 = var0.addSchema(3945, SAME_NAMESPACED);
+      var0.addFixer(new AttributeModifierIdFix(var234));
+      var0.addFixer(new JukeboxTicksSinceSongStartedFix(var234));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

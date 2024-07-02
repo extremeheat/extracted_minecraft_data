@@ -100,8 +100,8 @@ public class ObjectiveCriteria {
          return var2 < 0
             ? Optional.empty()
             : BuiltInRegistries.STAT_TYPE
-               .getOptional(ResourceLocation.of(var0.substring(0, var2), '.'))
-               .flatMap(var2x -> getStat((StatType<?>)var2x, ResourceLocation.of(var0.substring(var2 + 1), '.')));
+               .getOptional(ResourceLocation.bySeparator(var0.substring(0, var2), '.'))
+               .flatMap(var2x -> getStat((StatType<?>)var2x, ResourceLocation.bySeparator(var0.substring(var2 + 1), '.')));
       }
    }
 

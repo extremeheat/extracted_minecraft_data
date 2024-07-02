@@ -49,7 +49,13 @@ public interface ContainerEventHandler extends GuiEventListener {
 
    @Override
    default boolean mouseReleased(double var1, double var3, int var5) {
-      this.setDragging(false);
+      if (var5 == 0 && this.isDragging()) {
+         this.setDragging(false);
+         if (this.getFocused() != null) {
+            return this.getFocused().mouseReleased(var1, var3, var5);
+         }
+      }
+
       return this.getChildAt(var1, var3).filter(var5x -> var5x.mouseReleased(var1, var3, var5)).isPresent();
    }
 

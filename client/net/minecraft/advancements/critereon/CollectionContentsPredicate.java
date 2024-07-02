@@ -1,7 +1,6 @@
 package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -25,52 +24,31 @@ public interface CollectionContentsPredicate<T, P extends Predicate<T>> extends 
       });
    }
 
-   public static record Multiple<T, P extends Predicate<T>>(List<P> tests) implements CollectionContentsPredicate<T, P> {
-      public Multiple(List<P> tests) {
-         super();
-         this.tests = tests;
-      }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public boolean test(Iterable<T> var1) {
-         ArrayList var2 = new ArrayList<>(this.tests);
-
-         for (Object var4 : var1) {
-            var2.removeIf(var1x -> var1x.test(var4));
-            if (var2.isEmpty()) {
-               return true;
-            }
-         }
-
-         return false;
-      }
-
-      @Override
-      public List<P> unpack() {
-         return this.tests;
-      }
-   }
-
-   public static record Single<T, P extends Predicate<T>>(P test) implements CollectionContentsPredicate<T, P> {
-      public Single(P test) {
-         super();
-         this.test = (P)test;
-      }
-
-      public boolean test(Iterable<T> var1) {
-         for (Object var3 : var1) {
-            if (this.test.test((T)var3)) {
-               return true;
-            }
-         }
-
-         return false;
-      }
-
-      @Override
-      public List<P> unpack() {
-         return List.of(this.test);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static class Zero<T, P extends Predicate<T>> implements CollectionContentsPredicate<T, P> {
       public Zero() {

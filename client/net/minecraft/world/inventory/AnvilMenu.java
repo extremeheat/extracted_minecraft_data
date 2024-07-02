@@ -166,17 +166,17 @@ public class AnvilMenu extends ItemCombinerMenu {
 
                for (Entry var32 : var24.entrySet()) {
                   Holder var15 = (Holder)var32.getKey();
-                  Enchantment var16 = (Enchantment)var15.value();
-                  int var17 = var8.getLevel(var16);
-                  int var18 = var32.getIntValue();
-                  var18 = var17 == var18 ? var18 + 1 : Math.max(var18, var17);
-                  boolean var19 = var16.canEnchant(var1);
+                  int var16 = var8.getLevel(var15);
+                  int var17 = var32.getIntValue();
+                  var17 = var16 == var17 ? var17 + 1 : Math.max(var17, var16);
+                  Enchantment var18 = (Enchantment)var15.value();
+                  boolean var19 = var18.canEnchant(var1);
                   if (this.player.getAbilities().instabuild || var1.is(Items.ENCHANTED_BOOK)) {
                      var19 = true;
                   }
 
                   for (Holder var21 : var8.keySet()) {
-                     if (!var21.equals(var15) && !var16.isCompatibleWith((Enchantment)var21.value())) {
+                     if (!var21.equals(var15) && !Enchantment.areCompatible(var15, var21)) {
                         var19 = false;
                         var2++;
                      }
@@ -186,17 +186,17 @@ public class AnvilMenu extends ItemCombinerMenu {
                      var29 = true;
                   } else {
                      var27 = true;
-                     if (var18 > var16.getMaxLevel()) {
-                        var18 = var16.getMaxLevel();
+                     if (var17 > var18.getMaxLevel()) {
+                        var17 = var18.getMaxLevel();
                      }
 
-                     var8.set(var16, var18);
-                     int var34 = var16.getAnvilCost();
+                     var8.set(var15, var17);
+                     int var34 = var18.getAnvilCost();
                      if (var9) {
                         var34 = Math.max(1, var34 / 2);
                      }
 
-                     var2 += var34 * var18;
+                     var2 += var34 * var17;
                      if (var1.getCount() > 1) {
                         var2 = 40;
                      }

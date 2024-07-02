@@ -1,6 +1,5 @@
 package net.minecraft.server.level;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.util.function.Consumer;
 import net.minecraft.world.level.ChunkPos;
 
@@ -80,48 +79,16 @@ public interface ChunkTrackingView {
       return var12 < (long)var14;
    }
 
-   public static record Positioned(ChunkPos center, int viewDistance) implements ChunkTrackingView {
-      public Positioned(ChunkPos center, int viewDistance) {
-         super();
-         this.center = center;
-         this.viewDistance = viewDistance;
-      }
-
-      int minX() {
-         return this.center.x - this.viewDistance - 1;
-      }
-
-      int minZ() {
-         return this.center.z - this.viewDistance - 1;
-      }
-
-      int maxX() {
-         return this.center.x + this.viewDistance + 1;
-      }
-
-      int maxZ() {
-         return this.center.z + this.viewDistance + 1;
-      }
-
-      @VisibleForTesting
-      protected boolean squareIntersects(ChunkTrackingView.Positioned var1) {
-         return this.minX() <= var1.maxX() && this.maxX() >= var1.minX() && this.minZ() <= var1.maxZ() && this.maxZ() >= var1.minZ();
-      }
-
-      @Override
-      public boolean contains(int var1, int var2, boolean var3) {
-         return ChunkTrackingView.isWithinDistance(this.center.x, this.center.z, this.viewDistance, var1, var2, var3);
-      }
-
-      @Override
-      public void forEach(Consumer<ChunkPos> var1) {
-         for (int var2 = this.minX(); var2 <= this.maxX(); var2++) {
-            for (int var3 = this.minZ(); var3 <= this.maxZ(); var3++) {
-               if (this.contains(var2, var3)) {
-                  var1.accept(new ChunkPos(var2, var3));
-               }
-            }
-         }
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

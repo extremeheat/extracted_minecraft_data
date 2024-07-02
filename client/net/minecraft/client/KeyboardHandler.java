@@ -18,9 +18,8 @@ import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.SimpleOptionsSubScreen;
-import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
+import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
@@ -388,12 +387,8 @@ public class KeyboardHandler {
                   boolean var10 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
                   this.minecraft.options.narrator().set(NarratorStatus.byId(this.minecraft.options.narrator().get().getId() + 1));
                   this.minecraft.options.save();
-                  if (var8 instanceof SimpleOptionsSubScreen) {
-                     ((SimpleOptionsSubScreen)var8).updateNarratorButton();
-                  }
-
-                  if (var10 && var8 != null) {
-                     var8.narrationEnabled();
+                  if (var8 != null) {
+                     var8.updateNarratorStatus(var10);
                   }
                }
 
@@ -419,17 +414,17 @@ public class KeyboardHandler {
          InputConstants.Key var15;
          boolean var17;
          boolean var10000;
-         label187: {
+         label180: {
             var15 = InputConstants.getKey(var3, var4);
             var17 = this.minecraft.screen == null;
-            label147:
+            label141:
             if (!var17) {
                if (this.minecraft.screen instanceof PauseScreen var12 && !var12.showsPauseMenu()) {
-                  break label147;
+                  break label141;
                }
 
                var10000 = false;
-               break label187;
+               break label180;
             }
 
             var10000 = true;

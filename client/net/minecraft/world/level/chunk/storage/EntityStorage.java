@@ -40,28 +40,34 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
 
    @Override
    public CompletableFuture<ChunkEntities<Entity>> loadEntities(ChunkPos var1) {
-      return this.emptyChunks.contains(var1.toLong())
-         ? CompletableFuture.completedFuture(emptyChunk(var1))
-         : this.simpleRegionStorage.read(var1).thenApplyAsync(var2 -> {
-            if (var2.isEmpty()) {
+      if (this.emptyChunks.contains(var1.toLong())) {
+         return CompletableFuture.completedFuture(emptyChunk(var1));
+      } else {
+         CompletableFuture var2 = this.simpleRegionStorage.read(var1);
+         this.reportLoadFailureIfPresent(var2, var1);
+         return var2.thenApplyAsync(var2x -> {
+            if (var2x.isEmpty()) {
                this.emptyChunks.add(var1.toLong());
                return emptyChunk(var1);
             } else {
                try {
-                  ChunkPos var3 = readChunkPos(var2.get());
+                  ChunkPos var3 = readChunkPos((CompoundTag)var2x.get());
                   if (!Objects.equals(var1, var3)) {
                      LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", new Object[]{var1, var1, var3});
+                     this.level.getServer().reportMisplacedChunk(var3, var1, this.simpleRegionStorage.storageInfo());
                   }
                } catch (Exception var6) {
                   LOGGER.warn("Failed to parse chunk {} position info", var1, var6);
+                  this.level.getServer().reportChunkLoadFailure(var6, this.simpleRegionStorage.storageInfo(), var1);
                }
 
-               CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag(var2.get(), -1);
+               CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)var2x.get(), -1);
                ListTag var4 = var7.getList("Entities", 10);
                List var5 = EntityType.loadEntitiesRecursive(var4, this.level).collect(ImmutableList.toImmutableList());
                return new ChunkEntities<>(var1, var5);
             }
          }, this.entityDeserializerQueue::tell);
+      }
    }
 
    private static ChunkPos readChunkPos(CompoundTag var0) {
@@ -82,7 +88,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
       ChunkPos var2 = var1.getPos();
       if (var1.isEmpty()) {
          if (this.emptyChunks.add(var2.toLong())) {
-            this.simpleRegionStorage.write(var2, null);
+            this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, null), var2);
          }
       } else {
          ListTag var3 = new ListTag();
@@ -95,12 +101,25 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
          CompoundTag var4 = NbtUtils.addCurrentDataVersion(new CompoundTag());
          var4.put("Entities", var3);
          writeChunkPos(var4, var2);
-         this.simpleRegionStorage.write(var2, var4).exceptionally(var1x -> {
-            LOGGER.error("Failed to store chunk {}", var2, var1x);
-            return null;
-         });
+         this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, var4), var2);
          this.emptyChunks.remove(var2.toLong());
       }
+   }
+
+   private void reportSaveFailureIfPresent(CompletableFuture<?> var1, ChunkPos var2) {
+      var1.exceptionally(var2x -> {
+         LOGGER.error("Failed to store entity chunk {}", var2, var2x);
+         this.level.getServer().reportChunkSaveFailure(var2x, this.simpleRegionStorage.storageInfo(), var2);
+         return null;
+      });
+   }
+
+   private void reportLoadFailureIfPresent(CompletableFuture<?> var1, ChunkPos var2) {
+      var1.exceptionally(var2x -> {
+         LOGGER.error("Failed to load entity chunk {}", var2, var2x);
+         this.level.getServer().reportChunkLoadFailure(var2x, this.simpleRegionStorage.storageInfo(), var2);
+         return null;
+      });
    }
 
    @Override

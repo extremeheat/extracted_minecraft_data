@@ -6,11 +6,14 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
+import it.unimi.dsi.fastutil.floats.FloatArraySet;
+import it.unimi.dsi.fastutil.floats.FloatArrays;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -55,9 +58,9 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SyncedDataHolder;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
@@ -83,7 +86,7 @@ import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
@@ -96,13 +99,12 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.HoneyBlock;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.level.entity.EntityInLevelCallback;
 import net.minecraft.world.level.gameevent.DynamicGameEventListener;
@@ -111,7 +113,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.level.portal.PortalInfo;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.level.portal.PortalShape;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -220,10 +222,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    private final VecDeltaCodec packetPositionCodec = new VecDeltaCodec();
    public boolean noCulling;
    public boolean hasImpulse;
+   @Nullable
+   public PortalProcessor portalProcess;
    private int portalCooldown;
-   protected boolean isInsidePortal;
-   protected int portalTime;
-   protected BlockPos portalEntrancePos;
    private boolean invulnerable;
    protected UUID uuid = Mth.createInsecureUUID(this.random);
    protected String stringUUID = this.uuid.toString();
@@ -434,7 +435,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.walkDistO = this.walkDist;
       this.xRotO = this.getXRot();
       this.yRotO = this.getYRot();
-      this.handleNetherPortal();
+      this.handlePortal();
       if (this.canSpawnSprintParticle()) {
          this.spawnSprintParticle();
       }
@@ -477,6 +478,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       }
 
       this.firstTick = false;
+      if (!this.level().isClientSide && this instanceof Leashable) {
+         Leashable.tickLeash((Entity)((Leashable)this));
+      }
+
       this.level().getProfiler().pop();
    }
 
@@ -512,21 +517,17 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       }
    }
 
-   public int getPortalWaitTime() {
-      return 0;
-   }
-
    public void lavaHurt() {
       if (!this.fireImmune()) {
-         this.igniteForSeconds(15);
+         this.igniteForSeconds(15.0F);
          if (this.hurt(this.damageSources().lava(), 4.0F)) {
             this.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + this.random.nextFloat() * 0.4F);
          }
       }
    }
 
-   public final void igniteForSeconds(int var1) {
-      this.igniteForTicks(var1 * 20);
+   public final void igniteForSeconds(float var1) {
+      this.igniteForTicks(Mth.floor(var1 * 20.0F));
    }
 
    public void igniteForTicks(int var1) {
@@ -564,7 +565,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.checkSupportingBlock(var1, null);
    }
 
-   public void setOnGroundWithKnownMovement(boolean var1, Vec3 var2) {
+   public void setOnGroundWithMovement(boolean var1, Vec3 var2) {
       this.onGround = var1;
       this.checkSupportingBlock(var1, var2);
    }
@@ -646,7 +647,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             this.minorHorizontalCollision = false;
          }
 
-         this.setOnGroundWithKnownMovement(this.verticalCollisionBelow, var3);
+         this.setOnGroundWithMovement(this.verticalCollisionBelow, var3);
          BlockPos var8 = this.getOnPosLegacy();
          BlockState var9 = this.level().getBlockState(var8);
          this.checkFallDamage(var3.y, this.onGround(), var9, var8);
@@ -794,7 +795,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return this.getOnPos(0.2F);
    }
 
-   protected BlockPos getBlockPosBelowThatAffectsMyMovement() {
+   public BlockPos getBlockPosBelowThatAffectsMyMovement() {
       return this.getOnPos(0.500001F);
    }
 
@@ -881,39 +882,74 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       boolean var5 = var1.x != var4.x;
       boolean var6 = var1.y != var4.y;
       boolean var7 = var1.z != var4.z;
-      boolean var8 = this.onGround() || var6 && var1.y < 0.0;
-      if (this.maxUpStep() > 0.0F && var8 && (var5 || var7)) {
-         Vec3 var9 = collideBoundingBox(this, new Vec3(var1.x, (double)this.maxUpStep(), var1.z), var2, this.level(), var3);
-         Vec3 var10 = collideBoundingBox(this, new Vec3(0.0, (double)this.maxUpStep(), 0.0), var2.expandTowards(var1.x, 0.0, var1.z), this.level(), var3);
-         if (var10.y < (double)this.maxUpStep()) {
-            Vec3 var11 = collideBoundingBox(this, new Vec3(var1.x, 0.0, var1.z), var2.move(var10), this.level(), var3).add(var10);
-            if (var11.horizontalDistanceSqr() > var9.horizontalDistanceSqr()) {
-               var9 = var11;
-            }
+      boolean var8 = var6 && var1.y < 0.0;
+      if (this.maxUpStep() > 0.0F && (var8 || this.onGround()) && (var5 || var7)) {
+         AABB var9 = var8 ? var2.move(0.0, var4.y, 0.0) : var2;
+         AABB var10 = var9.expandTowards(var1.x, (double)this.maxUpStep(), var1.z);
+         if (!var8) {
+            var10 = var10.expandTowards(0.0, -9.999999747378752E-6, 0.0);
          }
 
-         if (var9.horizontalDistanceSqr() > var4.horizontalDistanceSqr()) {
-            return var9.add(collideBoundingBox(this, new Vec3(0.0, -var9.y + var1.y, 0.0), var2.move(var9), this.level(), var3));
+         List var11 = collectColliders(this, this.level, var3, var10);
+         float var12 = (float)var4.y;
+         float[] var13 = collectCandidateStepUpHeights(var9, var11, this.maxUpStep(), var12);
+
+         for (float var17 : var13) {
+            Vec3 var18 = collideWithShapes(new Vec3(var1.x, (double)var17, var1.z), var9, var11);
+            if (var18.horizontalDistanceSqr() > var4.horizontalDistanceSqr()) {
+               double var19 = var2.minY - var9.minY;
+               return var18.add(0.0, -var19, 0.0);
+            }
          }
       }
 
       return var4;
    }
 
+   private static float[] collectCandidateStepUpHeights(AABB var0, List<VoxelShape> var1, float var2, float var3) {
+      FloatArraySet var4 = new FloatArraySet(4);
+
+      for (VoxelShape var6 : var1) {
+         DoubleList var7 = var6.getCoords(Direction.Axis.Y);
+         DoubleListIterator var8 = var7.iterator();
+
+         while (var8.hasNext()) {
+            double var9 = (Double)var8.next();
+            float var11 = (float)(var9 - var0.minY);
+            if (!(var11 < 0.0F) && var11 != var3) {
+               if (var11 > var2) {
+                  break;
+               }
+
+               var4.add(var11);
+            }
+         }
+      }
+
+      float[] var12 = var4.toFloatArray();
+      FloatArrays.unstableSort(var12);
+      return var12;
+   }
+
    public static Vec3 collideBoundingBox(@Nullable Entity var0, Vec3 var1, AABB var2, Level var3, List<VoxelShape> var4) {
-      Builder var5 = ImmutableList.builderWithExpectedSize(var4.size() + 1);
-      if (!var4.isEmpty()) {
-         var5.addAll(var4);
+      List var5 = collectColliders(var0, var3, var4, var2.expandTowards(var1));
+      return collideWithShapes(var1, var2, var5);
+   }
+
+   private static List<VoxelShape> collectColliders(@Nullable Entity var0, Level var1, List<VoxelShape> var2, AABB var3) {
+      Builder var4 = ImmutableList.builderWithExpectedSize(var2.size() + 1);
+      if (!var2.isEmpty()) {
+         var4.addAll(var2);
       }
 
-      WorldBorder var6 = var3.getWorldBorder();
-      boolean var7 = var0 != null && var6.isInsideCloseToBorder(var0, var2.expandTowards(var1));
-      if (var7) {
-         var5.add(var6.getCollisionShape());
+      WorldBorder var5 = var1.getWorldBorder();
+      boolean var6 = var0 != null && var5.isInsideCloseToBorder(var0, var3);
+      if (var6) {
+         var4.add(var5.getCollisionShape());
       }
 
-      var5.addAll(var3.getBlockCollisions(var0, var2.expandTowards(var1)));
-      return collideWithShapes(var1, var2, var5.build());
+      var4.addAll(var1.getBlockCollisions(var0, var3));
+      return var4.build();
    }
 
    private static Vec3 collideWithShapes(Vec3 var0, AABB var1, List<VoxelShape> var2) {
@@ -1002,6 +1038,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    protected void onInsideBlock(BlockState var1) {
+   }
+
+   public BlockPos adjustSpawnLocation(ServerLevel var1, BlockPos var2) {
+      BlockPos var3 = var1.getSharedSpawnPos();
+      Vec3 var4 = var3.getCenter();
+      int var5 = var1.getChunkAt(var3).getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var3.getX(), var3.getZ()) + 1;
+      return BlockPos.containing(var4.x, (double)var5, var4.z);
    }
 
    public void gameEvent(Holder<GameEvent> var1, @Nullable Entity var2) {
@@ -1351,8 +1394,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public void absMoveTo(double var1, double var3, double var5, float var7, float var8) {
       this.absMoveTo(var1, var3, var5);
-      this.setYRot(var7 % 360.0F);
-      this.setXRot(Mth.clamp(var8, -90.0F, 90.0F) % 360.0F);
+      this.absRotateTo(var7, var8);
+   }
+
+   public void absRotateTo(float var1, float var2) {
+      this.setYRot(var1 % 360.0F);
+      this.setXRot(Mth.clamp(var2, -90.0F, 90.0F) % 360.0F);
       this.yRotO = this.getYRot();
       this.xRotO = this.getXRot();
    }
@@ -1375,7 +1422,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public void moveTo(BlockPos var1, float var2, float var3) {
-      this.moveTo((double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2, var3);
+      this.moveTo(var1.getBottomCenter(), var2, var3);
+   }
+
+   public void moveTo(Vec3 var1, float var2, float var3) {
+      this.moveTo(var1.x, var1.y, var1.z, var2, var3);
    }
 
    public void moveTo(double var1, double var3, double var5, float var7, float var8) {
@@ -1457,6 +1508,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             }
          }
       }
+   }
+
+   public void push(Vec3 var1) {
+      this.push(var1.x, var1.y, var1.z);
    }
 
    public void push(double var1, double var3, double var5) {
@@ -1849,6 +1904,27 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
+      if (this.isAlive() && this instanceof Leashable var3) {
+         if (var3.getLeashHolder() == var1) {
+            if (!this.level().isClientSide()) {
+               var3.dropLeash(true, !var1.hasInfiniteMaterials());
+               this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
+            }
+
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+         }
+
+         ItemStack var4 = var1.getItemInHand(var2);
+         if (var4.is(Items.LEAD) && var3.canHaveALeashAttachedToIt()) {
+            if (!this.level().isClientSide()) {
+               var3.setLeashedTo(var1, true);
+            }
+
+            var4.shrink(1);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+         }
+      }
+
       return InteractionResult.PASS;
    }
 
@@ -2059,51 +2135,45 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return Vec3.directionFromRotation(this.getRotationVector());
    }
 
-   public void handleInsidePortal(BlockPos var1) {
+   public void setAsInsidePortal(Portal var1, BlockPos var2) {
       if (this.isOnPortalCooldown()) {
          this.setPortalCooldown();
       } else {
-         if (!this.level().isClientSide && !var1.equals(this.portalEntrancePos)) {
-            this.portalEntrancePos = var1.immutable();
+         if (this.portalProcess != null && this.portalProcess.isSamePortal(var1)) {
+            this.portalProcess.updateEntryPosition(var2.immutable());
+            this.portalProcess.setAsInsidePortalThisTick(true);
+         } else {
+            this.portalProcess = new PortalProcessor(var1, var2.immutable());
          }
-
-         this.isInsidePortal = true;
       }
    }
 
-   protected void handleNetherPortal() {
-      if (this.level() instanceof ServerLevel) {
-         int var1 = this.getPortalWaitTime();
-         ServerLevel var2 = (ServerLevel)this.level();
-         if (this.isInsidePortal) {
-            MinecraftServer var3 = var2.getServer();
-            ResourceKey var4 = this.level().dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;
-            ServerLevel var5 = var3.getLevel(var4);
-            if (var5 != null && var3.isNetherEnabled() && !this.isPassenger() && this.portalTime++ >= var1) {
-               this.level().getProfiler().push("portal");
-               this.portalTime = var1;
+   protected void handlePortal() {
+      if (this.level() instanceof ServerLevel var1) {
+         this.processPortalCooldown();
+         if (this.portalProcess != null) {
+            if (this.portalProcess.processPortalTeleportation(var1, this, this.canUsePortal(false))) {
+               var1.getProfiler().push("portal");
                this.setPortalCooldown();
-               this.changeDimension(var5);
-               this.level().getProfiler().pop();
-            }
+               DimensionTransition var4 = this.portalProcess.getPortalDestination(var1, this);
+               if (var4 != null) {
+                  ServerLevel var3 = var4.newLevel();
+                  if (var1.getServer().isLevelEnabled(var3) && (var3.dimension() == var1.dimension() || this.canChangeDimensions(var1, var3))) {
+                     this.changeDimension(var4);
+                  }
+               }
 
-            this.isInsidePortal = false;
-         } else {
-            if (this.portalTime > 0) {
-               this.portalTime -= 4;
-            }
-
-            if (this.portalTime < 0) {
-               this.portalTime = 0;
+               var1.getProfiler().pop();
+            } else if (this.portalProcess.hasExpired()) {
+               this.portalProcess = null;
             }
          }
-
-         this.processPortalCooldown();
       }
    }
 
    public int getDimensionChangingDelay() {
-      return 300;
+      Entity var1 = this.getFirstPassenger();
+      return var1 instanceof ServerPlayer ? var1.getDimensionChangingDelay() : 300;
    }
 
    public void lerpMotion(double var1, double var3, double var5) {
@@ -2295,7 +2365,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
       this.setRemainingFireTicks(this.remainingFireTicks + 1);
       if (this.remainingFireTicks == 0) {
-         this.igniteForSeconds(8);
+         this.igniteForSeconds(8.0F);
       }
 
       this.hurt(this.damageSources().lightningBolt(), 5.0F);
@@ -2471,107 +2541,77 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       var2.remove("Dimension");
       this.load(var2);
       this.portalCooldown = var1.portalCooldown;
-      this.portalEntrancePos = var1.portalEntrancePos;
+      this.portalProcess = var1.portalProcess;
    }
 
    @Nullable
-   public Entity changeDimension(ServerLevel var1) {
-      if (this.level() instanceof ServerLevel && !this.isRemoved()) {
-         this.level().getProfiler().push("changeDimension");
+   public Entity changeDimension(DimensionTransition var1) {
+      if (this.level() instanceof ServerLevel var2 && !this.isRemoved()) {
+         ServerLevel var9 = var1.newLevel();
+         List var4 = this.getPassengers();
          this.unRide();
-         this.level().getProfiler().push("reposition");
-         PortalInfo var2 = this.findDimensionEntryPoint(var1);
-         if (var2 == null) {
-            return null;
-         } else {
-            this.level().getProfiler().popPush("reloading");
-            Entity var3 = this.getType().create(var1);
-            if (var3 != null) {
-               var3.restoreFrom(this);
-               var3.moveTo(var2.pos.x, var2.pos.y, var2.pos.z, var2.yRot, var3.getXRot());
-               var3.setDeltaMovement(var2.speed);
-               var1.addDuringTeleport(var3);
-               if (var1.dimension() == Level.END) {
-                  ServerLevel.makeObsidianPlatform(var1);
-               }
+         ArrayList var5 = new ArrayList();
+
+         for (Entity var7 : var4) {
+            Entity var8 = var7.changeDimension(var1);
+            if (var8 != null) {
+               var5.add(var8);
+            }
+         }
+
+         var2.getProfiler().push("changeDimension");
+         Entity var10 = var9.dimension() == var2.dimension() ? this : this.getType().create(var9);
+         if (var10 != null) {
+            if (this != var10) {
+               var10.restoreFrom(this);
+               this.removeAfterChangingDimensions();
             }
 
-            this.removeAfterChangingDimensions();
-            this.level().getProfiler().pop();
-            ((ServerLevel)this.level()).resetEmptyTime();
-            var1.resetEmptyTime();
-            this.level().getProfiler().pop();
-            return var3;
+            var10.moveTo(var1.pos().x, var1.pos().y, var1.pos().z, var1.yRot(), var10.getXRot());
+            var10.setDeltaMovement(var1.speed());
+            if (this != var10) {
+               var9.addDuringTeleport(var10);
+            }
+
+            for (Entity var12 : var5) {
+               var12.startRiding(var10, true);
+            }
+
+            var2.resetEmptyTime();
+            var9.resetEmptyTime();
+            var1.postDimensionTransition().onTransition(var10);
          }
-      } else {
-         return null;
+
+         var2.getProfiler().pop();
+         return var10;
+      }
+
+      return null;
+   }
+
+   public void placePortalTicket(BlockPos var1) {
+      if (this.level() instanceof ServerLevel var2) {
+         var2.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(var1), 3, var1);
       }
    }
 
    protected void removeAfterChangingDimensions() {
       this.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
-   }
-
-   @Nullable
-   protected PortalInfo findDimensionEntryPoint(ServerLevel var1) {
-      boolean var2 = this.level().dimension() == Level.END && var1.dimension() == Level.OVERWORLD;
-      boolean var3 = var1.dimension() == Level.END;
-      if (!var2 && !var3) {
-         boolean var9 = var1.dimension() == Level.NETHER;
-         if (this.level().dimension() != Level.NETHER && !var9) {
-            return null;
-         } else {
-            WorldBorder var10 = var1.getWorldBorder();
-            double var6 = DimensionType.getTeleportationScale(this.level().dimensionType(), var1.dimensionType());
-            BlockPos var8 = var10.clampToBounds(this.getX() * var6, this.getY(), this.getZ() * var6);
-            return this.getExitPortal(var1, var8, var9, var10)
-               .map(
-                  var2x -> {
-                     BlockState var5x = this.level().getBlockState(this.portalEntrancePos);
-                     Direction.Axis var3x;
-                     Vec3 var4x;
-                     if (var5x.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
-                        var3x = var5x.getValue(BlockStateProperties.HORIZONTAL_AXIS);
-                        BlockUtil.FoundRectangle var6x = BlockUtil.getLargestRectangleAround(
-                           this.portalEntrancePos, var3x, 21, Direction.Axis.Y, 21, var2xx -> this.level().getBlockState(var2xx) == var5x
-                        );
-                        var4x = this.getRelativePortalPosition(var3x, var6x);
-                     } else {
-                        var3x = Direction.Axis.X;
-                        var4x = new Vec3(0.5, 0.0, 0.0);
-                     }
-
-                     return PortalShape.createPortalInfo(var1, var2x, var3x, var4x, this, this.getDeltaMovement(), this.getYRot(), this.getXRot());
-                  }
-               )
-               .orElse(null);
-         }
-      } else {
-         BlockPos var4 = var3 ? ServerLevel.END_SPAWN_POINT : var1.getSharedSpawnPos();
-         var1.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(var4), 3, var4);
-         int var5;
-         if (var3) {
-            var5 = var4.getY();
-         } else {
-            var5 = var1.getChunkAt(var4).getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var4.getX(), var4.getZ()) + 1;
-         }
-
-         return new PortalInfo(
-            new Vec3((double)var4.getX() + 0.5, (double)var5, (double)var4.getZ() + 0.5), this.getDeltaMovement(), this.getYRot(), this.getXRot()
-         );
+      if (this instanceof Leashable var1) {
+         var1.dropLeash(true, false);
       }
    }
 
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
+   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
       return PortalShape.getRelativePosition(var2, var1, this.position(), this.getDimensions(this.getPose()));
    }
 
-   protected Optional<BlockUtil.FoundRectangle> getExitPortal(ServerLevel var1, BlockPos var2, boolean var3, WorldBorder var4) {
-      return var1.getPortalForcer().findPortalAround(var2, var3, var4);
+   public boolean canUsePortal(boolean var1) {
+      return (var1 || !this.isPassenger()) && this.isAlive();
    }
 
-   public boolean canChangeDimensions() {
-      return !this.isPassenger() && !this.isVehicle();
+   public boolean canChangeDimensions(Level var1, Level var2) {
+      return true;
    }
 
    public float getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5, float var6) {
@@ -2668,15 +2708,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return this.entityData.get(DATA_CUSTOM_NAME_VISIBLE);
    }
 
-   public final void teleportToWithTicket(double var1, double var3, double var5) {
-      if (this.level() instanceof ServerLevel) {
-         ChunkPos var7 = new ChunkPos(BlockPos.containing(var1, var3, var5));
-         ((ServerLevel)this.level()).getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var7, 0, this.getId());
-         this.level().getChunk(var7.x, var7.z);
-         this.teleportTo(var1, var3, var5);
-      }
-   }
-
    public boolean teleportTo(ServerLevel var1, double var2, double var4, double var6, Set<RelativeMovement> var8, float var9, float var10) {
       float var11 = Mth.clamp(var10, -90.0F, 90.0F);
       if (var1 == this.level()) {
@@ -2757,19 +2788,37 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.eyeHeight = var3.eyeHeight();
       this.reapplyPosition();
       boolean var4 = (double)var3.width() <= 4.0 && (double)var3.height() <= 4.0;
-      if (!this.level().isClientSide
+      if (!this.level.isClientSide
          && !this.firstTick
          && !this.noPhysics
          && var4
          && (var3.width() > var1.width() || var3.height() > var1.height())
          && !(this instanceof Player)) {
-         Vec3 var5 = this.position().add(0.0, (double)var1.height() / 2.0, 0.0);
-         double var6 = (double)Math.max(0.0F, var3.width() - var1.width()) + 1.0E-6;
-         double var8 = (double)Math.max(0.0F, var3.height() - var1.height()) + 1.0E-6;
-         VoxelShape var10 = Shapes.create(AABB.ofSize(var5, var6, var8, var6));
-         this.level()
-            .findFreePosition(this, var10, var5, (double)var3.width(), (double)var3.height(), (double)var3.width())
-            .ifPresent(var2x -> this.setPos(var2x.add(0.0, (double)(-var3.height()) / 2.0, 0.0)));
+         this.fudgePositionAfterSizeChange(var1);
+      }
+   }
+
+   public boolean fudgePositionAfterSizeChange(EntityDimensions var1) {
+      EntityDimensions var2 = this.getDimensions(this.getPose());
+      Vec3 var3 = this.position().add(0.0, (double)var1.height() / 2.0, 0.0);
+      double var4 = (double)Math.max(0.0F, var2.width() - var1.width()) + 1.0E-6;
+      double var6 = (double)Math.max(0.0F, var2.height() - var1.height()) + 1.0E-6;
+      VoxelShape var8 = Shapes.create(AABB.ofSize(var3, var4, var6, var4));
+      Optional var9 = this.level.findFreePosition(this, var8, var3, (double)var2.width(), (double)var2.height(), (double)var2.width());
+      if (var9.isPresent()) {
+         this.setPos(((Vec3)var9.get()).add(0.0, (double)(-var2.height()) / 2.0, 0.0));
+         return true;
+      } else {
+         if (var2.width() > var1.width() && var2.height() > var1.height()) {
+            VoxelShape var10 = Shapes.create(AABB.ofSize(var3, var4, 1.0E-6, var4));
+            Optional var11 = this.level.findFreePosition(this, var10, var3, (double)var2.width(), (double)var1.height(), (double)var2.width());
+            if (var11.isPresent()) {
+               this.setPos(((Vec3)var11.get()).add(0.0, (double)(-var1.height()) / 2.0 + 1.0E-6, 0.0));
+               return true;
+            }
+         }
+
+         return false;
       }
    }
 
@@ -2843,14 +2892,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return false;
    }
 
-   public void doEnchantDamageEffects(LivingEntity var1, Entity var2) {
-      if (var2 instanceof LivingEntity) {
-         EnchantmentHelper.doPostHurtEffects((LivingEntity)var2, var1);
-      }
-
-      EnchantmentHelper.doPostDamageEffects(var1, var2);
-   }
-
    public void startSeenByPlayer(ServerPlayer var1) {
    }
 
@@ -2902,10 +2943,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public final List<Entity> getPassengers() {
       return this.passengers;
-   }
-
-   public Optional<Entity> getPassengerClosestTo(Vec3 var1) {
-      return this.getPassengers().stream().filter(var1x -> var1x != this).min(Comparator.comparingDouble(var1x -> var1.distanceToSqr(var1x.position())));
    }
 
    @Nullable
@@ -3071,6 +3108,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.yRotO = this.getYRot();
    }
 
+   public float getPreciseBodyRotation(float var1) {
+      return Mth.lerp(var1, this.yRotO, this.yRot);
+   }
+
    public boolean updateFluidHeightAndDoFluidPushing(TagKey<Fluid> var1, double var2) {
       if (this.touchingUnloadedChunk()) {
          return false;
@@ -3124,7 +3165,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             }
 
             Vec3 var26 = this.getDeltaMovement();
-            var15 = var15.scale(var2 * 1.0);
+            var15 = var15.scale(var2);
             double var27 = 0.003;
             if (Math.abs(var26.x) < 0.003 && Math.abs(var26.z) < 0.003 && var15.length() < 0.0045000000000000005) {
                var15 = var15.normalize().scale(0.0045000000000000005);
@@ -3163,8 +3204,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return this.dimensions.height();
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      return new ClientboundAddEntityPacket(this, var1);
    }
 
    public EntityDimensions getDimensions(Pose var1) {
@@ -3437,6 +3478,23 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       float var21 = (float)Mth.lerp(var12, (double)this.getXRot(), var10);
       this.setPos(var14, var16, var18);
       this.setRot(var20, var21);
+   }
+
+   public RandomSource getRandom() {
+      return this.random;
+   }
+
+   public Vec3 getKnownMovement() {
+      if (this.getControllingPassenger() instanceof Player var1 && this.isAlive()) {
+         return var1.getKnownMovement();
+      }
+
+      return this.getDeltaMovement();
+   }
+
+   @Nullable
+   public ItemStack getWeaponItem() {
+      return null;
    }
 
    @FunctionalInterface

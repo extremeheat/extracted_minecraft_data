@@ -103,19 +103,19 @@ public class RabbitModel<T extends Rabbit> extends EntityModel<T> {
    }
 
    @Override
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
+   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
       if (this.young) {
-         float var9 = 1.5F;
+         float var6 = 1.5F;
          var1.pushPose();
          var1.scale(0.56666666F, 0.56666666F, 0.56666666F);
          var1.translate(0.0F, 1.375F, 0.125F);
-         ImmutableList.of(this.head, this.leftEar, this.rightEar, this.nose).forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
+         ImmutableList.of(this.head, this.leftEar, this.rightEar, this.nose).forEach(var5x -> var5x.render(var1, var2, var3, var4, var5));
          var1.popPose();
          var1.pushPose();
          var1.scale(0.4F, 0.4F, 0.4F);
          var1.translate(0.0F, 2.25F, 0.0F);
          ImmutableList.of(this.leftRearFoot, this.rightRearFoot, this.leftHaunch, this.rightHaunch, this.body, this.leftFrontLeg, this.rightFrontLeg, this.tail)
-            .forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
+            .forEach(var5x -> var5x.render(var1, var2, var3, var4, var5));
          var1.popPose();
       } else {
          var1.pushPose();
@@ -136,7 +136,7 @@ public class RabbitModel<T extends Rabbit> extends EntityModel<T> {
                this.nose,
                new ModelPart[0]
             )
-            .forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
+            .forEach(var5x -> var5x.render(var1, var2, var3, var4, var5));
          var1.popPose();
       }
    }

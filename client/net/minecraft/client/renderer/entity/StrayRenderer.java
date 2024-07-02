@@ -6,8 +6,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Stray;
 
 public class StrayRenderer extends SkeletonRenderer<Stray> {
-   private static final ResourceLocation STRAY_SKELETON_LOCATION = new ResourceLocation("textures/entity/skeleton/stray.png");
-   private static final ResourceLocation STRAY_CLOTHES_LOCATION = new ResourceLocation("textures/entity/skeleton/stray_overlay.png");
+   private static final ResourceLocation STRAY_SKELETON_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/skeleton/stray.png");
+   private static final ResourceLocation STRAY_CLOTHES_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/skeleton/stray_overlay.png");
 
    public StrayRenderer(EntityRendererProvider.Context var1) {
       super(var1, ModelLayers.STRAY, ModelLayers.STRAY_INNER_ARMOR, ModelLayers.STRAY_OUTER_ARMOR);

@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import org.joml.Vector3f;
 
 public class AABB {
    private static final double EPSILON = 1.0E-7;
@@ -235,6 +236,10 @@ public class AABB {
       return this.move(var1.x, var1.y, var1.z);
    }
 
+   public AABB move(Vector3f var1) {
+      return this.move((double)var1.x, (double)var1.y, (double)var1.z);
+   }
+
    public boolean intersects(AABB var1) {
       return this.intersects(var1.minX, var1.minY, var1.minZ, var1.maxX, var1.maxY, var1.maxZ);
    }
@@ -397,6 +402,18 @@ public class AABB {
 
    public Vec3 getCenter() {
       return new Vec3(Mth.lerp(0.5, this.minX, this.maxX), Mth.lerp(0.5, this.minY, this.maxY), Mth.lerp(0.5, this.minZ, this.maxZ));
+   }
+
+   public Vec3 getBottomCenter() {
+      return new Vec3(Mth.lerp(0.5, this.minX, this.maxX), this.minY, Mth.lerp(0.5, this.minZ, this.maxZ));
+   }
+
+   public Vec3 getMinPosition() {
+      return new Vec3(this.minX, this.minY, this.minZ);
+   }
+
+   public Vec3 getMaxPosition() {
+      return new Vec3(this.maxX, this.maxY, this.maxZ);
    }
 
    public static AABB ofSize(Vec3 var0, double var1, double var3, double var5) {

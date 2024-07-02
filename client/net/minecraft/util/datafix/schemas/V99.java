@@ -320,9 +320,13 @@ public class V99 extends Schema {
 
             return var2xx;
          }).update("EntityTag", var2xx -> {
-            String var3x = NamespacedSchema.ensureNamespaced(var0.get("id").asString(""));
-            String var4 = (String)var2.get(var3x);
-            return var4 != null ? var2xx.set("id", var0.createString(var4)) : var2xx;
+            if (var2xx.get("id").result().isPresent()) {
+               return var2xx;
+            } else {
+               String var3x = NamespacedSchema.ensureNamespaced(var0.get("id").asString(""));
+               String var4 = (String)var2.get(var3x);
+               return var4 != null ? var2xx.set("id", var0.createString(var4)) : var2xx;
+            }
          })).getValue();
    }
 }
