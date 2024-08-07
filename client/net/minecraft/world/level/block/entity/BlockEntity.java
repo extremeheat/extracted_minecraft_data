@@ -39,7 +39,18 @@ public abstract class BlockEntity {
       super();
       this.type = var1;
       this.worldPosition = var2.immutable();
+      this.validateBlockState(var3);
       this.blockState = var3;
+   }
+
+   private void validateBlockState(BlockState var1) {
+      if (!this.isValidBlockState(var1)) {
+         throw new IllegalStateException("Invalid block entity " + this.getNameForReporting() + " state at " + this.worldPosition + ", got " + var1);
+      }
+   }
+
+   public boolean isValidBlockState(BlockState var1) {
+      return this.type.isValid(var1);
    }
 
    public static BlockPos getPosFromTag(CompoundTag var0) {
@@ -215,11 +226,15 @@ public abstract class BlockEntity {
    }
 
    public void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("Name", () -> BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(this.getType()) + " // " + this.getClass().getCanonicalName());
+      var1.setDetail("Name", this::getNameForReporting);
       if (this.level != null) {
          CrashReportCategory.populateBlockDetails(var1, this.level, this.worldPosition, this.getBlockState());
          CrashReportCategory.populateBlockDetails(var1, this.level, this.worldPosition, this.level.getBlockState(this.worldPosition));
       }
+   }
+
+   private String getNameForReporting() {
+      return BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(this.getType()) + " // " + this.getClass().getCanonicalName();
    }
 
    public boolean onlyOpCanSetNbt() {
@@ -232,6 +247,7 @@ public abstract class BlockEntity {
 
    @Deprecated
    public void setBlockState(BlockState var1) {
+      this.validateBlockState(var1);
       this.blockState = var1;
    }
 

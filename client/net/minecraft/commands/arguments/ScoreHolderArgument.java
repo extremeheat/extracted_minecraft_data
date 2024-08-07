@@ -32,7 +32,7 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_SCORE_HOLDERS = (var0, var1) -> {
       StringReader var2 = new StringReader(var1.getInput());
       var2.setCursor(var1.getStart());
-      EntitySelectorParser var3 = new EntitySelectorParser(var2);
+      EntitySelectorParser var3 = new EntitySelectorParser(var2, EntitySelectorParser.allowSelectors((CommandSourceStack)var0.getSource()));
 
       try {
          var3.parse();
@@ -81,23 +81,31 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
    }
 
    public ScoreHolderArgument.Result parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1, true);
+   }
+
+   public <S> ScoreHolderArgument.Result parse(StringReader var1, S var2) throws CommandSyntaxException {
+      return this.parse(var1, EntitySelectorParser.allowSelectors(var2));
+   }
+
+   private ScoreHolderArgument.Result parse(StringReader var1, boolean var2) throws CommandSyntaxException {
       if (var1.canRead() && var1.peek() == '@') {
-         EntitySelectorParser var7 = new EntitySelectorParser(var1);
-         EntitySelector var8 = var7.parse();
-         if (!this.multiple && var8.getMaxResults() > 1) {
+         EntitySelectorParser var8 = new EntitySelectorParser(var1, var2);
+         EntitySelector var9 = var8.parse();
+         if (!this.multiple && var9.getMaxResults() > 1) {
             throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.createWithContext(var1);
          } else {
-            return new ScoreHolderArgument.SelectorResult(var8);
+            return new ScoreHolderArgument.SelectorResult(var9);
          }
       } else {
-         int var2 = var1.getCursor();
+         int var3 = var1.getCursor();
 
          while (var1.canRead() && var1.peek() != ' ') {
             var1.skip();
          }
 
-         String var3 = var1.getString().substring(var2, var1.getCursor());
-         if (var3.equals("*")) {
+         String var4 = var1.getString().substring(var3, var1.getCursor());
+         if (var4.equals("*")) {
             return (var0, var1x) -> {
                Collection var2x = var1x.get();
                if (var2x.isEmpty()) {
@@ -107,29 +115,29 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
                }
             };
          } else {
-            List var4 = List.of(ScoreHolder.forNameOnly(var3));
-            if (var3.startsWith("#")) {
-               return (var1x, var2x) -> var4;
+            List var5 = List.of(ScoreHolder.forNameOnly(var4));
+            if (var4.startsWith("#")) {
+               return (var1x, var2x) -> var5;
             } else {
                try {
-                  UUID var5 = UUID.fromString(var3);
+                  UUID var6 = UUID.fromString(var4);
                   return (var2x, var3x) -> {
                      MinecraftServer var4x = var2x.getServer();
                      Entity var5x = null;
                      ArrayList var6x = null;
 
                      for (ServerLevel var8x : var4x.getAllLevels()) {
-                        Entity var9 = var8x.getEntity(var5);
-                        if (var9 != null) {
+                        Entity var9x = var8x.getEntity(var6);
+                        if (var9x != null) {
                            if (var5x == null) {
-                              var5x = var9;
+                              var5x = var9x;
                            } else {
                               if (var6x == null) {
                                  var6x = new ArrayList();
                                  var6x.add(var5x);
                               }
 
-                              var6x.add(var9);
+                              var6x.add(var9x);
                            }
                         }
                      }
@@ -137,14 +145,14 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
                      if (var6x != null) {
                         return var6x;
                      } else {
-                        return var5x != null ? List.of(var5x) : var4;
+                        return var5x != null ? List.of(var5x) : var5;
                      }
                   };
-               } catch (IllegalArgumentException var6) {
+               } catch (IllegalArgumentException var7) {
                   return (var2x, var3x) -> {
                      MinecraftServer var4x = var2x.getServer();
-                     ServerPlayer var5x = var4x.getPlayerList().getPlayerByName(var3);
-                     return var5x != null ? List.of(var5x) : var4;
+                     ServerPlayer var5x = var4x.getPlayerList().getPlayerByName(var4);
+                     return var5x != null ? List.of(var5x) : var5;
                   };
                }
             }

@@ -125,11 +125,10 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
+         super.onRemove(var1, var2, var3, var4, var5);
          if (getPhase(var1) == SculkSensorPhase.ACTIVE) {
             updateNeighbours(var2, var3, var1);
          }
-
-         super.onRemove(var1, var2, var3, var4, var5);
       }
    }
 

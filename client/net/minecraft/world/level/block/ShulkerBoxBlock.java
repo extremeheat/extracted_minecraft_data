@@ -173,11 +173,10 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          BlockEntity var6 = var2.getBlockEntity(var3);
+         super.onRemove(var1, var2, var3, var4, var5);
          if (var6 instanceof ShulkerBoxBlockEntity) {
             var2.updateNeighbourForOutputSignal(var3, var1.getBlock());
          }
-
-         super.onRemove(var1, var2, var3, var4, var5);
       }
    }
 
