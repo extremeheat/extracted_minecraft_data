@@ -8,8 +8,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
@@ -74,6 +76,10 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
 
    public MessageArgument.Message parse(StringReader var1) throws CommandSyntaxException {
       return MessageArgument.Message.parseText(var1, true);
+   }
+
+   public <S> MessageArgument.Message parse(StringReader var1, @Nullable S var2) throws CommandSyntaxException {
+      return MessageArgument.Message.parseText(var1, EntitySelectorParser.allowSelectors(var2));
    }
 
    public Collection<String> getExamples() {

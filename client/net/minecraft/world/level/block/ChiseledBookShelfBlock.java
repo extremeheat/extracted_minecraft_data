@@ -182,19 +182,28 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
    @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
-         if (var2.getBlockEntity(var3) instanceof ChiseledBookShelfBlockEntity var7 && !var7.isEmpty()) {
-            for (int var8 = 0; var8 < 6; var8++) {
-               ItemStack var9 = var7.getItem(var8);
-               if (!var9.isEmpty()) {
-                  Containers.dropItemStack(var2, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var9);
+         boolean var6;
+         label32: {
+            if (var2.getBlockEntity(var3) instanceof ChiseledBookShelfBlockEntity var8 && !var8.isEmpty()) {
+               for (int var9 = 0; var9 < 6; var9++) {
+                  ItemStack var10 = var8.getItem(var9);
+                  if (!var10.isEmpty()) {
+                     Containers.dropItemStack(var2, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var10);
+                  }
                }
+
+               var8.clearContent();
+               var6 = true;
+               break label32;
             }
 
-            var7.clearContent();
-            var2.updateNeighbourForOutputSignal(var3, this);
+            var6 = false;
          }
 
          super.onRemove(var1, var2, var3, var4, var5);
+         if (var6) {
+            var2.updateNeighbourForOutputSignal(var3, this);
+         }
       }
    }
 
