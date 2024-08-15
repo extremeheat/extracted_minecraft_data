@@ -7,13 +7,11 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.client.renderer.entity.state.SheepRenderState;
 
-public class SheepFurModel<T extends Sheep> extends QuadrupedModel<T> {
-   private float headXRot;
-
+public class SheepFurModel extends QuadrupedModel<SheepRenderState> {
    public SheepFurModel(ModelPart var1) {
-      super(var1, false, 8.0F, 4.0F, 2.0F, 2.0F, 24);
+      super(var1);
    }
 
    public static LayerDefinition createFurLayer() {
@@ -37,14 +35,10 @@ public class SheepFurModel<T extends Sheep> extends QuadrupedModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      super.prepareMobModel((T)var1, var2, var3, var4);
-      this.head.y = 6.0F + var1.getHeadEatPositionScale(var4) * 9.0F;
-      this.headXRot = var1.getHeadEatAngleScale(var4);
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim((T)var1, var2, var3, var4, var5, var6);
-      this.head.xRot = this.headXRot;
+   public void setupAnim(SheepRenderState var1) {
+      this.head.resetPose();
+      this.head.y = this.head.y + var1.headEatPositionScale * 9.0F * var1.ageScale;
+      super.setupAnim(var1);
+      this.head.xRot = var1.headEatAngleScale;
    }
 }

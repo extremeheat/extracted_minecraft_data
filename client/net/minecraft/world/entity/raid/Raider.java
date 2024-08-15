@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.raid;
 
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -18,11 +19,12 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.PathfindToRaidGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -35,13 +37,14 @@ import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class Raider extends PatrollingMonster {
    protected static final EntityDataAccessor<Boolean> IS_CELEBRATING = SynchedEntityData.defineId(Raider.class, EntityDataSerializers.BOOLEAN);
    static final Predicate<ItemEntity> ALLOWED_ITEMS = var0 -> !var0.hasPickUpDelay()
          && var0.isAlive()
-         && ItemStack.matches(var0.getItem(), Raid.getLeaderBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
+         && ItemStack.matches(var0.getItem(), Raid.getOminousBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
    @Nullable
    protected Raid raid;
    private int wave;
@@ -143,7 +146,7 @@ public abstract class Raider extends PatrollingMonster {
 
    public boolean isCaptain() {
       ItemStack var1 = this.getItemBySlot(EquipmentSlot.HEAD);
-      boolean var2 = !var1.isEmpty() && ItemStack.matches(var1, Raid.getLeaderBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
+      boolean var2 = !var1.isEmpty() && ItemStack.matches(var1, Raid.getOminousBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
       boolean var3 = this.isPatrolLeader();
       return var2 && var3;
    }
@@ -207,7 +210,7 @@ public abstract class Raider extends PatrollingMonster {
       boolean var3 = this.hasActiveRaid() && this.getCurrentRaid().getLeader(this.getWave()) != null;
       if (this.hasActiveRaid()
          && !var3
-         && ItemStack.matches(var2, Raid.getLeaderBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)))) {
+         && ItemStack.matches(var2, Raid.getOminousBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)))) {
          EquipmentSlot var4 = EquipmentSlot.HEAD;
          ItemStack var5 = this.getItemBySlot(var4);
          double var6 = (double)this.getEquipmentDropChance(var4);
@@ -255,8 +258,8 @@ public abstract class Raider extends PatrollingMonster {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
-      this.setCanJoinRaid(this.getType() != EntityType.WITCH || var3 != MobSpawnType.NATURAL);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      this.setCanJoinRaid(this.getType() != EntityType.WITCH || var3 != EntitySpawnReason.NATURAL);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
@@ -335,6 +338,11 @@ public abstract class Raider extends PatrollingMonster {
 
    public class ObtainRaidLeaderBannerGoal<T extends Raider> extends Goal {
       private final T mob;
+      private Int2LongOpenHashMap unreachableBannerCache = new Int2LongOpenHashMap();
+      @Nullable
+      private Path pathToBanner;
+      @Nullable
+      private ItemEntity pursuedBannerItemEntity;
 
       public ObtainRaidLeaderBannerGoal(final T nullx) {
          super();
@@ -344,34 +352,78 @@ public abstract class Raider extends PatrollingMonster {
 
       @Override
       public boolean canUse() {
-         Raid var1 = this.mob.getCurrentRaid();
-         if (this.mob.hasActiveRaid()
-            && !this.mob.getCurrentRaid().isOver()
-            && this.mob.canBeLeader()
-            && !ItemStack.matches(
-               this.mob.getItemBySlot(EquipmentSlot.HEAD), Raid.getLeaderBannerInstance(this.mob.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN))
-            )) {
-            Raider var2 = var1.getLeader(this.mob.getWave());
-            if (var2 == null || !var2.isAlive()) {
-               List var3 = this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(16.0, 8.0, 16.0), Raider.ALLOWED_ITEMS);
-               if (!var3.isEmpty()) {
-                  return this.mob.getNavigation().moveTo((Entity)var3.get(0), 1.149999976158142);
+         if (this.cannotPickUpBanner()) {
+            return false;
+         } else {
+            Int2LongOpenHashMap var1 = new Int2LongOpenHashMap();
+            double var2 = Raider.this.getAttributeValue(Attributes.FOLLOW_RANGE);
+
+            for (ItemEntity var6 : this.mob
+               .level()
+               .getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(var2, 8.0, var2), Raider.ALLOWED_ITEMS)) {
+               long var7 = this.unreachableBannerCache.getOrDefault(var6.getId(), -9223372036854775808L);
+               if (Raider.this.level().getGameTime() < var7) {
+                  var1.put(var6.getId(), var7);
+               } else {
+                  Path var9 = this.mob.getNavigation().createPath(var6, 1);
+                  if (var9 != null && var9.canReach()) {
+                     this.pathToBanner = var9;
+                     this.pursuedBannerItemEntity = var6;
+                     return true;
+                  }
+
+                  var1.put(var6.getId(), Raider.this.level().getGameTime() + 600L);
                }
             }
 
-            return false;
-         } else {
+            this.unreachableBannerCache = var1;
             return false;
          }
       }
 
       @Override
+      public boolean canContinueToUse() {
+         if (this.pursuedBannerItemEntity == null || this.pathToBanner == null) {
+            return false;
+         } else if (this.pursuedBannerItemEntity.isRemoved()) {
+            return false;
+         } else {
+            return this.pathToBanner.isDone() ? false : !this.cannotPickUpBanner();
+         }
+      }
+
+      private boolean cannotPickUpBanner() {
+         if (!this.mob.hasActiveRaid()) {
+            return true;
+         } else if (this.mob.getCurrentRaid().isOver()) {
+            return true;
+         } else if (!this.mob.canBeLeader()) {
+            return true;
+         } else if (ItemStack.matches(
+            this.mob.getItemBySlot(EquipmentSlot.HEAD), Raid.getOminousBannerInstance(this.mob.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN))
+         )) {
+            return true;
+         } else {
+            Raider var1 = Raider.this.raid.getLeader(this.mob.getWave());
+            return var1 != null && var1.isAlive();
+         }
+      }
+
+      @Override
+      public void start() {
+         this.mob.getNavigation().moveTo(this.pathToBanner, 1.149999976158142);
+      }
+
+      @Override
+      public void stop() {
+         this.pathToBanner = null;
+         this.pursuedBannerItemEntity = null;
+      }
+
+      @Override
       public void tick() {
-         if (this.mob.getNavigation().getTargetPos().closerToCenterThan(this.mob.position(), 1.414)) {
-            List var1 = this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(4.0, 4.0, 4.0), Raider.ALLOWED_ITEMS);
-            if (!var1.isEmpty()) {
-               this.mob.pickUpItem((ItemEntity)var1.get(0));
-            }
+         if (this.pursuedBannerItemEntity != null && this.pursuedBannerItemEntity.closerThan(this.mob, 1.414)) {
+            this.mob.pickUpItem(this.pursuedBannerItemEntity);
          }
       }
    }

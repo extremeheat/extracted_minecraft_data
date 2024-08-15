@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
@@ -37,8 +36,8 @@ import net.minecraft.server.gui.MinecraftServerGui;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
+import net.minecraft.server.network.ServerTextFilter;
 import net.minecraft.server.network.TextFilter;
-import net.minecraft.server.network.TextFilterClient;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.server.players.OldUsersConverter;
@@ -74,7 +73,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    @Nullable
    private MinecraftServerGui gui;
    @Nullable
-   private final TextFilterClient textFilterClient;
+   private final ServerTextFilter serverTextFilter;
    @Nullable
    private RemoteSampleLogger tickTimeLogger;
    @Nullable
@@ -94,7 +93,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       super(var1, var2, var3, var4, Proxy.NO_PROXY, var6, var7, var8);
       this.settings = var5;
       this.rconConsoleSource = new RconConsoleSource(this);
-      this.textFilterClient = TextFilterClient.createFromConfig(var5.getProperties().textFilteringConfig);
+      this.serverTextFilter = ServerTextFilter.createFromConfig(var5.getProperties());
       this.serverLinks = createServerLinks(var5);
    }
 
@@ -220,18 +219,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    @Override
-   public boolean isSpawningAnimals() {
-      return this.getProperties().spawnAnimals && super.isSpawningAnimals();
-   }
-
-   @Override
    public boolean isSpawningMonsters() {
       return this.settings.getProperties().spawnMonsters && super.isSpawningMonsters();
-   }
-
-   @Override
-   public boolean areNpcsEnabled() {
-      return this.settings.getProperties().spawnNpcs && super.areNpcsEnabled();
    }
 
    @Override
@@ -266,10 +255,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          var3.write(String.format(Locale.ROOT, "spawn-monsters=%s%n", var2.spawnMonsters));
          var3.write(String.format(Locale.ROOT, "entity-broadcast-range-percentage=%d%n", var2.entityBroadcastRangePercentage));
          var3.write(String.format(Locale.ROOT, "max-world-size=%d%n", var2.maxWorldSize));
-         var3.write(String.format(Locale.ROOT, "spawn-npcs=%s%n", var2.spawnNpcs));
          var3.write(String.format(Locale.ROOT, "view-distance=%d%n", var2.viewDistance));
          var3.write(String.format(Locale.ROOT, "simulation-distance=%d%n", var2.simulationDistance));
-         var3.write(String.format(Locale.ROOT, "spawn-animals=%s%n", var2.spawnAnimals));
          var3.write(String.format(Locale.ROOT, "generate-structures=%s%n", var2.worldOptions.generateStructures()));
          var3.write(String.format(Locale.ROOT, "use-native=%s%n", var2.useNativeTransport));
          var3.write(String.format(Locale.ROOT, "rate-limit=%d%n", var2.rateLimitPacketsPerSecond));
@@ -278,8 +265,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    @Override
    public void onServerExit() {
-      if (this.textFilterClient != null) {
-         this.textFilterClient.close();
+      if (this.serverTextFilter != null) {
+         this.serverTextFilter.close();
       }
 
       if (this.gui != null) {
@@ -296,8 +283,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    @Override
-   public void tickChildren(BooleanSupplier var1) {
-      super.tickChildren(var1);
+   public void tickConnection() {
+      super.tickConnection();
       this.handleConsoleInputs();
    }
 
@@ -573,7 +560,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    @Override
    public TextFilter createTextFilterForPlayer(ServerPlayer var1) {
-      return this.textFilterClient != null ? this.textFilterClient.createContext(var1.getGameProfile()) : TextFilter.DUMMY;
+      return this.serverTextFilter != null ? this.serverTextFilter.createContext(var1.getGameProfile()) : TextFilter.DUMMY;
    }
 
    @Nullable
@@ -616,6 +603,11 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    @Override
    public ServerLinks serverLinks() {
       return this.serverLinks;
+   }
+
+   @Override
+   public int pauseWhileEmptySeconds() {
+      return this.settings.getProperties().pauseWhenEmptySeconds;
    }
 
    private static ServerLinks createServerLinks(DedicatedServerSettings var0) {

@@ -250,7 +250,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
 
    @Override
    public boolean shouldRenderFace(Direction var1) {
-      return Block.shouldRenderFace(this.getBlockState(), this.level, this.getBlockPos(), var1, this.getBlockPos().relative(var1));
+      return Block.shouldRenderFace(this.getBlockState(), this.level.getBlockState(this.getBlockPos().relative(var1)), var1);
    }
 
    public int getParticleAmount() {

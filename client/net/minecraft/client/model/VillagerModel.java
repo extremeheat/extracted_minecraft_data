@@ -6,18 +6,16 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.AbstractVillager;
 
-public class VillagerModel<T extends Entity> extends HierarchicalModel<T> implements HeadedModel, VillagerHeadModel {
+public class VillagerModel extends EntityModel<VillagerRenderState> implements HeadedModel, VillagerHeadModel {
    private final ModelPart root;
    private final ModelPart head;
    private final ModelPart hat;
    private final ModelPart hatRim;
    private final ModelPart rightLeg;
    private final ModelPart leftLeg;
-   protected final ModelPart nose;
 
    public VillagerModel(ModelPart var1) {
       super();
@@ -25,7 +23,6 @@ public class VillagerModel<T extends Entity> extends HierarchicalModel<T> implem
       this.head = var1.getChild("head");
       this.hat = this.head.getChild("hat");
       this.hatRim = this.hat.getChild("hat_rim");
-      this.nose = this.head.getChild("nose");
       this.rightLeg = var1.getChild("right_leg");
       this.leftLeg = var1.getChild("left_leg");
    }
@@ -75,24 +72,18 @@ public class VillagerModel<T extends Entity> extends HierarchicalModel<T> implem
       return this.root;
    }
 
-   @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      boolean var7 = false;
-      if (var1 instanceof AbstractVillager) {
-         var7 = ((AbstractVillager)var1).getUnhappyCounter() > 0;
-      }
-
-      this.head.yRot = var5 * 0.017453292F;
-      this.head.xRot = var6 * 0.017453292F;
-      if (var7) {
-         this.head.zRot = 0.3F * Mth.sin(0.45F * var4);
+   public void setupAnim(VillagerRenderState var1) {
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
+      if (var1.isUnhappy) {
+         this.head.zRot = 0.3F * Mth.sin(0.45F * var1.ageInTicks);
          this.head.xRot = 0.4F;
       } else {
          this.head.zRot = 0.0F;
       }
 
-      this.rightLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3 * 0.5F;
-      this.leftLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3 * 0.5F;
+      this.rightLeg.xRot = Mth.cos(var1.walkAnimationPos * 0.6662F) * 1.4F * var1.walkAnimationSpeed * 0.5F;
+      this.leftLeg.xRot = Mth.cos(var1.walkAnimationPos * 0.6662F + 3.1415927F) * 1.4F * var1.walkAnimationSpeed * 0.5F;
       this.rightLeg.yRot = 0.0F;
       this.leftLeg.yRot = 0.0F;
    }

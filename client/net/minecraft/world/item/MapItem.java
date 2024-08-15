@@ -362,7 +362,7 @@ public class MapItem extends ComplexItem {
             }
          }
 
-         return InteractionResult.sidedSuccess(var1.getLevel().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.useOn(var1);
       }

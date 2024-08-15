@@ -98,6 +98,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
    @Override
    protected void generate() {
       HolderLookup.RegistryLookup var1 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ITEM);
       this.dropSelf(Blocks.GRANITE);
       this.dropSelf(Blocks.POLISHED_GRANITE);
       this.dropSelf(Blocks.DIORITE);
@@ -1010,20 +1011,20 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.CHERRY_LEAVES, var1x -> this.createLeavesDrops(var1x, Blocks.CHERRY_SAPLING, NORMAL_LEAVES_SAPLING_CHANCES));
       this.add(Blocks.AZALEA_LEAVES, var1x -> this.createLeavesDrops(var1x, Blocks.AZALEA, NORMAL_LEAVES_SAPLING_CHANCES));
       this.add(Blocks.FLOWERING_AZALEA_LEAVES, var1x -> this.createLeavesDrops(var1x, Blocks.FLOWERING_AZALEA, NORMAL_LEAVES_SAPLING_CHANCES));
-      LootItemBlockStatePropertyCondition.Builder var2 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.BEETROOTS)
+      LootItemBlockStatePropertyCondition.Builder var3 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.BEETROOTS)
          .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BeetrootBlock.AGE, 3));
-      this.add(Blocks.BEETROOTS, this.createCropDrops(Blocks.BEETROOTS, Items.BEETROOT, Items.BEETROOT_SEEDS, var2));
-      LootItemBlockStatePropertyCondition.Builder var3 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.WHEAT)
+      this.add(Blocks.BEETROOTS, this.createCropDrops(Blocks.BEETROOTS, Items.BEETROOT, Items.BEETROOT_SEEDS, var3));
+      LootItemBlockStatePropertyCondition.Builder var4 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.WHEAT)
          .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CropBlock.AGE, 7));
-      this.add(Blocks.WHEAT, this.createCropDrops(Blocks.WHEAT, Items.WHEAT, Items.WHEAT_SEEDS, var3));
-      LootItemBlockStatePropertyCondition.Builder var4 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.CARROTS)
+      this.add(Blocks.WHEAT, this.createCropDrops(Blocks.WHEAT, Items.WHEAT, Items.WHEAT_SEEDS, var4));
+      LootItemBlockStatePropertyCondition.Builder var5 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.CARROTS)
          .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CarrotBlock.AGE, 7));
-      LootItemBlockStatePropertyCondition.Builder var5 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.MANGROVE_PROPAGULE)
+      LootItemBlockStatePropertyCondition.Builder var6 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.MANGROVE_PROPAGULE)
          .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MangrovePropaguleBlock.AGE, 4));
       this.add(
          Blocks.MANGROVE_PROPAGULE,
          this.applyExplosionDecay(
-            Blocks.MANGROVE_PROPAGULE, LootTable.lootTable().withPool(LootPool.lootPool().when(var5).add(LootItem.lootTableItem(Items.MANGROVE_PROPAGULE)))
+            Blocks.MANGROVE_PROPAGULE, LootTable.lootTable().withPool(LootPool.lootPool().when(var6).add(LootItem.lootTableItem(Items.MANGROVE_PROPAGULE)))
          )
       );
       this.add(
@@ -1060,7 +1061,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                .withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.CARROT)))
                .withPool(
                   LootPool.lootPool()
-                     .when(var4)
+                     .when(var5)
                      .add(
                         LootItem.lootTableItem(Items.CARROT)
                            .apply(ApplyBonusCount.addBonusBinomialDistributionCount(var1.getOrThrow(Enchantments.FORTUNE), 0.5714286F, 3))
@@ -1068,7 +1069,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                )
          )
       );
-      LootItemBlockStatePropertyCondition.Builder var6 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.POTATOES)
+      LootItemBlockStatePropertyCondition.Builder var7 = LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.POTATOES)
          .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PotatoBlock.AGE, 7));
       this.add(
          Blocks.POTATOES,
@@ -1078,14 +1079,14 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                .withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.POTATO)))
                .withPool(
                   LootPool.lootPool()
-                     .when(var6)
+                     .when(var7)
                      .add(
                         LootItem.lootTableItem(Items.POTATO)
                            .apply(ApplyBonusCount.addBonusBinomialDistributionCount(var1.getOrThrow(Enchantments.FORTUNE), 0.5714286F, 3))
                      )
                )
                .withPool(
-                  LootPool.lootPool().when(var6).add(LootItem.lootTableItem(Items.POISONOUS_POTATO).when(LootItemRandomChanceCondition.randomChance(0.02F)))
+                  LootPool.lootPool().when(var7).add(LootItem.lootTableItem(Items.POISONOUS_POTATO).when(LootItemRandomChanceCondition.randomChance(0.02F)))
                )
          )
       );
@@ -1160,12 +1161,12 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                )
             )
       );
-      this.add(Blocks.NETHER_SPROUTS, var0 -> BlockLootSubProvider.createShearsOnlyDrop(var0));
-      this.add(Blocks.SEAGRASS, var0 -> BlockLootSubProvider.createShearsOnlyDrop(var0));
-      this.add(Blocks.VINE, var0 -> BlockLootSubProvider.createShearsOnlyDrop(var0));
-      this.add(Blocks.GLOW_LICHEN, var1x -> this.createMultifaceBlockDrops(var1x, HAS_SHEARS));
-      this.add(Blocks.HANGING_ROOTS, var0 -> BlockLootSubProvider.createShearsOnlyDrop(var0));
-      this.add(Blocks.SMALL_DRIPLEAF, var0 -> BlockLootSubProvider.createShearsOnlyDrop(var0));
+      this.add(Blocks.NETHER_SPROUTS, var1x -> this.createShearsOnlyDrop(var1x));
+      this.add(Blocks.SEAGRASS, var1x -> this.createShearsOnlyDrop(var1x));
+      this.add(Blocks.VINE, var1x -> this.createShearsOnlyDrop(var1x));
+      this.add(Blocks.GLOW_LICHEN, var1x -> this.createMultifaceBlockDrops(var1x, this.hasShears()));
+      this.add(Blocks.HANGING_ROOTS, var1x -> this.createShearsOnlyDrop(var1x));
+      this.add(Blocks.SMALL_DRIPLEAF, var1x -> this.createShearsOnlyDrop(var1x));
       this.add(Blocks.MANGROVE_LEAVES, var1x -> this.createMangroveLeavesDrops(var1x));
       this.add(Blocks.TALL_SEAGRASS, this.createDoublePlantShearsDrop(Blocks.SEAGRASS));
       this.add(Blocks.LARGE_FERN, var1x -> this.createDoublePlantWithSeedDrops(var1x, Blocks.FERN));
@@ -1335,15 +1336,15 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       );
       this.add(
          Blocks.AMETHYST_CLUSTER,
-         var2x -> this.createSilkTouchDispatchTable(
-               var2x,
+         var3x -> this.createSilkTouchDispatchTable(
+               var3x,
                LootItem.lootTableItem(Items.AMETHYST_SHARD)
                   .apply(SetItemCountFunction.setCount(ConstantValue.exactly(4.0F)))
                   .apply(ApplyBonusCount.addOreBonusCount(var1.getOrThrow(Enchantments.FORTUNE)))
-                  .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(ItemTags.CLUSTER_MAX_HARVESTABLES)))
+                  .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(var2, ItemTags.CLUSTER_MAX_HARVESTABLES)))
                   .otherwise(
                      (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
-                        var2x, LootItem.lootTableItem(Items.AMETHYST_SHARD).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))
+                        var3x, LootItem.lootTableItem(Items.AMETHYST_SHARD).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))
                      )
                   )
             )

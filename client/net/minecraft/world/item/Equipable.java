@@ -6,7 +6,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -21,11 +21,11 @@ public interface Equipable {
       return SoundEvents.ARMOR_EQUIP_GENERIC;
    }
 
-   default InteractionResultHolder<ItemStack> swapWithEquipmentSlot(Item var1, Level var2, Player var3, InteractionHand var4) {
+   default InteractionResult swapWithEquipmentSlot(Item var1, Level var2, Player var3, InteractionHand var4) {
       ItemStack var5 = var3.getItemInHand(var4);
       EquipmentSlot var6 = var3.getEquipmentSlotForItem(var5);
       if (!var3.canUseSlot(var6)) {
-         return InteractionResultHolder.pass(var5);
+         return InteractionResult.PASS;
       } else {
          ItemStack var7 = var3.getItemBySlot(var6);
          if ((!EnchantmentHelper.has(var7, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || var3.isCreative()) && !ItemStack.matches(var5, var7)) {
@@ -36,9 +36,9 @@ public interface Equipable {
             ItemStack var8 = var7.isEmpty() ? var5 : var7.copyAndClear();
             ItemStack var9 = var3.isCreative() ? var5.copy() : var5.copyAndClear();
             var3.setItemSlot(var6, var9);
-            return InteractionResultHolder.sidedSuccess(var8, var2.isClientSide());
+            return InteractionResult.SUCCESS.heldItemTransformedTo(var8);
          } else {
-            return InteractionResultHolder.fail(var5);
+            return InteractionResult.FAIL;
          }
       }
    }

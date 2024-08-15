@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
@@ -17,19 +17,6 @@ import net.minecraft.world.level.Level;
 public class WrittenBookItem extends Item {
    public WrittenBookItem(Item.Properties var1) {
       super(var1);
-   }
-
-   @Override
-   public Component getName(ItemStack var1) {
-      WrittenBookContent var2 = var1.get(DataComponents.WRITTEN_BOOK_CONTENT);
-      if (var2 != null) {
-         String var3 = var2.title().raw();
-         if (!StringUtil.isBlank(var3)) {
-            return Component.literal(var3);
-         }
-      }
-
-      return super.getName(var1);
    }
 
    @Override
@@ -45,11 +32,11 @@ public class WrittenBookItem extends Item {
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       var2.openItemGui(var4, var3);
       var2.awardStat(Stats.ITEM_USED.get(this));
-      return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
+      return InteractionResult.SUCCESS;
    }
 
    public static boolean resolveBookComponents(ItemStack var0, CommandSourceStack var1, @Nullable Player var2) {

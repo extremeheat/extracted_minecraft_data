@@ -2,12 +2,14 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,18 +17,21 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.Leashable;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
-public abstract class EntityRenderer<T extends Entity> {
+public abstract class EntityRenderer<T extends Entity, S extends EntityRenderState> {
    protected static final float NAMETAG_SCALE = 0.025F;
    public static final int LEASH_RENDER_STEPS = 24;
    protected final EntityRenderDispatcher entityRenderDispatcher;
    private final Font font;
    protected float shadowRadius;
    protected float shadowStrength = 1.0F;
+   private final S reusedState = this.createRenderState();
 
    protected EntityRenderer(EntityRendererProvider.Context var1) {
       super();
@@ -50,10 +55,10 @@ public abstract class EntityRenderer<T extends Entity> {
    public boolean shouldRender(T var1, Frustum var2, double var3, double var5, double var7) {
       if (!var1.shouldRender(var3, var5, var7)) {
          return false;
-      } else if (var1.noCulling) {
+      } else if (!this.affectedByCulling((T)var1)) {
          return true;
       } else {
-         AABB var9 = var1.getBoundingBoxForCulling().inflate(0.5);
+         AABB var9 = this.getBoundingBoxForCulling((T)var1).inflate(0.5);
          if (var9.hasNaN() || var9.getSize() == 0.0) {
             var9 = new AABB(var1.getX() - 2.0, var1.getY() - 2.0, var1.getZ() - 2.0, var1.getX() + 2.0, var1.getY() + 2.0, var1.getZ() + 2.0);
          }
@@ -64,7 +69,7 @@ public abstract class EntityRenderer<T extends Entity> {
             if (var1 instanceof Leashable var10) {
                Entity var11 = var10.getLeashHolder();
                if (var11 != null) {
-                  return var2.isVisible(var11.getBoundingBoxForCulling());
+                  return var2.isVisible(this.entityRenderDispatcher.getRenderer(var11).getBoundingBoxForCulling(var11));
                }
             }
 
@@ -73,59 +78,83 @@ public abstract class EntityRenderer<T extends Entity> {
       }
    }
 
-   public Vec3 getRenderOffset(T var1, float var2) {
-      return Vec3.ZERO;
+   protected AABB getBoundingBoxForCulling(T var1) {
+      return var1.getBoundingBox();
    }
 
-   public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      if (var1 instanceof Leashable var7) {
-         Entity var8 = var7.getLeashHolder();
-         if (var8 != null) {
-            this.renderLeash((T)var1, var3, var4, var5, var8);
-         }
+   protected boolean affectedByCulling(T var1) {
+      return true;
+   }
+
+   public Vec3 getRenderOffset(S var1) {
+      return var1.passengerOffset != null ? var1.passengerOffset : Vec3.ZERO;
+   }
+
+   public void render(S var1, PoseStack var2, MultiBufferSource var3, int var4) {
+      EntityRenderState.LeashState var5 = var1.leashState;
+      if (var5 != null) {
+         renderLeash(var2, var3, var5);
       }
 
-      if (this.shouldShowName(var1)) {
-         this.renderNameTag((T)var1, var1.getDisplayName(), var4, var5, var6, var3);
+      if (var1.nameTag != null) {
+         this.renderNameTag((S)var1, var1.nameTag, var2, var3, var4);
       }
    }
 
-   private <E extends Entity> void renderLeash(T var1, float var2, PoseStack var3, MultiBufferSource var4, E var5) {
-      var3.pushPose();
-      Vec3 var6 = var5.getRopeHoldPosition(var2);
-      double var7 = (double)(var1.getPreciseBodyRotation(var2) * 0.017453292F) + 1.5707963267948966;
-      Vec3 var9 = var1.getLeashOffset(var2);
-      double var10 = Math.cos(var7) * var9.z + Math.sin(var7) * var9.x;
-      double var12 = Math.sin(var7) * var9.z - Math.cos(var7) * var9.x;
-      double var14 = Mth.lerp((double)var2, var1.xo, var1.getX()) + var10;
-      double var16 = Mth.lerp((double)var2, var1.yo, var1.getY()) + var9.y;
-      double var18 = Mth.lerp((double)var2, var1.zo, var1.getZ()) + var12;
-      var3.translate(var10, var9.y, var12);
-      float var20 = (float)(var6.x - var14);
-      float var21 = (float)(var6.y - var16);
-      float var22 = (float)(var6.z - var18);
-      float var23 = 0.025F;
-      VertexConsumer var24 = var4.getBuffer(RenderType.leash());
-      Matrix4f var25 = var3.last().pose();
-      float var26 = Mth.invSqrt(var20 * var20 + var22 * var22) * 0.025F / 2.0F;
-      float var27 = var22 * var26;
-      float var28 = var20 * var26;
-      BlockPos var29 = BlockPos.containing(var1.getEyePosition(var2));
-      BlockPos var30 = BlockPos.containing(var5.getEyePosition(var2));
-      int var31 = this.getBlockLightLevel((T)var1, var29);
-      int var32 = this.entityRenderDispatcher.getRenderer(var5).getBlockLightLevel(var5, var30);
-      int var33 = var1.level().getBrightness(LightLayer.SKY, var29);
-      int var34 = var1.level().getBrightness(LightLayer.SKY, var30);
+   private static void renderLeash(PoseStack var0, MultiBufferSource var1, EntityRenderState.LeashState var2) {
+      float var3 = 0.025F;
+      float var4 = (float)(var2.end.x - var2.start.x);
+      float var5 = (float)(var2.end.y - var2.start.y);
+      float var6 = (float)(var2.end.z - var2.start.z);
+      float var7 = Mth.invSqrt(var4 * var4 + var6 * var6) * 0.025F / 2.0F;
+      float var8 = var6 * var7;
+      float var9 = var4 * var7;
+      var0.pushPose();
+      var0.translate(var2.offset);
+      VertexConsumer var10 = var1.getBuffer(RenderType.leash());
+      Matrix4f var11 = var0.last().pose();
 
-      for (int var35 = 0; var35 <= 24; var35++) {
-         addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.025F, var27, var28, var35, false);
+      for (int var12 = 0; var12 <= 24; var12++) {
+         addVertexPair(
+            var10,
+            var11,
+            var4,
+            var5,
+            var6,
+            var2.startBlockLight,
+            var2.endBlockLight,
+            var2.startSkyLight,
+            var2.endSkyLight,
+            0.025F,
+            0.025F,
+            var8,
+            var9,
+            var12,
+            false
+         );
       }
 
-      for (int var36 = 24; var36 >= 0; var36--) {
-         addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.0F, var27, var28, var36, true);
+      for (int var13 = 24; var13 >= 0; var13--) {
+         addVertexPair(
+            var10,
+            var11,
+            var4,
+            var5,
+            var6,
+            var2.startBlockLight,
+            var2.endBlockLight,
+            var2.startSkyLight,
+            var2.endSkyLight,
+            0.025F,
+            0.0F,
+            var8,
+            var9,
+            var13,
+            true
+         );
       }
 
-      var3.popPose();
+      var0.popPose();
    }
 
    private static void addVertexPair(
@@ -160,45 +189,109 @@ public abstract class EntityRenderer<T extends Entity> {
       var0.addVertex(var1, var23 + var11, var24 + var9 - var10, var25 - var12).setColor(var20, var21, var22, 1.0F).setLight(var18);
    }
 
-   protected boolean shouldShowName(T var1) {
+   protected boolean shouldShowName(T var1, double var2) {
       return var1.shouldShowName() || var1.hasCustomName() && var1 == this.entityRenderDispatcher.crosshairPickEntity;
    }
 
-   public abstract ResourceLocation getTextureLocation(T var1);
+   public abstract ResourceLocation getTextureLocation(S var1);
 
    public Font getFont() {
       return this.font;
    }
 
-   protected void renderNameTag(T var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5, float var6) {
-      double var7 = this.entityRenderDispatcher.distanceToSqr(var1);
-      if (!(var7 > 4096.0)) {
-         Vec3 var9 = var1.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, var1.getViewYRot(var6));
-         if (var9 != null) {
-            boolean var10 = !var1.isDiscrete();
-            int var11 = "deadmau5".equals(var2.getString()) ? -10 : 0;
-            var3.pushPose();
-            var3.translate(var9.x, var9.y + 0.5, var9.z);
-            var3.mulPose(this.entityRenderDispatcher.cameraOrientation());
-            var3.scale(0.025F, -0.025F, 0.025F);
-            Matrix4f var12 = var3.last().pose();
-            float var13 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
-            int var14 = (int)(var13 * 255.0F) << 24;
-            Font var15 = this.getFont();
-            float var16 = (float)(-var15.width(var2) / 2);
-            var15.drawInBatch(
-               var2, var16, (float)var11, 553648127, false, var12, var4, var10 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var14, var5
-            );
-            if (var10) {
-               var15.drawInBatch(var2, var16, (float)var11, -1, false, var12, var4, Font.DisplayMode.NORMAL, 0, var5);
-            }
-
-            var3.popPose();
+   protected void renderNameTag(S var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5) {
+      Vec3 var6 = var1.nameTagAttachment;
+      if (var6 != null) {
+         boolean var7 = !var1.isDiscrete;
+         int var8 = "deadmau5".equals(var2.getString()) ? -10 : 0;
+         var3.pushPose();
+         var3.translate(var6.x, var6.y + 0.5, var6.z);
+         var3.mulPose(this.entityRenderDispatcher.cameraOrientation());
+         var3.scale(0.025F, -0.025F, 0.025F);
+         Matrix4f var9 = var3.last().pose();
+         float var10 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
+         int var11 = (int)(var10 * 255.0F) << 24;
+         Font var12 = this.getFont();
+         float var13 = (float)(-var12.width(var2) / 2);
+         var12.drawInBatch(var2, var13, (float)var8, -2130706433, false, var9, var4, var7 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var11, var5);
+         if (var7) {
+            var12.drawInBatch(var2, var13, (float)var8, -1, false, var9, var4, Font.DisplayMode.NORMAL, 0, var5);
          }
+
+         var3.popPose();
       }
    }
 
-   protected float getShadowRadius(T var1) {
+   @Nullable
+   protected Component getNameTag(T var1) {
+      return var1.getDisplayName();
+   }
+
+   protected float getShadowRadius(S var1) {
       return this.shadowRadius;
+   }
+
+   public abstract S createRenderState();
+
+   public final S createRenderState(T var1, float var2) {
+      EntityRenderState var3 = this.reusedState;
+      this.extractRenderState((T)var1, (S)var3, var2);
+      return (S)var3;
+   }
+
+   public void extractRenderState(T var1, S var2, float var3) {
+      var2.x = Mth.lerp((double)var3, var1.xOld, var1.getX());
+      var2.y = Mth.lerp((double)var3, var1.yOld, var1.getY());
+      var2.z = Mth.lerp((double)var3, var1.zOld, var1.getZ());
+      var2.isInvisible = var1.isInvisible();
+      var2.ageInTicks = (float)var1.tickCount + var3;
+      var2.boundingBoxWidth = var1.getBbWidth();
+      var2.boundingBoxHeight = var1.getBbHeight();
+      var2.eyeHeight = var1.getEyeHeight();
+      if (var1.isPassenger()
+         && var1.getVehicle() instanceof AbstractMinecart var4
+         && var4.getBehavior() instanceof NewMinecartBehavior var5
+         && var5.cartHasPosRotLerp()) {
+         double var15 = Mth.lerp((double)var3, var4.xOld, var4.getX());
+         double var8 = Mth.lerp((double)var3, var4.yOld, var4.getY());
+         double var10 = Mth.lerp((double)var3, var4.zOld, var4.getZ());
+         var2.passengerOffset = var5.getCartLerpPosition(var3).subtract(new Vec3(var15, var8, var10));
+      } else {
+         var2.passengerOffset = null;
+      }
+
+      var2.distanceToCameraSq = this.entityRenderDispatcher.distanceToSqr(var1);
+      boolean var12 = var2.distanceToCameraSq < 4096.0 && this.shouldShowName((T)var1, var2.distanceToCameraSq);
+      if (var12) {
+         var2.nameTag = this.getNameTag((T)var1);
+         var2.nameTagAttachment = var1.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, var1.getYRot(var3));
+      } else {
+         var2.nameTag = null;
+      }
+
+      var2.isDiscrete = var1.isDiscrete();
+      Entity var13 = var1 instanceof Leashable var16 ? var16.getLeashHolder() : null;
+      if (var13 != null) {
+         float var17 = var1.getPreciseBodyRotation(var3) * 0.017453292F;
+         Vec3 var7 = var1.getLeashOffset(var3).yRot(-var17);
+         BlockPos var18 = BlockPos.containing(var1.getEyePosition(var3));
+         BlockPos var9 = BlockPos.containing(var13.getEyePosition(var3));
+         if (var2.leashState == null) {
+            var2.leashState = new EntityRenderState.LeashState();
+         }
+
+         EntityRenderState.LeashState var19 = var2.leashState;
+         var19.offset = var7;
+         var19.start = var1.getPosition(var3).add(var7);
+         var19.end = var13.getRopeHoldPosition(var3);
+         var19.startBlockLight = this.getBlockLightLevel((T)var1, var18);
+         var19.endBlockLight = this.entityRenderDispatcher.getRenderer(var13).getBlockLightLevel(var13, var9);
+         var19.startSkyLight = var1.level().getBrightness(LightLayer.SKY, var18);
+         var19.endSkyLight = var1.level().getBrightness(LightLayer.SKY, var9);
+      } else {
+         var2.leashState = null;
+      }
+
+      var2.displayFireAnimation = var1.displayFireAnimation();
    }
 }

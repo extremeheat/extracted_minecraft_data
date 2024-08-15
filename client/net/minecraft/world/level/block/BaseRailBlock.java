@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -67,14 +69,14 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    protected BlockState updateState(BlockState var1, Level var2, BlockPos var3, boolean var4) {
       var1 = this.updateDir(var2, var3, var1, true);
       if (this.isStraight) {
-         var2.neighborChanged(var1, var3, this, var3, var4);
+         var2.neighborChanged(var1, var3, this, null, var4);
       }
 
       return var1;
    }
 
    @Override
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (!var2.isClientSide && var2.getBlockState(var3).is(this)) {
          RailShape var7 = var1.getValue(this.getShapeProperty());
          if (shouldBeRemoved(var3, var2, var7)) {

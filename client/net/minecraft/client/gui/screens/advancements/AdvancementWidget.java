@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementNode;
@@ -10,6 +9,7 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -157,7 +157,7 @@ public class AdvancementWidget {
             var5 = AdvancementWidgetType.UNOBTAINED;
          }
 
-         var1.blitSprite(var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+         var1.blitSprite(RenderType::guiTextured, var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
       }
 
@@ -210,7 +210,6 @@ public class AdvancementWidget {
       }
 
       int var16 = this.width - var15;
-      RenderSystem.enableBlend();
       int var17 = var3 + this.y;
       int var18;
       if (var7) {
@@ -222,15 +221,15 @@ public class AdvancementWidget {
       int var19 = 32 + this.description.size() * 9;
       if (!this.description.isEmpty()) {
          if (var10) {
-            var1.blitSprite(TITLE_BOX_SPRITE, var18, var17 + 26 - var19, this.width, var19);
+            var1.blitSprite(RenderType::guiTextured, TITLE_BOX_SPRITE, var18, var17 + 26 - var19, this.width, var19);
          } else {
-            var1.blitSprite(TITLE_BOX_SPRITE, var18, var17, this.width, var19);
+            var1.blitSprite(RenderType::guiTextured, TITLE_BOX_SPRITE, var18, var17, this.width, var19);
          }
       }
 
-      var1.blitSprite(var12.boxSprite(), 200, 26, 0, 0, var18, var17, var15, 26);
-      var1.blitSprite(var13.boxSprite(), 200, 26, 200 - var16, 0, var18 + var15, var17, var16, 26);
-      var1.blitSprite(var14.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
+      var1.blitSprite(RenderType::guiTextured, var12.boxSprite(), 200, 26, 0, 0, var18, var17, var15, 26);
+      var1.blitSprite(RenderType::guiTextured, var13.boxSprite(), 200, 26, 200 - var16, 0, var18 + var15, var17, var16, 26);
+      var1.blitSprite(RenderType::guiTextured, var14.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
       if (var7) {
          var1.drawString(this.minecraft.font, this.title, var18 + 5, var3 + this.y + 9, -1);
          if (var8 != null) {

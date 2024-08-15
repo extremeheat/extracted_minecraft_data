@@ -31,7 +31,7 @@ public class DyeItem extends Item implements SignApplicator {
             var1.shrink(1);
          }
 
-         return InteractionResult.sidedSuccess(var2.level().isClientSide);
+         return InteractionResult.SUCCESS;
       }
 
       return InteractionResult.PASS;

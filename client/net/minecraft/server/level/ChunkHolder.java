@@ -115,34 +115,46 @@ public class ChunkHolder extends GenerationChunkHolder {
       }
    }
 
-   public void blockChanged(BlockPos var1) {
+   public boolean blockChanged(BlockPos var1) {
       LevelChunk var2 = this.getTickingChunk();
-      if (var2 != null) {
-         int var3 = this.levelHeightAccessor.getSectionIndex(var1.getY());
-         if (this.changedBlocksPerSection[var3] == null) {
+      if (var2 == null) {
+         return false;
+      } else {
+         boolean var3 = this.hasChangedSections;
+         int var4 = this.levelHeightAccessor.getSectionIndex(var1.getY());
+         if (this.changedBlocksPerSection[var4] == null) {
             this.hasChangedSections = true;
-            this.changedBlocksPerSection[var3] = new ShortOpenHashSet();
+            this.changedBlocksPerSection[var4] = new ShortOpenHashSet();
          }
 
-         this.changedBlocksPerSection[var3].add(SectionPos.sectionRelativePos(var1));
+         this.changedBlocksPerSection[var4].add(SectionPos.sectionRelativePos(var1));
+         return !var3;
       }
    }
 
-   public void sectionLightChanged(LightLayer var1, int var2) {
+   public boolean sectionLightChanged(LightLayer var1, int var2) {
       ChunkAccess var3 = this.getChunkIfPresent(ChunkStatus.INITIALIZE_LIGHT);
-      if (var3 != null) {
+      if (var3 == null) {
+         return false;
+      } else {
          var3.setUnsaved(true);
          LevelChunk var4 = this.getTickingChunk();
-         if (var4 != null) {
+         if (var4 == null) {
+            return false;
+         } else {
             int var5 = this.lightEngine.getMinLightSection();
             int var6 = this.lightEngine.getMaxLightSection();
             if (var2 >= var5 && var2 <= var6) {
-               int var7 = var2 - var5;
-               if (var1 == LightLayer.SKY) {
-                  this.skyChangedLightSectionFilter.set(var7);
+               BitSet var7 = var1 == LightLayer.SKY ? this.skyChangedLightSectionFilter : this.blockChangedLightSectionFilter;
+               int var8 = var2 - var5;
+               if (!var7.get(var8)) {
+                  var7.set(var8);
+                  return true;
                } else {
-                  this.blockChangedLightSectionFilter.set(var7);
+                  return false;
                }
+            } else {
+               return false;
             }
          }
       }

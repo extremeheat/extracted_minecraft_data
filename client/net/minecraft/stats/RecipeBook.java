@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
@@ -74,10 +73,6 @@ public class RecipeBook {
 
    public void setOpen(RecipeBookType var1, boolean var2) {
       this.bookSettings.setOpen(var1, var2);
-   }
-
-   public boolean isFiltering(RecipeBookMenu<?, ?> var1) {
-      return this.isFiltering(var1.getRecipeBookType());
    }
 
    public boolean isFiltering(RecipeBookType var1) {

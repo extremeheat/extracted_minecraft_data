@@ -13,8 +13,8 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
@@ -285,11 +285,11 @@ public class OceanRuinPieces {
                   .setLootTable(this.isLarge ? BuiltInLootTables.UNDERWATER_RUIN_BIG : BuiltInLootTables.UNDERWATER_RUIN_SMALL, var4.nextLong());
             }
          } else if ("drowned".equals(var1)) {
-            Drowned var7 = EntityType.DROWNED.create(var3.getLevel());
+            Drowned var7 = EntityType.DROWNED.create(var3.getLevel(), EntitySpawnReason.STRUCTURE);
             if (var7 != null) {
                var7.setPersistenceRequired();
                var7.moveTo(var2, 0.0F, 0.0F);
-               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, null);
+               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), EntitySpawnReason.STRUCTURE, null);
                var3.addFreshEntityWithPassengers(var7);
                if (var2.getY() > var3.getSeaLevel()) {
                   var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);

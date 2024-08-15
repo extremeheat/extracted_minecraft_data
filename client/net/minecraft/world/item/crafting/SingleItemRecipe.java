@@ -3,8 +3,8 @@ package net.minecraft.world.item.crafting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,6 +16,8 @@ public abstract class SingleItemRecipe implements Recipe<SingleRecipeInput> {
    private final RecipeType<?> type;
    private final RecipeSerializer<?> serializer;
    protected final String group;
+   @Nullable
+   private PlacementInfo placementInfo;
 
    public SingleItemRecipe(RecipeType<?> var1, RecipeSerializer<?> var2, String var3, Ingredient var4, ItemStack var5) {
       super();
@@ -47,10 +49,12 @@ public abstract class SingleItemRecipe implements Recipe<SingleRecipeInput> {
    }
 
    @Override
-   public NonNullList<Ingredient> getIngredients() {
-      NonNullList var1 = NonNullList.create();
-      var1.add(this.ingredient);
-      return var1;
+   public PlacementInfo placementInfo() {
+      if (this.placementInfo == null) {
+         this.placementInfo = PlacementInfo.create(this.ingredient);
+      }
+
+      return this.placementInfo;
    }
 
    @Override
@@ -77,7 +81,7 @@ public abstract class SingleItemRecipe implements Recipe<SingleRecipeInput> {
          this.codec = RecordCodecBuilder.mapCodec(
             var1x -> var1x.group(
                      Codec.STRING.optionalFieldOf("group", "").forGetter(var0x -> var0x.group),
-                     Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
+                     Ingredient.CODEC.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
                      ItemStack.STRICT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
                   )
                   .apply(var1x, var1::create)

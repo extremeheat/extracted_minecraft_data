@@ -39,6 +39,8 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
    private final HolderLookup.Provider registries;
    private Multimap<RecipeType<?>, RecipeHolder<?>> byType = ImmutableMultimap.of();
    private Map<ResourceLocation, RecipeHolder<?>> byName = ImmutableMap.of();
+   @Nullable
+   private List<RecipeHolder<?>> synchronizedRecipes;
    private boolean hasErrors;
 
    public RecipeManager(HolderLookup.Provider var1) {
@@ -67,7 +69,17 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
 
       this.byType = var4.build();
       this.byName = var5.build();
+      this.synchronizedRecipes = null;
       LOGGER.info("Loaded {} recipes", this.byType.size());
+   }
+
+   public void logImpossibleRecipes() {
+      this.byName.values().forEach(var0 -> {
+         Recipe var1 = var0.value();
+         if (!var1.isSpecial() && var1.placementInfo().isImpossibleToPlace()) {
+            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", var0.id());
+         }
+      });
    }
 
    public boolean hadErrorsLoading() {
@@ -142,6 +154,14 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       return this.byType.values();
    }
 
+   public Collection<RecipeHolder<?>> getSynchronizedRecipes() {
+      if (this.synchronizedRecipes == null) {
+         this.synchronizedRecipes = this.getOrderedRecipes().stream().filter(var0 -> !var0.value().placementInfo().isImpossibleToPlace()).toList();
+      }
+
+      return this.synchronizedRecipes;
+   }
+
    public Collection<RecipeHolder<?>> getRecipes() {
       return this.byName.values();
    }
@@ -169,6 +189,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
 
       this.byType = var2.build();
       this.byName = var3.build();
+      this.synchronizedRecipes = null;
    }
 
    public static <I extends RecipeInput, T extends Recipe<I>> RecipeManager.CachedCheck<I, T> createCheck(final RecipeType<T> var0) {

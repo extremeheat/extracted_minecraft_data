@@ -8,22 +8,28 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
-public class Squid extends WaterAnimal {
+public class Squid extends AgeableWaterCreature {
    public float xBodyRot;
    public float xBodyRotO;
    public float zBodyRot;
@@ -87,6 +93,12 @@ public class Squid extends WaterAnimal {
    @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
+   }
+
+   @Nullable
+   @Override
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return EntityType.SQUID.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Override
@@ -193,7 +205,9 @@ public class Squid extends WaterAnimal {
 
    @Override
    public void travel(Vec3 var1) {
-      this.move(MoverType.SELF, this.getDeltaMovement());
+      if (this.isControlledByLocalInstance()) {
+         this.move(MoverType.SELF, this.getDeltaMovement());
+      }
    }
 
    @Override
@@ -213,6 +227,16 @@ public class Squid extends WaterAnimal {
 
    public boolean hasMovementVector() {
       return this.tx != 0.0F || this.ty != 0.0F || this.tz != 0.0F;
+   }
+
+   @Nullable
+   @Override
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      if (this.random.nextFloat() > 0.95F) {
+         this.setBaby(true);
+      }
+
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    class SquidFleeGoal extends Goal {

@@ -1,16 +1,13 @@
 package net.minecraft.client.gui.screens.recipebook;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import net.minecraft.client.ClientRecipeBook;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.RecipeBookCategories;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
@@ -28,16 +25,14 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       this.initTextureValues(SPRITES);
    }
 
-   public void startAnimation(Minecraft var1) {
-      ClientRecipeBook var2 = var1.player.getRecipeBook();
-      List var3 = var2.getCollection(this.category);
-      if (var1.player.containerMenu instanceof RecipeBookMenu) {
-         for (RecipeCollection var5 : var3) {
-            for (RecipeHolder var7 : var5.getRecipes(var2.isFiltering((RecipeBookMenu<?, ?>)var1.player.containerMenu))) {
-               if (var2.willHighlight(var7)) {
-                  this.animationTime = 15.0F;
-                  return;
-               }
+   public void startAnimation(ClientRecipeBook var1, boolean var2) {
+      RecipeCollection.CraftableStatus var3 = var2 ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY;
+
+      for (RecipeCollection var6 : var1.getCollection(this.category)) {
+         for (RecipeHolder var8 : var6.getFittingRecipes(var3)) {
+            if (var1.willHighlight(var8)) {
+               this.animationTime = 15.0F;
+               return;
             }
          }
       }
@@ -54,17 +49,14 @@ public class RecipeBookTabButton extends StateSwitchingButton {
             var1.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
          }
 
-         Minecraft var8 = Minecraft.getInstance();
-         RenderSystem.disableDepthTest();
-         ResourceLocation var6 = this.sprites.get(true, this.isStateTriggered);
-         int var7 = this.getX();
+         ResourceLocation var7 = this.sprites.get(true, this.isStateTriggered);
+         int var6 = this.getX();
          if (this.isStateTriggered) {
-            var7 -= 2;
+            var6 -= 2;
          }
 
-         var1.blitSprite(var6, var7, this.getY(), this.width, this.height);
-         RenderSystem.enableDepthTest();
-         this.renderIcon(var1, var8.getItemRenderer());
+         var1.blitSprite(RenderType::guiTextured, var7, var6, this.getY(), this.width, this.height);
+         this.renderIcon(var1);
          if (this.animationTime > 0.0F) {
             var1.pose().popPose();
             this.animationTime -= var4;
@@ -72,14 +64,14 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       }
    }
 
-   private void renderIcon(GuiGraphics var1, ItemRenderer var2) {
-      List var3 = this.category.getIconItems();
-      int var4 = this.isStateTriggered ? -2 : 0;
-      if (var3.size() == 1) {
-         var1.renderFakeItem((ItemStack)var3.get(0), this.getX() + 9 + var4, this.getY() + 5);
-      } else if (var3.size() == 2) {
-         var1.renderFakeItem((ItemStack)var3.get(0), this.getX() + 3 + var4, this.getY() + 5);
-         var1.renderFakeItem((ItemStack)var3.get(1), this.getX() + 14 + var4, this.getY() + 5);
+   private void renderIcon(GuiGraphics var1) {
+      List var2 = this.category.getIconItems();
+      int var3 = this.isStateTriggered ? -2 : 0;
+      if (var2.size() == 1) {
+         var1.renderFakeItem((ItemStack)var2.get(0), this.getX() + 9 + var3, this.getY() + 5);
+      } else if (var2.size() == 2) {
+         var1.renderFakeItem((ItemStack)var2.get(0), this.getX() + 3 + var3, this.getY() + 5);
+         var1.renderFakeItem((ItemStack)var2.get(1), this.getX() + 14 + var3, this.getY() + 5);
       }
    }
 
@@ -90,12 +82,11 @@ public class RecipeBookTabButton extends StateSwitchingButton {
    public boolean updateVisibility(ClientRecipeBook var1) {
       List var2 = var1.getCollection(this.category);
       this.visible = false;
-      if (var2 != null) {
-         for (RecipeCollection var4 : var2) {
-            if (var4.hasKnownRecipes() && var4.hasFitting()) {
-               this.visible = true;
-               break;
-            }
+
+      for (RecipeCollection var4 : var2) {
+         if (var4.hasKnownRecipes() && var4.hasFitting()) {
+            this.visible = true;
+            break;
          }
       }
 

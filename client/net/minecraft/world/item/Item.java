@@ -12,7 +12,9 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -22,11 +24,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -45,6 +47,8 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -138,18 +142,18 @@ public class Item implements FeatureElement, ItemLike {
       return var3 != null ? var3.getMiningSpeed(var2) : 1.0F;
    }
 
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       FoodProperties var5 = var4.get(DataComponents.FOOD);
       if (var5 != null) {
          if (var2.canEat(var5.canAlwaysEat())) {
             var2.startUsingItem(var3);
-            return InteractionResultHolder.consume(var4);
+            return InteractionResult.CONSUME;
          } else {
-            return InteractionResultHolder.fail(var4);
+            return InteractionResult.FAIL;
          }
       } else {
-         return InteractionResultHolder.pass(var2.getItemInHand(var3));
+         return InteractionResult.PASS;
       }
    }
 
@@ -298,10 +302,16 @@ public class Item implements FeatureElement, ItemLike {
       return var0.clip(new ClipContext(var3, var4, ClipContext.Block.OUTLINE, var2, var1));
    }
 
+   @Deprecated(
+      forRemoval = true
+   )
    public int getEnchantmentValue() {
       return 0;
    }
 
+   @Deprecated(
+      forRemoval = true
+   )
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
       return false;
    }
@@ -382,6 +392,19 @@ public class Item implements FeatureElement, ItemLike {
 
       public Item.Properties jukeboxPlayable(ResourceKey<JukeboxSong> var1) {
          return this.component(DataComponents.JUKEBOX_PLAYABLE, new JukeboxPlayable(new EitherHolder<>(var1), true));
+      }
+
+      public Item.Properties enchantable(int var1) {
+         return this.component(DataComponents.ENCHANTABLE, new Enchantable(var1));
+      }
+
+      public Item.Properties repairable(Item var1) {
+         return this.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(var1.builtInRegistryHolder())));
+      }
+
+      public Item.Properties repairable(TagKey<Item> var1) {
+         HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ITEM);
+         return this.component(DataComponents.REPAIRABLE, new Repairable(var2.getOrThrow(var1)));
       }
 
       public Item.Properties requiredFeatures(FeatureFlag... var1) {

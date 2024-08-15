@@ -1,19 +1,22 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Set;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.WolfRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Wolf;
 
-public class WolfModel<T extends Wolf> extends ColorableAgeableListModel<T> {
+public class WolfModel extends EntityModel<WolfRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(Set.of("head"));
    private static final String REAL_HEAD = "real_head";
    private static final String UPPER_BODY = "upper_body";
    private static final String REAL_TAIL = "real_tail";
+   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart realHead;
    private final ModelPart body;
@@ -28,6 +31,7 @@ public class WolfModel<T extends Wolf> extends ColorableAgeableListModel<T> {
 
    public WolfModel(ModelPart var1) {
       super();
+      this.root = var1;
       this.head = var1.getChild("head");
       this.realHead = this.head.getChild("real_head");
       this.body = var1.getChild("body");
@@ -78,63 +82,62 @@ public class WolfModel<T extends Wolf> extends ColorableAgeableListModel<T> {
       return var1;
    }
 
-   @Override
-   protected Iterable<ModelPart> headParts() {
-      return ImmutableList.of(this.head);
-   }
-
-   @Override
-   protected Iterable<ModelPart> bodyParts() {
-      return ImmutableList.of(this.body, this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg, this.tail, this.upperBody);
-   }
-
-   public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      if (var1.isAngry()) {
+   public void setupAnim(WolfRenderState var1) {
+      this.body.resetPose();
+      this.upperBody.resetPose();
+      this.tail.resetPose();
+      this.rightHindLeg.resetPose();
+      this.leftHindLeg.resetPose();
+      this.rightFrontLeg.resetPose();
+      this.leftFrontLeg.resetPose();
+      float var2 = var1.walkAnimationPos;
+      float var3 = var1.walkAnimationSpeed;
+      if (var1.isAngry) {
          this.tail.yRot = 0.0F;
       } else {
          this.tail.yRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
       }
 
-      if (var1.isInSittingPose()) {
-         this.upperBody.setPos(-1.0F, 16.0F, -3.0F);
+      if (var1.isSitting) {
+         float var4 = var1.ageScale;
+         this.upperBody.y += 2.0F * var4;
          this.upperBody.xRot = 1.2566371F;
          this.upperBody.yRot = 0.0F;
-         this.body.setPos(0.0F, 18.0F, 0.0F);
+         this.body.y += 4.0F * var4;
+         this.body.z -= 2.0F * var4;
          this.body.xRot = 0.7853982F;
-         this.tail.setPos(-1.0F, 21.0F, 6.0F);
-         this.rightHindLeg.setPos(-2.5F, 22.7F, 2.0F);
+         this.tail.y += 9.0F * var4;
+         this.tail.z -= 2.0F * var4;
+         this.rightHindLeg.y += 6.7F * var4;
+         this.rightHindLeg.z -= 5.0F * var4;
          this.rightHindLeg.xRot = 4.712389F;
-         this.leftHindLeg.setPos(0.5F, 22.7F, 2.0F);
+         this.leftHindLeg.y += 6.7F * var4;
+         this.leftHindLeg.z -= 5.0F * var4;
          this.leftHindLeg.xRot = 4.712389F;
          this.rightFrontLeg.xRot = 5.811947F;
-         this.rightFrontLeg.setPos(-2.49F, 17.0F, -4.0F);
+         this.rightFrontLeg.x += 0.01F * var4;
+         this.rightFrontLeg.y += 1.0F * var4;
          this.leftFrontLeg.xRot = 5.811947F;
-         this.leftFrontLeg.setPos(0.51F, 17.0F, -4.0F);
+         this.leftFrontLeg.x -= 0.01F * var4;
+         this.leftFrontLeg.y += 1.0F * var4;
       } else {
-         this.body.setPos(0.0F, 14.0F, 2.0F);
-         this.body.xRot = 1.5707964F;
-         this.upperBody.setPos(-1.0F, 14.0F, -3.0F);
-         this.upperBody.xRot = this.body.xRot;
-         this.tail.setPos(-1.0F, 12.0F, 8.0F);
-         this.rightHindLeg.setPos(-2.5F, 16.0F, 7.0F);
-         this.leftHindLeg.setPos(0.5F, 16.0F, 7.0F);
-         this.rightFrontLeg.setPos(-2.5F, 16.0F, -4.0F);
-         this.leftFrontLeg.setPos(0.5F, 16.0F, -4.0F);
          this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
          this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
          this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
          this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
       }
 
-      this.realHead.zRot = var1.getHeadRollAngle(var4) + var1.getBodyRollAngle(var4, 0.0F);
-      this.upperBody.zRot = var1.getBodyRollAngle(var4, -0.08F);
-      this.body.zRot = var1.getBodyRollAngle(var4, -0.16F);
-      this.realTail.zRot = var1.getBodyRollAngle(var4, -0.2F);
+      this.realHead.zRot = var1.headRollAngle + var1.getBodyRollAngle(0.0F);
+      this.upperBody.zRot = var1.getBodyRollAngle(-0.08F);
+      this.body.zRot = var1.getBodyRollAngle(-0.16F);
+      this.realTail.zRot = var1.getBodyRollAngle(-0.2F);
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.tail.xRot = var1.tailAngle;
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.xRot = var6 * 0.017453292F;
-      this.head.yRot = var5 * 0.017453292F;
-      this.tail.xRot = var4;
+   @Override
+   public ModelPart root() {
+      return this.root;
    }
 }

@@ -6,9 +6,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.debugchart.SampleStorage;
 
 public class PingDebugChart extends AbstractDebugChart {
-   private static final int RED = -65536;
-   private static final int YELLOW = -256;
-   private static final int GREEN = -16711936;
    private static final int CHART_TOP_VALUE = 500;
 
    public PingDebugChart(Font var1, SampleStorage var2) {

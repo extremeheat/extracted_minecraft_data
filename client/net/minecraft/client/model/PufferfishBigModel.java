@@ -6,10 +6,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class PufferfishBigModel<T extends Entity> extends HierarchicalModel<T> {
+public class PufferfishBigModel extends EntityModel<EntityRenderState> {
    private final ModelPart root;
    private final ModelPart leftBlueFin;
    private final ModelPart rightBlueFin;
@@ -87,8 +87,8 @@ public class PufferfishBigModel<T extends Entity> extends HierarchicalModel<T> {
    }
 
    @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.rightBlueFin.zRot = -0.2F + 0.4F * Mth.sin(var4 * 0.2F);
-      this.leftBlueFin.zRot = 0.2F - 0.4F * Mth.sin(var4 * 0.2F);
+   public void setupAnim(EntityRenderState var1) {
+      this.rightBlueFin.zRot = -0.2F + 0.4F * Mth.sin(var1.ageInTicks * 0.2F);
+      this.leftBlueFin.zRot = 0.2F - 0.4F * Mth.sin(var1.ageInTicks * 0.2F);
    }
 }

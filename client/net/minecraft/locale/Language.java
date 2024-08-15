@@ -1,8 +1,6 @@
 package net.minecraft.locale;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -12,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
@@ -36,19 +36,21 @@ public abstract class Language {
    }
 
    private static Language loadDefault() {
-      Builder var0 = ImmutableMap.builder();
-      BiConsumer var1 = var0::put;
-      parseTranslations(var1, "/assets/minecraft/lang/en_us.json");
-      final ImmutableMap var2 = var0.build();
+      DeprecatedTranslationsInfo var0 = DeprecatedTranslationsInfo.loadFromDefaultResource();
+      HashMap var1 = new HashMap();
+      BiConsumer var2 = var1::put;
+      parseTranslations(var2, "/assets/minecraft/lang/en_us.json");
+      var0.applyToMap(var1);
+      final Map var3 = Map.copyOf(var1);
       return new Language() {
          @Override
-         public String getOrDefault(String var1, String var2x) {
-            return var2.getOrDefault(var1, var2x);
+         public String getOrDefault(String var1, String var2) {
+            return var3.getOrDefault(var1, var2);
          }
 
          @Override
          public boolean has(String var1) {
-            return var2.containsKey(var1);
+            return var3.containsKey(var1);
          }
 
          @Override
@@ -59,8 +61,7 @@ public abstract class Language {
          @Override
          public FormattedCharSequence getVisualOrder(FormattedText var1) {
             return var1x -> var1.visit(
-                     (var1xx, var2xxx) -> StringDecomposer.iterateFormatted(var2xxx, var1xx, var1x) ? Optional.empty() : FormattedText.STOP_ITERATION,
-                     Style.EMPTY
+                     (var1xx, var2) -> StringDecomposer.iterateFormatted(var2, var1xx, var1x) ? Optional.empty() : FormattedText.STOP_ITERATION, Style.EMPTY
                   )
                   .isPresent();
          }

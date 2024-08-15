@@ -8,6 +8,7 @@ import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -58,8 +59,17 @@ public class MinecartItem extends Item {
             }
          }
 
-         AbstractMinecart var19 = AbstractMinecart.createMinecart(var4, var6, var8 + var15, var10, ((MinecartItem)var2.getItem()).type, var2, null);
-         var4.addFreshEntity(var19);
+         Vec3 var22 = new Vec3(var6, var8 + var15, var10);
+         AbstractMinecart var23 = AbstractMinecart.createMinecart(var4, var22.x, var22.y, var22.z, ((MinecartItem)var2.getItem()).type, var2, null);
+         if (AbstractMinecart.useExperimentalMovement(var4)) {
+            for (Entity var21 : var4.getEntities(null, var23.getBoundingBox())) {
+               if (var21 instanceof AbstractMinecart) {
+                  return this.defaultDispenseItemBehavior.dispense(var1, var2);
+               }
+            }
+         }
+
+         var4.addFreshEntity(var23);
          var2.shrink(1);
          return var2;
       }
@@ -95,15 +105,22 @@ public class MinecartItem extends Item {
                var8 = 0.5;
             }
 
-            AbstractMinecart var10 = AbstractMinecart.createMinecart(
-               var6, (double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var8, (double)var3.getZ() + 0.5, this.type, var5, var1.getPlayer()
-            );
-            var6.addFreshEntity(var10);
+            Vec3 var10 = new Vec3((double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var8, (double)var3.getZ() + 0.5);
+            AbstractMinecart var11 = AbstractMinecart.createMinecart(var6, var10.x, var10.y, var10.z, this.type, var5, var1.getPlayer());
+            if (AbstractMinecart.useExperimentalMovement(var2)) {
+               for (Entity var14 : var2.getEntities(null, var11.getBoundingBox())) {
+                  if (var14 instanceof AbstractMinecart) {
+                     return InteractionResult.FAIL;
+                  }
+               }
+            }
+
+            var6.addFreshEntity(var11);
             var6.gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), var6.getBlockState(var3.below())));
          }
 
          var5.shrink(1);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 }

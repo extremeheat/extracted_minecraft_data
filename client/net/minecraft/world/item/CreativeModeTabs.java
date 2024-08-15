@@ -33,6 +33,7 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
@@ -1105,7 +1106,7 @@ public class CreativeModeTabs {
                   var1.accept(Items.PURPLE_BANNER);
                   var1.accept(Items.MAGENTA_BANNER);
                   var1.accept(Items.PINK_BANNER);
-                  var1.accept(Raid.getLeaderBannerInstance(var0x.holders().lookupOrThrow(Registries.BANNER_PATTERN)));
+                  var1.accept(Raid.getOminousBannerInstance(var0x.holders().lookupOrThrow(Registries.BANNER_PATTERN)));
                   var1.accept(Items.SKELETON_SKULL);
                   var1.accept(Items.WITHER_SKELETON_SKULL);
                   var1.accept(Items.PLAYER_HEAD);
@@ -1595,6 +1596,8 @@ public class CreativeModeTabs {
                var1.accept(Items.GHAST_TEAR);
                var1.accept(Items.TURTLE_HELMET);
                var1.accept(Items.PHANTOM_MEMBRANE);
+               var1.accept(Items.FIELD_MASONED_BANNER_PATTERN);
+               var1.accept(Items.BORDURE_INDENTED_BANNER_PATTERN);
                var1.accept(Items.FLOWER_BANNER_PATTERN);
                var1.accept(Items.CREEPER_BANNER_PATTERN);
                var1.accept(Items.SKULL_BANNER_PATTERN);
@@ -1828,7 +1831,7 @@ public class CreativeModeTabs {
 
    private static void generateEnchantmentBookTypesOnlyMaxLevel(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, CreativeModeTab.TabVisibility var2) {
       var1.listElements()
-         .map(var0x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel())))
+         .map(var0x -> EnchantmentHelper.createBook(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel())))
          .forEach(var2x -> var0.accept(var2x, var2));
    }
 
@@ -1836,7 +1839,7 @@ public class CreativeModeTabs {
       var1.listElements()
          .flatMap(
             var0x -> IntStream.rangeClosed(((Enchantment)var0x.value()).getMinLevel(), ((Enchantment)var0x.value()).getMaxLevel())
-                  .mapToObj(var1x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var1x)))
+                  .mapToObj(var1x -> EnchantmentHelper.createBook(new EnchantmentInstance(var0x, var1x)))
          )
          .forEach(var2x -> var0.accept(var2x, var2));
    }

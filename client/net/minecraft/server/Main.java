@@ -200,7 +200,13 @@ public class Main {
                               } else {
                                  DedicatedServerProperties var10x = var21.getProperties();
                                  var7x = new LevelSettings(
-                                    var10x.levelName, var10x.gamemode, var10x.hardcore, var10x.difficulty, false, new GameRules(), var5xx.dataConfiguration()
+                                    var10x.levelName,
+                                    var10x.gamemode,
+                                    var10x.hardcore,
+                                    var10x.difficulty,
+                                    false,
+                                    new GameRules(var5xx.dataConfiguration().enabledFeatures()),
+                                    var5xx.dataConfiguration()
                                  );
                                  var8x = var18.has(var5) ? var10x.worldOptions.withBonusChest(true) : var10x.worldOptions;
                                  var9x = var10x.createDimensions(var5xx.datapackWorldgen());
@@ -292,28 +298,30 @@ public class Main {
       LevelStorageSource.LevelStorageAccess var0, DataFixer var1, boolean var2, BooleanSupplier var3, RegistryAccess var4, boolean var5
    ) {
       LOGGER.info("Forcing world upgrade!");
-      WorldUpgrader var6 = new WorldUpgrader(var0, var1, var4, var2, var5);
-      Component var7 = null;
 
-      while (!var6.isFinished()) {
-         Component var8 = var6.getStatus();
-         if (var7 != var8) {
-            var7 = var8;
-            LOGGER.info(var6.getStatus().getString());
-         }
+      try (WorldUpgrader var6 = new WorldUpgrader(var0, var1, var4, var2, var5)) {
+         Component var7 = null;
 
-         int var9 = var6.getTotalChunks();
-         if (var9 > 0) {
-            int var10 = var6.getConverted() + var6.getSkipped();
-            LOGGER.info("{}% completed ({} / {} chunks)...", new Object[]{Mth.floor((float)var10 / (float)var9 * 100.0F), var10, var9});
-         }
+         while (!var6.isFinished()) {
+            Component var8 = var6.getStatus();
+            if (var7 != var8) {
+               var7 = var8;
+               LOGGER.info(var6.getStatus().getString());
+            }
 
-         if (!var3.getAsBoolean()) {
-            var6.cancel();
-         } else {
-            try {
-               Thread.sleep(1000L);
-            } catch (InterruptedException var11) {
+            int var9 = var6.getTotalChunks();
+            if (var9 > 0) {
+               int var10 = var6.getConverted() + var6.getSkipped();
+               LOGGER.info("{}% completed ({} / {} chunks)...", new Object[]{Mth.floor((float)var10 / (float)var9 * 100.0F), var10, var9});
+            }
+
+            if (!var3.getAsBoolean()) {
+               var6.cancel();
+            } else {
+               try {
+                  Thread.sleep(1000L);
+               } catch (InterruptedException var12) {
+               }
             }
          }
       }

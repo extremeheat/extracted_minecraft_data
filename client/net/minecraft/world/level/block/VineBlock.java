@@ -96,7 +96,7 @@ public class VineBlock extends Block {
    }
 
    @Override
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return true;
    }
 

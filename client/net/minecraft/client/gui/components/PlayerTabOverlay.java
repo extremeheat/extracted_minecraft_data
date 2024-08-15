@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -51,7 +51,8 @@ public class PlayerTabOverlay {
    private static final ResourceLocation HEART_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/full");
    private static final ResourceLocation HEART_ABSORBING_HALF_BLINKING_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half_blinking");
    private static final ResourceLocation HEART_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/half");
-   private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.<PlayerInfo>comparingInt(var0 -> var0.getGameMode() == GameType.SPECTATOR ? 1 : 0)
+   private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.<PlayerInfo>comparingInt(var0 -> -var0.getTabListOrder())
+      .thenComparingInt(var0 -> var0.getGameMode() == GameType.SPECTATOR ? 1 : 0)
       .thenComparing(var0 -> Optionull.mapOrDefault(var0.getTeam(), PlayerTeam::getName, ""))
       .thenComparing(var0 -> var0.getProfile().getName(), String::compareToIgnoreCase);
    public static final int MAX_ROWS_PER_COL = 20;
@@ -194,7 +195,6 @@ public class PlayerTabOverlay {
          int var25 = var40 + var51 * var39 + var51 * 5;
          int var26 = var41 + var24 * 9;
          var1.fill(var25, var26, var25 + var39, var26 + 8, var47);
-         RenderSystem.enableBlend();
          if (var49 < var5.size()) {
             PlayerInfo var27 = (PlayerInfo)var5.get(var49);
             PlayerTabOverlay.ScoreDisplayEntry var28 = (PlayerTabOverlay.ScoreDisplayEntry)var6.get(var49);
@@ -203,7 +203,7 @@ public class PlayerTabOverlay {
                Player var30 = this.minecraft.level.getPlayerByUUID(var29.getId());
                boolean var31 = var30 != null && LivingEntityRenderer.isEntityUpsideDown(var30);
                boolean var32 = var30 != null && var30.isModelPartShown(PlayerModelPart.HAT);
-               PlayerFaceRenderer.draw(var1, var27.getSkin().texture(), var25, var26, 8, var32, var31);
+               PlayerFaceRenderer.draw(var1, var27.getSkin().texture(), var25, var26, 8, var32, var31, -1);
                var25 += 9;
             }
 
@@ -250,7 +250,7 @@ public class PlayerTabOverlay {
 
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
-      var1.blitSprite(var6, var3 + var2 - 11, var4, 10, 8);
+      var1.blitSprite(RenderType::guiTextured, var6, var3 + var2 - 11, var4, 10, 8);
       var1.pose().popPose();
    }
 
@@ -287,27 +287,31 @@ public class PlayerTabOverlay {
             ResourceLocation var12 = var10 ? HEART_CONTAINER_BLINKING_SPRITE : HEART_CONTAINER_SPRITE;
 
             for (int var13 = var8; var13 < var9; var13++) {
-               var5.blitSprite(var12, var2 + var13 * var11, var1, 9, 9);
+               var5.blitSprite(RenderType::guiTextured, var12, var2 + var13 * var11, var1, 9, 9);
             }
 
             for (int var18 = 0; var18 < var8; var18++) {
-               var5.blitSprite(var12, var2 + var18 * var11, var1, 9, 9);
+               var5.blitSprite(RenderType::guiTextured, var12, var2 + var18 * var11, var1, 9, 9);
                if (var10) {
                   if (var18 * 2 + 1 < var7.displayedValue()) {
-                     var5.blitSprite(HEART_FULL_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
+                     var5.blitSprite(RenderType::guiTextured, HEART_FULL_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
                   }
 
                   if (var18 * 2 + 1 == var7.displayedValue()) {
-                     var5.blitSprite(HEART_HALF_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
+                     var5.blitSprite(RenderType::guiTextured, HEART_HALF_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
                   }
                }
 
                if (var18 * 2 + 1 < var6) {
-                  var5.blitSprite(var18 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE, var2 + var18 * var11, var1, 9, 9);
+                  var5.blitSprite(
+                     RenderType::guiTextured, var18 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE, var2 + var18 * var11, var1, 9, 9
+                  );
                }
 
                if (var18 * 2 + 1 == var6) {
-                  var5.blitSprite(var18 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE, var2 + var18 * var11, var1, 9, 9);
+                  var5.blitSprite(
+                     RenderType::guiTextured, var18 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE, var2 + var18 * var11, var1, 9, 9
+                  );
                }
             }
          }

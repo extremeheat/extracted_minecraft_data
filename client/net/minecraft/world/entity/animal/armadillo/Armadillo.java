@@ -28,10 +28,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -71,11 +70,11 @@ public class Armadillo extends Animal {
    @Nullable
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.ARMADILLO.create(var1);
+      return EntityType.ARMADILLO.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 12.0).add(Attributes.MOVEMENT_SPEED, 0.14);
+      return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 12.0).add(Attributes.MOVEMENT_SPEED, 0.14);
    }
 
    @Override
@@ -219,7 +218,7 @@ public class Armadillo extends Animal {
       return var1.is(ItemTags.ARMADILLO_FOOD);
    }
 
-   public static boolean checkArmadilloSpawnRules(EntityType<Armadillo> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkArmadilloSpawnRules(EntityType<Armadillo> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.ARMADILLO_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
@@ -300,19 +299,10 @@ public class Armadillo extends Animal {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.BRUSH) && this.brushOffScute()) {
          var3.hurtAndBreak(16, var1, getSlotForHand(var2));
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
-         return this.isScared() ? InteractionResult.FAIL : super.mobInteract(var1, var2);
+         return (InteractionResult)(this.isScared() ? InteractionResult.FAIL : super.mobInteract(var1, var2));
       }
-   }
-
-   @Override
-   public void ageUp(int var1, boolean var2) {
-      if (this.isBaby() && var2) {
-         this.makeSound(SoundEvents.ARMADILLO_EAT);
-      }
-
-      super.ageUp(var1, var2);
    }
 
    public boolean brushOffScute() {
@@ -331,24 +321,18 @@ public class Armadillo extends Animal {
    }
 
    @Override
-   public void setInLove(@Nullable Player var1) {
-      super.setInLove(var1);
-      this.makeSound(SoundEvents.ARMADILLO_EAT);
-   }
-
-   @Override
    public boolean canFallInLove() {
       return super.canFallInLove() && !this.isScared();
    }
 
    @Override
-   public SoundEvent getEatingSound(ItemStack var1) {
-      return SoundEvents.ARMADILLO_EAT;
+   protected SoundEvent getAmbientSound() {
+      return this.isScared() ? null : SoundEvents.ARMADILLO_AMBIENT;
    }
 
    @Override
-   protected SoundEvent getAmbientSound() {
-      return this.isScared() ? null : SoundEvents.ARMADILLO_AMBIENT;
+   protected void playEatingSound() {
+      this.makeSound(SoundEvents.ARMADILLO_EAT);
    }
 
    @Override

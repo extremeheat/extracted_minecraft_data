@@ -1,7 +1,5 @@
 package net.minecraft.client.model.dragon;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -35,7 +33,7 @@ public class DragonHeadModel extends SkullModelBase {
             .mirror(false)
             .addBox("scale", 3.0F, -12.0F, -4.0F, 2, 4, 6, 0, 0)
             .addBox("nostril", 3.0F, -3.0F, -22.0F, 2, 2, 4, 112, 0),
-         PartPose.ZERO
+         PartPose.offset(0.0F, -7.986666F, 0.0F).scaled(0.75F)
       );
       var3.addOrReplaceChild(
          "jaw", CubeListBuilder.create().texOffs(176, 65).addBox("jaw", -6.0F, 0.0F, -16.0F, 12.0F, 4.0F, 16.0F), PartPose.offset(0.0F, 4.0F, -8.0F)
@@ -51,11 +49,7 @@ public class DragonHeadModel extends SkullModelBase {
    }
 
    @Override
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      var1.pushPose();
-      var1.translate(0.0F, -0.374375F, 0.0F);
-      var1.scale(0.75F, 0.75F, 0.75F);
-      this.head.render(var1, var2, var3, var4, var5);
-      var1.popPose();
+   public ModelPart root() {
+      return this.head;
    }
 }

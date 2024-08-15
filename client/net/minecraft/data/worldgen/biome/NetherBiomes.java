@@ -39,7 +39,7 @@ public class NetherBiomes {
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.STRIDER, 60, 1, 2))
          .build();
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1)
-         .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
+         .addCarver(Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, MiscOverworldPlacements.SPRING_LAVA);
       BiomeDefaultFeatures.addDefaultMushrooms(var3);
       var3.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
@@ -87,7 +87,7 @@ public class NetherBiomes {
          .addMobCharge(EntityType.STRIDER, 0.7, 0.15)
          .build();
       BiomeGenerationSettings.Builder var7 = new BiomeGenerationSettings.Builder(var0, var1)
-         .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
+         .addCarver(Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, MiscOverworldPlacements.SPRING_LAVA)
          .addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, NetherPlacements.BASALT_PILLAR)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
@@ -129,7 +129,7 @@ public class NetherBiomes {
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.STRIDER, 60, 1, 2))
          .build();
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1)
-         .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
+         .addCarver(Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, NetherPlacements.DELTA)
          .addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, NetherPlacements.SMALL_BASALT_COLUMNS)
          .addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, NetherPlacements.LARGE_BASALT_COLUMNS)
@@ -177,7 +177,7 @@ public class NetherBiomes {
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.STRIDER, 60, 1, 2))
          .build();
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1)
-         .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
+         .addCarver(Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, MiscOverworldPlacements.SPRING_LAVA);
       BiomeDefaultFeatures.addDefaultMushrooms(var3);
       var3.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
@@ -219,7 +219,7 @@ public class NetherBiomes {
          .addMobCharge(EntityType.ENDERMAN, 1.0, 0.12)
          .build();
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1)
-         .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
+         .addCarver(Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, MiscOverworldPlacements.SPRING_LAVA);
       BiomeDefaultFeatures.addDefaultMushrooms(var3);
       var3.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)

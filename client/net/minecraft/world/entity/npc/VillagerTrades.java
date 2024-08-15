@@ -33,7 +33,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -1466,7 +1465,7 @@ public class VillagerTrades {
             int var8 = Math.max(var7.getMinLevel(), this.minLevel);
             int var9 = Math.min(var7.getMaxLevel(), this.maxLevel);
             int var10 = Mth.nextInt(var2, var8, var9);
-            var5 = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var6, var10));
+            var5 = EnchantmentHelper.createBook(new EnchantmentInstance(var6, var10));
             var4 = 2 + var2.nextInt(5 + var10 * 10) + 3 * var10;
             if (var6.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
                var4 *= 2;

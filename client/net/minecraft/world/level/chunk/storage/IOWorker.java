@@ -1,15 +1,14 @@
 package net.minecraft.world.level.chunk.storage;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Optional;
+import java.util.SequencedMap;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,7 +32,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    private final AtomicBoolean shutdownRequested = new AtomicBoolean();
    private final ProcessorMailbox<StrictQueue.IntRunnable> mailbox;
    private final RegionFileStorage storage;
-   private final Map<ChunkPos, IOWorker.PendingStore> pendingWrites = Maps.newLinkedHashMap();
+   private final SequencedMap<ChunkPos, IOWorker.PendingStore> pendingWrites = new LinkedHashMap<ChunkPos, IOWorker.PendingStore>();
    private final Long2ObjectLinkedOpenHashMap<CompletableFuture<BitSet>> regionCacheForBlender = new Long2ObjectLinkedOpenHashMap();
    private static final int REGION_CACHE_SIZE = 1024;
 
@@ -117,16 +116,21 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    public CompletableFuture<Void> store(ChunkPos var1, @Nullable CompoundTag var2) {
+      return this.store(var1, () -> var2);
+   }
+
+   public CompletableFuture<Void> store(ChunkPos var1, Supplier<CompoundTag> var2) {
       return this.submitTask(() -> {
-         IOWorker.PendingStore var3 = this.pendingWrites.computeIfAbsent(var1, var1xx -> new IOWorker.PendingStore(var2));
-         var3.data = var2;
-         return Either.left(var3.result);
+         CompoundTag var3 = (CompoundTag)var2.get();
+         IOWorker.PendingStore var4 = (IOWorker.PendingStore)this.pendingWrites.computeIfAbsent(var1, var1xx -> new IOWorker.PendingStore(var3));
+         var4.data = var3;
+         return Either.left(var4.result);
       }).thenCompose(Function.identity());
    }
 
    public CompletableFuture<Optional<CompoundTag>> loadAsync(ChunkPos var1) {
       return this.submitTask(() -> {
-         IOWorker.PendingStore var2 = this.pendingWrites.get(var1);
+         IOWorker.PendingStore var2 = (IOWorker.PendingStore)this.pendingWrites.get(var1);
          if (var2 != null) {
             return Either.left(Optional.ofNullable(var2.copyData()));
          } else {
@@ -161,7 +165,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    public CompletableFuture<Void> scanChunk(ChunkPos var1, StreamTagVisitor var2) {
       return this.submitTask(() -> {
          try {
-            IOWorker.PendingStore var3 = this.pendingWrites.get(var1);
+            IOWorker.PendingStore var3 = (IOWorker.PendingStore)this.pendingWrites.get(var1);
             if (var3 != null) {
                if (var3.data != null) {
                   var3.data.acceptAsRoot(var2);
@@ -189,11 +193,9 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    private void storePendingChunk() {
-      if (!this.pendingWrites.isEmpty()) {
-         Iterator var1 = this.pendingWrites.entrySet().iterator();
-         Entry var2 = (Entry)var1.next();
-         var1.remove();
-         this.runStore((ChunkPos)var2.getKey(), (IOWorker.PendingStore)var2.getValue());
+      Entry var1 = this.pendingWrites.pollFirstEntry();
+      if (var1 != null) {
+         this.runStore((ChunkPos)var1.getKey(), (IOWorker.PendingStore)var1.getValue());
          this.tellStorePending();
       }
    }

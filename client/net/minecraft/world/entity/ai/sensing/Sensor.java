@@ -1,16 +1,19 @@
 package net.minecraft.world.entity.ai.sensing;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
 public abstract class Sensor<E extends LivingEntity> {
    private static final RandomSource RANDOM = RandomSource.createThreadSafe();
    private static final int DEFAULT_SCAN_RATE = 20;
-   protected static final int TARGETING_RANGE = 16;
+   private static final int DEFAULT_TARGETING_RANGE = 16;
    private static final TargetingConditions TARGET_CONDITIONS = TargetingConditions.forNonCombat().range(16.0);
    private static final TargetingConditions TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING = TargetingConditions.forNonCombat()
       .range(16.0)
@@ -40,8 +43,19 @@ public abstract class Sensor<E extends LivingEntity> {
    public final void tick(ServerLevel var1, E var2) {
       if (--this.timeToTick <= 0L) {
          this.timeToTick = (long)this.scanRate;
+         this.updateTargetingConditionRanges((E)var2);
          this.doTick(var1, (E)var2);
       }
+   }
+
+   private void updateTargetingConditionRanges(E var1) {
+      double var2 = var1.getAttributeValue(Attributes.FOLLOW_RANGE);
+      TARGET_CONDITIONS.range(var2);
+      TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.range(var2);
+      ATTACK_TARGET_CONDITIONS.range(var2);
+      ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.range(var2);
+      ATTACK_TARGET_CONDITIONS_IGNORE_LINE_OF_SIGHT.range(var2);
+      ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_AND_LINE_OF_SIGHT.range(var2);
    }
 
    protected abstract void doTick(ServerLevel var1, E var2);
@@ -60,9 +74,25 @@ public abstract class Sensor<E extends LivingEntity> {
          : ATTACK_TARGET_CONDITIONS.test(var0, var1);
    }
 
+   public static Predicate<LivingEntity> wasEntityAttackableLastNTicks(LivingEntity var0, int var1) {
+      return rememberPositives(var1, var1x -> isEntityAttackable(var0, var1x));
+   }
+
    public static boolean isEntityAttackableIgnoringLineOfSight(LivingEntity var0, LivingEntity var1) {
       return var0.getBrain().isMemoryValue(MemoryModuleType.ATTACK_TARGET, var1)
          ? ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_AND_LINE_OF_SIGHT.test(var0, var1)
          : ATTACK_TARGET_CONDITIONS_IGNORE_LINE_OF_SIGHT.test(var0, var1);
+   }
+
+   static <T> Predicate<T> rememberPositives(int var0, Predicate<T> var1) {
+      AtomicInteger var2 = new AtomicInteger(0);
+      return var3 -> {
+         if (var1.test(var3)) {
+            var2.set(var0);
+            return true;
+         } else {
+            return var2.decrementAndGet() >= 0;
+         }
+      };
    }
 }

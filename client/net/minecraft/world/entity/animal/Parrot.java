@@ -35,9 +35,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
@@ -131,7 +131,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setVariant(Util.getRandom(Parrot.Variant.values(), var1.getRandom()));
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
@@ -158,7 +158,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes()
+      return Animal.createAnimalAttributes()
          .add(Attributes.MAX_HEALTH, 6.0)
          .add(Attributes.FLYING_SPEED, 0.4000000059604645)
          .add(Attributes.MOVEMENT_SPEED, 0.20000000298023224)
@@ -263,14 +263,14 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
             }
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else if (!var3.is(ItemTags.PARROT_POISONOUS_FOOD)) {
          if (!this.isFlying() && this.isTame() && this.isOwnedBy(var1)) {
             if (!this.level().isClientSide) {
                this.setOrderedToSit(!this.isOrderedToSit());
             }
 
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.SUCCESS;
          } else {
             return super.mobInteract(var1, var2);
          }
@@ -281,7 +281,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
             this.hurt(this.damageSources().playerAttack(var1), 3.4028235E38F);
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -290,7 +290,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       return false;
    }
 
-   public static boolean checkParrotSpawnRules(EntityType<Parrot> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkParrotSpawnRules(EntityType<Parrot> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.PARROTS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 

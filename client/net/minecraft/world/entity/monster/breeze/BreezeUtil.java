@@ -3,6 +3,7 @@ package net.minecraft.world.entity.monster.breeze;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -24,8 +25,12 @@ public class BreezeUtil {
 
    public static boolean hasLineOfSight(Breeze var0, Vec3 var1) {
       Vec3 var2 = new Vec3(var0.getX(), var0.getY(), var0.getZ());
-      return var1.distanceTo(var2) > 50.0
+      return var1.distanceTo(var2) > getMaxLineOfSightTestRange(var0)
          ? false
          : var0.level().clip(new ClipContext(var2, var1, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0)).getType() == HitResult.Type.MISS;
+   }
+
+   private static double getMaxLineOfSightTestRange(Breeze var0) {
+      return Math.max(50.0, var0.getAttributeValue(Attributes.FOLLOW_RANGE));
    }
 }

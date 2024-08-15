@@ -29,8 +29,8 @@ public abstract class AbstractIllager extends Raider {
    }
 
    @Override
-   public boolean isAlliedTo(Entity var1) {
-      if (super.isAlliedTo(var1)) {
+   protected boolean considersEntityAsAlly(Entity var1) {
+      if (super.considersEntityAsAlly(var1)) {
          return true;
       } else {
          return !var1.getType().is(EntityTypeTags.ILLAGER_FRIENDS) ? false : this.getTeam() == null && var1.getTeam() == null;

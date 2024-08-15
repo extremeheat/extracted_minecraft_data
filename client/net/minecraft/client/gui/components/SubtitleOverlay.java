@@ -15,6 +15,7 @@ import net.minecraft.client.sounds.SoundEventListener;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -54,8 +55,8 @@ public class SubtitleOverlay implements SoundEventListener {
          }
 
          if (!this.audibleSubtitles.isEmpty()) {
+            int var29 = 0;
             int var30 = 0;
-            int var31 = 0;
             double var9 = this.minecraft.options.notificationDisplayTime().get();
             Iterator var11 = this.audibleSubtitles.iterator();
 
@@ -65,45 +66,44 @@ public class SubtitleOverlay implements SoundEventListener {
                if (!var12.isStillActive()) {
                   var11.remove();
                } else {
-                  var31 = Math.max(var31, this.minecraft.font.width(var12.getText()));
+                  var30 = Math.max(var30, this.minecraft.font.width(var12.getText()));
                }
             }
 
-            var31 += this.minecraft.font.width("<") + this.minecraft.font.width(" ") + this.minecraft.font.width(">") + this.minecraft.font.width(" ");
+            var30 += this.minecraft.font.width("<") + this.minecraft.font.width(" ") + this.minecraft.font.width(">") + this.minecraft.font.width(" ");
 
-            for (SubtitleOverlay.Subtitle var34 : this.audibleSubtitles) {
+            for (SubtitleOverlay.Subtitle var33 : this.audibleSubtitles) {
                short var13 = 255;
-               Component var14 = var34.getText();
-               SubtitleOverlay.SoundPlayedAt var15 = var34.getClosest(var4);
+               Component var14 = var33.getText();
+               SubtitleOverlay.SoundPlayedAt var15 = var33.getClosest(var4);
                if (var15 != null) {
                   Vec3 var16 = var15.location.subtract(var4).normalize();
                   double var17 = var6.dot(var16);
                   double var19 = var5.dot(var16);
                   boolean var21 = var19 > 0.5;
-                  int var22 = var31 / 2;
+                  int var22 = var30 / 2;
                   byte var23 = 9;
                   int var24 = var23 / 2;
                   float var25 = 1.0F;
                   int var26 = this.minecraft.font.width(var14);
                   int var27 = Mth.floor(Mth.clampedLerp(255.0F, 75.0F, (float)(Util.getMillis() - var15.time) / (float)(3000.0 * var9)));
-                  int var28 = var27 << 16 | var27 << 8 | var27;
                   var1.pose().pushPose();
                   var1.pose()
-                     .translate((float)var1.guiWidth() - (float)var22 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var30 * (var23 + 1)) * 1.0F, 0.0F);
+                     .translate((float)var1.guiWidth() - (float)var22 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var29 * (var23 + 1)) * 1.0F, 0.0F);
                   var1.pose().scale(1.0F, 1.0F, 1.0F);
                   var1.fill(-var22 - 1, -var24 - 1, var22 + 1, var24 + 1, this.minecraft.options.getBackgroundColor(0.8F));
-                  int var29 = var28 + -16777216;
+                  int var28 = ARGB.color(255, var27, var27, var27);
                   if (!var21) {
                      if (var17 > 0.0) {
-                        var1.drawString(this.minecraft.font, ">", var22 - this.minecraft.font.width(">"), -var24, var29);
+                        var1.drawString(this.minecraft.font, ">", var22 - this.minecraft.font.width(">"), -var24, var28);
                      } else if (var17 < 0.0) {
-                        var1.drawString(this.minecraft.font, "<", -var22, -var24, var29);
+                        var1.drawString(this.minecraft.font, "<", -var22, -var24, var28);
                      }
                   }
 
-                  var1.drawString(this.minecraft.font, var14, -var26 / 2, -var24, var29);
+                  var1.drawString(this.minecraft.font, var14, -var26 / 2, -var24, var28);
                   var1.pose().popPose();
-                  var30++;
+                  var29++;
                }
             }
          }

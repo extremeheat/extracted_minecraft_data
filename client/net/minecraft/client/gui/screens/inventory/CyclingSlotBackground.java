@@ -3,9 +3,11 @@ package net.minecraft.client.gui.screens.inventory;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 
@@ -50,7 +52,7 @@ public class CyclingSlotBackground {
 
    private void renderIcon(Slot var1, ResourceLocation var2, float var3, GuiGraphics var4, int var5, int var6) {
       TextureAtlasSprite var7 = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(var2);
-      var4.blit(var5 + var1.x, var6 + var1.y, 0, 16, 16, var7, 1.0F, 1.0F, 1.0F, var3);
+      var4.blitSprite(RenderType::guiTextured, var7, var5 + var1.x, var6 + var1.y, 16, 16, ARGB.white(var3));
    }
 
    private float getIconTransitionTransparency(float var1) {

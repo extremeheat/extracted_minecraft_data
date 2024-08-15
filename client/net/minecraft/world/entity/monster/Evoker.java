@@ -12,10 +12,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -97,15 +97,17 @@ public class Evoker extends SpellcasterIllager {
    }
 
    @Override
-   public boolean isAlliedTo(Entity var1) {
-      if (var1 == null) {
-         return false;
-      } else if (var1 == this) {
+   protected boolean considersEntityAsAlly(Entity var1) {
+      if (var1 == this) {
          return true;
-      } else if (super.isAlliedTo(var1)) {
+      } else if (super.considersEntityAsAlly(var1)) {
          return true;
       } else {
-         return var1 instanceof Vex var2 ? this.isAlliedTo(var2.getOwner()) : false;
+         if (var1 instanceof Vex var2 && var2.getOwner() != null) {
+            return this.considersEntityAsAlly(var2.getOwner());
+         }
+
+         return false;
       }
    }
 
@@ -276,10 +278,10 @@ public class Evoker extends SpellcasterIllager {
 
          for (int var3 = 0; var3 < 3; var3++) {
             BlockPos var4 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
-            Vex var5 = EntityType.VEX.create(Evoker.this.level());
+            Vex var5 = EntityType.VEX.create(Evoker.this.level(), EntitySpawnReason.MOB_SUMMONED);
             if (var5 != null) {
                var5.moveTo(var4, 0.0F, 0.0F);
-               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), MobSpawnType.MOB_SUMMONED, null);
+               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), EntitySpawnReason.MOB_SUMMONED, null);
                var5.setOwner(Evoker.this);
                var5.setBoundOrigin(var4);
                var5.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));

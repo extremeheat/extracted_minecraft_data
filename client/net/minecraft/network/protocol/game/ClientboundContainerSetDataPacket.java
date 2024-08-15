@@ -22,13 +22,13 @@ public class ClientboundContainerSetDataPacket implements Packet<ClientGamePacke
 
    private ClientboundContainerSetDataPacket(FriendlyByteBuf var1) {
       super();
-      this.containerId = var1.readUnsignedByte();
+      this.containerId = var1.readContainerId();
       this.id = var1.readShort();
       this.value = var1.readShort();
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.containerId);
+      var1.writeContainerId(this.containerId);
       var1.writeShort(this.id);
       var1.writeShort(this.value);
    }

@@ -35,7 +35,6 @@ public class PiglinBruteAi {
    private static final double ACTIVITY_SOUND_LIKELIHOOD_PER_TICK = 0.0125;
    private static final int MAX_LOOK_DIST = 8;
    private static final int INTERACTION_RANGE = 8;
-   private static final double TARGETING_RANGE = 12.0;
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 0.6F;
    private static final int HOME_CLOSE_ENOUGH_DISTANCE = 2;
    private static final int HOME_TOO_FAR_DISTANCE = 100;
@@ -140,13 +139,9 @@ public class PiglinBruteAi {
       if (var1.isPresent() && Sensor.isEntityAttackableIgnoringLineOfSight(var0, (LivingEntity)var1.get())) {
          return var1;
       } else {
-         Optional var2 = getTargetIfWithinRange(var0, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
+         Optional var2 = var0.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
          return var2.isPresent() ? var2 : var0.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_NEMESIS);
       }
-   }
-
-   private static Optional<? extends LivingEntity> getTargetIfWithinRange(AbstractPiglin var0, MemoryModuleType<? extends LivingEntity> var1) {
-      return var0.getBrain().getMemory(var1).filter(var1x -> var1x.closerThan(var0, 12.0));
    }
 
    protected static void wasHurtBy(PiglinBrute var0, LivingEntity var1) {

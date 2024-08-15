@@ -62,14 +62,14 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return true;
    }
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       VoxelShape var5 = var1.getValue(LEAVES) == BambooLeaves.LARGE ? LARGE_SHAPE : SMALL_SHAPE;
-      Vec3 var6 = var1.getOffset(var2, var3);
+      Vec3 var6 = var1.getOffset(var3);
       return var5.move(var6.x, var6.y, var6.z);
    }
 
@@ -80,7 +80,7 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
 
    @Override
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Vec3 var5 = var1.getOffset(var2, var3);
+      Vec3 var5 = var1.getOffset(var3);
       return COLLISION_SHAPE.move(var5.x, var5.y, var5.z);
    }
 

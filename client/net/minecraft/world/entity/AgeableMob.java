@@ -25,7 +25,7 @@ public abstract class AgeableMob extends PathfinderMob {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(true);
       }
@@ -163,7 +163,7 @@ public abstract class AgeableMob extends PathfinderMob {
       private final boolean shouldSpawnBaby;
       private final float babySpawnChance;
 
-      private AgeableMobGroupData(boolean var1, float var2) {
+      public AgeableMobGroupData(boolean var1, float var2) {
          super();
          this.shouldSpawnBaby = var1;
          this.babySpawnChance = var2;

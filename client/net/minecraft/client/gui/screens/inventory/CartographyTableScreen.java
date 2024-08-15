@@ -2,6 +2,9 @@ package net.minecraft.client.gui.screens.inventory;
 
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MapRenderer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +23,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
    private static final ResourceLocation MAP_SPRITE = ResourceLocation.withDefaultNamespace("container/cartography_table/map");
    private static final ResourceLocation LOCKED_SPRITE = ResourceLocation.withDefaultNamespace("container/cartography_table/locked");
    private static final ResourceLocation BG_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/cartography_table.png");
+   private final MapRenderState mapRenderState = new MapRenderState();
 
    public CartographyTableScreen(CartographyTableMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);
@@ -36,7 +40,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       ItemStack var7 = this.menu.getSlot(1).getItem();
       boolean var8 = var7.is(Items.MAP);
       boolean var9 = var7.is(Items.PAPER);
@@ -51,13 +55,13 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
             if (var13.locked) {
                var14 = true;
                if (var9 || var10) {
-                  var1.blitSprite(ERROR_SPRITE, var5 + 35, var6 + 31, 28, 21);
+                  var1.blitSprite(RenderType::guiTextured, ERROR_SPRITE, var5 + 35, var6 + 31, 28, 21);
                }
             }
 
             if (var9 && var13.scale >= 4) {
                var14 = true;
-               var1.blitSprite(ERROR_SPRITE, var5 + 35, var6 + 31, 28, 21);
+               var1.blitSprite(RenderType::guiTextured, ERROR_SPRITE, var5 + 35, var6 + 31, 28, 21);
             }
          }
       } else {
@@ -73,25 +77,25 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       int var8 = this.leftPos;
       int var9 = this.topPos;
       if (var5 && !var7) {
-         var1.blitSprite(SCALED_MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
+         var1.blitSprite(RenderType::guiTextured, SCALED_MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 85, var9 + 31, 0.226F);
       } else if (var4) {
-         var1.blitSprite(DUPLICATED_MAP_SPRITE, var8 + 67 + 16, var9 + 13, 50, 66);
+         var1.blitSprite(RenderType::guiTextured, DUPLICATED_MAP_SPRITE, var8 + 67 + 16, var9 + 13, 50, 66);
          this.renderMap(var1, var2, var3, var8 + 86, var9 + 16, 0.34F);
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, 1.0F);
-         var1.blitSprite(DUPLICATED_MAP_SPRITE, var8 + 67, var9 + 13 + 16, 50, 66);
+         var1.blitSprite(RenderType::guiTextured, DUPLICATED_MAP_SPRITE, var8 + 67, var9 + 13 + 16, 50, 66);
          this.renderMap(var1, var2, var3, var8 + 70, var9 + 32, 0.34F);
          var1.pose().popPose();
       } else if (var6) {
-         var1.blitSprite(MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
+         var1.blitSprite(RenderType::guiTextured, MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 71, var9 + 17, 0.45F);
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, 1.0F);
-         var1.blitSprite(LOCKED_SPRITE, var8 + 118, var9 + 60, 10, 14);
+         var1.blitSprite(RenderType::guiTextured, LOCKED_SPRITE, var8 + 118, var9 + 60, 10, 14);
          var1.pose().popPose();
       } else {
-         var1.blitSprite(MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
+         var1.blitSprite(RenderType::guiTextured, MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 71, var9 + 17, 0.45F);
       }
    }
@@ -101,8 +105,9 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
          var1.pose().pushPose();
          var1.pose().translate((float)var4, (float)var5, 1.0F);
          var1.pose().scale(var6, var6, 1.0F);
-         this.minecraft.gameRenderer.getMapRenderer().render(var1.pose(), var1.bufferSource(), var2, var3, true, 15728880);
-         var1.flush();
+         MapRenderer var7 = this.minecraft.getMapRenderer();
+         var7.extractRenderState(var2, var3, this.mapRenderState);
+         var7.render(this.mapRenderState, var1.pose(), var1.bufferSource(), true, 15728880);
          var1.pose().popPose();
       }
    }

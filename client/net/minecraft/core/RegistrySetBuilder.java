@@ -98,7 +98,7 @@ public class RegistrySetBuilder {
       var2.forEach(var2x -> var3.put(var2x.key(), 1Entry.createForNewRegistry(var0, var2x)));
       return new HolderLookup.Provider() {
          @Override
-         public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
+         public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
             return var3.keySet().stream();
          }
 
@@ -189,8 +189,8 @@ public class RegistrySetBuilder {
       RegistrySetBuilder.BuildState var4 = this.createState(var1);
       HashMap var5 = new HashMap();
       this.entries.stream().map(var1x -> var1x.collectRegisteredValues(var4)).forEach(var1x -> var5.put(var1x.key, var1x));
-      Set var6 = var1.listRegistries().collect(Collectors.toUnmodifiableSet());
-      var2.listRegistries()
+      Set var6 = var1.listRegistryKeys().collect(Collectors.toUnmodifiableSet());
+      var2.listRegistryKeys()
          .filter(var1x -> !var6.contains(var1x))
          .forEach(
             var1x -> var5.putIfAbsent(var1x, new RegistrySetBuilder.RegistryContents<>((ResourceKey<? extends Registry<?>>)var1x, Lifecycle.stable(), Map.of()))

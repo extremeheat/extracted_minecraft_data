@@ -1,15 +1,20 @@
 package net.minecraft.world.entity.projectile;
 
+import java.util.UUID;
+import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Endermite;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -25,13 +30,37 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       super(var1, var2);
    }
 
-   public ThrownEnderpearl(Level var1, LivingEntity var2) {
-      super(EntityType.ENDER_PEARL, var2, var1);
+   public ThrownEnderpearl(Level var1, LivingEntity var2, ItemStack var3) {
+      super(EntityType.ENDER_PEARL, var2, var1, var3);
    }
 
    @Override
    protected Item getDefaultItem() {
       return Items.ENDER_PEARL;
+   }
+
+   @Nullable
+   @Override
+   protected Entity findOwner(UUID var1) {
+      if (this.level() instanceof ServerLevel var2) {
+         Entity var6 = super.findOwner(var1);
+         if (var6 != null) {
+            return var6;
+         } else {
+            for (ServerLevel var5 : var2.getServer().getAllLevels()) {
+               if (var5 != var2) {
+                  var6 = var5.getEntity(var1);
+                  if (var6 != null) {
+                     return var6;
+                  }
+               }
+            }
+
+            return null;
+         }
+      } else {
+         return null;
+      }
    }
 
    @Override
@@ -67,26 +96,32 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
             if (var7 instanceof ServerPlayer var4) {
                if (var4.connection.isAcceptingMessages()) {
                   if (this.random.nextFloat() < 0.05F && var6.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                     Endermite var5 = EntityType.ENDERMITE.create(var6);
+                     Endermite var5 = EntityType.ENDERMITE.create(var6, EntitySpawnReason.TRIGGERED);
                      if (var5 != null) {
                         var5.moveTo(var7.getX(), var7.getY(), var7.getZ(), var7.getYRot(), var7.getXRot());
                         var6.addFreshEntity(var5);
                      }
                   }
 
-                  var7.changeDimension(
+                  Player var8 = var4.changeDimension(
                      new DimensionTransition(var6, this.position(), var7.getDeltaMovement(), var7.getYRot(), var7.getXRot(), DimensionTransition.DO_NOTHING)
                   );
-                  var7.resetFallDistance();
-                  var4.resetCurrentImpulseContext();
-                  var7.hurt(this.damageSources().fall(), 5.0F);
+                  if (var8 != null) {
+                     var8.resetFallDistance();
+                     var8.resetCurrentImpulseContext();
+                     var8.hurt(this.damageSources().enderPearl(), 5.0F);
+                  }
+
                   this.playSound(var6, this.position());
                }
             } else {
-               var7.changeDimension(
+               Entity var9 = var7.changeDimension(
                   new DimensionTransition(var6, this.position(), var7.getDeltaMovement(), var7.getYRot(), var7.getXRot(), DimensionTransition.DO_NOTHING)
                );
-               var7.resetFallDistance();
+               if (var9 != null) {
+                  var9.resetFallDistance();
+               }
+
                this.playSound(var6, this.position());
             }
 
@@ -123,7 +158,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
    @Override
    public boolean canChangeDimensions(Level var1, Level var2) {
-      return var1.dimension() == Level.END && this.getOwner() instanceof ServerPlayer var3
+      return var1.dimension() == Level.END && var2.dimension() == Level.OVERWORLD && this.getOwner() instanceof ServerPlayer var3
          ? super.canChangeDimensions(var1, var2) && var3.seenCredits
          : super.canChangeDimensions(var1, var2);
    }

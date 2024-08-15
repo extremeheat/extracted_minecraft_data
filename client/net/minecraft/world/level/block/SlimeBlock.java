@@ -32,9 +32,9 @@ public class SlimeBlock extends HalfTransparentBlock {
    }
 
    @Override
-   public void updateEntityAfterFallOn(BlockGetter var1, Entity var2) {
+   public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
       if (var2.isSuppressingBounce()) {
-         super.updateEntityAfterFallOn(var1, var2);
+         super.updateEntityMovementAfterFallOn(var1, var2);
       } else {
          this.bounceUp(var2);
       }

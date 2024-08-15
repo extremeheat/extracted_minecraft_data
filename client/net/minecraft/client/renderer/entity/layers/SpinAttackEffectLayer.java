@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -15,42 +15,55 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.util.Mth;
 
-public class SpinAttackEffectLayer<T extends LivingEntity> extends RenderLayer<T, PlayerModel<T>> {
+public class SpinAttackEffectLayer extends RenderLayer<PlayerRenderState, PlayerModel> {
    public static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/trident_riptide.png");
-   public static final String BOX = "box";
-   private final ModelPart box;
+   private static final int BOX_COUNT = 2;
+   private final Model model;
+   private final ModelPart[] boxes = new ModelPart[2];
 
-   public SpinAttackEffectLayer(RenderLayerParent<T, PlayerModel<T>> var1, EntityModelSet var2) {
+   public SpinAttackEffectLayer(RenderLayerParent<PlayerRenderState, PlayerModel> var1, EntityModelSet var2) {
       super(var1);
       ModelPart var3 = var2.bakeLayer(ModelLayers.PLAYER_SPIN_ATTACK);
-      this.box = var3.getChild("box");
+      this.model = new Model.Simple(var3, RenderType::entityCutoutNoCull);
+
+      for (int var4 = 0; var4 < 2; var4++) {
+         this.boxes[var4] = var3.getChild(boxName(var4));
+      }
+   }
+
+   private static String boxName(int var0) {
+      return "box" + var0;
    }
 
    public static LayerDefinition createLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("box", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -16.0F, -8.0F, 16.0F, 32.0F, 16.0F), PartPose.ZERO);
+
+      for (int var2 = 0; var2 < 2; var2++) {
+         float var3 = -3.2F + 9.6F * (float)(var2 + 1);
+         float var4 = 0.75F * (float)(var2 + 1);
+         var1.addOrReplaceChild(
+            boxName(var2), CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -16.0F + var3, -8.0F, 16.0F, 32.0F, 16.0F), PartPose.ZERO.withScale(var4)
+         );
+      }
+
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      if (var4.isAutoSpinAttack()) {
-         VertexConsumer var11 = var2.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
-
-         for (int var12 = 0; var12 < 3; var12++) {
-            var1.pushPose();
-            float var13 = var8 * (float)(-(45 + var12 * 5));
-            var1.mulPose(Axis.YP.rotationDegrees(var13));
-            float var14 = 0.75F * (float)var12;
-            var1.scale(var14, var14, var14);
-            var1.translate(0.0F, -0.2F + 0.6F * (float)var12, 0.0F);
-            this.box.render(var1, var11, var3, OverlayTexture.NO_OVERLAY);
-            var1.popPose();
+   public void render(PoseStack var1, MultiBufferSource var2, int var3, PlayerRenderState var4, float var5, float var6) {
+      if (var4.isAutoSpinAttack) {
+         for (int var7 = 0; var7 < this.boxes.length; var7++) {
+            float var8 = var4.ageInTicks * (float)(-(45 + (var7 + 1) * 5));
+            this.boxes[var7].yRot = Mth.wrapDegrees(var8) * 0.017453292F;
          }
+
+         VertexConsumer var9 = var2.getBuffer(this.model.renderType(TEXTURE));
+         this.model.renderToBuffer(var1, var9, var3, OverlayTexture.NO_OVERLAY);
       }
    }
 }

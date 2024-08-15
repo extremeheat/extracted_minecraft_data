@@ -24,6 +24,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -173,10 +175,8 @@ public class TripWireHookBlock extends Block {
             for (int var25 = 1; var25 < var14; var25++) {
                BlockPos var27 = var1.relative(var8, var25);
                BlockState var28 = var15[var25];
-               if (var28 != null) {
+               if (var28 != null && !var0.getBlockState(var27).isAir()) {
                   var0.setBlock(var27, var28.trySetValue(ATTACHED, Boolean.valueOf(var12)), 3);
-                  if (!var0.getBlockState(var27).isAir()) {
-                  }
                }
             }
          }
@@ -205,8 +205,10 @@ public class TripWireHookBlock extends Block {
    }
 
    private static void notifyNeighbors(Block var0, Level var1, BlockPos var2, Direction var3) {
-      var1.updateNeighborsAt(var2, var0);
-      var1.updateNeighborsAt(var2.relative(var3.getOpposite()), var0);
+      Direction var4 = var3.getOpposite();
+      Orientation var5 = ExperimentalRedstoneUtils.randomOrientation(var1, var4, Direction.UP);
+      var1.updateNeighborsAt(var2, var0, var5);
+      var1.updateNeighborsAt(var2.relative(var4), var0, var5);
    }
 
    @Override
@@ -219,8 +221,7 @@ public class TripWireHookBlock extends Block {
          }
 
          if (var7) {
-            var2.updateNeighborsAt(var3, this);
-            var2.updateNeighborsAt(var3.relative(var1.getValue(FACING).getOpposite()), this);
+            notifyNeighbors(this, var2, var3, var1.getValue(FACING));
          }
 
          super.onRemove(var1, var2, var3, var4, var5);

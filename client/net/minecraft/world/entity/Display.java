@@ -91,6 +91,7 @@ public abstract class Display extends Entity {
    private int interpolationDuration;
    private float lastProgress;
    private AABB cullingBoundingBox;
+   private boolean noCulling = true;
    protected boolean updateRenderState;
    private boolean updateStartTick;
    private boolean updateInterpolationDuration;
@@ -102,7 +103,6 @@ public abstract class Display extends Entity {
    public Display(EntityType<?> var1, Level var2) {
       super(var1, var2);
       this.noPhysics = true;
-      this.noCulling = true;
       this.cullingBoundingBox = this.getBoundingBox();
    }
 
@@ -323,9 +323,12 @@ public abstract class Display extends Entity {
       return this.posRotInterpolationTarget != null ? (float)this.posRotInterpolationTarget.targetYRot : this.getYRot();
    }
 
-   @Override
    public AABB getBoundingBoxForCulling() {
       return this.cullingBoundingBox;
+   }
+
+   public boolean affectedByCulling() {
+      return !this.noCulling;
    }
 
    @Override
@@ -459,16 +462,12 @@ public abstract class Display extends Entity {
    private void updateCulling() {
       float var1 = this.getWidth();
       float var2 = this.getHeight();
-      if (var1 != 0.0F && var2 != 0.0F) {
-         this.noCulling = false;
-         float var3 = var1 / 2.0F;
-         double var4 = this.getX();
-         double var6 = this.getY();
-         double var8 = this.getZ();
-         this.cullingBoundingBox = new AABB(var4 - (double)var3, var6, var8 - (double)var3, var4 + (double)var3, var6 + (double)var2, var8 + (double)var3);
-      } else {
-         this.noCulling = true;
-      }
+      this.noCulling = var1 == 0.0F || var2 == 0.0F;
+      float var3 = var1 / 2.0F;
+      double var4 = this.getX();
+      double var6 = this.getY();
+      double var8 = this.getZ();
+      this.cullingBoundingBox = new AABB(var4 - (double)var3, var6, var8 - (double)var3, var4 + (double)var3, var6 + (double)var2, var8 + (double)var3);
    }
 
    @Override

@@ -22,8 +22,10 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
@@ -392,6 +394,9 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          } else {
             return super.keyPressed(var1, var2, var3);
          }
+      } else if (super.checkItemSlotActionKeyPressed(var1, var2)) {
+         this.ignoreTextInput = true;
+         return true;
       } else {
          boolean var4 = !this.isCreativeSlot(this.hoveredSlot) || this.hoveredSlot.hasItem();
          boolean var5 = InputConstants.getKey(var1, var2).getNumericKeyValue().isPresent();
@@ -457,7 +462,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          var3 = var2x -> var2x.getNamespace().contains(var4) && var2x.getPath().contains(var5);
       }
 
-      BuiltInRegistries.ITEM.getTagNames().filter(var1x -> var3.test(var1x.location())).forEach(this.visibleTags::add);
+      BuiltInRegistries.ITEM.getTags().map(HolderSet.Named::key).filter(var1x -> var3.test(var1x.location())).forEach(this.visibleTags::add);
    }
 
    @Override
@@ -611,7 +616,9 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    @Override
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
-      if (!this.canScroll()) {
+      if (super.mouseScrolled(var1, var3, var5, var7)) {
+         return true;
+      } else if (!this.canScroll()) {
          return false;
       } else {
          this.scrollOffs = this.menu.subtractInputFromScroll(this.scrollOffs, var7);
@@ -710,14 +717,14 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          }
       }
 
-      var1.blit(selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       this.searchBox.render(var1, var3, var4, var2);
       int var9 = this.leftPos + 175;
       int var10 = this.topPos + 18;
       int var7 = var10 + 112;
       if (selectedTab.canScroll()) {
          ResourceLocation var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-         var1.blitSprite(var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
+         var1.blitSprite(RenderType::guiTextured, var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
       }
 
       this.renderTabButton(var1, selectedTab);
@@ -780,7 +787,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          var8 = var3 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
       }
 
-      var1.blitSprite(var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
+      var1.blitSprite(RenderType::guiTextured, var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
       var6 += 5;
@@ -852,10 +859,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
             }
          }
 
-         for (int var5 = 0; var5 < 9; var5++) {
-            this.addSlot(new Slot(var2, var5, 9 + var5 * 18, 112));
-         }
-
+         this.addInventoryHotbarSlots(var2, 9, 112);
          this.scrollTo(0.0F);
       }
 

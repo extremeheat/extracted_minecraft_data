@@ -17,6 +17,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsObjectSelectionList;
@@ -186,7 +187,14 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
 
          @Override
          protected void draw(GuiGraphics var1, int var2, int var3, boolean var4) {
-            var1.blitSprite(var4 ? RealmsPendingInvitesScreen.ACCEPT_HIGHLIGHTED_SPRITE : RealmsPendingInvitesScreen.ACCEPT_SPRITE, var2, var3, 18, 18);
+            var1.blitSprite(
+               RenderType::guiTextured,
+               var4 ? RealmsPendingInvitesScreen.ACCEPT_HIGHLIGHTED_SPRITE : RealmsPendingInvitesScreen.ACCEPT_SPRITE,
+               var2,
+               var3,
+               18,
+               18
+            );
             if (var4) {
                RealmsPendingInvitesScreen.this.toolTip = RealmsPendingInvitesScreen.ACCEPT_INVITE;
             }
@@ -205,7 +213,14 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
 
          @Override
          protected void draw(GuiGraphics var1, int var2, int var3, boolean var4) {
-            var1.blitSprite(var4 ? RealmsPendingInvitesScreen.REJECT_HIGHLIGHTED_SPRITE : RealmsPendingInvitesScreen.REJECT_SPRITE, var2, var3, 18, 18);
+            var1.blitSprite(
+               RenderType::guiTextured,
+               var4 ? RealmsPendingInvitesScreen.REJECT_HIGHLIGHTED_SPRITE : RealmsPendingInvitesScreen.REJECT_SPRITE,
+               var2,
+               var3,
+               18,
+               18
+            );
             if (var4) {
                RealmsPendingInvitesScreen.this.toolTip = RealmsPendingInvitesScreen.REJECT_INVITE;
             }

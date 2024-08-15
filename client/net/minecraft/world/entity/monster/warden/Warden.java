@@ -40,9 +40,9 @@ import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
@@ -82,6 +82,7 @@ public class Warden extends Monster implements VibrationSystem {
    private static final float KNOCKBACK_RESISTANCE = 1.0F;
    private static final float ATTACK_KNOCKBACK = 1.5F;
    private static final int ATTACK_DAMAGE = 30;
+   private static final int FOLLOW_RANGE = 24;
    private static final EntityDataAccessor<Integer> CLIENT_ANGER_LEVEL = SynchedEntityData.defineId(Warden.class, EntityDataSerializers.INT);
    private static final int DARKNESS_DISPLAY_LIMIT = 200;
    private static final int DARKNESS_DURATION = 260;
@@ -180,7 +181,8 @@ public class Warden extends Monster implements VibrationSystem {
          .add(Attributes.MOVEMENT_SPEED, 0.30000001192092896)
          .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
          .add(Attributes.ATTACK_KNOCKBACK, 1.5)
-         .add(Attributes.ATTACK_DAMAGE, 30.0);
+         .add(Attributes.ATTACK_DAMAGE, 30.0)
+         .add(Attributes.FOLLOW_RANGE, 24.0);
    }
 
    @Override
@@ -322,7 +324,7 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    private void clientDiggingParticles(AnimationState var1) {
-      if ((float)var1.getAccumulatedTime() < 4500.0F) {
+      if ((float)var1.getTimeInMillis((float)this.tickCount) < 4500.0F) {
          RandomSource var2 = this.getRandom();
          BlockState var3 = this.getBlockStateOn();
          if (var3.getRenderShape() != RenderShape.INVISIBLE) {
@@ -496,9 +498,9 @@ public class Warden extends Monster implements VibrationSystem {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.getBrain().setMemoryWithExpiry(MemoryModuleType.DIG_COOLDOWN, Unit.INSTANCE, 1200L);
-      if (var3 == MobSpawnType.TRIGGERED) {
+      if (var3 == EntitySpawnReason.TRIGGERED) {
          this.setPose(Pose.EMERGING);
          this.getBrain().setMemoryWithExpiry(MemoryModuleType.IS_EMERGING, Unit.INSTANCE, (long)WardenAi.EMERGE_DURATION);
          this.playSound(SoundEvents.WARDEN_AGITATED, 5.0F, 1.0F);

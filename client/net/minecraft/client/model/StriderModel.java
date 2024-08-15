@@ -6,10 +6,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.StriderRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.monster.Strider;
 
-public class StriderModel<T extends Strider> extends HierarchicalModel<T> {
+public class StriderModel extends EntityModel<StriderRenderState> {
    private static final String RIGHT_BOTTOM_BRISTLE = "right_bottom_bristle";
    private static final String RIGHT_MIDDLE_BRISTLE = "right_middle_bristle";
    private static final String RIGHT_TOP_BRISTLE = "right_top_bristle";
@@ -86,17 +86,18 @@ public class StriderModel<T extends Strider> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 128);
    }
 
-   public void setupAnim(Strider var1, float var2, float var3, float var4, float var5, float var6) {
-      var3 = Math.min(0.25F, var3);
-      if (!var1.isVehicle()) {
-         this.body.xRot = var6 * 0.017453292F;
-         this.body.yRot = var5 * 0.017453292F;
+   public void setupAnim(StriderRenderState var1) {
+      float var2 = var1.walkAnimationPos;
+      float var3 = Math.min(var1.walkAnimationSpeed, 0.25F);
+      if (!var1.isRidden) {
+         this.body.xRot = var1.xRot * 0.017453292F;
+         this.body.yRot = var1.yRot * 0.017453292F;
       } else {
          this.body.xRot = 0.0F;
          this.body.yRot = 0.0F;
       }
 
-      float var7 = 1.5F;
+      float var4 = 1.5F;
       this.body.zRot = 0.1F * Mth.sin(var2 * 1.5F) * 4.0F * var3;
       this.body.y = 2.0F;
       this.body.y = this.body.y - 2.0F * Mth.cos(var2 * 1.5F) * 2.0F * var3;
@@ -112,21 +113,21 @@ public class StriderModel<T extends Strider> extends HierarchicalModel<T> {
       this.leftTopBristle.zRot = 0.87266463F;
       this.leftMiddleBristle.zRot = 1.134464F;
       this.leftBottomBristle.zRot = 1.2217305F;
-      float var8 = Mth.cos(var2 * 1.5F + 3.1415927F) * var3;
-      this.rightBottomBristle.zRot += var8 * 1.3F;
-      this.rightMiddleBristle.zRot += var8 * 1.2F;
-      this.rightTopBristle.zRot += var8 * 0.6F;
-      this.leftTopBristle.zRot += var8 * 0.6F;
-      this.leftMiddleBristle.zRot += var8 * 1.2F;
-      this.leftBottomBristle.zRot += var8 * 1.3F;
-      float var9 = 1.0F;
-      float var10 = 1.0F;
-      this.rightBottomBristle.zRot = this.rightBottomBristle.zRot + 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
-      this.rightMiddleBristle.zRot = this.rightMiddleBristle.zRot + 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
-      this.rightTopBristle.zRot = this.rightTopBristle.zRot + 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
-      this.leftTopBristle.zRot = this.leftTopBristle.zRot + 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
-      this.leftMiddleBristle.zRot = this.leftMiddleBristle.zRot + 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
-      this.leftBottomBristle.zRot = this.leftBottomBristle.zRot + 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
+      float var5 = Mth.cos(var2 * 1.5F + 3.1415927F) * var3;
+      this.rightBottomBristle.zRot += var5 * 1.3F;
+      this.rightMiddleBristle.zRot += var5 * 1.2F;
+      this.rightTopBristle.zRot += var5 * 0.6F;
+      this.leftTopBristle.zRot += var5 * 0.6F;
+      this.leftMiddleBristle.zRot += var5 * 1.2F;
+      this.leftBottomBristle.zRot += var5 * 1.3F;
+      float var6 = 1.0F;
+      float var7 = 1.0F;
+      this.rightBottomBristle.zRot = this.rightBottomBristle.zRot + 0.05F * Mth.sin(var1.ageInTicks * 1.0F * -0.4F);
+      this.rightMiddleBristle.zRot = this.rightMiddleBristle.zRot + 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.2F);
+      this.rightTopBristle.zRot = this.rightTopBristle.zRot + 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.4F);
+      this.leftTopBristle.zRot = this.leftTopBristle.zRot + 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.4F);
+      this.leftMiddleBristle.zRot = this.leftMiddleBristle.zRot + 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.2F);
+      this.leftBottomBristle.zRot = this.leftBottomBristle.zRot + 0.05F * Mth.sin(var1.ageInTicks * 1.0F * -0.4F);
    }
 
    @Override

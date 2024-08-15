@@ -310,42 +310,126 @@ public class Util {
       return var2 == null ? "[unregistered]" : var2.toString();
    }
 
-   public static <T> Predicate<T> allOf(List<? extends Predicate<T>> var0) {
+   public static <T> Predicate<T> allOf() {
+      return var0 -> true;
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0) {
+      return var0;
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1) {
+      return var2 -> var0.test(var2) && var1.test(var2);
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2) {
+      return var3 -> var0.test(var3) && var1.test(var3) && var2.test(var3);
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3) {
+      return var4 -> var0.test(var4) && var1.test(var4) && var2.test(var4) && var3.test(var4);
+   }
+
+   public static <T> Predicate<T> allOf(
+      Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3, Predicate<? super T> var4
+   ) {
+      return var5 -> var0.test(var5) && var1.test(var5) && var2.test(var5) && var3.test(var5) && var4.test(var5);
+   }
+
+   @SafeVarargs
+   public static <T> Predicate<T> allOf(Predicate<? super T>... var0) {
+      return var1 -> {
+         for (Predicate var5 : var0) {
+            if (!var5.test(var1)) {
+               return false;
+            }
+         }
+
+         return true;
+      };
+   }
+
+   public static <T> Predicate<T> allOf(List<? extends Predicate<? super T>> var0) {
       return switch (var0.size()) {
-         case 0 -> var0x -> true;
-         case 1 -> (Predicate)var0.get(0);
-         case 2 -> ((Predicate)var0.get(0)).and((Predicate<? super T>)var0.get(1));
+         case 0 -> allOf();
+         case 1 -> allOf((Predicate<? super T>)var0.get(0));
+         case 2 -> allOf((Predicate<? super T>)var0.get(0), (Predicate<? super T>)var0.get(1));
+         case 3 -> allOf((Predicate<? super T>)var0.get(0), (Predicate<? super T>)var0.get(1), (Predicate<? super T>)var0.get(2));
+         case 4 -> allOf(
+         (Predicate<? super T>)var0.get(0), (Predicate<? super T>)var0.get(1), (Predicate<? super T>)var0.get(2), (Predicate<? super T>)var0.get(3)
+      );
+         case 5 -> allOf(
+         (Predicate<? super T>)var0.get(0),
+         (Predicate<? super T>)var0.get(1),
+         (Predicate<? super T>)var0.get(2),
+         (Predicate<? super T>)var0.get(3),
+         (Predicate<? super T>)var0.get(4)
+      );
          default -> {
             Predicate[] var1 = var0.toArray(Predicate[]::new);
-            yield var1x -> {
-               for (Predicate var5 : var1) {
-                  if (!var5.test(var1x)) {
-                     return false;
-                  }
-               }
-
-               return true;
-            };
+            yield allOf(var1);
          }
       };
    }
 
-   public static <T> Predicate<T> anyOf(List<? extends Predicate<T>> var0) {
+   public static <T> Predicate<T> anyOf() {
+      return var0 -> false;
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0) {
+      return var0;
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1) {
+      return var2 -> var0.test(var2) || var1.test(var2);
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2) {
+      return var3 -> var0.test(var3) || var1.test(var3) || var2.test(var3);
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3) {
+      return var4 -> var0.test(var4) || var1.test(var4) || var2.test(var4) || var3.test(var4);
+   }
+
+   public static <T> Predicate<T> anyOf(
+      Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3, Predicate<? super T> var4
+   ) {
+      return var5 -> var0.test(var5) || var1.test(var5) || var2.test(var5) || var3.test(var5) || var4.test(var5);
+   }
+
+   @SafeVarargs
+   public static <T> Predicate<T> anyOf(Predicate<? super T>... var0) {
+      return var1 -> {
+         for (Predicate var5 : var0) {
+            if (var5.test(var1)) {
+               return true;
+            }
+         }
+
+         return false;
+      };
+   }
+
+   public static <T> Predicate<T> anyOf(List<? extends Predicate<? super T>> var0) {
       return switch (var0.size()) {
-         case 0 -> var0x -> false;
-         case 1 -> (Predicate)var0.get(0);
-         case 2 -> ((Predicate)var0.get(0)).or((Predicate<? super T>)var0.get(1));
+         case 0 -> anyOf();
+         case 1 -> anyOf((Predicate<? super T>)var0.get(0));
+         case 2 -> anyOf((Predicate<? super T>)var0.get(0), (Predicate<? super T>)var0.get(1));
+         case 3 -> anyOf((Predicate<? super T>)var0.get(0), (Predicate<? super T>)var0.get(1), (Predicate<? super T>)var0.get(2));
+         case 4 -> anyOf(
+         (Predicate<? super T>)var0.get(0), (Predicate<? super T>)var0.get(1), (Predicate<? super T>)var0.get(2), (Predicate<? super T>)var0.get(3)
+      );
+         case 5 -> anyOf(
+         (Predicate<? super T>)var0.get(0),
+         (Predicate<? super T>)var0.get(1),
+         (Predicate<? super T>)var0.get(2),
+         (Predicate<? super T>)var0.get(3),
+         (Predicate<? super T>)var0.get(4)
+      );
          default -> {
             Predicate[] var1 = var0.toArray(Predicate[]::new);
-            yield var1x -> {
-               for (Predicate var5 : var1) {
-                  if (var5.test(var1x)) {
-                     return true;
-                  }
-               }
-
-               return false;
-            };
+            yield anyOf(var1);
          }
       };
    }

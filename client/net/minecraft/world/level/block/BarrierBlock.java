@@ -33,7 +33,7 @@ public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return var1.getFluidState().isEmpty();
    }
 

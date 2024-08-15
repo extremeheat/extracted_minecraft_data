@@ -6,9 +6,9 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 
-public class LeashKnotModel<T extends Entity> extends HierarchicalModel<T> {
+public class LeashKnotModel extends EntityModel<EntityRenderState> {
    private static final String KNOT = "knot";
    private final ModelPart root;
    private final ModelPart knot;
@@ -32,8 +32,6 @@ public class LeashKnotModel<T extends Entity> extends HierarchicalModel<T> {
    }
 
    @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.knot.yRot = var5 * 0.017453292F;
-      this.knot.xRot = var6 * 0.017453292F;
+   public void setupAnim(EntityRenderState var1) {
    }
 }

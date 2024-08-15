@@ -18,9 +18,9 @@ import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -114,11 +114,11 @@ public abstract class BaseSpawner {
                      if (!var18.isValidPosition(var17, var1)) {
                         continue;
                      }
-                  } else if (!SpawnPlacements.checkSpawnRules((EntityType)var8.get(), var1, MobSpawnType.SPAWNER, var17, var1.getRandom())) {
+                  } else if (!SpawnPlacements.checkSpawnRules((EntityType)var8.get(), var1, EntitySpawnReason.SPAWNER, var17, var1.getRandom())) {
                      continue;
                   }
 
-                  Entity var22 = EntityType.loadEntityRecursive(var7, var1, var6x -> {
+                  Entity var22 = EntityType.loadEntityRecursive(var7, var1, EntitySpawnReason.SPAWNER, var6x -> {
                      var6x.moveTo(var11, var13, var15, var6x.getYRot(), var6x.getXRot());
                      return var6x;
                   });
@@ -148,13 +148,13 @@ public abstract class BaseSpawner {
 
                   var22.moveTo(var22.getX(), var22.getY(), var22.getZ(), var4.nextFloat() * 360.0F, 0.0F);
                   if (var22 instanceof Mob var20) {
-                     if (var5.getCustomSpawnRules().isEmpty() && !var20.checkSpawnRules(var1, MobSpawnType.SPAWNER) || !var20.checkSpawnObstruction(var1)) {
+                     if (var5.getCustomSpawnRules().isEmpty() && !var20.checkSpawnRules(var1, EntitySpawnReason.SPAWNER) || !var20.checkSpawnObstruction(var1)) {
                         continue;
                      }
 
                      boolean var21 = var5.getEntityToSpawn().size() == 1 && var5.getEntityToSpawn().contains("id", 8);
                      if (var21) {
-                        ((Mob)var22).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var22.blockPosition()), MobSpawnType.SPAWNER, null);
+                        ((Mob)var22).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var22.blockPosition()), EntitySpawnReason.SPAWNER, null);
                      }
 
                      var5.getEquipment().ifPresent(var20::equip);
@@ -261,7 +261,7 @@ public abstract class BaseSpawner {
             return null;
          }
 
-         this.displayEntity = EntityType.loadEntityRecursive(var3, var1, Function.identity());
+         this.displayEntity = EntityType.loadEntityRecursive(var3, var1, EntitySpawnReason.SPAWNER, Function.identity());
          if (var3.size() == 1 && this.displayEntity instanceof Mob) {
          }
       }

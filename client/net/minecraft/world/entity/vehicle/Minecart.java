@@ -1,14 +1,20 @@
 package net.minecraft.world.entity.vehicle;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class Minecart extends AbstractMinecart {
+   private float rotationOffset;
+   private float playerRotationOffset;
+
    public Minecart(EntityType<?> var1, Level var2) {
       super(var1, var2);
    }
@@ -19,14 +25,15 @@ public class Minecart extends AbstractMinecart {
 
    @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (var1.isSecondaryUseActive()) {
-         return InteractionResult.PASS;
-      } else if (this.isVehicle()) {
-         return InteractionResult.PASS;
-      } else if (!this.level().isClientSide) {
-         return var1.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
+      if (!var1.isSecondaryUseActive() && !this.isVehicle() && (this.level().isClientSide || var1.startRiding(this))) {
+         this.playerRotationOffset = this.rotationOffset;
+         if (!this.level().isClientSide) {
+            return (InteractionResult)(var1.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS);
+         } else {
+            return InteractionResult.SUCCESS;
+         }
       } else {
-         return InteractionResult.SUCCESS;
+         return InteractionResult.PASS;
       }
    }
 
@@ -54,5 +61,27 @@ public class Minecart extends AbstractMinecart {
    @Override
    public AbstractMinecart.Type getMinecartType() {
       return AbstractMinecart.Type.RIDEABLE;
+   }
+
+   @Override
+   public void tick() {
+      double var1 = (double)this.getYRot();
+      Vec3 var3 = this.position();
+      super.tick();
+      double var4 = ((double)this.getYRot() - var1) % 360.0;
+      if (this.level().isClientSide && var3.distanceTo(this.position()) > 0.01) {
+         this.rotationOffset += (float)var4;
+         this.rotationOffset %= 360.0F;
+      }
+   }
+
+   @Override
+   protected void positionRider(Entity var1, Entity.MoveFunction var2) {
+      super.positionRider(var1, var2);
+      if (this.level().isClientSide && var1 instanceof Player var3 && var3.shouldRotateWithMinecart() && useExperimentalMovement(this.level())) {
+         float var4 = (float)Mth.rotLerp(0.5, (double)this.playerRotationOffset, (double)this.rotationOffset);
+         var3.setYRot(var3.getYRot() - (var4 - this.playerRotationOffset));
+         this.playerRotationOffset = var4;
+      }
    }
 }

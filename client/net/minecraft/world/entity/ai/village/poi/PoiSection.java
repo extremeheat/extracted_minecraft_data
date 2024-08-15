@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import java.util.List;
@@ -30,27 +28,19 @@ public class PoiSection {
    private final Runnable setDirty;
    private boolean isValid;
 
-   public static Codec<PoiSection> codec(Runnable var0) {
-      return RecordCodecBuilder.create(
-            var1 -> var1.group(
-                     RecordCodecBuilder.point(var0),
-                     Codec.BOOL.lenientOptionalFieldOf("Valid", false).forGetter(var0xx -> var0xx.isValid),
-                     PoiRecord.codec(var0).listOf().fieldOf("Records").forGetter(var0xx -> ImmutableList.copyOf(var0xx.records.values()))
-                  )
-                  .apply(var1, PoiSection::new)
-         )
-         .orElseGet(Util.prefix("Failed to read POI section: ", LOGGER::error), () -> new PoiSection(var0, false, ImmutableList.of()));
-   }
-
    public PoiSection(Runnable var1) {
       this(var1, true, ImmutableList.of());
    }
 
-   private PoiSection(Runnable var1, boolean var2, List<PoiRecord> var3) {
+   PoiSection(Runnable var1, boolean var2, List<PoiRecord> var3) {
       super();
       this.setDirty = var1;
       this.isValid = var2;
       var3.forEach(this::add);
+   }
+
+   public PoiSection.Packed pack() {
+      return new PoiSection.Packed(this.isValid, this.records.values().stream().map(PoiRecord::pack).toList());
    }
 
    public Stream<PoiRecord> getRecords(Predicate<Holder<PoiType>> var1, PoiManager.Occupancy var2) {
@@ -144,4 +134,17 @@ public class PoiSection {
    boolean isValid() {
       return this.isValid;
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

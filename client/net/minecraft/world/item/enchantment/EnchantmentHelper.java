@@ -33,7 +33,7 @@ import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -116,6 +116,12 @@ public class EnchantmentHelper {
       } else {
          return var3;
       }
+   }
+
+   public static ItemStack createBook(EnchantmentInstance var0) {
+      ItemStack var1 = new ItemStack(Items.ENCHANTED_BOOK);
+      var1.enchant(var0.enchantment, var0.level);
+      return var1;
    }
 
    private static void runIterationOnItem(ItemStack var0, EnchantmentHelper.EnchantmentVisitor var1) {
@@ -256,7 +262,7 @@ public class EnchantmentHelper {
       return Math.max(0, var3.intValue());
    }
 
-   public static void onProjectileSpawned(ServerLevel var0, ItemStack var1, AbstractArrow var2, Consumer<Item> var3) {
+   public static void onProjectileSpawned(ServerLevel var0, ItemStack var1, Projectile var2, Consumer<Item> var3) {
       LivingEntity var4 = var2.getOwner() instanceof LivingEntity var5 ? var5 : null;
       EnchantedItemInUse var7 = new EnchantedItemInUse(var1, null, var4, var3);
       runIterationOnItem(var1, (var3x, var4x) -> var3x.value().onProjectileSpawned(var0, var4x, var7, var2));
@@ -415,20 +421,18 @@ public class EnchantmentHelper {
    }
 
    public static int getEnchantmentCost(RandomSource var0, int var1, int var2, ItemStack var3) {
-      Item var4 = var3.getItem();
-      int var5 = var4.getEnchantmentValue();
-      if (var5 <= 0) {
+      if (var3.getEnchantmentValue() <= 0) {
          return 0;
       } else {
          if (var2 > 15) {
             var2 = 15;
          }
 
-         int var6 = var0.nextInt(8) + 1 + (var2 >> 1) + var0.nextInt(var2 + 1);
+         int var4 = var0.nextInt(8) + 1 + (var2 >> 1) + var0.nextInt(var2 + 1);
          if (var1 == 0) {
-            return Math.max(var6 / 3, 1);
+            return Math.max(var4 / 3, 1);
          } else {
-            return var1 == 1 ? var6 * 2 / 3 + 1 : Math.max(var6, var2 * 2);
+            return var1 == 1 ? var4 * 2 / 3 + 1 : Math.max(var4, var2 * 2);
          }
       }
    }
@@ -457,28 +461,27 @@ public class EnchantmentHelper {
 
    public static List<EnchantmentInstance> selectEnchantment(RandomSource var0, ItemStack var1, int var2, Stream<Holder<Enchantment>> var3) {
       ArrayList var4 = Lists.newArrayList();
-      Item var5 = var1.getItem();
-      int var6 = var5.getEnchantmentValue();
-      if (var6 <= 0) {
+      int var5 = var1.getEnchantmentValue();
+      if (var5 <= 0) {
          return var4;
       } else {
-         var2 += 1 + var0.nextInt(var6 / 4 + 1) + var0.nextInt(var6 / 4 + 1);
-         float var7 = (var0.nextFloat() + var0.nextFloat() - 1.0F) * 0.15F;
-         var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var7), 1, 2147483647);
-         List var8 = getAvailableEnchantmentResults(var2, var1, var3);
-         if (!var8.isEmpty()) {
-            WeightedRandom.getRandomItem(var0, var8).ifPresent(var4::add);
+         var2 += 1 + var0.nextInt(var5 / 4 + 1) + var0.nextInt(var5 / 4 + 1);
+         float var6 = (var0.nextFloat() + var0.nextFloat() - 1.0F) * 0.15F;
+         var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var6), 1, 2147483647);
+         List var7 = getAvailableEnchantmentResults(var2, var1, var3);
+         if (!var7.isEmpty()) {
+            WeightedRandom.getRandomItem(var0, var7).ifPresent(var4::add);
 
             while (var0.nextInt(50) <= var2) {
                if (!var4.isEmpty()) {
-                  filterCompatibleEnchantments(var8, Util.lastOf(var4));
+                  filterCompatibleEnchantments(var7, Util.lastOf(var4));
                }
 
-               if (var8.isEmpty()) {
+               if (var7.isEmpty()) {
                   break;
                }
 
-               WeightedRandom.getRandomItem(var0, var8).ifPresent(var4::add);
+               WeightedRandom.getRandomItem(var0, var7).ifPresent(var4::add);
                var2 /= 2;
             }
          }

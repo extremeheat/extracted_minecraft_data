@@ -8,27 +8,6 @@ public class GenerationStep {
       super();
    }
 
-   public static enum Carving implements StringRepresentable {
-      AIR("air"),
-      LIQUID("liquid");
-
-      public static final Codec<GenerationStep.Carving> CODEC = StringRepresentable.fromEnum(GenerationStep.Carving::values);
-      private final String name;
-
-      private Carving(final String nullxx) {
-         this.name = nullxx;
-      }
-
-      public String getName() {
-         return this.name;
-      }
-
-      @Override
-      public String getSerializedName() {
-         return this.name;
-      }
-   }
-
    public static enum Decoration implements StringRepresentable {
       RAW_GENERATION("raw_generation"),
       LAKES("lakes"),

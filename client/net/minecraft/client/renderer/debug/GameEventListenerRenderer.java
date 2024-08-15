@@ -9,9 +9,9 @@ import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
@@ -58,7 +58,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
                      double var16x = var9x.x() + (double)var13.getListenerRadius();
                      double var18x = var9x.y() + (double)var13.getListenerRadius();
                      double var20x = var9x.z() + (double)var13.getListenerRadius();
-                     LevelRenderer.renderVoxelShape(
+                     DebugRenderer.renderVoxelShape(
                         var1, var11, Shapes.create(new AABB(var10x, var12, var14x, var16x, var18x, var20x)), -var3, -var5, -var7, 1.0F, 1.0F, 0.0F, 0.35F, true
                      );
                   }
@@ -70,7 +70,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
          for (GameEventListenerRenderer.TrackedListener var14 : this.trackedListeners) {
             var14.getPosition(var9)
                .ifPresent(
-                  var8 -> LevelRenderer.addChainedFilledBoxVertices(
+                  var8 -> ShapeRenderer.addChainedFilledBoxVertices(
                         var1,
                         var30,
                         var8.x() - 0.25 - var3,

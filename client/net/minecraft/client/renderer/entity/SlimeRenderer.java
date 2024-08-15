@@ -5,34 +5,45 @@ import net.minecraft.client.model.SlimeModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
+import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Slime;
 
-public class SlimeRenderer extends MobRenderer<Slime, SlimeModel<Slime>> {
+public class SlimeRenderer extends MobRenderer<Slime, SlimeRenderState, SlimeModel> {
    private static final ResourceLocation SLIME_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/slime/slime.png");
 
    public SlimeRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new SlimeModel<>(var1.bakeLayer(ModelLayers.SLIME)), 0.25F);
-      this.addLayer(new SlimeOuterLayer<>(this, var1.getModelSet()));
+      super(var1, new SlimeModel(var1.bakeLayer(ModelLayers.SLIME)), 0.25F);
+      this.addLayer(new SlimeOuterLayer(this, var1.getModelSet()));
    }
 
-   public void render(Slime var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      this.shadowRadius = 0.25F * (float)var1.getSize();
-      super.render(var1, var2, var3, var4, var5, var6);
+   public void render(SlimeRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+      this.shadowRadius = 0.25F * (float)var1.size;
+      super.render(var1, var2, var3, var4);
    }
 
-   protected void scale(Slime var1, PoseStack var2, float var3) {
-      float var4 = 0.999F;
+   protected void scale(SlimeRenderState var1, PoseStack var2) {
+      float var3 = 0.999F;
       var2.scale(0.999F, 0.999F, 0.999F);
       var2.translate(0.0F, 0.001F, 0.0F);
-      float var5 = (float)var1.getSize();
-      float var6 = Mth.lerp(var3, var1.oSquish, var1.squish) / (var5 * 0.5F + 1.0F);
-      float var7 = 1.0F / (var6 + 1.0F);
-      var2.scale(var7 * var5, 1.0F / var7 * var5, var7 * var5);
+      float var4 = (float)var1.size;
+      float var5 = var1.squish / (var4 * 0.5F + 1.0F);
+      float var6 = 1.0F / (var5 + 1.0F);
+      var2.scale(var6 * var4, 1.0F / var6 * var4, var6 * var4);
    }
 
-   public ResourceLocation getTextureLocation(Slime var1) {
+   public ResourceLocation getTextureLocation(SlimeRenderState var1) {
       return SLIME_LOCATION;
+   }
+
+   public SlimeRenderState createRenderState() {
+      return new SlimeRenderState();
+   }
+
+   public void extractRenderState(Slime var1, SlimeRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.squish = Mth.lerp(var3, var1.oSquish, var1.squish);
+      var2.size = var1.getSize();
    }
 }

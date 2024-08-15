@@ -1,22 +1,27 @@
 package net.minecraft.client.renderer.entity;
 
-import net.minecraft.client.model.HoglinModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.state.HoglinRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 
-public class HoglinRenderer extends MobRenderer<Hoglin, HoglinModel<Hoglin>> {
+public class HoglinRenderer extends AbstractHoglinRenderer<Hoglin> {
    private static final ResourceLocation HOGLIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/hoglin/hoglin.png");
 
    public HoglinRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new HoglinModel<>(var1.bakeLayer(ModelLayers.HOGLIN)), 0.7F);
+      super(var1, ModelLayers.HOGLIN, ModelLayers.HOGLIN_BABY, 0.7F);
    }
 
-   public ResourceLocation getTextureLocation(Hoglin var1) {
+   public ResourceLocation getTextureLocation(HoglinRenderState var1) {
       return HOGLIN_LOCATION;
    }
 
-   protected boolean isShaking(Hoglin var1) {
-      return super.isShaking(var1) || var1.isConverting();
+   public void extractRenderState(Hoglin var1, HoglinRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.isConverting = var1.isConverting();
+   }
+
+   protected boolean isShaking(HoglinRenderState var1) {
+      return super.isShaking(var1) || var1.isConverting;
    }
 }

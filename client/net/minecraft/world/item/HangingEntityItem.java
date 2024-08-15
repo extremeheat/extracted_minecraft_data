@@ -55,7 +55,7 @@ public class HangingEntityItem extends Item {
             var8 = new ItemFrame(var7, var4, var3);
          } else {
             if (this.type != EntityType.GLOW_ITEM_FRAME) {
-               return InteractionResult.sidedSuccess(var7.isClientSide);
+               return InteractionResult.SUCCESS;
             }
 
             var8 = new GlowItemFrame(var7, var4, var3);
@@ -74,7 +74,7 @@ public class HangingEntityItem extends Item {
             }
 
             var6.shrink(1);
-            return InteractionResult.sidedSuccess(var7.isClientSide);
+            return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.CONSUME;
          }
@@ -93,10 +93,8 @@ public class HangingEntityItem extends Item {
          CustomData var6 = var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
          if (!var6.isEmpty()) {
             var6.read(var5.createSerializationContext(NbtOps.INSTANCE), Painting.VARIANT_MAP_CODEC).result().ifPresentOrElse(var1x -> {
-               var1x.unwrapKey().ifPresent(var1xx -> {
-                  var3.add(Component.translatable(var1xx.location().toLanguageKey("painting", "title")).withStyle(ChatFormatting.YELLOW));
-                  var3.add(Component.translatable(var1xx.location().toLanguageKey("painting", "author")).withStyle(ChatFormatting.GRAY));
-               });
+               ((PaintingVariant)var1x.value()).title().ifPresent(var3::add);
+               ((PaintingVariant)var1x.value()).author().ifPresent(var3::add);
                var3.add(Component.translatable("painting.dimensions", ((PaintingVariant)var1x.value()).width(), ((PaintingVariant)var1x.value()).height()));
             }, () -> var3.add(TOOLTIP_RANDOM_VARIANT));
          } else if (var4.isCreative()) {

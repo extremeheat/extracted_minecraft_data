@@ -1,10 +1,8 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.DyeItem;
@@ -15,32 +13,30 @@ import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.level.Level;
 
 public class FireworkStarRecipe extends CustomRecipe {
-   private static final Ingredient SHAPE_INGREDIENT = Ingredient.of(
+   private static final Map<Item, FireworkExplosion.Shape> SHAPE_BY_ITEM = Map.of(
       Items.FIRE_CHARGE,
+      FireworkExplosion.Shape.LARGE_BALL,
       Items.FEATHER,
+      FireworkExplosion.Shape.BURST,
       Items.GOLD_NUGGET,
+      FireworkExplosion.Shape.STAR,
       Items.SKELETON_SKULL,
+      FireworkExplosion.Shape.CREEPER,
       Items.WITHER_SKELETON_SKULL,
+      FireworkExplosion.Shape.CREEPER,
       Items.CREEPER_HEAD,
+      FireworkExplosion.Shape.CREEPER,
       Items.PLAYER_HEAD,
+      FireworkExplosion.Shape.CREEPER,
       Items.DRAGON_HEAD,
+      FireworkExplosion.Shape.CREEPER,
       Items.ZOMBIE_HEAD,
-      Items.PIGLIN_HEAD
+      FireworkExplosion.Shape.CREEPER,
+      Items.PIGLIN_HEAD,
+      FireworkExplosion.Shape.CREEPER
    );
    private static final Ingredient TRAIL_INGREDIENT = Ingredient.of(Items.DIAMOND);
    private static final Ingredient TWINKLE_INGREDIENT = Ingredient.of(Items.GLOWSTONE_DUST);
-   private static final Map<Item, FireworkExplosion.Shape> SHAPE_BY_ITEM = Util.make(Maps.newHashMap(), var0 -> {
-      var0.put(Items.FIRE_CHARGE, FireworkExplosion.Shape.LARGE_BALL);
-      var0.put(Items.FEATHER, FireworkExplosion.Shape.BURST);
-      var0.put(Items.GOLD_NUGGET, FireworkExplosion.Shape.STAR);
-      var0.put(Items.SKELETON_SKULL, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.WITHER_SKELETON_SKULL, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.CREEPER_HEAD, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.PLAYER_HEAD, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.DRAGON_HEAD, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.ZOMBIE_HEAD, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.PIGLIN_HEAD, FireworkExplosion.Shape.CREEPER);
-   });
    private static final Ingredient GUNPOWDER_INGREDIENT = Ingredient.of(Items.GUNPOWDER);
 
    public FireworkStarRecipe(CraftingBookCategory var1) {
@@ -57,7 +53,7 @@ public class FireworkStarRecipe extends CustomRecipe {
       for (int var8 = 0; var8 < var1.size(); var8++) {
          ItemStack var9 = var1.getItem(var8);
          if (!var9.isEmpty()) {
-            if (SHAPE_INGREDIENT.test(var9)) {
+            if (SHAPE_BY_ITEM.containsKey(var9.getItem())) {
                if (var5) {
                   return false;
                }
@@ -103,8 +99,9 @@ public class FireworkStarRecipe extends CustomRecipe {
       for (int var7 = 0; var7 < var1.size(); var7++) {
          ItemStack var8 = var1.getItem(var7);
          if (!var8.isEmpty()) {
-            if (SHAPE_INGREDIENT.test(var8)) {
-               var3 = SHAPE_BY_ITEM.get(var8.getItem());
+            FireworkExplosion.Shape var9 = SHAPE_BY_ITEM.get(var8.getItem());
+            if (var9 != null) {
+               var3 = var9;
             } else if (TWINKLE_INGREDIENT.test(var8)) {
                var4 = true;
             } else if (TRAIL_INGREDIENT.test(var8)) {
@@ -115,9 +112,9 @@ public class FireworkStarRecipe extends CustomRecipe {
          }
       }
 
-      ItemStack var9 = new ItemStack(Items.FIREWORK_STAR);
-      var9.set(DataComponents.FIREWORK_EXPLOSION, new FireworkExplosion(var3, var6, IntList.of(), var5, var4));
-      return var9;
+      ItemStack var10 = new ItemStack(Items.FIREWORK_STAR);
+      var10.set(DataComponents.FIREWORK_EXPLOSION, new FireworkExplosion(var3, var6, IntList.of(), var5, var4));
+      return var10;
    }
 
    @Override

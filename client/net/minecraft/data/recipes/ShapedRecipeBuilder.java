@@ -12,6 +12,7 @@ import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -22,6 +23,7 @@ import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
 
 public class ShapedRecipeBuilder implements RecipeBuilder {
+   private final HolderGetter<Item> items;
    private final RecipeCategory category;
    private final Item result;
    private final int count;
@@ -32,23 +34,24 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
    private String group;
    private boolean showNotification = true;
 
-   public ShapedRecipeBuilder(RecipeCategory var1, ItemLike var2, int var3) {
+   private ShapedRecipeBuilder(HolderGetter<Item> var1, RecipeCategory var2, ItemLike var3, int var4) {
       super();
-      this.category = var1;
-      this.result = var2.asItem();
-      this.count = var3;
+      this.items = var1;
+      this.category = var2;
+      this.result = var3.asItem();
+      this.count = var4;
    }
 
-   public static ShapedRecipeBuilder shaped(RecipeCategory var0, ItemLike var1) {
-      return shaped(var0, var1, 1);
+   public static ShapedRecipeBuilder shaped(HolderGetter<Item> var0, RecipeCategory var1, ItemLike var2) {
+      return shaped(var0, var1, var2, 1);
    }
 
-   public static ShapedRecipeBuilder shaped(RecipeCategory var0, ItemLike var1, int var2) {
-      return new ShapedRecipeBuilder(var0, var1, var2);
+   public static ShapedRecipeBuilder shaped(HolderGetter<Item> var0, RecipeCategory var1, ItemLike var2, int var3) {
+      return new ShapedRecipeBuilder(var0, var1, var2, var3);
    }
 
    public ShapedRecipeBuilder define(Character var1, TagKey<Item> var2) {
-      return this.define(var1, Ingredient.of(var2));
+      return this.define(var1, Ingredient.of(this.items.getOrThrow(var2)));
    }
 
    public ShapedRecipeBuilder define(Character var1, ItemLike var2) {

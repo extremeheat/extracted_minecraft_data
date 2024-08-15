@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.PackedBitStorage;
 import org.slf4j.Logger;
 
@@ -42,368 +43,10 @@ public class ChunkPalettedStorageFix extends DataFix {
    private static final int NORTH_EAST_MASK = 2;
    private static final int NORTH_MASK = 1;
    static final Logger LOGGER = LogUtils.getLogger();
-   static final BitSet VIRTUAL = new BitSet(256);
-   static final BitSet FIX = new BitSet(256);
-   static final Dynamic<?> PUMPKIN = BlockStateData.parse("{Name:'minecraft:pumpkin'}");
-   static final Dynamic<?> SNOWY_PODZOL = BlockStateData.parse("{Name:'minecraft:podzol',Properties:{snowy:'true'}}");
-   static final Dynamic<?> SNOWY_GRASS = BlockStateData.parse("{Name:'minecraft:grass_block',Properties:{snowy:'true'}}");
-   static final Dynamic<?> SNOWY_MYCELIUM = BlockStateData.parse("{Name:'minecraft:mycelium',Properties:{snowy:'true'}}");
-   static final Dynamic<?> UPPER_SUNFLOWER = BlockStateData.parse("{Name:'minecraft:sunflower',Properties:{half:'upper'}}");
-   static final Dynamic<?> UPPER_LILAC = BlockStateData.parse("{Name:'minecraft:lilac',Properties:{half:'upper'}}");
-   static final Dynamic<?> UPPER_TALL_GRASS = BlockStateData.parse("{Name:'minecraft:tall_grass',Properties:{half:'upper'}}");
-   static final Dynamic<?> UPPER_LARGE_FERN = BlockStateData.parse("{Name:'minecraft:large_fern',Properties:{half:'upper'}}");
-   static final Dynamic<?> UPPER_ROSE_BUSH = BlockStateData.parse("{Name:'minecraft:rose_bush',Properties:{half:'upper'}}");
-   static final Dynamic<?> UPPER_PEONY = BlockStateData.parse("{Name:'minecraft:peony',Properties:{half:'upper'}}");
-   static final Map<String, Dynamic<?>> FLOWER_POT_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
-      var0.put("minecraft:air0", BlockStateData.parse("{Name:'minecraft:flower_pot'}"));
-      var0.put("minecraft:red_flower0", BlockStateData.parse("{Name:'minecraft:potted_poppy'}"));
-      var0.put("minecraft:red_flower1", BlockStateData.parse("{Name:'minecraft:potted_blue_orchid'}"));
-      var0.put("minecraft:red_flower2", BlockStateData.parse("{Name:'minecraft:potted_allium'}"));
-      var0.put("minecraft:red_flower3", BlockStateData.parse("{Name:'minecraft:potted_azure_bluet'}"));
-      var0.put("minecraft:red_flower4", BlockStateData.parse("{Name:'minecraft:potted_red_tulip'}"));
-      var0.put("minecraft:red_flower5", BlockStateData.parse("{Name:'minecraft:potted_orange_tulip'}"));
-      var0.put("minecraft:red_flower6", BlockStateData.parse("{Name:'minecraft:potted_white_tulip'}"));
-      var0.put("minecraft:red_flower7", BlockStateData.parse("{Name:'minecraft:potted_pink_tulip'}"));
-      var0.put("minecraft:red_flower8", BlockStateData.parse("{Name:'minecraft:potted_oxeye_daisy'}"));
-      var0.put("minecraft:yellow_flower0", BlockStateData.parse("{Name:'minecraft:potted_dandelion'}"));
-      var0.put("minecraft:sapling0", BlockStateData.parse("{Name:'minecraft:potted_oak_sapling'}"));
-      var0.put("minecraft:sapling1", BlockStateData.parse("{Name:'minecraft:potted_spruce_sapling'}"));
-      var0.put("minecraft:sapling2", BlockStateData.parse("{Name:'minecraft:potted_birch_sapling'}"));
-      var0.put("minecraft:sapling3", BlockStateData.parse("{Name:'minecraft:potted_jungle_sapling'}"));
-      var0.put("minecraft:sapling4", BlockStateData.parse("{Name:'minecraft:potted_acacia_sapling'}"));
-      var0.put("minecraft:sapling5", BlockStateData.parse("{Name:'minecraft:potted_dark_oak_sapling'}"));
-      var0.put("minecraft:red_mushroom0", BlockStateData.parse("{Name:'minecraft:potted_red_mushroom'}"));
-      var0.put("minecraft:brown_mushroom0", BlockStateData.parse("{Name:'minecraft:potted_brown_mushroom'}"));
-      var0.put("minecraft:deadbush0", BlockStateData.parse("{Name:'minecraft:potted_dead_bush'}"));
-      var0.put("minecraft:tallgrass2", BlockStateData.parse("{Name:'minecraft:potted_fern'}"));
-      var0.put("minecraft:cactus0", BlockStateData.getTag(2240));
-   });
-   static final Map<String, Dynamic<?>> SKULL_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
-      mapSkull(var0, 0, "skeleton", "skull");
-      mapSkull(var0, 1, "wither_skeleton", "skull");
-      mapSkull(var0, 2, "zombie", "head");
-      mapSkull(var0, 3, "player", "head");
-      mapSkull(var0, 4, "creeper", "head");
-      mapSkull(var0, 5, "dragon", "head");
-   });
-   static final Map<String, Dynamic<?>> DOOR_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
-      mapDoor(var0, "oak_door", 1024);
-      mapDoor(var0, "iron_door", 1136);
-      mapDoor(var0, "spruce_door", 3088);
-      mapDoor(var0, "birch_door", 3104);
-      mapDoor(var0, "jungle_door", 3120);
-      mapDoor(var0, "acacia_door", 3136);
-      mapDoor(var0, "dark_oak_door", 3152);
-   });
-   static final Map<String, Dynamic<?>> NOTE_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
-      for (int var1 = 0; var1 < 26; var1++) {
-         var0.put("true" + var1, BlockStateData.parse("{Name:'minecraft:note_block',Properties:{powered:'true',note:'" + var1 + "'}}"));
-         var0.put("false" + var1, BlockStateData.parse("{Name:'minecraft:note_block',Properties:{powered:'false',note:'" + var1 + "'}}"));
-      }
-   });
-   private static final Int2ObjectMap<String> DYE_COLOR_MAP = (Int2ObjectMap<String>)DataFixUtils.make(new Int2ObjectOpenHashMap(), var0 -> {
-      var0.put(0, "white");
-      var0.put(1, "orange");
-      var0.put(2, "magenta");
-      var0.put(3, "light_blue");
-      var0.put(4, "yellow");
-      var0.put(5, "lime");
-      var0.put(6, "pink");
-      var0.put(7, "gray");
-      var0.put(8, "light_gray");
-      var0.put(9, "cyan");
-      var0.put(10, "purple");
-      var0.put(11, "blue");
-      var0.put(12, "brown");
-      var0.put(13, "green");
-      var0.put(14, "red");
-      var0.put(15, "black");
-   });
-   static final Map<String, Dynamic<?>> BED_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
-      ObjectIterator var1 = DYE_COLOR_MAP.int2ObjectEntrySet().iterator();
-
-      while (var1.hasNext()) {
-         Entry var2 = (Entry)var1.next();
-         if (!Objects.equals(var2.getValue(), "red")) {
-            addBeds(var0, var2.getIntKey(), (String)var2.getValue());
-         }
-      }
-   });
-   static final Map<String, Dynamic<?>> BANNER_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
-      ObjectIterator var1 = DYE_COLOR_MAP.int2ObjectEntrySet().iterator();
-
-      while (var1.hasNext()) {
-         Entry var2 = (Entry)var1.next();
-         if (!Objects.equals(var2.getValue(), "white")) {
-            addBanners(var0, 15 - var2.getIntKey(), (String)var2.getValue());
-         }
-      }
-   });
-   static final Dynamic<?> AIR = BlockStateData.getTag(0);
    private static final int SIZE = 4096;
 
    public ChunkPalettedStorageFix(Schema var1, boolean var2) {
       super(var1, var2);
-   }
-
-   private static void mapSkull(Map<String, Dynamic<?>> var0, int var1, String var2, String var3) {
-      var0.put(var1 + "north", BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_" + var3 + "',Properties:{facing:'north'}}"));
-      var0.put(var1 + "east", BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_" + var3 + "',Properties:{facing:'east'}}"));
-      var0.put(var1 + "south", BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_" + var3 + "',Properties:{facing:'south'}}"));
-      var0.put(var1 + "west", BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_" + var3 + "',Properties:{facing:'west'}}"));
-
-      for (int var4 = 0; var4 < 16; var4++) {
-         var0.put("" + var1 + var4, BlockStateData.parse("{Name:'minecraft:" + var2 + "_" + var3 + "',Properties:{rotation:'" + var4 + "'}}"));
-      }
-   }
-
-   private static void mapDoor(Map<String, Dynamic<?>> var0, String var1, int var2) {
-      var0.put(
-         "minecraft:" + var1 + "eastlowerleftfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'lower',hinge:'left',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "eastlowerleftfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'lower',hinge:'left',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "eastlowerlefttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'lower',hinge:'left',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "eastlowerlefttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'lower',hinge:'left',open:'true',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "eastlowerrightfalsefalse", BlockStateData.getTag(var2));
-      var0.put(
-         "minecraft:" + var1 + "eastlowerrightfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'lower',hinge:'right',open:'false',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "eastlowerrighttruefalse", BlockStateData.getTag(var2 + 4));
-      var0.put(
-         "minecraft:" + var1 + "eastlowerrighttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'lower',hinge:'right',open:'true',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "eastupperleftfalsefalse", BlockStateData.getTag(var2 + 8));
-      var0.put("minecraft:" + var1 + "eastupperleftfalsetrue", BlockStateData.getTag(var2 + 10));
-      var0.put(
-         "minecraft:" + var1 + "eastupperlefttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'upper',hinge:'left',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "eastupperlefttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'upper',hinge:'left',open:'true',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "eastupperrightfalsefalse", BlockStateData.getTag(var2 + 9));
-      var0.put("minecraft:" + var1 + "eastupperrightfalsetrue", BlockStateData.getTag(var2 + 11));
-      var0.put(
-         "minecraft:" + var1 + "eastupperrighttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'upper',hinge:'right',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "eastupperrighttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'east',half:'upper',hinge:'right',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northlowerleftfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'lower',hinge:'left',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northlowerleftfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'lower',hinge:'left',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northlowerlefttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'lower',hinge:'left',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northlowerlefttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'lower',hinge:'left',open:'true',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "northlowerrightfalsefalse", BlockStateData.getTag(var2 + 3));
-      var0.put(
-         "minecraft:" + var1 + "northlowerrightfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'lower',hinge:'right',open:'false',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "northlowerrighttruefalse", BlockStateData.getTag(var2 + 7));
-      var0.put(
-         "minecraft:" + var1 + "northlowerrighttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'lower',hinge:'right',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northupperleftfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'upper',hinge:'left',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northupperleftfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'upper',hinge:'left',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northupperlefttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'upper',hinge:'left',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northupperlefttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'upper',hinge:'left',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northupperrightfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'upper',hinge:'right',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northupperrightfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'upper',hinge:'right',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northupperrighttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'upper',hinge:'right',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "northupperrighttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'north',half:'upper',hinge:'right',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southlowerleftfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'lower',hinge:'left',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southlowerleftfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'lower',hinge:'left',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southlowerlefttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'lower',hinge:'left',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southlowerlefttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'lower',hinge:'left',open:'true',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "southlowerrightfalsefalse", BlockStateData.getTag(var2 + 1));
-      var0.put(
-         "minecraft:" + var1 + "southlowerrightfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'lower',hinge:'right',open:'false',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "southlowerrighttruefalse", BlockStateData.getTag(var2 + 5));
-      var0.put(
-         "minecraft:" + var1 + "southlowerrighttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'lower',hinge:'right',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southupperleftfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'upper',hinge:'left',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southupperleftfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'upper',hinge:'left',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southupperlefttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'upper',hinge:'left',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southupperlefttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'upper',hinge:'left',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southupperrightfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'upper',hinge:'right',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southupperrightfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'upper',hinge:'right',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southupperrighttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'upper',hinge:'right',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "southupperrighttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'south',half:'upper',hinge:'right',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westlowerleftfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'lower',hinge:'left',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westlowerleftfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'lower',hinge:'left',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westlowerlefttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'lower',hinge:'left',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westlowerlefttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'lower',hinge:'left',open:'true',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "westlowerrightfalsefalse", BlockStateData.getTag(var2 + 2));
-      var0.put(
-         "minecraft:" + var1 + "westlowerrightfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'lower',hinge:'right',open:'false',powered:'true'}}")
-      );
-      var0.put("minecraft:" + var1 + "westlowerrighttruefalse", BlockStateData.getTag(var2 + 6));
-      var0.put(
-         "minecraft:" + var1 + "westlowerrighttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'lower',hinge:'right',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westupperleftfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'upper',hinge:'left',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westupperleftfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'upper',hinge:'left',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westupperlefttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'upper',hinge:'left',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westupperlefttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'upper',hinge:'left',open:'true',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westupperrightfalsefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'upper',hinge:'right',open:'false',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westupperrightfalsetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'upper',hinge:'right',open:'false',powered:'true'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westupperrighttruefalse",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'upper',hinge:'right',open:'true',powered:'false'}}")
-      );
-      var0.put(
-         "minecraft:" + var1 + "westupperrighttruetrue",
-         BlockStateData.parse("{Name:'minecraft:" + var1 + "',Properties:{facing:'west',half:'upper',hinge:'right',open:'true',powered:'true'}}")
-      );
-   }
-
-   private static void addBeds(Map<String, Dynamic<?>> var0, int var1, String var2) {
-      var0.put("southfalsefoot" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'south',occupied:'false',part:'foot'}}"));
-      var0.put("westfalsefoot" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'west',occupied:'false',part:'foot'}}"));
-      var0.put("northfalsefoot" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'north',occupied:'false',part:'foot'}}"));
-      var0.put("eastfalsefoot" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'east',occupied:'false',part:'foot'}}"));
-      var0.put("southfalsehead" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'south',occupied:'false',part:'head'}}"));
-      var0.put("westfalsehead" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'west',occupied:'false',part:'head'}}"));
-      var0.put("northfalsehead" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'north',occupied:'false',part:'head'}}"));
-      var0.put("eastfalsehead" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'east',occupied:'false',part:'head'}}"));
-      var0.put("southtruehead" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'south',occupied:'true',part:'head'}}"));
-      var0.put("westtruehead" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'west',occupied:'true',part:'head'}}"));
-      var0.put("northtruehead" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'north',occupied:'true',part:'head'}}"));
-      var0.put("easttruehead" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_bed',Properties:{facing:'east',occupied:'true',part:'head'}}"));
-   }
-
-   private static void addBanners(Map<String, Dynamic<?>> var0, int var1, String var2) {
-      for (int var3 = 0; var3 < 16; var3++) {
-         var0.put(var3 + "_" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_banner',Properties:{rotation:'" + var3 + "'}}"));
-      }
-
-      var0.put("north_" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_banner',Properties:{facing:'north'}}"));
-      var0.put("south_" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_banner',Properties:{facing:'south'}}"));
-      var0.put("west_" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_banner',Properties:{facing:'west'}}"));
-      var0.put("east_" + var1, BlockStateData.parse("{Name:'minecraft:" + var2 + "_wall_banner',Properties:{facing:'east'}}"));
    }
 
    public static String getName(Dynamic<?> var0) {
@@ -461,69 +104,6 @@ public class ChunkPalettedStorageFix extends DataFix {
       }
 
       return var4;
-   }
-
-   static {
-      FIX.set(2);
-      FIX.set(3);
-      FIX.set(110);
-      FIX.set(140);
-      FIX.set(144);
-      FIX.set(25);
-      FIX.set(86);
-      FIX.set(26);
-      FIX.set(176);
-      FIX.set(177);
-      FIX.set(175);
-      FIX.set(64);
-      FIX.set(71);
-      FIX.set(193);
-      FIX.set(194);
-      FIX.set(195);
-      FIX.set(196);
-      FIX.set(197);
-      VIRTUAL.set(54);
-      VIRTUAL.set(146);
-      VIRTUAL.set(25);
-      VIRTUAL.set(26);
-      VIRTUAL.set(51);
-      VIRTUAL.set(53);
-      VIRTUAL.set(67);
-      VIRTUAL.set(108);
-      VIRTUAL.set(109);
-      VIRTUAL.set(114);
-      VIRTUAL.set(128);
-      VIRTUAL.set(134);
-      VIRTUAL.set(135);
-      VIRTUAL.set(136);
-      VIRTUAL.set(156);
-      VIRTUAL.set(163);
-      VIRTUAL.set(164);
-      VIRTUAL.set(180);
-      VIRTUAL.set(203);
-      VIRTUAL.set(55);
-      VIRTUAL.set(85);
-      VIRTUAL.set(113);
-      VIRTUAL.set(188);
-      VIRTUAL.set(189);
-      VIRTUAL.set(190);
-      VIRTUAL.set(191);
-      VIRTUAL.set(192);
-      VIRTUAL.set(93);
-      VIRTUAL.set(94);
-      VIRTUAL.set(101);
-      VIRTUAL.set(102);
-      VIRTUAL.set(160);
-      VIRTUAL.set(106);
-      VIRTUAL.set(107);
-      VIRTUAL.set(183);
-      VIRTUAL.set(184);
-      VIRTUAL.set(185);
-      VIRTUAL.set(186);
-      VIRTUAL.set(187);
-      VIRTUAL.set(132);
-      VIRTUAL.set(139);
-      VIRTUAL.set(199);
    }
 
    static class DataLayer {
@@ -607,6 +187,495 @@ public class ChunkPalettedStorageFix extends DataFix {
       }
    }
 
+   static class MappingConstants {
+      static final BitSet VIRTUAL = new BitSet(256);
+      static final BitSet FIX = new BitSet(256);
+      static final Dynamic<?> PUMPKIN = ExtraDataFixUtils.blockState("minecraft:pumpkin");
+      static final Dynamic<?> SNOWY_PODZOL = ExtraDataFixUtils.blockState("minecraft:podzol", Map.of("snowy", "true"));
+      static final Dynamic<?> SNOWY_GRASS = ExtraDataFixUtils.blockState("minecraft:grass_block", Map.of("snowy", "true"));
+      static final Dynamic<?> SNOWY_MYCELIUM = ExtraDataFixUtils.blockState("minecraft:mycelium", Map.of("snowy", "true"));
+      static final Dynamic<?> UPPER_SUNFLOWER = ExtraDataFixUtils.blockState("minecraft:sunflower", Map.of("half", "upper"));
+      static final Dynamic<?> UPPER_LILAC = ExtraDataFixUtils.blockState("minecraft:lilac", Map.of("half", "upper"));
+      static final Dynamic<?> UPPER_TALL_GRASS = ExtraDataFixUtils.blockState("minecraft:tall_grass", Map.of("half", "upper"));
+      static final Dynamic<?> UPPER_LARGE_FERN = ExtraDataFixUtils.blockState("minecraft:large_fern", Map.of("half", "upper"));
+      static final Dynamic<?> UPPER_ROSE_BUSH = ExtraDataFixUtils.blockState("minecraft:rose_bush", Map.of("half", "upper"));
+      static final Dynamic<?> UPPER_PEONY = ExtraDataFixUtils.blockState("minecraft:peony", Map.of("half", "upper"));
+      static final Map<String, Dynamic<?>> FLOWER_POT_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
+         var0.put("minecraft:air0", ExtraDataFixUtils.blockState("minecraft:flower_pot"));
+         var0.put("minecraft:red_flower0", ExtraDataFixUtils.blockState("minecraft:potted_poppy"));
+         var0.put("minecraft:red_flower1", ExtraDataFixUtils.blockState("minecraft:potted_blue_orchid"));
+         var0.put("minecraft:red_flower2", ExtraDataFixUtils.blockState("minecraft:potted_allium"));
+         var0.put("minecraft:red_flower3", ExtraDataFixUtils.blockState("minecraft:potted_azure_bluet"));
+         var0.put("minecraft:red_flower4", ExtraDataFixUtils.blockState("minecraft:potted_red_tulip"));
+         var0.put("minecraft:red_flower5", ExtraDataFixUtils.blockState("minecraft:potted_orange_tulip"));
+         var0.put("minecraft:red_flower6", ExtraDataFixUtils.blockState("minecraft:potted_white_tulip"));
+         var0.put("minecraft:red_flower7", ExtraDataFixUtils.blockState("minecraft:potted_pink_tulip"));
+         var0.put("minecraft:red_flower8", ExtraDataFixUtils.blockState("minecraft:potted_oxeye_daisy"));
+         var0.put("minecraft:yellow_flower0", ExtraDataFixUtils.blockState("minecraft:potted_dandelion"));
+         var0.put("minecraft:sapling0", ExtraDataFixUtils.blockState("minecraft:potted_oak_sapling"));
+         var0.put("minecraft:sapling1", ExtraDataFixUtils.blockState("minecraft:potted_spruce_sapling"));
+         var0.put("minecraft:sapling2", ExtraDataFixUtils.blockState("minecraft:potted_birch_sapling"));
+         var0.put("minecraft:sapling3", ExtraDataFixUtils.blockState("minecraft:potted_jungle_sapling"));
+         var0.put("minecraft:sapling4", ExtraDataFixUtils.blockState("minecraft:potted_acacia_sapling"));
+         var0.put("minecraft:sapling5", ExtraDataFixUtils.blockState("minecraft:potted_dark_oak_sapling"));
+         var0.put("minecraft:red_mushroom0", ExtraDataFixUtils.blockState("minecraft:potted_red_mushroom"));
+         var0.put("minecraft:brown_mushroom0", ExtraDataFixUtils.blockState("minecraft:potted_brown_mushroom"));
+         var0.put("minecraft:deadbush0", ExtraDataFixUtils.blockState("minecraft:potted_dead_bush"));
+         var0.put("minecraft:tallgrass2", ExtraDataFixUtils.blockState("minecraft:potted_fern"));
+         var0.put("minecraft:cactus0", ExtraDataFixUtils.blockState("minecraft:potted_cactus"));
+      });
+      static final Map<String, Dynamic<?>> SKULL_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
+         mapSkull(var0, 0, "skeleton", "skull");
+         mapSkull(var0, 1, "wither_skeleton", "skull");
+         mapSkull(var0, 2, "zombie", "head");
+         mapSkull(var0, 3, "player", "head");
+         mapSkull(var0, 4, "creeper", "head");
+         mapSkull(var0, 5, "dragon", "head");
+      });
+      static final Map<String, Dynamic<?>> DOOR_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
+         mapDoor(var0, "oak_door");
+         mapDoor(var0, "iron_door");
+         mapDoor(var0, "spruce_door");
+         mapDoor(var0, "birch_door");
+         mapDoor(var0, "jungle_door");
+         mapDoor(var0, "acacia_door");
+         mapDoor(var0, "dark_oak_door");
+      });
+      static final Map<String, Dynamic<?>> NOTE_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
+         for (int var1 = 0; var1 < 26; var1++) {
+            var0.put("true" + var1, ExtraDataFixUtils.blockState("minecraft:note_block", Map.of("powered", "true", "note", String.valueOf(var1))));
+            var0.put("false" + var1, ExtraDataFixUtils.blockState("minecraft:note_block", Map.of("powered", "false", "note", String.valueOf(var1))));
+         }
+      });
+      private static final Int2ObjectMap<String> DYE_COLOR_MAP = (Int2ObjectMap<String>)DataFixUtils.make(new Int2ObjectOpenHashMap(), var0 -> {
+         var0.put(0, "white");
+         var0.put(1, "orange");
+         var0.put(2, "magenta");
+         var0.put(3, "light_blue");
+         var0.put(4, "yellow");
+         var0.put(5, "lime");
+         var0.put(6, "pink");
+         var0.put(7, "gray");
+         var0.put(8, "light_gray");
+         var0.put(9, "cyan");
+         var0.put(10, "purple");
+         var0.put(11, "blue");
+         var0.put(12, "brown");
+         var0.put(13, "green");
+         var0.put(14, "red");
+         var0.put(15, "black");
+      });
+      static final Map<String, Dynamic<?>> BED_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
+         ObjectIterator var1 = DYE_COLOR_MAP.int2ObjectEntrySet().iterator();
+
+         while (var1.hasNext()) {
+            Entry var2 = (Entry)var1.next();
+            if (!Objects.equals(var2.getValue(), "red")) {
+               addBeds(var0, var2.getIntKey(), (String)var2.getValue());
+            }
+         }
+      });
+      static final Map<String, Dynamic<?>> BANNER_BLOCK_MAP = (Map<String, Dynamic<?>>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
+         ObjectIterator var1 = DYE_COLOR_MAP.int2ObjectEntrySet().iterator();
+
+         while (var1.hasNext()) {
+            Entry var2 = (Entry)var1.next();
+            if (!Objects.equals(var2.getValue(), "white")) {
+               addBanners(var0, 15 - var2.getIntKey(), (String)var2.getValue());
+            }
+         }
+      });
+      static final Dynamic<?> AIR = ExtraDataFixUtils.blockState("minecraft:air");
+
+      private MappingConstants() {
+         super();
+      }
+
+      private static void mapSkull(Map<String, Dynamic<?>> var0, int var1, String var2, String var3) {
+         var0.put(var1 + "north", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "north")));
+         var0.put(var1 + "east", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "east")));
+         var0.put(var1 + "south", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "south")));
+         var0.put(var1 + "west", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "west")));
+
+         for (int var4 = 0; var4 < 16; var4++) {
+            var0.put("" + var1 + var4, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_" + var3, Map.of("rotation", String.valueOf(var4))));
+         }
+      }
+
+      private static void mapDoor(Map<String, Dynamic<?>> var0, String var1) {
+         String var2 = "minecraft:" + var1;
+         var0.put(
+            "minecraft:" + var1 + "eastlowerleftfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastlowerleftfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastlowerlefttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastlowerlefttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "lower", "hinge", "left", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastlowerrightfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastlowerrightfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastlowerrighttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastlowerrighttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "lower", "hinge", "right", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastupperleftfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastupperleftfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastupperlefttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastupperlefttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "upper", "hinge", "left", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastupperrightfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastupperrightfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastupperrighttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "eastupperrighttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "east", "half", "upper", "hinge", "right", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northlowerleftfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northlowerleftfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northlowerlefttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northlowerlefttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "lower", "hinge", "left", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northlowerrightfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northlowerrightfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northlowerrighttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northlowerrighttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "lower", "hinge", "right", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northupperleftfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northupperleftfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northupperlefttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northupperlefttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "upper", "hinge", "left", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northupperrightfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northupperrightfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northupperrighttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "northupperrighttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "north", "half", "upper", "hinge", "right", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southlowerleftfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southlowerleftfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southlowerlefttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southlowerlefttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "lower", "hinge", "left", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southlowerrightfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southlowerrightfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southlowerrighttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southlowerrighttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "lower", "hinge", "right", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southupperleftfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southupperleftfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southupperlefttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southupperlefttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "upper", "hinge", "left", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southupperrightfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southupperrightfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southupperrighttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "southupperrighttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "south", "half", "upper", "hinge", "right", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westlowerleftfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westlowerleftfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westlowerlefttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westlowerlefttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "lower", "hinge", "left", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westlowerrightfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westlowerrightfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westlowerrighttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westlowerrighttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "lower", "hinge", "right", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westupperleftfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westupperleftfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westupperlefttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westupperlefttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "upper", "hinge", "left", "open", "true", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westupperrightfalsefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "false", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westupperrightfalsetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "false", "powered", "true"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westupperrighttruefalse",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "true", "powered", "false"))
+         );
+         var0.put(
+            "minecraft:" + var1 + "westupperrighttruetrue",
+            ExtraDataFixUtils.blockState(var2, Map.of("facing", "west", "half", "upper", "hinge", "right", "open", "true", "powered", "true"))
+         );
+      }
+
+      private static void addBeds(Map<String, Dynamic<?>> var0, int var1, String var2) {
+         var0.put(
+            "southfalsefoot" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "south", "occupied", "false", "part", "foot"))
+         );
+         var0.put(
+            "westfalsefoot" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "west", "occupied", "false", "part", "foot"))
+         );
+         var0.put(
+            "northfalsefoot" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "north", "occupied", "false", "part", "foot"))
+         );
+         var0.put(
+            "eastfalsefoot" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "east", "occupied", "false", "part", "foot"))
+         );
+         var0.put(
+            "southfalsehead" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "south", "occupied", "false", "part", "head"))
+         );
+         var0.put(
+            "westfalsehead" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "west", "occupied", "false", "part", "head"))
+         );
+         var0.put(
+            "northfalsehead" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "north", "occupied", "false", "part", "head"))
+         );
+         var0.put(
+            "eastfalsehead" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "east", "occupied", "false", "part", "head"))
+         );
+         var0.put(
+            "southtruehead" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "south", "occupied", "true", "part", "head"))
+         );
+         var0.put(
+            "westtruehead" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "west", "occupied", "true", "part", "head"))
+         );
+         var0.put(
+            "northtruehead" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "north", "occupied", "true", "part", "head"))
+         );
+         var0.put(
+            "easttruehead" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_bed", Map.of("facing", "east", "occupied", "true", "part", "head"))
+         );
+      }
+
+      private static void addBanners(Map<String, Dynamic<?>> var0, int var1, String var2) {
+         for (int var3 = 0; var3 < 16; var3++) {
+            var0.put(var3 + "_" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_banner", Map.of("rotation", String.valueOf(var3))));
+         }
+
+         var0.put("north_" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_banner", Map.of("facing", "north")));
+         var0.put("south_" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_banner", Map.of("facing", "south")));
+         var0.put("west_" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_banner", Map.of("facing", "west")));
+         var0.put("east_" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_banner", Map.of("facing", "east")));
+      }
+
+      static {
+         FIX.set(2);
+         FIX.set(3);
+         FIX.set(110);
+         FIX.set(140);
+         FIX.set(144);
+         FIX.set(25);
+         FIX.set(86);
+         FIX.set(26);
+         FIX.set(176);
+         FIX.set(177);
+         FIX.set(175);
+         FIX.set(64);
+         FIX.set(71);
+         FIX.set(193);
+         FIX.set(194);
+         FIX.set(195);
+         FIX.set(196);
+         FIX.set(197);
+         VIRTUAL.set(54);
+         VIRTUAL.set(146);
+         VIRTUAL.set(25);
+         VIRTUAL.set(26);
+         VIRTUAL.set(51);
+         VIRTUAL.set(53);
+         VIRTUAL.set(67);
+         VIRTUAL.set(108);
+         VIRTUAL.set(109);
+         VIRTUAL.set(114);
+         VIRTUAL.set(128);
+         VIRTUAL.set(134);
+         VIRTUAL.set(135);
+         VIRTUAL.set(136);
+         VIRTUAL.set(156);
+         VIRTUAL.set(163);
+         VIRTUAL.set(164);
+         VIRTUAL.set(180);
+         VIRTUAL.set(203);
+         VIRTUAL.set(55);
+         VIRTUAL.set(85);
+         VIRTUAL.set(113);
+         VIRTUAL.set(188);
+         VIRTUAL.set(189);
+         VIRTUAL.set(190);
+         VIRTUAL.set(191);
+         VIRTUAL.set(192);
+         VIRTUAL.set(93);
+         VIRTUAL.set(94);
+         VIRTUAL.set(101);
+         VIRTUAL.set(102);
+         VIRTUAL.set(160);
+         VIRTUAL.set(106);
+         VIRTUAL.set(107);
+         VIRTUAL.set(183);
+         VIRTUAL.set(184);
+         VIRTUAL.set(185);
+         VIRTUAL.set(186);
+         VIRTUAL.set(187);
+         VIRTUAL.set(132);
+         VIRTUAL.set(139);
+         VIRTUAL.set(199);
+      }
+   }
+
    static class Section {
       private final CrudeIncrementalIntIdentityHashBiMap<Dynamic<?>> palette = CrudeIncrementalIntIdentityHashBiMap.create(32);
       private final List<Dynamic<?>> listTag;
@@ -629,15 +698,15 @@ public class ChunkPalettedStorageFix extends DataFix {
       public Dynamic<?> getBlock(int var1) {
          if (var1 >= 0 && var1 <= 4095) {
             Dynamic var2 = this.palette.byId(this.buffer[var1]);
-            return var2 == null ? ChunkPalettedStorageFix.AIR : var2;
+            return var2 == null ? ChunkPalettedStorageFix.MappingConstants.AIR : var2;
          } else {
-            return ChunkPalettedStorageFix.AIR;
+            return ChunkPalettedStorageFix.MappingConstants.AIR;
          }
       }
 
       public void setBlock(int var1, Dynamic<?> var2) {
          if (this.seen.add(var2)) {
-            this.listTag.add("%%FILTER_ME%%".equals(ChunkPalettedStorageFix.getName(var2)) ? ChunkPalettedStorageFix.AIR : var2);
+            this.listTag.add("%%FILTER_ME%%".equals(ChunkPalettedStorageFix.getName(var2)) ? ChunkPalettedStorageFix.MappingConstants.AIR : var2);
          }
 
          this.buffer[var1] = ChunkPalettedStorageFix.idFor(this.palette, var2);
@@ -660,20 +729,20 @@ public class ChunkPalettedStorageFix extends DataFix {
                .map(var0 -> new ChunkPalettedStorageFix.DataLayer(DataFixUtils.toArray(var0)))
                .result()
                .orElseGet(ChunkPalettedStorageFix.DataLayer::new);
-            this.seen.add(ChunkPalettedStorageFix.AIR);
-            ChunkPalettedStorageFix.idFor(this.palette, ChunkPalettedStorageFix.AIR);
-            this.listTag.add(ChunkPalettedStorageFix.AIR);
+            this.seen.add(ChunkPalettedStorageFix.MappingConstants.AIR);
+            ChunkPalettedStorageFix.idFor(this.palette, ChunkPalettedStorageFix.MappingConstants.AIR);
+            this.listTag.add(ChunkPalettedStorageFix.MappingConstants.AIR);
 
             for (int var5 = 0; var5 < 4096; var5++) {
                int var6 = var5 & 15;
                int var7 = var5 >> 8 & 15;
                int var8 = var5 >> 4 & 15;
                int var9 = var4.get(var6, var7, var8) << 12 | (var2.get(var5) & 255) << 4 | var3.get(var6, var7, var8);
-               if (ChunkPalettedStorageFix.FIX.get(var9 >> 4)) {
+               if (ChunkPalettedStorageFix.MappingConstants.FIX.get(var9 >> 4)) {
                   this.addFix(var9 >> 4, var5);
                }
 
-               if (ChunkPalettedStorageFix.VIRTUAL.get(var9 >> 4)) {
+               if (ChunkPalettedStorageFix.MappingConstants.VIRTUAL.get(var9 >> 4)) {
                   int var10 = ChunkPalettedStorageFix.getSideMask(var6 == 0, var6 == 15, var8 == 0, var8 == 15);
                   if (var10 == 0) {
                      this.update.add(var5);
@@ -758,12 +827,12 @@ public class ChunkPalettedStorageFix extends DataFix {
 
          for (ChunkPalettedStorageFix.Section var6 : this.sections) {
             if (var6 != null) {
-               ObjectIterator var7 = var6.toFix.entrySet().iterator();
+               ObjectIterator var7 = var6.toFix.int2ObjectEntrySet().iterator();
 
                while (var7.hasNext()) {
-                  java.util.Map.Entry var8 = (java.util.Map.Entry)var7.next();
+                  Entry var8 = (Entry)var7.next();
                   int var9 = var6.y << 12;
-                  switch (var8.getKey()) {
+                  switch (var8.getIntKey()) {
                      case 2:
                         IntListIterator var30 = ((IntList)var8.getValue()).iterator();
 
@@ -774,7 +843,7 @@ public class ChunkPalettedStorageFix extends DataFix {
                            if ("minecraft:grass_block".equals(ChunkPalettedStorageFix.getName(var61))) {
                               String var71 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var50, ChunkPalettedStorageFix.Direction.UP)));
                               if ("minecraft:snow".equals(var71) || "minecraft:snow_layer".equals(var71)) {
-                                 this.setBlock(var50, ChunkPalettedStorageFix.SNOWY_GRASS);
+                                 this.setBlock(var50, ChunkPalettedStorageFix.MappingConstants.SNOWY_GRASS);
                               }
                            }
                         }
@@ -789,7 +858,7 @@ public class ChunkPalettedStorageFix extends DataFix {
                            if ("minecraft:podzol".equals(ChunkPalettedStorageFix.getName(var60))) {
                               String var70 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var48, ChunkPalettedStorageFix.Direction.UP)));
                               if ("minecraft:snow".equals(var70) || "minecraft:snow_layer".equals(var70)) {
-                                 this.setBlock(var48, ChunkPalettedStorageFix.SNOWY_PODZOL);
+                                 this.setBlock(var48, ChunkPalettedStorageFix.MappingConstants.SNOWY_PODZOL);
                               }
                            }
                         }
@@ -805,7 +874,9 @@ public class ChunkPalettedStorageFix extends DataFix {
                               String var69 = Boolean.toString(var59.get("powered").asBoolean(false))
                                  + (byte)Math.min(Math.max(var59.get("note").asInt(0), 0), 24);
                               this.setBlock(
-                                 var46, ChunkPalettedStorageFix.NOTE_BLOCK_MAP.getOrDefault(var69, ChunkPalettedStorageFix.NOTE_BLOCK_MAP.get("false0"))
+                                 var46,
+                                 ChunkPalettedStorageFix.MappingConstants.NOTE_BLOCK_MAP
+                                    .getOrDefault(var69, ChunkPalettedStorageFix.MappingConstants.NOTE_BLOCK_MAP.get("false0"))
                               );
                            }
                         }
@@ -825,8 +896,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                                     + ChunkPalettedStorageFix.getProperty(var68, "occupied")
                                     + ChunkPalettedStorageFix.getProperty(var68, "part")
                                     + var75;
-                                 if (ChunkPalettedStorageFix.BED_BLOCK_MAP.containsKey(var78)) {
-                                    this.setBlock(var44, ChunkPalettedStorageFix.BED_BLOCK_MAP.get(var78));
+                                 if (ChunkPalettedStorageFix.MappingConstants.BED_BLOCK_MAP.containsKey(var78)) {
+                                    this.setBlock(var44, ChunkPalettedStorageFix.MappingConstants.BED_BLOCK_MAP.get(var78));
                                  }
                               }
                            }
@@ -850,14 +921,14 @@ public class ChunkPalettedStorageFix extends DataFix {
                               if ("lower".equals(ChunkPalettedStorageFix.getProperty(var67, "half"))) {
                                  int var74 = relative(var42, ChunkPalettedStorageFix.Direction.UP);
                                  Dynamic var77 = this.getBlock(var74);
-                                 String var16 = ChunkPalettedStorageFix.getName(var67);
-                                 if (var16.equals(ChunkPalettedStorageFix.getName(var77))) {
+                                 String var79 = ChunkPalettedStorageFix.getName(var67);
+                                 if (var79.equals(ChunkPalettedStorageFix.getName(var77))) {
                                     String var17 = ChunkPalettedStorageFix.getProperty(var67, "facing");
                                     String var18 = ChunkPalettedStorageFix.getProperty(var67, "open");
                                     String var19 = var2 ? "left" : ChunkPalettedStorageFix.getProperty(var77, "hinge");
                                     String var20 = var2 ? "false" : ChunkPalettedStorageFix.getProperty(var77, "powered");
-                                    this.setBlock(var42, ChunkPalettedStorageFix.DOOR_MAP.get(var16 + var17 + "lower" + var19 + var18 + var20));
-                                    this.setBlock(var74, ChunkPalettedStorageFix.DOOR_MAP.get(var16 + var17 + "upper" + var19 + var18 + var20));
+                                    this.setBlock(var42, ChunkPalettedStorageFix.MappingConstants.DOOR_MAP.get(var79 + var17 + "lower" + var19 + var18 + var20));
+                                    this.setBlock(var74, ChunkPalettedStorageFix.MappingConstants.DOOR_MAP.get(var79 + var17 + "upper" + var19 + var18 + var20));
                                  }
                               }
                            }
@@ -873,7 +944,7 @@ public class ChunkPalettedStorageFix extends DataFix {
                            if ("minecraft:carved_pumpkin".equals(ChunkPalettedStorageFix.getName(var56))) {
                               String var66 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var40, ChunkPalettedStorageFix.Direction.DOWN)));
                               if ("minecraft:grass_block".equals(var66) || "minecraft:dirt".equals(var66)) {
-                                 this.setBlock(var40, ChunkPalettedStorageFix.PUMPKIN);
+                                 this.setBlock(var40, ChunkPalettedStorageFix.MappingConstants.PUMPKIN);
                               }
                            }
                         }
@@ -888,7 +959,7 @@ public class ChunkPalettedStorageFix extends DataFix {
                            if ("minecraft:mycelium".equals(ChunkPalettedStorageFix.getName(var55))) {
                               String var65 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var38, ChunkPalettedStorageFix.Direction.UP)));
                               if ("minecraft:snow".equals(var65) || "minecraft:snow_layer".equals(var65)) {
-                                 this.setBlock(var38, ChunkPalettedStorageFix.SNOWY_MYCELIUM);
+                                 this.setBlock(var38, ChunkPalettedStorageFix.MappingConstants.SNOWY_MYCELIUM);
                               }
                            }
                         }
@@ -904,7 +975,8 @@ public class ChunkPalettedStorageFix extends DataFix {
                               String var64 = var54.get("Item").asString("") + var54.get("Data").asInt(0);
                               this.setBlock(
                                  var36,
-                                 ChunkPalettedStorageFix.FLOWER_POT_MAP.getOrDefault(var64, ChunkPalettedStorageFix.FLOWER_POT_MAP.get("minecraft:air0"))
+                                 ChunkPalettedStorageFix.MappingConstants.FLOWER_POT_MAP
+                                    .getOrDefault(var64, ChunkPalettedStorageFix.MappingConstants.FLOWER_POT_MAP.get("minecraft:air0"))
                               );
                            }
                         }
@@ -929,7 +1001,11 @@ public class ChunkPalettedStorageFix extends DataFix {
                               var53.remove("SkullType");
                               var53.remove("facing");
                               var53.remove("Rot");
-                              this.setBlock(var34, ChunkPalettedStorageFix.SKULL_MAP.getOrDefault(var76, ChunkPalettedStorageFix.SKULL_MAP.get("0north")));
+                              this.setBlock(
+                                 var34,
+                                 ChunkPalettedStorageFix.MappingConstants.SKULL_MAP
+                                    .getOrDefault(var76, ChunkPalettedStorageFix.MappingConstants.SKULL_MAP.get("0north"))
+                              );
                            }
                         }
                         break;
@@ -943,18 +1019,24 @@ public class ChunkPalettedStorageFix extends DataFix {
                            if ("upper".equals(ChunkPalettedStorageFix.getProperty(var52, "half"))) {
                               Dynamic var62 = this.getBlock(relative(var32, ChunkPalettedStorageFix.Direction.DOWN));
                               String var72 = ChunkPalettedStorageFix.getName(var62);
-                              if ("minecraft:sunflower".equals(var72)) {
-                                 this.setBlock(var32, ChunkPalettedStorageFix.UPPER_SUNFLOWER);
-                              } else if ("minecraft:lilac".equals(var72)) {
-                                 this.setBlock(var32, ChunkPalettedStorageFix.UPPER_LILAC);
-                              } else if ("minecraft:tall_grass".equals(var72)) {
-                                 this.setBlock(var32, ChunkPalettedStorageFix.UPPER_TALL_GRASS);
-                              } else if ("minecraft:large_fern".equals(var72)) {
-                                 this.setBlock(var32, ChunkPalettedStorageFix.UPPER_LARGE_FERN);
-                              } else if ("minecraft:rose_bush".equals(var72)) {
-                                 this.setBlock(var32, ChunkPalettedStorageFix.UPPER_ROSE_BUSH);
-                              } else if ("minecraft:peony".equals(var72)) {
-                                 this.setBlock(var32, ChunkPalettedStorageFix.UPPER_PEONY);
+                              switch (var72) {
+                                 case "minecraft:sunflower":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_SUNFLOWER);
+                                    break;
+                                 case "minecraft:lilac":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_LILAC);
+                                    break;
+                                 case "minecraft:tall_grass":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_TALL_GRASS);
+                                    break;
+                                 case "minecraft:large_fern":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_LARGE_FERN);
+                                    break;
+                                 case "minecraft:rose_bush":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_ROSE_BUSH);
+                                    break;
+                                 case "minecraft:peony":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_PEONY);
                               }
                            }
                         }
@@ -971,9 +1053,9 @@ public class ChunkPalettedStorageFix extends DataFix {
                            if (var12 != null) {
                               int var14 = var12.get("Base").asInt(0);
                               if (var14 != 15 && var14 >= 0 && var14 < 16) {
-                                 String var15 = ChunkPalettedStorageFix.getProperty(var13, var8.getKey() == 176 ? "rotation" : "facing") + "_" + var14;
-                                 if (ChunkPalettedStorageFix.BANNER_BLOCK_MAP.containsKey(var15)) {
-                                    this.setBlock(var11, ChunkPalettedStorageFix.BANNER_BLOCK_MAP.get(var15));
+                                 String var15 = ChunkPalettedStorageFix.getProperty(var13, var8.getIntKey() == 176 ? "rotation" : "facing") + "_" + var14;
+                                 if (ChunkPalettedStorageFix.MappingConstants.BANNER_BLOCK_MAP.containsKey(var15)) {
+                                    this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.BANNER_BLOCK_MAP.get(var15));
                                  }
                               }
                            }
@@ -995,19 +1077,25 @@ public class ChunkPalettedStorageFix extends DataFix {
       }
 
       public static int relative(int var0, ChunkPalettedStorageFix.Direction var1) {
+         int var10000;
          switch (var1.getAxis()) {
             case X:
-               int var2 = (var0 & 15) + var1.getAxisDirection().getStep();
-               return var2 >= 0 && var2 <= 15 ? var0 & -16 | var2 : -1;
+               int var4 = (var0 & 15) + var1.getAxisDirection().getStep();
+               var10000 = var4 >= 0 && var4 <= 15 ? var0 & -16 | var4 : -1;
+               break;
             case Y:
                int var3 = (var0 >> 8) + var1.getAxisDirection().getStep();
-               return var3 >= 0 && var3 <= 255 ? var0 & 0xFF | var3 << 8 : -1;
+               var10000 = var3 >= 0 && var3 <= 255 ? var0 & 0xFF | var3 << 8 : -1;
+               break;
             case Z:
-               int var4 = (var0 >> 4 & 15) + var1.getAxisDirection().getStep();
-               return var4 >= 0 && var4 <= 15 ? var0 & -241 | var4 << 4 : -1;
+               int var2 = (var0 >> 4 & 15) + var1.getAxisDirection().getStep();
+               var10000 = var2 >= 0 && var2 <= 15 ? var0 & -241 | var2 << 4 : -1;
+               break;
             default:
-               return -1;
+               throw new MatchException(null, null);
          }
+
+         return var10000;
       }
 
       private void setBlock(int var1, Dynamic<?> var2) {
@@ -1028,9 +1116,9 @@ public class ChunkPalettedStorageFix extends DataFix {
       public Dynamic<?> getBlock(int var1) {
          if (var1 >= 0 && var1 <= 65535) {
             ChunkPalettedStorageFix.Section var2 = this.getSection(var1);
-            return var2 == null ? ChunkPalettedStorageFix.AIR : var2.getBlock(var1 & 4095);
+            return var2 == null ? ChunkPalettedStorageFix.MappingConstants.AIR : var2.getBlock(var1 & 4095);
          } else {
-            return ChunkPalettedStorageFix.AIR;
+            return ChunkPalettedStorageFix.MappingConstants.AIR;
          }
       }
 

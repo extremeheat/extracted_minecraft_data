@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,6 +36,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -70,21 +72,12 @@ public class DispenserBlock extends BaseEntityBlock {
 
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof DispenserBlockEntity) {
-            var4.openMenu((DispenserBlockEntity)var6);
-            if (var6 instanceof DropperBlockEntity) {
-               var4.awardStat(Stats.INSPECT_DROPPER);
-            } else {
-               var4.awardStat(Stats.INSPECT_DISPENSER);
-            }
-         }
-
-         return InteractionResult.CONSUME;
+      if (!var2.isClientSide && var2.getBlockEntity(var3) instanceof DispenserBlockEntity var6) {
+         var4.openMenu(var6);
+         var4.awardStat(var6 instanceof DropperBlockEntity ? Stats.INSPECT_DROPPER : Stats.INSPECT_DISPENSER);
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    protected void dispenseFrom(ServerLevel var1, BlockState var2, BlockPos var3) {
@@ -112,7 +105,7 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    @Override
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3) || var2.hasNeighborSignal(var3.above());
       boolean var8 = var1.getValue(TRIGGERED);
       if (var7 && !var8) {

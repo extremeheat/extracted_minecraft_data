@@ -100,7 +100,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    @Override
-   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1) {
       return COLLIDER;
    }
 

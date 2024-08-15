@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.logging.LogUtils;
 import com.mojang.math.Axis;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -14,31 +13,41 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
-import org.slf4j.Logger;
 
-public abstract class LivingEntityRenderer<T extends LivingEntity, M extends EntityModel<T>> extends EntityRenderer<T> implements RenderLayerParent<T, M> {
-   private static final Logger LOGGER = LogUtils.getLogger();
+public abstract class LivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>>
+   extends EntityRenderer<T, S>
+   implements RenderLayerParent<S, M> {
    private static final float EYE_BED_OFFSET = 0.1F;
    protected M model;
-   protected final List<RenderLayer<T, M>> layers = Lists.newArrayList();
+   protected final ItemRenderer itemRenderer;
+   protected final List<RenderLayer<S, M>> layers = Lists.newArrayList();
 
    public LivingEntityRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
       super(var1);
+      this.itemRenderer = var1.getItemRenderer();
       this.model = (M)var2;
       this.shadowRadius = var3;
    }
 
-   protected final boolean addLayer(RenderLayer<T, M> var1) {
+   protected final boolean addLayer(RenderLayer<S, M> var1) {
       return this.layers.add(var1);
    }
 
@@ -47,96 +56,65 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       return this.model;
    }
 
-   public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      var4.pushPose();
-      this.model.attackTime = this.getAttackAnim((T)var1, var3);
-      this.model.riding = var1.isPassenger();
-      this.model.young = var1.isBaby();
-      float var7 = Mth.rotLerp(var3, var1.yBodyRotO, var1.yBodyRot);
-      float var8 = Mth.rotLerp(var3, var1.yHeadRotO, var1.yHeadRot);
-      float var9 = var8 - var7;
-      if (var1.isPassenger() && var1.getVehicle() instanceof LivingEntity var10) {
-         var7 = Mth.rotLerp(var3, var10.yBodyRotO, var10.yBodyRot);
-         var9 = var8 - var7;
-         float var26 = Mth.wrapDegrees(var9);
-         if (var26 < -85.0F) {
-            var26 = -85.0F;
-         }
-
-         if (var26 >= 85.0F) {
-            var26 = 85.0F;
-         }
-
-         var7 = var8 - var26;
-         if (var26 * var26 > 2500.0F) {
-            var7 += var26 * 0.2F;
-         }
-
-         var9 = var8 - var7;
+   protected AABB getBoundingBoxForCulling(T var1) {
+      AABB var2 = super.getBoundingBoxForCulling((T)var1);
+      if (var1.getItemBySlot(EquipmentSlot.HEAD).is(Items.DRAGON_HEAD)) {
+         float var3 = 0.5F;
+         return var2.inflate(0.5, 0.5, 0.5);
+      } else {
+         return var2;
       }
+   }
 
-      float var25 = Mth.lerp(var3, var1.xRotO, var1.getXRot());
-      if (isEntityUpsideDown(var1)) {
-         var25 *= -1.0F;
-         var9 *= -1.0F;
-      }
-
-      var9 = Mth.wrapDegrees(var9);
+   public void render(S var1, PoseStack var2, MultiBufferSource var3, int var4) {
+      var2.pushPose();
       if (var1.hasPose(Pose.SLEEPING)) {
-         Direction var27 = var1.getBedOrientation();
-         if (var27 != null) {
-            float var12 = var1.getEyeHeight(Pose.STANDING) - 0.1F;
-            var4.translate((float)(-var27.getStepX()) * var12, 0.0F, (float)(-var27.getStepZ()) * var12);
+         Direction var5 = var1.bedOrientation;
+         if (var5 != null) {
+            float var6 = var1.eyeHeight - 0.1F;
+            var2.translate((float)(-var5.getStepX()) * var6, 0.0F, (float)(-var5.getStepZ()) * var6);
          }
       }
 
-      float var28 = var1.getScale();
-      var4.scale(var28, var28, var28);
-      float var29 = this.getBob((T)var1, var3);
-      this.setupRotations((T)var1, var4, var29, var7, var3, var28);
-      var4.scale(-1.0F, -1.0F, 1.0F);
-      this.scale((T)var1, var4, var3);
-      var4.translate(0.0F, -1.501F, 0.0F);
-      float var13 = 0.0F;
-      float var14 = 0.0F;
-      if (!var1.isPassenger() && var1.isAlive()) {
-         var13 = var1.walkAnimation.speed(var3);
-         var14 = var1.walkAnimation.position(var3);
-         if (var1.isBaby()) {
-            var14 *= 3.0F;
-         }
-
-         if (var13 > 1.0F) {
-            var13 = 1.0F;
-         }
+      float var13 = var1.scale;
+      var2.scale(var13, var13, var13);
+      this.setupRotations((S)var1, var2, var1.bodyRot, var13);
+      var2.scale(-1.0F, -1.0F, 1.0F);
+      this.scale((S)var1, var2);
+      var2.translate(0.0F, -1.501F, 0.0F);
+      this.model.setupAnim((S)var1);
+      boolean var14 = this.isBodyVisible((S)var1);
+      boolean var7 = !var14 && !var1.isInvisibleToPlayer;
+      RenderType var8 = this.getRenderType((S)var1, var14, var7, var1.appearsGlowing);
+      if (var8 != null) {
+         VertexConsumer var9 = var3.getBuffer(var8);
+         int var10 = getOverlayCoords(var1, this.getWhiteOverlayProgress((S)var1));
+         int var11 = var7 ? 654311423 : -1;
+         int var12 = ARGB.multiply(var11, this.getModelTint((S)var1));
+         this.model.renderToBuffer(var2, var9, var4, var10, var12);
       }
 
-      this.model.prepareMobModel((T)var1, var14, var13, var3);
-      this.model.setupAnim((T)var1, var14, var13, var29, var9, var25);
-      Minecraft var15 = Minecraft.getInstance();
-      boolean var16 = this.isBodyVisible((T)var1);
-      boolean var17 = !var16 && !var1.isInvisibleTo(var15.player);
-      boolean var18 = var15.shouldEntityAppearGlowing(var1);
-      RenderType var19 = this.getRenderType((T)var1, var16, var17, var18);
-      if (var19 != null) {
-         VertexConsumer var20 = var5.getBuffer(var19);
-         int var21 = getOverlayCoords(var1, this.getWhiteOverlayProgress((T)var1, var3));
-         this.model.renderToBuffer(var4, var20, var6, var21, var17 ? 654311423 : -1);
-      }
-
-      if (!var1.isSpectator()) {
-         for (RenderLayer var31 : this.layers) {
-            var31.render(var4, var5, var6, var1, var14, var13, var3, var29, var9, var25);
+      if (this.shouldRenderLayers((S)var1)) {
+         for (RenderLayer var16 : this.layers) {
+            var16.render(var2, var3, var4, var1, var1.yRot, var1.xRot);
          }
       }
 
-      var4.popPose();
-      super.render((T)var1, var2, var3, var4, var5, var6);
+      var2.popPose();
+      super.render((S)var1, var2, var3, var4);
+   }
+
+   protected boolean shouldRenderLayers(S var1) {
+      return true;
+   }
+
+   protected int getModelTint(S var1) {
+      return -1;
    }
 
    @Nullable
-   protected RenderType getRenderType(T var1, boolean var2, boolean var3, boolean var4) {
-      ResourceLocation var5 = this.getTextureLocation((T)var1);
+   protected RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
+      ResourceLocation var5 = this.getTextureLocation((S)var1);
       if (var3) {
          return RenderType.itemEntityTranslucentCull(var5);
       } else if (var2) {
@@ -146,12 +124,12 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       }
    }
 
-   public static int getOverlayCoords(LivingEntity var0, float var1) {
-      return OverlayTexture.pack(OverlayTexture.u(var1), OverlayTexture.v(var0.hurtTime > 0 || var0.deathTime > 0));
+   public static int getOverlayCoords(LivingEntityRenderState var0, float var1) {
+      return OverlayTexture.pack(OverlayTexture.u(var1), OverlayTexture.v(var0.hasRedOverlay));
    }
 
-   protected boolean isBodyVisible(T var1) {
-      return !var1.isInvisible();
+   protected boolean isBodyVisible(S var1) {
+      return !var1.isInvisible;
    }
 
    private static float sleepDirectionToRotation(Direction var0) {
@@ -169,92 +147,85 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       }
    }
 
-   protected boolean isShaking(T var1) {
-      return var1.isFullyFrozen();
+   protected boolean isShaking(S var1) {
+      return var1.isFullyFrozen;
    }
 
-   protected void setupRotations(T var1, PoseStack var2, float var3, float var4, float var5, float var6) {
-      if (this.isShaking((T)var1)) {
-         var4 += (float)(Math.cos((double)var1.tickCount * 3.25) * 3.141592653589793 * 0.4000000059604645);
+   protected void setupRotations(S var1, PoseStack var2, float var3, float var4) {
+      if (this.isShaking((S)var1)) {
+         var3 += (float)(Math.cos((double)((float)Mth.floor(var1.ageInTicks) * 3.25F)) * 3.141592653589793 * 0.4000000059604645);
       }
 
       if (!var1.hasPose(Pose.SLEEPING)) {
-         var2.mulPose(Axis.YP.rotationDegrees(180.0F - var4));
+         var2.mulPose(Axis.YP.rotationDegrees(180.0F - var3));
       }
 
-      if (var1.deathTime > 0) {
-         float var7 = ((float)var1.deathTime + var5 - 1.0F) / 20.0F * 1.6F;
-         var7 = Mth.sqrt(var7);
-         if (var7 > 1.0F) {
-            var7 = 1.0F;
+      if (var1.deathTime > 0.0F) {
+         float var5 = (var1.deathTime - 1.0F) / 20.0F * 1.6F;
+         var5 = Mth.sqrt(var5);
+         if (var5 > 1.0F) {
+            var5 = 1.0F;
          }
 
-         var2.mulPose(Axis.ZP.rotationDegrees(var7 * this.getFlipDegrees((T)var1)));
-      } else if (var1.isAutoSpinAttack()) {
-         var2.mulPose(Axis.XP.rotationDegrees(-90.0F - var1.getXRot()));
-         var2.mulPose(Axis.YP.rotationDegrees(((float)var1.tickCount + var5) * -75.0F));
+         var2.mulPose(Axis.ZP.rotationDegrees(var5 * this.getFlipDegrees()));
+      } else if (var1.isAutoSpinAttack) {
+         var2.mulPose(Axis.XP.rotationDegrees(-90.0F - var1.xRot));
+         var2.mulPose(Axis.YP.rotationDegrees(var1.ageInTicks * -75.0F));
       } else if (var1.hasPose(Pose.SLEEPING)) {
-         Direction var10 = var1.getBedOrientation();
-         float var8 = var10 != null ? sleepDirectionToRotation(var10) : var4;
-         var2.mulPose(Axis.YP.rotationDegrees(var8));
-         var2.mulPose(Axis.ZP.rotationDegrees(this.getFlipDegrees((T)var1)));
+         Direction var8 = var1.bedOrientation;
+         float var6 = var8 != null ? sleepDirectionToRotation(var8) : var3;
+         var2.mulPose(Axis.YP.rotationDegrees(var6));
+         var2.mulPose(Axis.ZP.rotationDegrees(this.getFlipDegrees()));
          var2.mulPose(Axis.YP.rotationDegrees(270.0F));
-      } else if (isEntityUpsideDown(var1)) {
-         var2.translate(0.0F, (var1.getBbHeight() + 0.1F) / var6, 0.0F);
+      } else if (var1.isUpsideDown) {
+         var2.translate(0.0F, (var1.boundingBoxHeight + 0.1F) / var4, 0.0F);
          var2.mulPose(Axis.ZP.rotationDegrees(180.0F));
       }
    }
 
-   protected float getAttackAnim(T var1, float var2) {
-      return var1.getAttackAnim(var2);
-   }
-
-   protected float getBob(T var1, float var2) {
-      return (float)var1.tickCount + var2;
-   }
-
-   protected float getFlipDegrees(T var1) {
+   protected float getFlipDegrees() {
       return 90.0F;
    }
 
-   protected float getWhiteOverlayProgress(T var1, float var2) {
+   protected float getWhiteOverlayProgress(S var1) {
       return 0.0F;
    }
 
-   protected void scale(T var1, PoseStack var2, float var3) {
+   protected void scale(S var1, PoseStack var2) {
    }
 
-   protected boolean shouldShowName(T var1) {
-      double var2 = this.entityRenderDispatcher.distanceToSqr(var1);
-      float var4 = var1.isDiscrete() ? 32.0F : 64.0F;
-      if (var2 >= (double)(var4 * var4)) {
-         return false;
-      } else {
-         Minecraft var5 = Minecraft.getInstance();
-         LocalPlayer var6 = var5.player;
-         boolean var7 = !var1.isInvisibleTo(var6);
-         if (var1 != var6) {
-            PlayerTeam var8 = var1.getTeam();
-            PlayerTeam var9 = var6.getTeam();
-            if (var8 != null) {
-               Team.Visibility var10 = var8.getNameTagVisibility();
-               switch (var10) {
-                  case ALWAYS:
-                     return var7;
-                  case NEVER:
-                     return false;
-                  case HIDE_FOR_OTHER_TEAMS:
-                     return var9 == null ? var7 : var8.isAlliedTo(var9) && (var8.canSeeFriendlyInvisibles() || var7);
-                  case HIDE_FOR_OWN_TEAM:
-                     return var9 == null ? var7 : !var8.isAlliedTo(var9) && var7;
-                  default:
-                     return true;
-               }
+   protected boolean shouldShowName(T var1, double var2) {
+      if (var1.isDiscrete()) {
+         float var4 = 32.0F;
+         if (var2 >= 1024.0) {
+            return false;
+         }
+      }
+
+      Minecraft var10 = Minecraft.getInstance();
+      LocalPlayer var5 = var10.player;
+      boolean var6 = !var1.isInvisibleTo(var5);
+      if (var1 != var5) {
+         PlayerTeam var7 = var1.getTeam();
+         PlayerTeam var8 = var5.getTeam();
+         if (var7 != null) {
+            Team.Visibility var9 = var7.getNameTagVisibility();
+            switch (var9) {
+               case ALWAYS:
+                  return var6;
+               case NEVER:
+                  return false;
+               case HIDE_FOR_OTHER_TEAMS:
+                  return var8 == null ? var6 : var7.isAlliedTo(var8) && (var7.canSeeFriendlyInvisibles() || var6);
+               case HIDE_FOR_OWN_TEAM:
+                  return var8 == null ? var6 : !var7.isAlliedTo(var8) && var6;
+               default:
+                  return true;
             }
          }
-
-         return Minecraft.renderNames() && var1 != var5.getCameraEntity() && var7 && !var1.isVehicle();
       }
+
+      return Minecraft.renderNames() && var1 != var10.getCameraEntity() && var6 && !var1.isVehicle();
    }
 
    public static boolean isEntityUpsideDown(LivingEntity var0) {
@@ -268,7 +239,72 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       return false;
    }
 
-   protected float getShadowRadius(T var1) {
-      return super.getShadowRadius((T)var1) * var1.getScale();
+   protected float getShadowRadius(S var1) {
+      return super.getShadowRadius((S)var1) * var1.scale;
+   }
+
+   public void extractRenderState(T var1, S var2, float var3) {
+      super.extractRenderState((T)var1, (S)var2, var3);
+      float var4 = Mth.rotLerp(var3, var1.yHeadRotO, var1.yHeadRot);
+      var2.bodyRot = solveBodyRot(var1, var4, var3);
+      var2.yRot = Mth.wrapDegrees(var4 - var2.bodyRot);
+      var2.xRot = var1.getXRot(var3);
+      var2.customName = var1.getCustomName();
+      var2.isUpsideDown = isEntityUpsideDown(var1);
+      if (var2.isUpsideDown) {
+         var2.xRot *= -1.0F;
+         var2.yRot *= -1.0F;
+      }
+
+      var2.walkAnimationPos = var1.walkAnimation.position(var3);
+      var2.walkAnimationSpeed = var1.walkAnimation.speed(var3);
+      if (var1.getVehicle() instanceof LivingEntity var5) {
+         var2.wornHeadAnimationPos = var5.walkAnimation.position(var3);
+      } else {
+         var2.wornHeadAnimationPos = var2.walkAnimationPos;
+      }
+
+      var2.scale = var1.getScale();
+      var2.ageScale = var1.getAgeScale();
+      var2.pose = var1.getPose();
+      var2.bedOrientation = var1.getBedOrientation();
+      if (var2.bedOrientation != null) {
+         var2.eyeHeight = var1.getEyeHeight(Pose.STANDING);
+      }
+
+      var2.isFullyFrozen = var1.isFullyFrozen();
+      var2.isBaby = var1.isBaby();
+      var2.isInWater = var1.isInWater();
+      var2.isAutoSpinAttack = var1.isAutoSpinAttack();
+      var2.hasRedOverlay = var1.hurtTime > 0 || var1.deathTime > 0;
+      var2.headItem = var1.getItemBySlot(EquipmentSlot.HEAD).copy();
+      var2.headItemModel = this.itemRenderer.resolveItemModel(var2.headItem, var1, ItemDisplayContext.HEAD);
+      var2.mainArm = var1.getMainArm();
+      ItemStack var8 = var1.getItemHeldByArm(HumanoidArm.RIGHT);
+      ItemStack var9 = var1.getItemHeldByArm(HumanoidArm.LEFT);
+      var2.rightHandItem = var8.copy();
+      var2.leftHandItem = var9.copy();
+      var2.rightHandItemModel = this.itemRenderer.resolveItemModel(var8, var1, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+      var2.leftHandItemModel = this.itemRenderer.resolveItemModel(var9, var1, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+      var2.deathTime = var1.deathTime > 0 ? (float)var1.deathTime + var3 : 0.0F;
+      Minecraft var7 = Minecraft.getInstance();
+      var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var7.player);
+      var2.appearsGlowing = var7.shouldEntityAppearGlowing(var1);
+   }
+
+   private static float solveBodyRot(LivingEntity var0, float var1, float var2) {
+      if (var0.getVehicle() instanceof LivingEntity var3) {
+         float var7 = Mth.rotLerp(var2, var3.yBodyRotO, var3.yBodyRot);
+         float var5 = 85.0F;
+         float var6 = Mth.clamp(Mth.wrapDegrees(var1 - var7), -85.0F, 85.0F);
+         var7 = var1 - var6;
+         if (Math.abs(var6) > 50.0F) {
+            var7 += var6 * 0.2F;
+         }
+
+         return var7;
+      } else {
+         return Mth.rotLerp(var2, var0.yBodyRotO, var0.yBodyRot);
+      }
    }
 }

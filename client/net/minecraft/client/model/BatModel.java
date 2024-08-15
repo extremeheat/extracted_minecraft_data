@@ -8,9 +8,9 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.entity.ambient.Bat;
+import net.minecraft.client.renderer.entity.state.BatRenderState;
 
-public class BatModel extends HierarchicalModel<Bat> {
+public class BatModel extends EntityModel<BatRenderState> {
    private final ModelPart root;
    private final ModelPart head;
    private final ModelPart body;
@@ -68,14 +68,14 @@ public class BatModel extends HierarchicalModel<Bat> {
       return this.root;
    }
 
-   public void setupAnim(Bat var1, float var2, float var3, float var4, float var5, float var6) {
+   public void setupAnim(BatRenderState var1) {
       this.root().getAllParts().forEach(ModelPart::resetPose);
-      if (var1.isResting()) {
-         this.applyHeadRotation(var5);
+      if (var1.isResting) {
+         this.applyHeadRotation(var1.yRot);
       }
 
-      this.animate(var1.flyAnimationState, BatAnimation.BAT_FLYING, var4, 1.0F);
-      this.animate(var1.restAnimationState, BatAnimation.BAT_RESTING, var4, 1.0F);
+      this.animate(var1.flyAnimationState, BatAnimation.BAT_FLYING, var1.ageInTicks, 1.0F);
+      this.animate(var1.restAnimationState, BatAnimation.BAT_RESTING, var1.ageInTicks, 1.0F);
    }
 
    private void applyHeadRotation(float var1) {

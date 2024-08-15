@@ -14,6 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class Fireball extends AbstractHurtingProjectile implements ItemSupplier {
+   private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(Fireball.class, EntityDataSerializers.ITEM_STACK);
 
    public Fireball(EntityType<? extends Fireball> var1, Level var2) {
@@ -74,5 +75,10 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       return false;
+   }
+
+   @Override
+   public boolean shouldRenderAtSqrDistance(double var1) {
+      return this.tickCount < 2 && var1 < 12.25 ? false : super.shouldRenderAtSqrDistance(var1);
    }
 }

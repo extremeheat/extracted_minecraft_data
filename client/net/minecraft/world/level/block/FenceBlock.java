@@ -4,12 +4,8 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.LeadItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -49,7 +45,7 @@ public class FenceBlock extends CrossCollisionBlock {
    }
 
    @Override
-   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1) {
       return this.occlusionByIndex[this.getAABBIndex(var1)];
    }
 
@@ -75,17 +71,8 @@ public class FenceBlock extends CrossCollisionBlock {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if (var3.isClientSide) {
-         return var1.is(Items.LEAD) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
-      } else {
-         return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
-      }
-   }
-
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      return !var2.isClientSide() ? LeadItem.bindPlayerMobs(var4, var2, var3) : InteractionResult.PASS;
+      return (InteractionResult)(!var2.isClientSide() ? LeadItem.bindPlayerMobs(var4, var2, var3) : InteractionResult.PASS);
    }
 
    @Override

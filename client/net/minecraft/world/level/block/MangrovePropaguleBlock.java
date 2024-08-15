@@ -78,7 +78,7 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
 
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Vec3 var5 = var1.getOffset(var2, var3);
+      Vec3 var5 = var1.getOffset(var3);
       VoxelShape var6;
       if (!var1.getValue(HANGING)) {
          var6 = SHAPE_PER_AGE[4];

@@ -6,9 +6,9 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.client.renderer.entity.state.MinecartRenderState;
 
-public class MinecartModel<T extends Entity> extends HierarchicalModel<T> {
+public class MinecartModel extends EntityModel<MinecartRenderState> {
    private final ModelPart root;
 
    public MinecartModel(ModelPart var1) {
@@ -47,8 +47,7 @@ public class MinecartModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
+   public void setupAnim(MinecartRenderState var1) {
    }
 
    @Override

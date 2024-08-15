@@ -278,7 +278,7 @@ public class TeleportCommand {
       } else {
          float var14 = Mth.wrapDegrees(var10);
          float var15 = Mth.wrapDegrees(var11);
-         if (var1.teleportTo(var2, var3, var5, var7, var9, var14, var15)) {
+         if (var1.teleportTo(var2, var3, var5, var7, var9, var14, var15, true)) {
             if (var12 != null) {
                var12.perform(var0, var1);
             }

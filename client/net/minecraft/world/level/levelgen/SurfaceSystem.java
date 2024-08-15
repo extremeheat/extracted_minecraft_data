@@ -176,6 +176,10 @@ public class SurfaceSystem {
       return !var1.isAir() && var1.getFluidState().isEmpty();
    }
 
+   public int getSeaLevel() {
+      return this.seaLevel;
+   }
+
    @Deprecated
    public Optional<BlockState> topMaterial(
       SurfaceRules.RuleSource var1, CarvingContext var2, Function<BlockPos, Holder<Biome>> var3, ChunkAccess var4, NoiseChunk var5, BlockPos var6, boolean var7
@@ -235,7 +239,7 @@ public class SurfaceSystem {
          double var16 = 1.5;
          double var18 = Math.abs(this.icebergPillarRoofNoise.getValue((double)var5 * 1.17, 0.0, (double)var6 * 1.17) * 1.5);
          double var20 = Math.min(var10 * var10 * 1.2, Math.ceil(var18 * 40.0) + 14.0);
-         if (var2.shouldMeltFrozenOceanIcebergSlightly(var4.set(var5, 63, var6))) {
+         if (var2.shouldMeltFrozenOceanIcebergSlightly(var4.set(var5, this.seaLevel, var6), this.seaLevel)) {
             var20 -= 2.0;
          }
 

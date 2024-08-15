@@ -32,6 +32,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 
 public class GoatAi {
    public static final int RAM_PREPARE_TIME = 20;
@@ -49,7 +50,11 @@ public class GoatAi {
    private static final UniformInt TIME_BETWEEN_RAMS = UniformInt.of(600, 6000);
    private static final UniformInt TIME_BETWEEN_RAMS_SCREAMER = UniformInt.of(100, 300);
    private static final TargetingConditions RAM_TARGET_CONDITIONS = TargetingConditions.forCombat()
-      .selector(var0 -> !var0.getType().equals(EntityType.GOAT) && var0.level().getWorldBorder().isWithinBounds(var0.getBoundingBox()));
+      .selector(
+         var0 -> !var0.getType().equals(EntityType.GOAT)
+               && (var0.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || !var0.getType().equals(EntityType.ARMOR_STAND))
+               && var0.level().getWorldBorder().isWithinBounds(var0.getBoundingBox())
+      );
    private static final float SPEED_MULTIPLIER_WHEN_RAMMING = 3.0F;
    public static final int RAM_MIN_DISTANCE = 4;
    public static final float ADULT_RAM_KNOCKBACK_FORCE = 2.5F;

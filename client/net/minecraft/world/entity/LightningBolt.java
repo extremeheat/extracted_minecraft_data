@@ -42,7 +42,6 @@ public class LightningBolt extends Entity {
 
    public LightningBolt(EntityType<? extends LightningBolt> var1, Level var2) {
       super(var1, var2);
-      this.noCulling = true;
       this.life = 2;
       this.seed = this.random.nextLong();
       this.flashes = this.random.nextInt(3) + 1;

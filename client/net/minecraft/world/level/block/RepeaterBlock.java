@@ -47,7 +47,7 @@ public class RepeaterBlock extends DiodeBlock {
          return InteractionResult.PASS;
       } else {
          var2.setBlock(var3, var1.cycle(DELAY), 3);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 

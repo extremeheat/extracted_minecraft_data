@@ -8,10 +8,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -102,15 +102,15 @@ public abstract class Monster extends PathfinderMob implements Enemy {
    }
 
    public static boolean checkMonsterSpawnRules(
-      EntityType<? extends Monster> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
+      EntityType<? extends Monster> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4
    ) {
       return var1.getDifficulty() != Difficulty.PEACEFUL
-         && (MobSpawnType.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4))
+         && (EntitySpawnReason.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4))
          && checkMobSpawnRules(var0, var1, var2, var3, var4);
    }
 
    public static boolean checkAnyLightMonsterSpawnRules(
-      EntityType<? extends Monster> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
+      EntityType<? extends Monster> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4
    ) {
       return var1.getDifficulty() != Difficulty.PEACEFUL && checkMobSpawnRules(var0, var1, var2, var3, var4);
    }

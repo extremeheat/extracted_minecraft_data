@@ -100,9 +100,33 @@ public class StructureUtils {
       StructureBlockEntity var6 = (StructureBlockEntity)var4.getBlockEntity(var1);
       var6.setIgnoreEntities(false);
       var6.setStructureName(ResourceLocation.parse(var0));
+      var6.setMetaData(var0);
       var6.setStructureSize(var2);
       var6.setMode(StructureMode.SAVE);
       var6.setShowBoundingBox(true);
+   }
+
+   public static BlockPos getStartCorner(GameTestInfo var0, BlockPos var1, Rotation var2, ServerLevel var3) {
+      Vec3i var4 = var3.getStructureManager()
+         .get(ResourceLocation.parse(var0.getStructureName()))
+         .orElseThrow(() -> new IllegalStateException("Missing test structure: " + var0.getStructureName()))
+         .getSize();
+      BlockPos var5;
+      if (var2 == Rotation.NONE) {
+         var5 = var1;
+      } else if (var2 == Rotation.CLOCKWISE_90) {
+         var5 = var1.offset(var4.getZ() - 1, 0, 0);
+      } else if (var2 == Rotation.CLOCKWISE_180) {
+         var5 = var1.offset(var4.getX() - 1, 0, var4.getZ() - 1);
+      } else {
+         if (var2 != Rotation.COUNTERCLOCKWISE_90) {
+            throw new IllegalArgumentException("Invalid rotation: " + var2);
+         }
+
+         var5 = var1.offset(0, 0, var4.getX() - 1);
+      }
+
+      return var5;
    }
 
    public static StructureBlockEntity prepareTestStructure(GameTestInfo var0, BlockPos var1, Rotation var2, ServerLevel var3) {
@@ -111,21 +135,7 @@ public class StructureUtils {
          .orElseThrow(() -> new IllegalStateException("Missing test structure: " + var0.getStructureName()))
          .getSize();
       BoundingBox var5 = getStructureBoundingBox(var1, var4, var2);
-      BlockPos var6;
-      if (var2 == Rotation.NONE) {
-         var6 = var1;
-      } else if (var2 == Rotation.CLOCKWISE_90) {
-         var6 = var1.offset(var4.getZ() - 1, 0, 0);
-      } else if (var2 == Rotation.CLOCKWISE_180) {
-         var6 = var1.offset(var4.getX() - 1, 0, var4.getZ() - 1);
-      } else {
-         if (var2 != Rotation.COUNTERCLOCKWISE_90) {
-            throw new IllegalArgumentException("Invalid rotation: " + var2);
-         }
-
-         var6 = var1.offset(0, 0, var4.getX() - 1);
-      }
-
+      BlockPos var6 = getStartCorner(var0, var1, var2, var3);
       forceLoadChunks(var5, var3);
       clearSpaceForStructure(var5, var3);
       return createStructureBlock(var0, var6.below(), var2, var3);

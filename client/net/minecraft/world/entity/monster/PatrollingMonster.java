@@ -9,9 +9,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -64,21 +64,21 @@ public abstract class PatrollingMonster extends Monster {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
-      if (var3 != MobSpawnType.PATROL
-         && var3 != MobSpawnType.EVENT
-         && var3 != MobSpawnType.STRUCTURE
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      if (var3 != EntitySpawnReason.PATROL
+         && var3 != EntitySpawnReason.EVENT
+         && var3 != EntitySpawnReason.STRUCTURE
          && var1.getRandom().nextFloat() < 0.06F
          && this.canBeLeader()) {
          this.patrolLeader = true;
       }
 
       if (this.isPatrolLeader()) {
-         this.setItemSlot(EquipmentSlot.HEAD, Raid.getLeaderBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
+         this.setItemSlot(EquipmentSlot.HEAD, Raid.getOminousBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
          this.setDropChance(EquipmentSlot.HEAD, 2.0F);
       }
 
-      if (var3 == MobSpawnType.PATROL) {
+      if (var3 == EntitySpawnReason.PATROL) {
          this.patrolling = true;
       }
 
@@ -86,7 +86,7 @@ public abstract class PatrollingMonster extends Monster {
    }
 
    public static boolean checkPatrollingMonsterSpawnRules(
-      EntityType<? extends PatrollingMonster> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
+      EntityType<? extends PatrollingMonster> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4
    ) {
       return var1.getBrightness(LightLayer.BLOCK, var3) > 8 ? false : checkAnyLightMonsterSpawnRules(var0, var1, var2, var3, var4);
    }

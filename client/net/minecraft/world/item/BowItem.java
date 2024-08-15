@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -77,14 +77,14 @@ public class BowItem extends ProjectileWeaponItem {
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       boolean var5 = !var2.getProjectile(var4).isEmpty();
       if (!var2.hasInfiniteMaterials() && !var5) {
-         return InteractionResultHolder.fail(var4);
+         return InteractionResult.FAIL;
       } else {
          var2.startUsingItem(var3);
-         return InteractionResultHolder.consume(var4);
+         return InteractionResult.CONSUME;
       }
    }
 

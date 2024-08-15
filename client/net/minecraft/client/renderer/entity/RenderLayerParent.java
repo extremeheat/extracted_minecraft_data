@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
 
-public interface RenderLayerParent<T extends Entity, M extends EntityModel<T>> {
+public interface RenderLayerParent<S extends EntityRenderState, M extends EntityModel<? super S>> {
    M getModel();
 
-   ResourceLocation getTextureLocation(T var1);
+   ResourceLocation getTextureLocation(S var1);
 }

@@ -19,7 +19,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -62,19 +62,19 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       ChargedProjectiles var5 = var4.get(DataComponents.CHARGED_PROJECTILES);
       if (var5 != null && !var5.isEmpty()) {
          this.performShooting(var1, var2, var3, var4, getShootingPower(var5), 1.0F, null);
-         return InteractionResultHolder.consume(var4);
+         return InteractionResult.CONSUME;
       } else if (!var2.getProjectile(var4).isEmpty()) {
          this.startSoundPlayed = false;
          this.midLoadSoundPlayed = false;
          var2.startUsingItem(var3);
-         return InteractionResultHolder.consume(var4);
+         return InteractionResult.CONSUME;
       } else {
-         return InteractionResultHolder.fail(var4);
+         return InteractionResult.FAIL;
       }
    }
 

@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -50,10 +51,10 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       int var7 = (int)(41.0F * this.scrollOffs);
       ResourceLocation var8 = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      var1.blitSprite(var8, var5 + 119, var6 + 15 + var7, 12, 15);
+      var1.blitSprite(RenderType::guiTextured, var8, var5 + 119, var6 + 15 + var7, 12, 15);
       int var9 = this.leftPos + 52;
       int var10 = this.topPos + 14;
       int var11 = this.startIndex + 12;
@@ -98,7 +99,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             var12 = RECIPE_SPRITE;
          }
 
-         var1.blitSprite(var12, var9, var11 - 1, 16, 18);
+         var1.blitSprite(RenderType::guiTextured, var12, var9, var11 - 1, 16, 18);
       }
    }
 

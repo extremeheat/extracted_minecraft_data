@@ -36,6 +36,8 @@ public class GlStateManager {
    private static final GlStateManager.ColorLogicState COLOR_LOGIC = new GlStateManager.ColorLogicState();
    private static final GlStateManager.StencilState STENCIL = new GlStateManager.StencilState();
    private static final GlStateManager.ScissorState SCISSOR = new GlStateManager.ScissorState();
+   private static final GlStateManager.FramebufferState READ_FRAMEBUFFER = new GlStateManager.FramebufferState();
+   private static final GlStateManager.FramebufferState DRAW_FRAMEBUFFER = new GlStateManager.FramebufferState();
    private static int activeTexture;
    private static final GlStateManager.TextureState[] TEXTURES = IntStream.range(0, 12)
       .mapToObj(var0 -> new GlStateManager.TextureState())
@@ -352,7 +354,16 @@ public class GlStateManager {
 
    public static void _glBindFramebuffer(int var0, int var1) {
       RenderSystem.assertOnRenderThreadOrInit();
-      GL30.glBindFramebuffer(var0, var1);
+
+      boolean var2 = switch (var0) {
+         case 36008 -> READ_FRAMEBUFFER.update(var1);
+         case 36009 -> DRAW_FRAMEBUFFER.update(var1);
+         case 36160 -> READ_FRAMEBUFFER.update(var1) | DRAW_FRAMEBUFFER.update(var1);
+         default -> true;
+      };
+      if (var2) {
+         GL30.glBindFramebuffer(var0, var1);
+      }
    }
 
    public static void _glBlitFrameBuffer(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
@@ -667,10 +678,10 @@ public class GlStateManager {
       GL11.glClearStencil(var0);
    }
 
-   public static void _clear(int var0, boolean var1) {
+   public static void _clear(int var0) {
       RenderSystem.assertOnRenderThreadOrInit();
       GL11.glClear(var0);
-      if (var1) {
+      if (MacosUtil.IS_MACOS) {
          _getError();
       }
    }
@@ -837,6 +848,23 @@ public class GlStateManager {
 
       private DestFactor(final int nullxx) {
          this.value = nullxx;
+      }
+   }
+
+   static class FramebufferState {
+      public int binding;
+
+      FramebufferState() {
+         super();
+      }
+
+      public boolean update(int var1) {
+         if (var1 != this.binding) {
+            this.binding = var1;
+            return true;
+         } else {
+            return false;
+         }
       }
    }
 

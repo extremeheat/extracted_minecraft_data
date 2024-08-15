@@ -5,6 +5,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
@@ -16,12 +17,12 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
       super(var1, var2);
    }
 
-   public ThrownExperienceBottle(Level var1, LivingEntity var2) {
-      super(EntityType.EXPERIENCE_BOTTLE, var2, var1);
+   public ThrownExperienceBottle(Level var1, LivingEntity var2, ItemStack var3) {
+      super(EntityType.EXPERIENCE_BOTTLE, var2, var1, var3);
    }
 
-   public ThrownExperienceBottle(Level var1, double var2, double var4, double var6) {
-      super(EntityType.EXPERIENCE_BOTTLE, var2, var4, var6, var1);
+   public ThrownExperienceBottle(Level var1, double var2, double var4, double var6, ItemStack var8) {
+      super(EntityType.EXPERIENCE_BOTTLE, var2, var4, var6, var1, var8);
    }
 
    @Override

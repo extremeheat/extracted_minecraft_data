@@ -28,13 +28,11 @@ public class LeadItem extends Item {
       if (var4.is(BlockTags.FENCES)) {
          Player var5 = var1.getPlayer();
          if (!var2.isClientSide && var5 != null) {
-            bindPlayerMobs(var5, var2, var3);
+            return bindPlayerMobs(var5, var2, var3);
          }
-
-         return InteractionResult.sidedSuccess(var2.isClientSide);
-      } else {
-         return InteractionResult.PASS;
       }
+
+      return InteractionResult.PASS;
    }
 
    public static InteractionResult bindPlayerMobs(Player var0, Level var1, BlockPos var2) {
@@ -52,7 +50,7 @@ public class LeadItem extends Item {
 
       if (!var4.isEmpty()) {
          var1.gameEvent(GameEvent.BLOCK_ATTACH, var2, GameEvent.Context.of(var0));
-         return InteractionResult.SUCCESS;
+         return InteractionResult.SUCCESS_SERVER;
       } else {
          return InteractionResult.PASS;
       }

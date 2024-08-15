@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.state.ThrownItemRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
@@ -9,9 +10,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 
-public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityRenderer<T> {
-   private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
+public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityRenderer<T, ThrownItemRenderState> {
    private final ItemRenderer itemRenderer;
    private final float scale;
    private final boolean fullBright;
@@ -32,21 +33,30 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
       return this.fullBright ? 15 : super.getBlockLightLevel((T)var1, var2);
    }
 
-   @Override
-   public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      if (var1.tickCount >= 2 || !(this.entityRenderDispatcher.camera.getEntity().distanceToSqr(var1) < 12.25)) {
-         var4.pushPose();
-         var4.scale(this.scale, this.scale, this.scale);
-         var4.mulPose(this.entityRenderDispatcher.cameraOrientation());
-         this.itemRenderer
-            .renderStatic(((ItemSupplier)var1).getItem(), ItemDisplayContext.GROUND, var6, OverlayTexture.NO_OVERLAY, var4, var5, var1.level(), var1.getId());
-         var4.popPose();
-         super.render((T)var1, var2, var3, var4, var5, var6);
+   public void render(ThrownItemRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+      var2.pushPose();
+      var2.scale(this.scale, this.scale, this.scale);
+      var2.mulPose(this.entityRenderDispatcher.cameraOrientation());
+      if (var1.itemModel != null) {
+         this.itemRenderer.render(var1.item, ItemDisplayContext.GROUND, false, var2, var3, var4, OverlayTexture.NO_OVERLAY, var1.itemModel);
       }
+
+      var2.popPose();
+      super.render(var1, var2, var3, var4);
    }
 
-   @Override
-   public ResourceLocation getTextureLocation(Entity var1) {
+   public ThrownItemRenderState createRenderState() {
+      return new ThrownItemRenderState();
+   }
+
+   public void extractRenderState(T var1, ThrownItemRenderState var2, float var3) {
+      super.extractRenderState((T)var1, var2, var3);
+      ItemStack var4 = ((ItemSupplier)var1).getItem();
+      var2.itemModel = !var4.isEmpty() ? this.itemRenderer.getModel(var4, var1.level(), null, var1.getId()) : null;
+      var2.item = var4;
+   }
+
+   public ResourceLocation getTextureLocation(ThrownItemRenderState var1) {
       return TextureAtlas.LOCATION_BLOCKS;
    }
 }

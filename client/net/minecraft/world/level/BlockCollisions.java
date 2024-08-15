@@ -30,8 +30,12 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
    private final BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> resultProvider;
 
    public BlockCollisions(CollisionGetter var1, @Nullable Entity var2, AABB var3, boolean var4, BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> var5) {
+      this(var1, var2 == null ? CollisionContext.empty() : CollisionContext.of(var2), var3, var4, var5);
+   }
+
+   public BlockCollisions(CollisionGetter var1, CollisionContext var2, AABB var3, boolean var4, BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> var5) {
       super();
-      this.context = var2 == null ? CollisionContext.empty() : CollisionContext.of(var2);
+      this.context = var2;
       this.pos = new BlockPos.MutableBlockPos();
       this.entityShape = Shapes.create(var3);
       this.collisionGetter = var1;

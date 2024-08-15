@@ -20,9 +20,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       this.horseContainer = var3;
       this.armorContainer = var4.getBodyArmorAccess();
       this.horse = var4;
-      byte var6 = 3;
       var3.startOpen(var2.player);
-      byte var7 = -18;
       this.addSlot(new Slot(var3, 0, 8, 18) {
          @Override
          public boolean mayPlace(ItemStack var1) {
@@ -46,22 +44,14 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
          }
       });
       if (var5 > 0) {
-         for (int var8 = 0; var8 < 3; var8++) {
-            for (int var9 = 0; var9 < var5; var9++) {
-               this.addSlot(new Slot(var3, 1 + var9 + var8 * var5, 80 + var9 * 18, 18 + var8 * 18));
+         for (int var6 = 0; var6 < 3; var6++) {
+            for (int var7 = 0; var7 < var5; var7++) {
+               this.addSlot(new Slot(var3, 1 + var7 + var6 * var5, 80 + var7 * 18, 18 + var6 * 18));
             }
          }
       }
 
-      for (int var10 = 0; var10 < 3; var10++) {
-         for (int var12 = 0; var12 < 9; var12++) {
-            this.addSlot(new Slot(var2, var12 + var10 * 9 + 9, 8 + var12 * 18, 102 + var10 * 18 + -18));
-         }
-      }
-
-      for (int var11 = 0; var11 < 9; var11++) {
-         this.addSlot(new Slot(var2, var11, 8 + var11 * 18, 142));
-      }
+      this.addStandardInventorySlots(var2, 8, 84);
    }
 
    @Override

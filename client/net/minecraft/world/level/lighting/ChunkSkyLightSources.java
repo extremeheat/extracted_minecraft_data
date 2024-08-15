@@ -61,7 +61,7 @@ public class ChunkSkyLightSources {
          } else {
             for (int var11 = 15; var11 >= 0; var11--) {
                BlockState var12 = var10.getBlockState(var3, var11, var4);
-               if (isEdgeOccluded(var1, var6, var8, var7, var12)) {
+               if (isEdgeOccluded(var8, var12)) {
                   return var6.getY();
                }
 
@@ -98,7 +98,7 @@ public class ChunkSkyLightSources {
 
    private boolean updateEdge(BlockGetter var1, int var2, int var3, BlockPos var4, BlockState var5, BlockPos var6, BlockState var7) {
       int var8 = var4.getY();
-      if (isEdgeOccluded(var1, var4, var5, var6, var7)) {
+      if (isEdgeOccluded(var5, var7)) {
          if (var8 > var3) {
             this.set(var2, var8);
             return true;
@@ -118,7 +118,7 @@ public class ChunkSkyLightSources {
 
       while (var5.getY() >= this.minY) {
          BlockState var7 = var1.getBlockState(var5);
-         if (isEdgeOccluded(var1, var4, var6, var5, var7)) {
+         if (isEdgeOccluded(var6, var7)) {
             return var4.getY();
          }
 
@@ -130,13 +130,13 @@ public class ChunkSkyLightSources {
       return this.minY;
    }
 
-   private static boolean isEdgeOccluded(BlockGetter var0, BlockPos var1, BlockState var2, BlockPos var3, BlockState var4) {
-      if (var4.getLightBlock(var0, var3) != 0) {
+   private static boolean isEdgeOccluded(BlockState var0, BlockState var1) {
+      if (var1.getLightBlock() != 0) {
          return true;
       } else {
-         VoxelShape var5 = LightEngine.getOcclusionShape(var0, var1, var2, Direction.DOWN);
-         VoxelShape var6 = LightEngine.getOcclusionShape(var0, var3, var4, Direction.UP);
-         return Shapes.faceShapeOccludes(var5, var6);
+         VoxelShape var2 = LightEngine.getOcclusionShape(var0, Direction.DOWN);
+         VoxelShape var3 = LightEngine.getOcclusionShape(var1, Direction.UP);
+         return Shapes.faceShapeOccludes(var2, var3);
       }
    }
 

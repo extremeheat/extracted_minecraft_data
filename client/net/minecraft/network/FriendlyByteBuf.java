@@ -435,14 +435,22 @@ public class FriendlyByteBuf extends ByteBuf {
       var0.writeFloat(var1.w);
    }
 
+   public static Vec3 readVec3(ByteBuf var0) {
+      return new Vec3(var0.readDouble(), var0.readDouble(), var0.readDouble());
+   }
+
    public Vec3 readVec3() {
-      return new Vec3(this.readDouble(), this.readDouble(), this.readDouble());
+      return readVec3(this);
+   }
+
+   public static void writeVec3(ByteBuf var0, Vec3 var1) {
+      var0.writeDouble(var1.x());
+      var0.writeDouble(var1.y());
+      var0.writeDouble(var1.z());
    }
 
    public void writeVec3(Vec3 var1) {
-      this.writeDouble(var1.x());
-      this.writeDouble(var1.y());
-      this.writeDouble(var1.z());
+      writeVec3(this, var1);
    }
 
    public <T extends Enum<T>> T readEnum(Class<T> var1) {
@@ -660,6 +668,22 @@ public class FriendlyByteBuf extends ByteBuf {
          byte[] var3 = var1.toByteArray();
          this.writeBytes(Arrays.copyOf(var3, Mth.positiveCeilDiv(var2, 8)));
       }
+   }
+
+   public static int readContainerId(ByteBuf var0) {
+      return VarInt.read(var0);
+   }
+
+   public int readContainerId() {
+      return readContainerId(this.source);
+   }
+
+   public static void writeContainerId(ByteBuf var0, int var1) {
+      VarInt.write(var0, var1);
+   }
+
+   public void writeContainerId(int var1) {
+      writeContainerId(this.source, var1);
    }
 
    public boolean isContiguous() {

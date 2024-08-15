@@ -163,8 +163,8 @@ public class LevelChunk extends ChunkAccess {
    }
 
    @Override
-   public ChunkAccess.TicksToSave getTicksForSerialization() {
-      return new ChunkAccess.TicksToSave(this.blockTicks, this.fluidTicks);
+   public ChunkAccess.PackedTicks getTicksForSerialization(long var1) {
+      return new ChunkAccess.PackedTicks(this.blockTicks.pack(var1), this.fluidTicks.pack(var1));
    }
 
    @Override
@@ -261,7 +261,7 @@ public class LevelChunk extends ChunkAccess {
                this.level.getChunkSource().getLightEngine().updateSectionStatus(var1, var12);
             }
 
-            if (LightEngine.hasDifferentLightProperties(this, var1, var10, var2)) {
+            if (LightEngine.hasDifferentLightProperties(var10, var2)) {
                ProfilerFiller var13 = this.level.getProfiler();
                var13.push("updateSkyLightSources");
                this.skyLightSources.update(this, var7, var4, var9);
@@ -287,6 +287,10 @@ public class LevelChunk extends ChunkAccess {
                if (var2.hasBlockEntity()) {
                   BlockEntity var14 = this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
                   if (var14 != null && !var14.isValidBlockState(var2)) {
+                     LOGGER.warn(
+                        "Found mismatched block entity @ {}: type = {}, state = {}",
+                        new Object[]{var1, var14.getType().builtInRegistryHolder().key().location(), var2}
+                     );
                      this.removeBlockEntity(var1);
                      var14 = null;
                   }
@@ -532,12 +536,14 @@ public class LevelChunk extends ChunkAccess {
                BlockState var6 = this.getBlockState(var5);
                FluidState var7 = var6.getFluidState();
                if (!var7.isEmpty()) {
-                  var7.tick(this.level, var5);
+                  var7.tick(this.level, var5, var6);
                }
 
                if (!(var6.getBlock() instanceof LiquidBlock)) {
                   BlockState var8 = Block.updateFromNeighbourShapes(var6, this.level, var5);
-                  this.level.setBlock(var5, var8, 20);
+                  if (var8 != var6) {
+                     this.level.setBlock(var5, var8, 20);
+                  }
                }
             }
 

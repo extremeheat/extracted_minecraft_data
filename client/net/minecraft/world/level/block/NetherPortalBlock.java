@@ -15,8 +15,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -75,9 +75,13 @@ public class NetherPortalBlock extends Block implements Portal {
          }
 
          if (var2.getBlockState(var3).isValidSpawn(var2, var3, EntityType.ZOMBIFIED_PIGLIN)) {
-            Entity var5 = EntityType.ZOMBIFIED_PIGLIN.spawn(var2, var3.above(), MobSpawnType.STRUCTURE);
+            Entity var5 = EntityType.ZOMBIFIED_PIGLIN.spawn(var2, var3.above(), EntitySpawnReason.STRUCTURE);
             if (var5 != null) {
                var5.setPortalCooldown();
+               Entity var6 = var5.getVehicle();
+               if (var6 != null) {
+                  var6.setPortalCooldown();
+               }
             }
          }
       }
@@ -104,7 +108,7 @@ public class NetherPortalBlock extends Block implements Portal {
    public int getPortalTransitionTime(ServerLevel var1, Entity var2) {
       return var2 instanceof Player var3
          ? Math.max(
-            1,
+            0,
             var1.getGameRules()
                .getInt(
                   var3.getAbilities().invulnerable ? GameRules.RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY : GameRules.RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY

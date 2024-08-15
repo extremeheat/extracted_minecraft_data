@@ -91,39 +91,40 @@ public final class Biome {
       return this.climateSettings.hasPrecipitation();
    }
 
-   public Biome.Precipitation getPrecipitationAt(BlockPos var1) {
+   public Biome.Precipitation getPrecipitationAt(BlockPos var1, int var2) {
       if (!this.hasPrecipitation()) {
          return Biome.Precipitation.NONE;
       } else {
-         return this.coldEnoughToSnow(var1) ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN;
+         return this.coldEnoughToSnow(var1, var2) ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN;
       }
    }
 
-   private float getHeightAdjustedTemperature(BlockPos var1) {
-      float var2 = this.climateSettings.temperatureModifier.modifyTemperature(var1, this.getBaseTemperature());
-      if (var1.getY() > 80) {
-         float var3 = (float)(TEMPERATURE_NOISE.getValue((double)((float)var1.getX() / 8.0F), (double)((float)var1.getZ() / 8.0F), false) * 8.0);
-         return var2 - (var3 + (float)var1.getY() - 80.0F) * 0.05F / 40.0F;
+   private float getHeightAdjustedTemperature(BlockPos var1, int var2) {
+      float var3 = this.climateSettings.temperatureModifier.modifyTemperature(var1, this.getBaseTemperature());
+      int var4 = var2 + 17;
+      if (var1.getY() > var4) {
+         float var5 = (float)(TEMPERATURE_NOISE.getValue((double)((float)var1.getX() / 8.0F), (double)((float)var1.getZ() / 8.0F), false) * 8.0);
+         return var3 - (var5 + (float)var1.getY() - (float)var4) * 0.05F / 40.0F;
       } else {
-         return var2;
+         return var3;
       }
    }
 
    @Deprecated
-   private float getTemperature(BlockPos var1) {
-      long var2 = var1.asLong();
-      Long2FloatLinkedOpenHashMap var4 = this.temperatureCache.get();
-      float var5 = var4.get(var2);
-      if (!Float.isNaN(var5)) {
-         return var5;
+   private float getTemperature(BlockPos var1, int var2) {
+      long var3 = var1.asLong();
+      Long2FloatLinkedOpenHashMap var5 = this.temperatureCache.get();
+      float var6 = var5.get(var3);
+      if (!Float.isNaN(var6)) {
+         return var6;
       } else {
-         float var6 = this.getHeightAdjustedTemperature(var1);
-         if (var4.size() == 1024) {
-            var4.removeFirstFloat();
+         float var7 = this.getHeightAdjustedTemperature(var1, var2);
+         if (var5.size() == 1024) {
+            var5.removeFirstFloat();
          }
 
-         var4.put(var2, var6);
-         return var6;
+         var5.put(var3, var7);
+         return var7;
       }
    }
 
@@ -132,7 +133,7 @@ public final class Biome {
    }
 
    public boolean shouldFreeze(LevelReader var1, BlockPos var2, boolean var3) {
-      if (this.warmEnoughToRain(var2)) {
+      if (this.warmEnoughToRain(var2, var1.getSeaLevel())) {
          return false;
       } else {
          if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
@@ -154,20 +155,20 @@ public final class Biome {
       }
    }
 
-   public boolean coldEnoughToSnow(BlockPos var1) {
-      return !this.warmEnoughToRain(var1);
+   public boolean coldEnoughToSnow(BlockPos var1, int var2) {
+      return !this.warmEnoughToRain(var1, var2);
    }
 
-   public boolean warmEnoughToRain(BlockPos var1) {
-      return this.getTemperature(var1) >= 0.15F;
+   public boolean warmEnoughToRain(BlockPos var1, int var2) {
+      return this.getTemperature(var1, var2) >= 0.15F;
    }
 
-   public boolean shouldMeltFrozenOceanIcebergSlightly(BlockPos var1) {
-      return this.getTemperature(var1) > 0.1F;
+   public boolean shouldMeltFrozenOceanIcebergSlightly(BlockPos var1, int var2) {
+      return this.getTemperature(var1, var2) > 0.1F;
    }
 
    public boolean shouldSnow(LevelReader var1, BlockPos var2) {
-      if (this.warmEnoughToRain(var2)) {
+      if (this.warmEnoughToRain(var2, var1.getSeaLevel())) {
          return false;
       } else {
          if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {

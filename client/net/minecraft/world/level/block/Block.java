@@ -93,9 +93,9 @@ public class Block extends BlockBehaviour implements ItemLike {
    private String descriptionId;
    @Nullable
    private Item item;
-   private static final int CACHE_SIZE = 2048;
-   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<Block.BlockStatePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
-      Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<Block.BlockStatePairKey>(2048, 0.25F) {
+   private static final int CACHE_SIZE = 256;
+   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<Block.ShapePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
+      Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<Block.ShapePairKey>(256, 0.25F) {
          protected void rehash(int var1) {
          }
       };
@@ -197,33 +197,34 @@ public class Block extends BlockBehaviour implements ItemLike {
          || var0.is(BlockTags.SHULKER_BOXES);
    }
 
-   public static boolean shouldRenderFace(BlockState var0, BlockGetter var1, BlockPos var2, Direction var3, BlockPos var4) {
-      BlockState var5 = var1.getBlockState(var4);
-      if (var0.skipRendering(var5, var3)) {
+   public static boolean shouldRenderFace(BlockState var0, BlockState var1, Direction var2) {
+      VoxelShape var3 = var1.getFaceOcclusionShape(var2.getOpposite());
+      if (var3 == Shapes.block()) {
          return false;
-      } else if (var5.canOcclude()) {
-         Block.BlockStatePairKey var6 = new Block.BlockStatePairKey(var0, var5, var3);
-         Object2ByteLinkedOpenHashMap var7 = OCCLUSION_CACHE.get();
-         byte var8 = var7.getAndMoveToFirst(var6);
-         if (var8 != 127) {
-            return var8 != 0;
+      } else if (var0.skipRendering(var1, var2)) {
+         return false;
+      } else if (var3 == Shapes.empty()) {
+         return true;
+      } else {
+         VoxelShape var4 = var0.getFaceOcclusionShape(var2);
+         if (var4 == Shapes.empty()) {
+            return true;
          } else {
-            VoxelShape var9 = var0.getFaceOcclusionShape(var1, var2, var3);
-            if (var9.isEmpty()) {
-               return true;
+            Block.ShapePairKey var5 = new Block.ShapePairKey(var4, var3);
+            Object2ByteLinkedOpenHashMap var6 = OCCLUSION_CACHE.get();
+            byte var7 = var6.getAndMoveToFirst(var5);
+            if (var7 != 127) {
+               return var7 != 0;
             } else {
-               VoxelShape var10 = var5.getFaceOcclusionShape(var1, var4, var3.getOpposite());
-               boolean var11 = Shapes.joinIsNotEmpty(var9, var10, BooleanOp.ONLY_FIRST);
-               if (var7.size() == 2048) {
-                  var7.removeLastByte();
+               boolean var8 = Shapes.joinIsNotEmpty(var4, var3, BooleanOp.ONLY_FIRST);
+               if (var6.size() == 256) {
+                  var6.removeLastByte();
                }
 
-               var7.putAndMoveToFirst(var6, (byte)(var11 ? 1 : 0));
-               return var11;
+               var6.putAndMoveToFirst(var5, (byte)(var8 ? 1 : 0));
+               return var8;
             }
          }
-      } else {
-         return true;
       }
    }
 
@@ -330,7 +331,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.explosionResistance;
    }
 
-   public void wasExploded(Level var1, BlockPos var2, Explosion var3) {
+   public void wasExploded(ServerLevel var1, BlockPos var2, Explosion var3) {
    }
 
    public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
@@ -370,7 +371,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       var4.causeFallDamage(var5, 1.0F, var4.damageSources().fall());
    }
 
-   public void updateEntityAfterFallOn(BlockGetter var1, Entity var2) {
+   public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
       var2.setDeltaMovement(var2.getDeltaMovement().multiply(1.0, 0.0, 1.0));
    }
 
@@ -514,4 +515,17 @@ public class Block extends BlockBehaviour implements ItemLike {
          return 31 * var1 + this.direction.hashCode();
       }
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

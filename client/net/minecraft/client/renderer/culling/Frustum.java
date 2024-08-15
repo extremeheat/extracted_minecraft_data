@@ -81,4 +81,37 @@ public class Frustum {
       float var18 = (float)(var11 - this.camZ);
       return this.intersection.testAab(var13, var14, var15, var16, var17, var18);
    }
+
+   public Vector4f[] getFrustumPoints() {
+      Vector4f[] var1 = new Vector4f[]{
+         new Vector4f(-1.0F, -1.0F, -1.0F, 1.0F),
+         new Vector4f(1.0F, -1.0F, -1.0F, 1.0F),
+         new Vector4f(1.0F, 1.0F, -1.0F, 1.0F),
+         new Vector4f(-1.0F, 1.0F, -1.0F, 1.0F),
+         new Vector4f(-1.0F, -1.0F, 1.0F, 1.0F),
+         new Vector4f(1.0F, -1.0F, 1.0F, 1.0F),
+         new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
+         new Vector4f(-1.0F, 1.0F, 1.0F, 1.0F)
+      };
+      Matrix4f var2 = this.matrix.invert(new Matrix4f());
+
+      for (int var3 = 0; var3 < 8; var3++) {
+         var2.transform(var1[var3]);
+         var1[var3].div(var1[var3].w());
+      }
+
+      return var1;
+   }
+
+   public double getCamX() {
+      return this.camX;
+   }
+
+   public double getCamY() {
+      return this.camY;
+   }
+
+   public double getCamZ() {
+      return this.camZ;
+   }
 }

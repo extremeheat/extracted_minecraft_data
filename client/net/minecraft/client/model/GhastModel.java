@@ -5,12 +5,13 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.GhastRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
 
-public class GhastModel<T extends Entity> extends HierarchicalModel<T> {
+public class GhastModel extends EntityModel<GhastRenderState> {
    private final ModelPart root;
    private final ModelPart[] tentacles = new ModelPart[9];
 
@@ -46,13 +47,12 @@ public class GhastModel<T extends Entity> extends HierarchicalModel<T> {
          );
       }
 
-      return LayerDefinition.create(var0, 64, 32);
+      return LayerDefinition.create(var0, 64, 32).apply(MeshTransformer.scaling(4.5F));
    }
 
-   @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      for (int var7 = 0; var7 < this.tentacles.length; var7++) {
-         this.tentacles[var7].xRot = 0.2F * Mth.sin(var4 * 0.3F + (float)var7) + 0.4F;
+   public void setupAnim(GhastRenderState var1) {
+      for (int var2 = 0; var2 < this.tentacles.length; var2++) {
+         this.tentacles[var2].xRot = 0.2F * Mth.sin(var1.ageInTicks * 0.3F + (float)var2) + 0.4F;
       }
    }
 

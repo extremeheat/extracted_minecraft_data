@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
@@ -103,6 +104,10 @@ public class TickingTracker extends ChunkTracker {
       } else {
          this.chunks.put(var1, (byte)var3);
       }
+   }
+
+   public LongSet getTickingChunks() {
+      return this.chunks.keySet();
    }
 
    public void runAllUpdates() {

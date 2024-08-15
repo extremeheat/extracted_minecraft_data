@@ -2,12 +2,13 @@ package net.minecraft.world.entity.projectile;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class ThrowableProjectile extends Projectile {
+   private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
+
    protected ThrowableProjectile(EntityType<? extends ThrowableProjectile> var1, Level var2) {
       super(var1, var2);
    }
@@ -17,20 +18,19 @@ public abstract class ThrowableProjectile extends Projectile {
       this.setPos(var2, var4, var6);
    }
 
-   protected ThrowableProjectile(EntityType<? extends ThrowableProjectile> var1, LivingEntity var2, Level var3) {
-      this(var1, var2.getX(), var2.getEyeY() - 0.10000000149011612, var2.getZ(), var3);
-      this.setOwner(var2);
-   }
-
    @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
-      double var3 = this.getBoundingBox().getSize() * 4.0;
-      if (Double.isNaN(var3)) {
-         var3 = 4.0;
-      }
+      if (this.tickCount < 2 && var1 < 12.25) {
+         return false;
+      } else {
+         double var3 = this.getBoundingBox().getSize() * 4.0;
+         if (Double.isNaN(var3)) {
+            var3 = 4.0;
+         }
 
-      var3 *= 64.0;
-      return var1 < var3 * var3;
+         var3 *= 64.0;
+         return var1 < var3 * var3;
+      }
    }
 
    @Override
@@ -46,7 +46,6 @@ public abstract class ThrowableProjectile extends Projectile {
          this.hitTargetOrDeflectSelf(var1);
       }
 
-      this.checkInsideBlocks();
       Vec3 var2 = this.getDeltaMovement();
       double var3 = this.getX() + var2.x;
       double var5 = this.getY() + var2.y;
@@ -67,6 +66,7 @@ public abstract class ThrowableProjectile extends Projectile {
       this.setDeltaMovement(var2.scale((double)var9));
       this.applyGravity();
       this.setPos(var3, var5, var7);
+      this.checkInsideBlocks();
    }
 
    @Override

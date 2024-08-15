@@ -68,17 +68,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             return Pair.of(InventoryMenu.BLOCK_ATLAS, EnchantmentMenu.EMPTY_SLOT_LAPIS_LAZULI);
          }
       });
-
-      for (int var4 = 0; var4 < 3; var4++) {
-         for (int var5 = 0; var5 < 9; var5++) {
-            this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
-         }
-      }
-
-      for (int var6 = 0; var6 < 9; var6++) {
-         this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
-      }
-
+      this.addStandardInventorySlots(var2, 8, 84);
       this.addDataSlot(DataSlot.shared(this.costs, 0));
       this.addDataSlot(DataSlot.shared(this.costs, 1));
       this.addDataSlot(DataSlot.shared(this.costs, 2));

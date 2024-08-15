@@ -1,12 +1,13 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.CommonInputs;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 public abstract class AbstractButton extends AbstractWidget {
@@ -26,11 +27,15 @@ public abstract class AbstractButton extends AbstractWidget {
    @Override
    protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
-      var1.setColor(1.0F, 1.0F, 1.0F, this.alpha);
-      RenderSystem.enableBlend();
-      RenderSystem.enableDepthTest();
-      var1.blitSprite(SPRITES.get(this.active, this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight());
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.blitSprite(
+         RenderType::guiTextured,
+         SPRITES.get(this.active, this.isHoveredOrFocused()),
+         this.getX(),
+         this.getY(),
+         this.getWidth(),
+         this.getHeight(),
+         ARGB.white(this.alpha)
+      );
       int var6 = this.active ? 16777215 : 10526880;
       this.renderString(var1, var5.font, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
    }

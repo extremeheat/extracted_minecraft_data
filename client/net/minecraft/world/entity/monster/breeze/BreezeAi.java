@@ -30,7 +30,7 @@ public class BreezeAi {
    public static final float SPEED_MULTIPLIER_WHEN_SLIDING = 0.6F;
    public static final float JUMP_CIRCLE_INNER_RADIUS = 4.0F;
    public static final float JUMP_CIRCLE_MIDDLE_RADIUS = 8.0F;
-   public static final float JUMP_CIRCLE_OUTER_RADIUS = 20.0F;
+   public static final float JUMP_CIRCLE_OUTER_RADIUS = 24.0F;
    static final List<SensorType<? extends Sensor<? super Breeze>>> SENSOR_TYPES = ImmutableList.of(
       SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.NEAREST_PLAYERS, SensorType.BREEZE_ATTACK_ENTITY_SENSOR
    );
@@ -55,6 +55,7 @@ public class BreezeAi {
          MemoryModuleType.PATH
       }
    );
+   private static final int TICKS_TO_REMEMBER_SEEN_TARGET = 100;
 
    public BreezeAi() {
       super();
@@ -90,7 +91,7 @@ public class BreezeAi {
       var1.addActivityWithConditions(
          Activity.FIGHT,
          ImmutableList.of(
-            Pair.of(0, StopAttackingIfTargetInvalid.create(var1x -> !Sensor.isEntityAttackable(var0, var1x))),
+            Pair.of(0, StopAttackingIfTargetInvalid.create(Sensor.wasEntityAttackableLastNTicks(var0, 100).negate())),
             Pair.of(1, new Shoot()),
             Pair.of(2, new LongJump()),
             Pair.of(3, new ShootWhenStuck()),

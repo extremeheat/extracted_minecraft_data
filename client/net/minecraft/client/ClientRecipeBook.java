@@ -64,7 +64,7 @@ public class ClientRecipeBook extends RecipeBook {
 
       for (RecipeHolder var4 : var0) {
          Recipe var5 = var4.value();
-         if (!var5.isSpecial() && !var5.isIncomplete()) {
+         if (!var5.isSpecial() && !var5.placementInfo().isImpossibleToPlace()) {
             RecipeBookCategories var6 = getCategory(var4);
             String var7 = var5.getGroup();
             if (var7.isEmpty()) {

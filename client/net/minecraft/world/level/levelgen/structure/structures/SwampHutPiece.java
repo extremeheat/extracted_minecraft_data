@@ -4,8 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.level.ChunkPos;
@@ -90,11 +90,11 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
             BlockPos.MutableBlockPos var14 = this.getWorldPos(2, 2, 5);
             if (var5.isInside(var14)) {
                this.spawnedWitch = true;
-               Witch var15 = EntityType.WITCH.create(var1.getLevel());
+               Witch var15 = EntityType.WITCH.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
                if (var15 != null) {
                   var15.setPersistenceRequired();
                   var15.moveTo((double)var14.getX() + 0.5, (double)var14.getY(), (double)var14.getZ() + 0.5, 0.0F, 0.0F);
-                  var15.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var14), MobSpawnType.STRUCTURE, null);
+                  var15.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var14), EntitySpawnReason.STRUCTURE, null);
                   var1.addFreshEntityWithPassengers(var15);
                }
             }
@@ -109,11 +109,11 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
          BlockPos.MutableBlockPos var3 = this.getWorldPos(2, 2, 5);
          if (var2.isInside(var3)) {
             this.spawnedCat = true;
-            Cat var4 = EntityType.CAT.create(var1.getLevel());
+            Cat var4 = EntityType.CAT.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
             if (var4 != null) {
                var4.setPersistenceRequired();
                var4.moveTo((double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5, 0.0F, 0.0F);
-               var4.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3), MobSpawnType.STRUCTURE, null);
+               var4.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3), EntitySpawnReason.STRUCTURE, null);
                var1.addFreshEntityWithPassengers(var4);
             }
          }

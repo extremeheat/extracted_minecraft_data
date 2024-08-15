@@ -18,9 +18,9 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -84,11 +84,7 @@ public class Guardian extends Monster {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes()
-         .add(Attributes.ATTACK_DAMAGE, 6.0)
-         .add(Attributes.MOVEMENT_SPEED, 0.5)
-         .add(Attributes.FOLLOW_RANGE, 16.0)
-         .add(Attributes.MAX_HEALTH, 30.0);
+      return Monster.createMonsterAttributes().add(Attributes.ATTACK_DAMAGE, 6.0).add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.MAX_HEALTH, 30.0);
    }
 
    @Override
@@ -306,10 +302,12 @@ public class Guardian extends Monster {
       return var1.isUnobstructed(this);
    }
 
-   public static boolean checkGuardianSpawnRules(EntityType<? extends Guardian> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkGuardianSpawnRules(
+      EntityType<? extends Guardian> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4
+   ) {
       return (var4.nextInt(20) == 0 || !var1.canSeeSkyFromBelowWater(var3))
          && var1.getDifficulty() != Difficulty.PEACEFUL
-         && (MobSpawnType.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER))
+         && (EntitySpawnReason.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER))
          && var1.getFluidState(var3.below()).is(FluidTags.WATER);
    }
 

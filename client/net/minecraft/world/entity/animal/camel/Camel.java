@@ -25,12 +25,10 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -50,7 +48,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddleable {
+public class Camel extends AbstractHorse {
    public static final float BABY_SCALE = 0.45F;
    public static final int DASH_COOLDOWN_TICKS = 55;
    public static final int MAX_HEAD_Y_ROT = 30;
@@ -116,7 +114,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       CamelAi.initMemories(this, var1.getRandom());
       this.resetLastPoseChangeTickToFullStand(var1.getLevel().getGameTime());
       return super.finalizeSpawn(var1, var2, var3, var4);
@@ -215,7 +213,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
          var2 = 0.0F;
       }
 
-      this.walkAnimation.update(var2, 0.2F);
+      this.walkAnimation.update(var2, 0.2F, this.isBaby() ? 3.0F : 1.0F);
    }
 
    @Override
@@ -346,7 +344,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
       ItemStack var3 = var1.getItemInHand(var2);
       if (var1.isSecondaryUseActive() && !this.isBaby()) {
          this.openCustomInventoryScreen(var1);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
          if (var4.consumesAction()) {
@@ -358,7 +356,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
                this.doPlayerRide(var1);
             }
 
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.SUCCESS;
          }
       }
    }
@@ -441,7 +439,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
 
    @Nullable
    public Camel getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.CAMEL.create(var1);
+      return EntityType.CAMEL.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Nullable

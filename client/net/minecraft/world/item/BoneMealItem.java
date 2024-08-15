@@ -41,7 +41,7 @@ public class BoneMealItem extends Item {
             var2.levelEvent(1505, var3, 15);
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          BlockState var5 = var2.getBlockState(var3);
          boolean var6 = var5.isFaceSturdy(var2, var3, var1.getClickedFace());
@@ -51,7 +51,7 @@ public class BoneMealItem extends Item {
                var2.levelEvent(1505, var4, 15);
             }
 
-            return InteractionResult.sidedSuccess(var2.isClientSide);
+            return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.PASS;
          }

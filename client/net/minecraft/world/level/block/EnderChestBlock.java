@@ -80,23 +80,22 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       PlayerEnderChestContainer var6 = var4.getEnderChestInventory();
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var6 != null && var7 instanceof EnderChestBlockEntity) {
-         BlockPos var8 = var3.above();
-         if (var2.getBlockState(var8).isRedstoneConductor(var2, var8)) {
-            return InteractionResult.sidedSuccess(var2.isClientSide);
-         } else if (var2.isClientSide) {
+      if (var6 != null && var2.getBlockEntity(var3) instanceof EnderChestBlockEntity var8) {
+         BlockPos var9 = var3.above();
+         if (var2.getBlockState(var9).isRedstoneConductor(var2, var9)) {
             return InteractionResult.SUCCESS;
          } else {
-            EnderChestBlockEntity var9 = (EnderChestBlockEntity)var7;
-            var6.setActiveChest(var9);
-            var4.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> ChestMenu.threeRows(var1x, var2x, var6), CONTAINER_TITLE));
-            var4.awardStat(Stats.OPEN_ENDERCHEST);
-            PiglinAi.angerNearbyPiglins(var4, true);
-            return InteractionResult.CONSUME;
+            if (!var2.isClientSide) {
+               var6.setActiveChest(var8);
+               var4.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> ChestMenu.threeRows(var1x, var2x, var6), CONTAINER_TITLE));
+               var4.awardStat(Stats.OPEN_ENDERCHEST);
+               PiglinAi.angerNearbyPiglins(var4, true);
+            }
+
+            return InteractionResult.SUCCESS;
          }
       } else {
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 

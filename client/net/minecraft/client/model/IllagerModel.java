@@ -8,11 +8,12 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.IllagerRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.AbstractIllager;
 
-public class IllagerModel<T extends AbstractIllager> extends HierarchicalModel<T> implements ArmedModel, HeadedModel {
+public class IllagerModel<S extends IllagerRenderState> extends EntityModel<S> implements ArmedModel, HeadedModel {
    private final ModelPart root;
    private final ModelPart head;
    private final ModelPart hat;
@@ -80,10 +81,10 @@ public class IllagerModel<T extends AbstractIllager> extends HierarchicalModel<T
       return this.root;
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.yRot = var5 * 0.017453292F;
-      this.head.xRot = var6 * 0.017453292F;
-      if (this.riding) {
+   public void setupAnim(S var1) {
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
+      if (var1.isRiding) {
          this.rightArm.xRot = -0.62831855F;
          this.rightArm.yRot = 0.0F;
          this.rightArm.zRot = 0.0F;
@@ -97,65 +98,67 @@ public class IllagerModel<T extends AbstractIllager> extends HierarchicalModel<T
          this.leftLeg.yRot = -0.31415927F;
          this.leftLeg.zRot = -0.07853982F;
       } else {
-         this.rightArm.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 2.0F * var3 * 0.5F;
+         float var2 = var1.walkAnimationSpeed;
+         float var3 = var1.walkAnimationPos;
+         this.rightArm.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 2.0F * var2 * 0.5F;
          this.rightArm.yRot = 0.0F;
          this.rightArm.zRot = 0.0F;
-         this.leftArm.xRot = Mth.cos(var2 * 0.6662F) * 2.0F * var3 * 0.5F;
+         this.leftArm.xRot = Mth.cos(var3 * 0.6662F) * 2.0F * var2 * 0.5F;
          this.leftArm.yRot = 0.0F;
          this.leftArm.zRot = 0.0F;
-         this.rightLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3 * 0.5F;
+         this.rightLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2 * 0.5F;
          this.rightLeg.yRot = 0.0F;
          this.rightLeg.zRot = 0.0F;
-         this.leftLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3 * 0.5F;
+         this.leftLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2 * 0.5F;
          this.leftLeg.yRot = 0.0F;
          this.leftLeg.zRot = 0.0F;
       }
 
-      AbstractIllager.IllagerArmPose var7 = var1.getArmPose();
-      if (var7 == AbstractIllager.IllagerArmPose.ATTACKING) {
+      AbstractIllager.IllagerArmPose var4 = var1.armPose;
+      if (var4 == AbstractIllager.IllagerArmPose.ATTACKING) {
          if (var1.getMainHandItem().isEmpty()) {
-            AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, true, this.attackTime, var4);
+            AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, true, var1.attackAnim, var1.ageInTicks);
          } else {
-            AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, var1, this.attackTime, var4);
+            AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, var1.mainArm, var1.attackAnim, var1.ageInTicks);
          }
-      } else if (var7 == AbstractIllager.IllagerArmPose.SPELLCASTING) {
+      } else if (var4 == AbstractIllager.IllagerArmPose.SPELLCASTING) {
          this.rightArm.z = 0.0F;
          this.rightArm.x = -5.0F;
          this.leftArm.z = 0.0F;
          this.leftArm.x = 5.0F;
-         this.rightArm.xRot = Mth.cos(var4 * 0.6662F) * 0.25F;
-         this.leftArm.xRot = Mth.cos(var4 * 0.6662F) * 0.25F;
+         this.rightArm.xRot = Mth.cos(var1.ageInTicks * 0.6662F) * 0.25F;
+         this.leftArm.xRot = Mth.cos(var1.ageInTicks * 0.6662F) * 0.25F;
          this.rightArm.zRot = 2.3561945F;
          this.leftArm.zRot = -2.3561945F;
          this.rightArm.yRot = 0.0F;
          this.leftArm.yRot = 0.0F;
-      } else if (var7 == AbstractIllager.IllagerArmPose.BOW_AND_ARROW) {
+      } else if (var4 == AbstractIllager.IllagerArmPose.BOW_AND_ARROW) {
          this.rightArm.yRot = -0.1F + this.head.yRot;
          this.rightArm.xRot = -1.5707964F + this.head.xRot;
          this.leftArm.xRot = -0.9424779F + this.head.xRot;
          this.leftArm.yRot = this.head.yRot - 0.4F;
          this.leftArm.zRot = 1.5707964F;
-      } else if (var7 == AbstractIllager.IllagerArmPose.CROSSBOW_HOLD) {
+      } else if (var4 == AbstractIllager.IllagerArmPose.CROSSBOW_HOLD) {
          AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, true);
-      } else if (var7 == AbstractIllager.IllagerArmPose.CROSSBOW_CHARGE) {
-         AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, var1, true);
-      } else if (var7 == AbstractIllager.IllagerArmPose.CELEBRATING) {
+      } else if (var4 == AbstractIllager.IllagerArmPose.CROSSBOW_CHARGE) {
+         AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, (float)var1.maxCrossbowChargeDuration, var1.ticksUsingItem, true);
+      } else if (var4 == AbstractIllager.IllagerArmPose.CELEBRATING) {
          this.rightArm.z = 0.0F;
          this.rightArm.x = -5.0F;
-         this.rightArm.xRot = Mth.cos(var4 * 0.6662F) * 0.05F;
+         this.rightArm.xRot = Mth.cos(var1.ageInTicks * 0.6662F) * 0.05F;
          this.rightArm.zRot = 2.670354F;
          this.rightArm.yRot = 0.0F;
          this.leftArm.z = 0.0F;
          this.leftArm.x = 5.0F;
-         this.leftArm.xRot = Mth.cos(var4 * 0.6662F) * 0.05F;
+         this.leftArm.xRot = Mth.cos(var1.ageInTicks * 0.6662F) * 0.05F;
          this.leftArm.zRot = -2.3561945F;
          this.leftArm.yRot = 0.0F;
       }
 
-      boolean var8 = var7 == AbstractIllager.IllagerArmPose.CROSSED;
-      this.arms.visible = var8;
-      this.leftArm.visible = !var8;
-      this.rightArm.visible = !var8;
+      boolean var5 = var4 == AbstractIllager.IllagerArmPose.CROSSED;
+      this.arms.visible = var5;
+      this.leftArm.visible = !var5;
+      this.rightArm.visible = !var5;
    }
 
    private ModelPart getArm(HumanoidArm var1) {
@@ -173,6 +176,7 @@ public class IllagerModel<T extends AbstractIllager> extends HierarchicalModel<T
 
    @Override
    public void translateToHand(HumanoidArm var1, PoseStack var2) {
+      this.root.translateAndRotate(var2);
       this.getArm(var1).translateAndRotate(var2);
    }
 }

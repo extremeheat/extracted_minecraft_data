@@ -57,7 +57,7 @@ public class GlobalPalette<T> implements Palette<T> {
    }
 
    @Override
-   public Palette<T> copy() {
+   public Palette<T> copy(PaletteResize<T> var1) {
       return this;
    }
 }

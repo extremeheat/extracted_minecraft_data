@@ -1346,7 +1346,7 @@ public class Blocks {
             .instrument(NoteBlockInstrument.BASEDRUM)
             .requiresCorrectToolForDrops()
             .strength(5.0F)
-            .sound(SoundType.METAL)
+            .sound(SoundType.SPAWNER)
             .noOcclusion()
       )
    );
@@ -6712,7 +6712,13 @@ public class Blocks {
    public static final Block POWDER_SNOW = register(
       "powder_snow",
       new PowderSnowBlock(
-         BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).strength(0.25F).sound(SoundType.POWDER_SNOW).dynamicShape().isRedstoneConductor(Blocks::never)
+         BlockBehaviour.Properties.of()
+            .mapColor(MapColor.SNOW)
+            .strength(0.25F)
+            .sound(SoundType.POWDER_SNOW)
+            .dynamicShape()
+            .noOcclusion()
+            .isRedstoneConductor(Blocks::never)
       )
    );
    public static final Block SCULK_SENSOR = register(
@@ -7572,10 +7578,6 @@ public class Blocks {
 
    public static Block register(ResourceKey<Block> var0, Block var1) {
       return Registry.register(BuiltInRegistries.BLOCK, var0, var1);
-   }
-
-   public static void rebuildCache() {
-      Block.BLOCK_STATE_REGISTRY.forEach(BlockBehaviour.BlockStateBase::initCache);
    }
 
    static {

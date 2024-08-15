@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -36,6 +37,8 @@ import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -99,7 +102,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    @Override
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (!var2.isClientSide) {
          this.checkIfExtend(var2, var3, var1);
       }
@@ -313,56 +316,57 @@ public class PistonBaseBlock extends DirectionalBlock {
 
          for (int var23 = var8.size() - 1; var23 >= 0; var23--) {
             BlockPos var26 = (BlockPos)var8.get(var23);
-            BlockState var33 = var1.getBlockState(var26);
+            BlockState var32 = var1.getBlockState(var26);
             var26 = var26.relative(var21);
             var7.remove(var26);
             BlockState var38 = Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3);
             var1.setBlock(var26, var38, 68);
             var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var26, var38, (BlockState)var9.get(var23), var3, var4, false));
-            var20[var13++] = var33;
+            var20[var13++] = var32;
          }
 
          if (var4) {
             PistonType var24 = this.isSticky ? PistonType.STICKY : PistonType.DEFAULT;
             BlockState var28 = Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, var3).setValue(PistonHeadBlock.TYPE, var24);
-            BlockState var34 = Blocks.MOVING_PISTON
+            BlockState var33 = Blocks.MOVING_PISTON
                .defaultBlockState()
                .setValue(MovingPistonBlock.FACING, var3)
                .setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
             var7.remove(var5);
-            var1.setBlock(var5, var34, 68);
-            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var5, var34, var28, var3, true, true));
+            var1.setBlock(var5, var33, 68);
+            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var5, var33, var28, var3, true, true));
          }
 
          BlockState var25 = Blocks.AIR.defaultBlockState();
 
-         for (BlockPos var35 : var7.keySet()) {
-            var1.setBlock(var35, var25, 82);
+         for (BlockPos var34 : var7.keySet()) {
+            var1.setBlock(var34, var25, 82);
          }
 
-         for (Entry var36 : var7.entrySet()) {
-            BlockPos var39 = (BlockPos)var36.getKey();
-            BlockState var18 = (BlockState)var36.getValue();
+         for (Entry var35 : var7.entrySet()) {
+            BlockPos var39 = (BlockPos)var35.getKey();
+            BlockState var18 = (BlockState)var35.getValue();
             var18.updateIndirectNeighbourShapes(var1, var39, 2);
             var25.updateNeighbourShapes(var1, var39, 2);
             var25.updateIndirectNeighbourShapes(var1, var39, 2);
          }
 
+         Orientation var31 = ExperimentalRedstoneUtils.randomOrientation(var1, var6.getPushDirection(), null);
          var13 = 0;
 
-         for (int var31 = var19.size() - 1; var31 >= 0; var31--) {
-            BlockState var37 = var20[var13++];
-            BlockPos var40 = (BlockPos)var19.get(var31);
-            var37.updateIndirectNeighbourShapes(var1, var40, 2);
-            var1.updateNeighborsAt(var40, var37.getBlock());
+         for (int var36 = var19.size() - 1; var36 >= 0; var36--) {
+            BlockState var40 = var20[var13++];
+            BlockPos var41 = (BlockPos)var19.get(var36);
+            var40.updateIndirectNeighbourShapes(var1, var41, 2);
+            var1.updateNeighborsAt(var41, var40.getBlock(), var31);
          }
 
-         for (int var32 = var8.size() - 1; var32 >= 0; var32--) {
-            var1.updateNeighborsAt((BlockPos)var8.get(var32), var20[var13++].getBlock());
+         for (int var37 = var8.size() - 1; var37 >= 0; var37--) {
+            var1.updateNeighborsAt((BlockPos)var8.get(var37), var20[var13++].getBlock(), var31);
          }
 
          if (var4) {
-            var1.updateNeighborsAt(var5, Blocks.PISTON_HEAD);
+            var1.updateNeighborsAt(var5, Blocks.PISTON_HEAD, var31);
          }
 
          return true;

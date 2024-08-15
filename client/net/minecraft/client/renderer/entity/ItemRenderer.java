@@ -29,10 +29,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -104,43 +105,76 @@ public class ItemRenderer implements ResourceManagerReloadListener {
                var8 = this.itemModelShaper.getModelManager().getModel(TRIDENT_MODEL);
             } else if (var1.is(Items.SPYGLASS)) {
                var8 = this.itemModelShaper.getModelManager().getModel(SPYGLASS_MODEL);
+            } else if (var1.is(Items.BUNDLE) && BundleItem.hasSelectedItem(var1)) {
+               this.renderBundleWithSelectedItem(var1, var2, var3, var4, var5, var6, var7, var9);
+               var4.popPose();
+               return;
             }
          }
 
          var8.getTransforms().getTransform(var2).apply(var3, var4);
          var4.translate(-0.5F, -0.5F, -0.5F);
-         if (!var8.isCustomRenderer() && (!var1.is(Items.TRIDENT) || var9)) {
-            boolean var10;
-            if (var2 != ItemDisplayContext.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem var11) {
-               Block var15 = var11.getBlock();
-               var10 = !(var15 instanceof HalfTransparentBlock) && !(var15 instanceof StainedGlassPaneBlock);
-            } else {
-               var10 = true;
-            }
+         this.renderItem(var1, var2, var4, var5, var6, var7, var8, var9);
+         var4.popPose();
+      }
+   }
 
-            RenderType var14 = ItemBlockRenderTypes.getRenderType(var1, var10);
-            VertexConsumer var16;
-            if (hasAnimatedTexture(var1) && var1.hasFoil()) {
-               PoseStack.Pose var13 = var4.last().copy();
-               if (var2 == ItemDisplayContext.GUI) {
-                  MatrixUtil.mulComponentWise(var13.pose(), 0.5F);
-               } else if (var2.firstPerson()) {
-                  MatrixUtil.mulComponentWise(var13.pose(), 0.75F);
-               }
+   private void renderBundleWithSelectedItem(
+      ItemStack var1, ItemDisplayContext var2, boolean var3, PoseStack var4, MultiBufferSource var5, int var6, int var7, boolean var8
+   ) {
+      if (var1.getItem() instanceof BundleItem var9) {
+         var4.pushPose();
+         BakedModel var14 = this.itemModelShaper.getModelManager().getModel(getBundleOpenBackModelLocation(var9));
+         var14.getTransforms().getTransform(var2).apply(var3, var4);
+         var4.translate(-0.5F, -0.5F, -1.5F);
+         this.renderItem(var1, var2, var4, var5, var6, var7, var14, var8);
+         var4.popPose();
+         var4.pushPose();
+         ItemStack var11 = BundleItem.getSelectedItemStack(var1);
+         BakedModel var12 = this.itemModelShaper.getItemModel(var11);
+         var12.getTransforms().getTransform(var2).apply(var3, var4);
+         var4.translate(-0.5F, -0.5F, -0.5F);
+         this.renderItem(var11, var2, var4, var5, var6, var7, var12, var8);
+         var4.popPose();
+         var4.pushPose();
+         BakedModel var13 = this.itemModelShaper.getModelManager().getModel(getBundleOpenFrontModelLocation(var9));
+         var13.getTransforms().getTransform(var2).apply(var3, var4);
+         var4.translate(-0.5F, -0.5F, 0.5F);
+         this.renderItem(var1, var2, var4, var5, var6, var7, var13, var8);
+         var4.popPose();
+      }
+   }
 
-               var16 = getCompassFoilBuffer(var5, var14, var13);
-            } else if (var10) {
-               var16 = getFoilBufferDirect(var5, var14, true, var1.hasFoil());
-            } else {
-               var16 = getFoilBuffer(var5, var14, true, var1.hasFoil());
-            }
-
-            this.renderModelLists(var8, var1, var6, var7, var4, var16);
+   private void renderItem(ItemStack var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, BakedModel var7, boolean var8) {
+      if (!var7.isCustomRenderer() && (!var1.is(Items.TRIDENT) || var8)) {
+         boolean var9;
+         if (var2 != ItemDisplayContext.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem var10) {
+            Block var14 = var10.getBlock();
+            var9 = !(var14 instanceof HalfTransparentBlock) && !(var14 instanceof StainedGlassPaneBlock);
          } else {
-            this.blockEntityRenderer.renderByItem(var1, var2, var4, var5, var6, var7);
+            var9 = true;
          }
 
-         var4.popPose();
+         RenderType var13 = ItemBlockRenderTypes.getRenderType(var1, var9);
+         VertexConsumer var15;
+         if (hasAnimatedTexture(var1) && var1.hasFoil()) {
+            PoseStack.Pose var12 = var3.last().copy();
+            if (var2 == ItemDisplayContext.GUI) {
+               MatrixUtil.mulComponentWise(var12.pose(), 0.5F);
+            } else if (var2.firstPerson()) {
+               MatrixUtil.mulComponentWise(var12.pose(), 0.75F);
+            }
+
+            var15 = getCompassFoilBuffer(var4, var13, var12);
+         } else if (var9) {
+            var15 = getFoilBufferDirect(var4, var13, true, var1.hasFoil());
+         } else {
+            var15 = getFoilBuffer(var4, var13, true, var1.hasFoil());
+         }
+
+         this.renderModelLists(var7, var1, var5, var6, var3, var15);
+      } else {
+         this.blockEntityRenderer.renderByItem(var1, var2, var3, var4, var5, var6);
       }
    }
 
@@ -182,10 +216,10 @@ public class ItemRenderer implements ResourceManagerReloadListener {
             var11 = this.itemColors.getColor(var4, var10.getTintIndex());
          }
 
-         float var12 = (float)FastColor.ARGB32.alpha(var11) / 255.0F;
-         float var13 = (float)FastColor.ARGB32.red(var11) / 255.0F;
-         float var14 = (float)FastColor.ARGB32.green(var11) / 255.0F;
-         float var15 = (float)FastColor.ARGB32.blue(var11) / 255.0F;
+         float var12 = (float)ARGB.alpha(var11) / 255.0F;
+         float var13 = (float)ARGB.red(var11) / 255.0F;
+         float var14 = (float)ARGB.green(var11) / 255.0F;
+         float var15 = (float)ARGB.blue(var11) / 255.0F;
          var2.putBulkData(var8, var10, var13, var14, var15, var12, var5, var6);
       }
    }
@@ -203,6 +237,14 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       ClientLevel var6 = var2 instanceof ClientLevel ? (ClientLevel)var2 : null;
       BakedModel var7 = var5.getOverrides().resolve(var5, var1, var6, var3, var4);
       return var7 == null ? this.itemModelShaper.getModelManager().getMissingModel() : var7;
+   }
+
+   public static ModelResourceLocation getBundleOpenFrontModelLocation(BundleItem var0) {
+      return ModelResourceLocation.inventory(ResourceLocation.withDefaultNamespace(var0.getOpenBundleModelFrontLocation()));
+   }
+
+   public static ModelResourceLocation getBundleOpenBackModelLocation(BundleItem var0) {
+      return ModelResourceLocation.inventory(ResourceLocation.withDefaultNamespace(var0.getOpenBundleModelBackLocation()));
    }
 
    public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8) {
@@ -230,5 +272,10 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    @Override
    public void onResourceManagerReload(ResourceManager var1) {
       this.itemModelShaper.rebuildCache();
+   }
+
+   @Nullable
+   public BakedModel resolveItemModel(ItemStack var1, LivingEntity var2, ItemDisplayContext var3) {
+      return var1.isEmpty() ? null : this.getModel(var1, var2.level(), var2, var2.getId() + var3.ordinal());
    }
 }

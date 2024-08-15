@@ -37,7 +37,7 @@ public class DragonEggBlock extends FallingBlock {
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       this.teleport(var1, var2, var3);
-      return InteractionResult.sidedSuccess(var2.isClientSide);
+      return InteractionResult.SUCCESS;
    }
 
    @Override

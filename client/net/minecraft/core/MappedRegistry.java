@@ -1,11 +1,9 @@
 package net.minecraft.core;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.logging.LogUtils;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -22,18 +20,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.tags.TagLoader;
 import net.minecraft.util.RandomSource;
-import org.slf4j.Logger;
 
 public class MappedRegistry<T> implements WritableRegistry<T> {
-   private static final Logger LOGGER = LogUtils.getLogger();
    final ResourceKey<? extends Registry<T>> key;
    private final ObjectList<Holder.Reference<T>> byId = new ObjectArrayList(256);
    private final Reference2IntMap<T> toId = Util.make(new Reference2IntOpenHashMap(), var0 -> var0.defaultReturnValue(-1));
@@ -42,7 +39,8 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    private final Map<T, Holder.Reference<T>> byValue = new IdentityHashMap<>();
    private final Map<ResourceKey<T>, RegistrationInfo> registrationInfos = new IdentityHashMap<>();
    private Lifecycle registryLifecycle;
-   private volatile Map<TagKey<T>, HolderSet.Named<T>> tags = new IdentityHashMap<>();
+   private final Map<TagKey<T>, HolderSet.Named<T>> frozenTags = new IdentityHashMap<>();
+   MappedRegistry.TagSet<T> allTags = MappedRegistry.TagSet.unbound();
    private boolean frozen;
    @Nullable
    private Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
@@ -74,10 +72,9 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
       @Override
       public Stream<HolderSet.Named<T>> listTags() {
-         return MappedRegistry.this.getTags().map(Pair::getSecond);
+         return MappedRegistry.this.getTags();
       }
    };
-   private final Object tagAdditionLock = new Object();
 
    public MappedRegistry(ResourceKey<? extends Registry<T>> var1, Lifecycle var2) {
       this(var1, var2, false);
@@ -120,34 +117,32 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       Objects.requireNonNull(var1);
       Objects.requireNonNull(var2);
       if (this.byLocation.containsKey(var1.location())) {
-         Util.pauseInIde(new IllegalStateException("Adding duplicate key '" + var1 + "' to registry"));
-      }
+         throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Adding duplicate key '" + var1 + "' to registry"));
+      } else if (this.byValue.containsKey(var2)) {
+         throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Adding duplicate value '" + var2 + "' to registry"));
+      } else {
+         Holder.Reference var4;
+         if (this.unregisteredIntrusiveHolders != null) {
+            var4 = this.unregisteredIntrusiveHolders.remove(var2);
+            if (var4 == null) {
+               throw new AssertionError("Missing intrusive holder for " + var1 + ":" + var2);
+            }
 
-      if (this.byValue.containsKey(var2)) {
-         Util.pauseInIde(new IllegalStateException("Adding duplicate value '" + var2 + "' to registry"));
-      }
-
-      Holder.Reference var4;
-      if (this.unregisteredIntrusiveHolders != null) {
-         var4 = this.unregisteredIntrusiveHolders.remove(var2);
-         if (var4 == null) {
-            throw new AssertionError("Missing intrusive holder for " + var1 + ":" + var2);
+            var4.bindKey(var1);
+         } else {
+            var4 = this.byKey.computeIfAbsent(var1, var1x -> Holder.Reference.createStandAlone(this.holderOwner(), (ResourceKey<T>)var1x));
          }
 
-         var4.bindKey(var1);
-      } else {
-         var4 = this.byKey.computeIfAbsent(var1, var1x -> Holder.Reference.createStandAlone(this.holderOwner(), (ResourceKey<T>)var1x));
+         this.byKey.put(var1, var4);
+         this.byLocation.put(var1.location(), var4);
+         this.byValue.put((T)var2, var4);
+         int var5 = this.byId.size();
+         this.byId.add(var4);
+         this.toId.put(var2, var5);
+         this.registrationInfos.put(var1, var3);
+         this.registryLifecycle = this.registryLifecycle.add(var3.lifecycle());
+         return var4;
       }
-
-      this.byKey.put(var1, var4);
-      this.byLocation.put(var1.location(), var4);
-      this.byValue.put((T)var2, var4);
-      int var5 = this.byId.size();
-      this.byId.add(var4);
-      this.toId.put(var2, var5);
-      this.registrationInfos.put(var1, var3);
-      this.registryLifecycle = this.registryLifecycle.add(var3.lifecycle());
-      return var4;
    }
 
    @Nullable
@@ -269,38 +264,16 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    @Override
-   public Stream<Pair<TagKey<T>, HolderSet.Named<T>>> getTags() {
-      return this.tags.entrySet().stream().map(var0 -> Pair.of(var0.getKey(), var0.getValue()));
+   public Stream<HolderSet.Named<T>> getTags() {
+      return this.allTags.getTags();
    }
 
-   @Override
-   public HolderSet.Named<T> getOrCreateTag(TagKey<T> var1) {
-      HolderSet.Named var2 = this.tags.get(var1);
-      if (var2 != null) {
-         return var2;
-      } else {
-         synchronized (this.tagAdditionLock) {
-            var2 = this.tags.get(var1);
-            if (var2 != null) {
-               return var2;
-            } else {
-               var2 = this.createTag(var1);
-               IdentityHashMap var4 = new IdentityHashMap<>(this.tags);
-               var4.put(var1, var2);
-               this.tags = var4;
-               return var2;
-            }
-         }
-      }
+   HolderSet.Named<T> getOrCreateTagForRegistration(TagKey<T> var1) {
+      return this.frozenTags.computeIfAbsent(var1, this::createTag);
    }
 
    private HolderSet.Named<T> createTag(TagKey<T> var1) {
-      return new HolderSet.Named<>(this.holderOwner(), var1);
-   }
-
-   @Override
-   public Stream<TagKey<T>> getTagNames() {
-      return this.tags.keySet().stream();
+      return new HolderSet.Named<>(this.holderOwner(), (TagKey<T>)var1);
    }
 
    @Override
@@ -342,7 +315,24 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
                this.unregisteredIntrusiveHolders = null;
             }
 
-            return this;
+            if (this.allTags.isBound()) {
+               throw new IllegalStateException("Tags already present before freezing");
+            } else {
+               List var2 = this.frozenTags
+                  .entrySet()
+                  .stream()
+                  .filter(var0 -> !var0.getValue().isBound())
+                  .map(var0 -> var0.getKey().location())
+                  .sorted()
+                  .toList();
+               if (!var2.isEmpty()) {
+                  throw new IllegalStateException("Unbound tags in registry " + this.key() + ": " + var2);
+               } else {
+                  this.allTags = MappedRegistry.TagSet.fromMap(this.frozenTags);
+                  this.refreshTagsInHolders();
+                  return this;
+               }
+            }
          }
       }
    }
@@ -359,47 +349,40 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Override
    public Optional<HolderSet.Named<T>> getTag(TagKey<T> var1) {
-      return Optional.ofNullable(this.tags.get(var1));
+      return this.allTags.get(var1);
+   }
+
+   private Holder.Reference<T> validateAndUnwrapTagElement(TagKey<T> var1, Holder<T> var2) {
+      if (!var2.canSerializeIn(this.holderOwner())) {
+         throw new IllegalStateException("Can't create named set " + var1 + " containing value " + var2 + " from outside registry " + this);
+      } else if (var2 instanceof Holder.Reference) {
+         return (Holder.Reference<T>)var2;
+      } else {
+         throw new IllegalStateException("Found direct holder " + var2 + " value in tag " + var1);
+      }
    }
 
    @Override
-   public void bindTags(Map<TagKey<T>, List<Holder<T>>> var1) {
-      IdentityHashMap var2 = new IdentityHashMap();
-      this.byKey.values().forEach(var1x -> var2.put(var1x, new ArrayList()));
-      var1.forEach((var2x, var3x) -> {
-         for (Holder var5x : var3x) {
-            if (!var5x.canSerializeIn(this.asLookup())) {
-               throw new IllegalStateException("Can't create named set " + var2x + " containing value " + var5x + " from outside registry " + this);
-            }
+   public void bindTag(TagKey<T> var1, List<Holder<T>> var2) {
+      this.validateWrite();
+      this.getOrCreateTagForRegistration(var1).bind(var2);
+   }
 
-            if (!(var5x instanceof Holder.Reference var6)) {
-               throw new IllegalStateException("Found direct holder " + var5x + " value in tag " + var2x);
-            }
-
-            ((List)var2.get(var6)).add(var2x);
+   void refreshTagsInHolders() {
+      IdentityHashMap var1 = new IdentityHashMap();
+      this.byKey.values().forEach(var1x -> var1.put(var1x, new ArrayList()));
+      this.allTags.forEach((var2, var3) -> {
+         for (Holder var5 : var3) {
+            Holder.Reference var6 = this.validateAndUnwrapTagElement((TagKey<T>)var2, var5);
+            ((List)var1.get(var6)).add(var2);
          }
       });
-      SetView var3 = Sets.difference(this.tags.keySet(), var1.keySet());
-      if (!var3.isEmpty()) {
-         LOGGER.warn(
-            "Not all defined tags for registry {} are present in data pack: {}",
-            this.key(),
-            var3.stream().map(var0 -> var0.location().toString()).sorted().collect(Collectors.joining(", "))
-         );
-      }
-
-      synchronized (this.tagAdditionLock) {
-         IdentityHashMap var5 = new IdentityHashMap<>(this.tags);
-         var1.forEach((var2x, var3x) -> var5.computeIfAbsent(var2x, this::createTag).bind((List<Holder<T>>)var3x));
-         var2.forEach(Holder.Reference::bindTags);
-         this.tags = var5;
-      }
+      var1.forEach(Holder.Reference::bindTags);
    }
 
-   @Override
-   public void resetTags() {
-      this.tags.values().forEach(var0 -> var0.bind(List.of()));
-      this.byKey.values().forEach(var0 -> var0.bindTags(Set.of()));
+   public void bindAllTagsToEmpty() {
+      this.validateWrite();
+      this.frozenTags.values().forEach(var0 -> var0.bind(List.of()));
    }
 
    @Override
@@ -423,7 +406,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
          @Override
          public HolderSet.Named<T> getOrThrow(TagKey<T> var1) {
-            return MappedRegistry.this.getOrCreateTag(var1);
+            return MappedRegistry.this.getOrCreateTagForRegistration(var1);
          }
       };
    }
@@ -436,5 +419,120 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    @Override
    public HolderLookup.RegistryLookup<T> asLookup() {
       return this.lookup;
+   }
+
+   @Override
+   public Registry.PendingTags<T> prepareTagReload(TagLoader.LoadResult<T> var1) {
+      if (!this.frozen) {
+         throw new IllegalStateException("Invalid method used for tag loading");
+      } else {
+         Builder var2 = ImmutableMap.builder();
+         final HashMap var3 = new HashMap();
+         var1.tags().forEach((var3x, var4x) -> {
+            HolderSet.Named var5x = this.frozenTags.get(var3x);
+            if (var5x == null) {
+               var5x = this.createTag((TagKey<T>)var3x);
+            }
+
+            var2.put(var3x, var5x);
+            var3.put(var3x, List.copyOf(var4x));
+         });
+         final ImmutableMap var4 = var2.build();
+         final HolderLookup.RegistryLookup.Delegate var5 = new HolderLookup.RegistryLookup.Delegate<T>() {
+            @Override
+            public HolderLookup.RegistryLookup<T> parent() {
+               return MappedRegistry.this.asLookup();
+            }
+
+            @Override
+            public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
+               return Optional.ofNullable((HolderSet.Named<T>)var4.get(var1));
+            }
+
+            @Override
+            public Stream<HolderSet.Named<T>> listTags() {
+               return var4.values().stream();
+            }
+         };
+         return new Registry.PendingTags<T>() {
+            @Override
+            public ResourceKey<? extends Registry<? extends T>> key() {
+               return MappedRegistry.this.key();
+            }
+
+            @Override
+            public HolderLookup.RegistryLookup<T> lookup() {
+               return var5;
+            }
+
+            @Override
+            public void apply() {
+               var4.forEach((var1, var2) -> {
+                  List var3x = var3.getOrDefault(var1, List.of());
+                  var2.bind(var3x);
+               });
+               MappedRegistry.this.allTags = MappedRegistry.TagSet.fromMap(var4);
+               MappedRegistry.this.refreshTagsInHolders();
+            }
+         };
+      }
+   }
+
+   interface TagSet<T> {
+      static <T> MappedRegistry.TagSet<T> unbound() {
+         return new MappedRegistry.TagSet<T>() {
+            @Override
+            public boolean isBound() {
+               return false;
+            }
+
+            @Override
+            public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
+               throw new IllegalStateException("Tags not bound, trying to access " + var1);
+            }
+
+            @Override
+            public void forEach(BiConsumer<? super TagKey<T>, ? super HolderSet.Named<T>> var1) {
+               throw new IllegalStateException("Tags not bound");
+            }
+
+            @Override
+            public Stream<HolderSet.Named<T>> getTags() {
+               throw new IllegalStateException("Tags not bound");
+            }
+         };
+      }
+
+      static <T> MappedRegistry.TagSet<T> fromMap(final Map<TagKey<T>, HolderSet.Named<T>> var0) {
+         return new MappedRegistry.TagSet<T>() {
+            @Override
+            public boolean isBound() {
+               return true;
+            }
+
+            @Override
+            public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
+               return Optional.ofNullable((HolderSet.Named<T>)var0.get(var1));
+            }
+
+            @Override
+            public void forEach(BiConsumer<? super TagKey<T>, ? super HolderSet.Named<T>> var1) {
+               var0.forEach(var1);
+            }
+
+            @Override
+            public Stream<HolderSet.Named<T>> getTags() {
+               return var0.values().stream();
+            }
+         };
+      }
+
+      boolean isBound();
+
+      Optional<HolderSet.Named<T>> get(TagKey<T> var1);
+
+      void forEach(BiConsumer<? super TagKey<T>, ? super HolderSet.Named<T>> var1);
+
+      Stream<HolderSet.Named<T>> getTags();
    }
 }

@@ -26,10 +26,9 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -265,7 +264,10 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 3.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 3.0);
+      return Animal.createAnimalAttributes()
+         .add(Attributes.MAX_HEALTH, 3.0)
+         .add(Attributes.MOVEMENT_SPEED, 0.30000001192092896)
+         .add(Attributes.ATTACK_DAMAGE, 3.0);
    }
 
    @Override
@@ -315,7 +317,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
 
    @Nullable
    public Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Rabbit var3 = EntityType.RABBIT.create(var1);
+      Rabbit var3 = EntityType.RABBIT.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          Rabbit.Variant var4;
          var4 = getRandomRabbitVariant(var1, this.blockPosition());
@@ -365,7 +367,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       Rabbit.Variant var5 = getRandomRabbitVariant(var1, this.blockPosition());
       if (var4 instanceof Rabbit.RabbitGroupData) {
          var5 = ((Rabbit.RabbitGroupData)var4).variant;
@@ -389,7 +391,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       }
    }
 
-   public static boolean checkRabbitSpawnRules(EntityType<Rabbit> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkRabbitSpawnRules(EntityType<Rabbit> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.RABBITS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 

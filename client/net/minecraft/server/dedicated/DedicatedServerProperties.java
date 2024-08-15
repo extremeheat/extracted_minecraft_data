@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -35,8 +36,6 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean onlineMode = this.get("online-mode", true);
    public final boolean preventProxyConnections = this.get("prevent-proxy-connections", false);
    public final String serverIp = this.get("server-ip", "");
-   public final boolean spawnAnimals = this.get("spawn-animals", true);
-   public final boolean spawnNpcs = this.get("spawn-npcs", true);
    public final boolean pvp = this.get("pvp", true);
    public final boolean allowFlight = this.get("allow-flight", false);
    public final String motd = this.get("motd", "A Minecraft Server");
@@ -81,12 +80,14 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean hideOnlinePlayers = this.get("hide-online-players", false);
    public final int entityBroadcastRangePercentage = this.get("entity-broadcast-range-percentage", var0 -> Mth.clamp(var0, 10, 1000), 100);
    public final String textFilteringConfig = this.get("text-filtering-config", "");
+   public final int textFilteringVersion = this.get("text-filtering-version", 0);
    public final Optional<MinecraftServer.ServerResourcePackInfo> serverResourcePackInfo;
    public final DataPackConfig initialDataPackConfiguration;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> playerIdleTimeout = this.getMutable("player-idle-timeout", 0);
    public final Settings<DedicatedServerProperties>.MutableValue<Boolean> whiteList = this.getMutable("white-list", false);
    public final boolean enforceSecureProfile = this.get("enforce-secure-profile", true);
    public final boolean logIPs = this.get("log-ips", true);
+   public final int pauseWhenEmptySeconds = this.get("pause-when-empty-seconds", 60);
    private final DedicatedServerProperties.WorldDimensionData worldDimensionData;
    public final WorldOptions worldOptions;
    public boolean acceptsTransfers = this.get("accepts-transfers", false);
@@ -187,7 +188,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       return new DataPackConfig(var2, var3);
    }
 
-   public WorldDimensions createDimensions(RegistryAccess var1) {
+   public WorldDimensions createDimensions(HolderLookup.Provider var1) {
       return this.worldDimensionData.create(var1);
    }
 

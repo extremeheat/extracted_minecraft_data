@@ -12,8 +12,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.animal.TropicalFish;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +48,7 @@ public class MobBucketItem extends BucketItem {
    }
 
    private void spawn(ServerLevel var1, ItemStack var2, BlockPos var3) {
-      if (this.type.spawn(var1, var2, null, var3, MobSpawnType.BUCKET, true, false) instanceof Bucketable var5) {
+      if (this.type.spawn(var1, var2, null, var3, EntitySpawnReason.BUCKET, true, false) instanceof Bucketable var5) {
          CustomData var6 = var2.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
          var5.loadFromBucketTag(var6.copyTag());
          var5.setFromBucket(true);

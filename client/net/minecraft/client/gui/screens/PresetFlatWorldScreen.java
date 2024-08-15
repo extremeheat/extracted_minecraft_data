@@ -18,6 +18,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -316,7 +317,7 @@ public class PresetFlatWorldScreen extends Screen {
          }
 
          private void blitSlotBg(GuiGraphics var1, int var2, int var3) {
-            var1.blitSprite(PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 0, 18, 18);
+            var1.blitSprite(RenderType::guiTextured, PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 18, 18);
          }
 
          @Override

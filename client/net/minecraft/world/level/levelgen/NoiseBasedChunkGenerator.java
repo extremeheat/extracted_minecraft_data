@@ -223,40 +223,38 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    }
 
    @Override
-   public void applyCarvers(
-      WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7, GenerationStep.Carving var8
-   ) {
-      BiomeManager var9 = var5.withDifferentSource((var2x, var3, var4x) -> this.biomeSource.getNoiseBiome(var2x, var3, var4x, var4.sampler()));
-      WorldgenRandom var10 = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
-      byte var11 = 8;
-      ChunkPos var12 = var7.getPos();
-      NoiseChunk var13 = var7.getOrCreateNoiseChunk(var4x -> this.createNoiseChunk(var4x, var6, Blender.of(var1), var4));
-      Aquifer var14 = var13.aquifer();
-      CarvingContext var15 = new CarvingContext(
-         this, var1.registryAccess(), var7.getHeightAccessorForGeneration(), var13, var4, this.settings.value().surfaceRule()
+   public void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7) {
+      BiomeManager var8 = var5.withDifferentSource((var2x, var3, var4x) -> this.biomeSource.getNoiseBiome(var2x, var3, var4x, var4.sampler()));
+      WorldgenRandom var9 = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
+      byte var10 = 8;
+      ChunkPos var11 = var7.getPos();
+      NoiseChunk var12 = var7.getOrCreateNoiseChunk(var4x -> this.createNoiseChunk(var4x, var6, Blender.of(var1), var4));
+      Aquifer var13 = var12.aquifer();
+      CarvingContext var14 = new CarvingContext(
+         this, var1.registryAccess(), var7.getHeightAccessorForGeneration(), var12, var4, this.settings.value().surfaceRule()
       );
-      CarvingMask var16 = ((ProtoChunk)var7).getOrCreateCarvingMask(var8);
+      CarvingMask var15 = ((ProtoChunk)var7).getOrCreateCarvingMask();
 
-      for (int var17 = -8; var17 <= 8; var17++) {
-         for (int var18 = -8; var18 <= 8; var18++) {
-            ChunkPos var19 = new ChunkPos(var12.x + var17, var12.z + var18);
-            ChunkAccess var20 = var1.getChunk(var19.x, var19.z);
-            BiomeGenerationSettings var21 = var20.carverBiome(
+      for (int var16 = -8; var16 <= 8; var16++) {
+         for (int var17 = -8; var17 <= 8; var17++) {
+            ChunkPos var18 = new ChunkPos(var11.x + var16, var11.z + var17);
+            ChunkAccess var19 = var1.getChunk(var18.x, var18.z);
+            BiomeGenerationSettings var20 = var19.carverBiome(
                () -> this.getBiomeGenerationSettings(
-                     this.biomeSource.getNoiseBiome(QuartPos.fromBlock(var19.getMinBlockX()), 0, QuartPos.fromBlock(var19.getMinBlockZ()), var4.sampler())
+                     this.biomeSource.getNoiseBiome(QuartPos.fromBlock(var18.getMinBlockX()), 0, QuartPos.fromBlock(var18.getMinBlockZ()), var4.sampler())
                   )
             );
-            Iterable var22 = var21.getCarvers(var8);
-            int var23 = 0;
+            Iterable var21 = var20.getCarvers();
+            int var22 = 0;
 
-            for (Holder var25 : var22) {
-               ConfiguredWorldCarver var26 = (ConfiguredWorldCarver)var25.value();
-               var10.setLargeFeatureSeed(var2 + (long)var23, var19.x, var19.z);
-               if (var26.isStartChunk(var10)) {
-                  var26.carve(var15, var7, var9::getBiome, var10, var14, var19, var16);
+            for (Holder var24 : var21) {
+               ConfiguredWorldCarver var25 = (ConfiguredWorldCarver)var24.value();
+               var9.setLargeFeatureSeed(var2 + (long)var22, var18.x, var18.z);
+               if (var25.isStartChunk(var9)) {
+                  var25.carve(var14, var7, var8::getBiome, var9, var13, var18, var15);
                }
 
-               var23++;
+               var22++;
             }
          }
       }

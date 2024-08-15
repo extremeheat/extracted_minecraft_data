@@ -22,12 +22,12 @@ public class ClientboundPlaceGhostRecipePacket implements Packet<ClientGamePacke
 
    private ClientboundPlaceGhostRecipePacket(FriendlyByteBuf var1) {
       super();
-      this.containerId = var1.readByte();
+      this.containerId = var1.readContainerId();
       this.recipe = var1.readResourceLocation();
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.containerId);
+      var1.writeContainerId(this.containerId);
       var1.writeResourceLocation(this.recipe);
    }
 

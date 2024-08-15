@@ -1,5 +1,6 @@
 package net.minecraft.world.level.redstone;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -20,13 +21,13 @@ public class InstantNeighborUpdater implements NeighborUpdater {
    }
 
    @Override
-   public void neighborChanged(BlockPos var1, Block var2, BlockPos var3) {
+   public void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3) {
       BlockState var4 = this.level.getBlockState(var1);
       this.neighborChanged(var4, var1, var2, var3, false);
    }
 
    @Override
-   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
+   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
       NeighborUpdater.executeUpdate(this.level, var1, var2, var3, var4, var5);
    }
 }

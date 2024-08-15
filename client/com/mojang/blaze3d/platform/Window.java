@@ -11,7 +11,9 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.client.main.SilentInitException;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.IoSupplier;
@@ -20,6 +22,7 @@ import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.glfw.GLFWImage.Buffer;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
@@ -53,8 +56,8 @@ public final class Window implements AutoCloseable {
    private double guiScale;
    private String errorSection = "";
    private boolean dirty;
-   private int framerateLimit;
    private boolean vsync;
+   private boolean iconified;
 
    public Window(WindowEventHandler var1, ScreenManager var2, DisplayData var3, @Nullable String var4, String var5) {
       super();
@@ -106,6 +109,7 @@ public final class Window implements AutoCloseable {
       GLFW.glfwSetWindowSizeCallback(this.window, this::onResize);
       GLFW.glfwSetWindowFocusCallback(this.window, this::onFocus);
       GLFW.glfwSetCursorEnterCallback(this.window, this::onEnter);
+      GLFW.glfwSetWindowIconifyCallback(this.window, this::onIconify);
    }
 
    public static String getPlatform() {
@@ -177,7 +181,7 @@ public final class Window implements AutoCloseable {
                      try (NativeImage var9 = NativeImage.read((InputStream)((IoSupplier)var4.get(var8)).get())) {
                         ByteBuffer var10 = MemoryUtil.memAlloc(var9.getWidth() * var9.getHeight() * 4);
                         var5.add(var10);
-                        var10.asIntBuffer().put(var9.getPixelsRGBA());
+                        var10.asIntBuffer().put(var9.getPixelsABGR());
                         var7.position(var8);
                         var7.width(var9.getWidth());
                         var7.height(var9.getHeight());
@@ -274,7 +278,15 @@ public final class Window implements AutoCloseable {
             this.framebufferWidth = var3;
             this.framebufferHeight = var4;
             if (this.getWidth() != var5 || this.getHeight() != var6) {
-               this.eventHandler.resizeDisplay();
+               try {
+                  this.eventHandler.resizeDisplay();
+               } catch (Exception var10) {
+                  CrashReport var8 = CrashReport.forThrowable(var10, "Window resize");
+                  CrashReportCategory var9 = var8.addCategory("Window Dimensions");
+                  var9.setDetail("Old", var5 + "x" + var6);
+                  var9.setDetail("New", var3 + "x" + var4);
+                  throw new ReportedException(var8);
+               }
             }
          }
       }
@@ -305,12 +317,8 @@ public final class Window implements AutoCloseable {
       }
    }
 
-   public void setFramerateLimit(int var1) {
-      this.framerateLimit = var1;
-   }
-
-   public int getFramerateLimit() {
-      return this.framerateLimit;
+   private void onIconify(long var1, boolean var3) {
+      this.iconified = var3;
    }
 
    public void updateDisplay() {
@@ -349,7 +357,7 @@ public final class Window implements AutoCloseable {
             LOGGER.warn("Failed to find suitable monitor for fullscreen mode");
             this.fullscreen = false;
          } else {
-            if (Minecraft.ON_OSX) {
+            if (MacosUtil.IS_MACOS) {
                MacosUtil.exitNativeFullscreen(this.window);
             }
 
@@ -366,7 +374,7 @@ public final class Window implements AutoCloseable {
             this.width = var3.getWidth();
             this.height = var3.getHeight();
             GLFW.glfwSetWindowMonitor(this.window, var2.getMonitor(), this.x, this.y, this.width, this.height, var3.getRefreshRate());
-            if (Minecraft.ON_OSX) {
+            if (MacosUtil.IS_MACOS) {
                MacosUtil.clearResizableBit(this.window);
             }
          }
@@ -443,6 +451,10 @@ public final class Window implements AutoCloseable {
       return this.fullscreen;
    }
 
+   public boolean isIconified() {
+      return this.iconified;
+   }
+
    public int getWidth() {
       return this.framebufferWidth;
    }
@@ -494,6 +506,13 @@ public final class Window implements AutoCloseable {
 
    public void updateRawMouseInput(boolean var1) {
       InputConstants.updateRawMouseInput(this.window, var1);
+   }
+
+   public void setWindowCloseCallback(Runnable var1) {
+      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.window, var1x -> var1.run());
+      if (var2 != null) {
+         var2.free();
+      }
    }
 
    public static class WindowInitFailed extends SilentInitException {

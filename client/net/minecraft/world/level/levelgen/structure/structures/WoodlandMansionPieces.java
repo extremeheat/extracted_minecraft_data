@@ -13,9 +13,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -1236,16 +1236,16 @@ public class WoodlandMansionPieces {
             ArrayList var6 = new ArrayList();
             switch (var1) {
                case "Mage":
-                  var6.add(EntityType.EVOKER.create(var3.getLevel()));
+                  var6.add(EntityType.EVOKER.create(var3.getLevel(), EntitySpawnReason.STRUCTURE));
                   break;
                case "Warrior":
-                  var6.add(EntityType.VINDICATOR.create(var3.getLevel()));
+                  var6.add(EntityType.VINDICATOR.create(var3.getLevel(), EntitySpawnReason.STRUCTURE));
                   break;
                case "Group of Allays":
                   int var9 = var3.getRandom().nextInt(3) + 1;
 
                   for (int var10 = 0; var10 < var9; var10++) {
-                     var6.add(EntityType.ALLAY.create(var3.getLevel()));
+                     var6.add(EntityType.ALLAY.create(var3.getLevel(), EntitySpawnReason.STRUCTURE));
                   }
                   break;
                default:
@@ -1256,7 +1256,7 @@ public class WoodlandMansionPieces {
                if (var13 != null) {
                   var13.setPersistenceRequired();
                   var13.moveTo(var2, 0.0F, 0.0F);
-                  var13.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var13.blockPosition()), MobSpawnType.STRUCTURE, null);
+                  var13.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var13.blockPosition()), EntitySpawnReason.STRUCTURE, null);
                   var3.addFreshEntityWithPassengers(var13);
                   var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
                }

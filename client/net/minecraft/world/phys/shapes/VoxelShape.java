@@ -165,7 +165,7 @@ public abstract class VoxelShape {
                      this.findIndex(Direction.Axis.Y, var5.y - (double)var3.getY()),
                      this.findIndex(Direction.Axis.Z, var5.z - (double)var3.getZ())
                   )
-               ? new BlockHitResult(var5, Direction.getNearest(var4.x, var4.y, var4.z).getOpposite(), var3, true)
+               ? new BlockHitResult(var5, Direction.getApproximateNearest(var4.x, var4.y, var4.z).getOpposite(), var3, true)
                : AABB.clip(this.toAabbs(), var1, var2, var3);
          }
       }
@@ -209,14 +209,33 @@ public abstract class VoxelShape {
 
    private VoxelShape calculateFace(Direction var1) {
       Direction.Axis var2 = var1.getAxis();
-      DoubleList var3 = this.getCoords(var2);
-      if (var3.size() == 2 && DoubleMath.fuzzyEquals(var3.getDouble(0), 0.0, 1.0E-7) && DoubleMath.fuzzyEquals(var3.getDouble(1), 1.0, 1.0E-7)) {
+      if (this.isCubeLikeAlong(var2)) {
          return this;
       } else {
-         Direction.AxisDirection var4 = var1.getAxisDirection();
-         int var5 = this.findIndex(var2, var4 == Direction.AxisDirection.POSITIVE ? 0.9999999 : 1.0E-7);
-         return new SliceShape(this, var2, var5);
+         Direction.AxisDirection var3 = var1.getAxisDirection();
+         int var4 = this.findIndex(var2, var3 == Direction.AxisDirection.POSITIVE ? 0.9999999 : 1.0E-7);
+         SliceShape var5 = new SliceShape(this, var2, var4);
+         if (var5.isEmpty()) {
+            return Shapes.empty();
+         } else {
+            return (VoxelShape)(var5.isCubeLike() ? Shapes.block() : var5);
+         }
       }
+   }
+
+   protected boolean isCubeLike() {
+      for (Direction.Axis var4 : Direction.Axis.VALUES) {
+         if (!this.isCubeLikeAlong(var4)) {
+            return false;
+         }
+      }
+
+      return true;
+   }
+
+   private boolean isCubeLikeAlong(Direction.Axis var1) {
+      DoubleList var2 = this.getCoords(var1);
+      return var2.size() == 2 && DoubleMath.fuzzyEquals(var2.getDouble(0), 0.0, 1.0E-7) && DoubleMath.fuzzyEquals(var2.getDouble(1), 1.0, 1.0E-7);
    }
 
    public double collide(Direction.Axis var1, AABB var2, double var3) {

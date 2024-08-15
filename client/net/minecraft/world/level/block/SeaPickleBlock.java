@@ -117,7 +117,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
 
    @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return true;
+      return !isDead(var3) && var1.getBlockState(var2.below()).is(BlockTags.CORAL_BLOCKS);
    }
 
    @Override
@@ -127,42 +127,40 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
 
    @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      if (!isDead(var4) && var1.getBlockState(var3.below()).is(BlockTags.CORAL_BLOCKS)) {
-         byte var5 = 5;
-         byte var6 = 1;
-         byte var7 = 2;
-         int var8 = 0;
-         int var9 = var3.getX() - 2;
-         int var10 = 0;
+      byte var5 = 5;
+      byte var6 = 1;
+      byte var7 = 2;
+      int var8 = 0;
+      int var9 = var3.getX() - 2;
+      int var10 = 0;
 
-         for (int var11 = 0; var11 < 5; var11++) {
-            for (int var12 = 0; var12 < var6; var12++) {
-               int var13 = 2 + var3.getY() - 1;
+      for (int var11 = 0; var11 < 5; var11++) {
+         for (int var12 = 0; var12 < var6; var12++) {
+            int var13 = 2 + var3.getY() - 1;
 
-               for (int var14 = var13 - 2; var14 < var13; var14++) {
-                  BlockPos var15 = new BlockPos(var9 + var11, var14, var3.getZ() - var10 + var12);
-                  if (var15 != var3 && var2.nextInt(6) == 0 && var1.getBlockState(var15).is(Blocks.WATER)) {
-                     BlockState var16 = var1.getBlockState(var15.below());
-                     if (var16.is(BlockTags.CORAL_BLOCKS)) {
-                        var1.setBlock(var15, Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, Integer.valueOf(var2.nextInt(4) + 1)), 3);
-                     }
+            for (int var14 = var13 - 2; var14 < var13; var14++) {
+               BlockPos var15 = new BlockPos(var9 + var11, var14, var3.getZ() - var10 + var12);
+               if (var15 != var3 && var2.nextInt(6) == 0 && var1.getBlockState(var15).is(Blocks.WATER)) {
+                  BlockState var16 = var1.getBlockState(var15.below());
+                  if (var16.is(BlockTags.CORAL_BLOCKS)) {
+                     var1.setBlock(var15, Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, Integer.valueOf(var2.nextInt(4) + 1)), 3);
                   }
                }
             }
-
-            if (var8 < 2) {
-               var6 += 2;
-               var10++;
-            } else {
-               var6 -= 2;
-               var10--;
-            }
-
-            var8++;
          }
 
-         var1.setBlock(var3, var4.setValue(PICKLES, Integer.valueOf(4)), 2);
+         if (var8 < 2) {
+            var6 += 2;
+            var10++;
+         } else {
+            var6 -= 2;
+            var10--;
+         }
+
+         var8++;
       }
+
+      var1.setBlock(var3, var4.setValue(PICKLES, Integer.valueOf(4)), 2);
    }
 
    @Override

@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -26,6 +27,8 @@ import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
 
 public class GameRules {
@@ -137,7 +140,7 @@ public class GameRules {
       "playersNetherPortalDefaultDelay", GameRules.Category.PLAYER, GameRules.IntegerValue.create(80)
    );
    public static final GameRules.Key<GameRules.IntegerValue> RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY = register(
-      "playersNetherPortalCreativeDelay", GameRules.Category.PLAYER, GameRules.IntegerValue.create(1)
+      "playersNetherPortalCreativeDelay", GameRules.Category.PLAYER, GameRules.IntegerValue.create(0)
    );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_DROWNING_DAMAGE = register(
       "drowningDamage", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true)
@@ -196,13 +199,20 @@ public class GameRules {
    public static final GameRules.Key<GameRules.BooleanValue> RULE_ENDER_PEARLS_VANISH_ON_DEATH = register(
       "enderPearlsVanishOnDeath", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true)
    );
+   public static final GameRules.Key<GameRules.IntegerValue> RULE_MINECART_MAX_SPEED = register(
+      "minecartMaxSpeed",
+      GameRules.Category.MISC,
+      GameRules.IntegerValue.create(8, 1, 1000, FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS), (var0, var1) -> {
+      })
+   );
    public static final GameRules.Key<GameRules.IntegerValue> RULE_SPAWN_CHUNK_RADIUS = register(
-      "spawnChunkRadius", GameRules.Category.MISC, GameRules.IntegerValue.create(2, 0, 32, (var0, var1) -> {
+      "spawnChunkRadius", GameRules.Category.MISC, GameRules.IntegerValue.create(2, 0, 32, FeatureFlagSet.of(), (var0, var1) -> {
          ServerLevel var2 = var0.overworld();
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       })
    );
    private final Map<GameRules.Key<?>, GameRules.Value<?>> rules;
+   private final FeatureFlagSet enabledFeatures;
 
    private static <T extends GameRules.Value<T>> GameRules.Key<T> register(String var0, GameRules.Category var1, GameRules.Type<T> var2) {
       GameRules.Key var3 = new GameRules.Key(var0, var1);
@@ -214,25 +224,32 @@ public class GameRules {
       }
    }
 
-   public GameRules(DynamicLike<?> var1) {
-      this();
-      this.loadFromTag(var1);
+   public GameRules(FeatureFlagSet var1, DynamicLike<?> var2) {
+      this(var1);
+      this.loadFromTag(var2);
    }
 
-   public GameRules() {
-      super();
-      this.rules = GAME_RULE_TYPES.entrySet()
-         .stream()
-         .collect(ImmutableMap.toImmutableMap(Entry::getKey, var0 -> ((GameRules.Type)var0.getValue()).createRule()));
+   public GameRules(FeatureFlagSet var1) {
+      this(availableRules(var1).collect(ImmutableMap.toImmutableMap(Entry::getKey, var0 -> ((GameRules.Type)var0.getValue()).createRule())), var1);
    }
 
-   private GameRules(Map<GameRules.Key<?>, GameRules.Value<?>> var1) {
+   private static Stream<Entry<GameRules.Key<?>, GameRules.Type<?>>> availableRules(FeatureFlagSet var0) {
+      return GAME_RULE_TYPES.entrySet().stream().filter(var1 -> var1.getValue().requiredFeatures.isSubsetOf(var0));
+   }
+
+   private GameRules(Map<GameRules.Key<?>, GameRules.Value<?>> var1, FeatureFlagSet var2) {
       super();
       this.rules = var1;
+      this.enabledFeatures = var2;
    }
 
    public <T extends GameRules.Value<T>> T getRule(GameRules.Key<T> var1) {
-      return (T)this.rules.get(var1);
+      GameRules.Value var2 = this.rules.get(var1);
+      if (var2 == null) {
+         throw new IllegalArgumentException("Tried to access invalid game rule");
+      } else {
+         return (T)var2;
+      }
    }
 
    public CompoundTag createTag() {
@@ -245,19 +262,28 @@ public class GameRules {
       this.rules.forEach((var1x, var2) -> var1.get(var1x.id).asString().ifSuccess(var2::deserialize));
    }
 
-   public GameRules copy() {
+   public GameRules copy(FeatureFlagSet var1) {
       return new GameRules(
-         this.rules.entrySet().stream().collect(ImmutableMap.toImmutableMap(Entry::getKey, var0 -> ((GameRules.Value)var0.getValue()).copy()))
+         availableRules(var1)
+            .collect(
+               ImmutableMap.toImmutableMap(
+                  Entry::getKey,
+                  var1x -> this.rules.containsKey(var1x.getKey()) ? this.rules.get(var1x.getKey()) : ((GameRules.Type)var1x.getValue()).createRule()
+               )
+            ),
+         var1
       );
    }
 
-   public static void visitGameRuleTypes(GameRules.GameRuleTypeVisitor var0) {
-      GAME_RULE_TYPES.forEach((var1, var2) -> callVisitorCap(var0, (GameRules.Key<?>)var1, (GameRules.Type<?>)var2));
+   public void visitGameRuleTypes(GameRules.GameRuleTypeVisitor var1) {
+      GAME_RULE_TYPES.forEach((var2, var3) -> this.callVisitorCap(var1, (GameRules.Key<?>)var2, (GameRules.Type<?>)var3));
    }
 
-   private static <T extends GameRules.Value<T>> void callVisitorCap(GameRules.GameRuleTypeVisitor var0, GameRules.Key<?> var1, GameRules.Type<?> var2) {
-      var0.visit(var1, var2);
-      var2.callVisitor(var0, var1);
+   private <T extends GameRules.Value<T>> void callVisitorCap(GameRules.GameRuleTypeVisitor var1, GameRules.Key<?> var2, GameRules.Type<?> var3) {
+      if (var3.requiredFeatures.isSubsetOf(this.enabledFeatures)) {
+         var1.visit(var2, var3);
+         var3.callVisitor(var1, var2);
+      }
    }
 
    public void assignFrom(GameRules var1, @Nullable MinecraftServer var2) {
@@ -282,7 +308,7 @@ public class GameRules {
 
       static GameRules.Type<GameRules.BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, GameRules.BooleanValue> var1) {
          return new GameRules.Type<>(
-            BoolArgumentType::bool, var1x -> new GameRules.BooleanValue(var1x, var0), var1, GameRules.GameRuleTypeVisitor::visitBoolean
+            BoolArgumentType::bool, var1x -> new GameRules.BooleanValue(var1x, var0), var1, GameRules.GameRuleTypeVisitor::visitBoolean, FeatureFlagSet.of()
          );
       }
 
@@ -375,13 +401,23 @@ public class GameRules {
 
       private static GameRules.Type<GameRules.IntegerValue> create(int var0, BiConsumer<MinecraftServer, GameRules.IntegerValue> var1) {
          return new GameRules.Type<>(
-            IntegerArgumentType::integer, var1x -> new GameRules.IntegerValue(var1x, var0), var1, GameRules.GameRuleTypeVisitor::visitInteger
+            IntegerArgumentType::integer,
+            var1x -> new GameRules.IntegerValue(var1x, var0),
+            var1,
+            GameRules.GameRuleTypeVisitor::visitInteger,
+            FeatureFlagSet.of()
          );
       }
 
-      static GameRules.Type<GameRules.IntegerValue> create(int var0, int var1, int var2, BiConsumer<MinecraftServer, GameRules.IntegerValue> var3) {
+      static GameRules.Type<GameRules.IntegerValue> create(
+         int var0, int var1, int var2, FeatureFlagSet var3, BiConsumer<MinecraftServer, GameRules.IntegerValue> var4
+      ) {
          return new GameRules.Type<>(
-            () -> IntegerArgumentType.integer(var1, var2), var1x -> new GameRules.IntegerValue(var1x, var0), var3, GameRules.GameRuleTypeVisitor::visitInteger
+            () -> IntegerArgumentType.integer(var1, var2),
+            var1x -> new GameRules.IntegerValue(var1x, var0),
+            var4,
+            GameRules.GameRuleTypeVisitor::visitInteger,
+            var3
          );
       }
 
@@ -503,13 +539,21 @@ public class GameRules {
       private final Function<GameRules.Type<T>, T> constructor;
       final BiConsumer<MinecraftServer, T> callback;
       private final GameRules.VisitorCaller<T> visitorCaller;
+      final FeatureFlagSet requiredFeatures;
 
-      Type(Supplier<ArgumentType<?>> var1, Function<GameRules.Type<T>, T> var2, BiConsumer<MinecraftServer, T> var3, GameRules.VisitorCaller<T> var4) {
+      Type(
+         Supplier<ArgumentType<?>> var1,
+         Function<GameRules.Type<T>, T> var2,
+         BiConsumer<MinecraftServer, T> var3,
+         GameRules.VisitorCaller<T> var4,
+         FeatureFlagSet var5
+      ) {
          super();
          this.argument = var1;
          this.constructor = var2;
          this.callback = var3;
          this.visitorCaller = var4;
+         this.requiredFeatures = var5;
       }
 
       public RequiredArgumentBuilder<CommandSourceStack, ?> createArgument(String var1) {
@@ -522,6 +566,10 @@ public class GameRules {
 
       public void callVisitor(GameRules.GameRuleTypeVisitor var1, GameRules.Key<T> var2) {
          this.visitorCaller.call(var1, var2, this);
+      }
+
+      public FeatureFlagSet requiredFeatures() {
+         return this.requiredFeatures;
       }
    }
 

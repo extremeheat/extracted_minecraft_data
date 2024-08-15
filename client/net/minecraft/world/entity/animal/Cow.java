@@ -11,8 +11,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -56,7 +56,7 @@ public class Cow extends Animal {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
+      return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
    }
 
    @Override
@@ -91,7 +91,7 @@ public class Cow extends Animal {
          var1.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
          ItemStack var4 = ItemUtils.createFilledResult(var3, var1, Items.MILK_BUCKET.getDefaultInstance());
          var1.setItemInHand(var2, var4);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -99,7 +99,7 @@ public class Cow extends Animal {
 
    @Nullable
    public Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.COW.create(var1);
+      return EntityType.COW.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Override

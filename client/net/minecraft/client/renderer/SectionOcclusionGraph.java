@@ -336,7 +336,7 @@ public class SectionOcclusionGraph {
 
    @Nullable
    @VisibleForDebug
-   protected SectionOcclusionGraph.Node getNode(SectionRenderDispatcher.RenderSection var1) {
+   public SectionOcclusionGraph.Node getNode(SectionRenderDispatcher.RenderSection var1) {
       return this.currentGraph.get().storage.sectionToNodeMap.get(var1);
    }
 
@@ -380,13 +380,13 @@ public class SectionOcclusionGraph {
    }
 
    @VisibleForDebug
-   protected static class Node {
+   public static class Node {
       @VisibleForDebug
       protected final SectionRenderDispatcher.RenderSection section;
       private byte sourceDirections;
       byte directions;
       @VisibleForDebug
-      protected final int step;
+      public final int step;
 
       Node(SectionRenderDispatcher.RenderSection var1, @Nullable Direction var2, int var3) {
          super();
@@ -411,7 +411,7 @@ public class SectionOcclusionGraph {
       }
 
       @VisibleForDebug
-      protected boolean hasSourceDirection(int var1) {
+      public boolean hasSourceDirection(int var1) {
          return (this.sourceDirections & 1 << var1) > 0;
       }
 

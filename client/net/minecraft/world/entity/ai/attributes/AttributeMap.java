@@ -114,6 +114,15 @@ public class AttributeMap {
       });
    }
 
+   public void assignPermanentModifiers(AttributeMap var1) {
+      var1.attributes.values().forEach(var1x -> {
+         AttributeInstance var2 = this.getInstance(var1x.getAttribute());
+         if (var2 != null) {
+            var2.addPermanentModifiers(var1x.getPermanentModifiers());
+         }
+      });
+   }
+
    public ListTag save() {
       ListTag var1 = new ListTag();
 

@@ -265,47 +265,56 @@ public class EntitySelectorOptions {
                var0.setHasTeamEquals(true);
             }
          }, var0 -> !var0.hasTeamEquals(), Component.translatable("argument.entity.options.team.description"));
-         register("type", var0 -> {
-            var0.setSuggestions((var1x, var2x) -> {
-               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
-               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTagNames().map(TagKey::location), var1x, "!#");
-               if (!var0.isTypeLimitedInversely()) {
-                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x);
-                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTagNames().map(TagKey::location), var1x, String.valueOf('#'));
-               }
+         register(
+            "type",
+            var0 -> {
+               var0.setSuggestions(
+                  (var1x, var2x) -> {
+                     SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
+                     SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map(var0xx -> var0xx.key().location()), var1x, "!#");
+                     if (!var0.isTypeLimitedInversely()) {
+                        SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x);
+                        SharedSuggestionProvider.suggestResource(
+                           BuiltInRegistries.ENTITY_TYPE.getTags().map(var0xx -> var0xx.key().location()), var1x, String.valueOf('#')
+                        );
+                     }
 
-               return var1x.buildFuture();
-            });
-            int var1 = var0.getReader().getCursor();
-            boolean var2 = var0.shouldInvertValue();
-            if (var0.isTypeLimitedInversely() && !var2) {
-               var0.getReader().setCursor(var1);
-               throw ERROR_INAPPLICABLE_OPTION.createWithContext(var0.getReader(), "type");
-            } else {
-               if (var2) {
-                  var0.setTypeLimitedInversely();
-               }
-
-               if (var0.isTag()) {
-                  TagKey var3 = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.read(var0.getReader()));
-                  var0.addPredicate(var2x -> var2x.getType().is(var3) != var2);
+                     return var1x.buildFuture();
+                  }
+               );
+               int var1 = var0.getReader().getCursor();
+               boolean var2 = var0.shouldInvertValue();
+               if (var0.isTypeLimitedInversely() && !var2) {
+                  var0.getReader().setCursor(var1);
+                  throw ERROR_INAPPLICABLE_OPTION.createWithContext(var0.getReader(), "type");
                } else {
-                  ResourceLocation var5 = ResourceLocation.read(var0.getReader());
-                  EntityType var4 = BuiltInRegistries.ENTITY_TYPE.getOptional(var5).orElseThrow(() -> {
-                     var0.getReader().setCursor(var1);
-                     return ERROR_ENTITY_TYPE_INVALID.createWithContext(var0.getReader(), var5.toString());
-                  });
-                  if (Objects.equals(EntityType.PLAYER, var4) && !var2) {
-                     var0.setIncludesEntities(false);
+                  if (var2) {
+                     var0.setTypeLimitedInversely();
                   }
 
-                  var0.addPredicate(var2x -> Objects.equals(var4, var2x.getType()) != var2);
-                  if (!var2) {
-                     var0.limitToType(var4);
+                  if (var0.isTag()) {
+                     TagKey var3 = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.read(var0.getReader()));
+                     var0.addPredicate(var2x -> var2x.getType().is(var3) != var2);
+                  } else {
+                     ResourceLocation var5 = ResourceLocation.read(var0.getReader());
+                     EntityType var4 = BuiltInRegistries.ENTITY_TYPE.getOptional(var5).orElseThrow(() -> {
+                        var0.getReader().setCursor(var1);
+                        return ERROR_ENTITY_TYPE_INVALID.createWithContext(var0.getReader(), var5.toString());
+                     });
+                     if (Objects.equals(EntityType.PLAYER, var4) && !var2) {
+                        var0.setIncludesEntities(false);
+                     }
+
+                     var0.addPredicate(var2x -> Objects.equals(var4, var2x.getType()) != var2);
+                     if (!var2) {
+                        var0.limitToType(var4);
+                     }
                   }
                }
-            }
-         }, var0 -> !var0.isTypeLimited(), Component.translatable("argument.entity.options.type.description"));
+            },
+            var0 -> !var0.isTypeLimited(),
+            Component.translatable("argument.entity.options.type.description")
+         );
          register("tag", var0 -> {
             boolean var1 = var0.shouldInvertValue();
             String var2 = var0.getReader().readUnquotedString();

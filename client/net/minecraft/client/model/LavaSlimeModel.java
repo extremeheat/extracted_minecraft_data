@@ -7,10 +7,9 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 
-public class LavaSlimeModel<T extends Slime> extends HierarchicalModel<T> {
+public class LavaSlimeModel extends EntityModel<SlimeRenderState> {
    private static final int SEGMENT_COUNT = 8;
    private final ModelPart root;
    private final ModelPart[] bodyCubes = new ModelPart[8];
@@ -49,17 +48,11 @@ public class LavaSlimeModel<T extends Slime> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-   }
+   public void setupAnim(SlimeRenderState var1) {
+      float var2 = Math.max(0.0F, var1.squish);
 
-   public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      float var5 = Mth.lerp(var4, var1.oSquish, var1.squish);
-      if (var5 < 0.0F) {
-         var5 = 0.0F;
-      }
-
-      for (int var6 = 0; var6 < this.bodyCubes.length; var6++) {
-         this.bodyCubes[var6].y = (float)(-(4 - var6)) * var5 * 1.7F;
+      for (int var3 = 0; var3 < this.bodyCubes.length; var3++) {
+         this.bodyCubes[var3].y = (float)(-(4 - var3)) * var2 * 1.7F;
       }
    }
 

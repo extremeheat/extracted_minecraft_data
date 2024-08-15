@@ -4,18 +4,14 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -30,7 +26,6 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositione
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -42,7 +37,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -62,7 +57,6 @@ public class GuiGraphics {
    private final MultiBufferSource.BufferSource bufferSource;
    private final GuiGraphics.ScissorStack scissorStack = new GuiGraphics.ScissorStack();
    private final GuiSpriteManager sprites;
-   private boolean managed;
 
    private GuiGraphics(Minecraft var1, PoseStack var2, MultiBufferSource.BufferSource var3) {
       super();
@@ -74,29 +68,6 @@ public class GuiGraphics {
 
    public GuiGraphics(Minecraft var1, MultiBufferSource.BufferSource var2) {
       this(var1, new PoseStack(), var2);
-   }
-
-   @Deprecated
-   public void drawManaged(Runnable var1) {
-      this.flush();
-      this.managed = true;
-      var1.run();
-      this.managed = false;
-      this.flush();
-   }
-
-   @Deprecated
-   private void flushIfUnmanaged() {
-      if (!this.managed) {
-         this.flush();
-      }
-   }
-
-   @Deprecated
-   private void flushIfManaged() {
-      if (this.managed) {
-         this.flush();
-      }
    }
 
    public int guiWidth() {
@@ -116,9 +87,7 @@ public class GuiGraphics {
    }
 
    public void flush() {
-      RenderSystem.disableDepthTest();
       this.bufferSource.endBatch();
-      RenderSystem.enableDepthTest();
    }
 
    public void hLine(int var1, int var2, int var3, int var4) {
@@ -162,7 +131,7 @@ public class GuiGraphics {
    }
 
    private void applyScissor(@Nullable ScreenRectangle var1) {
-      this.flushIfManaged();
+      this.flush();
       if (var1 != null) {
          Window var2 = Minecraft.getInstance().getWindow();
          int var3 = var2.getHeight();
@@ -175,11 +144,6 @@ public class GuiGraphics {
       } else {
          RenderSystem.disableScissor();
       }
-   }
-
-   public void setColor(float var1, float var2, float var3, float var4) {
-      this.flushIfManaged();
-      RenderSystem.setShaderColor(var1, var2, var3, var4);
    }
 
    public void fill(int var1, int var2, int var3, int var4, int var5) {
@@ -213,7 +177,6 @@ public class GuiGraphics {
       var11.addVertex(var8, (float)var2, (float)var5, (float)var6).setColor(var7);
       var11.addVertex(var8, (float)var4, (float)var5, (float)var6).setColor(var7);
       var11.addVertex(var8, (float)var4, (float)var3, (float)var6).setColor(var7);
-      this.flushIfUnmanaged();
    }
 
    public void fillGradient(int var1, int var2, int var3, int var4, int var5, int var6) {
@@ -227,7 +190,6 @@ public class GuiGraphics {
    public void fillGradient(RenderType var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
       VertexConsumer var9 = this.bufferSource.getBuffer(var1);
       this.fillGradient(var9, var2, var3, var4, var5, var8, var6, var7);
-      this.flushIfUnmanaged();
    }
 
    private void fillGradient(VertexConsumer var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
@@ -245,7 +207,6 @@ public class GuiGraphics {
       var8.addVertex(var7, (float)var2, (float)var5, (float)var6);
       var8.addVertex(var7, (float)var4, (float)var5, (float)var6);
       var8.addVertex(var7, (float)var4, (float)var3, (float)var6);
-      this.flushIfUnmanaged();
    }
 
    public void drawCenteredString(Font var1, String var2, int var3, int var4, int var5) {
@@ -266,10 +227,9 @@ public class GuiGraphics {
    }
 
    public int drawString(Font var1, @Nullable String var2, int var3, int var4, int var5, boolean var6) {
-      if (var2 == null) {
-         return 0;
-      } else {
-         int var7 = var1.drawInBatch(
+      return var2 == null
+         ? 0
+         : var1.drawInBatch(
             var2,
             (float)var3,
             (float)var4,
@@ -282,9 +242,6 @@ public class GuiGraphics {
             15728880,
             var1.isBidirectional()
          );
-         this.flushIfUnmanaged();
-         return var7;
-      }
    }
 
    public int drawString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5) {
@@ -292,9 +249,7 @@ public class GuiGraphics {
    }
 
    public int drawString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5, boolean var6) {
-      int var7 = var1.drawInBatch(var2, (float)var3, (float)var4, var5, var6, this.pose.last().pose(), this.bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
-      this.flushIfUnmanaged();
-      return var7;
+      return var1.drawInBatch(var2, (float)var3, (float)var4, var5, var6, this.pose.last().pose(), this.bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
    }
 
    public int drawString(Font var1, Component var2, int var3, int var4, int var5) {
@@ -316,20 +271,10 @@ public class GuiGraphics {
       int var7 = this.minecraft.options.getBackgroundColor(0.0F);
       if (var7 != 0) {
          byte var8 = 2;
-         this.fill(var3 - 2, var4 - 2, var3 + var5 + 2, var4 + 9 + 2, FastColor.ARGB32.multiply(var7, var6));
+         this.fill(var3 - 2, var4 - 2, var3 + var5 + 2, var4 + 9 + 2, ARGB.multiply(var7, var6));
       }
 
       return this.drawString(var1, var2, var3, var4, var6, true);
-   }
-
-   public void blit(int var1, int var2, int var3, int var4, int var5, TextureAtlasSprite var6) {
-      this.blitSprite(var6, var1, var2, var3, var4, var5);
-   }
-
-   public void blit(int var1, int var2, int var3, int var4, int var5, TextureAtlasSprite var6, float var7, float var8, float var9, float var10) {
-      this.innerBlit(
-         var6.atlasLocation(), var1, var1 + var4, var2, var2 + var5, var3, var6.getU0(), var6.getU1(), var6.getV0(), var6.getV1(), var7, var8, var9, var10
-      );
    }
 
    public void renderOutline(int var1, int var2, int var3, int var4, int var5) {
@@ -339,105 +284,284 @@ public class GuiGraphics {
       this.fill(var1 + var3 - 1, var2 + 1, var1 + var3, var2 + var4 - 1, var5);
    }
 
-   public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5) {
-      this.blitSprite(var1, var2, var3, 0, var4, var5);
+   public void blitSprite(Function<ResourceLocation, RenderType> var1, ResourceLocation var2, int var3, int var4, int var5, int var6) {
+      this.blitSprite(var1, var2, var3, var4, var5, var6, -1);
    }
 
-   public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6) {
-      TextureAtlasSprite var7 = this.sprites.getSprite(var1);
-      GuiSpriteScaling var8 = this.sprites.getSpriteScaling(var7);
-      if (var8 instanceof GuiSpriteScaling.Stretch) {
-         this.blitSprite(var7, var2, var3, var4, var5, var6);
-      } else if (var8 instanceof GuiSpriteScaling.Tile var9) {
-         this.blitTiledSprite(var7, var2, var3, var4, var5, var6, 0, 0, var9.width(), var9.height(), var9.width(), var9.height());
-      } else if (var8 instanceof GuiSpriteScaling.NineSlice var10) {
-         this.blitNineSlicedSprite(var7, var10, var2, var3, var4, var5, var6);
+   public void blitSprite(Function<ResourceLocation, RenderType> var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7) {
+      TextureAtlasSprite var8 = this.sprites.getSprite(var2);
+      GuiSpriteScaling var9 = this.sprites.getSpriteScaling(var8);
+      if (var9 instanceof GuiSpriteScaling.Stretch) {
+         this.blitSprite(var1, var8, var3, var4, var5, var6, var7);
+      } else if (var9 instanceof GuiSpriteScaling.Tile var10) {
+         this.blitTiledSprite(var1, var8, var3, var4, var5, var6, 0, 0, var10.width(), var10.height(), var10.width(), var10.height(), var7);
+      } else if (var9 instanceof GuiSpriteScaling.NineSlice var11) {
+         this.blitNineSlicedSprite(var1, var8, var11, var3, var4, var5, var6, var7);
       }
    }
 
-   public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
-      this.blitSprite(var1, var2, var3, var4, var5, var6, var7, 0, var8, var9);
-   }
-
-   public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10) {
-      TextureAtlasSprite var11 = this.sprites.getSprite(var1);
+   public void blitSprite(
+      Function<ResourceLocation, RenderType> var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10
+   ) {
+      TextureAtlasSprite var11 = this.sprites.getSprite(var2);
       GuiSpriteScaling var12 = this.sprites.getSpriteScaling(var11);
       if (var12 instanceof GuiSpriteScaling.Stretch) {
-         this.blitSprite(var11, var2, var3, var4, var5, var6, var7, var8, var9, var10);
+         this.blitSprite(var1, var11, var3, var4, var5, var6, var7, var8, var9, var10, -1);
       } else {
-         this.blitSprite(var11, var6, var7, var8, var9, var10);
+         this.blitSprite(var1, var11, var7, var8, var9, var10);
       }
    }
 
-   private void blitSprite(TextureAtlasSprite var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10) {
+   public void blitSprite(Function<ResourceLocation, RenderType> var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6) {
+      this.blitSprite(var1, var2, var3, var4, var5, var6, -1);
+   }
+
+   public void blitSprite(Function<ResourceLocation, RenderType> var1, TextureAtlasSprite var2, int var3, int var4, int var5, int var6, int var7) {
+      if (var5 != 0 && var6 != 0) {
+         this.innerBlit(var1, var2.atlasLocation(), var3, var3 + var5, var4, var4 + var6, var2.getU0(), var2.getU1(), var2.getV0(), var2.getV1(), var7);
+      }
+   }
+
+   private void blitSprite(
+      Function<ResourceLocation, RenderType> var1,
+      TextureAtlasSprite var2,
+      int var3,
+      int var4,
+      int var5,
+      int var6,
+      int var7,
+      int var8,
+      int var9,
+      int var10,
+      int var11
+   ) {
       if (var9 != 0 && var10 != 0) {
          this.innerBlit(
-            var1.atlasLocation(),
-            var6,
-            var6 + var9,
+            var1,
+            var2.atlasLocation(),
             var7,
-            var7 + var10,
+            var7 + var9,
             var8,
-            var1.getU((float)var4 / (float)var2),
-            var1.getU((float)(var4 + var9) / (float)var2),
-            var1.getV((float)var5 / (float)var3),
-            var1.getV((float)(var5 + var10) / (float)var3)
+            var8 + var10,
+            var2.getU((float)var5 / (float)var3),
+            var2.getU((float)(var5 + var9) / (float)var3),
+            var2.getV((float)var6 / (float)var4),
+            var2.getV((float)(var6 + var10) / (float)var4),
+            var11
          );
       }
    }
 
-   private void blitSprite(TextureAtlasSprite var1, int var2, int var3, int var4, int var5, int var6) {
-      if (var5 != 0 && var6 != 0) {
-         this.innerBlit(var1.atlasLocation(), var2, var2 + var5, var3, var3 + var6, var4, var1.getU0(), var1.getU1(), var1.getV0(), var1.getV1());
+   private void blitNineSlicedSprite(
+      Function<ResourceLocation, RenderType> var1, TextureAtlasSprite var2, GuiSpriteScaling.NineSlice var3, int var4, int var5, int var6, int var7, int var8
+   ) {
+      GuiSpriteScaling.NineSlice.Border var9 = var3.border();
+      int var10 = Math.min(var9.left(), var6 / 2);
+      int var11 = Math.min(var9.right(), var6 / 2);
+      int var12 = Math.min(var9.top(), var7 / 2);
+      int var13 = Math.min(var9.bottom(), var7 / 2);
+      if (var6 == var3.width() && var7 == var3.height()) {
+         this.blitSprite(var1, var2, var3.width(), var3.height(), 0, 0, var4, var5, var6, var7, var8);
+      } else if (var7 == var3.height()) {
+         this.blitSprite(var1, var2, var3.width(), var3.height(), 0, 0, var4, var5, var10, var7, var8);
+         this.blitTiledSprite(
+            var1,
+            var2,
+            var4 + var10,
+            var5,
+            var6 - var11 - var10,
+            var7,
+            var10,
+            0,
+            var3.width() - var11 - var10,
+            var3.height(),
+            var3.width(),
+            var3.height(),
+            var8
+         );
+         this.blitSprite(var1, var2, var3.width(), var3.height(), var3.width() - var11, 0, var4 + var6 - var11, var5, var11, var7, var8);
+      } else if (var6 == var3.width()) {
+         this.blitSprite(var1, var2, var3.width(), var3.height(), 0, 0, var4, var5, var6, var12, var8);
+         this.blitTiledSprite(
+            var1,
+            var2,
+            var4,
+            var5 + var12,
+            var6,
+            var7 - var13 - var12,
+            0,
+            var12,
+            var3.width(),
+            var3.height() - var13 - var12,
+            var3.width(),
+            var3.height(),
+            var8
+         );
+         this.blitSprite(var1, var2, var3.width(), var3.height(), 0, var3.height() - var13, var4, var5 + var7 - var13, var6, var13, var8);
+      } else {
+         this.blitSprite(var1, var2, var3.width(), var3.height(), 0, 0, var4, var5, var10, var12, var8);
+         this.blitTiledSprite(
+            var1, var2, var4 + var10, var5, var6 - var11 - var10, var12, var10, 0, var3.width() - var11 - var10, var12, var3.width(), var3.height(), var8
+         );
+         this.blitSprite(var1, var2, var3.width(), var3.height(), var3.width() - var11, 0, var4 + var6 - var11, var5, var11, var12, var8);
+         this.blitSprite(var1, var2, var3.width(), var3.height(), 0, var3.height() - var13, var4, var5 + var7 - var13, var10, var13, var8);
+         this.blitTiledSprite(
+            var1,
+            var2,
+            var4 + var10,
+            var5 + var7 - var13,
+            var6 - var11 - var10,
+            var13,
+            var10,
+            var3.height() - var13,
+            var3.width() - var11 - var10,
+            var13,
+            var3.width(),
+            var3.height(),
+            var8
+         );
+         this.blitSprite(
+            var1, var2, var3.width(), var3.height(), var3.width() - var11, var3.height() - var13, var4 + var6 - var11, var5 + var7 - var13, var11, var13, var8
+         );
+         this.blitTiledSprite(
+            var1, var2, var4, var5 + var12, var10, var7 - var13 - var12, 0, var12, var10, var3.height() - var13 - var12, var3.width(), var3.height(), var8
+         );
+         this.blitTiledSprite(
+            var1,
+            var2,
+            var4 + var10,
+            var5 + var12,
+            var6 - var11 - var10,
+            var7 - var13 - var12,
+            var10,
+            var12,
+            var3.width() - var11 - var10,
+            var3.height() - var13 - var12,
+            var3.width(),
+            var3.height(),
+            var8
+         );
+         this.blitTiledSprite(
+            var1,
+            var2,
+            var4 + var6 - var11,
+            var5 + var12,
+            var10,
+            var7 - var13 - var12,
+            var3.width() - var11,
+            var12,
+            var11,
+            var3.height() - var13 - var12,
+            var3.width(),
+            var3.height(),
+            var8
+         );
       }
    }
 
-   public void blit(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      this.blit(var1, var2, var3, 0, (float)var4, (float)var5, var6, var7, 256, 256);
+   private void blitTiledSprite(
+      Function<ResourceLocation, RenderType> var1,
+      TextureAtlasSprite var2,
+      int var3,
+      int var4,
+      int var5,
+      int var6,
+      int var7,
+      int var8,
+      int var9,
+      int var10,
+      int var11,
+      int var12,
+      int var13
+   ) {
+      if (var5 > 0 && var6 > 0) {
+         if (var9 > 0 && var10 > 0) {
+            for (int var14 = 0; var14 < var5; var14 += var9) {
+               int var15 = Math.min(var9, var5 - var14);
+
+               for (int var16 = 0; var16 < var6; var16 += var10) {
+                  int var17 = Math.min(var10, var6 - var16);
+                  this.blitSprite(var1, var2, var11, var12, var7, var8, var3 + var14, var4 + var16, var15, var17, var13);
+               }
+            }
+         } else {
+            throw new IllegalArgumentException("Tiled sprite texture size must be positive, got " + var9 + "x" + var10);
+         }
+      }
    }
 
-   public void blit(ResourceLocation var1, int var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10) {
-      this.blit(var1, var2, var2 + var7, var3, var3 + var8, var4, var7, var8, var5, var6, var9, var10);
+   public void blit(
+      Function<ResourceLocation, RenderType> var1,
+      ResourceLocation var2,
+      int var3,
+      int var4,
+      float var5,
+      float var6,
+      int var7,
+      int var8,
+      int var9,
+      int var10,
+      int var11
+   ) {
+      this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var7, var8, var9, var10, var11);
    }
 
-   public void blit(ResourceLocation var1, int var2, int var3, int var4, int var5, float var6, float var7, int var8, int var9, int var10, int var11) {
-      this.blit(var1, var2, var2 + var4, var3, var3 + var5, 0, var8, var9, var6, var7, var10, var11);
+   public void blit(
+      Function<ResourceLocation, RenderType> var1, ResourceLocation var2, int var3, int var4, float var5, float var6, int var7, int var8, int var9, int var10
+   ) {
+      this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var7, var8, var9, var10);
    }
 
-   public void blit(ResourceLocation var1, int var2, int var3, float var4, float var5, int var6, int var7, int var8, int var9) {
-      this.blit(var1, var2, var3, var6, var7, var4, var5, var6, var7, var8, var9);
+   public void blit(
+      Function<ResourceLocation, RenderType> var1,
+      ResourceLocation var2,
+      int var3,
+      int var4,
+      float var5,
+      float var6,
+      int var7,
+      int var8,
+      int var9,
+      int var10,
+      int var11,
+      int var12
+   ) {
+      this.blit(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, -1);
    }
 
-   void blit(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, float var9, float var10, int var11, int var12) {
+   public void blit(
+      Function<ResourceLocation, RenderType> var1,
+      ResourceLocation var2,
+      int var3,
+      int var4,
+      float var5,
+      float var6,
+      int var7,
+      int var8,
+      int var9,
+      int var10,
+      int var11,
+      int var12,
+      int var13
+   ) {
       this.innerBlit(
          var1,
          var2,
          var3,
+         var3 + var7,
          var4,
-         var5,
-         var6,
-         (var9 + 0.0F) / (float)var11,
-         (var9 + (float)var7) / (float)var11,
-         (var10 + 0.0F) / (float)var12,
-         (var10 + (float)var8) / (float)var12
+         var4 + var8,
+         (var5 + 0.0F) / (float)var11,
+         (var5 + (float)var9) / (float)var11,
+         (var6 + 0.0F) / (float)var12,
+         (var6 + (float)var10) / (float)var12,
+         var13
       );
    }
 
-   void innerBlit(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, float var7, float var8, float var9, float var10) {
-      RenderSystem.setShaderTexture(0, var1);
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      Matrix4f var11 = this.pose.last().pose();
-      BufferBuilder var12 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-      var12.addVertex(var11, (float)var2, (float)var4, (float)var6).setUv(var7, var9);
-      var12.addVertex(var11, (float)var2, (float)var5, (float)var6).setUv(var7, var10);
-      var12.addVertex(var11, (float)var3, (float)var5, (float)var6).setUv(var8, var10);
-      var12.addVertex(var11, (float)var3, (float)var4, (float)var6).setUv(var8, var9);
-      BufferUploader.drawWithShader(var12.buildOrThrow());
-   }
-
-   void innerBlit(
-      ResourceLocation var1,
-      int var2,
+   private void innerBlit(
+      Function<ResourceLocation, RenderType> var1,
+      ResourceLocation var2,
       int var3,
       int var4,
       int var5,
@@ -446,119 +570,15 @@ public class GuiGraphics {
       float var8,
       float var9,
       float var10,
-      float var11,
-      float var12,
-      float var13,
-      float var14
+      int var11
    ) {
-      RenderSystem.setShaderTexture(0, var1);
-      RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-      RenderSystem.enableBlend();
-      Matrix4f var15 = this.pose.last().pose();
-      BufferBuilder var16 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-      var16.addVertex(var15, (float)var2, (float)var4, (float)var6).setUv(var7, var9).setColor(var11, var12, var13, var14);
-      var16.addVertex(var15, (float)var2, (float)var5, (float)var6).setUv(var7, var10).setColor(var11, var12, var13, var14);
-      var16.addVertex(var15, (float)var3, (float)var5, (float)var6).setUv(var8, var10).setColor(var11, var12, var13, var14);
-      var16.addVertex(var15, (float)var3, (float)var4, (float)var6).setUv(var8, var9).setColor(var11, var12, var13, var14);
-      BufferUploader.drawWithShader(var16.buildOrThrow());
-      RenderSystem.disableBlend();
-   }
-
-   private void blitNineSlicedSprite(TextureAtlasSprite var1, GuiSpriteScaling.NineSlice var2, int var3, int var4, int var5, int var6, int var7) {
-      GuiSpriteScaling.NineSlice.Border var8 = var2.border();
-      int var9 = Math.min(var8.left(), var6 / 2);
-      int var10 = Math.min(var8.right(), var6 / 2);
-      int var11 = Math.min(var8.top(), var7 / 2);
-      int var12 = Math.min(var8.bottom(), var7 / 2);
-      if (var6 == var2.width() && var7 == var2.height()) {
-         this.blitSprite(var1, var2.width(), var2.height(), 0, 0, var3, var4, var5, var6, var7);
-      } else if (var7 == var2.height()) {
-         this.blitSprite(var1, var2.width(), var2.height(), 0, 0, var3, var4, var5, var9, var7);
-         this.blitTiledSprite(
-            var1, var3 + var9, var4, var5, var6 - var10 - var9, var7, var9, 0, var2.width() - var10 - var9, var2.height(), var2.width(), var2.height()
-         );
-         this.blitSprite(var1, var2.width(), var2.height(), var2.width() - var10, 0, var3 + var6 - var10, var4, var5, var10, var7);
-      } else if (var6 == var2.width()) {
-         this.blitSprite(var1, var2.width(), var2.height(), 0, 0, var3, var4, var5, var6, var11);
-         this.blitTiledSprite(
-            var1, var3, var4 + var11, var5, var6, var7 - var12 - var11, 0, var11, var2.width(), var2.height() - var12 - var11, var2.width(), var2.height()
-         );
-         this.blitSprite(var1, var2.width(), var2.height(), 0, var2.height() - var12, var3, var4 + var7 - var12, var5, var6, var12);
-      } else {
-         this.blitSprite(var1, var2.width(), var2.height(), 0, 0, var3, var4, var5, var9, var11);
-         this.blitTiledSprite(
-            var1, var3 + var9, var4, var5, var6 - var10 - var9, var11, var9, 0, var2.width() - var10 - var9, var11, var2.width(), var2.height()
-         );
-         this.blitSprite(var1, var2.width(), var2.height(), var2.width() - var10, 0, var3 + var6 - var10, var4, var5, var10, var11);
-         this.blitSprite(var1, var2.width(), var2.height(), 0, var2.height() - var12, var3, var4 + var7 - var12, var5, var9, var12);
-         this.blitTiledSprite(
-            var1,
-            var3 + var9,
-            var4 + var7 - var12,
-            var5,
-            var6 - var10 - var9,
-            var12,
-            var9,
-            var2.height() - var12,
-            var2.width() - var10 - var9,
-            var12,
-            var2.width(),
-            var2.height()
-         );
-         this.blitSprite(
-            var1, var2.width(), var2.height(), var2.width() - var10, var2.height() - var12, var3 + var6 - var10, var4 + var7 - var12, var5, var10, var12
-         );
-         this.blitTiledSprite(
-            var1, var3, var4 + var11, var5, var9, var7 - var12 - var11, 0, var11, var9, var2.height() - var12 - var11, var2.width(), var2.height()
-         );
-         this.blitTiledSprite(
-            var1,
-            var3 + var9,
-            var4 + var11,
-            var5,
-            var6 - var10 - var9,
-            var7 - var12 - var11,
-            var9,
-            var11,
-            var2.width() - var10 - var9,
-            var2.height() - var12 - var11,
-            var2.width(),
-            var2.height()
-         );
-         this.blitTiledSprite(
-            var1,
-            var3 + var6 - var10,
-            var4 + var11,
-            var5,
-            var9,
-            var7 - var12 - var11,
-            var2.width() - var10,
-            var11,
-            var10,
-            var2.height() - var12 - var11,
-            var2.width(),
-            var2.height()
-         );
-      }
-   }
-
-   private void blitTiledSprite(
-      TextureAtlasSprite var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12
-   ) {
-      if (var5 > 0 && var6 > 0) {
-         if (var9 > 0 && var10 > 0) {
-            for (int var13 = 0; var13 < var5; var13 += var9) {
-               int var14 = Math.min(var9, var5 - var13);
-
-               for (int var15 = 0; var15 < var6; var15 += var10) {
-                  int var16 = Math.min(var10, var6 - var15);
-                  this.blitSprite(var1, var11, var12, var7, var8, var2 + var13, var3 + var15, var4, var14, var16);
-               }
-            }
-         } else {
-            throw new IllegalArgumentException("Tiled sprite texture size must be positive, got " + var9 + "x" + var10);
-         }
-      }
+      RenderType var12 = (RenderType)var1.apply(var2);
+      Matrix4f var13 = this.pose.last().pose();
+      VertexConsumer var14 = this.bufferSource.getBuffer(var12);
+      var14.addVertex(var13, (float)var3, (float)var5, 0.0F).setUv(var7, var9).setColor(var11);
+      var14.addVertex(var13, (float)var3, (float)var6, 0.0F).setUv(var7, var10).setColor(var11);
+      var14.addVertex(var13, (float)var4, (float)var6, 0.0F).setUv(var8, var10).setColor(var11);
+      var14.addVertex(var13, (float)var4, (float)var5, 0.0F).setUv(var8, var9).setColor(var11);
    }
 
    public void renderItem(ItemStack var1, int var2, int var3) {
@@ -599,6 +619,7 @@ public class GuiGraphics {
             this.pose.scale(16.0F, -16.0F, 16.0F);
             boolean var9 = !var8.usesBlockLight();
             if (var9) {
+               this.flush();
                Lighting.setupForFlatItems();
             }
 
@@ -641,13 +662,13 @@ public class GuiGraphics {
             int var8 = var3 + 2;
             int var9 = var4 + 13;
             this.fill(RenderType.guiOverlay(), var8, var9, var8 + 13, var9 + 2, -16777216);
-            this.fill(RenderType.guiOverlay(), var8, var9, var8 + var10, var9 + 1, var7 | 0xFF000000);
+            this.fill(RenderType.guiOverlay(), var8, var9, var8 + var10, var9 + 1, ARGB.opaque(var7));
          }
 
          LocalPlayer var11 = this.minecraft.player;
          float var12 = var11 == null
             ? 0.0F
-            : var11.getCooldowns().getCooldownPercent(var2.getItem(), this.minecraft.getTimer().getGameTimeDeltaPartialTick(true));
+            : var11.getCooldowns().getCooldownPercent(var2.getItem(), this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true));
          if (var12 > 0.0F) {
             int var13 = var4 + Mth.floor(16.0F * (1.0F - var12));
             int var14 = var13 + Mth.ceil(16.0F * var12);
@@ -697,32 +718,30 @@ public class GuiGraphics {
                var6 = var10;
             }
 
-            var7 += var9.getHeight();
+            var7 += var9.getHeight(var1);
          }
 
-         int var17 = var6;
-         int var18 = var7;
-         Vector2ic var19 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var17, var18);
-         int var11 = var19.x();
-         int var12 = var19.y();
+         Vector2ic var17 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var6, var7);
+         int var11 = var17.x();
+         int var12 = var17.y();
          this.pose.pushPose();
          short var13 = 400;
-         this.drawManaged(() -> TooltipRenderUtil.renderTooltipBackground(this, var11, var12, var17, var18, 400));
+         TooltipRenderUtil.renderTooltipBackground(this, var11, var12, var6, var7, 400);
          this.pose.translate(0.0F, 0.0F, 400.0F);
          int var14 = var12;
 
          for (int var15 = 0; var15 < var2.size(); var15++) {
             ClientTooltipComponent var16 = (ClientTooltipComponent)var2.get(var15);
             var16.renderText(var1, var11, var14, this.pose.last().pose(), this.bufferSource);
-            var14 += var16.getHeight() + (var15 == 0 ? 2 : 0);
+            var14 += var16.getHeight(var1) + (var15 == 0 ? 2 : 0);
          }
 
          var14 = var12;
 
-         for (int var21 = 0; var21 < var2.size(); var21++) {
-            ClientTooltipComponent var22 = (ClientTooltipComponent)var2.get(var21);
-            var22.renderImage(var1, var11, var14, this);
-            var14 += var22.getHeight() + (var21 == 0 ? 2 : 0);
+         for (int var19 = 0; var19 < var2.size(); var19++) {
+            ClientTooltipComponent var20 = (ClientTooltipComponent)var2.get(var19);
+            var20.renderImage(var1, var11, var14, this);
+            var14 += var20.getHeight(var1) + (var19 == 0 ? 2 : 0);
          }
 
          this.pose.popPose();

@@ -2,6 +2,7 @@ package net.minecraft.data.recipes;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
@@ -42,7 +43,7 @@ public class SmithingTrimRecipeBuilder {
          .rewards(AdvancementRewards.Builder.recipe(var2))
          .requirements(AdvancementRequirements.Strategy.OR);
       this.criteria.forEach(var3::addCriterion);
-      SmithingTrimRecipe var4 = new SmithingTrimRecipe(this.template, this.base, this.addition);
+      SmithingTrimRecipe var4 = new SmithingTrimRecipe(Optional.of(this.template), Optional.of(this.base), Optional.of(this.addition));
       var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 

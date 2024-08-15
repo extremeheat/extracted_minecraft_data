@@ -4,6 +4,7 @@ import com.google.common.collect.Queues;
 import com.mojang.math.MatrixUtil;
 import java.util.Deque;
 import net.minecraft.Util;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -27,6 +28,10 @@ public class PoseStack {
    public void translate(float var1, float var2, float var3) {
       PoseStack.Pose var4 = this.poseStack.getLast();
       var4.pose.translate(var1, var2, var3);
+   }
+
+   public void translate(Vec3 var1) {
+      this.translate(var1.x, var1.y, var1.z);
    }
 
    public void scale(float var1, float var2, float var3) {

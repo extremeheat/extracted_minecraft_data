@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponentMap;
@@ -39,6 +40,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -93,6 +95,9 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    private static final int MOB_FLAG_AGGRESSIVE = 4;
    protected static final int PICKUP_REACH = 1;
    private static final Vec3i ITEM_PICKUP_REACH = new Vec3i(1, 0, 1);
+   private static final List<EquipmentSlot> EQUIPMENT_POPULATION_ORDER = List.of(
+      EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
+   );
    public static final float MAX_WEARING_ARMOR_CHANCE = 0.15F;
    public static final float MAX_PICKUP_LOOT_CHANCE = 0.55F;
    public static final float MAX_ENCHANTED_ARMOR_CHANCE = 0.5F;
@@ -432,7 +437,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("CanPickUpLoot", 1)) {
+      if (var1.contains("CanPickUpLoot", 99)) {
          this.setCanPickUpLoot(var1.getBoolean("CanPickUpLoot"));
       }
 
@@ -826,12 +831,12 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       return var1 + var4;
    }
 
-   public static boolean checkMobSpawnRules(EntityType<? extends Mob> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkMobSpawnRules(EntityType<? extends Mob> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       BlockPos var5 = var3.below();
-      return var2 == MobSpawnType.SPAWNER || var1.getBlockState(var5).isValidSpawn(var1, var5, var0);
+      return EntitySpawnReason.isSpawner(var2) || var1.getBlockState(var5).isValidSpawn(var1, var5, var0);
    }
 
-   public boolean checkSpawnRules(LevelAccessor var1, MobSpawnType var2) {
+   public boolean checkSpawnRules(LevelAccessor var1, EntitySpawnReason var2) {
       return true;
    }
 
@@ -1024,19 +1029,17 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
          boolean var5 = true;
 
-         for (EquipmentSlot var9 : EquipmentSlot.values()) {
-            if (var9.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
-               ItemStack var10 = this.getItemBySlot(var9);
-               if (!var5 && var1.nextFloat() < var4) {
-                  break;
-               }
+         for (EquipmentSlot var7 : EQUIPMENT_POPULATION_ORDER) {
+            ItemStack var8 = this.getItemBySlot(var7);
+            if (!var5 && var1.nextFloat() < var4) {
+               break;
+            }
 
-               var5 = false;
-               if (var10.isEmpty()) {
-                  Item var11 = getEquipmentForSlot(var9, var3);
-                  if (var11 != null) {
-                     this.setItemSlot(var9, new ItemStack(var11));
-                  }
+            var5 = false;
+            if (var8.isEmpty()) {
+               Item var9 = getEquipmentForSlot(var7, var3);
+               if (var9 != null) {
+                  this.setItemSlot(var7, new ItemStack(var9));
                }
             }
          }
@@ -1126,7 +1129,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       AttributeInstance var6 = Objects.requireNonNull(this.getAttribute(Attributes.FOLLOW_RANGE));
       if (!var6.hasModifier(RANDOM_SPAWN_BONUS_ID)) {
@@ -1217,10 +1220,12 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
                var1, this, (EntityType<? extends Mob>)this.getType(), (ServerLevel)this.level(), this.position(), var3
             );
             var5.ifPresent(var2x -> this.onOffspringSpawnedFromEgg(var1, var2x));
-            return var5.isPresent() ? InteractionResult.SUCCESS : InteractionResult.PASS;
-         } else {
-            return InteractionResult.CONSUME;
+            if (var5.isEmpty()) {
+               return InteractionResult.PASS;
+            }
          }
+
+         return InteractionResult.SUCCESS_SERVER;
       } else {
          return InteractionResult.PASS;
       }
@@ -1267,7 +1272,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       if (this.isRemoved()) {
          return null;
       } else {
-         Mob var3 = (Mob)var1.create(this.level());
+         Mob var3 = (Mob)var1.create(this.level(), EntitySpawnReason.CONVERSION);
          if (var3 == null) {
             return null;
          } else {
@@ -1417,28 +1422,33 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    @Override
    public boolean doHurtTarget(Entity var1) {
       float var2 = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
-      DamageSource var3 = this.damageSources().mobAttack(this);
-      if (this.level() instanceof ServerLevel var4) {
-         var2 = EnchantmentHelper.modifyDamage(var4, this.getWeaponItem(), var1, var3, var2);
+      ItemStack var3 = this.getWeaponItem();
+      DamageSource var4 = this.damageSources().mobAttack(this);
+      if (this.level() instanceof ServerLevel var5) {
+         var2 = EnchantmentHelper.modifyDamage(var5, var3, var1, var4, var2);
       }
 
-      boolean var8 = var1.hurt(var3, var2);
-      if (var8) {
-         float var9 = this.getKnockback(var1, var3);
-         if (var9 > 0.0F && var1 instanceof LivingEntity var6) {
-            var6.knockback((double)(var9 * 0.5F), (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
+      boolean var9 = var1.hurt(var4, var2);
+      if (var9) {
+         float var10 = this.getKnockback(var1, var4);
+         if (var10 > 0.0F && var1 instanceof LivingEntity var7) {
+            var7.knockback((double)(var10 * 0.5F), (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
          }
 
-         if (this.level() instanceof ServerLevel var10) {
-            EnchantmentHelper.doPostAttackEffects(var10, var1, var3);
+         if (this.level() instanceof ServerLevel var11) {
+            if (var1 instanceof LivingEntity var12) {
+               var3.hurtEnemy(var12, this);
+            }
+
+            EnchantmentHelper.doPostAttackEffects(var11, var1, var4);
          }
 
          this.setLastHurtMob(var1);
          this.playAttackSound();
       }
 
-      return var8;
+      return var9;
    }
 
    protected void playAttackSound() {
@@ -1491,5 +1501,13 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    public ItemStack getPickResult() {
       SpawnEggItem var1 = SpawnEggItem.byId(this.getType());
       return var1 == null ? null : new ItemStack(var1);
+   }
+
+   @Override
+   protected void onAttributeUpdated(Holder<Attribute> var1) {
+      super.onAttributeUpdated(var1);
+      if (var1.is(Attributes.FOLLOW_RANGE) || var1.is(Attributes.TEMPT_RANGE)) {
+         this.getNavigation().updatePathfinderMaxVisitedNodes();
+      }
    }
 }

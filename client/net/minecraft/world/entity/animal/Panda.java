@@ -31,11 +31,11 @@ import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -252,7 +252,7 @@ public class Panda extends Animal {
    @Nullable
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Panda var3 = EntityType.PANDA.create(var1);
+      Panda var3 = EntityType.PANDA.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          if (var2 instanceof Panda var4) {
             var3.setGeneFromParents(this, var4);
@@ -286,7 +286,7 @@ public class Panda extends Animal {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.15000000596046448).add(Attributes.ATTACK_DAMAGE, 6.0);
+      return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 0.15000000596046448).add(Attributes.ATTACK_DAMAGE, 6.0);
    }
 
    public Panda.Gene getVariant() {
@@ -561,7 +561,7 @@ public class Panda extends Animal {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.setMainGene(Panda.Gene.getRandom(var5));
       this.setHiddenGene(Panda.Gene.getRandom(var5));
@@ -628,7 +628,7 @@ public class Panda extends Animal {
          return InteractionResult.PASS;
       } else if (this.isOnBack()) {
          this.setOnBack(false);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else if (this.isFood(var3)) {
          if (this.getTarget() != null) {
             this.gotBamboo = true;
@@ -656,7 +656,7 @@ public class Panda extends Animal {
             this.usePlayerItem(var1, var2, var3);
          }
 
-         return InteractionResult.SUCCESS;
+         return InteractionResult.SUCCESS_SERVER;
       } else {
          return InteractionResult.PASS;
       }

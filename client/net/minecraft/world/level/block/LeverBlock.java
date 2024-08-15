@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -23,6 +24,8 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -96,16 +99,15 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
          if (var6.getValue(POWERED)) {
             makeParticle(var6, var2, var3, 1.0F);
          }
-
-         return InteractionResult.SUCCESS;
       } else {
          this.pull(var1, var2, var3, null);
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    @Override
-   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.canTriggerBlocks()) {
          this.pull(var1, var2, var3, null);
       }
@@ -169,8 +171,10 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    private void updateNeighbours(BlockState var1, Level var2, BlockPos var3) {
-      var2.updateNeighborsAt(var3, this);
-      var2.updateNeighborsAt(var3.relative(getConnectedDirection(var1).getOpposite()), this);
+      Direction var4 = getConnectedDirection(var1).getOpposite();
+      Orientation var5 = ExperimentalRedstoneUtils.randomOrientation(var2, var4, var4.getAxis().isHorizontal() ? Direction.UP : null);
+      var2.updateNeighborsAt(var3, this, var5);
+      var2.updateNeighborsAt(var3.relative(var4), this, var5);
    }
 
    @Override

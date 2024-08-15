@@ -75,7 +75,7 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
 
    @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.isSolidRender(var2, var3);
+      return var1.isSolidRender();
    }
 
    @Override

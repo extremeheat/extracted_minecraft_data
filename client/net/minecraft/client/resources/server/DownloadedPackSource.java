@@ -107,7 +107,7 @@ public class DownloadedPackSource implements AutoCloseable {
          private OptionalLong totalBytes = OptionalLong.empty();
 
          private void updateToast() {
-            SystemToast.addOrUpdate(DownloadedPackSource.this.minecraft.getToasts(), this.toastId, this.title, this.message);
+            SystemToast.addOrUpdate(DownloadedPackSource.this.minecraft.getToastManager(), this.toastId, this.title, this.message);
          }
 
          private void updateProgress(long var1x) {
@@ -156,7 +156,7 @@ public class DownloadedPackSource implements AutoCloseable {
                   this.message = null;
                   this.updateToast();
                } else {
-                  SystemToast.forceHide(DownloadedPackSource.this.minecraft.getToasts(), this.toastId);
+                  SystemToast.forceHide(DownloadedPackSource.this.minecraft.getToastManager(), this.toastId);
                }
             }
          }

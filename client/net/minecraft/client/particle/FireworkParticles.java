@@ -12,7 +12,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -232,7 +232,7 @@ public class FireworkParticles {
 
             int var7 = var5.getInt(0);
             Particle var8 = this.engine.createParticle(ParticleTypes.FLASH, this.x, this.y, this.z, 0.0, 0.0, 0.0);
-            var8.setColor((float)FastColor.ARGB32.red(var7) / 255.0F, (float)FastColor.ARGB32.green(var7) / 255.0F, (float)FastColor.ARGB32.blue(var7) / 255.0F);
+            var8.setColor((float)ARGB.red(var7) / 255.0F, (float)ARGB.green(var7) / 255.0F, (float)ARGB.blue(var7) / 255.0F);
          }
 
          this.life++;

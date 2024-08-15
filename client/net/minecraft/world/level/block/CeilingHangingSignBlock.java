@@ -11,7 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HangingSignItem;
 import net.minecraft.world.item.ItemStack;
@@ -77,9 +77,9 @@ public class CeilingHangingSignBlock extends SignBlock {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (var3.getBlockEntity(var4) instanceof SignBlockEntity var8 && this.shouldTryToChainAnotherHangingSign(var5, var7, var8, var1)) {
-         return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.PASS;
       }
 
       return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);

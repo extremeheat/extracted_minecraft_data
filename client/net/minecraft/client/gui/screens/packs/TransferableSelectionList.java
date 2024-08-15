@@ -7,6 +7,7 @@ import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -143,7 +144,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
             var1.fill(var4 - 1, var3 - 1, var12, var3 + var6 + 1, -8978432);
          }
 
-         var1.blit(this.pack.getIconTexture(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
+         var1.blit(RenderType::guiTextured, this.pack.getIconTexture(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
          FormattedCharSequence var16 = this.nameDisplayCache;
          MultiLineLabel var13 = this.descriptionDisplayCache;
          if (this.showHoverOverlay() && (this.minecraft.options.touchscreen().get() || var9 || this.parent.getSelected() == this && this.parent.isFocused())) {
@@ -157,32 +158,32 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
 
             if (this.pack.canSelect()) {
                if (var14 < 32) {
-                  var1.blitSprite(TransferableSelectionList.SELECT_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderType::guiTextured, TransferableSelectionList.SELECT_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(TransferableSelectionList.SELECT_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderType::guiTextured, TransferableSelectionList.SELECT_SPRITE, var4, var3, 32, 32);
                }
             } else {
                if (this.pack.canUnselect()) {
                   if (var14 < 16) {
-                     var1.blitSprite(TransferableSelectionList.UNSELECT_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                     var1.blitSprite(RenderType::guiTextured, TransferableSelectionList.UNSELECT_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                   } else {
-                     var1.blitSprite(TransferableSelectionList.UNSELECT_SPRITE, var4, var3, 32, 32);
+                     var1.blitSprite(RenderType::guiTextured, TransferableSelectionList.UNSELECT_SPRITE, var4, var3, 32, 32);
                   }
                }
 
                if (this.pack.canMoveUp()) {
                   if (var14 < 32 && var14 > 16 && var15 < 16) {
-                     var1.blitSprite(TransferableSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                     var1.blitSprite(RenderType::guiTextured, TransferableSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                   } else {
-                     var1.blitSprite(TransferableSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
+                     var1.blitSprite(RenderType::guiTextured, TransferableSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
                   }
                }
 
                if (this.pack.canMoveDown()) {
                   if (var14 < 32 && var14 > 16 && var15 > 16) {
-                     var1.blitSprite(TransferableSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                     var1.blitSprite(RenderType::guiTextured, TransferableSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                   } else {
-                     var1.blitSprite(TransferableSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
+                     var1.blitSprite(RenderType::guiTextured, TransferableSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
                   }
                }
             }

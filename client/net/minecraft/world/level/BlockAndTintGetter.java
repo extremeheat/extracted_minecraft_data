@@ -20,6 +20,6 @@ public interface BlockAndTintGetter extends BlockGetter {
    }
 
    default boolean canSeeSky(BlockPos var1) {
-      return this.getBrightness(LightLayer.SKY, var1) >= this.getMaxLightLevel();
+      return this.getBrightness(LightLayer.SKY, var1) >= 15;
    }
 }

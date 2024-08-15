@@ -31,6 +31,7 @@ public class AnvilMenu extends ItemCombinerMenu {
    @Nullable
    private String itemName;
    private final DataSlot cost = DataSlot.standalone();
+   private boolean onlyRenaming = false;
    private static final int COST_FAIL = 0;
    private static final int COST_BASE = 1;
    private static final int COST_ADDED_BASE = 1;
@@ -73,7 +74,6 @@ public class AnvilMenu extends ItemCombinerMenu {
          var1.giveExperienceLevels(-this.cost.get());
       }
 
-      this.inputSlots.setItem(0, ItemStack.EMPTY);
       if (this.repairItemCountCost > 0) {
          ItemStack var3 = this.inputSlots.getItem(1);
          if (!var3.isEmpty() && var3.getCount() > this.repairItemCountCost) {
@@ -82,11 +82,12 @@ public class AnvilMenu extends ItemCombinerMenu {
          } else {
             this.inputSlots.setItem(1, ItemStack.EMPTY);
          }
-      } else {
+      } else if (!this.onlyRenaming) {
          this.inputSlots.setItem(1, ItemStack.EMPTY);
       }
 
       this.cost.set(0);
+      this.inputSlots.setItem(0, ItemStack.EMPTY);
       this.access.execute((var1x, var2x) -> {
          BlockState var3x = var1x.getBlockState(var2x);
          if (!var1.hasInfiniteMaterials() && var3x.is(BlockTags.ANVIL) && var1.getRandom().nextFloat() < 0.12F) {
@@ -107,6 +108,7 @@ public class AnvilMenu extends ItemCombinerMenu {
    @Override
    public void createResult() {
       ItemStack var1 = this.inputSlots.getItem(0);
+      this.onlyRenaming = false;
       this.cost.set(1);
       int var2 = 0;
       long var3 = 0L;
@@ -120,7 +122,7 @@ public class AnvilMenu extends ItemCombinerMenu {
          this.repairItemCountCost = 0;
          if (!var7.isEmpty()) {
             boolean var9 = var7.has(DataComponents.STORED_ENCHANTMENTS);
-            if (var6.isDamageableItem() && var6.getItem().isValidRepairItem(var1, var7)) {
+            if (var6.isDamageableItem() && var1.isValidRepairItem(var7)) {
                int var25 = Math.min(var6.getDamageValue(), var6.getMaxDamage() / 4);
                if (var25 <= 0) {
                   this.resultSlots.setItem(0, ItemStack.EMPTY);
@@ -229,8 +231,12 @@ public class AnvilMenu extends ItemCombinerMenu {
             var6 = ItemStack.EMPTY;
          }
 
-         if (var5 == var2 && var5 > 0 && this.cost.get() >= 40) {
-            this.cost.set(39);
+         if (var5 == var2 && var5 > 0) {
+            if (this.cost.get() >= 40) {
+               this.cost.set(39);
+            }
+
+            this.onlyRenaming = true;
          }
 
          if (this.cost.get() >= 40 && !this.player.getAbilities().instabuild) {

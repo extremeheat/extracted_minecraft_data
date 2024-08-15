@@ -22,10 +22,10 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -66,7 +66,7 @@ public class PolarBear extends Animal implements NeutralMob {
    @Nullable
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.POLAR_BEAR.create(var1);
+      return EntityType.POLAR_BEAR.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Override
@@ -92,14 +92,14 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes()
+      return Animal.createAnimalAttributes()
          .add(Attributes.MAX_HEALTH, 30.0)
          .add(Attributes.FOLLOW_RANGE, 20.0)
          .add(Attributes.MOVEMENT_SPEED, 0.25)
          .add(Attributes.ATTACK_DAMAGE, 6.0);
    }
 
-   public static boolean checkPolarBearSpawnRules(EntityType<PolarBear> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkPolarBearSpawnRules(EntityType<PolarBear> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       Holder var5 = var1.getBiome(var3);
       return !var5.is(BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS)
          ? checkAnimalSpawnRules(var0, var1, var2, var3, var4)
@@ -231,7 +231,7 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }

@@ -75,6 +75,13 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       this.data = var3;
    }
 
+   private PalettedContainer(PalettedContainer<T> var1) {
+      super();
+      this.registry = var1.registry;
+      this.strategy = var1.strategy;
+      this.data = var1.data.copy(this);
+   }
+
    public PalettedContainer(IdMap<T> var1, T var2, PalettedContainer.Strategy var3) {
       super();
       this.strategy = var3;
@@ -266,8 +273,9 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return this.data.palette.maybeHas(var1);
    }
 
+   @Override
    public PalettedContainer<T> copy() {
-      return new PalettedContainer<>(this.registry, this.strategy, this.data.copy());
+      return new PalettedContainer<>(this);
    }
 
    @Override

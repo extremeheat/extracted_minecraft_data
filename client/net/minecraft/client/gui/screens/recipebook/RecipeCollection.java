@@ -1,14 +1,14 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.stats.RecipeBook;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
@@ -61,7 +61,7 @@ public class RecipeCollection {
       }
    }
 
-   public void canCraft(StackedContents var1, int var2, int var3, RecipeBook var4) {
+   public void selectMatchingRecipes(StackedItemContents var1, int var2, int var3, RecipeBook var4) {
       for (RecipeHolder var6 : this.recipes) {
          boolean var7 = var6.value().canCraftInDimensions(var2, var3) && var4.contains(var6);
          if (var7) {
@@ -94,32 +94,33 @@ public class RecipeCollection {
       return this.recipes;
    }
 
-   public List<RecipeHolder<?>> getRecipes(boolean var1) {
-      ArrayList var2 = Lists.newArrayList();
-      Set var3 = var1 ? this.craftable : this.fitsDimensions;
+   public List<RecipeHolder<?>> getFittingRecipes(RecipeCollection.CraftableStatus var1) {
+      Predicate var2 = switch (var1) {
+         case ANY -> this.fitsDimensions::contains;
+         case CRAFTABLE -> this.craftable::contains;
+         case NOT_CRAFTABLE -> var1x -> this.fitsDimensions.contains(var1x) && !this.craftable.contains(var1x);
+      };
+      ArrayList var3 = new ArrayList();
 
       for (RecipeHolder var5 : this.recipes) {
-         if (var3.contains(var5)) {
-            var2.add(var5);
+         if (var2.test(var5)) {
+            var3.add(var5);
          }
       }
 
-      return var2;
-   }
-
-   public List<RecipeHolder<?>> getDisplayRecipes(boolean var1) {
-      ArrayList var2 = Lists.newArrayList();
-
-      for (RecipeHolder var4 : this.recipes) {
-         if (this.fitsDimensions.contains(var4) && this.craftable.contains(var4) == var1) {
-            var2.add(var4);
-         }
-      }
-
-      return var2;
+      return var3;
    }
 
    public boolean hasSingleResultItem() {
       return this.singleResultItem;
+   }
+
+   public static enum CraftableStatus {
+      ANY,
+      CRAFTABLE,
+      NOT_CRAFTABLE;
+
+      private CraftableStatus() {
+      }
    }
 }

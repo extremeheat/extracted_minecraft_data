@@ -6,10 +6,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.RavagerRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.monster.Ravager;
 
-public class RavagerModel extends HierarchicalModel<Ravager> {
+public class RavagerModel extends EntityModel<RavagerRenderState> {
    private final ModelPart root;
    private final ModelPart head;
    private final ModelPart mouth;
@@ -85,53 +85,47 @@ public class RavagerModel extends HierarchicalModel<Ravager> {
       return this.root;
    }
 
-   public void setupAnim(Ravager var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.xRot = var6 * 0.017453292F;
-      this.head.yRot = var5 * 0.017453292F;
-      float var7 = 0.4F * var3;
-      this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F) * var7;
-      this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * var7;
-      this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * var7;
-      this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * var7;
-   }
-
-   public void prepareMobModel(Ravager var1, float var2, float var3, float var4) {
-      super.prepareMobModel(var1, var2, var3, var4);
-      int var5 = var1.getStunnedTick();
-      int var6 = var1.getRoarTick();
-      byte var7 = 20;
-      int var8 = var1.getAttackTick();
-      byte var9 = 10;
-      if (var8 > 0) {
-         float var10 = Mth.triangleWave((float)var8 - var4, 10.0F);
-         float var11 = (1.0F + var10) * 0.5F;
-         float var12 = var11 * var11 * var11 * 12.0F;
-         float var13 = var12 * Mth.sin(this.neck.xRot);
-         this.neck.z = -6.5F + var12;
-         this.neck.y = -7.0F - var13;
-         float var14 = Mth.sin(((float)var8 - var4) / 10.0F * 3.1415927F * 0.25F);
-         this.mouth.xRot = 1.5707964F * var14;
-         if (var8 > 5) {
-            this.mouth.xRot = Mth.sin(((float)(-4 + var8) - var4) / 4.0F) * 3.1415927F * 0.4F;
+   public void setupAnim(RavagerRenderState var1) {
+      float var2 = var1.stunnedTicksRemaining;
+      float var3 = var1.attackTicksRemaining;
+      byte var4 = 10;
+      if (var3 > 0.0F) {
+         float var5 = Mth.triangleWave(var3, 10.0F);
+         float var6 = (1.0F + var5) * 0.5F;
+         float var7 = var6 * var6 * var6 * 12.0F;
+         float var8 = var7 * Mth.sin(this.neck.xRot);
+         this.neck.z = -6.5F + var7;
+         this.neck.y = -7.0F - var8;
+         if (var3 > 5.0F) {
+            this.mouth.xRot = Mth.sin((-4.0F + var3) / 4.0F) * 3.1415927F * 0.4F;
          } else {
-            this.mouth.xRot = 0.15707964F * Mth.sin(3.1415927F * ((float)var8 - var4) / 10.0F);
+            this.mouth.xRot = 0.15707964F * Mth.sin(3.1415927F * var3 / 10.0F);
          }
       } else {
-         float var15 = -1.0F;
-         float var16 = -1.0F * Mth.sin(this.neck.xRot);
+         float var10 = -1.0F;
+         float var12 = -1.0F * Mth.sin(this.neck.xRot);
          this.neck.x = 0.0F;
-         this.neck.y = -7.0F - var16;
+         this.neck.y = -7.0F - var12;
          this.neck.z = 5.5F;
-         boolean var17 = var5 > 0;
-         this.neck.xRot = var17 ? 0.21991149F : 0.0F;
-         this.mouth.xRot = 3.1415927F * (var17 ? 0.05F : 0.01F);
-         if (var17) {
-            double var18 = (double)var5 / 40.0;
-            this.neck.x = (float)Math.sin(var18 * 10.0) * 3.0F;
-         } else if (var6 > 0) {
-            float var19 = Mth.sin(((float)(20 - var6) - var4) / 20.0F * 3.1415927F * 0.25F);
-            this.mouth.xRot = 1.5707964F * var19;
+         boolean var14 = var2 > 0.0F;
+         this.neck.xRot = var14 ? 0.21991149F : 0.0F;
+         this.mouth.xRot = 3.1415927F * (var14 ? 0.05F : 0.01F);
+         if (var14) {
+            double var15 = (double)var2 / 40.0;
+            this.neck.x = (float)Math.sin(var15 * 10.0) * 3.0F;
+         } else if ((double)var1.roarAnimation > 0.0) {
+            float var16 = Mth.sin(var1.roarAnimation * 3.1415927F * 0.25F);
+            this.mouth.xRot = 1.5707964F * var16;
          }
       }
+
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.head.yRot = var1.yRot * 0.017453292F;
+      float var11 = var1.walkAnimationPos;
+      float var13 = 0.4F * var1.walkAnimationSpeed;
+      this.rightHindLeg.xRot = Mth.cos(var11 * 0.6662F) * var13;
+      this.leftHindLeg.xRot = Mth.cos(var11 * 0.6662F + 3.1415927F) * var13;
+      this.rightFrontLeg.xRot = Mth.cos(var11 * 0.6662F + 3.1415927F) * var13;
+      this.leftFrontLeg.xRot = Mth.cos(var11 * 0.6662F) * var13;
    }
 }

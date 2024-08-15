@@ -25,9 +25,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
@@ -158,7 +158,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
                this.startConverting(var1.getUUID(), this.random.nextInt(2401) + 3600);
             }
 
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else {
             return InteractionResult.CONSUME;
          }
@@ -229,7 +229,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          }
 
          var2.setVillagerXp(this.villagerXp);
-         var2.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2.blockPosition()), MobSpawnType.CONVERSION, null);
+         var2.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2.blockPosition()), EntitySpawnReason.CONVERSION, null);
          var2.refreshBrain(var1);
          if (this.conversionStarter != null) {
             Player var6 = var1.getPlayerByUUID(this.conversionStarter);
@@ -313,7 +313,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setVillagerData(this.getVillagerData().setType(VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
       return super.finalizeSpawn(var1, var2, var3, var4);
    }

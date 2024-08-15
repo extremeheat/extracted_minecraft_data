@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -44,18 +44,19 @@ public class VaultBlock extends BaseEntityBlock {
    }
 
    @Override
-   public ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if (var1.isEmpty() || var2.getValue(STATE) != VaultState.ACTIVE) {
-         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-      } else if (var3 instanceof ServerLevel var8) {
-         if (var8.getBlockEntity(var4) instanceof VaultBlockEntity var9) {
+   public InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      if (!var1.isEmpty() && var2.getValue(STATE) == VaultState.ACTIVE) {
+         if (var3 instanceof ServerLevel var8) {
+            if (!(var8.getBlockEntity(var4) instanceof VaultBlockEntity var9)) {
+               return InteractionResult.TRY_WITH_EMPTY_HAND;
+            }
+
             VaultBlockEntity.Server.tryInsertKey(var8, var4, var2, var9.getConfig(), var9.getServerData(), var9.getSharedData(), var5, var1);
-            return ItemInteractionResult.SUCCESS;
-         } else {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
          }
+
+         return InteractionResult.SUCCESS_SERVER;
       } else {
-         return ItemInteractionResult.CONSUME;
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
       }
    }
 

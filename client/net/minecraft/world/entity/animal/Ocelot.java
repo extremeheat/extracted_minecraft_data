@@ -21,10 +21,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -130,7 +129,10 @@ public class Ocelot extends Animal {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 3.0);
+      return Animal.createAnimalAttributes()
+         .add(Attributes.MAX_HEALTH, 10.0)
+         .add(Attributes.MOVEMENT_SPEED, 0.30000001192092896)
+         .add(Attributes.ATTACK_DAMAGE, 3.0);
    }
 
    @Nullable
@@ -170,7 +172,7 @@ public class Ocelot extends Animal {
             }
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -214,7 +216,7 @@ public class Ocelot extends Animal {
 
    @Nullable
    public Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.OCELOT.create(var1);
+      return EntityType.OCELOT.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Override
@@ -222,7 +224,7 @@ public class Ocelot extends Animal {
       return var1.is(ItemTags.OCELOT_FOOD);
    }
 
-   public static boolean checkOcelotSpawnRules(EntityType<Ocelot> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkOcelotSpawnRules(EntityType<Ocelot> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var4.nextInt(3) != 0;
    }
 
@@ -245,7 +247,7 @@ public class Ocelot extends Animal {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }

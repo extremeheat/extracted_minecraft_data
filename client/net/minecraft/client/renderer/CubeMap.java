@@ -49,7 +49,6 @@ public class CubeMap {
          var7.translate(var10, var11, 0.0F);
          var7.rotateX(var2 * 0.017453292F);
          var7.rotateY(var3 * 0.017453292F);
-         RenderSystem.applyModelViewMatrix();
 
          for (int var13 = 0; var13 < 6; var13++) {
             RenderSystem.setShaderTexture(0, this.images[var13]);
@@ -107,7 +106,6 @@ public class CubeMap {
       RenderSystem.colorMask(true, true, true, true);
       RenderSystem.restoreProjectionMatrix();
       var7.popMatrix();
-      RenderSystem.applyModelViewMatrix();
       RenderSystem.depthMask(true);
       RenderSystem.enableCull();
       RenderSystem.enableDepthTest();

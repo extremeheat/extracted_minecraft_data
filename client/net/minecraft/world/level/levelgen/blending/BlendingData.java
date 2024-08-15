@@ -1,17 +1,12 @@
 package net.minecraft.world.level.levelgen.blending;
 
-import com.google.common.primitives.Doubles;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.DoubleStream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -46,7 +41,7 @@ public class BlendingData {
    private static final int CELL_HORIZONTAL_MAX_INDEX_OUTSIDE = QUARTS_PER_SECTION;
    private static final int CELL_COLUMN_INSIDE_COUNT = 2 * CELL_HORIZONTAL_MAX_INDEX_INSIDE + 1;
    private static final int CELL_COLUMN_OUTSIDE_COUNT = 2 * CELL_HORIZONTAL_MAX_INDEX_OUTSIDE + 1;
-   private static final int CELL_COLUMN_COUNT = CELL_COLUMN_INSIDE_COUNT + CELL_COLUMN_OUTSIDE_COUNT;
+   static final int CELL_COLUMN_COUNT = CELL_COLUMN_INSIDE_COUNT + CELL_COLUMN_OUTSIDE_COUNT;
    private final LevelHeightAccessor areaWithOldGeneration;
    private static final List<Block> SURFACE_BLOCKS = List.of(
       Blocks.PODZOL,
@@ -66,29 +61,10 @@ public class BlendingData {
    private final double[] heights;
    private final List<List<Holder<Biome>>> biomes;
    private final transient double[][] densities;
-   private static final Codec<double[]> DOUBLE_ARRAY_CODEC = Codec.DOUBLE.listOf().xmap(Doubles::toArray, Doubles::asList);
-   public static final Codec<BlendingData> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  Codec.INT.fieldOf("min_section").forGetter(var0x -> var0x.areaWithOldGeneration.getMinSection()),
-                  Codec.INT.fieldOf("max_section").forGetter(var0x -> var0x.areaWithOldGeneration.getMaxSection()),
-                  DOUBLE_ARRAY_CODEC.lenientOptionalFieldOf("heights")
-                     .forGetter(
-                        var0x -> DoubleStream.of(var0x.heights).anyMatch(var0xx -> var0xx != 1.7976931348623157E308)
-                              ? Optional.of(var0x.heights)
-                              : Optional.empty()
-                     )
-               )
-               .apply(var0, BlendingData::new)
-      )
-      .comapFlatMap(BlendingData::validateArraySize, Function.identity());
-
-   private static DataResult<BlendingData> validateArraySize(BlendingData var0) {
-      return var0.heights.length != CELL_COLUMN_COUNT ? DataResult.error(() -> "heights has to be of length " + CELL_COLUMN_COUNT) : DataResult.success(var0);
-   }
 
    private BlendingData(int var1, int var2, Optional<double[]> var3) {
       super();
-      this.heights = var3.orElse(Util.make(new double[CELL_COLUMN_COUNT], var0 -> Arrays.fill(var0, 1.7976931348623157E308)));
+      this.heights = var3.orElseGet(() -> Util.make(new double[CELL_COLUMN_COUNT], var0 -> Arrays.fill(var0, 1.7976931348623157E308)));
       this.densities = new double[CELL_COLUMN_COUNT][];
       ObjectArrayList var4 = new ObjectArrayList(CELL_COLUMN_COUNT);
       var4.size(CELL_COLUMN_COUNT);
@@ -96,6 +72,28 @@ public class BlendingData {
       int var5 = SectionPos.sectionToBlockCoord(var1);
       int var6 = SectionPos.sectionToBlockCoord(var2) - var5;
       this.areaWithOldGeneration = LevelHeightAccessor.create(var5, var6);
+   }
+
+   @Nullable
+   public static BlendingData unpack(@Nullable BlendingData.Packed var0) {
+      return var0 == null ? null : new BlendingData(var0.minSection(), var0.maxSection(), var0.heights());
+   }
+
+   public BlendingData.Packed pack() {
+      boolean var1 = false;
+
+      for (double var5 : this.heights) {
+         if (var5 != 1.7976931348623157E308) {
+            var1 = true;
+            break;
+         }
+      }
+
+      return new BlendingData.Packed(
+         this.areaWithOldGeneration.getMinSection(),
+         this.areaWithOldGeneration.getMaxSection(),
+         var1 ? Optional.of(DoubleArrays.copy(this.heights)) : Optional.empty()
+      );
    }
 
    @Nullable
@@ -395,4 +393,17 @@ public class BlendingData {
    protected interface HeightConsumer {
       void consume(int var1, int var2, double var3);
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

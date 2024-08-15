@@ -64,7 +64,7 @@ public enum TrialSpawnerState implements StringRepresentable {
          case INACTIVE -> var4.getOrCreateDisplayEntity(var2, var3, WAITING_FOR_PLAYERS) == null ? this : WAITING_FOR_PLAYERS;
          case WAITING_FOR_PLAYERS -> {
             if (!var2.canSpawnInLevel(var3)) {
-               var4.reset();
+               var4.resetStatistics();
                yield this;
             } else if (!var4.hasMobToSpawn(var2, var3.random)) {
                yield INACTIVE;
@@ -75,7 +75,7 @@ public enum TrialSpawnerState implements StringRepresentable {
          }
          case ACTIVE -> {
             if (!var2.canSpawnInLevel(var3)) {
-               var4.reset();
+               var4.resetStatistics();
                yield WAITING_FOR_PLAYERS;
             } else if (!var4.hasMobToSpawn(var2, var3.random)) {
                yield INACTIVE;

@@ -1,6 +1,8 @@
 package net.minecraft.world.level;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -35,10 +37,6 @@ public interface BlockGetter extends LevelHeightAccessor {
       return this.getBlockState(var1).getLightEmission();
    }
 
-   default int getMaxLightLevel() {
-      return 15;
-   }
-
    default Stream<BlockState> getBlockStates(AABB var1) {
       return BlockPos.betweenClosedStream(var1).map(this::getBlockState);
    }
@@ -52,12 +50,12 @@ public interface BlockGetter extends LevelHeightAccessor {
             BlockState var3 = this.getBlockState(var2);
             Vec3 var4 = var1x.getFrom().subtract(var1x.getTo());
             return var1x.isTargetBlock().test(var3)
-               ? new BlockHitResult(var1x.getTo(), Direction.getNearest(var4.x, var4.y, var4.z), BlockPos.containing(var1x.getTo()), false)
+               ? new BlockHitResult(var1x.getTo(), Direction.getApproximateNearest(var4.x, var4.y, var4.z), BlockPos.containing(var1x.getTo()), false)
                : null;
          },
          var0 -> {
             Vec3 var1x = var0.getFrom().subtract(var0.getTo());
-            return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1x.x, var1x.y, var1x.z), BlockPos.containing(var0.getTo()));
+            return BlockHitResult.miss(var0.getTo(), Direction.getApproximateNearest(var1x.x, var1x.y, var1x.z), BlockPos.containing(var0.getTo()));
          }
       );
    }
@@ -77,7 +75,7 @@ public interface BlockGetter extends LevelHeightAccessor {
          return var11 <= var13 ? var8 : var10;
       }, var0 -> {
          Vec3 var1x = var0.getFrom().subtract(var0.getTo());
-         return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1x.x, var1x.y, var1x.z), BlockPos.containing(var0.getTo()));
+         return BlockHitResult.miss(var0.getTo(), Direction.getApproximateNearest(var1x.x, var1x.y, var1x.z), BlockPos.containing(var0.getTo()));
       });
    }
 
@@ -165,6 +163,80 @@ public interface BlockGetter extends LevelHeightAccessor {
             }
 
             return (T)var4.apply(var2);
+         }
+      }
+   }
+
+   static Iterable<BlockPos> boxTraverseBlocks(Vec3 var0, Vec3 var1, AABB var2) {
+      AABB var3 = var2.inflate(9.999999747378752E-6);
+      Vec3 var4 = var1.subtract(var0);
+      Iterable var5 = BlockPos.betweenClosed(var3);
+      if (var4.lengthSqr() < (double)Mth.square(0.99999F)) {
+         return var5;
+      } else {
+         ObjectOpenHashSet var6 = new ObjectOpenHashSet();
+
+         for (BlockPos var8 : var5) {
+            var6.add(var8.immutable());
+         }
+
+         Vec3 var10 = var4.normalize().scale(1.0E-7);
+         Vec3 var11 = var2.getMinPosition().add(var10);
+         Vec3 var9 = var2.getMinPosition().subtract(var4).subtract(var10);
+         addCollisionsAlongTravel(var6, var9, var11, var3);
+         return var6;
+      }
+   }
+
+   private static void addCollisionsAlongTravel(Set<BlockPos> var0, Vec3 var1, Vec3 var2, AABB var3) {
+      Vec3 var4 = var2.subtract(var1);
+      int var5 = Mth.floor(var1.x);
+      int var6 = Mth.floor(var1.y);
+      int var7 = Mth.floor(var1.z);
+      int var8 = Mth.sign(var4.x);
+      int var9 = Mth.sign(var4.y);
+      int var10 = Mth.sign(var4.z);
+      double var11 = var8 == 0 ? 1.7976931348623157E308 : (double)var8 / var4.x;
+      double var13 = var9 == 0 ? 1.7976931348623157E308 : (double)var9 / var4.y;
+      double var15 = var10 == 0 ? 1.7976931348623157E308 : (double)var10 / var4.z;
+      double var17 = var11 * (var8 > 0 ? 1.0 - Mth.frac(var1.x) : Mth.frac(var1.x));
+      double var19 = var13 * (var9 > 0 ? 1.0 - Mth.frac(var1.y) : Mth.frac(var1.y));
+      double var21 = var15 * (var10 > 0 ? 1.0 - Mth.frac(var1.z) : Mth.frac(var1.z));
+
+      while (var17 <= 1.0 || var19 <= 1.0 || var21 <= 1.0) {
+         if (var17 < var19) {
+            if (var17 < var21) {
+               var5 += var8;
+               var17 += var11;
+            } else {
+               var7 += var10;
+               var21 += var15;
+            }
+         } else if (var19 < var21) {
+            var6 += var9;
+            var19 += var13;
+         } else {
+            var7 += var10;
+            var21 += var15;
+         }
+
+         Optional var23 = AABB.clip((double)var5, (double)var6, (double)var7, (double)(var5 + 1), (double)(var6 + 1), (double)(var7 + 1), var1, var2);
+         if (!var23.isEmpty()) {
+            Vec3 var24 = (Vec3)var23.get();
+            double var25 = Mth.clamp(var24.x, (double)var5 + 9.999999747378752E-6, (double)var5 + 1.0 - 9.999999747378752E-6);
+            double var27 = Mth.clamp(var24.y, (double)var6 + 9.999999747378752E-6, (double)var6 + 1.0 - 9.999999747378752E-6);
+            double var29 = Mth.clamp(var24.z, (double)var7 + 9.999999747378752E-6, (double)var7 + 1.0 - 9.999999747378752E-6);
+            int var31 = Mth.floor(var25 + var3.getXsize());
+            int var32 = Mth.floor(var27 + var3.getYsize());
+            int var33 = Mth.floor(var29 + var3.getZsize());
+
+            for (int var34 = var5; var34 <= var31; var34++) {
+               for (int var35 = var6; var35 <= var32; var35++) {
+                  for (int var36 = var7; var36 <= var33; var36++) {
+                     var0.add(new BlockPos(var34, var35, var36));
+                  }
+               }
+            }
          }
       }
    }

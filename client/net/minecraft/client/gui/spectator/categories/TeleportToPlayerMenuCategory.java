@@ -10,8 +10,10 @@ import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuCategory;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.level.GameType;
 
 public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
@@ -55,8 +57,8 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
    }
 
    @Override
-   public void renderIcon(GuiGraphics var1, float var2, int var3) {
-      var1.blitSprite(TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16);
+   public void renderIcon(GuiGraphics var1, float var2, float var3) {
+      var1.blitSprite(RenderType::guiTextured, TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
    }
 
    @Override

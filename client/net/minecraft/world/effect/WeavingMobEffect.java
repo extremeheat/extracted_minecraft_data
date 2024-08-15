@@ -25,7 +25,7 @@ class WeavingMobEffect extends MobEffect {
    @Override
    public void onMobRemoved(LivingEntity var1, int var2, Entity.RemovalReason var3) {
       if (var3 == Entity.RemovalReason.KILLED && (var1 instanceof Player || var1.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))) {
-         this.spawnCobwebsRandomlyAround(var1.level(), var1.getRandom(), var1.getOnPos());
+         this.spawnCobwebsRandomlyAround(var1.level(), var1.getRandom(), var1.blockPosition());
       }
    }
 

@@ -2,6 +2,7 @@ package net.minecraft.world.level.saveddata.maps;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.util.Collection;
@@ -77,7 +78,6 @@ public class MapItemSavedData extends SavedData {
       this.trackingPosition = var4;
       this.unlimitedTracking = var5;
       this.locked = var6;
-      this.setDirty();
    }
 
    public static MapItemSavedData createFresh(double var0, double var2, byte var4, boolean var5, boolean var6, ResourceKey<Level> var7) {
@@ -173,7 +173,6 @@ public class MapItemSavedData extends SavedData {
       var1.decorations.putAll(this.decorations);
       var1.trackedDecorationCount = this.trackedDecorationCount;
       System.arraycopy(this.colors, 0, var1.colors, 0, this.colors.length);
-      var1.setDirty();
       return var1;
    }
 
@@ -267,68 +266,91 @@ public class MapItemSavedData extends SavedData {
    private void addDecoration(
       Holder<MapDecorationType> var1, @Nullable LevelAccessor var2, String var3, double var4, double var6, double var8, @Nullable Component var10
    ) {
-      int var11 = 1 << this.scale;
-      float var12 = (float)(var4 - (double)this.centerX) / (float)var11;
-      float var13 = (float)(var6 - (double)this.centerZ) / (float)var11;
-      byte var14 = (byte)((int)((double)(var12 * 2.0F) + 0.5));
-      byte var15 = (byte)((int)((double)(var13 * 2.0F) + 0.5));
-      byte var17 = 63;
-      byte var16;
-      if (var12 >= -63.0F && var13 >= -63.0F && var12 <= 63.0F && var13 <= 63.0F) {
-         var8 += var8 < 0.0 ? -8.0 : 8.0;
-         var16 = (byte)((int)(var8 * 16.0 / 360.0));
-         if (this.dimension == Level.NETHER && var2 != null) {
-            int var21 = (int)(var2.getLevelData().getDayTime() / 10L);
-            var16 = (byte)(var21 * var21 * 34187121 + var21 * 121 >> 15 & 15);
-         }
+      int var12 = 1 << this.scale;
+      float var13 = (float)(var4 - (double)this.centerX) / (float)var12;
+      float var14 = (float)(var6 - (double)this.centerZ) / (float)var12;
+      MapItemSavedData.MapDecorationLocation var11 = this.calculateDecorationLocationAndType(var1, var2, var8, var13, var14);
+      if (var11 == null) {
+         this.removeDecoration(var3);
       } else {
-         if (!var1.is(MapDecorationTypes.PLAYER)) {
-            this.removeDecoration(var3);
-            return;
-         }
-
-         short var18 = 320;
-         if (Math.abs(var12) < 320.0F && Math.abs(var13) < 320.0F) {
-            var1 = MapDecorationTypes.PLAYER_OFF_MAP;
-         } else {
-            if (!this.unlimitedTracking) {
-               this.removeDecoration(var3);
-               return;
+         MapDecoration var15 = new MapDecoration(var11.type(), var11.x(), var11.y(), var11.rot(), Optional.ofNullable(var10));
+         MapDecoration var16 = this.decorations.put(var3, var15);
+         if (!var15.equals(var16)) {
+            if (var16 != null && var16.type().value().trackCount()) {
+               this.trackedDecorationCount--;
             }
 
-            var1 = MapDecorationTypes.PLAYER_OFF_LIMITS;
-         }
+            if (var11.type().value().trackCount()) {
+               this.trackedDecorationCount++;
+            }
 
-         var16 = 0;
-         if (var12 <= -63.0F) {
-            var14 = -128;
-         }
-
-         if (var13 <= -63.0F) {
-            var15 = -128;
-         }
-
-         if (var12 >= 63.0F) {
-            var14 = 127;
-         }
-
-         if (var13 >= 63.0F) {
-            var15 = 127;
+            this.setDecorationsDirty();
          }
       }
+   }
 
-      MapDecoration var22 = new MapDecoration(var1, var14, var15, var16, Optional.ofNullable(var10));
-      MapDecoration var19 = this.decorations.put(var3, var22);
-      if (!var22.equals(var19)) {
-         if (var19 != null && var19.type().value().trackCount()) {
-            this.trackedDecorationCount--;
-         }
+   @Nullable
+   private MapItemSavedData.MapDecorationLocation calculateDecorationLocationAndType(
+      Holder<MapDecorationType> var1, @Nullable LevelAccessor var2, double var3, float var5, float var6
+   ) {
+      byte var7 = clampMapCoordinate(var5);
+      byte var8 = clampMapCoordinate(var6);
+      if (var1.is(MapDecorationTypes.PLAYER)) {
+         Pair var9 = this.playerDecorationTypeAndRotation(var1, var2, var3, var5, var6);
+         return var9 == null
+            ? null
+            : new MapItemSavedData.MapDecorationLocation((Holder<MapDecorationType>)var9.getFirst(), var7, var8, (Byte)var9.getSecond());
+      } else {
+         return !isInsideMap(var5, var6) && !this.unlimitedTracking
+            ? null
+            : new MapItemSavedData.MapDecorationLocation(var1, var7, var8, this.calculateRotation(var2, var3));
+      }
+   }
 
-         if (((MapDecorationType)var1.value()).trackCount()) {
-            this.trackedDecorationCount++;
-         }
+   @Nullable
+   private Pair<Holder<MapDecorationType>, Byte> playerDecorationTypeAndRotation(
+      Holder<MapDecorationType> var1, @Nullable LevelAccessor var2, double var3, float var5, float var6
+   ) {
+      if (isInsideMap(var5, var6)) {
+         return Pair.of(var1, this.calculateRotation(var2, var3));
+      } else {
+         Holder var7 = this.decorationTypeForPlayerOutsideMap(var5, var6);
+         return var7 == null ? null : Pair.of(var7, (byte)0);
+      }
+   }
 
-         this.setDecorationsDirty();
+   private byte calculateRotation(@Nullable LevelAccessor var1, double var2) {
+      if (this.dimension == Level.NETHER && var1 != null) {
+         int var6 = (int)(var1.getLevelData().getDayTime() / 10L);
+         return (byte)(var6 * var6 * 34187121 + var6 * 121 >> 15 & 15);
+      } else {
+         double var4 = var2 < 0.0 ? var2 - 8.0 : var2 + 8.0;
+         return (byte)((int)(var4 * 16.0 / 360.0));
+      }
+   }
+
+   private static boolean isInsideMap(float var0, float var1) {
+      byte var2 = 63;
+      return var0 >= -63.0F && var1 >= -63.0F && var0 <= 63.0F && var1 <= 63.0F;
+   }
+
+   @Nullable
+   private Holder<MapDecorationType> decorationTypeForPlayerOutsideMap(float var1, float var2) {
+      short var3 = 320;
+      boolean var4 = Math.abs(var1) < 320.0F && Math.abs(var2) < 320.0F;
+      if (var4) {
+         return MapDecorationTypes.PLAYER_OFF_MAP;
+      } else {
+         return this.unlimitedTracking ? MapDecorationTypes.PLAYER_OFF_LIMITS : null;
+      }
+   }
+
+   private static byte clampMapCoordinate(float var0) {
+      byte var1 = 63;
+      if (var0 <= -63.0F) {
+         return -128;
+      } else {
+         return var0 >= 63.0F ? 127 : (byte)((int)((double)(var0 * 2.0F) + 0.5));
       }
    }
 
@@ -412,6 +434,7 @@ public class MapItemSavedData extends SavedData {
    public void removedFromFrame(BlockPos var1, int var2) {
       this.removeDecoration(getFrameKey(var2));
       this.frameMarkers.remove(MapFrame.frameId(var1));
+      this.setDirty();
    }
 
    public boolean updateColor(int var1, int var2, byte var3) {
@@ -538,6 +561,19 @@ public class MapItemSavedData extends SavedData {
          this.dirtyDecorations = true;
       }
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
 // $VF: Couldn't be decompiled
 // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)

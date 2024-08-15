@@ -35,30 +35,31 @@ public class FaceBakery {
       Direction var5,
       ModelState var6,
       @Nullable BlockElementRotation var7,
-      boolean var8
+      boolean var8,
+      int var9
    ) {
-      BlockFaceUV var9 = var3.uv();
+      BlockFaceUV var10 = var3.uv();
       if (var6.isUvLocked()) {
-         var9 = recomputeUVs(var3.uv(), var5, var6.getRotation());
+         var10 = recomputeUVs(var3.uv(), var5, var6.getRotation());
       }
 
-      float[] var10 = new float[var9.uvs.length];
-      System.arraycopy(var9.uvs, 0, var10, 0, var10.length);
-      float var11 = var4.uvShrinkRatio();
-      float var12 = (var9.uvs[0] + var9.uvs[0] + var9.uvs[2] + var9.uvs[2]) / 4.0F;
-      float var13 = (var9.uvs[1] + var9.uvs[1] + var9.uvs[3] + var9.uvs[3]) / 4.0F;
-      var9.uvs[0] = Mth.lerp(var11, var9.uvs[0], var12);
-      var9.uvs[2] = Mth.lerp(var11, var9.uvs[2], var12);
-      var9.uvs[1] = Mth.lerp(var11, var9.uvs[1], var13);
-      var9.uvs[3] = Mth.lerp(var11, var9.uvs[3], var13);
-      int[] var14 = this.makeVertices(var9, var4, var5, this.setupShape(var1, var2), var6.getRotation(), var7, var8);
-      Direction var15 = calculateFacing(var14);
-      System.arraycopy(var10, 0, var9.uvs, 0, var10.length);
+      float[] var11 = new float[var10.uvs.length];
+      System.arraycopy(var10.uvs, 0, var11, 0, var11.length);
+      float var12 = var4.uvShrinkRatio();
+      float var13 = (var10.uvs[0] + var10.uvs[0] + var10.uvs[2] + var10.uvs[2]) / 4.0F;
+      float var14 = (var10.uvs[1] + var10.uvs[1] + var10.uvs[3] + var10.uvs[3]) / 4.0F;
+      var10.uvs[0] = Mth.lerp(var12, var10.uvs[0], var13);
+      var10.uvs[2] = Mth.lerp(var12, var10.uvs[2], var13);
+      var10.uvs[1] = Mth.lerp(var12, var10.uvs[1], var14);
+      var10.uvs[3] = Mth.lerp(var12, var10.uvs[3], var14);
+      int[] var15 = this.makeVertices(var10, var4, var5, this.setupShape(var1, var2), var6.getRotation(), var7);
+      Direction var16 = calculateFacing(var15);
+      System.arraycopy(var11, 0, var10.uvs, 0, var11.length);
       if (var7 == null) {
-         this.recalculateWinding(var14, var15);
+         this.recalculateWinding(var15, var16);
       }
 
-      return new BakedQuad(var14, var3.tintIndex(), var15, var4, var8);
+      return new BakedQuad(var15, var3.tintIndex(), var16, var4, var8, var9);
    }
 
    public static BlockFaceUV recomputeUVs(BlockFaceUV var0, Direction var1, Transformation var2) {
@@ -100,16 +101,14 @@ public class FaceBakery {
       return new BlockFaceUV(new float[]{var14, var16, var15, var17}, var21);
    }
 
-   private int[] makeVertices(
-      BlockFaceUV var1, TextureAtlasSprite var2, Direction var3, float[] var4, Transformation var5, @Nullable BlockElementRotation var6, boolean var7
-   ) {
-      int[] var8 = new int[32];
+   private int[] makeVertices(BlockFaceUV var1, TextureAtlasSprite var2, Direction var3, float[] var4, Transformation var5, @Nullable BlockElementRotation var6) {
+      int[] var7 = new int[32];
 
-      for (int var9 = 0; var9 < 4; var9++) {
-         this.bakeVertex(var8, var9, var3, var1, var4, var2, var5, var6, var7);
+      for (int var8 = 0; var8 < 4; var8++) {
+         this.bakeVertex(var7, var8, var3, var1, var4, var2, var5, var6);
       }
 
-      return var8;
+      return var7;
    }
 
    private float[] setupShape(Vector3f var1, Vector3f var2) {
@@ -124,21 +123,13 @@ public class FaceBakery {
    }
 
    private void bakeVertex(
-      int[] var1,
-      int var2,
-      Direction var3,
-      BlockFaceUV var4,
-      float[] var5,
-      TextureAtlasSprite var6,
-      Transformation var7,
-      @Nullable BlockElementRotation var8,
-      boolean var9
+      int[] var1, int var2, Direction var3, BlockFaceUV var4, float[] var5, TextureAtlasSprite var6, Transformation var7, @Nullable BlockElementRotation var8
    ) {
-      FaceInfo.VertexInfo var10 = FaceInfo.fromFacing(var3).getVertexInfo(var2);
-      Vector3f var11 = new Vector3f(var5[var10.xFace], var5[var10.yFace], var5[var10.zFace]);
-      this.applyElementRotation(var11, var8);
-      this.applyModelRotation(var11, var7);
-      this.fillVertex(var1, var2, var11, var6, var4);
+      FaceInfo.VertexInfo var9 = FaceInfo.fromFacing(var3).getVertexInfo(var2);
+      Vector3f var10 = new Vector3f(var5[var9.xFace], var5[var9.yFace], var5[var9.zFace]);
+      this.applyElementRotation(var10, var8);
+      this.applyModelRotation(var10, var7);
+      this.fillVertex(var1, var2, var10, var6, var4);
    }
 
    private void fillVertex(int[] var1, int var2, Vector3f var3, TextureAtlasSprite var4, BlockFaceUV var5) {
@@ -215,7 +206,7 @@ public class FaceBakery {
          float var8 = 0.0F;
 
          for (Direction var12 : Direction.values()) {
-            Vec3i var13 = var12.getNormal();
+            Vec3i var13 = var12.getUnitVec3i();
             Vector3f var14 = new Vector3f((float)var13.getX(), (float)var13.getY(), (float)var13.getZ());
             float var15 = var6.dot(var14);
             if (var15 >= 0.0F && var15 > var8) {

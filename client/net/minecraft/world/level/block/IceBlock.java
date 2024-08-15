@@ -49,7 +49,7 @@ public class IceBlock extends HalfTransparentBlock {
 
    @Override
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.getBrightness(LightLayer.BLOCK, var3) > 11 - var1.getLightBlock(var2, var3)) {
+      if (var2.getBrightness(LightLayer.BLOCK, var3) > 11 - var1.getLightBlock()) {
          this.melt(var1, var2, var3);
       }
    }
@@ -59,7 +59,7 @@ public class IceBlock extends HalfTransparentBlock {
          var2.removeBlock(var3, false);
       } else {
          var2.setBlockAndUpdate(var3, meltsInto());
-         var2.neighborChanged(var3, meltsInto().getBlock(), var3);
+         var2.neighborChanged(var3, meltsInto().getBlock(), null);
       }
    }
 }

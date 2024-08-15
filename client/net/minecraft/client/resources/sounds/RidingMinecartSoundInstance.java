@@ -5,6 +5,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
 
 public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
    private static final float VOLUME_MIN = 0.0F;
@@ -36,14 +37,15 @@ public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
 
    @Override
    public void tick() {
-      if (this.minecart.isRemoved() || !this.player.isPassenger() || this.player.getVehicle() != this.minecart) {
+      boolean var1 = !this.minecart.isOnRails() && this.minecart.getBehavior() instanceof NewMinecartBehavior;
+      if (this.minecart.isRemoved() || !this.player.isPassenger() || this.player.getVehicle() != this.minecart || var1) {
          this.stop();
       } else if (this.underwaterSound != this.player.isUnderWater()) {
          this.volume = 0.0F;
       } else {
-         float var1 = (float)this.minecart.getDeltaMovement().horizontalDistance();
-         if (var1 >= 0.01F) {
-            this.volume = Mth.clampedLerp(0.0F, 0.75F, var1);
+         float var2 = (float)this.minecart.getDeltaMovement().horizontalDistance();
+         if (var2 >= 0.01F) {
+            this.volume = Mth.clampedLerp(0.0F, 0.75F, var2);
          } else {
             this.volume = 0.0F;
          }

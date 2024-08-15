@@ -38,6 +38,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.FileUtil;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -132,7 +133,7 @@ public class LevelStorageSource {
    }
 
    public static LevelDataAndDimensions getLevelDataAndDimensions(
-      Dynamic<?> var0, WorldDataConfiguration var1, Registry<LevelStem> var2, RegistryAccess.Frozen var3
+      Dynamic<?> var0, WorldDataConfiguration var1, Registry<LevelStem> var2, HolderLookup.Provider var3
    ) {
       Dynamic var4 = RegistryOps.injectRegistryContext(var0, var3);
       Dynamic var5 = var4.get("WorldGenSettings").orElseEmptyMap();

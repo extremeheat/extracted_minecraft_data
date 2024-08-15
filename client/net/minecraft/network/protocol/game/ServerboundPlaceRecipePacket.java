@@ -13,26 +13,26 @@ public class ServerboundPlaceRecipePacket implements Packet<ServerGamePacketList
    );
    private final int containerId;
    private final ResourceLocation recipe;
-   private final boolean shiftDown;
+   private final boolean useMaxItems;
 
    public ServerboundPlaceRecipePacket(int var1, RecipeHolder<?> var2, boolean var3) {
       super();
       this.containerId = var1;
       this.recipe = var2.id();
-      this.shiftDown = var3;
+      this.useMaxItems = var3;
    }
 
    private ServerboundPlaceRecipePacket(FriendlyByteBuf var1) {
       super();
-      this.containerId = var1.readByte();
+      this.containerId = var1.readContainerId();
       this.recipe = var1.readResourceLocation();
-      this.shiftDown = var1.readBoolean();
+      this.useMaxItems = var1.readBoolean();
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.containerId);
+      var1.writeContainerId(this.containerId);
       var1.writeResourceLocation(this.recipe);
-      var1.writeBoolean(this.shiftDown);
+      var1.writeBoolean(this.useMaxItems);
    }
 
    @Override
@@ -52,7 +52,7 @@ public class ServerboundPlaceRecipePacket implements Packet<ServerGamePacketList
       return this.recipe;
    }
 
-   public boolean isShiftDown() {
-      return this.shiftDown;
+   public boolean isUseMaxItems() {
+      return this.useMaxItems;
    }
 }

@@ -19,7 +19,7 @@ public class SimpleCookingSerializer<T extends AbstractCookingRecipe> implements
          var2x -> var2x.group(
                   Codec.STRING.optionalFieldOf("group", "").forGetter(var0x -> var0x.group),
                   CookingBookCategory.CODEC.fieldOf("category").orElse(CookingBookCategory.MISC).forGetter(var0x -> var0x.category),
-                  Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
+                  Ingredient.CODEC.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
                   ItemStack.STRICT_SINGLE_ITEM_CODEC.fieldOf("result").forGetter(var0x -> var0x.result),
                   Codec.FLOAT.fieldOf("experience").orElse(0.0F).forGetter(var0x -> var0x.experience),
                   Codec.INT.fieldOf("cookingtime").orElse(var2).forGetter(var0x -> var0x.cookingTime)

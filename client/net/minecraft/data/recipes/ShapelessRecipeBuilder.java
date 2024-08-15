@@ -1,6 +1,8 @@
 package net.minecraft.data.recipes;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -9,7 +11,7 @@ import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.NonNullList;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -19,31 +21,35 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.ItemLike;
 
 public class ShapelessRecipeBuilder implements RecipeBuilder {
+   private final HolderGetter<Item> items;
    private final RecipeCategory category;
-   private final Item result;
-   private final int count;
-   private final NonNullList<Ingredient> ingredients = NonNullList.create();
+   private final ItemStack result;
+   private final List<Ingredient> ingredients = new ArrayList<>();
    private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
    @Nullable
    private String group;
 
-   public ShapelessRecipeBuilder(RecipeCategory var1, ItemLike var2, int var3) {
+   private ShapelessRecipeBuilder(HolderGetter<Item> var1, RecipeCategory var2, ItemStack var3) {
       super();
-      this.category = var1;
-      this.result = var2.asItem();
-      this.count = var3;
+      this.items = var1;
+      this.category = var2;
+      this.result = var3;
    }
 
-   public static ShapelessRecipeBuilder shapeless(RecipeCategory var0, ItemLike var1) {
-      return new ShapelessRecipeBuilder(var0, var1, 1);
-   }
-
-   public static ShapelessRecipeBuilder shapeless(RecipeCategory var0, ItemLike var1, int var2) {
+   public static ShapelessRecipeBuilder shapeless(HolderGetter<Item> var0, RecipeCategory var1, ItemStack var2) {
       return new ShapelessRecipeBuilder(var0, var1, var2);
    }
 
+   public static ShapelessRecipeBuilder shapeless(HolderGetter<Item> var0, RecipeCategory var1, ItemLike var2) {
+      return shapeless(var0, var1, var2, 1);
+   }
+
+   public static ShapelessRecipeBuilder shapeless(HolderGetter<Item> var0, RecipeCategory var1, ItemLike var2, int var3) {
+      return new ShapelessRecipeBuilder(var0, var1, var2.asItem().getDefaultInstance().copyWithCount(var3));
+   }
+
    public ShapelessRecipeBuilder requires(TagKey<Item> var1) {
-      return this.requires(Ingredient.of(var1));
+      return this.requires(Ingredient.of(this.items.getOrThrow(var1)));
    }
 
    public ShapelessRecipeBuilder requires(ItemLike var1) {
@@ -82,7 +88,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
 
    @Override
    public Item getResult() {
-      return this.result;
+      return this.result.getItem();
    }
 
    @Override
@@ -94,10 +100,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
          .requirements(AdvancementRequirements.Strategy.OR);
       this.criteria.forEach(var3::addCriterion);
       ShapelessRecipe var4 = new ShapelessRecipe(
-         Objects.requireNonNullElse(this.group, ""),
-         RecipeBuilder.determineBookCategory(this.category),
-         new ItemStack(this.result, this.count),
-         this.ingredients
+         Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.result, this.ingredients
       );
       var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }

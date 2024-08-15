@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.vehicle;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -14,9 +15,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RailShape;
 
 public class MinecartHopper extends AbstractMinecartContainer implements Hopper {
    private boolean enabled = true;
+   private boolean consumedItemThisFrame = false;
 
    public MinecartHopper(EntityType<? extends MinecartHopper> var1, Level var2) {
       super(var1, var2);
@@ -84,8 +87,21 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
 
    @Override
    public void tick() {
+      this.consumedItemThisFrame = false;
       super.tick();
-      if (!this.level().isClientSide && this.isAlive() && this.isEnabled() && this.suckInItems()) {
+      this.tryConsumeItems();
+   }
+
+   @Override
+   protected double makeStepAlongTrack(BlockPos var1, RailShape var2, double var3) {
+      double var5 = super.makeStepAlongTrack(var1, var2, var3);
+      this.tryConsumeItems();
+      return var5;
+   }
+
+   private void tryConsumeItems() {
+      if (!this.level().isClientSide && this.isAlive() && this.isEnabled() && !this.consumedItemThisFrame && this.suckInItems()) {
+         this.consumedItemThisFrame = true;
          this.setChanged();
       }
    }

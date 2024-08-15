@@ -27,14 +27,20 @@ public class BlockElement {
    public final Map<Direction, BlockElementFace> faces;
    public final BlockElementRotation rotation;
    public final boolean shade;
+   public final int lightEmission;
 
-   public BlockElement(Vector3f var1, Vector3f var2, Map<Direction, BlockElementFace> var3, @Nullable BlockElementRotation var4, boolean var5) {
+   public BlockElement(Vector3f var1, Vector3f var2, Map<Direction, BlockElementFace> var3) {
+      this(var1, var2, var3, null, true, 0);
+   }
+
+   public BlockElement(Vector3f var1, Vector3f var2, Map<Direction, BlockElementFace> var3, @Nullable BlockElementRotation var4, boolean var5, int var6) {
       super();
       this.from = var1;
       this.to = var2;
       this.faces = var3;
       this.rotation = var4;
       this.shade = var5;
+      this.lightEmission = var6;
       this.fillUvs();
    }
 
@@ -65,6 +71,7 @@ public class BlockElement {
 
    protected static class Deserializer implements JsonDeserializer<BlockElement> {
       private static final boolean DEFAULT_SHADE = true;
+      private static final int DEFAULT_LIGHT_EMISSION = 0;
 
       protected Deserializer() {
          super();
@@ -80,7 +87,19 @@ public class BlockElement {
             throw new JsonParseException("Expected shade to be a Boolean");
          } else {
             boolean var9 = GsonHelper.getAsBoolean(var4, "shade", true);
-            return new BlockElement(var5, var6, var8, var7, var9);
+            int var10 = 0;
+            if (var4.has("light_emission")) {
+               boolean var11 = GsonHelper.isNumberValue(var4, "light_emission");
+               if (var11) {
+                  var10 = GsonHelper.getAsInt(var4, "light_emission");
+               }
+
+               if (!var11 || var10 < 0 || var10 > 15) {
+                  throw new JsonParseException("Expected light_emission to be an Integer between (inclusive) 0 and 15");
+               }
+            }
+
+            return new BlockElement(var5, var6, var8, var7, var9, var10);
          }
       }
 

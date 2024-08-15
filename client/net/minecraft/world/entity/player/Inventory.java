@@ -6,12 +6,13 @@ import java.util.function.Predicate;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerInventoryPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
@@ -24,11 +25,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public class Inventory implements Container, Nameable {
    public static final int POP_TIME_DURATION = 5;
    public static final int INVENTORY_SIZE = 36;
-   private static final int SELECTION_SIZE = 9;
+   public static final int SELECTION_SIZE = 9;
    public static final int SLOT_OFFHAND = 40;
    public static final int NOT_FOUND_INDEX = -1;
-   public static final int[] ALL_ARMOR_SLOTS = new int[]{0, 1, 2, 3};
-   public static final int[] HELMET_SLOT_ONLY = new int[]{3};
    public final NonNullList<ItemStack> items = NonNullList.withSize(36, ItemStack.EMPTY);
    public final NonNullList<ItemStack> armor = NonNullList.withSize(4, ItemStack.EMPTY);
    public final NonNullList<ItemStack> offhand = NonNullList.withSize(1, ItemStack.EMPTY);
@@ -106,14 +105,14 @@ public class Inventory implements Container, Nameable {
       return -1;
    }
 
-   public int findSlotMatchingUnusedItem(ItemStack var1) {
+   public static boolean isUsableForCrafting(ItemStack var0) {
+      return !var0.isDamaged() && !var0.isEnchanted() && !var0.has(DataComponents.CUSTOM_NAME);
+   }
+
+   public int findSlotMatchingCraftingIngredient(Holder<Item> var1) {
       for (int var2 = 0; var2 < this.items.size(); var2++) {
          ItemStack var3 = this.items.get(var2);
-         if (!var3.isEmpty()
-            && ItemStack.isSameItemSameComponents(var1, var3)
-            && !var3.isDamaged()
-            && !var3.isEnchanted()
-            && !var3.has(DataComponents.CUSTOM_NAME)) {
+         if (!var3.isEmpty() && var3.is(var1) && isUsableForCrafting(var3)) {
             return var2;
          }
       }
@@ -139,17 +138,8 @@ public class Inventory implements Container, Nameable {
       return this.selected;
    }
 
-   public void swapPaint(double var1) {
-      int var3 = (int)Math.signum(var1);
-      this.selected -= var3;
-
-      while (this.selected < 0) {
-         this.selected += 9;
-      }
-
-      while (this.selected >= 9) {
-         this.selected -= 9;
-      }
+   public void setSelectedHotbarSlot(int var1) {
+      this.selected = var1;
    }
 
    public int clearOrCountMatchingItems(Predicate<ItemStack> var1, int var2, Container var3) {
@@ -291,10 +281,14 @@ public class Inventory implements Container, Nameable {
          }
 
          int var4 = var1.getMaxStackSize() - this.getItem(var3).getCount();
-         if (this.add(var3, var1.split(var4)) && var2 && this.player instanceof ServerPlayer) {
-            ((ServerPlayer)this.player).connection.send(new ClientboundContainerSetSlotPacket(-2, 0, var3, this.getItem(var3)));
+         if (this.add(var3, var1.split(var4)) && var2 && this.player instanceof ServerPlayer var5) {
+            var5.connection.send(this.createInventoryUpdatePacket(var3));
          }
       }
+   }
+
+   public ClientboundSetPlayerInventoryPacket createInventoryUpdatePacket(int var1) {
+      return new ClientboundSetPlayerInventoryPacket(var1, this.getItem(var1).copy());
    }
 
    @Override
@@ -545,7 +539,7 @@ public class Inventory implements Container, Nameable {
       }
    }
 
-   public void fillStackedContents(StackedContents var1) {
+   public void fillStackedContents(StackedItemContents var1) {
       for (ItemStack var3 : this.items) {
          var1.accountSimpleStack(var3);
       }

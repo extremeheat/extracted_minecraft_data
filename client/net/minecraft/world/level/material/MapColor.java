@@ -1,6 +1,7 @@
 package net.minecraft.world.level.material;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.util.ARGB;
 
 public class MapColor {
    private static final MapColor[] MATERIAL_COLORS = new MapColor[64];
@@ -80,16 +81,8 @@ public class MapColor {
       }
    }
 
-   public int calculateRGBColor(MapColor.Brightness var1) {
-      if (this == NONE) {
-         return 0;
-      } else {
-         int var2 = var1.modifier;
-         int var3 = (this.col >> 16 & 0xFF) * var2 / 255;
-         int var4 = (this.col >> 8 & 0xFF) * var2 / 255;
-         int var5 = (this.col & 0xFF) * var2 / 255;
-         return 0xFF000000 | var5 << 16 | var4 << 8 | var3;
-      }
+   public int calculateARGBColor(MapColor.Brightness var1) {
+      return this == NONE ? 0 : ARGB.scaleRGB(ARGB.opaque(this.col), var1.modifier);
    }
 
    public static MapColor byId(int var0) {
@@ -104,7 +97,7 @@ public class MapColor {
 
    public static int getColorFromPackedId(int var0) {
       int var1 = var0 & 0xFF;
-      return byIdUnsafe(var1 >> 2).calculateRGBColor(MapColor.Brightness.byIdUnsafe(var1 & 3));
+      return byIdUnsafe(var1 >> 2).calculateARGBColor(MapColor.Brightness.byIdUnsafe(var1 & 3));
    }
 
    public byte getPackedId(MapColor.Brightness var1) {

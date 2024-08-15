@@ -220,7 +220,7 @@ public abstract class MultifaceBlock extends Block {
 
    public static boolean hasFace(BlockState var0, Direction var1) {
       BooleanProperty var2 = getFaceProperty(var1);
-      return var0.hasProperty(var2) && var0.getValue(var2);
+      return var0.getValueOrElse(var2, Boolean.valueOf(false));
    }
 
    public static boolean canAttachTo(BlockGetter var0, Direction var1, BlockPos var2, BlockState var3) {
@@ -245,9 +245,7 @@ public abstract class MultifaceBlock extends Block {
       BlockState var1 = (BlockState)var0.any();
 
       for (BooleanProperty var3 : PROPERTY_BY_DIRECTION.values()) {
-         if (var1.hasProperty(var3)) {
-            var1 = var1.setValue(var3, Boolean.valueOf(false));
-         }
+         var1 = var1.trySetValue(var3, Boolean.valueOf(false));
       }
 
       return var1;
@@ -266,11 +264,23 @@ public abstract class MultifaceBlock extends Block {
    }
 
    protected static boolean hasAnyFace(BlockState var0) {
-      return Arrays.stream(DIRECTIONS).anyMatch(var1 -> hasFace(var0, var1));
+      for (Direction var4 : DIRECTIONS) {
+         if (hasFace(var0, var4)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    private static boolean hasAnyVacantFace(BlockState var0) {
-      return Arrays.stream(DIRECTIONS).anyMatch(var1 -> !hasFace(var0, var1));
+      for (Direction var4 : DIRECTIONS) {
+         if (!hasFace(var0, var4)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public abstract MultifaceSpreader getSpreader();

@@ -5,11 +5,13 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.DolphinRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class DolphinModel<T extends Entity> extends HierarchicalModel<T> {
+public class DolphinModel extends EntityModel<DolphinRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private final ModelPart root;
    private final ModelPart body;
    private final ModelPart tail;
@@ -64,14 +66,13 @@ public class DolphinModel<T extends Entity> extends HierarchicalModel<T> {
       return this.root;
    }
 
-   @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.body.xRot = var6 * 0.017453292F;
-      this.body.yRot = var5 * 0.017453292F;
-      if (var1.getDeltaMovement().horizontalDistanceSqr() > 1.0E-7) {
-         this.body.xRot = this.body.xRot + (-0.05F - 0.05F * Mth.cos(var4 * 0.3F));
-         this.tail.xRot = -0.1F * Mth.cos(var4 * 0.3F);
-         this.tailFin.xRot = -0.2F * Mth.cos(var4 * 0.3F);
+   public void setupAnim(DolphinRenderState var1) {
+      this.body.xRot = var1.xRot * 0.017453292F;
+      this.body.yRot = var1.yRot * 0.017453292F;
+      if (var1.isMoving) {
+         this.body.xRot = this.body.xRot + (-0.05F - 0.05F * Mth.cos(var1.ageInTicks * 0.3F));
+         this.tail.xRot = -0.1F * Mth.cos(var1.ageInTicks * 0.3F);
+         this.tailFin.xRot = -0.2F * Mth.cos(var1.ageInTicks * 0.3F);
       }
    }
 }

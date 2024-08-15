@@ -53,6 +53,7 @@ import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -69,6 +70,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.redstone.CollectingNeighborUpdater;
 import net.minecraft.world.level.redstone.NeighborUpdater;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
@@ -305,13 +307,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void updateNeighborsAt(BlockPos var1, Block var2) {
    }
 
-   public void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, Direction var3) {
+   public void updateNeighborsAt(BlockPos var1, Block var2, @Nullable Orientation var3) {
    }
 
-   public void neighborChanged(BlockPos var1, Block var2, BlockPos var3) {
+   public void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, Direction var3, @Nullable Orientation var4) {
    }
 
-   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
+   public void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3) {
+   }
+
+   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
    }
 
    @Override
@@ -485,8 +490,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.shouldTickBlocksAt(ChunkPos.asLong(var1));
    }
 
-   public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, Level.ExplosionInteraction var9) {
-      return this.explode(
+   public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, Level.ExplosionInteraction var9) {
+      this.explode(
          var1,
          Explosion.getDefaultDamageSource(this, var1),
          null,
@@ -502,8 +507,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       );
    }
 
-   public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, Level.ExplosionInteraction var10) {
-      return this.explode(
+   public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, Level.ExplosionInteraction var10) {
+      this.explode(
          var1,
          Explosion.getDefaultDamageSource(this, var1),
          null,
@@ -519,7 +524,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       );
    }
 
-   public Explosion explode(
+   public void explode(
       @Nullable Entity var1,
       @Nullable DamageSource var2,
       @Nullable ExplosionDamageCalculator var3,
@@ -528,7 +533,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       boolean var6,
       Level.ExplosionInteraction var7
    ) {
-      return this.explode(
+      this.explode(
          var1,
          var2,
          var3,
@@ -544,7 +549,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       );
    }
 
-   public Explosion explode(
+   public void explode(
       @Nullable Entity var1,
       @Nullable DamageSource var2,
       @Nullable ExplosionDamageCalculator var3,
@@ -555,12 +560,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       boolean var11,
       Level.ExplosionInteraction var12
    ) {
-      return this.explode(
+      this.explode(
          var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE
       );
    }
 
-   public Explosion explode(
+   public abstract void explode(
       @Nullable Entity var1,
       @Nullable DamageSource var2,
       @Nullable ExplosionDamageCalculator var3,
@@ -573,43 +578,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       ParticleOptions var13,
       ParticleOptions var14,
       Holder<SoundEvent> var15
-   ) {
-      return this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, true, var13, var14, var15);
-   }
-
-   public Explosion explode(
-      @Nullable Entity var1,
-      @Nullable DamageSource var2,
-      @Nullable ExplosionDamageCalculator var3,
-      double var4,
-      double var6,
-      double var8,
-      float var10,
-      boolean var11,
-      Level.ExplosionInteraction var12,
-      boolean var13,
-      ParticleOptions var14,
-      ParticleOptions var15,
-      Holder<SoundEvent> var16
-   ) {
-      Explosion.BlockInteraction var17 = switch (var12) {
-         case NONE -> Explosion.BlockInteraction.KEEP;
-         case BLOCK -> this.getDestroyType(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY);
-         case MOB -> this.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
-         ? this.getDestroyType(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)
-         : Explosion.BlockInteraction.KEEP;
-         case TNT -> this.getDestroyType(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY);
-         case TRIGGER -> Explosion.BlockInteraction.TRIGGER_BLOCK;
-      };
-      Explosion var18 = new Explosion(this, var1, var2, var3, var4, var6, var8, var10, var11, var17, var14, var15, var16);
-      var18.explode();
-      var18.finalizeExplosion(var13);
-      return var18;
-   }
-
-   private Explosion.BlockInteraction getDestroyType(GameRules.Key<GameRules.BooleanValue> var1) {
-      return this.getGameRules().getBoolean(var1) ? Explosion.BlockInteraction.DESTROY_WITH_DECAY : Explosion.BlockInteraction.DESTROY;
-   }
+   );
 
    public abstract String gatherChunkSourceStats();
 
@@ -664,8 +633,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.skyDarken = (int)((1.0 - var5 * var1 * var3) * 11.0);
    }
 
-   public void setSpawnSettings(boolean var1, boolean var2) {
-      this.getChunkSource().setSpawnSettings(var1, var2);
+   public void setSpawnSettings(boolean var1) {
+      this.getChunkSource().setSpawnSettings(var1);
    }
 
    public BlockPos getSharedSpawnPos() {
@@ -769,11 +738,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   @Override
-   public int getSeaLevel() {
-      return 63;
-   }
-
    public void disconnect() {
    }
 
@@ -847,7 +811,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          return false;
       } else {
          Biome var2 = this.getBiome(var1).value();
-         return var2.getPrecipitationAt(var1) == Biome.Precipitation.RAIN;
+         return var2.getPrecipitationAt(var1, this.getSeaLevel()) == Biome.Precipitation.RAIN;
       }
    }
 
@@ -889,12 +853,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          if (this.hasChunkAt(var5)) {
             BlockState var6 = this.getBlockState(var5);
             if (var6.is(Blocks.COMPARATOR)) {
-               this.neighborChanged(var6, var5, var2, var1, false);
+               this.neighborChanged(var6, var5, var2, null, false);
             } else if (var6.isRedstoneConductor(this, var5)) {
                var5 = var5.relative(var4);
                var6 = this.getBlockState(var5);
                if (var6.is(Blocks.COMPARATOR)) {
-                  this.neighborChanged(var6, var5, var2, var1, false);
+                  this.neighborChanged(var6, var5, var2, null, false);
                }
             }
          }
@@ -1005,6 +969,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract PotionBrewing potionBrewing();
 
+   public abstract FuelValues fuelValues();
+
    public static enum ExplosionInteraction implements StringRepresentable {
       NONE("none"),
       BLOCK("block"),
@@ -1015,7 +981,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       public static final Codec<Level.ExplosionInteraction> CODEC = StringRepresentable.fromEnum(Level.ExplosionInteraction::values);
       private final String id;
 
-      private ExplosionInteraction(String nullxx) {
+      private ExplosionInteraction(final String nullxx) {
          this.id = nullxx;
       }
 

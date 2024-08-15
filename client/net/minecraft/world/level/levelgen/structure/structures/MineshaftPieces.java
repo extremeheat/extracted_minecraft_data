@@ -384,7 +384,7 @@ public class MineshaftPieces {
 
                for (int var26 = 0; var26 <= var12; var26++) {
                   BlockState var27 = this.getBlock(var1, 1, -1, var26, var5);
-                  if (!var27.isAir() && var27.isSolidRender(var1, this.getWorldPos(1, -1, var26))) {
+                  if (!var27.isAir() && var27.isSolidRender()) {
                      float var28 = this.isInterior(var1, 1, 0, var26, var5) ? 0.7F : 0.9F;
                      this.maybeGenerateBlock(var1, var5, var4, var28, 1, 0, var26, var25);
                   }

@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,7 +25,6 @@ import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.levelgen.DensityFunction;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
@@ -120,7 +118,7 @@ public class Blender {
             .forEach(
                (var5x, var6) -> var6.iterateHeights(
                      QuartPos.fromSection(ChunkPos.getX(var5x)), QuartPos.fromSection(ChunkPos.getZ(var5x)), (var5xx, var6x, var7x) -> {
-                        double var9x = Mth.length((double)(var3 - var5xx), (double)(var4 - var6x));
+                        double var9x = (double)Mth.length((float)(var3 - var5xx), (float)(var4 - var6x));
                         if (!(var9x > (double)HEIGHT_BLENDING_RANGE_CELLS)) {
                            if (var9x < var9.doubleValue()) {
                               var9.setValue(var9x);
@@ -238,7 +236,7 @@ public class Blender {
          .forEach(
             (var5x, var6x) -> var6x.iterateBiomes(
                   QuartPos.fromSection(ChunkPos.getX(var5x)), var2, QuartPos.fromSection(ChunkPos.getZ(var5x)), (var4xx, var5xx, var6xx) -> {
-                     double var7 = Mth.length((double)(var1 - var4xx), (double)(var3 - var5xx));
+                     double var7 = (double)Mth.length((float)(var1 - var4xx), (float)(var3 - var5xx));
                      if (!(var7 > (double)HEIGHT_BLENDING_RANGE_CELLS)) {
                         if (var7 < var4.doubleValue()) {
                            var5.setValue(var6xx);
@@ -332,7 +330,7 @@ public class Blender {
             double var8x = (double)var3x + 0.5 + SHIFT_NOISE.getValue((double)var3x, (double)var1x, (double)var2x) * 4.0;
             return var12.getDistance(var4, var6, var8x) < 4.0;
          };
-         Stream.of(GenerationStep.Carving.values()).map(var1::getOrCreateCarvingMask).forEach(var1x -> var1x.setAdditionalMask(var13));
+         var1.getOrCreateCarvingMask().setAdditionalMask(var13);
       }
    }
 

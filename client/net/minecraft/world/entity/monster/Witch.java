@@ -30,6 +30,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableWitchTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestHealableRaiderTargetGoal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
@@ -240,18 +241,17 @@ public class Witch extends Raider implements RangedAttackMob {
             var12 = Potions.WEAKNESS;
          }
 
-         ThrownPotion var13 = new ThrownPotion(this.level(), this);
-         var13.setItem(PotionContents.createItemStack(Items.SPLASH_POTION, var12));
-         var13.setXRot(var13.getXRot() - -20.0F);
-         var13.shoot(var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
+         if (this.level() instanceof ServerLevel var13) {
+            ItemStack var15 = PotionContents.createItemStack(Items.SPLASH_POTION, var12);
+            Projectile.spawnProjectileUsingShoot(ThrownPotion::new, var13, var15, this, var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
+         }
+
          if (!this.isSilent()) {
             this.level()
                .playSound(
                   null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F
                );
          }
-
-         this.level().addFreshEntity(var13);
       }
    }
 

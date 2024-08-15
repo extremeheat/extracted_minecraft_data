@@ -11,8 +11,6 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -280,12 +278,18 @@ public class ServerPlayerGameMode {
       } else {
          int var5 = var3.getCount();
          int var6 = var3.getDamageValue();
-         InteractionResultHolder var7 = var3.use(var2, var1, var4);
-         ItemStack var8 = (ItemStack)var7.getObject();
+         InteractionResult var7 = var3.use(var2, var1, var4);
+         ItemStack var8;
+         if (var7 instanceof InteractionResult.Success var9) {
+            var8 = Objects.requireNonNullElse(var9.heldItemTransformedTo(), var1.getItemInHand(var4));
+         } else {
+            var8 = var1.getItemInHand(var4);
+         }
+
          if (var8 == var3 && var8.getCount() == var5 && var8.getUseDuration(var1) <= 0 && var8.getDamageValue() == var6) {
-            return var7.getResult();
-         } else if (var7.getResult() == InteractionResult.FAIL && var8.getUseDuration(var1) > 0 && !var1.isUsingItem()) {
-            return var7.getResult();
+            return var7;
+         } else if (var7 instanceof InteractionResult.Fail && var8.getUseDuration(var1) > 0 && !var1.isUsingItem()) {
+            return var7;
          } else {
             if (var3 != var8) {
                var1.setItemInHand(var4, var8);
@@ -299,7 +303,7 @@ public class ServerPlayerGameMode {
                var1.inventoryMenu.sendAllDataToRemote();
             }
 
-            return var7.getResult();
+            return var7;
          }
       }
    }
@@ -313,7 +317,7 @@ public class ServerPlayerGameMode {
          MenuProvider var14 = var7.getMenuProvider(var2, var6);
          if (var14 != null) {
             var1.openMenu(var14);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.CONSUME;
          } else {
             return InteractionResult.PASS;
          }
@@ -322,13 +326,13 @@ public class ServerPlayerGameMode {
          boolean var9 = var1.isSecondaryUseActive() && var8;
          ItemStack var10 = var3.copy();
          if (!var9) {
-            ItemInteractionResult var11 = var7.useItemOn(var1.getItemInHand(var4), var2, var1, var4, var5);
+            InteractionResult var11 = var7.useItemOn(var1.getItemInHand(var4), var2, var1, var4, var5);
             if (var11.consumesAction()) {
                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var1, var6, var10);
-               return var11.result();
+               return var11;
             }
 
-            if (var11 == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && var4 == InteractionHand.MAIN_HAND) {
+            if (var11 instanceof InteractionResult.TryEmptyHandInteraction && var4 == InteractionHand.MAIN_HAND) {
                InteractionResult var12 = var7.useWithoutItem(var2, var1, var5);
                if (var12.consumesAction()) {
                   CriteriaTriggers.DEFAULT_BLOCK_USE.trigger(var1, var6);

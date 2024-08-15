@@ -7,6 +7,7 @@ import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.phys.AABB;
@@ -18,20 +19,13 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
 
    @Override
    protected void doTick(ServerLevel var1, T var2) {
-      AABB var3 = var2.getBoundingBox().inflate((double)this.radiusXZ(), (double)this.radiusY(), (double)this.radiusXZ());
-      List var4 = var1.getEntitiesOfClass(LivingEntity.class, var3, var1x -> var1x != var2 && var1x.isAlive());
-      var4.sort(Comparator.comparingDouble(var2::distanceToSqr));
-      Brain var5 = var2.getBrain();
-      var5.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, var4);
-      var5.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(var2, var4));
-   }
-
-   protected int radiusXZ() {
-      return 16;
-   }
-
-   protected int radiusY() {
-      return 16;
+      double var3 = var2.getAttributeValue(Attributes.FOLLOW_RANGE);
+      AABB var5 = var2.getBoundingBox().inflate(var3, var3, var3);
+      List var6 = var1.getEntitiesOfClass(LivingEntity.class, var5, var1x -> var1x != var2 && var1x.isAlive());
+      var6.sort(Comparator.comparingDouble(var2::distanceToSqr));
+      Brain var7 = var2.getBrain();
+      var7.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, var6);
+      var7.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(var2, var6));
    }
 
    @Override

@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.world.flag.FeatureFlags;
 
 public class AccessibilityOptionsScreen extends OptionsSubScreen {
    public static final Component TITLE = Component.translatable("options.accessibility.title");
@@ -41,7 +42,8 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
          var0.darkMojangStudiosBackground(),
          var0.panoramaSpeed(),
          var0.hideSplashTexts(),
-         var0.narratorHotkey()
+         var0.narratorHotkey(),
+         var0.rotateWithMinecart()
       };
    }
 
@@ -57,6 +59,11 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
          var1.active = false;
          var1.setTooltip(Tooltip.create(Component.translatable("options.accessibility.high_contrast.error.tooltip")));
       }
+
+      AbstractWidget var2 = this.list.findOption(this.options.rotateWithMinecart());
+      if (var2 != null) {
+         var2.active = this.isMinecartOptionEnabled();
+      }
    }
 
    @Override
@@ -71,5 +78,9 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
          Button.builder(Component.translatable("options.accessibility.link"), ConfirmLinkScreen.confirmLink(this, CommonLinks.ACCESSIBILITY_HELP)).build()
       );
       var1.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.minecraft.setScreen(this.lastScreen)).build());
+   }
+
+   private boolean isMinecartOptionEnabled() {
+      return this.minecraft.level != null && this.minecraft.level.enabledFeatures().contains(FeatureFlags.MINECART_IMPROVEMENTS);
    }
 }

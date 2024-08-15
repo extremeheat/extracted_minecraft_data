@@ -18,6 +18,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.LongJumpUtil;
 import net.minecraft.world.entity.ai.behavior.Swim;
@@ -34,7 +35,9 @@ public class LongJump extends Behavior<Breeze> {
    private static final int JUMP_COOLDOWN_TICKS = 10;
    private static final int JUMP_COOLDOWN_WHEN_HURT_TICKS = 2;
    private static final int INHALING_DURATION_TICKS = Math.round(10.0F);
-   private static final float MAX_JUMP_VELOCITY = 1.4F;
+   private static final float DEFAULT_FOLLOW_RANGE = 24.0F;
+   private static final float DEFAULT_MAX_JUMP_VELOCITY = 1.4F;
+   private static final float MAX_JUMP_VELOCITY_MULTIPLIER = 0.058333334F;
    private static final ObjectArrayList<Integer> ALLOWED_ANGLES = new ObjectArrayList(Lists.newArrayList(new Integer[]{40, 55, 60, 75, 80}));
 
    @VisibleForTesting
@@ -185,7 +188,7 @@ public class LongJump extends Behavior<Breeze> {
    }
 
    private static boolean outOfAggroRange(Breeze var0, LivingEntity var1) {
-      return !var1.closerThan(var0, 24.0);
+      return !var1.closerThan(var0, var0.getAttributeValue(Attributes.FOLLOW_RANGE));
    }
 
    private static boolean tooCloseForJump(Breeze var0, LivingEntity var1) {
@@ -207,9 +210,10 @@ public class LongJump extends Behavior<Breeze> {
 
    private static Optional<Vec3> calculateOptimalJumpVector(Breeze var0, RandomSource var1, Vec3 var2) {
       for (int var5 : Util.shuffledCopy(ALLOWED_ANGLES, var1)) {
-         Optional var6 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, 1.4F, var5, false);
-         if (var6.isPresent()) {
-            return var6;
+         float var6 = 0.058333334F * (float)var0.getAttributeValue(Attributes.FOLLOW_RANGE);
+         Optional var7 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, var6, var5, false);
+         if (var7.isPresent()) {
+            return var7;
          }
       }
 

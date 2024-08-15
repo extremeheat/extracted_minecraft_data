@@ -46,36 +46,20 @@ public class ServerWatchdog implements Runnable {
                String.format(Locale.ROOT, "%.2f", this.server.tickRateManager().millisecondsPerTick() / (float)TimeUtil.MILLISECONDS_PER_SECOND)
             );
             LOGGER.error(LogUtils.FATAL_MARKER, "Considering it to be crashed, server will forcibly shutdown.");
-            ThreadMXBean var7 = ManagementFactory.getThreadMXBean();
-            ThreadInfo[] var8 = var7.dumpAllThreads(true, true);
-            StringBuilder var9 = new StringBuilder();
-            Error var10 = new Error("Watchdog");
-
-            for (ThreadInfo var14 : var8) {
-               if (var14.getThreadId() == this.server.getRunningThread().getId()) {
-                  var10.setStackTrace(var14.getStackTrace());
-               }
-
-               var9.append(var14);
-               var9.append("\n");
-            }
-
-            CrashReport var16 = new CrashReport("Watching Server", var10);
-            this.server.fillSystemReport(var16.getSystemReport());
-            CrashReportCategory var17 = var16.addCategory("Thread Dump");
-            var17.setDetail("Threads", var9);
-            CrashReportCategory var18 = var16.addCategory("Performance stats");
-            var18.setDetail("Random tick rate", () -> this.server.getWorldData().getGameRules().getRule(GameRules.RULE_RANDOMTICKING).toString());
-            var18.setDetail(
+            CrashReport var7 = createWatchdogCrashReport("Watching Server", this.server.getRunningThread().threadId());
+            this.server.fillSystemReport(var7.getSystemReport());
+            CrashReportCategory var8 = var7.addCategory("Performance stats");
+            var8.setDetail("Random tick rate", () -> this.server.getWorldData().getGameRules().getRule(GameRules.RULE_RANDOMTICKING).toString());
+            var8.setDetail(
                "Level stats",
                () -> Streams.stream(this.server.getAllLevels())
                      .map(var0 -> var0.dimension() + ": " + var0.getWatchdogStats())
                      .collect(Collectors.joining(",\n"))
             );
-            Bootstrap.realStdoutPrintln("Crash report:\n" + var16.getFriendlyReport(ReportType.CRASH));
-            Path var19 = this.server.getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
-            if (var16.saveToFile(var19, ReportType.CRASH)) {
-               LOGGER.error("This crash report has been saved to: {}", var19.toAbsolutePath());
+            Bootstrap.realStdoutPrintln("Crash report:\n" + var7.getFriendlyReport(ReportType.CRASH));
+            Path var9 = this.server.getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
+            if (var7.saveToFile(var9, ReportType.CRASH)) {
+               LOGGER.error("This crash report has been saved to: {}", var9.toAbsolutePath());
             } else {
                LOGGER.error("We were unable to save this crash report to disk.");
             }
@@ -85,9 +69,30 @@ public class ServerWatchdog implements Runnable {
 
          try {
             Thread.sleep((var1 + this.maxTickTimeNanos - var3) / TimeUtil.NANOSECONDS_PER_MILLISECOND);
-         } catch (InterruptedException var15) {
+         } catch (InterruptedException var10) {
          }
       }
+   }
+
+   public static CrashReport createWatchdogCrashReport(String var0, long var1) {
+      ThreadMXBean var3 = ManagementFactory.getThreadMXBean();
+      ThreadInfo[] var4 = var3.dumpAllThreads(true, true);
+      StringBuilder var5 = new StringBuilder();
+      Error var6 = new Error("Watchdog");
+
+      for (ThreadInfo var10 : var4) {
+         if (var10.getThreadId() == var1) {
+            var6.setStackTrace(var10.getStackTrace());
+         }
+
+         var5.append(var10);
+         var5.append("\n");
+      }
+
+      CrashReport var11 = new CrashReport(var0, var6);
+      CrashReportCategory var12 = var11.addCategory("Thread Dump");
+      var12.setDetail("Threads", var5);
+      return var11;
    }
 
    private void exit() {

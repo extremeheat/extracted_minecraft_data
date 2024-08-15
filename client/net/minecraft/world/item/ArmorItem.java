@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -95,11 +95,11 @@ public class ArmorItem extends Item implements Equipable {
 
    @Override
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return this.material.value().repairIngredient().get().test(var2) || super.isValidRepairItem(var1, var2);
+      return this.material.value().repairIngredient().test(var2) || super.isValidRepairItem(var1, var2);
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       return this.swapWithEquipmentSlot(this, var1, var2, var3);
    }
 

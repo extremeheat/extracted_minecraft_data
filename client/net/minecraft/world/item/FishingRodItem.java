@@ -5,10 +5,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -19,7 +20,7 @@ public class FishingRodItem extends Item {
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (var2.fishing != null) {
          if (!var1.isClientSide) {
@@ -52,18 +53,13 @@ public class FishingRodItem extends Item {
          if (var1 instanceof ServerLevel var8) {
             int var6 = (int)(EnchantmentHelper.getFishingTimeReduction(var8, var4, var2) * 20.0F);
             int var7 = EnchantmentHelper.getFishingLuckBonus(var8, var4, var2);
-            var1.addFreshEntity(new FishingHook(var2, var1, var7, var6));
+            Projectile.spawnProjectile(new FishingHook(var2, var1, var7, var6, var4), var8, var4);
          }
 
          var2.awardStat(Stats.ITEM_USED.get(this));
          var2.gameEvent(GameEvent.ITEM_INTERACT_START);
       }
 
-      return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
-   }
-
-   @Override
-   public int getEnchantmentValue() {
-      return 1;
+      return InteractionResult.SUCCESS;
    }
 }

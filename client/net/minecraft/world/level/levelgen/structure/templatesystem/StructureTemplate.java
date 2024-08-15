@@ -27,9 +27,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.EmptyBlockGetter;
@@ -413,7 +413,7 @@ public class StructureTemplate {
                var6x += var5x.mirror(var3) - var5x.getYRot();
                var5x.moveTo(var13.x, var13.y, var13.z, var6x, var5x.getXRot());
                if (var7 && var5x instanceof Mob) {
-                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), MobSpawnType.STRUCTURE, null);
+                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), EntitySpawnReason.STRUCTURE, null);
                }
 
                var1.addFreshEntityWithPassengers(var5x);
@@ -424,7 +424,7 @@ public class StructureTemplate {
 
    private static Optional<Entity> createEntityIgnoreException(ServerLevelAccessor var0, CompoundTag var1) {
       try {
-         return EntityType.create(var1, var0.getLevel());
+         return EntityType.create(var1, var0.getLevel(), EntitySpawnReason.STRUCTURE);
       } catch (Exception var3) {
          return Optional.empty();
       }

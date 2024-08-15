@@ -25,6 +25,7 @@ import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -40,6 +41,8 @@ public abstract class AbstractContainerMenu {
    public static final int QUICKCRAFT_HEADER_CONTINUE = 1;
    public static final int QUICKCRAFT_HEADER_END = 2;
    public static final int CARRIED_SLOT_SIZE = 2147483647;
+   public static final int SLOTS_PER_ROW = 9;
+   public static final int SLOT_SIZE = 18;
    private final NonNullList<ItemStack> lastSlots = NonNullList.create();
    public final NonNullList<Slot> slots = NonNullList.create();
    private final List<DataSlot> dataSlots = Lists.newArrayList();
@@ -63,6 +66,27 @@ public abstract class AbstractContainerMenu {
       super();
       this.menuType = var1;
       this.containerId = var2;
+   }
+
+   protected void addInventoryHotbarSlots(Container var1, int var2, int var3) {
+      for (int var4 = 0; var4 < 9; var4++) {
+         this.addSlot(new Slot(var1, var4, var2 + var4 * 18, var3));
+      }
+   }
+
+   protected void addInventoryExtendedSlots(Container var1, int var2, int var3) {
+      for (int var4 = 0; var4 < 3; var4++) {
+         for (int var5 = 0; var5 < 9; var5++) {
+            this.addSlot(new Slot(var1, var5 + (var4 + 1) * 9, var2 + var5 * 18, var3 + var4 * 18));
+         }
+      }
+   }
+
+   protected void addStandardInventorySlots(Container var1, int var2, int var3) {
+      this.addInventoryExtendedSlots(var1, var2, var3);
+      byte var4 = 4;
+      byte var5 = 58;
+      this.addInventoryHotbarSlots(var1, var2, var3 + 58);
    }
 
    protected static boolean stillValid(ContainerLevelAccess var0, Player var1, Block var2) {
@@ -277,6 +301,13 @@ public abstract class AbstractContainerMenu {
 
    public abstract ItemStack quickMoveStack(Player var1, int var2);
 
+   public void setSelectedBundleItemIndex(int var1, int var2) {
+      if (var1 >= 0 && var1 < this.slots.size()) {
+         ItemStack var3 = this.slots.get(var1).getItem();
+         BundleItem.toggleSelectedItem(var3, var2);
+      }
+   }
+
    public void clicked(int var1, int var2, ClickType var3, Player var4) {
       try {
          this.doClick(var1, var2, var3, var4);
@@ -478,6 +509,14 @@ public abstract class AbstractContainerMenu {
          int var23 = var2 == 0 ? 1 : var16.getItem().getCount();
          ItemStack var30 = var16.safeTake(var23, 2147483647, var4);
          var4.drop(var30, true);
+         if (var2 == 1) {
+            while (!var30.isEmpty() && ItemStack.isSameItem(var16.getItem(), var30)) {
+               var30 = var16.safeTake(var23, 2147483647, var4);
+               var4.drop(var30, true);
+            }
+         }
+
+         var4.handleCreativeModeItemDrop(var30);
       } else if (var3 == ClickType.PICKUP_ALL && var1 >= 0) {
          Slot var15 = this.slots.get(var1);
          ItemStack var22 = this.getCarried();

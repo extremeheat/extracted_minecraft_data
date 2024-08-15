@@ -10,6 +10,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -50,5 +51,10 @@ public class AzaleaBlock extends BushBlock implements BonemealableBlock {
    @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       TreeGrower.AZALEA.growTree(var1, var1.getChunkSource().getGenerator(), var3, var4, var2);
+   }
+
+   @Override
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+      return false;
    }
 }

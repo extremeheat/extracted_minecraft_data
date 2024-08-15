@@ -8,6 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -22,7 +23,10 @@ import net.minecraft.world.level.material.FluidState;
 
 public class MinecartTNT extends AbstractMinecart {
    private static final byte EVENT_PRIME = 10;
+   private static final String TAG_EXPLOSION_POWER = "explosion_power";
+   private static final float DEFAULT_EXPLOSION_POWER_BASE = 4.0F;
    private int fuse = -1;
+   private float explosionPowerBase = 4.0F;
 
    public MinecartTNT(EntityType<? extends MinecartTNT> var1, Level var2) {
       super(var1, var2);
@@ -44,6 +48,7 @@ public class MinecartTNT extends AbstractMinecart {
 
    @Override
    public void tick() {
+      double var1 = this.getDeltaMovement().horizontalDistanceSqr();
       super.tick();
       if (this.fuse > 0) {
          this.fuse--;
@@ -53,9 +58,9 @@ public class MinecartTNT extends AbstractMinecart {
       }
 
       if (this.horizontalCollision) {
-         double var1 = this.getDeltaMovement().horizontalDistanceSqr();
-         if (var1 >= 0.009999999776482582) {
-            this.explode(var1);
+         double var3 = this.getDeltaMovement().horizontalDistanceSqr();
+         if (var1 >= 0.009999999776482582 && var3 <= 0.009999999776482582) {
+            this.explode(var3);
          }
       }
    }
@@ -179,12 +184,19 @@ public class MinecartTNT extends AbstractMinecart {
       if (var1.contains("TNTFuse", 99)) {
          this.fuse = var1.getInt("TNTFuse");
       }
+
+      if (var1.contains("explosion_power", 99)) {
+         this.explosionPowerBase = Mth.clamp(var1.getFloat("explosion_power"), 0.0F, 128.0F);
+      }
    }
 
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("TNTFuse", this.fuse);
+      if (this.explosionPowerBase != 4.0F) {
+         var1.putFloat("explosion_power", this.explosionPowerBase);
+      }
    }
 
    @Override

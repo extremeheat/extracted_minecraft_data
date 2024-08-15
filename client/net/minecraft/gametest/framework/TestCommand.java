@@ -59,6 +59,8 @@ import org.slf4j.Logger;
 public class TestCommand {
    public static final int STRUCTURE_BLOCK_NEARBY_SEARCH_RADIUS = 15;
    public static final int STRUCTURE_BLOCK_FULL_SEARCH_RADIUS = 200;
+   public static final int VERIFY_TEST_GRID_AXIS_SIZE = 10;
+   public static final int VERIFY_TEST_BATCH_SIZE = 100;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_CLEAR_RADIUS = 200;
    private static final int MAX_CLEAR_RADIUS = 1024;
@@ -567,33 +569,32 @@ public class TestCommand {
                TestCommand.toGameTestInfo(var1, RetryOptions.noRetries(), this.finder, 0)
             )
             .toList();
-         byte var5 = 10;
          GameTestRunner.clearMarkers(var2);
          GameTestRegistry.forgetFailedTests();
-         ArrayList var6 = new ArrayList();
+         ArrayList var5 = new ArrayList();
 
-         for (GameTestInfo var8 : var4) {
-            for (Rotation var12 : Rotation.values()) {
-               ArrayList var13 = new ArrayList();
+         for (GameTestInfo var7 : var4) {
+            for (Rotation var11 : Rotation.values()) {
+               ArrayList var12 = new ArrayList();
 
-               for (int var14 = 0; var14 < 100; var14++) {
-                  GameTestInfo var15 = new GameTestInfo(var8.getTestFunction(), var12, var2, new RetryOptions(1, true));
-                  var13.add(var15);
+               for (int var13 = 0; var13 < 100; var13++) {
+                  GameTestInfo var14 = new GameTestInfo(var7.getTestFunction(), var11, var2, new RetryOptions(1, true));
+                  var12.add(var14);
                }
 
-               GameTestBatch var18 = GameTestBatchFactory.toGameTestBatch(var13, var8.getTestFunction().batchName(), (long)var12.ordinal());
-               var6.add(var18);
+               GameTestBatch var17 = GameTestBatchFactory.toGameTestBatch(var12, var7.getTestFunction().batchName(), (long)var11.ordinal());
+               var5.add(var17);
             }
          }
 
-         StructureGridSpawner var16 = new StructureGridSpawner(var3, 10, true);
-         GameTestRunner var17 = GameTestRunner.Builder.fromBatches(var6, var2)
+         StructureGridSpawner var15 = new StructureGridSpawner(var3, 10, true);
+         GameTestRunner var16 = GameTestRunner.Builder.fromBatches(var5, var2)
             .batcher(GameTestBatchFactory.fromGameTestInfo(100))
-            .newStructureSpawner(var16)
-            .existingStructureSpawner(var16)
+            .newStructureSpawner(var15)
+            .existingStructureSpawner(var15)
             .haltOnError(true)
             .build();
-         return TestCommand.trackAndStartRunner(var1, var2, var17);
+         return TestCommand.trackAndStartRunner(var1, var2, var16);
       }
 
       public int run(RetryOptions var1, int var2, int var3) {

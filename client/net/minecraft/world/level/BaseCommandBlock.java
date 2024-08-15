@@ -195,7 +195,7 @@ public abstract class BaseCommandBlock implements CommandSource {
             var1.openMinecartCommandBlock(this);
          }
 
-         return InteractionResult.sidedSuccess(var1.level().isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 

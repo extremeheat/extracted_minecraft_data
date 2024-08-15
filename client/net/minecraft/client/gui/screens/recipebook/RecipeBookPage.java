@@ -27,7 +27,7 @@ public class RecipeBookPage {
    private final List<RecipeButton> buttons = Lists.newArrayListWithCapacity(20);
    @Nullable
    private RecipeButton hoveredButton;
-   private final OverlayRecipeComponent overlay = new OverlayRecipeComponent();
+   private final OverlayRecipeComponent overlay;
    private Minecraft minecraft;
    private final List<RecipeShownListener> showListeners = Lists.newArrayList();
    private List<RecipeCollection> recipeCollections = ImmutableList.of();
@@ -40,12 +40,14 @@ public class RecipeBookPage {
    private RecipeHolder<?> lastClickedRecipe;
    @Nullable
    private RecipeCollection lastClickedRecipeCollection;
+   private boolean isFiltering;
 
-   public RecipeBookPage() {
+   public RecipeBookPage(SlotSelectTime var1, boolean var2) {
       super();
+      this.overlay = new OverlayRecipeComponent(var1, var2);
 
-      for (int var1 = 0; var1 < 20; var1++) {
-         this.buttons.add(new RecipeButton());
+      for (int var3 = 0; var3 < 20; var3++) {
+         this.buttons.add(new RecipeButton(var1));
       }
    }
 
@@ -68,8 +70,9 @@ public class RecipeBookPage {
       this.showListeners.add(var1);
    }
 
-   public void updateCollections(List<RecipeCollection> var1, boolean var2) {
+   public void updateCollections(List<RecipeCollection> var1, boolean var2, boolean var3) {
       this.recipeCollections = var1;
+      this.isFiltering = var3;
       this.totalPages = (int)Math.ceil((double)var1.size() / 20.0);
       if (this.totalPages <= this.currentPage || var2) {
          this.currentPage = 0;
@@ -85,7 +88,7 @@ public class RecipeBookPage {
          RecipeButton var3 = this.buttons.get(var2);
          if (var1 + var2 < this.recipeCollections.size()) {
             RecipeCollection var4 = this.recipeCollections.get(var1 + var2);
-            var3.init(var4, this);
+            var3.init(var4, this.isFiltering, this);
             var3.visible = true;
          } else {
             var3.visible = false;
@@ -169,7 +172,7 @@ public class RecipeBookPage {
                   this.lastClickedRecipeCollection = var11.getCollection();
                } else if (var5 == 1 && !this.overlay.isVisible() && !var11.isOnlyOption()) {
                   this.overlay
-                     .init(this.minecraft, var11.getCollection(), var11.getX(), var11.getY(), var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var11.getWidth());
+                     .init(var11.getCollection(), this.isFiltering, var11.getX(), var11.getY(), var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var11.getWidth());
                }
 
                return true;
@@ -184,10 +187,6 @@ public class RecipeBookPage {
       for (RecipeShownListener var3 : this.showListeners) {
          var3.recipesShown(var1);
       }
-   }
-
-   public Minecraft getMinecraft() {
-      return this.minecraft;
    }
 
    public RecipeBook getRecipeBook() {

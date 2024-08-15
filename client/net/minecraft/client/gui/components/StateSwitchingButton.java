@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 
 public class StateSwitchingButton extends AbstractWidget {
@@ -36,9 +36,9 @@ public class StateSwitchingButton extends AbstractWidget {
    @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.sprites != null) {
-         RenderSystem.disableDepthTest();
-         var1.blitSprite(this.sprites.get(this.isStateTriggered, this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
-         RenderSystem.enableDepthTest();
+         var1.blitSprite(
+            RenderType::guiTextured, this.sprites.get(this.isStateTriggered, this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height
+         );
       }
    }
 }

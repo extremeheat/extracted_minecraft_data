@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 
 public class JigsawPlacement {
    static final Logger LOGGER = LogUtils.getLogger();
+   private static final int UNSET_HEIGHT = -2147483648;
 
    public JigsawPlacement() {
       super();
@@ -280,7 +281,7 @@ public class JigsawPlacement {
             BlockPos var20 = var18.pos();
             BlockPos var21 = var20.relative(var19);
             int var22 = var20.getY() - var16;
-            int var23 = -1;
+            int var23 = -2147483648;
             ResourceKey var24 = readPoolKey(var18, var7);
             Optional var25 = this.pools.getHolder(var24);
             if (var25.isEmpty()) {
@@ -365,7 +366,7 @@ public class JigsawPlacement {
                                  if (var13 && var46) {
                                     var49 = var16 + var48;
                                  } else {
-                                    if (var23 == -1) {
+                                    if (var23 == -2147483648) {
                                        var23 = this.chunkGenerator.getFirstFreeHeight(var20.getX(), var20.getZ(), Heightmap.Types.WORLD_SURFACE_WG, var5, var6);
                                     }
 
@@ -399,7 +400,7 @@ public class JigsawPlacement {
                                     } else if (var46) {
                                        var56 = var49 + var47;
                                     } else {
-                                       if (var23 == -1) {
+                                       if (var23 == -2147483648) {
                                           var23 = this.chunkGenerator
                                              .getFirstFreeHeight(var20.getX(), var20.getZ(), Heightmap.Types.WORLD_SURFACE_WG, var5, var6);
                                        }

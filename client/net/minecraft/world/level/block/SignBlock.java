@@ -13,7 +13,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SignApplicator;
@@ -77,7 +76,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (var3.getBlockEntity(var4) instanceof SignBlockEntity var8) {
          SignApplicator var12 = var1.getItem() instanceof SignApplicator var10 ? var10 : null;
          boolean var13 = var12 != null && var5.mayBuild();
@@ -89,18 +88,18 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
                   var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
                   var3.gameEvent(GameEvent.BLOCK_CHANGE, var8.getBlockPos(), GameEvent.Context.of(var5, var8.getBlockState()));
                   var1.consume(1, var5);
-                  return ItemInteractionResult.SUCCESS;
+                  return InteractionResult.SUCCESS;
                } else {
-                  return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                  return InteractionResult.TRY_WITH_EMPTY_HAND;
                }
             } else {
-               return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
          } else {
-            return !var13 && !var8.isWaxed() ? ItemInteractionResult.CONSUME : ItemInteractionResult.SUCCESS;
+            return !var13 && !var8.isWaxed() ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
          }
       } else {
-         return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.PASS;
       }
    }
 
@@ -115,12 +114,12 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
          boolean var8 = var6.executeClickCommandsIfPresent(var4, var2, var3, var9);
          if (var6.isWaxed()) {
             var2.playSound(null, var6.getBlockPos(), var6.getSignInteractionFailedSoundEvent(), SoundSource.BLOCKS);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else if (var8) {
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else if (!this.otherPlayerIsEditingSign(var4, var6) && var4.mayBuild() && this.hasEditableText(var4, var6, var9)) {
             this.openTextEdit(var4, var6, var9);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else {
             return InteractionResult.PASS;
          }

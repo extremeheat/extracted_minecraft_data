@@ -10,7 +10,6 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
@@ -23,6 +22,8 @@ public abstract class AbstractClientPlayer extends Player {
    public float elytraRotY;
    public float elytraRotZ;
    public final ClientLevel clientLevel;
+   public float walkDistO;
+   public float walkDist;
 
    public AbstractClientPlayer(ClientLevel var1, GameProfile var2) {
       super(var1, var1.getSharedSpawnPos(), var1.getSharedSpawnAngle(), var2);
@@ -52,6 +53,7 @@ public abstract class AbstractClientPlayer extends Player {
 
    @Override
    public void tick() {
+      this.walkDistO = this.walkDist;
       this.deltaMovementOnPreviousTick = this.getDeltaMovement();
       super.tick();
    }
@@ -65,34 +67,27 @@ public abstract class AbstractClientPlayer extends Player {
       return var1 == null ? DefaultPlayerSkin.get(this.getUUID()) : var1.getSkin();
    }
 
-   public float getFieldOfViewModifier() {
-      float var1 = 1.0F;
+   public float getFieldOfViewModifier(boolean var1) {
+      float var2 = 1.0F;
       if (this.getAbilities().flying) {
-         var1 *= 1.1F;
+         var2 *= 1.1F;
       }
 
-      var1 *= ((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) / this.getAbilities().getWalkingSpeed() + 1.0F) / 2.0F;
-      if (this.getAbilities().getWalkingSpeed() == 0.0F || Float.isNaN(var1) || Float.isInfinite(var1)) {
-         var1 = 1.0F;
+      float var3 = this.getAbilities().getWalkingSpeed();
+      if (var3 != 0.0F) {
+         float var4 = (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) / var3;
+         var2 *= (var4 + 1.0F) / 2.0F;
       }
 
-      ItemStack var2 = this.getUseItem();
       if (this.isUsingItem()) {
-         if (var2.is(Items.BOW)) {
-            int var3 = this.getTicksUsingItem();
-            float var4 = (float)var3 / 20.0F;
-            if (var4 > 1.0F) {
-               var4 = 1.0F;
-            } else {
-               var4 *= var4;
-            }
-
-            var1 *= 1.0F - var4 * 0.15F;
-         } else if (Minecraft.getInstance().options.getCameraType().isFirstPerson() && this.isScoping()) {
+         if (this.getUseItem().is(Items.BOW)) {
+            float var5 = Math.min((float)this.getTicksUsingItem() / 20.0F, 1.0F);
+            var2 *= 1.0F - Mth.square(var5) * 0.15F;
+         } else if (var1 && this.isScoping()) {
             return 0.1F;
          }
       }
 
-      return Mth.lerp(Minecraft.getInstance().options.fovEffectScale().get().floatValue(), 1.0F, var1);
+      return var2;
    }
 }

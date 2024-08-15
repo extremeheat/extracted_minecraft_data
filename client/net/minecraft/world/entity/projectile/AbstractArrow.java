@@ -34,6 +34,7 @@ import net.minecraft.world.entity.OminousItemSpawner;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -97,8 +98,6 @@ public abstract class AbstractArrow extends Projectile {
          if (var13 > 0) {
             this.setPierceLevel((byte)var13);
          }
-
-         EnchantmentHelper.onProjectileSpawned(var12, var10, this, var1x -> this.firedFromWeapon = null);
       }
    }
 
@@ -195,7 +194,7 @@ public abstract class AbstractArrow extends Projectile {
          this.inGroundTime = 0;
          Vec3 var27 = this.position();
          Vec3 var28 = var27.add(var2);
-         Object var29 = this.level().clip(new ClipContext(var27, var28, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+         Object var29 = this.level().clipIncludingBorder(new ClipContext(var27, var28, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
          if (((HitResult)var29).getType() != HitResult.Type.MISS) {
             var28 = ((HitResult)var29).getLocation();
          }
@@ -278,7 +277,9 @@ public abstract class AbstractArrow extends Projectile {
          }
 
          this.setPos(var34, var16, var18);
-         this.checkInsideBlocks();
+         if (!this.level().isClientSide()) {
+            this.applyEffectsFromBlocks();
+         }
       }
    }
 
@@ -323,6 +324,11 @@ public abstract class AbstractArrow extends Projectile {
       if (this.piercingIgnoreEntityIds != null) {
          this.piercingIgnoreEntityIds.clear();
       }
+   }
+
+   @Override
+   protected void onItemBreak(Item var1) {
+      this.firedFromWeapon = null;
    }
 
    @Override

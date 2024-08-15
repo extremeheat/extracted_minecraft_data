@@ -47,7 +47,8 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
          ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE,
          ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED,
          ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LATENCY,
-         ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME
+         ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME,
+         ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LIST_ORDER
       );
       return new ClientboundPlayerInfoUpdatePacket(var1, var0);
    }
@@ -123,7 +124,8 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       UPDATE_DISPLAY_NAME(
          (var0, var1) -> var0.displayName = FriendlyByteBuf.readNullable(var1, ComponentSerialization.TRUSTED_STREAM_CODEC),
          (var0, var1) -> FriendlyByteBuf.writeNullable(var0, var1.displayName(), ComponentSerialization.TRUSTED_STREAM_CODEC)
-      );
+      ),
+      UPDATE_LIST_ORDER((var0, var1) -> var0.listOrder = var1.readVarInt(), (var0, var1) -> var0.writeVarInt(var1.listOrder));
 
       final ClientboundPlayerInfoUpdatePacket.Action.Reader reader;
       final ClientboundPlayerInfoUpdatePacket.Action.Writer writer;
@@ -164,6 +166,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       GameType gameMode = GameType.DEFAULT_MODE;
       @Nullable
       Component displayName;
+      int listOrder;
       @Nullable
       RemoteChatSession.Data chatSession;
 
@@ -174,7 +177,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
 
       ClientboundPlayerInfoUpdatePacket.Entry build() {
          return new ClientboundPlayerInfoUpdatePacket.Entry(
-            this.profileId, this.profile, this.listed, this.latency, this.gameMode, this.displayName, this.chatSession
+            this.profileId, this.profile, this.listed, this.latency, this.gameMode, this.displayName, this.listOrder, this.chatSession
          );
       }
    }

@@ -11,9 +11,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 
@@ -59,7 +59,7 @@ public class NeighborsUpdateRenderer implements DebugRenderer.SimpleDebugRendere
                      .deflate(0.0025 * (double)var21)
                      .move((double)var25.getX(), (double)var25.getY(), (double)var25.getZ())
                      .move(-var3, -var5, -var7);
-                  LevelRenderer.renderLineBox(var1, var16, var27.minX, var27.minY, var27.minZ, var27.maxX, var27.maxY, var27.maxZ, 1.0F, 1.0F, 1.0F, 1.0F);
+                  ShapeRenderer.renderLineBox(var1, var16, var27.minX, var27.minY, var27.minZ, var27.maxX, var27.maxY, var27.maxZ, 1.0F, 1.0F, 1.0F, 1.0F);
                   var15.put(var25, var26);
                }
             }

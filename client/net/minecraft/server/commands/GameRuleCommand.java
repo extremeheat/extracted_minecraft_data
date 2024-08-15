@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.GameRules;
 
 public class GameRuleCommand {
@@ -15,18 +16,23 @@ public class GameRuleCommand {
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       final LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("gamerule").requires(var0x -> var0x.hasPermission(2));
-      GameRules.visitGameRuleTypes(
-         new GameRules.GameRuleTypeVisitor() {
-            @Override
-            public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1x, GameRules.Type<T> var2) {
-               var1.then(
-                  ((LiteralArgumentBuilder)Commands.literal(var1x.getId())
-                        .executes(var1xxx -> GameRuleCommand.queryRule((CommandSourceStack)var1xxx.getSource(), var1x)))
-                     .then(var2.createArgument("value").executes(var1xxx -> GameRuleCommand.setRule(var1xxx, var1x)))
-               );
+      new GameRules(FeatureFlags.REGISTRY.allFlags())
+         .visitGameRuleTypes(
+            new GameRules.GameRuleTypeVisitor() {
+               @Override
+               public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1x, GameRules.Type<T> var2) {
+                  LiteralArgumentBuilder var3 = Commands.literal(var1x.getId());
+                  if (!var2.requiredFeatures().isEmpty()) {
+                     var3.requires(var1xxx -> var2.requiredFeatures().isSubsetOf(var1xxx.enabledFeatures()));
+                  }
+
+                  var1.then(
+                     ((LiteralArgumentBuilder)var3.executes(var1xxx -> GameRuleCommand.queryRule((CommandSourceStack)var1xxx.getSource(), var1x)))
+                        .then(var2.createArgument("value").executes(var1xxx -> GameRuleCommand.setRule(var1xxx, var1x)))
+                  );
+               }
             }
-         }
-      );
+         );
       var0.register(var1);
    }
 

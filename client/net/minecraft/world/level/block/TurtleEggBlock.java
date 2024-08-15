@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ambient.Bat;
@@ -103,7 +104,7 @@ public class TurtleEggBlock extends Block {
 
             for (int var6 = 0; var6 < var1.getValue(EGGS); var6++) {
                var2.levelEvent(2001, var3, Block.getId(var1));
-               Turtle var7 = EntityType.TURTLE.create(var2);
+               Turtle var7 = EntityType.TURTLE.create(var2, EntitySpawnReason.BREEDING);
                if (var7 != null) {
                   var7.setAge(-24000);
                   var7.setHomePos(var3);

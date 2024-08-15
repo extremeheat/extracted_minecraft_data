@@ -2,12 +2,13 @@ package net.minecraft.world.item;
 
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.windcharge.WindCharge;
@@ -23,11 +24,18 @@ public class WindChargeItem extends Item implements ProjectileItem {
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      if (!var1.isClientSide()) {
-         WindCharge var4 = new WindCharge(var2, var1, var2.position().x(), var2.getEyePosition().y(), var2.position().z());
-         var4.shootFromRotation(var2, var2.getXRot(), var2.getYRot(), 0.0F, 1.5F, 1.0F);
-         var1.addFreshEntity(var4);
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
+      ItemStack var4 = var2.getItemInHand(var3);
+      if (var1 instanceof ServerLevel var5) {
+         Projectile.spawnProjectileFromRotation(
+            (var2x, var3x, var4x) -> new WindCharge(var2, var1, var2.position().x(), var2.getEyePosition().y(), var2.position().z()),
+            var5,
+            var4,
+            var2,
+            0.0F,
+            1.5F,
+            1.0F
+         );
       }
 
       var1.playSound(
@@ -40,11 +48,10 @@ public class WindChargeItem extends Item implements ProjectileItem {
          0.5F,
          0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
       );
-      ItemStack var5 = var2.getItemInHand(var3);
       var2.getCooldowns().addCooldown(this, 10);
       var2.awardStat(Stats.ITEM_USED.get(this));
-      var5.consume(1, var2);
-      return InteractionResultHolder.sidedSuccess(var5, var1.isClientSide());
+      var4.consume(1, var2);
+      return InteractionResult.SUCCESS;
    }
 
    @Override

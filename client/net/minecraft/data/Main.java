@@ -21,6 +21,7 @@ import net.minecraft.data.advancements.packs.VanillaAdvancementProvider;
 import net.minecraft.data.info.BiomeParametersDumpReport;
 import net.minecraft.data.info.BlockListReport;
 import net.minecraft.data.info.CommandsReport;
+import net.minecraft.data.info.DatapackStructureReport;
 import net.minecraft.data.info.ItemListReport;
 import net.minecraft.data.info.PacketReport;
 import net.minecraft.data.info.RegistryDumpReport;
@@ -123,7 +124,7 @@ public class Main {
       var16.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var19));
       var16.addProvider(bindRegistries(VanillaAdvancementProvider::create, var19));
       var16.addProvider(bindRegistries(VanillaLootTableProvider::create, var19));
-      var16.addProvider(bindRegistries(VanillaRecipeProvider::new, var19));
+      var16.addProvider(bindRegistries(VanillaRecipeProvider.Runner::new, var19));
       TagsProvider var20 = var16.addProvider(bindRegistries(VanillaBlockTagsProvider::new, var19));
       TagsProvider var12 = var16.addProvider(var2x -> new VanillaItemTagsProvider(var2x, var19, var20.contentsGetter()));
       TagsProvider var13 = var16.addProvider(bindRegistries(BiomeTagsProvider::new, var19));
@@ -149,8 +150,9 @@ public class Main {
       var16.addProvider(bindRegistries(CommandsReport::new, var19));
       var16.addProvider(RegistryDumpReport::new);
       var16.addProvider(PacketReport::new);
+      var16.addProvider(DatapackStructureReport::new);
       var16 = var9.getBuiltinDatapack(var3, "bundle");
-      var16.addProvider(bindRegistries(BundleRecipeProvider::new, var19));
+      var16.addProvider(bindRegistries(BundleRecipeProvider.Runner::new, var19));
       var16.addProvider(
          var0x -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.bundle.description"), FeatureFlagSet.of(FeatureFlags.BUNDLE))
       );
@@ -166,6 +168,18 @@ public class Main {
       var18.addProvider(bindRegistries(TradeRebalanceLootTableProvider::create, var19));
       var18.addProvider(bindRegistries(TradeRebalanceStructureTagsProvider::new, var19));
       var18.addProvider(bindRegistries(TradeRebalanceEnchantmentTagsProvider::new, var19));
+      var16 = var9.getBuiltinDatapack(var3, "redstone_experiments");
+      var16.addProvider(
+         var0x -> PackMetadataGenerator.forFeaturePack(
+               var0x, Component.translatable("dataPack.redstone_experiments.description"), FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS)
+            )
+      );
+      var16 = var9.getBuiltinDatapack(var3, "minecart_improvements");
+      var16.addProvider(
+         var0x -> PackMetadataGenerator.forFeaturePack(
+               var0x, Component.translatable("dataPack.minecart_improvements.description"), FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS)
+            )
+      );
       return var9;
    }
 }

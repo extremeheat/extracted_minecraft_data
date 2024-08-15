@@ -52,13 +52,27 @@ public abstract class PathNavigation {
    private float maxVisitedNodesMultiplier = 1.0F;
    private final PathFinder pathFinder;
    private boolean isStuck;
+   private float requiredPathLength = 16.0F;
 
    public PathNavigation(Mob var1, Level var2) {
       super();
       this.mob = var1;
       this.level = var2;
-      int var3 = Mth.floor(var1.getAttributeValue(Attributes.FOLLOW_RANGE) * 16.0);
-      this.pathFinder = this.createPathFinder(var3);
+      this.pathFinder = this.createPathFinder(Mth.floor(var1.getAttributeBaseValue(Attributes.FOLLOW_RANGE) * 16.0));
+   }
+
+   public void updatePathfinderMaxVisitedNodes() {
+      int var1 = Mth.floor(this.getMaxPathLength() * 16.0F);
+      this.pathFinder.setMaxVisitedNodes(var1);
+   }
+
+   public void setRequiredPathLength(float var1) {
+      this.requiredPathLength = var1;
+      this.updatePathfinderMaxVisitedNodes();
+   }
+
+   private float getMaxPathLength() {
+      return Math.max((float)this.mob.getAttributeValue(Attributes.FOLLOW_RANGE), this.requiredPathLength);
    }
 
    public void resetMaxVisitedNodesMultiplier() {
@@ -125,7 +139,7 @@ public abstract class PathNavigation {
 
    @Nullable
    protected Path createPath(Set<BlockPos> var1, int var2, boolean var3, int var4) {
-      return this.createPath(var1, var2, var3, var4, (float)this.mob.getAttributeValue(Attributes.FOLLOW_RANGE));
+      return this.createPath(var1, var2, var3, var4, this.getMaxPathLength());
    }
 
    @Nullable
@@ -366,7 +380,7 @@ public abstract class PathNavigation {
 
    public boolean isStableDestination(BlockPos var1) {
       BlockPos var2 = var1.below();
-      return this.level.getBlockState(var2).isSolidRender(this.level, var2);
+      return this.level.getBlockState(var2).isSolidRender();
    }
 
    public NodeEvaluator getNodeEvaluator() {

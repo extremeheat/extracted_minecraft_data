@@ -7,10 +7,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class BlazeModel<T extends Entity> extends HierarchicalModel<T> {
+public class BlazeModel extends EntityModel<LivingEntityRenderState> {
    private final ModelPart root;
    private final ModelPart[] upperBodyParts;
    private final ModelPart head;
@@ -70,36 +70,35 @@ public class BlazeModel<T extends Entity> extends HierarchicalModel<T> {
       return this.root;
    }
 
-   @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = var4 * 3.1415927F * -0.1F;
+   public void setupAnim(LivingEntityRenderState var1) {
+      float var2 = var1.ageInTicks * 3.1415927F * -0.1F;
 
-      for (int var8 = 0; var8 < 4; var8++) {
-         this.upperBodyParts[var8].y = -2.0F + Mth.cos(((float)(var8 * 2) + var4) * 0.25F);
-         this.upperBodyParts[var8].x = Mth.cos(var7) * 9.0F;
-         this.upperBodyParts[var8].z = Mth.sin(var7) * 9.0F;
-         var7++;
+      for (int var3 = 0; var3 < 4; var3++) {
+         this.upperBodyParts[var3].y = -2.0F + Mth.cos(((float)(var3 * 2) + var1.ageInTicks) * 0.25F);
+         this.upperBodyParts[var3].x = Mth.cos(var2) * 9.0F;
+         this.upperBodyParts[var3].z = Mth.sin(var2) * 9.0F;
+         var2++;
       }
 
-      var7 = 0.7853982F + var4 * 3.1415927F * 0.03F;
+      var2 = 0.7853982F + var1.ageInTicks * 3.1415927F * 0.03F;
 
-      for (int var11 = 4; var11 < 8; var11++) {
-         this.upperBodyParts[var11].y = 2.0F + Mth.cos(((float)(var11 * 2) + var4) * 0.25F);
-         this.upperBodyParts[var11].x = Mth.cos(var7) * 7.0F;
-         this.upperBodyParts[var11].z = Mth.sin(var7) * 7.0F;
-         var7++;
+      for (int var6 = 4; var6 < 8; var6++) {
+         this.upperBodyParts[var6].y = 2.0F + Mth.cos(((float)(var6 * 2) + var1.ageInTicks) * 0.25F);
+         this.upperBodyParts[var6].x = Mth.cos(var2) * 7.0F;
+         this.upperBodyParts[var6].z = Mth.sin(var2) * 7.0F;
+         var2++;
       }
 
-      var7 = 0.47123894F + var4 * 3.1415927F * -0.05F;
+      var2 = 0.47123894F + var1.ageInTicks * 3.1415927F * -0.05F;
 
-      for (int var12 = 8; var12 < 12; var12++) {
-         this.upperBodyParts[var12].y = 11.0F + Mth.cos(((float)var12 * 1.5F + var4) * 0.5F);
-         this.upperBodyParts[var12].x = Mth.cos(var7) * 5.0F;
-         this.upperBodyParts[var12].z = Mth.sin(var7) * 5.0F;
-         var7++;
+      for (int var7 = 8; var7 < 12; var7++) {
+         this.upperBodyParts[var7].y = 11.0F + Mth.cos(((float)var7 * 1.5F + var1.ageInTicks) * 0.5F);
+         this.upperBodyParts[var7].x = Mth.cos(var2) * 5.0F;
+         this.upperBodyParts[var7].z = Mth.sin(var2) * 5.0F;
+         var2++;
       }
 
-      this.head.yRot = var5 * 0.017453292F;
-      this.head.xRot = var6 * 0.017453292F;
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
    }
 }

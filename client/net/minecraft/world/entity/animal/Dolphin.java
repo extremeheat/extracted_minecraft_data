@@ -24,11 +24,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -59,7 +61,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 
-public class Dolphin extends WaterAnimal {
+public class Dolphin extends AgeableWaterCreature {
    private static final EntityDataAccessor<BlockPos> TREASURE_POS = SynchedEntityData.defineId(Dolphin.class, EntityDataSerializers.BLOCK_POS);
    private static final EntityDataAccessor<Boolean> GOT_FISH = SynchedEntityData.defineId(Dolphin.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Integer> MOISTNESS_LEVEL = SynchedEntityData.defineId(Dolphin.class, EntityDataSerializers.INT);
@@ -67,6 +69,7 @@ public class Dolphin extends WaterAnimal {
    public static final int TOTAL_AIR_SUPPLY = 4800;
    private static final int TOTAL_MOISTNESS_LEVEL = 2400;
    public static final Predicate<ItemEntity> ALLOWED_ITEMS = var0 -> !var0.hasPickUpDelay() && var0.isAlive() && var0.isInWater();
+   public static final float BABY_SCALE = 0.65F;
 
    public Dolphin(EntityType<? extends Dolphin> var1, Level var2) {
       super(var1, var2);
@@ -77,10 +80,20 @@ public class Dolphin extends WaterAnimal {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setAirSupply(this.getMaxAirSupply());
       this.setXRot(0.0F);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      return super.finalizeSpawn(var1, var2, var3, new AgeableMob.AgeableMobGroupData(true, 0.1F));
+   }
+
+   @Nullable
+   public Dolphin getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return EntityType.DOLPHIN.create(var1, EntitySpawnReason.BREEDING);
+   }
+
+   @Override
+   public float getAgeScale() {
+      return this.isBaby() ? 0.65F : 1.0F;
    }
 
    @Override
@@ -169,6 +182,11 @@ public class Dolphin extends WaterAnimal {
    @Override
    public void playAttackSound() {
       this.playSound(SoundEvents.DOLPHIN_ATTACK, 1.0F, 1.0F);
+   }
+
+   @Override
+   public boolean canAttack(LivingEntity var1) {
+      return !this.isBaby() && super.canAttack(var1);
    }
 
    @Override
@@ -301,7 +319,7 @@ public class Dolphin extends WaterAnimal {
 
          this.setGotFish(true);
          var3.consume(1, var1);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -341,7 +359,7 @@ public class Dolphin extends WaterAnimal {
 
    @Override
    public void travel(Vec3 var1) {
-      if (this.isEffectiveAi() && this.isInWater()) {
+      if (this.isControlledByLocalInstance() && this.isInWater()) {
          this.moveRelative(this.getSpeed(), var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));

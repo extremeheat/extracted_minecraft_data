@@ -7,25 +7,27 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.client.renderer.entity.state.SnifferRenderState;
 
-public class SnifferModel<T extends Sniffer> extends AgeableHierarchicalModel<T> {
+public class SnifferModel extends EntityModel<SnifferRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private static final float WALK_ANIMATION_SPEED_MAX = 9.0F;
    private static final float WALK_ANIMATION_SCALE_FACTOR = 100.0F;
    private final ModelPart root;
    private final ModelPart head;
 
    public SnifferModel(ModelPart var1) {
-      super(0.5F, 24.0F);
-      this.root = var1.getChild("root");
-      this.head = this.root.getChild("bone").getChild("body").getChild("head");
+      super();
+      this.root = var1;
+      this.head = var1.getChild("bone").getChild("body").getChild("head");
    }
 
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot().addOrReplaceChild("root", CubeListBuilder.create(), PartPose.offset(0.0F, 5.0F, 0.0F));
-      PartDefinition var2 = var1.addOrReplaceChild("bone", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
+      PartDefinition var1 = var0.getRoot();
+      PartDefinition var2 = var1.addOrReplaceChild("bone", CubeListBuilder.create(), PartPose.offset(0.0F, 5.0F, 0.0F));
       PartDefinition var3 = var2.addOrReplaceChild(
          "body",
          CubeListBuilder.create()
@@ -99,22 +101,22 @@ public class SnifferModel<T extends Sniffer> extends AgeableHierarchicalModel<T>
       return LayerDefinition.create(var0, 192, 192);
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
+   public void setupAnim(SnifferRenderState var1) {
       this.root().getAllParts().forEach(ModelPart::resetPose);
-      this.head.xRot = var6 * 0.017453292F;
-      this.head.yRot = var5 * 0.017453292F;
-      if (var1.isSearching()) {
-         this.animateWalk(SnifferAnimation.SNIFFER_SNIFF_SEARCH, var2, var3, 9.0F, 100.0F);
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.head.yRot = var1.yRot * 0.017453292F;
+      if (var1.isSearching) {
+         this.animateWalk(SnifferAnimation.SNIFFER_SNIFF_SEARCH, var1.walkAnimationPos, var1.walkAnimationSpeed, 9.0F, 100.0F);
       } else {
-         this.animateWalk(SnifferAnimation.SNIFFER_WALK, var2, var3, 9.0F, 100.0F);
+         this.animateWalk(SnifferAnimation.SNIFFER_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 9.0F, 100.0F);
       }
 
-      this.animate(var1.diggingAnimationState, SnifferAnimation.SNIFFER_DIG, var4);
-      this.animate(var1.sniffingAnimationState, SnifferAnimation.SNIFFER_LONGSNIFF, var4);
-      this.animate(var1.risingAnimationState, SnifferAnimation.SNIFFER_STAND_UP, var4);
-      this.animate(var1.feelingHappyAnimationState, SnifferAnimation.SNIFFER_HAPPY, var4);
-      this.animate(var1.scentingAnimationState, SnifferAnimation.SNIFFER_SNIFFSNIFF, var4);
-      if (this.young) {
+      this.animate(var1.diggingAnimationState, SnifferAnimation.SNIFFER_DIG, var1.ageInTicks);
+      this.animate(var1.sniffingAnimationState, SnifferAnimation.SNIFFER_LONGSNIFF, var1.ageInTicks);
+      this.animate(var1.risingAnimationState, SnifferAnimation.SNIFFER_STAND_UP, var1.ageInTicks);
+      this.animate(var1.feelingHappyAnimationState, SnifferAnimation.SNIFFER_HAPPY, var1.ageInTicks);
+      this.animate(var1.scentingAnimationState, SnifferAnimation.SNIFFER_SNIFFSNIFF, var1.ageInTicks);
+      if (var1.isBaby) {
          this.applyStatic(SnifferAnimation.BABY_TRANSFORM);
       }
    }

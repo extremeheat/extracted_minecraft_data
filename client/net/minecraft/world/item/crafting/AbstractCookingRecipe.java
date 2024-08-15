@@ -1,7 +1,7 @@
 package net.minecraft.world.item.crafting;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -13,6 +13,8 @@ public abstract class AbstractCookingRecipe implements Recipe<SingleRecipeInput>
    protected final ItemStack result;
    protected final float experience;
    protected final int cookingTime;
+   @Nullable
+   private PlacementInfo placementInfo;
 
    public AbstractCookingRecipe(RecipeType<?> var1, String var2, CookingBookCategory var3, Ingredient var4, ItemStack var5, float var6, int var7) {
       super();
@@ -39,10 +41,12 @@ public abstract class AbstractCookingRecipe implements Recipe<SingleRecipeInput>
    }
 
    @Override
-   public NonNullList<Ingredient> getIngredients() {
-      NonNullList var1 = NonNullList.create();
-      var1.add(this.ingredient);
-      return var1;
+   public PlacementInfo placementInfo() {
+      if (this.placementInfo == null) {
+         this.placementInfo = PlacementInfo.create(this.ingredient);
+      }
+
+      return this.placementInfo;
    }
 
    public float getExperience() {

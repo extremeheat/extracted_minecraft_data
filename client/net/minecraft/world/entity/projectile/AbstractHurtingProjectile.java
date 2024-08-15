@@ -78,7 +78,10 @@ public abstract class AbstractHurtingProjectile extends Projectile {
             this.hitTargetOrDeflectSelf(var2);
          }
 
-         this.checkInsideBlocks();
+         if (!this.level().isClientSide()) {
+            this.applyEffectsFromBlocks();
+         }
+
          Vec3 var3 = this.getDeltaMovement();
          double var4 = this.getX() + var3.x;
          double var6 = this.getY() + var3.y;

@@ -6,10 +6,13 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -44,8 +47,12 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean noCollision(@Nullable Entity var1, AABB var2) {
-      for (VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
-         if (!var4.isEmpty()) {
+      return this.noCollision(var1, var2, false);
+   }
+
+   default boolean noCollision(@Nullable Entity var1, AABB var2, boolean var3) {
+      for (VoxelShape var6 : var3 ? this.getBlockAndLiquidCollisions(var1, var2) : this.getBlockCollisions(var1, var2)) {
+         if (!var6.isEmpty()) {
             return false;
          }
       }
@@ -55,8 +62,8 @@ public interface CollisionGetter extends BlockGetter {
       } else if (var1 == null) {
          return true;
       } else {
-         VoxelShape var5 = this.borderCollision(var1, var2);
-         return var5 == null || !Shapes.joinIsNotEmpty(var5, Shapes.create(var2), BooleanOp.AND);
+         VoxelShape var7 = this.borderCollision(var1, var2);
+         return var7 == null || !Shapes.joinIsNotEmpty(var7, Shapes.create(var2), BooleanOp.AND);
       }
    }
 
@@ -82,10 +89,27 @@ public interface CollisionGetter extends BlockGetter {
       return () -> new BlockCollisions<VoxelShape>(this, var1, var2, false, (var0, var1xx) -> var1xx);
    }
 
+   default Iterable<VoxelShape> getBlockAndLiquidCollisions(@Nullable Entity var1, AABB var2) {
+      return () -> new BlockCollisions<VoxelShape>(this, CollisionContext.of(var1, true), var2, false, (var0, var1xx) -> var1xx);
+   }
+
    @Nullable
    private VoxelShape borderCollision(Entity var1, AABB var2) {
       WorldBorder var3 = this.getWorldBorder();
       return var3.isInsideCloseToBorder(var1, var2) ? var3.getCollisionShape() : null;
+   }
+
+   default HitResult clipIncludingBorder(ClipContext var1) {
+      BlockHitResult var2 = this.clip(var1);
+      WorldBorder var3 = this.getWorldBorder();
+      if (var3.isWithinBounds(var1.getFrom()) && !var3.isWithinBounds(var2.getLocation())) {
+         Vec3 var4 = var2.getLocation().subtract(var1.getFrom());
+         Direction var5 = Direction.getApproximateNearest(var4.x, var4.y, var4.z);
+         Vec3 var6 = var3.clampVec3ToBound(var2.getLocation());
+         return new BlockHitResult(var6, var5, BlockPos.containing(var6), false);
+      } else {
+         return var2;
+      }
    }
 
    default boolean collidesWithSuffocatingBlock(@Nullable Entity var1, AABB var2) {

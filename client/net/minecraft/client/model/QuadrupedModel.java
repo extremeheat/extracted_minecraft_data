@@ -1,16 +1,16 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class QuadrupedModel<T extends Entity> extends AgeableListModel<T> {
+public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityModel<T> {
+   protected final ModelPart root;
    protected final ModelPart head;
    protected final ModelPart body;
    protected final ModelPart rightHindLeg;
@@ -18,8 +18,9 @@ public class QuadrupedModel<T extends Entity> extends AgeableListModel<T> {
    protected final ModelPart rightFrontLeg;
    protected final ModelPart leftFrontLeg;
 
-   protected QuadrupedModel(ModelPart var1, boolean var2, float var3, float var4, float var5, float var6, int var7) {
-      super(var2, var3, var4, var5, var6, (float)var7);
+   protected QuadrupedModel(ModelPart var1) {
+      super();
+      this.root = var1;
       this.head = var1.getChild("head");
       this.body = var1.getChild("body");
       this.rightHindLeg = var1.getChild("right_hind_leg");
@@ -47,23 +48,19 @@ public class QuadrupedModel<T extends Entity> extends AgeableListModel<T> {
       return var2;
    }
 
-   @Override
-   protected Iterable<ModelPart> headParts() {
-      return ImmutableList.of(this.head);
-   }
-
-   @Override
-   protected Iterable<ModelPart> bodyParts() {
-      return ImmutableList.of(this.body, this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg);
-   }
-
-   @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.xRot = var6 * 0.017453292F;
-      this.head.yRot = var5 * 0.017453292F;
+   public void setupAnim(T var1) {
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.head.yRot = var1.yRot * 0.017453292F;
+      float var2 = var1.walkAnimationPos;
+      float var3 = var1.walkAnimationSpeed;
       this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
       this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
       this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
       this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
+   }
+
+   @Override
+   public ModelPart root() {
+      return this.root;
    }
 }

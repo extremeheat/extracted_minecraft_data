@@ -118,9 +118,7 @@ public class FlatLevelSource extends ChunkGenerator {
    }
 
    @Override
-   public void applyCarvers(
-      WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7, GenerationStep.Carving var8
-   ) {
+   public void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7) {
    }
 
    @Override

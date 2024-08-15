@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.core.Holder;
@@ -78,9 +79,9 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
 
       for (MobEffectInstance var8 : var4) {
          if (var5) {
-            var1.blitSprite(EFFECT_BACKGROUND_LARGE_SPRITE, var2, var6, 120, 32);
+            var1.blitSprite(RenderType::guiTextured, EFFECT_BACKGROUND_LARGE_SPRITE, var2, var6, 120, 32);
          } else {
-            var1.blitSprite(EFFECT_BACKGROUND_SMALL_SPRITE, var2, var6, 32, 32);
+            var1.blitSprite(RenderType::guiTextured, EFFECT_BACKGROUND_SMALL_SPRITE, var2, var6, 32, 32);
          }
 
          var6 += var3;
@@ -94,7 +95,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
       for (MobEffectInstance var9 : var4) {
          Holder var10 = var9.getEffect();
          TextureAtlasSprite var11 = var6.get(var10);
-         var1.blit(var2 + (var5 ? 6 : 7), var7 + 7, 0, 18, 18, var11);
+         var1.blitSprite(RenderType::guiTextured, var11, var2 + (var5 ? 6 : 7), var7 + 7, 18, 18);
          var7 += var3;
       }
    }

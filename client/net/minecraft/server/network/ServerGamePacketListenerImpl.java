@@ -65,13 +65,13 @@ import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
 import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundCommandSuggestionsPacket;
-import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundDisguisedChatPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveVehiclePacket;
+import net.minecraft.network.protocol.game.ClientboundPlaceGhostRecipePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
-import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundStartConfigurationPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ClientboundTagQueryPacket;
@@ -86,6 +86,7 @@ import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.network.protocol.game.ServerboundChatSessionUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundChunkBatchReceivedPacket;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
+import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
 import net.minecraft.network.protocol.game.ServerboundConfigurationAcknowledgedPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
@@ -111,6 +112,7 @@ import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPa
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
+import net.minecraft.network.protocol.game.ServerboundSelectBundleItemPacket;
 import net.minecraft.network.protocol.game.ServerboundSelectTradePacket;
 import net.minecraft.network.protocol.game.ServerboundSetBeaconPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
@@ -151,6 +153,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.BeaconMenu;
@@ -231,6 +234,7 @@ public class ServerGamePacketListenerImpl
    private int aboveGroundVehicleTickCount;
    private int receivedMovePacketCount;
    private int knownMovePacketCount;
+   private boolean receivedMovementThisTick;
    @Nullable
    private RemoteChatSession chatSession;
    private SignedMessageChain.Decoder signedMessageDecoder;
@@ -372,8 +376,11 @@ public class ServerGamePacketListenerImpl
 
    @Override
    public void handlePlayerInput(ServerboundPlayerInputPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      this.player.setPlayerInput(var1.getXxa(), var1.getZza(), var1.isJumping(), var1.isShiftKeyDown());
+      if (this.player.isPassenger()
+         && this.player.getVehicle() instanceof AbstractMinecart var2
+         && ((double)var1.getXxa() != 0.0 || (double)var1.getZza() != 0.0)) {
+         var2.setPassengerMoveIntentFromInput(this.player, new Vec3((double)var1.getXxa(), 0.0, (double)var1.getZza()));
+      }
    }
 
    private static boolean containsInvalidValues(double var0, double var2, double var4, float var6, float var7) {
@@ -455,7 +462,7 @@ public class ServerGamePacketListenerImpl
 
             this.player.serverLevel().getChunkSource().move(this.player);
             Vec3 var34 = new Vec3(var2.getX() - var4, var2.getY() - var6, var2.getZ() - var8);
-            this.player.setKnownMovement(var34);
+            this.handlePlayerKnownMovement(var34);
             this.player.checkMovementStatistics(var34.x, var34.y, var34.z);
             this.clientVehicleIsFloating = var20 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isNoGravity() && this.noBlocksAround(var2);
             this.vehicleLastGoodX = var2.getX();
@@ -501,6 +508,11 @@ public class ServerGamePacketListenerImpl
    public void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.server.getRecipeManager().byKey(var1.getRecipe()).ifPresent(this.player.getRecipeBook()::removeHighlight);
+   }
+
+   @Override
+   public void handleBundleItemSelectedPacket(ServerboundSelectBundleItemPacket var1) {
+      this.player.containerMenu.setSelectedBundleItemIndex(var1.slotId(), var1.selectedItemIndex());
    }
 
    @Override
@@ -617,15 +629,10 @@ public class ServerGamePacketListenerImpl
    public void handlePickItem(ServerboundPickItemPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.getInventory().pickSlot(var1.getSlot());
-      this.player
-         .connection
-         .send(
-            new ClientboundContainerSetSlotPacket(
-               -2, 0, this.player.getInventory().selected, this.player.getInventory().getItem(this.player.getInventory().selected)
-            )
-         );
-      this.player.connection.send(new ClientboundContainerSetSlotPacket(-2, 0, var1.getSlot(), this.player.getInventory().getItem(var1.getSlot())));
-      this.player.connection.send(new ClientboundSetCarriedItemPacket(this.player.getInventory().selected));
+      int var2 = this.player.getInventory().selected;
+      this.player.connection.send(this.player.getInventory().createInventoryUpdatePacket(var2));
+      this.player.connection.send(this.player.getInventory().createInventoryUpdatePacket(var1.getSlot()));
+      this.player.connection.send(new ClientboundSetHeldSlotPacket(var2));
    }
 
    @Override
@@ -924,9 +931,9 @@ public class ServerGamePacketListenerImpl
                            && this.noBlocksAround(this.player);
                         this.player.serverLevel().getChunkSource().move(this.player);
                         Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
-                        this.player.setOnGroundWithMovement(var1.isOnGround(), var35);
+                        this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
                         this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
-                        this.player.setKnownMovement(var35);
+                        this.handlePlayerKnownMovement(var35);
                         if (var44) {
                            this.player.resetFallDistance();
                         }
@@ -1083,15 +1090,15 @@ public class ServerGamePacketListenerImpl
                      }
 
                      if (var11 == Direction.UP && !var13.consumesAction() && var7.getY() >= var12 - 1 && wasBlockPlacementAttempt(this.player, var4)) {
-                        MutableComponent var14 = Component.translatable("build.tooHigh", var12 - 1).withStyle(ChatFormatting.RED);
-                        this.player.sendSystemMessage(var14, true);
-                     } else if (var13.shouldSwing()) {
+                        MutableComponent var15 = Component.translatable("build.tooHigh", var12 - 1).withStyle(ChatFormatting.RED);
+                        this.player.sendSystemMessage(var15, true);
+                     } else if (var13 instanceof InteractionResult.Success var14 && var14.swingSource() == InteractionResult.SwingSource.SERVER) {
                         this.player.swing(var3, true);
                      }
                   }
                } else {
-                  MutableComponent var15 = Component.translatable("build.tooHigh", var12 - 1).withStyle(ChatFormatting.RED);
-                  this.player.sendSystemMessage(var15, true);
+                  MutableComponent var16 = Component.translatable("build.tooHigh", var12 - 1).withStyle(ChatFormatting.RED);
+                  this.player.sendSystemMessage(var16, true);
                }
 
                this.player.connection.send(new ClientboundBlockUpdatePacket(var2, var7));
@@ -1121,8 +1128,8 @@ public class ServerGamePacketListenerImpl
             this.player.absRotateTo(var5, var6);
          }
 
-         InteractionResult var7 = this.player.gameMode.useItem(this.player, var2, var4, var3);
-         if (var7.shouldSwing()) {
+         if (this.player.gameMode.useItem(this.player, var2, var4, var3) instanceof InteractionResult.Success var8
+            && var8.swingSource() == InteractionResult.SwingSource.SERVER) {
             this.player.swing(var3, true);
          }
       }
@@ -1135,7 +1142,7 @@ public class ServerGamePacketListenerImpl
          for (ServerLevel var3 : this.server.getAllLevels()) {
             Entity var4 = var1.getEntity(var3);
             if (var4 != null) {
-               this.player.teleportTo(var3, var4.getX(), var4.getY(), var4.getZ(), var4.getYRot(), var4.getXRot());
+               this.player.teleportTo(var3, var4.getX(), var4.getY(), var4.getZ(), var4.getYRot(), var4.getXRot(), true);
                return;
             }
          }
@@ -1509,11 +1516,10 @@ public class ServerGamePacketListenerImpl
                      ItemStack var3x = ServerGamePacketListenerImpl.this.player.getItemInHand(var1);
                      if (var3x.isItemEnabled(var2.enabledFeatures())) {
                         ItemStack var4 = var3x.copy();
-                        InteractionResult var5 = var2x.run(ServerGamePacketListenerImpl.this.player, var3, var1);
-                        if (var5.consumesAction()) {
-                           CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY
-                              .trigger(ServerGamePacketListenerImpl.this.player, var5.indicateItemUse() ? var4 : ItemStack.EMPTY, var3);
-                           if (var5.shouldSwing()) {
+                        if (var2x.run(ServerGamePacketListenerImpl.this.player, var3, var1) instanceof InteractionResult.Success var6) {
+                           ItemStack var7 = var6.wasItemInteraction() ? var4 : ItemStack.EMPTY;
+                           CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(ServerGamePacketListenerImpl.this.player, var7, var3);
+                           if (var6.swingSource() == InteractionResult.SwingSource.SERVER) {
                               ServerGamePacketListenerImpl.this.player.swing(var1, true);
                            }
                         }
@@ -1634,14 +1640,29 @@ public class ServerGamePacketListenerImpl
    public void handlePlaceRecipe(ServerboundPlaceRecipePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
-      if (!this.player.isSpectator() && this.player.containerMenu.containerId == var1.getContainerId() && this.player.containerMenu instanceof RecipeBookMenu) {
+      if (!this.player.isSpectator() && this.player.containerMenu.containerId == var1.getContainerId()) {
          if (!this.player.containerMenu.stillValid(this.player)) {
             LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
-         } else {
-            this.server
-               .getRecipeManager()
-               .byKey(var1.getRecipe())
-               .ifPresent(var2 -> ((RecipeBookMenu)this.player.containerMenu).handlePlacement(var1.isShiftDown(), (RecipeHolder<?>)var2, this.player));
+         } else if (this.player.getRecipeBook().contains(var1.getRecipe())) {
+            if (this.player.containerMenu instanceof RecipeBookMenu var2) {
+               this.server
+                  .getRecipeManager()
+                  .byKey(var1.getRecipe())
+                  .ifPresent(
+                     var3 -> {
+                        if (var3.value().placementInfo().isImpossibleToPlace()) {
+                           LOGGER.debug("Player {} tried to place impossible recipe {}", this.player, var3.id());
+                        } else {
+                           RecipeBookMenu.PostPlaceAction var4 = var2.handlePlacement(
+                              var1.isUseMaxItems(), this.player.isCreative(), (RecipeHolder<?>)var3, this.player.getInventory()
+                           );
+                           if (var4 == RecipeBookMenu.PostPlaceAction.PLACE_GHOST_RECIPE) {
+                              this.player.connection.send(new ClientboundPlaceGhostRecipePacket(this.player.containerMenu.containerId, (RecipeHolder<?>)var3));
+                           }
+                        }
+                     }
+                  );
+            }
          }
       }
    }
@@ -1811,6 +1832,22 @@ public class ServerGamePacketListenerImpl
 
    @Override
    public void handleCustomPayload(ServerboundCustomPayloadPacket var1) {
+   }
+
+   @Override
+   public void handleClientTickEnd(ServerboundClientTickEndPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      if (!this.receivedMovementThisTick) {
+         this.player.setKnownMovement(Vec3.ZERO);
+      }
+
+      this.receivedMovementThisTick = false;
+   }
+
+   private void handlePlayerKnownMovement(Vec3 var1) {
+      this.player.setKnownMovement(var1);
+      this.player.resetLastActionTime();
+      this.receivedMovementThisTick = true;
    }
 
    @Override

@@ -848,7 +848,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    @Nullable
-   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable Player var3, BlockPos var4, MobSpawnType var5, boolean var6, boolean var7) {
+   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable Player var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
       Consumer var8;
       if (var2 != null) {
          var8 = createDefaultStackConfig(var1, var2, var3);
@@ -880,12 +880,12 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    @Nullable
-   public T spawn(ServerLevel var1, BlockPos var2, MobSpawnType var3) {
+   public T spawn(ServerLevel var1, BlockPos var2, EntitySpawnReason var3) {
       return this.spawn(var1, null, var2, var3, false, false);
    }
 
    @Nullable
-   public T spawn(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, MobSpawnType var4, boolean var5, boolean var6) {
+   public T spawn(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
       Entity var7 = this.create(var1, var2, var3, var4, var5, var6);
       if (var7 != null) {
          var1.addFreshEntityWithPassengers(var7);
@@ -895,8 +895,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    @Nullable
-   public T create(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, MobSpawnType var4, boolean var5, boolean var6) {
-      Entity var7 = this.create(var1);
+   public T create(ServerLevel var1, @Nullable Consumer<T> var2, BlockPos var3, EntitySpawnReason var4, boolean var5, boolean var6) {
+      Entity var7 = this.create(var1, var4);
       if (var7 == null) {
          return null;
       } else {
@@ -1012,13 +1012,13 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    @Nullable
-   public T create(Level var1) {
+   public T create(Level var1, EntitySpawnReason var2) {
       return !this.isEnabled(var1.enabledFeatures()) ? null : this.factory.create(this, var1);
    }
 
-   public static Optional<Entity> create(CompoundTag var0, Level var1) {
+   public static Optional<Entity> create(CompoundTag var0, Level var1, EntitySpawnReason var2) {
       return Util.ifElse(
-         by(var0).map(var1x -> var1x.create(var1)), var1x -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getString("id"))
+         by(var0).map(var2x -> var2x.create(var1, var2)), var1x -> var1x.load(var0), () -> LOGGER.warn("Skipping Entity with id {}", var0.getString("id"))
       );
    }
 
@@ -1047,29 +1047,29 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    @Nullable
-   public static Entity loadEntityRecursive(CompoundTag var0, Level var1, Function<Entity, Entity> var2) {
-      return loadStaticEntity(var0, var1).<Entity>map(var2).map(var3 -> {
+   public static Entity loadEntityRecursive(CompoundTag var0, Level var1, EntitySpawnReason var2, Function<Entity, Entity> var3) {
+      return loadStaticEntity(var0, var1, var2).<Entity>map(var3).map(var4 -> {
          if (var0.contains("Passengers", 9)) {
-            ListTag var4 = var0.getList("Passengers", 10);
+            ListTag var5 = var0.getList("Passengers", 10);
 
-            for (int var5 = 0; var5 < var4.size(); var5++) {
-               Entity var6 = loadEntityRecursive(var4.getCompound(var5), var1, var2);
-               if (var6 != null) {
-                  var6.startRiding(var3, true);
+            for (int var6 = 0; var6 < var5.size(); var6++) {
+               Entity var7 = loadEntityRecursive(var5.getCompound(var6), var1, var2, var3);
+               if (var7 != null) {
+                  var7.startRiding(var4, true);
                }
             }
          }
 
-         return (Entity)var3;
+         return (Entity)var4;
       }).orElse(null);
    }
 
-   public static Stream<Entity> loadEntitiesRecursive(final List<? extends Tag> var0, final Level var1) {
-      final Spliterator var2 = var0.spliterator();
+   public static Stream<Entity> loadEntitiesRecursive(final List<? extends Tag> var0, final Level var1, final EntitySpawnReason var2) {
+      final Spliterator var3 = var0.spliterator();
       return StreamSupport.stream(new Spliterator<Entity>() {
          @Override
          public boolean tryAdvance(Consumer<? super Entity> var1x) {
-            return var2.tryAdvance(var2xx -> EntityType.loadEntityRecursive((CompoundTag)var2xx, var1, var1xxxxx -> {
+            return var3.tryAdvance(var3xx -> EntityType.loadEntityRecursive((CompoundTag)var3xx, var1, var2, var1xxxxx -> {
                   var1x.accept(var1xxxxx);
                   return var1xxxxx;
                }));
@@ -1092,11 +1092,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       }, false);
    }
 
-   private static Optional<Entity> loadStaticEntity(CompoundTag var0, Level var1) {
+   private static Optional<Entity> loadStaticEntity(CompoundTag var0, Level var1, EntitySpawnReason var2) {
       try {
-         return create(var0, var1);
-      } catch (RuntimeException var3) {
-         LOGGER.warn("Exception loading entity: ", var3);
+         return create(var0, var1, var2);
+      } catch (RuntimeException var4) {
+         LOGGER.warn("Exception loading entity: ", var4);
          return Optional.empty();
       }
    }

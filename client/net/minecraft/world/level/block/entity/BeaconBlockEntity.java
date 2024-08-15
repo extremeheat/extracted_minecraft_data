@@ -24,7 +24,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
@@ -145,12 +145,12 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
                if (var14 == var8.color) {
                   var8.increaseHeight();
                } else {
-                  var8 = new BeaconBlockEntity.BeaconBeamSection(FastColor.ARGB32.average(var8.color, var14));
+                  var8 = new BeaconBlockEntity.BeaconBeamSection(ARGB.average(var8.color, var14));
                   var3.checkingBeamSections.add(var8);
                }
             }
          } else {
-            if (var8 == null || var11.getLightBlock(var0, var7) >= 15 && !var11.is(Blocks.BEDROCK)) {
+            if (var8 == null || var11.getLightBlock() >= 15 && !var11.is(Blocks.BEDROCK)) {
                var3.checkingBeamSections.clear();
                var3.lastCheckY = var9;
                break;

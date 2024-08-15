@@ -29,7 +29,7 @@ public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketL
 
    private ClientboundMerchantOffersPacket(RegistryFriendlyByteBuf var1) {
       super();
-      this.containerId = var1.readVarInt();
+      this.containerId = var1.readContainerId();
       this.offers = MerchantOffers.STREAM_CODEC.decode(var1);
       this.villagerLevel = var1.readVarInt();
       this.villagerXp = var1.readVarInt();
@@ -38,7 +38,7 @@ public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketL
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeVarInt(this.containerId);
+      var1.writeContainerId(this.containerId);
       MerchantOffers.STREAM_CODEC.encode(var1, this.offers);
       var1.writeVarInt(this.villagerLevel);
       var1.writeVarInt(this.villagerXp);

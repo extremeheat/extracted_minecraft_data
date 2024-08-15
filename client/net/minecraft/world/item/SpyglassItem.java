@@ -3,7 +3,7 @@ package net.minecraft.world.item;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -27,7 +27,7 @@ public class SpyglassItem extends Item {
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       var2.playSound(SoundEvents.SPYGLASS_USE, 1.0F, 1.0F);
       var2.awardStat(Stats.ITEM_USED.get(this));
       return ItemUtils.startUsingInstantly(var1, var2, var3);

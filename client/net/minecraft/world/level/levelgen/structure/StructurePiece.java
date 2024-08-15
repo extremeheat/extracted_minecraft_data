@@ -371,7 +371,7 @@ public abstract class StructurePiece {
             return var2;
          }
 
-         if (var7.isSolidRender(var0, var6)) {
+         if (var7.isSolidRender()) {
             if (var3 != null) {
                var3 = null;
                break;
@@ -386,17 +386,17 @@ public abstract class StructurePiece {
       } else {
          Direction var8 = var2.getValue(HorizontalDirectionalBlock.FACING);
          BlockPos var9 = var1.relative(var8);
-         if (var0.getBlockState(var9).isSolidRender(var0, var9)) {
+         if (var0.getBlockState(var9).isSolidRender()) {
             var8 = var8.getOpposite();
             var9 = var1.relative(var8);
          }
 
-         if (var0.getBlockState(var9).isSolidRender(var0, var9)) {
+         if (var0.getBlockState(var9).isSolidRender()) {
             var8 = var8.getClockWise();
             var9 = var1.relative(var8);
          }
 
-         if (var0.getBlockState(var9).isSolidRender(var0, var9)) {
+         if (var0.getBlockState(var9).isSolidRender()) {
             var8 = var8.getOpposite();
             var9 = var1.relative(var8);
          }

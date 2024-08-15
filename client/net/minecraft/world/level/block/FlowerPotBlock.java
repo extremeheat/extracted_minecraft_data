@@ -10,7 +10,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -53,19 +52,19 @@ public class FlowerPotBlock extends Block {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       BlockState var8 = (var1.getItem() instanceof BlockItem var9 ? POTTED_BY_CONTENT.getOrDefault(var9.getBlock(), Blocks.AIR) : Blocks.AIR)
          .defaultBlockState();
       if (var8.isAir()) {
-         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else if (!this.isEmpty()) {
-         return ItemInteractionResult.CONSUME;
+         return InteractionResult.CONSUME;
       } else {
          var3.setBlock(var4, var8, 3);
          var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);
          var5.awardStat(Stats.POT_FLOWER);
          var1.consume(1, var5);
-         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -81,7 +80,7 @@ public class FlowerPotBlock extends Block {
 
          var2.setBlock(var3, Blocks.FLOWER_POT.defaultBlockState(), 3);
          var2.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 

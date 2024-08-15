@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,18 +33,18 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    }
 
    @Override
-   public void neighborChanged(BlockPos var1, Block var2, BlockPos var3) {
-      this.addAndRun(var1, new CollectingNeighborUpdater.SimpleNeighborUpdate(var1, var2, var3.immutable()));
+   public void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3) {
+      this.addAndRun(var1, new CollectingNeighborUpdater.SimpleNeighborUpdate(var1, var2, var3));
    }
 
    @Override
-   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
-      this.addAndRun(var2, new CollectingNeighborUpdater.FullNeighborUpdate(var1, var2.immutable(), var3, var4.immutable(), var5));
+   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
+      this.addAndRun(var2, new CollectingNeighborUpdater.FullNeighborUpdate(var1, var2.immutable(), var3, var4, var5));
    }
 
    @Override
-   public void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3) {
-      this.addAndRun(var1, new CollectingNeighborUpdater.MultiNeighborUpdate(var1.immutable(), var2, var3));
+   public void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3, @Nullable Orientation var4) {
+      this.addAndRun(var1, new CollectingNeighborUpdater.MultiNeighborUpdate(var1.immutable(), var2, var4, var3));
    }
 
    private void addAndRun(BlockPos var1, CollectingNeighborUpdater.NeighborUpdates var2) {
@@ -106,24 +107,37 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       private final BlockPos sourcePos;
       private final Block sourceBlock;
       @Nullable
+      private Orientation orientation;
+      @Nullable
       private final Direction skipDirection;
       private int idx = 0;
 
-      MultiNeighborUpdate(BlockPos var1, Block var2, @Nullable Direction var3) {
+      MultiNeighborUpdate(BlockPos var1, Block var2, @Nullable Orientation var3, @Nullable Direction var4) {
          super();
          this.sourcePos = var1;
          this.sourceBlock = var2;
-         this.skipDirection = var3;
-         if (NeighborUpdater.UPDATE_ORDER[this.idx] == var3) {
+         this.orientation = var3;
+         this.skipDirection = var4;
+         if (NeighborUpdater.UPDATE_ORDER[this.idx] == var4) {
             this.idx++;
          }
       }
 
       @Override
       public boolean runNext(Level var1) {
-         BlockPos var2 = this.sourcePos.relative(NeighborUpdater.UPDATE_ORDER[this.idx++]);
-         BlockState var3 = var1.getBlockState(var2);
-         NeighborUpdater.executeUpdate(var1, var3, var2, this.sourceBlock, this.sourcePos, false);
+         Direction var2 = NeighborUpdater.UPDATE_ORDER[this.idx++];
+         BlockPos var3 = this.sourcePos.relative(var2);
+         BlockState var4 = var1.getBlockState(var3);
+         Orientation var5 = null;
+         if (var1.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS)) {
+            if (this.orientation == null) {
+               this.orientation = ExperimentalRedstoneUtils.randomOrientation(var1, this.skipDirection == null ? null : this.skipDirection.getOpposite(), null);
+            }
+
+            var5 = this.orientation.withFront(var2);
+         }
+
+         NeighborUpdater.executeUpdate(var1, var4, var3, this.sourceBlock, var5, false);
          if (this.idx < NeighborUpdater.UPDATE_ORDER.length && NeighborUpdater.UPDATE_ORDER[this.idx] == this.skipDirection) {
             this.idx++;
          }

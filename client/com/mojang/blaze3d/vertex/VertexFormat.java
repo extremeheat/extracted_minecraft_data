@@ -110,14 +110,7 @@ public class VertexFormat {
    }
 
    public void setupBufferState() {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(this::_setupBufferState);
-      } else {
-         this._setupBufferState();
-      }
-   }
-
-   private void _setupBufferState() {
+      RenderSystem.assertOnRenderThread();
       int var1 = this.getVertexSize();
 
       for (int var2 = 0; var2 < this.elements.size(); var2++) {
@@ -128,14 +121,8 @@ public class VertexFormat {
    }
 
    public void clearBufferState() {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(this::_clearBufferState);
-      } else {
-         this._clearBufferState();
-      }
-   }
+      RenderSystem.assertOnRenderThread();
 
-   private void _clearBufferState() {
       for (int var1 = 0; var1 < this.elements.size(); var1++) {
          GlStateManager._disableVertexAttribArray(var1);
       }

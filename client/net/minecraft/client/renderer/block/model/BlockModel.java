@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -15,20 +14,14 @@ import com.google.gson.JsonParseException;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import java.io.Reader;
-import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -37,9 +30,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.BuiltInModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.SimpleBakedModel;
+import net.minecraft.client.resources.model.SpecialModels;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -80,10 +73,6 @@ public class BlockModel implements UnbakedModel {
 
    public static BlockModel fromStream(Reader var0) {
       return GsonHelper.fromJson(GSON, var0, BlockModel.class);
-   }
-
-   public static BlockModel fromString(String var0) {
-      return fromStream(new StringReader(var0));
    }
 
    public BlockModel(
@@ -133,62 +122,23 @@ public class BlockModel implements UnbakedModel {
       return this.overrides;
    }
 
-   private ItemOverrides getItemOverrides(ModelBaker var1, BlockModel var2) {
+   private ItemOverrides bakeItemOverrides(ModelBaker var1, BlockModel var2) {
       return this.overrides.isEmpty() ? ItemOverrides.EMPTY : new ItemOverrides(var1, var2, this.overrides);
    }
 
    @Override
-   public Collection<ResourceLocation> getDependencies() {
-      HashSet var1 = Sets.newHashSet();
-
-      for (ItemOverride var3 : this.overrides) {
-         var1.add(var3.getModel());
-      }
-
+   public void resolveDependencies(UnbakedModel.Resolver var1, UnbakedModel.ResolutionContext var2) {
       if (this.parentLocation != null) {
-         var1.add(this.parentLocation);
-      }
-
-      return var1;
-   }
-
-   @Override
-   public void resolveParents(Function<ResourceLocation, UnbakedModel> var1) {
-      LinkedHashSet var2 = Sets.newLinkedHashSet();
-
-      for (BlockModel var3 = this; var3.parentLocation != null && var3.parent == null; var3 = var3.parent) {
-         var2.add(var3);
-         UnbakedModel var4 = (UnbakedModel)var1.apply(var3.parentLocation);
-         if (var4 == null) {
-            LOGGER.warn("No parent '{}' while loading model '{}'", this.parentLocation, var3);
-         }
-
-         if (var2.contains(var4)) {
-            LOGGER.warn(
-               "Found 'parent' loop while loading model '{}' in chain: {} -> {}",
-               new Object[]{var3, var2.stream().map(Object::toString).collect(Collectors.joining(" -> ")), this.parentLocation}
-            );
-            var4 = null;
-         }
-
-         if (var4 == null) {
-            var3.parentLocation = ModelBakery.MISSING_MODEL_LOCATION;
-            var4 = (UnbakedModel)var1.apply(var3.parentLocation);
-         }
-
-         if (!(var4 instanceof BlockModel)) {
+         if (!(var1.resolve(this.parentLocation) instanceof BlockModel var4)) {
             throw new IllegalStateException("BlockModel parent has to be a block model.");
          }
 
-         var3.parent = (BlockModel)var4;
+         this.parent = var4;
       }
 
-      this.overrides.forEach(var2x -> {
-         UnbakedModel var3x = (UnbakedModel)var1.apply(var2x.getModel());
-         if (!Objects.equals(var3x, this)) {
-            var3x.resolveParents(var1);
-         }
-      });
+      if (var2 != UnbakedModel.ResolutionContext.OVERRIDE) {
+         this.overrides.forEach(var1x -> var1.resolveForOverride(var1x.getModel()));
+      }
    }
 
    @Override
@@ -198,10 +148,10 @@ public class BlockModel implements UnbakedModel {
 
    public BakedModel bake(ModelBaker var1, BlockModel var2, Function<Material, TextureAtlasSprite> var3, ModelState var4, boolean var5) {
       TextureAtlasSprite var6 = (TextureAtlasSprite)var3.apply(this.getMaterial("particle"));
-      if (this.getRootModel() == ModelBakery.BLOCK_ENTITY_MARKER) {
-         return new BuiltInModel(this.getTransforms(), this.getItemOverrides(var1, var2), var6, this.getGuiLight().lightLikeBlock());
+      if (this.getRootModel() == SpecialModels.BLOCK_ENTITY_MARKER) {
+         return new BuiltInModel(this.getTransforms(), this.bakeItemOverrides(var1, var2), var6, this.getGuiLight().lightLikeBlock());
       } else {
-         SimpleBakedModel.Builder var7 = new SimpleBakedModel.Builder(this, this.getItemOverrides(var1, var2), var5).particle(var6);
+         SimpleBakedModel.Builder var7 = new SimpleBakedModel.Builder(this, this.bakeItemOverrides(var1, var2), var5).particle(var6);
 
          for (BlockElement var9 : this.getElements()) {
             for (Direction var11 : var9.faces.keySet()) {
@@ -220,7 +170,7 @@ public class BlockModel implements UnbakedModel {
    }
 
    private static BakedQuad bakeFace(BlockElement var0, BlockElementFace var1, TextureAtlasSprite var2, Direction var3, ModelState var4) {
-      return FACE_BAKERY.bakeQuad(var0.from, var0.to, var1, var2, var3, var4, var0.rotation, var0.shade);
+      return FACE_BAKERY.bakeQuad(var0.from, var0.to, var1, var2, var3, var4, var0.rotation, var0.shade, var0.lightEmission);
    }
 
    public boolean hasTexture(String var1) {

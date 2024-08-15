@@ -13,8 +13,8 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -37,10 +37,12 @@ public class ZombieHorse extends AbstractHorse {
       return createBaseHorseAttributes().add(Attributes.MAX_HEALTH, 15.0).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
    }
 
-   public static boolean checkZombieHorseSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
-      return !MobSpawnType.isSpawner(var2)
+   public static boolean checkZombieHorseSpawnRules(
+      EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4
+   ) {
+      return !EntitySpawnReason.isSpawner(var2)
          ? Animal.checkAnimalSpawnRules(var0, var1, var2, var3, var4)
-         : MobSpawnType.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
+         : EntitySpawnReason.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
    }
 
    @Override
@@ -66,12 +68,12 @@ public class ZombieHorse extends AbstractHorse {
    @Nullable
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.ZOMBIE_HORSE.create(var1);
+      return EntityType.ZOMBIE_HORSE.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      return !this.isTamed() ? InteractionResult.PASS : super.mobInteract(var1, var2);
+      return (InteractionResult)(!this.isTamed() ? InteractionResult.PASS : super.mobInteract(var1, var2));
    }
 
    @Override

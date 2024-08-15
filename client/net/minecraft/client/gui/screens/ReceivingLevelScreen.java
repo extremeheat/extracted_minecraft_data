@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
@@ -22,7 +23,7 @@ public class ReceivingLevelScreen extends Screen {
       super(GameNarrator.NO_TITLE);
       this.levelReceived = var1;
       this.reason = var2;
-      this.createdAt = System.currentTimeMillis();
+      this.createdAt = Util.getMillis();
    }
 
    @Override
@@ -38,21 +39,21 @@ public class ReceivingLevelScreen extends Screen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, DOWNLOADING_TERRAIN_TEXT, this.width / 2, this.height / 2 - 50, 16777215);
+      var1.drawCenteredString(this.font, DOWNLOADING_TERRAIN_TEXT, this.width / 2, this.height / 2 - 50, -1);
    }
 
    @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       switch (this.reason) {
          case NETHER_PORTAL:
-            var1.blit(0, 0, -90, var1.guiWidth(), var1.guiHeight(), this.getNetherPortalSprite());
+            var1.blitSprite(RenderType::guiOpaqueTexturedBackground, this.getNetherPortalSprite(), 0, 0, var1.guiWidth(), var1.guiHeight());
             break;
          case END_PORTAL:
             var1.fillRenderType(RenderType.endPortal(), 0, 0, this.width, this.height, 0);
             break;
          case OTHER:
             this.renderPanorama(var1, var4);
-            this.renderBlurredBackground(var4);
+            this.renderBlurredBackground();
             this.renderMenuBackground(var1);
       }
    }
@@ -68,7 +69,7 @@ public class ReceivingLevelScreen extends Screen {
 
    @Override
    public void tick() {
-      if (this.levelReceived.getAsBoolean() || System.currentTimeMillis() > this.createdAt + 30000L) {
+      if (this.levelReceived.getAsBoolean() || Util.getMillis() > this.createdAt + 30000L) {
          this.onClose();
       }
    }

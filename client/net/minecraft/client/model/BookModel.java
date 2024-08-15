@@ -1,7 +1,5 @@
 package net.minecraft.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -55,15 +53,6 @@ public class BookModel extends Model {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      this.render(var1, var2, var3, var4, var5);
-   }
-
-   public void render(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      this.root.render(var1, var2, var3, var4, var5);
-   }
-
    public void setupAnim(float var1, float var2, float var3, float var4) {
       float var5 = (Mth.sin(var1 * 0.02F) * 0.1F + 1.25F) * var4;
       this.leftLid.yRot = 3.1415927F + var5;
@@ -76,5 +65,10 @@ public class BookModel extends Model {
       this.rightPages.x = Mth.sin(var5);
       this.flipPage1.x = Mth.sin(var5);
       this.flipPage2.x = Mth.sin(var5);
+   }
+
+   @Override
+   public ModelPart root() {
+      return this.root;
    }
 }

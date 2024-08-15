@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -66,27 +67,40 @@ public class OminousItemSpawner extends Entity {
    }
 
    private void spawnItem() {
-      Level var1 = this.level();
-      ItemStack var2 = this.getItem();
-      if (!var2.isEmpty()) {
-         Object var3;
-         if (var2.getItem() instanceof ProjectileItem var4) {
-            Direction var8 = Direction.DOWN;
-            Projectile var6 = var4.asProjectile(var1, this.position(), var2, var8);
-            var6.setOwner(this);
-            ProjectileItem.DispenseConfig var7 = var4.createDispenseConfig();
-            var4.shoot(var6, (double)var8.getStepX(), (double)var8.getStepY(), (double)var8.getStepZ(), var7.power(), var7.uncertainty());
-            var7.overrideDispenseEvent().ifPresent(var2x -> var1.levelEvent(var2x, this.blockPosition(), 0));
-            var3 = var6;
-         } else {
-            var3 = new ItemEntity(var1, this.getX(), this.getY(), this.getZ(), var2);
-         }
+      if (this.level() instanceof ServerLevel var1) {
+         ItemStack var6 = this.getItem();
+         if (!var6.isEmpty()) {
+            Object var3;
+            if (var6.getItem() instanceof ProjectileItem var4) {
+               var3 = this.spawnProjectile(var1, var4, var6);
+            } else {
+               var3 = new ItemEntity(var1, this.getX(), this.getY(), this.getZ(), var6);
+               var1.addFreshEntity((Entity)var3);
+            }
 
-         var1.addFreshEntity((Entity)var3);
-         var1.levelEvent(3021, this.blockPosition(), 1);
-         var1.gameEvent((Entity)var3, GameEvent.ENTITY_PLACE, this.position());
-         this.setItem(ItemStack.EMPTY);
+            var1.levelEvent(3021, this.blockPosition(), 1);
+            var1.gameEvent((Entity)var3, GameEvent.ENTITY_PLACE, this.position());
+            this.setItem(ItemStack.EMPTY);
+         }
       }
+   }
+
+   private Entity spawnProjectile(ServerLevel var1, ProjectileItem var2, ItemStack var3) {
+      ProjectileItem.DispenseConfig var4 = var2.createDispenseConfig();
+      var4.overrideDispenseEvent().ifPresent(var2x -> var1.levelEvent(var2x, this.blockPosition(), 0));
+      Direction var5 = Direction.DOWN;
+      Projectile var6 = Projectile.spawnProjectileUsingShoot(
+         var2.asProjectile(var1, this.position(), var3, var5),
+         var1,
+         var3,
+         (double)var5.getStepX(),
+         (double)var5.getStepY(),
+         (double)var5.getStepZ(),
+         var4.power(),
+         var4.uncertainty()
+      );
+      var6.setOwner(this);
+      return var6;
    }
 
    @Override

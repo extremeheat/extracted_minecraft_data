@@ -19,21 +19,12 @@ public class HopperMenu extends AbstractContainerMenu {
       this.hopper = var3;
       checkContainerSize(var3, 5);
       var3.startOpen(var2.player);
-      byte var4 = 51;
 
-      for (int var5 = 0; var5 < 5; var5++) {
-         this.addSlot(new Slot(var3, var5, 44 + var5 * 18, 20));
+      for (int var4 = 0; var4 < 5; var4++) {
+         this.addSlot(new Slot(var3, var4, 44 + var4 * 18, 20));
       }
 
-      for (int var7 = 0; var7 < 3; var7++) {
-         for (int var6 = 0; var6 < 9; var6++) {
-            this.addSlot(new Slot(var2, var6 + var7 * 9 + 9, 8 + var6 * 18, var7 * 18 + 51));
-         }
-      }
-
-      for (int var8 = 0; var8 < 9; var8++) {
-         this.addSlot(new Slot(var2, var8, 8 + var8 * 18, 109));
-      }
+      this.addStandardInventorySlots(var2, 8, 51);
    }
 
    @Override

@@ -1,7 +1,9 @@
 package net.minecraft.client.renderer;
 
-import com.google.common.collect.Lists;
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import com.mojang.blaze3d.framegraph.FramePass;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
@@ -9,29 +11,23 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.IntSupplier;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.joml.Matrix4f;
 
 public class PostPass implements AutoCloseable {
    private final EffectInstance effect;
-   public final RenderTarget inTarget;
-   public final RenderTarget outTarget;
-   private final List<IntSupplier> auxAssets = Lists.newArrayList();
-   private final List<String> auxNames = Lists.newArrayList();
-   private final List<Integer> auxWidths = Lists.newArrayList();
-   private final List<Integer> auxHeights = Lists.newArrayList();
-   private Matrix4f shaderOrthoMatrix;
-   private final int filterMode;
+   public final ResourceLocation outputTargetId;
+   private final List<PostPass.Input> inputs = new ArrayList<>();
 
-   public PostPass(ResourceProvider var1, String var2, RenderTarget var3, RenderTarget var4, boolean var5) throws IOException {
+   public PostPass(ResourceProvider var1, String var2, ResourceLocation var3) throws IOException {
       super();
       this.effect = new EffectInstance(var1, var2);
-      this.inTarget = var3;
-      this.outTarget = var4;
-      this.filterMode = var5 ? 9729 : 9728;
+      this.outputTargetId = var3;
    }
 
    @Override
@@ -43,54 +39,53 @@ public class PostPass implements AutoCloseable {
       return this.effect.getName();
    }
 
-   public void addAuxAsset(String var1, IntSupplier var2, int var3, int var4) {
-      this.auxNames.add(this.auxNames.size(), var1);
-      this.auxAssets.add(this.auxAssets.size(), var2);
-      this.auxWidths.add(this.auxWidths.size(), var3);
-      this.auxHeights.add(this.auxHeights.size(), var4);
+   public void addInput(PostPass.Input var1) {
+      this.inputs.add(var1);
    }
 
-   public void setOrthoMatrix(Matrix4f var1) {
-      this.shaderOrthoMatrix = var1;
-   }
+   public void addToFrame(FrameGraphBuilder var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2, Matrix4f var3, float var4) {
+      FramePass var5 = var1.addPass(this.getName());
 
-   public void process(float var1) {
-      this.inTarget.unbindWrite();
-      float var2 = (float)this.outTarget.width;
-      float var3 = (float)this.outTarget.height;
-      RenderSystem.viewport(0, 0, (int)var2, (int)var3);
-      this.effect.setSampler("DiffuseSampler", this.inTarget::getColorTextureId);
-
-      for (int var4 = 0; var4 < this.auxAssets.size(); var4++) {
-         this.effect.setSampler(this.auxNames.get(var4), this.auxAssets.get(var4));
-         this.effect.safeGetUniform("AuxSize" + var4).set((float)this.auxWidths.get(var4).intValue(), (float)this.auxHeights.get(var4).intValue());
+      for (PostPass.Input var7 : this.inputs) {
+         var7.addToPass(var5, var2);
       }
 
-      this.effect.safeGetUniform("ProjMat").set(this.shaderOrthoMatrix);
-      this.effect.safeGetUniform("InSize").set((float)this.inTarget.width, (float)this.inTarget.height);
-      this.effect.safeGetUniform("OutSize").set(var2, var3);
-      this.effect.safeGetUniform("Time").set(var1);
-      Minecraft var8 = Minecraft.getInstance();
-      this.effect.safeGetUniform("ScreenSize").set((float)var8.getWindow().getWidth(), (float)var8.getWindow().getHeight());
-      this.effect.apply();
-      this.outTarget.clear(Minecraft.ON_OSX);
-      this.outTarget.bindWrite(false);
-      RenderSystem.depthFunc(519);
-      BufferBuilder var5 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-      var5.addVertex(0.0F, 0.0F, 500.0F);
-      var5.addVertex(var2, 0.0F, 500.0F);
-      var5.addVertex(var2, var3, 500.0F);
-      var5.addVertex(0.0F, var3, 500.0F);
-      BufferUploader.draw(var5.buildOrThrow());
-      RenderSystem.depthFunc(515);
-      this.effect.clear();
-      this.outTarget.unbindWrite();
-      this.inTarget.unbindRead();
+      ResourceHandle var8 = var2.computeIfPresent(this.outputTargetId, (var1x, var2x) -> var5.readsAndWrites(var2x));
+      if (var8 == null) {
+         throw new IllegalStateException("Missing handle for target " + this.outputTargetId);
+      } else {
+         var5.executes(() -> {
+            RenderTarget var5x = (RenderTarget)var8.get();
+            RenderSystem.viewport(0, 0, var5x.width, var5x.height);
 
-      for (Object var7 : this.auxAssets) {
-         if (var7 instanceof RenderTarget) {
-            ((RenderTarget)var7).unbindRead();
-         }
+            for (PostPass.Input var7x : this.inputs) {
+               var7x.bindTo(this.effect, var2);
+            }
+
+            this.effect.safeGetUniform("ProjMat").set(var3);
+            this.effect.safeGetUniform("OutSize").set((float)var5x.width, (float)var5x.height);
+            this.effect.safeGetUniform("Time").set(var4);
+            Minecraft var10 = Minecraft.getInstance();
+            this.effect.safeGetUniform("ScreenSize").set((float)var10.getWindow().getWidth(), (float)var10.getWindow().getHeight());
+            this.effect.apply();
+            var5x.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+            var5x.clear();
+            var5x.bindWrite(false);
+            RenderSystem.depthFunc(519);
+            BufferBuilder var11 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            var11.addVertex(0.0F, 0.0F, 500.0F);
+            var11.addVertex((float)var5x.width, 0.0F, 500.0F);
+            var11.addVertex((float)var5x.width, (float)var5x.height, 500.0F);
+            var11.addVertex(0.0F, (float)var5x.height, 500.0F);
+            BufferUploader.draw(var11.buildOrThrow());
+            RenderSystem.depthFunc(515);
+            this.effect.clear();
+            var5x.unbindWrite();
+
+            for (PostPass.Input var9 : this.inputs) {
+               var9.cleanup(var2);
+            }
+         });
       }
    }
 
@@ -98,7 +93,38 @@ public class PostPass implements AutoCloseable {
       return this.effect;
    }
 
-   public int getFilterMode() {
-      return this.filterMode;
+   public interface Input {
+      void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
+
+      void bindTo(EffectInstance var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
+
+      default void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
+      }
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

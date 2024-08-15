@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.ArrayList;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
@@ -32,8 +33,6 @@ import net.minecraft.stats.StatsCounter;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.player.Player;
@@ -292,7 +291,7 @@ public class MultiPlayerGameMode {
       BlockPos var4 = var3.getBlockPos();
       ItemStack var5 = var1.getItemInHand(var2);
       if (this.localPlayerMode == GameType.SPECTATOR) {
-         return InteractionResult.SUCCESS;
+         return InteractionResult.CONSUME;
       } else {
          boolean var6 = !var1.getMainHandItem().isEmpty() || !var1.getOffhandItem().isEmpty();
          boolean var7 = var1.isSecondaryUseActive() && var6;
@@ -302,12 +301,12 @@ public class MultiPlayerGameMode {
                return InteractionResult.FAIL;
             }
 
-            ItemInteractionResult var9 = var8.useItemOn(var1.getItemInHand(var2), this.minecraft.level, var1, var2, var3);
+            InteractionResult var9 = var8.useItemOn(var1.getItemInHand(var2), this.minecraft.level, var1, var2, var3);
             if (var9.consumesAction()) {
-               return var9.result();
+               return var9;
             }
 
-            if (var9 == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && var2 == InteractionHand.MAIN_HAND) {
+            if (var9 instanceof InteractionResult.TryEmptyHandInteraction && var2 == InteractionHand.MAIN_HAND) {
                InteractionResult var10 = var8.useWithoutItem(this.minecraft.level, var1, var3);
                if (var10.consumesAction()) {
                   return var10;
@@ -346,13 +345,19 @@ public class MultiPlayerGameMode {
                var3.setValue(InteractionResult.PASS);
                return var5;
             } else {
-               InteractionResultHolder var7 = var6.use(this.minecraft.level, var1, var2);
-               ItemStack var8 = (ItemStack)var7.getObject();
+               InteractionResult var7 = var6.use(this.minecraft.level, var1, var2);
+               ItemStack var8;
+               if (var7 instanceof InteractionResult.Success var9) {
+                  var8 = Objects.requireNonNullElseGet(var9.heldItemTransformedTo(), () -> var1.getItemInHand(var2));
+               } else {
+                  var8 = var1.getItemInHand(var2);
+               }
+
                if (var8 != var6) {
                   var1.setItemInHand(var2, var8);
                }
 
-               var3.setValue(var7.getResult());
+               var3.setValue(var7);
                return var5;
             }
          });
@@ -380,14 +385,14 @@ public class MultiPlayerGameMode {
    public InteractionResult interact(Player var1, Entity var2, InteractionHand var3) {
       this.ensureHasSentCarriedItem();
       this.connection.send(ServerboundInteractPacket.createInteractionPacket(var2, var1.isShiftKeyDown(), var3));
-      return this.localPlayerMode == GameType.SPECTATOR ? InteractionResult.PASS : var1.interactOn(var2, var3);
+      return (InteractionResult)(this.localPlayerMode == GameType.SPECTATOR ? InteractionResult.PASS : var1.interactOn(var2, var3));
    }
 
    public InteractionResult interactAt(Player var1, Entity var2, EntityHitResult var3, InteractionHand var4) {
       this.ensureHasSentCarriedItem();
       Vec3 var5 = var3.getLocation().subtract(var2.getX(), var2.getY(), var2.getZ());
       this.connection.send(ServerboundInteractPacket.createInteractionPacket(var2, var1.isShiftKeyDown(), var4, var5));
-      return this.localPlayerMode == GameType.SPECTATOR ? InteractionResult.PASS : var2.interactAt(var1, var5, var4);
+      return (InteractionResult)(this.localPlayerMode == GameType.SPECTATOR ? InteractionResult.PASS : var2.interactAt(var1, var5, var4));
    }
 
    public void handleInventoryMouseClick(int var1, int var2, int var3, ClickType var4, Player var5) {

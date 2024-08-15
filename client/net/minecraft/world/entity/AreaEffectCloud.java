@@ -19,7 +19,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -96,7 +96,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       ParticleOptions var1 = this.entityData.get(DATA_PARTICLE);
       if (var1 instanceof ColorParticleOption var2) {
          int var3 = this.potionContents.equals(PotionContents.EMPTY) ? 0 : this.potionContents.getColor();
-         this.entityData.set(DATA_PARTICLE, ColorParticleOption.create(var2.getType(), FastColor.ARGB32.opaque(var3)));
+         this.entityData.set(DATA_PARTICLE, ColorParticleOption.create(var2.getType(), ARGB.opaque(var3)));
       }
    }
 

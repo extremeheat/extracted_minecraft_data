@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
@@ -13,6 +12,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
@@ -108,7 +108,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
       byte var2 = 8;
       var0.pose().pushPose();
       var0.pose().translate(0.0F, 0.0F, 110.0F);
-      var0.blitSprite(TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
+      var0.blitSprite(RenderType::guiTextured, TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
       var0.pose().popPose();
    }
 
@@ -116,12 +116,12 @@ public class AddRealmPopupScreen extends RealmsScreen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.flush();
-      RenderSystem.clear(256, Minecraft.ON_OSX);
+      RenderSystem.clear(256);
       this.clearTooltipForNextRenderPass();
       this.renderTransparentBackground(var1);
-      var1.blitSprite(BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
+      var1.blitSprite(RenderType::guiTextured, BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {
-         var1.blit(carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0, 0.0F, 0.0F, 195, 152, 195, 152);
+         var1.blit(RenderType::guiTextured, carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);
       }
    }
 

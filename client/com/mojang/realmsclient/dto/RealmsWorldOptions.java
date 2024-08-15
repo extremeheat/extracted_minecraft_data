@@ -9,9 +9,7 @@ import net.minecraft.util.StringUtil;
 
 public class RealmsWorldOptions extends ValueObject {
    public final boolean pvp;
-   public final boolean spawnAnimals;
    public final boolean spawnMonsters;
-   public final boolean spawnNPCs;
    public final int spawnProtection;
    public final boolean commandBlocks;
    public final boolean forceGameMode;
@@ -26,9 +24,7 @@ public class RealmsWorldOptions extends ValueObject {
    public boolean empty;
    private static final boolean DEFAULT_FORCE_GAME_MODE = false;
    private static final boolean DEFAULT_PVP = true;
-   private static final boolean DEFAULT_SPAWN_ANIMALS = true;
    private static final boolean DEFAULT_SPAWN_MONSTERS = true;
-   private static final boolean DEFAULT_SPAWN_NPCS = true;
    private static final int DEFAULT_SPAWN_PROTECTION = 0;
    private static final boolean DEFAULT_COMMAND_BLOCKS = false;
    private static final int DEFAULT_DIFFICULTY = 2;
@@ -40,36 +36,23 @@ public class RealmsWorldOptions extends ValueObject {
    private static final String DEFAULT_TEMPLATE_IMAGE = null;
 
    public RealmsWorldOptions(
-      boolean var1,
-      boolean var2,
-      boolean var3,
-      boolean var4,
-      int var5,
-      boolean var6,
-      int var7,
-      int var8,
-      boolean var9,
-      String var10,
-      String var11,
-      RealmsServer.Compatibility var12
+      boolean var1, boolean var2, int var3, boolean var4, int var5, int var6, boolean var7, String var8, String var9, RealmsServer.Compatibility var10
    ) {
       super();
       this.pvp = var1;
-      this.spawnAnimals = var2;
-      this.spawnMonsters = var3;
-      this.spawnNPCs = var4;
-      this.spawnProtection = var5;
-      this.commandBlocks = var6;
-      this.difficulty = var7;
-      this.gameMode = var8;
-      this.forceGameMode = var9;
-      this.slotName = var10;
-      this.version = var11;
-      this.compatibility = var12;
+      this.spawnMonsters = var2;
+      this.spawnProtection = var3;
+      this.commandBlocks = var4;
+      this.difficulty = var5;
+      this.gameMode = var6;
+      this.forceGameMode = var7;
+      this.slotName = var8;
+      this.version = var9;
+      this.compatibility = var10;
    }
 
    public static RealmsWorldOptions createDefaults() {
-      return new RealmsWorldOptions(true, true, true, true, 0, false, 2, 0, false, "", "", DEFAULT_COMPATIBILITY);
+      return new RealmsWorldOptions(true, true, 0, false, 2, 0, false, "", "", DEFAULT_COMPATIBILITY);
    }
 
    public static RealmsWorldOptions createEmptyDefaults() {
@@ -85,9 +68,7 @@ public class RealmsWorldOptions extends ValueObject {
    public static RealmsWorldOptions parse(JsonObject var0) {
       RealmsWorldOptions var1 = new RealmsWorldOptions(
          JsonUtils.getBooleanOr("pvp", var0, true),
-         JsonUtils.getBooleanOr("spawnAnimals", var0, true),
          JsonUtils.getBooleanOr("spawnMonsters", var0, true),
-         JsonUtils.getBooleanOr("spawnNPCs", var0, true),
          JsonUtils.getIntOr("spawnProtection", var0, 0),
          JsonUtils.getBooleanOr("commandBlocks", var0, false),
          JsonUtils.getIntOr("difficulty", var0, 2),
@@ -120,16 +101,8 @@ public class RealmsWorldOptions extends ValueObject {
          var1.addProperty("pvp", this.pvp);
       }
 
-      if (!this.spawnAnimals) {
-         var1.addProperty("spawnAnimals", this.spawnAnimals);
-      }
-
       if (!this.spawnMonsters) {
          var1.addProperty("spawnMonsters", this.spawnMonsters);
-      }
-
-      if (!this.spawnNPCs) {
-         var1.addProperty("spawnNPCs", this.spawnNPCs);
       }
 
       if (this.spawnProtection != 0) {
@@ -170,9 +143,7 @@ public class RealmsWorldOptions extends ValueObject {
    public RealmsWorldOptions clone() {
       return new RealmsWorldOptions(
          this.pvp,
-         this.spawnAnimals,
          this.spawnMonsters,
-         this.spawnNPCs,
          this.spawnProtection,
          this.commandBlocks,
          this.difficulty,

@@ -20,6 +20,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.TraceableEntity;
@@ -27,6 +28,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.portal.DimensionTransition;
@@ -149,6 +152,10 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
          if (!this.onGround() || this.getDeltaMovement().horizontalDistanceSqr() > 9.999999747378752E-6 || (this.tickCount + this.getId()) % 4 == 0) {
             this.move(MoverType.SELF, this.getDeltaMovement());
+            if (!this.level().isClientSide()) {
+               this.applyEffectsFromBlocks();
+            }
+
             float var2 = 0.98F;
             if (this.onGround()) {
                var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
@@ -269,6 +276,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
+      } else if (!this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.getEntity() instanceof Mob) {
+         return false;
       } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.is(DamageTypeTags.IS_EXPLOSION)) {
          return false;
       } else if (!this.getItem().canBeHurtBy(var1)) {
@@ -286,6 +295,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
          return true;
       }
+   }
+
+   @Override
+   public boolean ignoreExplosion(Explosion var1) {
+      return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
    }
 
    @Override
@@ -438,8 +452,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
       this.age = 5999;
    }
 
-   public float getSpin(float var1) {
-      return ((float)this.getAge() + var1) / 20.0F + this.bobOffs;
+   public static float getSpin(float var0, float var1) {
+      return var0 / 20.0F + var1;
    }
 
    public ItemEntity copy() {
@@ -453,7 +467,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Override
    public float getVisualRotationYInDegrees() {
-      return 180.0F - this.getSpin(0.5F) / 6.2831855F * 360.0F;
+      return 180.0F - getSpin((float)this.getAge() + 0.5F, this.bobOffs) / 6.2831855F * 360.0F;
    }
 
    @Override

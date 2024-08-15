@@ -11,6 +11,7 @@ import net.minecraft.world.level.chunk.LightChunkGetter;
 
 public class LevelLightEngine implements LightEventListener {
    public static final int LIGHT_SECTION_PADDING = 1;
+   public static final LevelLightEngine EMPTY = new LevelLightEngine();
    protected final LevelHeightAccessor levelHeightAccessor;
    @Nullable
    private final LightEngine<?, ?> blockEngine;
@@ -22,6 +23,13 @@ public class LevelLightEngine implements LightEventListener {
       this.levelHeightAccessor = var1.getLevel();
       this.blockEngine = var2 ? new BlockLightEngine(var1) : null;
       this.skyEngine = var3 ? new SkyLightEngine(var1) : null;
+   }
+
+   private LevelLightEngine() {
+      super();
+      this.levelHeightAccessor = LevelHeightAccessor.create(0, 0);
+      this.blockEngine = null;
+      this.skyEngine = null;
    }
 
    @Override

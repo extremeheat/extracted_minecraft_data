@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.Map;
 import net.minecraft.client.model.Model;
@@ -77,12 +76,6 @@ public class HangingSignRenderer extends SignRenderer {
    }
 
    @Override
-   void renderSignModel(PoseStack var1, int var2, int var3, Model var4, VertexConsumer var5) {
-      HangingSignRenderer.HangingSignModel var6 = (HangingSignRenderer.HangingSignModel)var4;
-      var6.root.render(var1, var5, var2, var3);
-   }
-
-   @Override
    Material getSignMaterial(WoodType var1) {
       return Sheets.getHangingSignMaterial(var1);
    }
@@ -149,8 +142,8 @@ public class HangingSignRenderer extends SignRenderer {
       }
 
       @Override
-      public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-         this.root.render(var1, var2, var3, var4, var5);
+      public ModelPart root() {
+         return this.root;
       }
    }
 }

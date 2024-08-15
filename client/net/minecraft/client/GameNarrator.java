@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.text2speech.Narrator;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.main.SilentInitException;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -65,7 +65,7 @@ public class GameNarrator {
    public void updateNarratorStatus(NarratorStatus var1) {
       this.clear();
       this.narrator.say(Component.translatable("options.narrator").append(" : ").append(var1.getName()).getString(), true);
-      ToastComponent var2 = Minecraft.getInstance().getToasts();
+      ToastManager var2 = Minecraft.getInstance().getToastManager();
       if (this.narrator.active()) {
          if (var1 == NarratorStatus.OFF) {
             SystemToast.addOrUpdate(var2, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), null);

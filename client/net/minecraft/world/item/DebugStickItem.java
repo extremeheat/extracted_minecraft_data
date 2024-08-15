@@ -45,7 +45,7 @@ public class DebugStickItem extends Item {
          }
       }
 
-      return InteractionResult.sidedSuccess(var3.isClientSide);
+      return InteractionResult.SUCCESS;
    }
 
    private boolean handleInteraction(Player var1, BlockState var2, LevelAccessor var3, BlockPos var4, boolean var5, ItemStack var6) {

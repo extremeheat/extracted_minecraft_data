@@ -50,7 +50,7 @@ public class SectionCompiler {
 
       for (BlockPos var13 : BlockPos.betweenClosed(var6, var7)) {
          BlockState var14 = var2.getBlockState(var13);
-         if (var14.isSolidRender(var2, var13)) {
+         if (var14.isSolidRender()) {
             var8.setOpaque(var13);
          }
 

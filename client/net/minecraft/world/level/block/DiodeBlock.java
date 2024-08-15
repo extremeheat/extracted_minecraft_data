@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -17,6 +18,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.TickPriority;
@@ -78,7 +81,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    @Override
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (var1.canSurvive(var2, var3)) {
          this.checkTickOnNeighbor(var2, var3, var1);
       } else {
@@ -170,8 +173,9 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    protected void updateNeighborsInFront(Level var1, BlockPos var2, BlockState var3) {
       Direction var4 = var3.getValue(FACING);
       BlockPos var5 = var2.relative(var4.getOpposite());
-      var1.neighborChanged(var5, this, var2);
-      var1.updateNeighborsAtExceptFromFacing(var5, this, var4);
+      Orientation var6 = ExperimentalRedstoneUtils.randomOrientation(var1, var4.getOpposite(), Direction.UP);
+      var1.neighborChanged(var5, this, var6);
+      var1.updateNeighborsAtExceptFromFacing(var5, this, var4, var6);
    }
 
    protected boolean sideInputDiodesOnly() {

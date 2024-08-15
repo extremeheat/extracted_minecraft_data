@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
@@ -36,11 +36,11 @@ public interface VertexConsumer {
    }
 
    default VertexConsumer setColor(int var1) {
-      return this.setColor(FastColor.ARGB32.red(var1), FastColor.ARGB32.green(var1), FastColor.ARGB32.blue(var1), FastColor.ARGB32.alpha(var1));
+      return this.setColor(ARGB.red(var1), ARGB.green(var1), ARGB.blue(var1), ARGB.alpha(var1));
    }
 
    default VertexConsumer setWhiteAlpha(int var1) {
-      return this.setColor(FastColor.ARGB32.color(var1, -1));
+      return this.setColor(ARGB.color(var1, -1));
    }
 
    default VertexConsumer setLight(int var1) {
@@ -59,7 +59,7 @@ public interface VertexConsumer {
       PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, float var7, int[] var8, int var9, boolean var10
    ) {
       int[] var11 = var2.getVertices();
-      Vec3i var12 = var2.getDirection().getNormal();
+      Vec3i var12 = var2.getDirection().getUnitVec3i();
       Matrix4f var13 = var1.pose();
       Vector3f var14 = var1.transformNormal((float)var12.getX(), (float)var12.getY(), (float)var12.getZ(), new Vector3f());
       byte var15 = 8;
@@ -93,7 +93,7 @@ public interface VertexConsumer {
                var27 = var3[var21] * var6 * 255.0F;
             }
 
-            int var35 = FastColor.ARGB32.color(var17, (int)var25, (int)var26, (int)var27);
+            int var35 = ARGB.color(var17, (int)var25, (int)var26, (int)var27);
             int var36 = var8[var21];
             float var37 = var19.getFloat(16);
             float var31 = var19.getFloat(20);
@@ -137,5 +137,9 @@ public interface VertexConsumer {
    default VertexConsumer setNormal(PoseStack.Pose var1, float var2, float var3, float var4) {
       Vector3f var5 = var1.transformNormal(var2, var3, var4, new Vector3f());
       return this.setNormal(var5.x(), var5.y(), var5.z());
+   }
+
+   default VertexConsumer setNormal(PoseStack.Pose var1, Vector3f var2) {
+      return this.setNormal(var1, var2.x(), var2.y(), var2.z());
    }
 }

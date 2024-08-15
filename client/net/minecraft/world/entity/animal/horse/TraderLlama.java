@@ -6,9 +6,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
@@ -34,7 +34,7 @@ public class TraderLlama extends Llama {
    @Nullable
    @Override
    protected Llama makeNewLlama() {
-      return EntityType.TRADER_LLAMA.create(this.level());
+      return EntityType.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
    @Override
@@ -102,8 +102,8 @@ public class TraderLlama extends Llama {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
-      if (var3 == MobSpawnType.EVENT) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      if (var3 == EntitySpawnReason.EVENT) {
          this.setAge(0);
       }
 

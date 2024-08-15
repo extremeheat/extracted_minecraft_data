@@ -53,15 +53,15 @@ public final class ModelPart {
    }
 
    public void loadPose(PartPose var1) {
-      this.x = var1.x;
-      this.y = var1.y;
-      this.z = var1.z;
-      this.xRot = var1.xRot;
-      this.yRot = var1.yRot;
-      this.zRot = var1.zRot;
-      this.xScale = 1.0F;
-      this.yScale = 1.0F;
-      this.zScale = 1.0F;
+      this.x = var1.x();
+      this.y = var1.y();
+      this.z = var1.z();
+      this.xRot = var1.xRot();
+      this.yRot = var1.yRot();
+      this.zRot = var1.zRot();
+      this.xScale = var1.xScale();
+      this.yScale = var1.yScale();
+      this.zScale = var1.zScale();
    }
 
    public void copyFrom(ModelPart var1) {
@@ -121,6 +121,13 @@ public final class ModelPart {
             var1.popPose();
          }
       }
+   }
+
+   public void rotateBy(Quaternionf var1) {
+      Quaternionf var2 = new Quaternionf().rotationZYX(this.zRot, this.yRot, this.xRot);
+      Quaternionf var3 = var2.mul(var1);
+      Vector3f var4 = var3.getEulerAnglesXYZ(new Vector3f());
+      this.setRotation(var4.x, var4.y, var4.z);
    }
 
    public void visit(PoseStack var1, ModelPart.Visitor var2) {

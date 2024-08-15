@@ -40,7 +40,7 @@ public class WorldCreationUiState {
    private WorldCreationUiState.WorldTypeEntry worldType;
    private final List<WorldCreationUiState.WorldTypeEntry> normalPresetList = new ArrayList<>();
    private final List<WorldCreationUiState.WorldTypeEntry> altPresetList = new ArrayList<>();
-   private GameRules gameRules = new GameRules();
+   private GameRules gameRules;
 
    public WorldCreationUiState(Path var1, WorldCreationContext var2, Optional<ResourceKey<WorldPreset>> var3, OptionalLong var4) {
       super();
@@ -52,6 +52,7 @@ public class WorldCreationUiState {
       this.generateStructures = var2.options().generateStructures();
       this.bonusChest = var2.options().generateBonusChest();
       this.targetFolder = this.findResultFolder(this.name);
+      this.gameRules = new GameRules(var2.dataConfiguration().enabledFeatures());
    }
 
    public void addListener(Consumer<WorldCreationUiState> var1) {

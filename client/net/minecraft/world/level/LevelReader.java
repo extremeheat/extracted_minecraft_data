@@ -64,7 +64,6 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
 
    boolean isClientSide();
 
-   @Deprecated
    int getSeaLevel();
 
    DimensionType dimensionType();
@@ -97,7 +96,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
          } else {
             for (BlockPos var4 = var2.below(); var4.getY() > var1.getY(); var4 = var4.below()) {
                BlockState var3 = this.getBlockState(var4);
-               if (var3.getLightBlock(this, var4) > 0 && !var3.liquid()) {
+               if (var3.getLightBlock() > 0 && !var3.liquid()) {
                   return false;
                }
             }

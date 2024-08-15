@@ -10,8 +10,8 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.ClimbOnTopOfPowderSnowGoal;
@@ -109,12 +109,14 @@ public class Silverfish extends Monster {
       return InfestedBlock.isCompatibleHostBlock(var2.getBlockState(var1.below())) ? 10.0F : super.getWalkTargetValue(var1, var2);
    }
 
-   public static boolean checkSilverfishSpawnRules(EntityType<Silverfish> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
-      if (checkAnyLightMonsterSpawnRules(var0, var1, var2, var3, var4)) {
+   public static boolean checkSilverfishSpawnRules(EntityType<Silverfish> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
+      if (!checkAnyLightMonsterSpawnRules(var0, var1, var2, var3, var4)) {
+         return false;
+      } else if (EntitySpawnReason.isSpawner(var2)) {
+         return true;
+      } else {
          Player var5 = var1.getNearestPlayer((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, 5.0, true);
          return var5 == null;
-      } else {
-         return false;
       }
    }
 

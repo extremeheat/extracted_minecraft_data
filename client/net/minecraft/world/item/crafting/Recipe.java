@@ -39,10 +39,6 @@ public interface Recipe<T extends RecipeInput> {
       return var2;
    }
 
-   default NonNullList<Ingredient> getIngredients() {
-      return NonNullList.create();
-   }
-
    default boolean isSpecial() {
       return false;
    }
@@ -55,7 +51,7 @@ public interface Recipe<T extends RecipeInput> {
       return "";
    }
 
-   default ItemStack getToastSymbol() {
+   default ItemStack getCategoryIconItem() {
       return new ItemStack(Blocks.CRAFTING_TABLE);
    }
 
@@ -63,8 +59,5 @@ public interface Recipe<T extends RecipeInput> {
 
    RecipeType<?> getType();
 
-   default boolean isIncomplete() {
-      NonNullList var1 = this.getIngredients();
-      return var1.isEmpty() || var1.stream().anyMatch(var0 -> var0.getItems().length == 0);
-   }
+   PlacementInfo placementInfo();
 }

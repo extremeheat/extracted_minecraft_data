@@ -165,6 +165,15 @@ public interface ByteBufCodecs {
          FriendlyByteBuf.writeQuaternion(var1, var2);
       }
    };
+   StreamCodec<ByteBuf, Integer> CONTAINER_ID = new StreamCodec<ByteBuf, Integer>() {
+      public Integer decode(ByteBuf var1) {
+         return FriendlyByteBuf.readContainerId(var1);
+      }
+
+      public void encode(ByteBuf var1, Integer var2) {
+         FriendlyByteBuf.writeContainerId(var1, var2);
+      }
+   };
    StreamCodec<ByteBuf, PropertyMap> GAME_PROFILE_PROPERTIES = new StreamCodec<ByteBuf, PropertyMap>() {
       private static final int MAX_PROPERTY_NAME_LENGTH = 64;
       private static final int MAX_PROPERTY_VALUE_LENGTH = 32767;

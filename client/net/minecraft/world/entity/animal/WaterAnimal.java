@@ -3,8 +3,8 @@ package net.minecraft.world.entity.animal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -13,6 +13,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class WaterAnimal extends PathfinderMob {
+   public static final int AMBIENT_SOUND_INTERVAL = 120;
+
    protected WaterAnimal(EntityType<? extends WaterAnimal> var1, Level var2) {
       super(var1, var2);
       this.setPathfindingMalus(PathType.WATER, 0.0F);
@@ -63,7 +65,7 @@ public abstract class WaterAnimal extends PathfinderMob {
    }
 
    public static boolean checkSurfaceWaterAnimalSpawnRules(
-      EntityType<? extends WaterAnimal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
+      EntityType<? extends WaterAnimal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4
    ) {
       int var5 = var1.getSeaLevel();
       int var6 = var5 - 13;

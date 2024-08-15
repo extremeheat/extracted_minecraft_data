@@ -437,8 +437,8 @@ public class Commands {
    public static CommandBuildContext createValidationContext(final HolderLookup.Provider var0) {
       return new CommandBuildContext() {
          @Override
-         public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
-            return var0.listRegistries();
+         public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
+            return var0.listRegistryKeys();
          }
 
          @Override

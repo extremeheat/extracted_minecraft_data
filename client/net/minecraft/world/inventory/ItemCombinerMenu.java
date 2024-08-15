@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    private static final int INVENTORY_SLOTS_PER_ROW = 9;
-   private static final int INVENTORY_SLOTS_PER_COLUMN = 3;
+   private static final int INVENTORY_ROWS = 3;
    protected final ContainerLevelAccess access;
    protected final Player player;
    protected final Container inputSlots;
@@ -35,7 +35,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
       this.resultSlotIndex = var5.getResultSlotIndex();
       this.createInputSlots(var5);
       this.createResultSlot(var5);
-      this.createInventorySlots(var3);
+      this.addStandardInventorySlots(var3, 8, 84);
    }
 
    private void createInputSlots(ItemCombinerMenuSlotDefinition var1) {
@@ -66,18 +66,6 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
             ItemCombinerMenu.this.onTake(var1, var2);
          }
       });
-   }
-
-   private void createInventorySlots(Inventory var1) {
-      for (int var2 = 0; var2 < 3; var2++) {
-         for (int var3 = 0; var3 < 9; var3++) {
-            this.addSlot(new Slot(var1, var3 + var2 * 9 + 9, 8 + var3 * 18, 84 + var2 * 18));
-         }
-      }
-
-      for (int var4 = 0; var4 < 9; var4++) {
-         this.addSlot(new Slot(var1, var4, 8 + var4 * 18, 142));
-      }
    }
 
    public abstract void createResult();

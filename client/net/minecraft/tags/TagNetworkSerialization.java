@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistrySynchronization;
@@ -28,40 +27,41 @@ public class TagNetworkSerialization {
    ) {
       return RegistrySynchronization.networkSafeRegistries(var0)
          .map(var0x -> Pair.of(var0x.key(), serializeToNetwork(var0x.value())))
-         .filter(var0x -> ((TagNetworkSerialization.NetworkPayload)var0x.getSecond()).size() > 0)
+         .filter(var0x -> !((TagNetworkSerialization.NetworkPayload)var0x.getSecond()).isEmpty())
          .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
    }
 
    private static <T> TagNetworkSerialization.NetworkPayload serializeToNetwork(Registry<T> var0) {
       HashMap var1 = new HashMap();
       var0.getTags().forEach(var2 -> {
-         HolderSet var3 = (HolderSet)var2.getSecond();
-         IntArrayList var4 = new IntArrayList(var3.size());
+         IntArrayList var3 = new IntArrayList(var2.size());
 
-         for (Holder var6 : var3) {
-            if (var6.kind() != Holder.Kind.REFERENCE) {
-               throw new IllegalStateException("Can't serialize unregistered value " + var6);
+         for (Holder var5 : var2) {
+            if (var5.kind() != Holder.Kind.REFERENCE) {
+               throw new IllegalStateException("Can't serialize unregistered value " + var5);
             }
 
-            var4.add(var0.getId(var6.value()));
+            var3.add(var0.getId(var5.value()));
          }
 
-         var1.put(((TagKey)var2.getFirst()).location(), var4);
+         var1.put(var2.key().location(), var3);
       });
       return new TagNetworkSerialization.NetworkPayload(var1);
    }
 
-   static <T> void deserializeTagsFromNetwork(
-      ResourceKey<? extends Registry<T>> var0, Registry<T> var1, TagNetworkSerialization.NetworkPayload var2, TagNetworkSerialization.TagOutput<T> var3
-   ) {
-      var2.tags.forEach((var3x, var4) -> {
-         TagKey var5 = TagKey.create(var0, var3x);
-         List var6 = var4.intStream().mapToObj(var1::getHolder).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
-         var3.accept(var5, var6);
+   static <T> TagLoader.LoadResult<T> deserializeTagsFromNetwork(Registry<T> var0, TagNetworkSerialization.NetworkPayload var1) {
+      ResourceKey var2 = var0.key();
+      HashMap var3 = new HashMap();
+      var1.tags.forEach((var3x, var4) -> {
+         TagKey var5 = TagKey.create(var2, var3x);
+         List var6 = var4.intStream().mapToObj(var0::getHolder).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+         var3.put(var5, var6);
       });
+      return new TagLoader.LoadResult<>(var2, var3);
    }
 
    public static final class NetworkPayload {
+      public static final TagNetworkSerialization.NetworkPayload EMPTY = new TagNetworkSerialization.NetworkPayload(Map.of());
       final Map<ResourceLocation, IntList> tags;
 
       NetworkPayload(Map<ResourceLocation, IntList> var1) {
@@ -77,21 +77,12 @@ public class TagNetworkSerialization {
          return new TagNetworkSerialization.NetworkPayload(var0.readMap(FriendlyByteBuf::readResourceLocation, FriendlyByteBuf::readIntIdList));
       }
 
-      public int size() {
-         return this.tags.size();
+      public boolean isEmpty() {
+         return this.tags.isEmpty();
       }
 
-      public <T> void applyToRegistry(Registry<T> var1) {
-         if (this.size() != 0) {
-            HashMap var2 = new HashMap(this.size());
-            TagNetworkSerialization.deserializeTagsFromNetwork(var1.key(), var1, this, var2::put);
-            var1.bindTags(var2);
-         }
+      public <T> TagLoader.LoadResult<T> resolve(Registry<T> var1) {
+         return TagNetworkSerialization.deserializeTagsFromNetwork(var1, this);
       }
-   }
-
-   @FunctionalInterface
-   public interface TagOutput<T> {
-      void accept(TagKey<T> var1, List<Holder<T>> var2);
    }
 }

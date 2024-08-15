@@ -6,8 +6,10 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,13 +23,14 @@ import org.joml.Vector3f;
 public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMenu> implements RecipeUpdateListener {
    private float xMouse;
    private float yMouse;
-   private final RecipeBookComponent recipeBookComponent = new RecipeBookComponent();
+   private final RecipeBookComponent<?> recipeBookComponent;
    private boolean widthTooNarrow;
    private boolean buttonClicked;
 
    public InventoryScreen(Player var1) {
       super(var1.inventoryMenu, var1.getInventory(), Component.translatable("container.crafting"));
       this.titleLabelX = 97;
+      this.recipeBookComponent = new CraftingRecipeBookComponent(var1.inventoryMenu);
    }
 
    @Override
@@ -56,7 +59,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       } else {
          super.init();
          this.widthTooNarrow = this.width < 379;
-         this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
+         this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow);
          this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
          this.addRenderableWidget(new ImageButton(this.leftPos + 104, this.height / 2 - 22, 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, var1 -> {
             this.recipeBookComponent.toggleVisibility();
@@ -81,11 +84,11 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       } else {
          super.render(var1, var2, var3, var4);
          this.recipeBookComponent.render(var1, var2, var3, var4);
-         this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, false, var4);
+         this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, false);
       }
 
       this.renderTooltip(var1, var2, var3);
-      this.recipeBookComponent.renderTooltip(var1, this.leftPos, this.topPos, var2, var3);
+      this.recipeBookComponent.renderTooltip(var1, var2, var3, this.hoveredSlot);
       this.xMouse = (float)var2;
       this.yMouse = (float)var3;
    }
@@ -94,7 +97,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(INVENTORY_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       renderEntityInInventoryFollowsMouse(var1, var5 + 26, var6 + 8, var5 + 75, var6 + 78, 30, 0.0625F, this.xMouse, this.yMouse, this.minecraft.player);
    }
 
@@ -139,6 +142,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       var0.pose().scale(var3, var3, -var3);
       var0.pose().translate(var4.x, var4.y, var4.z);
       var0.pose().mulPose(var5);
+      var0.flush();
       Lighting.setupForEntityInInventory();
       EntityRenderDispatcher var8 = Minecraft.getInstance().getEntityRenderDispatcher();
       if (var6 != null) {
@@ -146,7 +150,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       }
 
       var8.setRenderShadow(false);
-      RenderSystem.runAsFancy(() -> var8.render(var7, 0.0, 0.0, 0.0, 0.0F, 1.0F, var0.pose(), var0.bufferSource(), 15728880));
+      RenderSystem.runAsFancy(() -> var8.render(var7, 0.0, 0.0, 0.0, 1.0F, var0.pose(), var0.bufferSource(), 15728880));
       var0.flush();
       var8.setRenderShadow(true);
       var0.pose().popPose();

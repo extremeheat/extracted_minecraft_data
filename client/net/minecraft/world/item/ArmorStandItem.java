@@ -8,8 +8,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
@@ -38,7 +38,7 @@ public class ArmorStandItem extends Item {
          if (var3.noCollision(null, var8) && var3.getEntities(null, var8).isEmpty()) {
             if (var3 instanceof ServerLevel var9) {
                Consumer var10 = EntityType.createDefaultStackConfig(var9, var6, var1.getPlayer());
-               ArmorStand var11 = EntityType.ARMOR_STAND.create(var9, var10, var5, MobSpawnType.SPAWN_EGG, true, true);
+               ArmorStand var11 = EntityType.ARMOR_STAND.create(var9, var10, var5, EntitySpawnReason.SPAWN_EGG, true, true);
                if (var11 == null) {
                   return InteractionResult.FAIL;
                }
@@ -51,7 +51,7 @@ public class ArmorStandItem extends Item {
             }
 
             var6.shrink(1);
-            return InteractionResult.sidedSuccess(var3.isClientSide);
+            return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.FAIL;
          }

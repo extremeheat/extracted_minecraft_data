@@ -15,7 +15,7 @@ import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.packs.repository.KnownPack;
 
 public class RegistrySynchronization {
-   public static final Set<ResourceKey<? extends Registry<?>>> NETWORKABLE_REGISTRIES = RegistryDataLoader.SYNCHRONIZED_REGISTRIES
+   private static final Set<ResourceKey<? extends Registry<?>>> NETWORKABLE_REGISTRIES = RegistryDataLoader.SYNCHRONIZED_REGISTRIES
       .stream()
       .map(RegistryDataLoader.RegistryData::key)
       .collect(Collectors.toUnmodifiableSet());
@@ -67,7 +67,7 @@ public class RegistrySynchronization {
    }
 
    private static Stream<RegistryAccess.RegistryEntry<?>> ownedNetworkableRegistries(RegistryAccess var0) {
-      return var0.registries().filter(var0x -> NETWORKABLE_REGISTRIES.contains(var0x.key()));
+      return var0.registries().filter(var0x -> isNetworkable(var0x.key()));
    }
 
    public static Stream<RegistryAccess.RegistryEntry<?>> networkedRegistries(LayeredRegistryAccess<RegistryLayer> var0) {
@@ -78,6 +78,10 @@ public class RegistrySynchronization {
       Stream var1 = var0.getLayer(RegistryLayer.STATIC).registries();
       Stream var2 = networkedRegistries(var0);
       return Stream.concat(var2, var1);
+   }
+
+   public static boolean isNetworkable(ResourceKey<? extends Registry<?>> var0) {
+      return NETWORKABLE_REGISTRIES.contains(var0);
    }
 
 // $VF: Couldn't be decompiled

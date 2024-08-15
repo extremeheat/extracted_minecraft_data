@@ -16,7 +16,6 @@ import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding
 public class TrialChambersStructurePools {
    public static final ResourceKey<StructureTemplatePool> START = Pools.createKey("trial_chambers/chamber/end");
    public static final ResourceKey<StructureTemplatePool> HALLWAY_FALLBACK = Pools.createKey("trial_chambers/hallway/fallback");
-   public static final ResourceKey<StructureTemplatePool> CHAMBER_CAP_FALLBACK = Pools.createKey("trial_chambers/chamber/entrance_cap");
    public static final List<PoolAliasBinding> ALIAS_BINDINGS = ImmutableList.builder()
       .add(
          PoolAliasBinding.randomGroup(
@@ -73,16 +72,15 @@ public class TrialChambersStructurePools {
       HolderGetter var1 = var0.lookup(Registries.TEMPLATE_POOL);
       Holder.Reference var2 = var1.getOrThrow(Pools.EMPTY);
       Holder.Reference var3 = var1.getOrThrow(HALLWAY_FALLBACK);
-      Holder.Reference var4 = var1.getOrThrow(CHAMBER_CAP_FALLBACK);
-      HolderGetter var5 = var0.lookup(Registries.PROCESSOR_LIST);
-      Holder.Reference var6 = var5.getOrThrow(ProcessorLists.TRIAL_CHAMBERS_COPPER_BULB_DEGRADATION);
+      HolderGetter var4 = var0.lookup(Registries.PROCESSOR_LIST);
+      Holder.Reference var5 = var4.getOrThrow(ProcessorLists.TRIAL_CHAMBERS_COPPER_BULB_DEGRADATION);
       var0.register(
          START,
          new StructureTemplatePool(
             var2,
             List.of(
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/end_1", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/end_2", var6), 1)
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/end_1", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/end_2", var5), 1)
             ),
             StructureTemplatePool.Projection.RIGID
          )
@@ -91,7 +89,7 @@ public class TrialChambersStructurePools {
          var0,
          "trial_chambers/chamber/entrance_cap",
          new StructureTemplatePool(
-            var4, List.of(Pair.of(StructurePoolElement.single("trial_chambers/chamber/entrance_cap", var6), 1)), StructureTemplatePool.Projection.RIGID
+            var2, List.of(Pair.of(StructurePoolElement.single("trial_chambers/chamber/entrance_cap", var5), 1)), StructureTemplatePool.Projection.RIGID
          )
       );
       Pools.register(
@@ -100,10 +98,10 @@ public class TrialChambersStructurePools {
          new StructureTemplatePool(
             var3,
             List.of(
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_1", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/assembly", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/eruption", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted", var6), 1)
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_1", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/assembly", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/eruption", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted", var5), 1)
             ),
             StructureTemplatePool.Projection.RIGID
          )
@@ -115,14 +113,14 @@ public class TrialChambersStructurePools {
             var2,
             List.of(
                Pair.of(StructurePoolElement.single("trial_chambers/corridor/second_plate"), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/intersection/intersection_1", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/intersection/intersection_2", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/intersection/intersection_3", var6), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/intersection/intersection_1", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/intersection/intersection_2", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/intersection/intersection_3", var5), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/corridor/first_plate"), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/atrium_1", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/entrance_1", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/entrance_2", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/entrance_3", var6), 1)
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/atrium_1", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/entrance_1", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/entrance_2", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/entrance_3", var5), 1)
             ),
             StructureTemplatePool.Projection.RIGID
          )
@@ -208,8 +206,6 @@ public class TrialChambersStructurePools {
                Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted/hallway_1"), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted/hallway_2"), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted/hallway_3"), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted/hallway_4"), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted/hallway_5"), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted/quadrant_1"), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted/quadrant_2"), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted/quadrant_3"), 1),
@@ -253,14 +249,14 @@ public class TrialChambersStructurePools {
          new StructureTemplatePool(
             var2,
             List.of(
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_1", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_2", var6), 2),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_3", var6), 2),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_4", var6), 2),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_5", var6), 2),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_6", var6), 2),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_7", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_8", var6), 2)
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_1", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_2", var5), 2),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_3", var5), 2),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_4", var5), 2),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_5", var5), 2),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_6", var5), 2),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_7", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/corridor/straight_8", var5), 2)
             ),
             StructureTemplatePool.Projection.RIGID
          )
@@ -285,29 +281,35 @@ public class TrialChambersStructurePools {
             var3,
             List.of(
                Pair.of(StructurePoolElement.single("trial_chambers/hallway/corridor_connector_1"), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/upper_hallway_connector", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/lower_hallway_connector", var6), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/upper_hallway_connector", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/lower_hallway_connector", var5), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/hallway/rubble"), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_1", var6), 150),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_2", var6), 150),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_4", var6), 150),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_8", var6), 150),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/assembly", var6), 150),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/eruption", var6), 150),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted", var6), 150),
-               Pair.of(StructurePoolElement.single("trial_chambers/chamber/pedestal", var6), 150),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/rubble_chamber", var6), 10),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/rubble_chamber_thin", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/cache_1", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/left_corner", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/right_corner", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/corner_staircase", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/corner_staircase_down", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/long_straight_staircase", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/long_straight_staircase_down", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/straight", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/straight_staircase", var6), 1),
-               Pair.of(StructurePoolElement.single("trial_chambers/hallway/straight_staircase_down", var6), 1)
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_1", var5), 150),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_2", var5), 150),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_4", var5), 150),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/chamber_8", var5), 150),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/assembly", var5), 150),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/eruption", var5), 150),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/slanted", var5), 150),
+               Pair.of(StructurePoolElement.single("trial_chambers/chamber/pedestal", var5), 150),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/rubble_chamber", var5), 10),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/rubble_chamber_thin", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/cache_1", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/left_corner", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/right_corner", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/corner_staircase", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/corner_staircase_down", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/long_straight_staircase", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/long_straight_staircase_down", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/straight", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/straight_staircase", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/straight_staircase_down", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/trapped_staircase", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/encounter_1", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/encounter_2", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/encounter_3", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/encounter_4", var5), 1),
+               Pair.of(StructurePoolElement.single("trial_chambers/hallway/encounter_5", var5), 1)
             ),
             StructureTemplatePool.Projection.RIGID
          )
@@ -392,6 +394,39 @@ public class TrialChambersStructurePools {
                Pair.of(StructurePoolElement.single("trial_chambers/decor/candle_3"), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/decor/candle_4"), 1),
                Pair.of(StructurePoolElement.single("trial_chambers/decor/barrel"), 2)
+            ),
+            StructureTemplatePool.Projection.RIGID
+         )
+      );
+      Pools.register(
+         var0,
+         "trial_chambers/decor/disposal",
+         new StructureTemplatePool(
+            var2, List.of(Pair.of(StructurePoolElement.single("trial_chambers/decor/disposal"), 1)), StructureTemplatePool.Projection.RIGID
+         )
+      );
+      Pools.register(
+         var0,
+         "trial_chambers/decor/bed",
+         new StructureTemplatePool(
+            var2,
+            List.of(
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/white_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/light_gray_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/gray_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/black_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/brown_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/red_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/orange_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/yellow_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/lime_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/green_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/cyan_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/light_blue_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/blue_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/purple_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/magenta_bed"), 3),
+               Pair.of(StructurePoolElement.single("trial_chambers/decor/pink_bed"), 1)
             ),
             StructureTemplatePool.Projection.RIGID
          )

@@ -9,7 +9,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -61,7 +60,7 @@ public class CakeBlock extends Block {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       Item var8 = var1.getItem();
       if (var1.is(ItemTags.CANDLES) && var2.getValue(BITES) == 0 && Block.byItem(var8) instanceof CandleBlock var9) {
          var1.consume(1, var5);
@@ -69,9 +68,9 @@ public class CakeBlock extends Block {
          var3.setBlockAndUpdate(var4, CandleCakeBlock.byCandle(var9));
          var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);
          var5.awardStat(Stats.ITEM_USED.get(var8));
-         return ItemInteractionResult.SUCCESS;
+         return InteractionResult.SUCCESS;
       } else {
-         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
       }
    }
 

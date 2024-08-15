@@ -30,7 +30,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PowerableMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
@@ -57,7 +56,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob {
+public class WitherBoss extends Monster implements RangedAttackMob {
    private static final EntityDataAccessor<Integer> DATA_TARGET_A = SynchedEntityData.defineId(WitherBoss.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Integer> DATA_TARGET_B = SynchedEntityData.defineId(WitherBoss.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Integer> DATA_TARGET_C = SynchedEntityData.defineId(WitherBoss.class, EntityDataSerializers.INT);
@@ -436,7 +435,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          var22.setDangerous(true);
       }
 
-      var22.setPosRaw(var9, var11, var13);
+      var22.setPos(var9, var11, var13);
       this.level().addFreshEntity(var22);
    }
 
@@ -510,12 +509,12 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          .add(Attributes.ARMOR, 4.0);
    }
 
-   public float getHeadYRot(int var1) {
-      return this.yRotHeads[var1];
+   public float[] getHeadYRots() {
+      return this.yRotHeads;
    }
 
-   public float getHeadXRot(int var1) {
-      return this.xRotHeads[var1];
+   public float[] getHeadXRots() {
+      return this.xRotHeads;
    }
 
    public int getInvulnerableTicks() {
@@ -534,7 +533,6 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       this.entityData.set(DATA_TARGETS.get(var1), var2);
    }
 
-   @Override
    public boolean isPowered() {
       return this.getHealth() <= this.getMaxHealth() / 2.0F;
    }

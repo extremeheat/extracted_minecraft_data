@@ -24,9 +24,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
@@ -207,7 +207,7 @@ public final class TrialSpawner {
                return Optional.empty();
             } else {
                BlockPos var16 = BlockPos.containing(var15);
-               if (!SpawnPlacements.checkSpawnRules((EntityType)var7.get(), var1, MobSpawnType.TRIAL_SPAWNER, var16, var1.getRandom())) {
+               if (!SpawnPlacements.checkSpawnRules((EntityType)var7.get(), var1, EntitySpawnReason.TRIAL_SPAWNER, var16, var1.getRandom())) {
                   return Optional.empty();
                } else {
                   if (var4.getCustomSpawnRules().isPresent()) {
@@ -217,7 +217,7 @@ public final class TrialSpawner {
                      }
                   }
 
-                  Entity var20 = EntityType.loadEntityRecursive(var5, var1, var7x -> {
+                  Entity var20 = EntityType.loadEntityRecursive(var5, var1, EntitySpawnReason.TRIAL_SPAWNER, var7x -> {
                      var7x.moveTo(var9, var11, var13, var3.nextFloat() * 360.0F, 0.0F);
                      return var7x;
                   });
@@ -231,7 +231,7 @@ public final class TrialSpawner {
 
                         boolean var19 = var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().contains("id", 8);
                         if (var19) {
-                           var18.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var18.blockPosition()), MobSpawnType.TRIAL_SPAWNER, null);
+                           var18.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var18.blockPosition()), EntitySpawnReason.TRIAL_SPAWNER, null);
                         }
 
                         var18.setPersistenceRequired();

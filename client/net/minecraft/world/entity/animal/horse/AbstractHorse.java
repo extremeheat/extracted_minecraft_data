@@ -35,13 +35,12 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
@@ -107,6 +106,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    private static final int FLAG_OPEN_MOUTH = 64;
    public static final int INV_SLOT_SADDLE = 0;
    public static final int INV_BASE_COUNT = 1;
+   public static final int INVENTORY_ROWS = 3;
    private int eatingCounter;
    private int mouthCounter;
    private int standCounter;
@@ -430,7 +430,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public static AttributeSupplier.Builder createBaseHorseAttributes() {
-      return Mob.createMobAttributes()
+      return Animal.createAnimalAttributes()
          .add(Attributes.JUMP_STRENGTH, 0.7)
          .add(Attributes.MAX_HEALTH, 53.0)
          .add(Attributes.MOVEMENT_SPEED, 0.22499999403953552)
@@ -471,11 +471,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          var2.consume(1, var1);
       }
 
-      if (this.level().isClientSide) {
-         return InteractionResult.CONSUME;
-      } else {
-         return var3 ? InteractionResult.SUCCESS : InteractionResult.PASS;
-      }
+      return (InteractionResult)(!var3 && !this.level().isClientSide ? InteractionResult.PASS : InteractionResult.SUCCESS_SERVER);
    }
 
    protected boolean handleEating(Player var1, ItemStack var2) {
@@ -696,7 +692,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          return super.mobInteract(var1, var2);
       } else if (this.isTamed() && var1.isSecondaryUseActive()) {
          this.openCustomInventoryScreen(var1);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          ItemStack var3 = var1.getItemInHand(var2);
          if (!var3.isEmpty()) {
@@ -707,12 +703,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
             if (this.canUseSlot(EquipmentSlot.BODY) && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
                this.equipBodyArmor(var1, var3);
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
+               return InteractionResult.SUCCESS;
             }
          }
 
          this.doPlayerRide(var1);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -1112,7 +1108,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(0.2F);
       }

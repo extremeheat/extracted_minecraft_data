@@ -5,11 +5,14 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.SalmonRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class SalmonModel<T extends Entity> extends HierarchicalModel<T> {
+public class SalmonModel extends EntityModel<SalmonRenderState> {
+   public static final MeshTransformer SMALL_TRANSFORMER = MeshTransformer.scaling(0.5F);
+   public static final MeshTransformer LARGE_TRANSFORMER = MeshTransformer.scaling(1.5F);
    private static final String BODY_FRONT = "body_front";
    private static final String BODY_BACK = "body_back";
    private final ModelPart root;
@@ -59,15 +62,14 @@ public class SalmonModel<T extends Entity> extends HierarchicalModel<T> {
       return this.root;
    }
 
-   @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = 1.0F;
-      float var8 = 1.0F;
-      if (!var1.isInWater()) {
-         var7 = 1.3F;
-         var8 = 1.7F;
+   public void setupAnim(SalmonRenderState var1) {
+      float var2 = 1.0F;
+      float var3 = 1.0F;
+      if (!var1.isInWater) {
+         var2 = 1.3F;
+         var3 = 1.7F;
       }
 
-      this.bodyBack.yRot = -var7 * 0.25F * Mth.sin(var8 * 0.6F * var4);
+      this.bodyBack.yRot = -var2 * 0.25F * Mth.sin(var3 * 0.6F * var1.ageInTicks);
    }
 }

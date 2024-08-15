@@ -295,16 +295,20 @@ public class AABB {
    }
 
    public Optional<Vec3> clip(Vec3 var1, Vec3 var2) {
-      double[] var3 = new double[]{1.0};
-      double var4 = var2.x - var1.x;
-      double var6 = var2.y - var1.y;
-      double var8 = var2.z - var1.z;
-      Direction var10 = getDirection(this, var1, var3, null, var4, var6, var8);
-      if (var10 == null) {
+      return clip(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ, var1, var2);
+   }
+
+   public static Optional<Vec3> clip(double var0, double var2, double var4, double var6, double var8, double var10, Vec3 var12, Vec3 var13) {
+      double[] var14 = new double[]{1.0};
+      double var15 = var13.x - var12.x;
+      double var17 = var13.y - var12.y;
+      double var19 = var13.z - var12.z;
+      Direction var21 = getDirection(var0, var2, var4, var6, var8, var10, var12, var14, null, var15, var17, var19);
+      if (var21 == null) {
          return Optional.empty();
       } else {
-         double var11 = var3[0];
-         return Optional.of(var1.add(var11 * var4, var11 * var6, var11 * var8));
+         double var22 = var14[0];
+         return Optional.of(var12.add(var22 * var15, var22 * var17, var22 * var19));
       }
    }
 
@@ -330,25 +334,43 @@ public class AABB {
 
    @Nullable
    private static Direction getDirection(AABB var0, Vec3 var1, double[] var2, @Nullable Direction var3, double var4, double var6, double var8) {
-      if (var4 > 1.0E-7) {
-         var3 = clipPoint(var2, var3, var4, var6, var8, var0.minX, var0.minY, var0.maxY, var0.minZ, var0.maxZ, Direction.WEST, var1.x, var1.y, var1.z);
-      } else if (var4 < -1.0E-7) {
-         var3 = clipPoint(var2, var3, var4, var6, var8, var0.maxX, var0.minY, var0.maxY, var0.minZ, var0.maxZ, Direction.EAST, var1.x, var1.y, var1.z);
+      return getDirection(var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ, var1, var2, var3, var4, var6, var8);
+   }
+
+   @Nullable
+   private static Direction getDirection(
+      double var0,
+      double var2,
+      double var4,
+      double var6,
+      double var8,
+      double var10,
+      Vec3 var12,
+      double[] var13,
+      @Nullable Direction var14,
+      double var15,
+      double var17,
+      double var19
+   ) {
+      if (var15 > 1.0E-7) {
+         var14 = clipPoint(var13, var14, var15, var17, var19, var0, var2, var8, var4, var10, Direction.WEST, var12.x, var12.y, var12.z);
+      } else if (var15 < -1.0E-7) {
+         var14 = clipPoint(var13, var14, var15, var17, var19, var6, var2, var8, var4, var10, Direction.EAST, var12.x, var12.y, var12.z);
       }
 
-      if (var6 > 1.0E-7) {
-         var3 = clipPoint(var2, var3, var6, var8, var4, var0.minY, var0.minZ, var0.maxZ, var0.minX, var0.maxX, Direction.DOWN, var1.y, var1.z, var1.x);
-      } else if (var6 < -1.0E-7) {
-         var3 = clipPoint(var2, var3, var6, var8, var4, var0.maxY, var0.minZ, var0.maxZ, var0.minX, var0.maxX, Direction.UP, var1.y, var1.z, var1.x);
+      if (var17 > 1.0E-7) {
+         var14 = clipPoint(var13, var14, var17, var19, var15, var2, var4, var10, var0, var6, Direction.DOWN, var12.y, var12.z, var12.x);
+      } else if (var17 < -1.0E-7) {
+         var14 = clipPoint(var13, var14, var17, var19, var15, var8, var4, var10, var0, var6, Direction.UP, var12.y, var12.z, var12.x);
       }
 
-      if (var8 > 1.0E-7) {
-         var3 = clipPoint(var2, var3, var8, var4, var6, var0.minZ, var0.minX, var0.maxX, var0.minY, var0.maxY, Direction.NORTH, var1.z, var1.x, var1.y);
-      } else if (var8 < -1.0E-7) {
-         var3 = clipPoint(var2, var3, var8, var4, var6, var0.maxZ, var0.minX, var0.maxX, var0.minY, var0.maxY, Direction.SOUTH, var1.z, var1.x, var1.y);
+      if (var19 > 1.0E-7) {
+         var14 = clipPoint(var13, var14, var19, var15, var17, var4, var0, var6, var2, var8, Direction.NORTH, var12.z, var12.x, var12.y);
+      } else if (var19 < -1.0E-7) {
+         var14 = clipPoint(var13, var14, var19, var15, var17, var10, var0, var6, var2, var8, Direction.SOUTH, var12.z, var12.x, var12.y);
       }
 
-      return var3;
+      return var14;
    }
 
    @Nullable
@@ -402,10 +424,6 @@ public class AABB {
 
    public Vec3 getCenter() {
       return new Vec3(Mth.lerp(0.5, this.minX, this.maxX), Mth.lerp(0.5, this.minY, this.maxY), Mth.lerp(0.5, this.minZ, this.maxZ));
-   }
-
-   public Vec3 getBottomCenter() {
-      return new Vec3(Mth.lerp(0.5, this.minX, this.maxX), this.minY, Mth.lerp(0.5, this.minZ, this.maxZ));
    }
 
    public Vec3 getMinPosition() {

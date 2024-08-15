@@ -2,8 +2,10 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -13,18 +15,19 @@ import net.minecraft.world.inventory.Slot;
 
 public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implements RecipeUpdateListener {
    private static final ResourceLocation CRAFTING_TABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/crafting_table.png");
-   private final RecipeBookComponent recipeBookComponent = new RecipeBookComponent();
+   private final RecipeBookComponent<?> recipeBookComponent;
    private boolean widthTooNarrow;
 
    public CraftingScreen(CraftingMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);
+      this.recipeBookComponent = new CraftingRecipeBookComponent(var1);
    }
 
    @Override
    protected void init() {
       super.init();
       this.widthTooNarrow = this.width < 379;
-      this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
+      this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow);
       this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
       this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, var1 -> {
          this.recipeBookComponent.toggleVisibility();
@@ -49,18 +52,18 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
       } else {
          super.render(var1, var2, var3, var4);
          this.recipeBookComponent.render(var1, var2, var3, var4);
-         this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, true, var4);
+         this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, true);
       }
 
       this.renderTooltip(var1, var2, var3);
-      this.recipeBookComponent.renderTooltip(var1, this.leftPos, this.topPos, var2, var3);
+      this.recipeBookComponent.renderTooltip(var1, var2, var3, this.hoveredSlot);
    }
 
    @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(CRAFTING_TABLE_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, CRAFTING_TABLE_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
    }
 
    @Override

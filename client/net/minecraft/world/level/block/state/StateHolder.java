@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -98,8 +99,17 @@ public abstract class StateHolder<O, S> {
    }
 
    public <T extends Comparable<T>> Optional<T> getOptionalValue(Property<T> var1) {
+      return Optional.ofNullable(this.getNullableValue(var1));
+   }
+
+   public <T extends Comparable<T>> T getValueOrElse(Property<T> var1, T var2) {
+      return Objects.requireNonNullElse(this.getNullableValue(var1), (T)var2);
+   }
+
+   @Nullable
+   public <T extends Comparable<T>> T getNullableValue(Property<T> var1) {
       Comparable var2 = (Comparable)this.values.get(var1);
-      return var2 == null ? Optional.empty() : Optional.of((T)var1.getValueClass().cast(var2));
+      return (T)(var2 == null ? null : var1.getValueClass().cast(var2));
    }
 
    public <T extends Comparable<T>, V extends T> S setValue(Property<T> var1, V var2) {

@@ -15,12 +15,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.component.CustomData;
@@ -53,7 +52,7 @@ public class SpawnEggItem extends Item {
    @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
-      if (!(var2 instanceof ServerLevel)) {
+      if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
          ItemStack var3 = var1.getItemInHand();
@@ -66,7 +65,7 @@ public class SpawnEggItem extends Item {
             var2.sendBlockUpdated(var4, var6, var6, 3);
             var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var4);
             var3.shrink(1);
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS;
          } else {
             BlockPos var7;
             if (var6.getCollisionShape(var2, var4).isEmpty()) {
@@ -76,42 +75,44 @@ public class SpawnEggItem extends Item {
             }
 
             EntityType var10 = this.getType(var3);
-            if (var10.spawn((ServerLevel)var2, var3, var1.getPlayer(), var7, MobSpawnType.SPAWN_EGG, true, !Objects.equals(var4, var7) && var5 == Direction.UP)
+            if (var10.spawn(
+                  (ServerLevel)var2, var3, var1.getPlayer(), var7, EntitySpawnReason.SPAWN_EGG, true, !Objects.equals(var4, var7) && var5 == Direction.UP
+               )
                != null) {
                var3.shrink(1);
                var2.gameEvent(var1.getPlayer(), GameEvent.ENTITY_PLACE, var4);
             }
 
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS;
          }
       }
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.SOURCE_ONLY);
       if (var5.getType() != HitResult.Type.BLOCK) {
-         return InteractionResultHolder.pass(var4);
-      } else if (!(var1 instanceof ServerLevel)) {
-         return InteractionResultHolder.success(var4);
+         return InteractionResult.PASS;
+      } else if (var1.isClientSide) {
+         return InteractionResult.SUCCESS;
       } else {
          BlockPos var7 = var5.getBlockPos();
          if (!(var1.getBlockState(var7).getBlock() instanceof LiquidBlock)) {
-            return InteractionResultHolder.pass(var4);
+            return InteractionResult.PASS;
          } else if (var1.mayInteract(var2, var7) && var2.mayUseItemAt(var7, var5.getDirection(), var4)) {
             EntityType var8 = this.getType(var4);
-            Entity var9 = var8.spawn((ServerLevel)var1, var4, var2, var7, MobSpawnType.SPAWN_EGG, false, false);
+            Entity var9 = var8.spawn((ServerLevel)var1, var4, var2, var7, EntitySpawnReason.SPAWN_EGG, false, false);
             if (var9 == null) {
-               return InteractionResultHolder.pass(var4);
+               return InteractionResult.PASS;
             } else {
                var4.consume(1, var2);
                var2.awardStat(Stats.ITEM_USED.get(this));
                var1.gameEvent(var2, GameEvent.ENTITY_PLACE, var9.position());
-               return InteractionResultHolder.consume(var4);
+               return InteractionResult.SUCCESS;
             }
          } else {
-            return InteractionResultHolder.fail(var4);
+            return InteractionResult.FAIL;
          }
       }
    }
@@ -151,7 +152,7 @@ public class SpawnEggItem extends Item {
          if (var2 instanceof AgeableMob) {
             var7 = ((AgeableMob)var2).getBreedOffspring(var4, (AgeableMob)var2);
          } else {
-            var7 = (Mob)var3.create(var4);
+            var7 = (Mob)var3.create(var4, EntitySpawnReason.SPAWN_EGG);
          }
 
          if (var7 == null) {

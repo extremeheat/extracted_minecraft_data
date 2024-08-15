@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.StructuresDebugPayload;
 import net.minecraft.resources.ResourceKey;
@@ -37,7 +37,7 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
       if (this.postMainBoxes.containsKey(var10)) {
          for (BoundingBox var14 : this.postMainBoxes.get(var10).values()) {
             if (var11.closerThan(var14.getCenter(), 500.0)) {
-               LevelRenderer.renderLineBox(
+               ShapeRenderer.renderLineBox(
                   var1,
                   var12,
                   (double)var14.minX() - var3,
@@ -64,7 +64,7 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
             BoundingBox var16 = var15.boundingBox();
             if (var11.closerThan(var16.getCenter(), 500.0)) {
                if (var15.isStart()) {
-                  LevelRenderer.renderLineBox(
+                  ShapeRenderer.renderLineBox(
                      var1,
                      var12,
                      (double)var16.minX() - var3,
@@ -82,7 +82,7 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
                      0.0F
                   );
                } else {
-                  LevelRenderer.renderLineBox(
+                  ShapeRenderer.renderLineBox(
                      var1,
                      var12,
                      (double)var16.minX() - var3,

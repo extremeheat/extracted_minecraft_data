@@ -36,8 +36,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -60,7 +60,6 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class Sniffer extends Animal {
@@ -81,7 +80,7 @@ public class Sniffer extends Animal {
    public final AnimationState risingAnimationState = new AnimationState();
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.MAX_HEALTH, 14.0);
+      return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.MAX_HEALTH, 14.0);
    }
 
    public Sniffer(EntityType<? extends Animal> var1, Level var2) {
@@ -287,7 +286,7 @@ public class Sniffer extends Animal {
    }
 
    private Sniffer emitDiggingParticles(AnimationState var1) {
-      boolean var2 = var1.getAccumulatedTime() > 1700L && var1.getAccumulatedTime() < 6000L;
+      boolean var2 = var1.getTimeInMillis((float)this.tickCount) > 1700L && var1.getTimeInMillis((float)this.tickCount) < 6000L;
       if (var2) {
          BlockPos var3 = this.getHeadBlock();
          BlockState var4 = this.level().getBlockState(var3.below());
@@ -368,10 +367,15 @@ public class Sniffer extends Animal {
       boolean var4 = this.isFood(var3);
       InteractionResult var5 = super.mobInteract(var1, var2);
       if (var5.consumesAction() && var4) {
-         this.level().playSound(null, this, this.getEatingSound(var3), SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
+         this.playEatingSound();
       }
 
       return var5;
+   }
+
+   @Override
+   protected void playEatingSound() {
+      this.level().playSound(null, this, SoundEvents.SNIFFER_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
    }
 
    private void playSearchingSound() {
@@ -383,11 +387,6 @@ public class Sniffer extends Animal {
    @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(SoundEvents.SNIFFER_STEP, 0.15F, 1.0F);
-   }
-
-   @Override
-   public SoundEvent getEatingSound(ItemStack var1) {
-      return SoundEvents.SNIFFER_EAT;
    }
 
    @Override
@@ -417,7 +416,7 @@ public class Sniffer extends Animal {
 
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.SNIFFER.create(var1);
+      return EntityType.SNIFFER.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Override
@@ -428,11 +427,6 @@ public class Sniffer extends Animal {
          Set var3 = Set.of(Sniffer.State.IDLING, Sniffer.State.SCENTING, Sniffer.State.FEELING_HAPPY);
          return var3.contains(this.getState()) && var3.contains(var2.getState()) && super.canMate(var1);
       }
-   }
-
-   @Override
-   public AABB getBoundingBoxForCulling() {
-      return super.getBoundingBoxForCulling().inflate(0.6000000238418579);
    }
 
    @Override

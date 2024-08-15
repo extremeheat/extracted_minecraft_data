@@ -14,10 +14,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
@@ -85,7 +85,7 @@ public interface DispenseItemBehavior {
             EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var2);
 
             try {
-               var4.spawn(var1.level(), var2, null, var1.pos().relative(var3), MobSpawnType.DISPENSER, var3 != Direction.UP, false);
+               var4.spawn(var1.level(), var2, null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
             } catch (Exception var6) {
                LOGGER.error("Error while dispensing spawn egg from dispenser at {}", var1.pos(), var6);
                return ItemStack.EMPTY;
@@ -108,7 +108,7 @@ public interface DispenseItemBehavior {
             BlockPos var4 = var1.pos().relative(var3);
             ServerLevel var5 = var1.level();
             Consumer var6 = EntityType.appendDefaultStackConfig(var1x -> var1x.setYRot(var3.toYRot()), var5, var2, null);
-            ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var6, var4, MobSpawnType.DISPENSER, false, false);
+            ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var6, var4, EntitySpawnReason.DISPENSER, false, false);
             if (var7 != null) {
                var2.shrink(1);
             }

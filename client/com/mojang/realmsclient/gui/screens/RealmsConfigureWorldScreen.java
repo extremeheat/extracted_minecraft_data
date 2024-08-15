@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
@@ -365,7 +366,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, ResourceLocation var6, Supplier<Component> var7) {
-      var1.blitSprite(var6, var2, var3, 10, 28);
+      var1.blitSprite(RenderType::guiTextured, var6, var2, var3, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.setTooltipForNextRenderPass((Component)var7.get());
       }

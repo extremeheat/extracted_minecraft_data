@@ -26,7 +26,7 @@ public class NameTagItem extends Item {
             var1.shrink(1);
          }
 
-         return InteractionResult.sidedSuccess(var2.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }

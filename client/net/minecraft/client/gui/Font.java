@@ -20,6 +20,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
 import net.minecraft.util.Mth;
@@ -133,7 +134,7 @@ public class Font {
    }
 
    private static int adjustColor(int var0) {
-      return (var0 & -67108864) == 0 ? var0 | 0xFF000000 : var0;
+      return (var0 & -67108864) == 0 ? ARGB.opaque(var0) : var0;
    }
 
    private int drawInternal(
@@ -394,7 +395,7 @@ public class Font {
             float var4 = (float)(var1 >> 16 & 0xFF) / 255.0F;
             float var5 = (float)(var1 >> 8 & 0xFF) / 255.0F;
             float var6 = (float)(var1 & 0xFF) / 255.0F;
-            this.addEffect(new BakedGlyph.Effect(var2 - 1.0F, this.y + 9.0F, this.x + 1.0F, this.y - 1.0F, 0.01F, var4, var5, var6, var3));
+            this.addEffect(new BakedGlyph.Effect(var2 - 1.0F, this.y + 9.0F, this.x, this.y - 1.0F, 0.01F, var4, var5, var6, var3));
          }
 
          if (this.effects != null) {

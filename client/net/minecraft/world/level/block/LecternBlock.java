@@ -13,7 +13,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -34,6 +33,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -93,7 +94,7 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1) {
       return SHAPE_COMMON;
    }
 
@@ -198,7 +199,8 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    private static void updateBelow(Level var0, BlockPos var1, BlockState var2) {
-      var0.updateNeighborsAt(var1.below(), var2.getBlock());
+      Orientation var3 = ExperimentalRedstoneUtils.randomOrientation(var0, var2.getValue(FACING).getOpposite(), Direction.UP);
+      var0.updateNeighborsAt(var1.below(), var2.getBlock(), var3);
    }
 
    @Override
@@ -215,7 +217,7 @@ public class LecternBlock extends BaseEntityBlock {
 
          super.onRemove(var1, var2, var3, var4, var5);
          if (var1.getValue(POWERED)) {
-            var2.updateNeighborsAt(var3.below(), this);
+            updateBelow(var2, var3, var1);
          }
       }
    }
@@ -268,17 +270,13 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (var2.getValue(HAS_BOOK)) {
-         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else if (var1.is(ItemTags.LECTERN_BOOKS)) {
-         return tryPlaceBook(var5, var3, var4, var2, var1)
-            ? ItemInteractionResult.sidedSuccess(var3.isClientSide)
-            : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+         return (InteractionResult)(tryPlaceBook(var5, var3, var4, var2, var1) ? InteractionResult.SUCCESS : InteractionResult.PASS);
       } else {
-         return var1.isEmpty() && var6 == InteractionHand.MAIN_HAND
-            ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
-            : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         return (InteractionResult)(var1.isEmpty() && var6 == InteractionHand.MAIN_HAND ? InteractionResult.PASS : InteractionResult.TRY_WITH_EMPTY_HAND);
       }
    }
 
@@ -289,7 +287,7 @@ public class LecternBlock extends BaseEntityBlock {
             this.openScreen(var2, var3, var4);
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.CONSUME;
       }

@@ -215,7 +215,6 @@ public class ItemFrame extends HangingEntity {
          MapItemSavedData var3 = MapItem.getSavedData(var2, this.level());
          if (var3 != null) {
             var3.removedFromFrame(this.pos, this.getId());
-            var3.setDirty(true);
          }
       }
 
@@ -344,29 +343,27 @@ public class ItemFrame extends HangingEntity {
       boolean var5 = !var3.isEmpty();
       if (this.fixed) {
          return InteractionResult.PASS;
-      } else if (!this.level().isClientSide) {
-         if (!var4) {
-            if (var5 && !this.isRemoved()) {
-               if (var3.is(Items.FILLED_MAP)) {
-                  MapItemSavedData var6 = MapItem.getSavedData(var3, this.level());
-                  if (var6 != null && var6.isTrackedCountOverLimit(256)) {
-                     return InteractionResult.FAIL;
-                  }
+      } else if (!var4) {
+         if (var5 && !this.isRemoved()) {
+            if (var3.is(Items.FILLED_MAP)) {
+               MapItemSavedData var6 = MapItem.getSavedData(var3, this.level());
+               if (var6 != null && var6.isTrackedCountOverLimit(256)) {
+                  return InteractionResult.FAIL;
                }
-
-               this.setItem(var3);
-               this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
-               var3.consume(1, var1);
             }
-         } else {
-            this.playSound(this.getRotateItemSound(), 1.0F, 1.0F);
-            this.setRotation(this.getRotation() + 1);
-            this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
-         }
 
-         return InteractionResult.CONSUME;
+            this.setItem(var3);
+            this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
+            var3.consume(1, var1);
+            return InteractionResult.SUCCESS;
+         } else {
+            return InteractionResult.PASS;
+         }
       } else {
-         return !var4 && !var5 ? InteractionResult.PASS : InteractionResult.SUCCESS;
+         this.playSound(this.getRotateItemSound(), 1.0F, 1.0F);
+         this.setRotation(this.getRotation() + 1);
+         this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
+         return InteractionResult.SUCCESS;
       }
    }
 

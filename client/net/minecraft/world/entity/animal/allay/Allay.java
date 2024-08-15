@@ -6,6 +6,7 @@ import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -32,6 +33,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
@@ -54,7 +56,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
@@ -76,7 +77,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    private static final int LIFTING_ITEM_ANIMATION_DURATION = 5;
    private static final float DANCING_LOOP_DURATION = 55.0F;
    private static final float SPINNING_ANIMATION_DURATION = 15.0F;
-   private static final Ingredient DUPLICATION_ITEM = Ingredient.of(Items.AMETHYST_SHARD);
+   private static final Predicate<ItemStack> DUPLICATION_ITEM = var0 -> var0.is(Items.AMETHYST_SHARD);
    private static final int DUPLICATION_COOLDOWN_TICKS = 6000;
    private static final int NUM_OF_DUPLICATION_HEARTS = 3;
    private static final EntityDataAccessor<Boolean> DATA_DANCING = SynchedEntityData.defineId(Allay.class, EntityDataSerializers.BOOLEAN);
@@ -148,8 +149,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
          .add(Attributes.MAX_HEALTH, 20.0)
          .add(Attributes.FLYING_SPEED, 0.10000000149011612)
          .add(Attributes.MOVEMENT_SPEED, 0.10000000149011612)
-         .add(Attributes.ATTACK_DAMAGE, 2.0)
-         .add(Attributes.FOLLOW_RANGE, 48.0);
+         .add(Attributes.ATTACK_DAMAGE, 2.0);
    }
 
    @Override
@@ -158,6 +158,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       var2.setCanOpenDoors(false);
       var2.setCanFloat(true);
       var2.setCanPassDoors(true);
+      var2.setRequiredPathLength(48.0F);
       return var2;
    }
 
@@ -185,8 +186,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
             this.setDeltaMovement(this.getDeltaMovement().scale(0.9100000262260437));
          }
       }
-
-      this.calculateEntityAnimation(false);
    }
 
    @Override
@@ -505,7 +504,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private void duplicateAllay() {
-      Allay var1 = EntityType.ALLAY.create(this.level());
+      Allay var1 = EntityType.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
       if (var1 != null) {
          var1.moveTo(this.position());
          var1.setPersistenceRequired();

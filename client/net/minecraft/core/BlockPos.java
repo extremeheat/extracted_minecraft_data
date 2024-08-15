@@ -353,6 +353,12 @@ public class BlockPos extends Vec3i {
       return StreamSupport.stream(withinManhattan(var0, var1, var2, var3).spliterator(), false);
    }
 
+   public static Iterable<BlockPos> betweenClosed(AABB var0) {
+      BlockPos var1 = containing(var0.minX, var0.minY, var0.minZ);
+      BlockPos var2 = containing(var0.maxX, var0.maxY, var0.maxZ);
+      return betweenClosed(var1, var2);
+   }
+
    public static Iterable<BlockPos> betweenClosed(BlockPos var0, BlockPos var1) {
       return betweenClosed(
          Math.min(var0.getX(), var1.getX()),

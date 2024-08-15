@@ -1,7 +1,8 @@
 package net.minecraft.client.resources.model;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -86,10 +87,11 @@ public class SimpleBakedModel implements BakedModel {
    }
 
    public static class Builder {
-      private final List<BakedQuad> unculledFaces = Lists.newArrayList();
-      private final Map<Direction, List<BakedQuad>> culledFaces = Maps.newEnumMap(Direction.class);
+      private final com.google.common.collect.ImmutableList.Builder<BakedQuad> unculledFaces = ImmutableList.builder();
+      private final EnumMap<Direction, com.google.common.collect.ImmutableList.Builder<BakedQuad>> culledFaces = Maps.newEnumMap(Direction.class);
       private final ItemOverrides overrides;
       private final boolean hasAmbientOcclusion;
+      @Nullable
       private TextureAtlasSprite particleIcon;
       private final boolean usesBlockLight;
       private final boolean isGui3d;
@@ -101,16 +103,15 @@ public class SimpleBakedModel implements BakedModel {
 
       private Builder(boolean var1, boolean var2, boolean var3, ItemTransforms var4, ItemOverrides var5) {
          super();
-
-         for (Direction var9 : Direction.values()) {
-            this.culledFaces.put(var9, Lists.newArrayList());
-         }
-
          this.overrides = var5;
          this.hasAmbientOcclusion = var1;
          this.usesBlockLight = var2;
          this.isGui3d = var3;
          this.transforms = var4;
+
+         for (Direction var9 : Direction.values()) {
+            this.culledFaces.put(var9, ImmutableList.builder());
+         }
       }
 
       public SimpleBakedModel.Builder addCulledFace(Direction var1, BakedQuad var2) {
@@ -136,9 +137,10 @@ public class SimpleBakedModel implements BakedModel {
          if (this.particleIcon == null) {
             throw new RuntimeException("Missing particle!");
          } else {
+            Map var1 = Maps.transformValues(this.culledFaces, com.google.common.collect.ImmutableList.Builder::build);
             return new SimpleBakedModel(
-               this.unculledFaces,
-               this.culledFaces,
+               this.unculledFaces.build(),
+               new EnumMap<>(var1),
                this.hasAmbientOcclusion,
                this.usesBlockLight,
                this.isGui3d,

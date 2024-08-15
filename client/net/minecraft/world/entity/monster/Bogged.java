@@ -1,12 +1,10 @@
 package net.minecraft.world.entity.monster;
 
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -27,10 +25,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class Bogged extends AbstractSkeleton implements Shearable {
    private static final int HARD_ATTACK_INTERVAL = 50;
@@ -82,7 +76,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -136,19 +130,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    private void spawnShearedMushrooms() {
-      if (this.level() instanceof ServerLevel var1) {
-         LootTable var6 = var1.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.BOGGED_SHEAR);
-         LootParams var3 = new LootParams.Builder(var1)
-            .withParameter(LootContextParams.ORIGIN, this.position())
-            .withParameter(LootContextParams.THIS_ENTITY, this)
-            .create(LootContextParamSets.SHEARING);
-         ObjectListIterator var4 = var6.getRandomItems(var3).iterator();
-
-         while (var4.hasNext()) {
-            ItemStack var5 = (ItemStack)var4.next();
-            this.spawnAtLocation(var5, this.getBbHeight());
-         }
-      }
+      this.dropFromShearingLootTable(BuiltInLootTables.BOGGED_SHEAR, var1 -> this.spawnAtLocation(var1, this.getBbHeight()));
    }
 
    @Override

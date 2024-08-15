@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.worldselection;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
@@ -46,6 +45,7 @@ import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -230,7 +230,7 @@ public class CreateWorldScreen extends Screen {
    private LevelSettings createLevelSettings(boolean var1) {
       String var2 = this.uiState.getName().trim();
       if (var1) {
-         GameRules var3 = new GameRules();
+         GameRules var3 = new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
          var3.getRule(GameRules.RULE_DAYLIGHT).set(false, null);
          return new LevelSettings(var2, GameType.SPECTATOR, false, Difficulty.PEACEFUL, true, var3, WorldDataConfiguration.DEFAULT);
       } else {
@@ -273,14 +273,12 @@ public class CreateWorldScreen extends Screen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      RenderSystem.enableBlend();
-      var1.blit(Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-      RenderSystem.disableBlend();
+      var1.blit(RenderType::guiTextured, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
    }
 
    @Override
    protected void renderMenuBackground(GuiGraphics var1) {
-      var1.blit(TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
+      var1.blit(RenderType::guiTextured, TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
       this.renderMenuBackground(var1, 0, this.layout.getHeaderHeight(), this.width, this.height);
    }
 
@@ -362,9 +360,9 @@ public class CreateWorldScreen extends Screen {
       WorldLoader.<CreateWorldScreen.DataPackReloadCookie, WorldCreationContext>load(
             var4,
             var1x -> {
-               if (var1x.datapackWorldgen().registryOrThrow(Registries.WORLD_PRESET).size() == 0) {
+               if (var1x.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).listElements().findAny().isEmpty()) {
                   throw new IllegalStateException("Needs at least one world preset to continue");
-               } else if (var1x.datapackWorldgen().registryOrThrow(Registries.BIOME).size() == 0) {
+               } else if (var1x.datapackWorldgen().lookupOrThrow(Registries.BIOME).listElements().findAny().isEmpty()) {
                   throw new IllegalStateException("Needs at least one biome continue");
                } else {
                   WorldCreationContext var2x = this.uiState.getSettings();
@@ -544,7 +542,7 @@ public class CreateWorldScreen extends Screen {
 
    class GameTab extends GridLayoutTab {
       private static final Component TITLE = Component.translatable("createWorld.tab.game.title");
-      private static final Component ALLOW_COMMANDS = Component.translatable("selectWorld.allowCommands.new");
+      private static final Component ALLOW_COMMANDS = Component.translatable("selectWorld.allowCommands");
       private final EditBox nameEdit;
 
       GameTab() {
@@ -644,10 +642,16 @@ public class CreateWorldScreen extends Screen {
       }
 
       private void openGameRulesScreen() {
-         CreateWorldScreen.this.minecraft.setScreen(new EditGameRulesScreen(CreateWorldScreen.this.uiState.getGameRules().copy(), var1 -> {
-            CreateWorldScreen.this.minecraft.setScreen(CreateWorldScreen.this);
-            var1.ifPresent(CreateWorldScreen.this.uiState::setGameRules);
-         }));
+         CreateWorldScreen.this.minecraft
+            .setScreen(
+               new EditGameRulesScreen(
+                  CreateWorldScreen.this.uiState.getGameRules().copy(CreateWorldScreen.this.uiState.getSettings().dataConfiguration().enabledFeatures()),
+                  var1 -> {
+                     CreateWorldScreen.this.minecraft.setScreen(CreateWorldScreen.this);
+                     var1.ifPresent(CreateWorldScreen.this.uiState::setGameRules);
+                  }
+               )
+            );
       }
    }
 

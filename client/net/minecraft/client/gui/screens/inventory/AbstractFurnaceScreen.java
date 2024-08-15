@@ -2,9 +2,10 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.screens.recipebook.AbstractFurnaceRecipeBookComponent;
+import net.minecraft.client.gui.screens.recipebook.FurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -14,17 +15,15 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 
 public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
-   public final AbstractFurnaceRecipeBookComponent recipeBookComponent;
+   private final RecipeBookComponent<?> recipeBookComponent;
    private boolean widthTooNarrow;
    private final ResourceLocation texture;
    private final ResourceLocation litProgressSprite;
    private final ResourceLocation burnProgressSprite;
 
-   public AbstractFurnaceScreen(
-      T var1, AbstractFurnaceRecipeBookComponent var2, Inventory var3, Component var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7
-   ) {
-      super((T)var1, var3, var4);
-      this.recipeBookComponent = var2;
+   public AbstractFurnaceScreen(T var1, Inventory var2, Component var3, Component var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7) {
+      super((T)var1, var2, var3);
+      this.recipeBookComponent = new FurnaceRecipeBookComponent(var1, var4);
       this.texture = var5;
       this.litProgressSprite = var6;
       this.burnProgressSprite = var7;
@@ -34,7 +33,7 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
    public void init() {
       super.init();
       this.widthTooNarrow = this.width < 379;
-      this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
+      this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow);
       this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
       this.addRenderableWidget(new ImageButton(this.leftPos + 20, this.height / 2 - 49, 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, var1 -> {
          this.recipeBookComponent.toggleVisibility();
@@ -58,27 +57,27 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       } else {
          super.render(var1, var2, var3, var4);
          this.recipeBookComponent.render(var1, var2, var3, var4);
-         this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, true, var4);
+         this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, true);
       }
 
       this.renderTooltip(var1, var2, var3);
-      this.recipeBookComponent.renderTooltip(var1, this.leftPos, this.topPos, var2, var3);
+      this.recipeBookComponent.renderTooltip(var1, var2, var3, this.hoveredSlot);
    }
 
    @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(this.texture, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, this.texture, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if (this.menu.isLit()) {
          byte var7 = 14;
          int var8 = Mth.ceil(this.menu.getLitProgress() * 13.0F) + 1;
-         var1.blitSprite(this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
+         var1.blitSprite(RenderType::guiTextured, this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
       }
 
       byte var9 = 24;
       int var10 = Mth.ceil(this.menu.getBurnProgress() * 24.0F);
-      var1.blitSprite(this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
+      var1.blitSprite(RenderType::guiTextured, this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
    }
 
    @Override

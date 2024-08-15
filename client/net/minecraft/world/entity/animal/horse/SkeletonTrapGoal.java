@@ -4,10 +4,10 @@ import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +36,7 @@ public class SkeletonTrapGoal extends Goal {
       this.horse.setTrap(false);
       this.horse.setTamed(true);
       this.horse.setAge(0);
-      LightningBolt var3 = EntityType.LIGHTNING_BOLT.create(var1);
+      LightningBolt var3 = EntityType.LIGHTNING_BOLT.create(var1, EntitySpawnReason.TRIGGERED);
       if (var3 != null) {
          var3.moveTo(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var3.setVisualOnly(true);
@@ -63,9 +63,9 @@ public class SkeletonTrapGoal extends Goal {
 
    @Nullable
    private AbstractHorse createHorse(DifficultyInstance var1) {
-      SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level());
+      SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level(), EntitySpawnReason.TRIGGERED);
       if (var2 != null) {
-         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, MobSpawnType.TRIGGERED, null);
+         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, EntitySpawnReason.TRIGGERED, null);
          var2.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var2.invulnerableTime = 60;
          var2.setPersistenceRequired();
@@ -78,9 +78,9 @@ public class SkeletonTrapGoal extends Goal {
 
    @Nullable
    private Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
-      Skeleton var3 = EntityType.SKELETON.create(var2.level());
+      Skeleton var3 = EntityType.SKELETON.create(var2.level(), EntitySpawnReason.TRIGGERED);
       if (var3 != null) {
-         var3.finalizeSpawn((ServerLevel)var2.level(), var1, MobSpawnType.TRIGGERED, null);
+         var3.finalizeSpawn((ServerLevel)var2.level(), var1, EntitySpawnReason.TRIGGERED, null);
          var3.setPos(var2.getX(), var2.getY(), var2.getZ());
          var3.invulnerableTime = 60;
          var3.setPersistenceRequired();

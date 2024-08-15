@@ -1,24 +1,23 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.Set;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.TurtleRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Turtle;
 
-public class TurtleModel<T extends Turtle> extends QuadrupedModel<T> {
+public class TurtleModel extends QuadrupedModel<TurtleRenderState> {
    private static final String EGG_BELLY = "egg_belly";
+   public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 120.0F, 0.0F, 9.0F, 6.0F, 120.0F, Set.of("head"));
    private final ModelPart eggBelly;
 
    public TurtleModel(ModelPart var1) {
-      super(var1, true, 120.0F, 0.0F, 9.0F, 6.0F, 120);
+      super(var1);
       this.eggBelly = var1.getChild("egg_belly");
    }
 
@@ -56,13 +55,10 @@ public class TurtleModel<T extends Turtle> extends QuadrupedModel<T> {
       return LayerDefinition.create(var0, 128, 64);
    }
 
-   @Override
-   protected Iterable<ModelPart> bodyParts() {
-      return Iterables.concat(super.bodyParts(), ImmutableList.of(this.eggBelly));
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim((T)var1, var2, var3, var4, var5, var6);
+   public void setupAnim(TurtleRenderState var1) {
+      super.setupAnim(var1);
+      float var2 = var1.walkAnimationPos;
+      float var3 = var1.walkAnimationSpeed;
       this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F * 0.6F) * 0.5F * var3;
       this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F * 0.6F + 3.1415927F) * 0.5F * var3;
       this.rightFrontLeg.zRot = Mth.cos(var2 * 0.6662F * 0.6F + 3.1415927F) * 0.5F * var3;
@@ -73,13 +69,13 @@ public class TurtleModel<T extends Turtle> extends QuadrupedModel<T> {
       this.leftFrontLeg.yRot = 0.0F;
       this.rightHindLeg.yRot = 0.0F;
       this.leftHindLeg.yRot = 0.0F;
-      if (!var1.isInWater() && var1.onGround()) {
-         float var7 = var1.isLayingEgg() ? 4.0F : 1.0F;
-         float var8 = var1.isLayingEgg() ? 2.0F : 1.0F;
-         float var9 = 5.0F;
-         this.rightFrontLeg.yRot = Mth.cos(var7 * var2 * 5.0F + 3.1415927F) * 8.0F * var3 * var8;
+      if (var1.isOnLand) {
+         float var4 = var1.isLayingEgg ? 4.0F : 1.0F;
+         float var5 = var1.isLayingEgg ? 2.0F : 1.0F;
+         float var6 = 5.0F;
+         this.rightFrontLeg.yRot = Mth.cos(var4 * var2 * 5.0F + 3.1415927F) * 8.0F * var3 * var5;
          this.rightFrontLeg.zRot = 0.0F;
-         this.leftFrontLeg.yRot = Mth.cos(var7 * var2 * 5.0F) * 8.0F * var3 * var8;
+         this.leftFrontLeg.yRot = Mth.cos(var4 * var2 * 5.0F) * 8.0F * var3 * var5;
          this.leftFrontLeg.zRot = 0.0F;
          this.rightHindLeg.yRot = Mth.cos(var2 * 5.0F + 3.1415927F) * 3.0F * var3;
          this.rightHindLeg.xRot = 0.0F;
@@ -87,20 +83,10 @@ public class TurtleModel<T extends Turtle> extends QuadrupedModel<T> {
          this.leftHindLeg.xRot = 0.0F;
       }
 
-      this.eggBelly.visible = !this.young && var1.hasEgg();
-   }
-
-   @Override
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      boolean var6 = this.eggBelly.visible;
-      if (var6) {
-         var1.pushPose();
-         var1.translate(0.0F, -0.08F, 0.0F);
-      }
-
-      super.renderToBuffer(var1, var2, var3, var4, var5);
-      if (var6) {
-         var1.popPose();
+      this.eggBelly.visible = var1.hasEgg;
+      this.root.resetPose();
+      if (this.eggBelly.visible) {
+         this.root.y--;
       }
    }
 }

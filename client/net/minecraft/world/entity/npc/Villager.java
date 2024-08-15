@@ -11,7 +11,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -47,12 +46,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ReputationEventHandler;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
@@ -95,15 +94,6 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public static final int BREEDING_FOOD_THRESHOLD = 12;
    public static final Map<Item, Integer> FOOD_POINTS = ImmutableMap.of(Items.BREAD, 4, Items.POTATO, 1, Items.CARROT, 1, Items.BEETROOT, 1);
    private static final int TRADES_PER_LEVEL = 2;
-   private static final Set<Item> WANTED_ITEMS = ImmutableSet.of(
-      Items.BREAD,
-      Items.POTATO,
-      Items.CARROT,
-      Items.WHEAT,
-      Items.WHEAT_SEEDS,
-      Items.BEETROOT,
-      new Item[]{Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD}
-   );
    private static final int MAX_GOSSIP_TOPICS = 10;
    private static final int GOSSIP_COOLDOWN = 1200;
    private static final int GOSSIP_DECAY_INTERVAL = 24000;
@@ -191,6 +181,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       super(var1, var2);
       ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
       this.getNavigation().setCanFloat(true);
+      this.getNavigation().setRequiredPathLength(48.0F);
       this.setCanPickUpLoot(true);
       this.setVillagerData(this.getVillagerData().setType(var3).setProfession(VillagerProfession.NONE));
    }
@@ -256,7 +247,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.FOLLOW_RANGE, 48.0);
+      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.5);
    }
 
    public boolean assignProfessionWhenSpawned() {
@@ -321,7 +312,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          return super.mobInteract(var1, var2);
       } else if (this.isBaby()) {
          this.setUnhappy();
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          if (!this.level().isClientSide) {
             boolean var4 = this.getOffers().isEmpty();
@@ -340,7 +331,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
             this.startTrading(var1);
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -754,16 +745,16 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
-      if (var3 == MobSpawnType.BREEDING) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      if (var3 == EntitySpawnReason.BREEDING) {
          this.setVillagerData(this.getVillagerData().setProfession(VillagerProfession.NONE));
       }
 
-      if (var3 == MobSpawnType.COMMAND || var3 == MobSpawnType.SPAWN_EGG || MobSpawnType.isSpawner(var3) || var3 == MobSpawnType.DISPENSER) {
+      if (var3 == EntitySpawnReason.COMMAND || var3 == EntitySpawnReason.SPAWN_EGG || EntitySpawnReason.isSpawner(var3) || var3 == EntitySpawnReason.DISPENSER) {
          this.setVillagerData(this.getVillagerData().setType(VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
       }
 
-      if (var3 == MobSpawnType.STRUCTURE) {
+      if (var3 == EntitySpawnReason.STRUCTURE) {
          this.assignProfessionWhenSpawned = true;
       }
 
@@ -783,7 +774,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
 
       Villager var6 = new Villager(EntityType.VILLAGER, var1, var3);
-      var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var6.blockPosition()), MobSpawnType.BREEDING, null);
+      var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var6.blockPosition()), EntitySpawnReason.BREEDING, null);
       return var6;
    }
 
@@ -791,10 +782,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
       if (var1.getDifficulty() != Difficulty.PEACEFUL) {
          LOGGER.info("Villager {} was struck by lightning {}.", this, var2);
-         Witch var3 = EntityType.WITCH.create(var1);
+         Witch var3 = EntityType.WITCH.create(var1, EntitySpawnReason.CONVERSION);
          if (var3 != null) {
             var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null);
+            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), EntitySpawnReason.CONVERSION, null);
             var3.setNoAi(this.isNoAi());
             if (this.hasCustomName()) {
                var3.setCustomName(this.getCustomName());
@@ -821,7 +812,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    @Override
    public boolean wantsToPickUp(ItemStack var1) {
       Item var2 = var1.getItem();
-      return (WANTED_ITEMS.contains(var2) || this.getVillagerData().getProfession().requestedItems().contains(var2)) && this.getInventory().canAddItem(var1);
+      return (var1.is(ItemTags.VILLAGER_PICKS_UP) || this.getVillagerData().getProfession().requestedItems().contains(var2))
+         && this.getInventory().canAddItem(var1);
    }
 
    public boolean hasExcessFood() {
@@ -887,7 +879,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          List var7 = var6.stream().filter(var2x -> var2x.wantsToSpawnGolem(var2)).limit(5L).collect(Collectors.toList());
          if (var7.size() >= var4) {
             if (!SpawnUtil.trySpawnMob(
-                  EntityType.IRON_GOLEM, MobSpawnType.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM
+                  EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM
                )
                .isEmpty()) {
                var6.forEach(GolemSensor::golemDetected);

@@ -1,10 +1,13 @@
 package net.minecraft.world.item.crafting;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +19,8 @@ public class ShapedRecipe implements CraftingRecipe {
    final String group;
    final CraftingBookCategory category;
    final boolean showNotification;
+   @Nullable
+   private PlacementInfo placementInfo;
 
    public ShapedRecipe(String var1, CraftingBookCategory var2, ShapedRecipePattern var3, ItemStack var4, boolean var5) {
       super();
@@ -50,9 +55,18 @@ public class ShapedRecipe implements CraftingRecipe {
       return this.result;
    }
 
-   @Override
-   public NonNullList<Ingredient> getIngredients() {
+   @VisibleForTesting
+   public List<Optional<Ingredient>> getIngredients() {
       return this.pattern.ingredients();
+   }
+
+   @Override
+   public PlacementInfo placementInfo() {
+      if (this.placementInfo == null) {
+         this.placementInfo = PlacementInfo.createFromOptionals(this.pattern.ingredients());
+      }
+
+      return this.placementInfo;
    }
 
    @Override
@@ -79,12 +93,6 @@ public class ShapedRecipe implements CraftingRecipe {
 
    public int getHeight() {
       return this.pattern.height();
-   }
-
-   @Override
-   public boolean isIncomplete() {
-      NonNullList var1 = this.getIngredients();
-      return var1.isEmpty() || var1.stream().filter(var0 -> !var0.isEmpty()).anyMatch(var0 -> var0.getItems().length == 0);
    }
 
    public static class Serializer implements RecipeSerializer<ShapedRecipe> {

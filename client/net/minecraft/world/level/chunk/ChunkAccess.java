@@ -33,7 +33,6 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
@@ -57,7 +56,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.ticks.TickContainerAccess;
 import org.slf4j.Logger;
 
-public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiomeSource, LightChunk, StructureAccess {
+public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, LightChunk, StructureAccess {
    public static final int NO_FILLED_SECTION = -1;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final LongSet EMPTY_REFERENCE_SET = new LongOpenHashSet();
@@ -298,8 +297,8 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return this.postProcessing;
    }
 
-   public void addPackedPostProcess(short var1, int var2) {
-      getOrCreateOffsetList(this.getPostProcessing(), var2).add(var1);
+   public void addPackedPostProcess(ShortList var1, int var2) {
+      getOrCreateOffsetList(this.getPostProcessing(), var2).addAll(var1);
    }
 
    public void setBlockEntityNbt(CompoundTag var1) {
@@ -345,7 +344,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
 
    public abstract TickContainerAccess<Fluid> getFluidTicks();
 
-   public abstract ChunkAccess.TicksToSave getTicksForSerialization();
+   public abstract ChunkAccess.PackedTicks getTicksForSerialization(long var1);
 
    public UpgradeData getUpgradeData() {
       return this.upgradeData;
@@ -358,10 +357,6 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    @Nullable
    public BlendingData getBlendingData() {
       return this.blendingData;
-   }
-
-   public void setBlendingData(BlendingData var1) {
-      this.blendingData = var1;
    }
 
    public long getInhabitedTime() {

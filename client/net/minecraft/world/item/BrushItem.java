@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -94,7 +95,7 @@ public class BrushItem extends Item {
    }
 
    private HitResult calculateHitResult(Player var1) {
-      return ProjectileUtil.getHitResultOnViewVector(var1, var0 -> !var0.isSpectator() && var0.isPickable(), var1.blockInteractionRange());
+      return ProjectileUtil.getHitResultOnViewVector(var1, EntitySelector.CAN_BE_PICKED, var1.blockInteractionRange());
    }
 
    private void spawnDustParticles(Level var1, BlockHitResult var2, BlockState var3, Vec3 var4, HumanoidArm var5) {

@@ -1,21 +1,21 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.frog.Tadpole;
 
-public class TadpoleModel<T extends Tadpole> extends AgeableListModel<T> {
+public class TadpoleModel extends EntityModel<LivingEntityRenderState> {
    private final ModelPart root;
    private final ModelPart tail;
 
    public TadpoleModel(ModelPart var1) {
-      super(true, 8.0F, 3.35F);
+      super(RenderType::entityCutoutNoCull);
       this.root = var1;
       this.tail = var1.getChild("tail");
    }
@@ -32,17 +32,12 @@ public class TadpoleModel<T extends Tadpole> extends AgeableListModel<T> {
    }
 
    @Override
-   protected Iterable<ModelPart> headParts() {
-      return ImmutableList.of(this.root);
+   public ModelPart root() {
+      return this.root;
    }
 
-   @Override
-   protected Iterable<ModelPart> bodyParts() {
-      return ImmutableList.of(this.tail);
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = var1.isInWater() ? 1.0F : 1.5F;
-      this.tail.yRot = -var7 * 0.25F * Mth.sin(0.3F * var4);
+   public void setupAnim(LivingEntityRenderState var1) {
+      float var2 = var1.isInWater ? 1.0F : 1.5F;
+      this.tail.yRot = -var2 * 0.25F * Mth.sin(0.3F * var1.ageInTicks);
    }
 }

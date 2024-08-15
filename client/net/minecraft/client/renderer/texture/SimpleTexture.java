@@ -27,22 +27,21 @@ public class SimpleTexture extends AbstractTexture {
    public void load(ResourceManager var1) throws IOException {
       SimpleTexture.TextureImage var2 = this.getTextureImage(var1);
       var2.throwIfError();
-      TextureMetadataSection var5 = var2.getTextureMetadata();
+      TextureMetadataSection var4 = var2.getTextureMetadata();
       boolean var3;
-      boolean var4;
-      if (var5 != null) {
-         var3 = var5.isBlur();
-         var4 = var5.isClamp();
+      if (var4 != null) {
+         this.defaultBlur = var4.isBlur();
+         var3 = var4.isClamp();
       } else {
+         this.defaultBlur = false;
          var3 = false;
-         var4 = false;
       }
 
-      NativeImage var6 = var2.getImage();
+      NativeImage var5 = var2.getImage();
       if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> this.doLoad(var6, var3, var4));
+         RenderSystem.recordRenderCall(() -> this.doLoad(var5, this.defaultBlur, var3));
       } else {
-         this.doLoad(var6, var3, var4);
+         this.doLoad(var5, this.defaultBlur, var3);
       }
    }
 

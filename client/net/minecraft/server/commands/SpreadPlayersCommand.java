@@ -249,7 +249,8 @@ public class SpreadPlayersCommand {
             (double)Mth.floor(var11.z) + 0.5,
             Set.of(),
             var10.getYRot(),
-            var10.getXRot()
+            var10.getXRot(),
+            true
          );
          double var20 = 1.7976931348623157E308;
 

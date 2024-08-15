@@ -17,6 +17,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractMinecartContainer extends AbstractMinecart implements ContainerEntity {
    private NonNullList<ItemStack> itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
@@ -99,18 +100,18 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    }
 
    @Override
-   protected void applyNaturalSlowdown() {
-      float var1 = 0.98F;
+   protected Vec3 applyNaturalSlowdown(Vec3 var1) {
+      float var2 = 0.98F;
       if (this.lootTable == null) {
-         int var2 = 15 - AbstractContainerMenu.getRedstoneSignalFromContainer(this);
-         var1 += (float)var2 * 0.001F;
+         int var3 = 15 - AbstractContainerMenu.getRedstoneSignalFromContainer(this);
+         var2 += (float)var3 * 0.001F;
       }
 
       if (this.isInWater()) {
-         var1 *= 0.95F;
+         var2 *= 0.95F;
       }
 
-      this.setDeltaMovement(this.getDeltaMovement().multiply((double)var1, 0.0, (double)var1));
+      return var1.multiply((double)var2, 0.0, (double)var2);
    }
 
    @Override

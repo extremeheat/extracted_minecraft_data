@@ -21,7 +21,7 @@ import net.minecraft.world.level.PathNavigationRegion;
 public class PathFinder {
    private static final float FUDGING = 1.5F;
    private final Node[] neighbors = new Node[32];
-   private final int maxVisitedNodes;
+   private int maxVisitedNodes;
    private final NodeEvaluator nodeEvaluator;
    private static final boolean DEBUG = false;
    private final BinaryHeap openSet = new BinaryHeap();
@@ -30,6 +30,10 @@ public class PathFinder {
       super();
       this.nodeEvaluator = var1;
       this.maxVisitedNodes = var2;
+   }
+
+   public void setMaxVisitedNodes(int var1) {
+      this.maxVisitedNodes = var1;
    }
 
    @Nullable

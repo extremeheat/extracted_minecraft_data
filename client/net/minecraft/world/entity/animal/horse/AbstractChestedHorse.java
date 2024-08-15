@@ -158,12 +158,12 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
             if (!this.isTamed()) {
                this.makeMad();
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
+               return InteractionResult.SUCCESS;
             }
 
             if (!this.hasChest() && var4.is(Items.CHEST)) {
                this.equipChest(var1, var4);
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
+               return InteractionResult.SUCCESS;
             }
          }
 

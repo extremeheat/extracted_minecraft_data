@@ -20,7 +20,7 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
    ) {
       for (int var7 = 0; var7 < var5; var7++) {
          var6.set(var3).move(Direction.UP, var7);
-         if (!var1.getBlockState(var6).isSolidRender(var1, var6)) {
+         if (!var1.getBlockState(var6).isSolidRender()) {
             this.setBlock(var1, var6, var4.stemProvider.getState(var2, var3));
          }
       }

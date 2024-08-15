@@ -3,6 +3,7 @@ package net.minecraft.world.level.chunk;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -92,6 +93,19 @@ public class UpgradeData {
          var0 -> BuiltInRegistries.FLUID.getOptional(ResourceLocation.tryParse(var0)).or(() -> Optional.of(Fluids.EMPTY)),
          this.neighborFluidTicks
       );
+   }
+
+   private UpgradeData(UpgradeData var1) {
+      super();
+      this.sides.addAll(var1.sides);
+      this.neighborBlockTicks.addAll(var1.neighborBlockTicks);
+      this.neighborFluidTicks.addAll(var1.neighborFluidTicks);
+      this.index = new int[var1.index.length][];
+
+      for (int var2 = 0; var2 < var1.index.length; var2++) {
+         int[] var3 = var1.index[var2];
+         this.index[var2] = var3 != null ? IntArrays.copy(var3) : null;
+      }
    }
 
    private static <T> void loadTicks(CompoundTag var0, String var1, Function<String, Optional<T>> var2, List<SavedTick<T>> var3) {
@@ -248,6 +262,10 @@ public class UpgradeData {
       }
 
       return var1;
+   }
+
+   public UpgradeData copy() {
+      return this == EMPTY ? EMPTY : new UpgradeData(this);
    }
 
    public interface BlockFixer {

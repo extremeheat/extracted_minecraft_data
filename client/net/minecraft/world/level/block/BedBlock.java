@@ -80,7 +80,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
-         return InteractionResult.CONSUME;
+         return InteractionResult.SUCCESS_SERVER;
       } else {
          if (var1.getValue(PART) != BedPart.HEAD) {
             var3 = var3.relative(var1.getValue(FACING));
@@ -99,20 +99,20 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
 
             Vec3 var7 = var3.getCenter();
             var2.explode(null, var2.damageSources().badRespawnPointExplosion(var7), null, var7, 5.0F, true, Level.ExplosionInteraction.BLOCK);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else if (var1.getValue(OCCUPIED)) {
             if (!this.kickVillagerOutOfBed(var2, var3)) {
                var4.displayClientMessage(Component.translatable("block.minecraft.bed.occupied"), true);
             }
 
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else {
             var4.startSleepInBed(var3).ifLeft(var1x -> {
                if (var1x.getMessage() != null) {
                   var4.displayClientMessage(var1x.getMessage(), true);
                }
             });
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          }
       }
    }
@@ -137,9 +137,9 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    @Override
-   public void updateEntityAfterFallOn(BlockGetter var1, Entity var2) {
+   public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
       if (var2.isSuppressingBounce()) {
-         super.updateEntityAfterFallOn(var1, var2);
+         super.updateEntityMovementAfterFallOn(var1, var2);
       } else {
          this.bounceUp(var2);
       }

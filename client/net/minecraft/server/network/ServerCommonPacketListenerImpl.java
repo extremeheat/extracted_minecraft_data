@@ -68,6 +68,12 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    @Override
+   public void onPacketError(Packet var1, Exception var2) throws ReportedException {
+      ServerCommonPacketListener.super.onPacketError(var1, var2);
+      this.server.reportPacketHandlingException(var2, var1.type());
+   }
+
+   @Override
    public void handleKeepAlive(ServerboundKeepAlivePacket var1) {
       if (this.keepAlivePending && var1.getId() == this.keepAliveChallenge) {
          int var2 = (int)(Util.getMillis() - this.keepAliveTime);
