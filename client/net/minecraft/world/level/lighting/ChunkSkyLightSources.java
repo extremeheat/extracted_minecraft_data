@@ -25,8 +25,8 @@ public class ChunkSkyLightSources {
 
    public ChunkSkyLightSources(LevelHeightAccessor var1) {
       super();
-      this.minY = var1.getMinBuildHeight() - 1;
-      int var2 = var1.getMaxBuildHeight();
+      this.minY = var1.getMinY() - 1;
+      int var2 = var1.getMaxY() + 1;
       int var3 = Mth.ceillog2(var2 - this.minY + 1);
       this.heightmap = new SimpleBitStorage(var3, 256);
    }

@@ -61,7 +61,7 @@ public class InstrumentItem extends Item {
          Instrument var6 = (Instrument)((Holder)var5.get()).value();
          var2.startUsingItem(var3);
          play(var1, var2, var6);
-         var2.getCooldowns().addCooldown(this, Mth.floor(var6.useDuration() * 20.0F));
+         var2.getCooldowns().addCooldown(var4, Mth.floor(var6.useDuration() * 20.0F));
          var2.awardStat(Stats.ITEM_USED.get(this));
          return InteractionResult.CONSUME;
       } else {
@@ -93,8 +93,8 @@ public class InstrumentItem extends Item {
    }
 
    @Override
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.TOOT_HORN;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.TOOT_HORN;
    }
 
    private static void play(Level var0, Player var1, Instrument var2) {

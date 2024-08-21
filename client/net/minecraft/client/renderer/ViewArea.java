@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 
@@ -15,6 +15,7 @@ public class ViewArea {
    protected int sectionGridSizeX;
    protected int sectionGridSizeZ;
    private int viewDistance;
+   private SectionPos cameraSectionPos;
    public SectionRenderDispatcher.RenderSection[] sections;
 
    public ViewArea(SectionRenderDispatcher var1, Level var2, int var3, LevelRenderer var4) {
@@ -23,6 +24,7 @@ public class ViewArea {
       this.level = var2;
       this.setViewDistance(var3);
       this.createSections(var1);
+      this.cameraSectionPos = SectionPos.of(this.viewDistance + 1, 0, this.viewDistance + 1);
    }
 
    protected void createSections(SectionRenderDispatcher var1) {
@@ -36,7 +38,7 @@ public class ViewArea {
             for (int var4 = 0; var4 < this.sectionGridSizeY; var4++) {
                for (int var5 = 0; var5 < this.sectionGridSizeZ; var5++) {
                   int var6 = this.getSectionIndex(var3, var4, var5);
-                  this.sections[var6] = var1.new RenderSection(var6, var3 * 16, this.level.getMinBuildHeight() + var4 * 16, var5 * 16);
+                  this.sections[var6] = var1.new RenderSection(var6, SectionPos.asLong(var3, var4 + this.level.getMinSectionY(), var5));
                }
             }
          }
@@ -69,49 +71,73 @@ public class ViewArea {
       return this.level;
    }
 
-   public void repositionCamera(double var1, double var3) {
-      int var5 = Mth.ceil(var1);
-      int var6 = Mth.ceil(var3);
+   public void repositionCamera(SectionPos var1) {
+      for (int var2 = 0; var2 < this.sectionGridSizeX; var2++) {
+         int var3 = var1.x() - this.viewDistance;
+         int var4 = var3 + Math.floorMod(var2 - var3, this.sectionGridSizeX);
 
-      for (int var7 = 0; var7 < this.sectionGridSizeX; var7++) {
-         int var8 = this.sectionGridSizeX * 16;
-         int var9 = var5 - 8 - var8 / 2;
-         int var10 = var9 + Math.floorMod(var7 * 16 - var9, var8);
+         for (int var5 = 0; var5 < this.sectionGridSizeZ; var5++) {
+            int var6 = var1.z() - this.viewDistance;
+            int var7 = var6 + Math.floorMod(var5 - var6, this.sectionGridSizeZ);
 
-         for (int var11 = 0; var11 < this.sectionGridSizeZ; var11++) {
-            int var12 = this.sectionGridSizeZ * 16;
-            int var13 = var6 - 8 - var12 / 2;
-            int var14 = var13 + Math.floorMod(var11 * 16 - var13, var12);
-
-            for (int var15 = 0; var15 < this.sectionGridSizeY; var15++) {
-               int var16 = this.level.getMinBuildHeight() + var15 * 16;
-               SectionRenderDispatcher.RenderSection var17 = this.sections[this.getSectionIndex(var7, var15, var11)];
-               BlockPos var18 = var17.getOrigin();
-               if (var10 != var18.getX() || var16 != var18.getY() || var14 != var18.getZ()) {
-                  var17.setOrigin(var10, var16, var14);
+            for (int var8 = 0; var8 < this.sectionGridSizeY; var8++) {
+               int var9 = this.level.getMinSectionY() + var8;
+               SectionRenderDispatcher.RenderSection var10 = this.sections[this.getSectionIndex(var2, var8, var5)];
+               long var11 = var10.getSectionNode();
+               if (var11 != SectionPos.asLong(var4, var9, var7)) {
+                  var10.setSectionNode(SectionPos.asLong(var4, var9, var7));
                }
             }
          }
       }
+
+      this.cameraSectionPos = var1;
+      this.levelRenderer.getSectionOcclusionGraph().invalidate();
+   }
+
+   public SectionPos getCameraSectionPos() {
+      return this.cameraSectionPos;
    }
 
    public void setDirty(int var1, int var2, int var3, boolean var4) {
-      int var5 = Math.floorMod(var1, this.sectionGridSizeX);
-      int var6 = Math.floorMod(var2 - this.level.getMinSection(), this.sectionGridSizeY);
-      int var7 = Math.floorMod(var3, this.sectionGridSizeZ);
-      SectionRenderDispatcher.RenderSection var8 = this.sections[this.getSectionIndex(var5, var6, var7)];
-      var8.setDirty(var4);
+      SectionRenderDispatcher.RenderSection var5 = this.getRenderSection(var1, var2, var3);
+      if (var5 != null) {
+         var5.setDirty(var4);
+      }
    }
 
    @Nullable
    protected SectionRenderDispatcher.RenderSection getRenderSectionAt(BlockPos var1) {
-      int var2 = Mth.floorDiv(var1.getY() - this.level.getMinBuildHeight(), 16);
-      if (var2 >= 0 && var2 < this.sectionGridSizeY) {
-         int var3 = Mth.positiveModulo(Mth.floorDiv(var1.getX(), 16), this.sectionGridSizeX);
-         int var4 = Mth.positiveModulo(Mth.floorDiv(var1.getZ(), 16), this.sectionGridSizeZ);
-         return this.sections[this.getSectionIndex(var3, var2, var4)];
-      } else {
+      return this.getRenderSection(SectionPos.asLong(var1));
+   }
+
+   @Nullable
+   protected SectionRenderDispatcher.RenderSection getRenderSection(long var1) {
+      int var3 = SectionPos.x(var1);
+      int var4 = SectionPos.y(var1);
+      int var5 = SectionPos.z(var1);
+      return this.getRenderSection(var3, var4, var5);
+   }
+
+   @Nullable
+   private SectionRenderDispatcher.RenderSection getRenderSection(int var1, int var2, int var3) {
+      if (!this.containsSection(var1, var2, var3)) {
          return null;
+      } else {
+         int var4 = var2 - this.level.getMinSectionY();
+         int var5 = Math.floorMod(var1, this.sectionGridSizeX);
+         int var6 = Math.floorMod(var3, this.sectionGridSizeZ);
+         return this.sections[this.getSectionIndex(var5, var4, var6)];
+      }
+   }
+
+   private boolean containsSection(int var1, int var2, int var3) {
+      if (var2 >= this.level.getMinSectionY() && var2 <= this.level.getMaxSectionY()) {
+         return var1 < this.cameraSectionPos.x() - this.viewDistance || var1 > this.cameraSectionPos.x() + this.viewDistance
+            ? false
+            : var3 >= this.cameraSectionPos.z() - this.viewDistance && var3 <= this.cameraSectionPos.z() + this.viewDistance;
+      } else {
+         return false;
       }
    }
 }

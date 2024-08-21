@@ -58,7 +58,7 @@ public class FlatLevelSource extends ChunkGenerator {
 
    @Override
    public int getSpawnHeight(LevelHeightAccessor var1) {
-      return var1.getMinBuildHeight() + Math.min(var1.getHeight(), this.settings.getLayers().size());
+      return var1.getMinY() + Math.min(var1.getHeight(), this.settings.getLayers().size());
    }
 
    @Override
@@ -71,7 +71,7 @@ public class FlatLevelSource extends ChunkGenerator {
       for (int var9 = 0; var9 < Math.min(var4.getHeight(), var5.size()); var9++) {
          BlockState var10 = (BlockState)var5.get(var9);
          if (var10 != null) {
-            int var11 = var4.getMinBuildHeight() + var9;
+            int var11 = var4.getMinY() + var9;
 
             for (int var12 = 0; var12 < 16; var12++) {
                for (int var13 = 0; var13 < 16; var13++) {
@@ -90,20 +90,20 @@ public class FlatLevelSource extends ChunkGenerator {
    public int getBaseHeight(int var1, int var2, Heightmap.Types var3, LevelHeightAccessor var4, RandomState var5) {
       List var6 = this.settings.getLayers();
 
-      for (int var7 = Math.min(var6.size(), var4.getMaxBuildHeight()) - 1; var7 >= 0; var7--) {
+      for (int var7 = Math.min(var6.size() - 1, var4.getMaxY()); var7 >= 0; var7--) {
          BlockState var8 = (BlockState)var6.get(var7);
          if (var8 != null && var3.isOpaque().test(var8)) {
-            return var4.getMinBuildHeight() + var7 + 1;
+            return var4.getMinY() + var7 + 1;
          }
       }
 
-      return var4.getMinBuildHeight();
+      return var4.getMinY();
    }
 
    @Override
    public NoiseColumn getBaseColumn(int var1, int var2, LevelHeightAccessor var3, RandomState var4) {
       return new NoiseColumn(
-         var3.getMinBuildHeight(),
+         var3.getMinY(),
          this.settings
             .getLayers()
             .stream()

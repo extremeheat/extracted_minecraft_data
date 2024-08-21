@@ -52,7 +52,7 @@ public class DoublePlantBlock extends BushBlock {
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
       Level var3 = var1.getLevel();
-      return var2.getY() < var3.getMaxBuildHeight() - 1 && var3.getBlockState(var2.above()).canBeReplaced(var1) ? super.getStateForPlacement(var1) : null;
+      return var2.getY() < var3.getMaxY() && var3.getBlockState(var2.above()).canBeReplaced(var1) ? super.getStateForPlacement(var1) : null;
    }
 
    @Override

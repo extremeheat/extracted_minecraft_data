@@ -329,7 +329,7 @@ public class OceanRuinPieces {
             BlockState var14 = var2.getBlockState(var13);
 
             for (FluidState var15 = var2.getFluidState(var13);
-               (var14.isAir() || var15.is(FluidTags.WATER) || var14.is(BlockTags.ICE)) && var12 > var2.getMinBuildHeight() + 1;
+               (var14.isAir() || var15.is(FluidTags.WATER) || var14.is(BlockTags.ICE)) && var12 > var2.getMinY() + 1;
                var15 = var2.getFluidState(var13)
             ) {
                var13.set(var10, --var12, var11);

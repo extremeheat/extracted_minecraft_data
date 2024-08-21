@@ -411,7 +411,7 @@ public class MineshaftPieces {
          if (var6.isInside(var7)) {
             int var8 = var7.getY();
 
-            while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinBuildHeight() + 1) {
+            while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinY() + 1) {
                var7.move(Direction.DOWN);
             }
 
@@ -441,7 +441,7 @@ public class MineshaftPieces {
                      return;
                   }
 
-                  var10 = var9 <= 20 && var13 && var7.getY() > var1.getMinBuildHeight() + 1;
+                  var10 = var9 <= 20 && var13 && var7.getY() > var1.getMinY() + 1;
                }
 
                if (var11) {
@@ -454,7 +454,7 @@ public class MineshaftPieces {
                      return;
                   }
 
-                  var11 = var9 <= 50 && var15 && var7.getY() < var1.getMaxBuildHeight() - 1;
+                  var11 = var9 <= 50 && var15 && var7.getY() < var1.getMaxY();
                }
             }
          }

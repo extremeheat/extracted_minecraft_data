@@ -67,27 +67,27 @@ public abstract class AbstractClientPlayer extends Player {
       return var1 == null ? DefaultPlayerSkin.get(this.getUUID()) : var1.getSkin();
    }
 
-   public float getFieldOfViewModifier(boolean var1) {
-      float var2 = 1.0F;
+   public float getFieldOfViewModifier(boolean var1, float var2) {
+      float var3 = 1.0F;
       if (this.getAbilities().flying) {
-         var2 *= 1.1F;
+         var3 *= 1.1F;
       }
 
-      float var3 = this.getAbilities().getWalkingSpeed();
-      if (var3 != 0.0F) {
-         float var4 = (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) / var3;
-         var2 *= (var4 + 1.0F) / 2.0F;
+      float var4 = this.getAbilities().getWalkingSpeed();
+      if (var4 != 0.0F) {
+         float var5 = (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) / var4;
+         var3 *= (var5 + 1.0F) / 2.0F;
       }
 
       if (this.isUsingItem()) {
          if (this.getUseItem().is(Items.BOW)) {
-            float var5 = Math.min((float)this.getTicksUsingItem() / 20.0F, 1.0F);
-            var2 *= 1.0F - Mth.square(var5) * 0.15F;
+            float var6 = Math.min((float)this.getTicksUsingItem() / 20.0F, 1.0F);
+            var3 *= 1.0F - Mth.square(var6) * 0.15F;
          } else if (var1 && this.isScoping()) {
             return 0.1F;
          }
       }
 
-      return var2;
+      return Mth.lerp(var2, 1.0F, var3);
    }
 }

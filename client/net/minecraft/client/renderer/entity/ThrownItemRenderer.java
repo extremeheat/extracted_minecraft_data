@@ -53,7 +53,7 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
       super.extractRenderState((T)var1, var2, var3);
       ItemStack var4 = ((ItemSupplier)var1).getItem();
       var2.itemModel = !var4.isEmpty() ? this.itemRenderer.getModel(var4, var1.level(), null, var1.getId()) : null;
-      var2.item = var4;
+      var2.item = var4.copy();
    }
 
    public ResourceLocation getTextureLocation(ThrownItemRenderState var1) {

@@ -75,7 +75,7 @@ public class StructureManager {
 
       while (var4.hasNext()) {
          long var5 = (Long)var4.next();
-         SectionPos var7 = SectionPos.of(new ChunkPos(var5), this.level.getMinSection());
+         SectionPos var7 = SectionPos.of(new ChunkPos(var5), this.level.getMinSectionY());
          StructureStart var8 = this.getStartForStructure(var7, var1, this.level.getChunk(var7.x(), var7.z(), ChunkStatus.STRUCTURE_STARTS));
          if (var8 != null && var8.isValid()) {
             var3.accept(var8);

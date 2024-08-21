@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -19,6 +20,9 @@ import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrationInfo;
@@ -65,6 +69,7 @@ import org.slf4j.Logger;
 
 public class RegistryDataLoader {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Comparator<ResourceKey<?>> ERROR_KEY_COMPARATOR = Comparator.comparing(ResourceKey::registry).thenComparing(ResourceKey::location);
    private static final RegistrationInfo NETWORK_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
    private static final Function<Optional<KnownPack>, RegistrationInfo> REGISTRATION_INFO_CACHE = Util.memoize(var0 -> {
       Lifecycle var1 = var0.map(KnownPack::isVanilla).map(var0x -> Lifecycle.stable()).orElse(Lifecycle.experimental());
@@ -154,8 +159,7 @@ public class RegistryDataLoader {
          }
       });
       if (!var3.isEmpty()) {
-         logErrors(var3);
-         throw new IllegalStateException("Failed to load registries due to above errors");
+         throw logErrors(var3);
       } else {
          return new RegistryAccess.ImmutableRegistryAccess(var4.stream().map(RegistryDataLoader.Loader::registry).toList()).freeze();
       }
@@ -181,7 +185,12 @@ public class RegistryDataLoader {
       return new RegistryOps.RegistryInfo<>(var0, var0, var0.registryLifecycle());
    }
 
-   private static void logErrors(Map<ResourceKey<?>, Exception> var0) {
+   private static ReportedException logErrors(Map<ResourceKey<?>, Exception> var0) {
+      printFullDetailsToLog(var0);
+      return createReportWithBriefInfo(var0);
+   }
+
+   private static void printFullDetailsToLog(Map<ResourceKey<?>, Exception> var0) {
       StringWriter var1 = new StringWriter();
       PrintWriter var2 = new PrintWriter(var1);
       Map var3 = var0.entrySet()
@@ -200,6 +209,30 @@ public class RegistryDataLoader {
       });
       var2.flush();
       LOGGER.error("Registry loading errors:\n{}", var1);
+   }
+
+   private static ReportedException createReportWithBriefInfo(Map<ResourceKey<?>, Exception> var0) {
+      CrashReport var1 = CrashReport.forThrowable(new IllegalStateException("Failed to load registries due to errors"), "Registry Loading");
+      CrashReportCategory var2 = var1.addCategory("Loading info");
+      var2.setDetail(
+         "Errors",
+         () -> {
+            StringBuilder var1x = new StringBuilder();
+            var0.entrySet()
+               .stream()
+               .sorted(Entry.comparingByKey(ERROR_KEY_COMPARATOR))
+               .forEach(
+                  var1xx -> var1x.append("\n\t\t")
+                        .append(((ResourceKey)var1xx.getKey()).registry())
+                        .append("/")
+                        .append(((ResourceKey)var1xx.getKey()).location())
+                        .append(": ")
+                        .append(((Exception)var1xx.getValue()).getMessage())
+               );
+            return var1x.toString();
+         }
+      );
+      return new ReportedException(var1);
    }
 
    private static <E> void loadElementFromResource(

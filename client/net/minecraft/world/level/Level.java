@@ -331,7 +331,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          if (this.hasChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3))) {
             var4 = this.getChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3)).getHeight(var1, var2 & 15, var3 & 15) + 1;
          } else {
-            var4 = this.getMinBuildHeight();
+            var4 = this.getMinY();
          }
       } else {
          var4 = this.getSeaLevel() + 1;

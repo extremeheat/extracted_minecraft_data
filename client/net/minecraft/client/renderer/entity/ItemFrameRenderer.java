@@ -153,21 +153,22 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
    public void extractRenderState(T var1, ItemFrameRenderState var2, float var3) {
       super.extractRenderState((T)var1, var2, var3);
       var2.direction = var1.getDirection();
-      var2.itemStack = var1.getItem().copy();
+      ItemStack var4 = var1.getItem();
+      var2.itemStack = var4.copy();
       var2.rotation = var1.getRotation();
       var2.isGlowFrame = var1.getType() == EntityType.GLOW_ITEM_FRAME;
       var2.itemModel = null;
       var2.mapId = null;
       if (!var2.itemStack.isEmpty()) {
-         MapId var4 = var1.getFramedMapId(var2.itemStack);
-         if (var4 != null) {
-            MapItemSavedData var5 = var1.level().getMapData(var4);
-            if (var5 != null) {
-               this.mapRenderer.extractRenderState(var4, var5, var2.mapRenderState);
-               var2.mapId = var4;
+         MapId var5 = var1.getFramedMapId(var4);
+         if (var5 != null) {
+            MapItemSavedData var6 = var1.level().getMapData(var5);
+            if (var6 != null) {
+               this.mapRenderer.extractRenderState(var5, var6, var2.mapRenderState);
+               var2.mapId = var5;
             }
          } else {
-            var2.itemModel = this.itemRenderer.getModel(var2.itemStack, var1.level(), null, var1.getId());
+            var2.itemModel = this.itemRenderer.getModel(var4, var1.level(), null, var1.getId());
          }
       }
    }

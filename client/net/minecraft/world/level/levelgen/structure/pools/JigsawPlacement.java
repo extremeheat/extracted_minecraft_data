@@ -124,10 +124,10 @@ public class JigsawPlacement {
                   if (var3 > 0) {
                      AABB var19x = new AABB(
                         (double)(var25 - var7),
-                        (double)Math.max(var29 - var7, var14.getMinBuildHeight() + var9.bottom()),
+                        (double)Math.max(var29 - var7, var14.getMinY() + var9.bottom()),
                         (double)(var26 - var7),
                         (double)(var25 + var7 + 1),
-                        (double)Math.min(var29 + var7 + 1, var14.getMaxBuildHeight() - var9.top()),
+                        (double)Math.min(var29 + var7 + 1, var14.getMaxY() + 1 - var9.top()),
                         (double)(var26 + var7 + 1)
                      );
                      VoxelShape var20x = Shapes.join(Shapes.create(var19x), Shapes.create(AABB.of(var24)), BooleanOp.ONLY_FIRST);

@@ -32,7 +32,7 @@ public class PiglinRenderer extends HumanoidMobRenderer<AbstractPiglin, PiglinRe
             new HumanoidArmorModel(var1.bakeLayer(var4)),
             new HumanoidArmorModel(var1.bakeLayer(var5)),
             new HumanoidArmorModel(var1.bakeLayer(var6)),
-            new HumanoidArmorModel(var1.bakeLayer(var6)),
+            new HumanoidArmorModel(var1.bakeLayer(var7)),
             var1.getModelManager()
          )
       );

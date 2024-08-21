@@ -133,7 +133,7 @@ public class ServerPlayerGameMode {
    public void handleBlockBreakAction(BlockPos var1, ServerboundPlayerActionPacket.Action var2, Direction var3, int var4, int var5) {
       if (!this.player.canInteractWithBlock(var1, 1.0)) {
          this.debugLogging(var1, false, var5, "too far");
-      } else if (var1.getY() >= var4) {
+      } else if (var1.getY() > var4) {
          this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));
          this.debugLogging(var1, false, var5, "too high");
       } else {
@@ -273,7 +273,7 @@ public class ServerPlayerGameMode {
    public InteractionResult useItem(ServerPlayer var1, Level var2, ItemStack var3, InteractionHand var4) {
       if (this.gameModeForPlayer == GameType.SPECTATOR) {
          return InteractionResult.PASS;
-      } else if (var1.getCooldowns().isOnCooldown(var3.getItem())) {
+      } else if (var1.getCooldowns().isOnCooldown(var3)) {
          return InteractionResult.PASS;
       } else {
          int var5 = var3.getCount();
@@ -341,7 +341,7 @@ public class ServerPlayerGameMode {
             }
          }
 
-         if (!var3.isEmpty() && !var1.getCooldowns().isOnCooldown(var3.getItem())) {
+         if (!var3.isEmpty() && !var1.getCooldowns().isOnCooldown(var3)) {
             UseOnContext var15 = new UseOnContext(var1, var4, var5);
             InteractionResult var16;
             if (this.isCreative()) {

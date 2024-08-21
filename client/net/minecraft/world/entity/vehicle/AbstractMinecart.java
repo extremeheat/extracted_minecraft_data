@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
@@ -19,17 +18,14 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
@@ -99,7 +95,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    public static AbstractMinecart createMinecart(
-      ServerLevel var0, double var1, double var3, double var5, AbstractMinecart.Type var7, ItemStack var8, @Nullable Player var9
+      Level var0, double var1, double var3, double var5, AbstractMinecart.Type var7, ItemStack var8, @Nullable Player var9
    ) {
       Object var10 = switch (var7) {
          case CHEST -> new MinecartChest(var0, var1, var3, var5);
@@ -111,6 +107,12 @@ public abstract class AbstractMinecart extends VehicleEntity {
          default -> new Minecart(var0, var1, var3, var5);
       };
       EntityType.createDefaultStackConfig(var0, var8, var9).accept(var10);
+      if (((AbstractMinecart)var10).getBehavior() instanceof NewMinecartBehavior var11) {
+         BlockPos var14 = ((AbstractMinecart)var10).getCurrentBlockPosOrRailBelow();
+         BlockState var13 = var0.getBlockState(var14);
+         var11.adjustToRails(var14, var13, true);
+      }
+
       return (AbstractMinecart)var10;
    }
 
@@ -264,42 +266,24 @@ public abstract class AbstractMinecart extends VehicleEntity {
       this.firstTick = false;
    }
 
-   public BlockPos getCurrentBlockPos() {
+   public boolean isFirstTick() {
+      return this.firstTick;
+   }
+
+   public BlockPos getCurrentBlockPosOrRailBelow() {
       int var1 = Mth.floor(this.getX());
       int var2 = Mth.floor(this.getY());
       int var3 = Mth.floor(this.getZ());
-      if (this.level().getBlockState(new BlockPos(var1, var2 - 1, var3)).is(BlockTags.RAILS)) {
+      if (useExperimentalMovement(this.level())) {
+         double var4 = this.getY() - 0.1 - 9.999999747378752E-6;
+         if (this.level().getBlockState(BlockPos.containing((double)var1, var4, (double)var3)).is(BlockTags.RAILS)) {
+            var2 = Mth.floor(var4);
+         }
+      } else if (this.level().getBlockState(new BlockPos(var1, var2 - 1, var3)).is(BlockTags.RAILS)) {
          var2--;
       }
 
       return new BlockPos(var1, var2, var3);
-   }
-
-   public boolean pushOrPickUpEntities(AABB var1, double var2) {
-      boolean var4 = false;
-      if (this.getMinecartType() == AbstractMinecart.Type.RIDEABLE && this.getDeltaMovement().horizontalDistanceSqr() >= var2) {
-         List var8 = this.level().getEntities(this, var1, EntitySelector.pushableBy(this));
-         if (!var8.isEmpty()) {
-            for (Entity var7 : var8) {
-               if (!(var7 instanceof Player) && !(var7 instanceof IronGolem) && !(var7 instanceof AbstractMinecart) && !this.isVehicle() && !var7.isPassenger()
-                  )
-                {
-                  var7.startRiding(this);
-                  var4 = true;
-               } else {
-                  var7.push(this);
-               }
-            }
-         }
-      } else {
-         for (Entity var6 : this.level().getEntities(this, var1)) {
-            if (!this.hasPassenger(var6) && var6.isPushable() && var6 instanceof AbstractMinecart) {
-               var6.push(this);
-            }
-         }
-      }
-
-      return var4;
    }
 
    protected double getMaxSpeed() {
@@ -396,11 +380,13 @@ public abstract class AbstractMinecart extends VehicleEntity {
       if (useExperimentalMovement(this.level())) {
          Vec3 var3 = this.position().add(var2);
          super.move(var1, var2);
-         if (this.horizontalCollision || this.verticalCollision) {
-            boolean var4 = this.pushOrPickUpEntities(this.getBoundingBox().inflate(1.0E-7), 0.0);
-            if (var4) {
-               super.move(var1, var3.subtract(this.position()));
-            }
+         boolean var4 = this.behavior.pushAndPickupEntities();
+         if (var4) {
+            super.move(var1, var3.subtract(this.position()));
+         }
+
+         if (var1.equals(MoverType.PISTON)) {
+            this.onRails = false;
          }
       } else {
          super.move(var1, var2);
@@ -416,7 +402,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       this.onRails = var1;
    }
 
-   public boolean isflipped() {
+   public boolean isFlipped() {
       return this.flipped;
    }
 
@@ -474,6 +460,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       }
 
       this.flipped = var1.getBoolean("FlippedRotation");
+      this.firstTick = var1.getBoolean("HasTicked");
    }
 
    @Override
@@ -485,6 +472,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       }
 
       var1.putBoolean("FlippedRotation", this.flipped);
+      var1.putBoolean("HasTicked", this.firstTick);
    }
 
    @Override
@@ -511,12 +499,20 @@ public abstract class AbstractMinecart extends VehicleEntity {
                   var2 *= 0.5;
                   var4 *= 0.5;
                   if (var1 instanceof AbstractMinecart) {
-                     double var10 = var1.getX() - this.getX();
-                     double var12 = var1.getZ() - this.getZ();
+                     double var10;
+                     double var12;
+                     if (useExperimentalMovement(this.level())) {
+                        var10 = this.getDeltaMovement().x;
+                        var12 = this.getDeltaMovement().z;
+                     } else {
+                        var10 = var1.getX() - this.getX();
+                        var12 = var1.getZ() - this.getZ();
+                     }
+
                      Vec3 var14 = new Vec3(var10, 0.0, var12).normalize();
                      Vec3 var15 = new Vec3((double)Mth.cos(this.getYRot() * 0.017453292F), 0.0, (double)Mth.sin(this.getYRot() * 0.017453292F)).normalize();
                      double var16 = Math.abs(var14.dot(var15));
-                     if (var16 < 0.800000011920929) {
+                     if (var16 < 0.800000011920929 && !useExperimentalMovement(this.level())) {
                         return;
                      }
 

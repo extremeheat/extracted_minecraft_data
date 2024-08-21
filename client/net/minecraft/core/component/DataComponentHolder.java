@@ -1,5 +1,6 @@
 package net.minecraft.core.component;
 
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 public interface DataComponentHolder {
@@ -8,6 +9,10 @@ public interface DataComponentHolder {
    @Nullable
    default <T> T get(DataComponentType<? extends T> var1) {
       return this.getComponents().get(var1);
+   }
+
+   default <T> Stream<T> getAllOfType(Class<? extends T> var1) {
+      return this.getComponents().stream().map(TypedDataComponent::value).filter(var1x -> var1.isAssignableFrom(var1x.getClass())).map(var0 -> (T)var0);
    }
 
    default <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {

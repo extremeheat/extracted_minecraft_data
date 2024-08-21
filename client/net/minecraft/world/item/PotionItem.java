@@ -1,21 +1,17 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -27,8 +23,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class PotionItem extends Item {
-   private static final int DRINK_DURATION = 32;
-
    public PotionItem(Item.Properties var1) {
       super(var1);
    }
@@ -37,43 +31,6 @@ public class PotionItem extends Item {
    public ItemStack getDefaultInstance() {
       ItemStack var1 = super.getDefaultInstance();
       var1.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
-      return var1;
-   }
-
-   @Override
-   public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      Player var4 = var3 instanceof Player ? (Player)var3 : null;
-      if (var4 instanceof ServerPlayer) {
-         CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer)var4, var1);
-      }
-
-      if (!var2.isClientSide) {
-         PotionContents var5 = var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-         var5.forEachEffect(var2x -> {
-            if (var2x.getEffect().value().isInstantenous()) {
-               var2x.getEffect().value().applyInstantenousEffect(var4, var4, var3, var2x.getAmplifier(), 1.0);
-            } else {
-               var3.addEffect(var2x);
-            }
-         });
-      }
-
-      if (var4 != null) {
-         var4.awardStat(Stats.ITEM_USED.get(this));
-         var1.consume(1, var4);
-      }
-
-      if (var4 == null || !var4.hasInfiniteMaterials()) {
-         if (var1.isEmpty()) {
-            return new ItemStack(Items.GLASS_BOTTLE);
-         }
-
-         if (var4 != null) {
-            var4.getInventory().add(new ItemStack(Items.GLASS_BOTTLE));
-         }
-      }
-
-      var3.gameEvent(GameEvent.DRINK);
       return var1;
    }
 
@@ -114,21 +71,6 @@ public class PotionItem extends Item {
       } else {
          return InteractionResult.PASS;
       }
-   }
-
-   @Override
-   public int getUseDuration(ItemStack var1, LivingEntity var2) {
-      return 32;
-   }
-
-   @Override
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.DRINK;
-   }
-
-   @Override
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      return ItemUtils.startUsingInstantly(var1, var2, var3);
    }
 
    @Override

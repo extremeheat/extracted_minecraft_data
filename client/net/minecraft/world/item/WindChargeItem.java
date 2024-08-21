@@ -48,7 +48,7 @@ public class WindChargeItem extends Item implements ProjectileItem {
          0.5F,
          0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
       );
-      var2.getCooldowns().addCooldown(this, 10);
+      var2.getCooldowns().addCooldown(var4, 10);
       var2.awardStat(Stats.ITEM_USED.get(this));
       var4.consume(1, var2);
       return InteractionResult.SUCCESS;

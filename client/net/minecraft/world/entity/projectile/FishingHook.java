@@ -110,6 +110,11 @@ public class FishingHook extends Projectile {
    }
 
    @Override
+   protected boolean shouldBounceOnWorldBorder() {
+      return true;
+   }
+
+   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (DATA_HOOKED_ENTITY.equals(var1)) {
          int var2 = this.getEntityData().get(DATA_HOOKED_ENTITY);

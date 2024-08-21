@@ -860,12 +860,12 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return this.spawn(var1, var8, var4, var5, var6, var7);
    }
 
-   public static <T extends Entity> Consumer<T> createDefaultStackConfig(ServerLevel var0, ItemStack var1, @Nullable Player var2) {
+   public static <T extends Entity> Consumer<T> createDefaultStackConfig(Level var0, ItemStack var1, @Nullable Player var2) {
       return appendDefaultStackConfig(var0x -> {
       }, var0, var1, var2);
    }
 
-   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(Consumer<T> var0, ServerLevel var1, ItemStack var2, @Nullable Player var3) {
+   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable Player var3) {
       return appendCustomEntityStackConfig(appendCustomNameConfig(var0, var2), var1, var2, var3);
    }
 
@@ -874,7 +874,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return var2 != null ? var0.andThen(var1x -> var1x.setCustomName(var2)) : var0;
    }
 
-   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, ServerLevel var1, ItemStack var2, @Nullable Player var3) {
+   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable Player var3) {
       CustomData var4 = var2.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
       return !var4.isEmpty() ? var0.andThen(var3x -> updateCustomEntityTag(var1, var3, var3x, var4)) : var0;
    }

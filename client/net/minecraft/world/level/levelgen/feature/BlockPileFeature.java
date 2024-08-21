@@ -21,7 +21,7 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
       WorldGenLevel var3 = var1.level();
       RandomSource var4 = var1.random();
       BlockPileConfiguration var5 = (BlockPileConfiguration)var1.config();
-      if (var2.getY() < var3.getMinBuildHeight() + 5) {
+      if (var2.getY() < var3.getMinY() + 5) {
          return false;
       } else {
          int var6 = 2 + var4.nextInt(2);

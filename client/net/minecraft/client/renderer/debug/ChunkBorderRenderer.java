@@ -23,8 +23,8 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
    @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       Entity var9 = this.minecraft.gameRenderer.getMainCamera().getEntity();
-      float var10 = (float)((double)this.minecraft.level.getMinBuildHeight() - var5);
-      float var11 = (float)((double)this.minecraft.level.getMaxBuildHeight() - var5);
+      float var10 = (float)((double)this.minecraft.level.getMinY() - var5);
+      float var11 = (float)((double)(this.minecraft.level.getMaxY() + 1) - var5);
       ChunkPos var12 = var9.chunkPosition();
       float var13 = (float)((double)var12.getMinBlockX() - var3);
       float var14 = (float)((double)var12.getMinBlockZ() - var7);
@@ -64,7 +64,7 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
          var15.addVertex(var16, var13 + 16.0F, var11, var14 + (float)var22).setColor(1.0F, 1.0F, 0.0F, 0.0F);
       }
 
-      for (int var23 = this.minecraft.level.getMinBuildHeight(); var23 <= this.minecraft.level.getMaxBuildHeight(); var23 += 2) {
+      for (int var23 = this.minecraft.level.getMinY(); var23 <= this.minecraft.level.getMaxY() + 1; var23 += 2) {
          float var28 = (float)((double)var23 - var5);
          int var19 = var23 % 8 == 0 ? CELL_BORDER : YELLOW;
          var15.addVertex(var16, var13, var28, var14).setColor(1.0F, 1.0F, 0.0F, 0.0F);
@@ -87,7 +87,7 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
       }
 
-      for (int var25 = this.minecraft.level.getMinBuildHeight(); var25 <= this.minecraft.level.getMaxBuildHeight(); var25 += 16) {
+      for (int var25 = this.minecraft.level.getMinY(); var25 <= this.minecraft.level.getMaxY() + 1; var25 += 16) {
          float var30 = (float)((double)var25 - var5);
          var15.addVertex(var16, var13, var30, var14).setColor(0.25F, 0.25F, 1.0F, 0.0F);
          var15.addVertex(var16, var13, var30, var14).setColor(0.25F, 0.25F, 1.0F, 1.0F);

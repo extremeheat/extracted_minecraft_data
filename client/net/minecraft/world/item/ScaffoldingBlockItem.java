@@ -41,9 +41,9 @@ public class ScaffoldingBlockItem extends BlockItem {
          while (var7 < 7) {
             if (!var3.isClientSide && !var3.isInWorldBounds(var8)) {
                Player var9 = var1.getPlayer();
-               int var10 = var3.getMaxBuildHeight();
-               if (var9 instanceof ServerPlayer && var8.getY() >= var10) {
-                  ((ServerPlayer)var9).sendSystemMessage(Component.translatable("build.tooHigh", var10 - 1).withStyle(ChatFormatting.RED), true);
+               int var10 = var3.getMaxY();
+               if (var9 instanceof ServerPlayer && var8.getY() > var10) {
+                  ((ServerPlayer)var9).sendSystemMessage(Component.translatable("build.tooHigh", var10).withStyle(ChatFormatting.RED), true);
                }
                break;
             }

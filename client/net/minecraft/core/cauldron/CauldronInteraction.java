@@ -234,28 +234,26 @@ public interface CauldronInteraction {
    }
 
    private static InteractionResult fillWaterInteraction(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
-      return (InteractionResult)(isUnderWater(var1, var2)
-         ? InteractionResult.SUCCESS
-         : emptyBucket(
-            var1,
-            var2,
-            var3,
-            var4,
-            var5,
-            Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, Integer.valueOf(3)),
-            SoundEvents.BUCKET_EMPTY
-         ));
+      return emptyBucket(
+         var1,
+         var2,
+         var3,
+         var4,
+         var5,
+         Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, Integer.valueOf(3)),
+         SoundEvents.BUCKET_EMPTY
+      );
    }
 
    private static InteractionResult fillLavaInteraction(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
       return (InteractionResult)(isUnderWater(var1, var2)
-         ? InteractionResult.SUCCESS
+         ? InteractionResult.CONSUME
          : emptyBucket(var1, var2, var3, var4, var5, Blocks.LAVA_CAULDRON.defaultBlockState(), SoundEvents.BUCKET_EMPTY_LAVA));
    }
 
    private static InteractionResult fillPowderSnowInteraction(BlockState var0, Level var1, BlockPos var2, Player var3, InteractionHand var4, ItemStack var5) {
       return (InteractionResult)(isUnderWater(var1, var2)
-         ? InteractionResult.SUCCESS
+         ? InteractionResult.CONSUME
          : emptyBucket(
             var1,
             var2,

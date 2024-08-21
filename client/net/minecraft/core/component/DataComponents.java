@@ -26,6 +26,7 @@ import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.DebugStickState;
@@ -39,11 +40,14 @@ import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.item.component.MapDecorations;
 import net.minecraft.world.item.component.MapItemColor;
 import net.minecraft.world.item.component.MapPostProcessing;
+import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.Unbreakable;
+import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.enchantment.Enchantable;
@@ -113,6 +117,15 @@ public class DataComponents {
    public static final DataComponentType<FoodProperties> FOOD = register(
       "food", var0 -> var0.persistent(FoodProperties.DIRECT_CODEC).networkSynchronized(FoodProperties.DIRECT_STREAM_CODEC).cacheEncoding()
    );
+   public static final DataComponentType<Consumable> CONSUMABLE = register(
+      "consumable", var0 -> var0.persistent(Consumable.CODEC).networkSynchronized(Consumable.STREAM_CODEC).cacheEncoding()
+   );
+   public static final DataComponentType<UseRemainder> USE_REMAINDER = register(
+      "use_remainder", var0 -> var0.persistent(UseRemainder.CODEC).networkSynchronized(UseRemainder.STREAM_CODEC).cacheEncoding()
+   );
+   public static final DataComponentType<UseCooldown> USE_COOLDOWN = register(
+      "use_cooldown", var0 -> var0.persistent(UseCooldown.CODEC).networkSynchronized(UseCooldown.STREAM_CODEC).cacheEncoding()
+   );
    public static final DataComponentType<Unit> FIRE_RESISTANT = register(
       "fire_resistant", var0 -> var0.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE))
    );
@@ -177,8 +190,8 @@ public class DataComponents {
    public static final DataComponentType<Holder<Instrument>> INSTRUMENT = register(
       "instrument", var0 -> var0.persistent(Instrument.CODEC).networkSynchronized(Instrument.STREAM_CODEC).cacheEncoding()
    );
-   public static final DataComponentType<Integer> OMINOUS_BOTTLE_AMPLIFIER = register(
-      "ominous_bottle_amplifier", var0 -> var0.persistent(ExtraCodecs.intRange(0, 4)).networkSynchronized(ByteBufCodecs.VAR_INT)
+   public static final DataComponentType<OminousBottleAmplifier> OMINOUS_BOTTLE_AMPLIFIER = register(
+      "ominous_bottle_amplifier", var0 -> var0.persistent(OminousBottleAmplifier.CODEC).networkSynchronized(OminousBottleAmplifier.STREAM_CODEC)
    );
    public static final DataComponentType<JukeboxPlayable> JUKEBOX_PLAYABLE = register(
       "jukebox_playable", var0 -> var0.persistent(JukeboxPlayable.CODEC).networkSynchronized(JukeboxPlayable.STREAM_CODEC)

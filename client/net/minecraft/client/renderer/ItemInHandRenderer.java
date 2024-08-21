@@ -20,6 +20,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -144,9 +145,9 @@ public class ItemInHandRenderer {
       var1.translate(var6 * 0.3F, -1.1F, 0.45F);
       ResourceLocation var7 = this.minecraft.player.getSkin().texture();
       if (var4 == HumanoidArm.RIGHT) {
-         var5.renderRightHand(var1, var2, var3, var7);
+         var5.renderRightHand(var1, var2, var3, var7, this.minecraft.player.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
-         var5.renderLeftHand(var1, var2, var3, var7);
+         var5.renderLeftHand(var1, var2, var3, var7, this.minecraft.player.isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
       }
 
       var1.popPose();
@@ -241,9 +242,9 @@ public class ItemInHandRenderer {
       PlayerRenderer var16 = (PlayerRenderer)this.entityRenderDispatcher.<AbstractClientPlayer>getRenderer(var15);
       ResourceLocation var17 = var15.getSkin().texture();
       if (var7) {
-         var16.renderRightHand(var1, var2, var3, var17);
+         var16.renderRightHand(var1, var2, var3, var17, var15.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
-         var16.renderLeftHand(var1, var2, var3, var17);
+         var16.renderLeftHand(var1, var2, var3, var17, var15.isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
       }
    }
 

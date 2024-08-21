@@ -46,10 +46,10 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
       float var4 = 0.25F;
       if (var1) {
          PartDefinition var5 = var3.addOrReplaceChild(
-            "left_arm", CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0), PartPose.offset(5.0F, 2.5F, 0.0F)
+            "left_arm", CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0), PartPose.offset(5.0F, 2.0F, 0.0F)
          );
          PartDefinition var6 = var3.addOrReplaceChild(
-            "right_arm", CubeListBuilder.create().texOffs(40, 16).addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0), PartPose.offset(-5.0F, 2.5F, 0.0F)
+            "right_arm", CubeListBuilder.create().texOffs(40, 16).addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0), PartPose.offset(-5.0F, 2.0F, 0.0F)
          );
          var5.addOrReplaceChild(
             "left_sleeve", CubeListBuilder.create().texOffs(48, 48).addBox(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO

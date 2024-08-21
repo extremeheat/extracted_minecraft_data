@@ -259,8 +259,8 @@ public class Breeze extends Monster {
       return 25;
    }
 
-   public double getSnoutYPosition() {
-      return this.getEyeY() - 0.4;
+   public double getFiringYPosition() {
+      return this.getY() + (double)(this.getBbHeight() / 2.0F) + 0.30000001192092896;
    }
 
    @Override

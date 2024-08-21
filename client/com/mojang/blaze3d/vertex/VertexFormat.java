@@ -38,16 +38,18 @@ public class VertexFormat {
       return new VertexFormat.Builder();
    }
 
+   public void bindAttributes(int var1) {
+      int var2 = 0;
+
+      for (String var4 : this.getElementAttributeNames()) {
+         GlStateManager._glBindAttribLocation(var1, var2, var4);
+         var2++;
+      }
+   }
+
    @Override
    public String toString() {
-      StringBuilder var1 = new StringBuilder("Vertex format (").append(this.vertexSize).append(" bytes):\n");
-
-      for (int var2 = 0; var2 < this.elements.size(); var2++) {
-         VertexFormatElement var3 = this.elements.get(var2);
-         var1.append(var2).append(". ").append(this.names.get(var2)).append(": ").append(var3).append(" @ ").append(this.getOffset(var3)).append('\n');
-      }
-
-      return var1.toString();
+      return "VertexFormat" + this.names;
    }
 
    public int getVertexSize() {

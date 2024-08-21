@@ -35,7 +35,7 @@ public class CubeMap {
       Matrix4fStack var7 = RenderSystem.getModelViewStack();
       var7.pushMatrix();
       var7.rotationX(3.1415927F);
-      RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+      RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
       RenderSystem.enableBlend();
       RenderSystem.disableCull();
       RenderSystem.depthMask(false);

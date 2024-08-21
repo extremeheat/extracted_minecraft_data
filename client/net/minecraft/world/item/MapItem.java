@@ -116,15 +116,15 @@ public class MapItem extends ComplexItem {
                                  var11.set(var20 + var35, 0, var21 + var28);
                                  int var29 = var23.getHeight(Heightmap.Types.WORLD_SURFACE, var11.getX(), var11.getZ()) + 1;
                                  BlockState var30;
-                                 if (var29 <= var1.getMinBuildHeight() + 1) {
+                                 if (var29 <= var1.getMinY() + 1) {
                                     var30 = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {
                                        var11.setY(--var29);
                                        var30 = var23.getBlockState(var11);
-                                    } while (var30.getMapColor(var1, var11) == MapColor.NONE && var29 > var1.getMinBuildHeight());
+                                    } while (var30.getMapColor(var1, var11) == MapColor.NONE && var29 > var1.getMinY());
 
-                                    if (var29 > var1.getMinBuildHeight() && !var30.getFluidState().isEmpty()) {
+                                    if (var29 > var1.getMinY() && !var30.getFluidState().isEmpty()) {
                                        int var31 = var29 - 1;
                                        var12.set(var11);
 
@@ -133,7 +133,7 @@ public class MapItem extends ComplexItem {
                                           var12.setY(var31--);
                                           var32 = var23.getBlockState(var12);
                                           var24++;
-                                       } while (var31 > var1.getMinBuildHeight() && !var32.getFluidState().isEmpty());
+                                       } while (var31 > var1.getMinY() && !var32.getFluidState().isEmpty());
 
                                        var30 = this.getCorrectStateForFluidBlock(var1, var30, var11);
                                     }

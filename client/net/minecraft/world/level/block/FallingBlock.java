@@ -37,7 +37,7 @@ public abstract class FallingBlock extends Block implements Fallable {
 
    @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinBuildHeight()) {
+      if (isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinY()) {
          FallingBlockEntity var5 = FallingBlockEntity.fall(var2, var3, var1);
          this.falling(var5);
       }

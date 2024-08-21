@@ -262,8 +262,8 @@ public class Blender {
       BlockPos var5 = new BlockPos(var2.getMinBlockX(), 0, var2.getMinBlockZ());
       BlendingData var6 = var1.getBlendingData();
       if (var6 != null) {
-         int var7 = var6.getAreaWithOldGeneration().getMinBuildHeight();
-         int var8 = var6.getAreaWithOldGeneration().getMaxBuildHeight() - 1;
+         int var7 = var6.getAreaWithOldGeneration().getMinY();
+         int var8 = var6.getAreaWithOldGeneration().getMaxY();
          if (var3) {
             for (int var9 = 0; var9 < 16; var9++) {
                for (int var10 = 0; var10 < 16; var10++) {
@@ -368,7 +368,7 @@ public class Blender {
       double var14 = var2;
       double var8 = var4;
       double var10 = (double)var1.getAreaWithOldGeneration().getHeight() / 2.0;
-      double var12 = (double)var1.getAreaWithOldGeneration().getMinBuildHeight() + var10;
+      double var12 = (double)var1.getAreaWithOldGeneration().getMinY() + var10;
       return (var8x, var10x, var12x) -> distanceToCube(var8x - 8.0 - var14, var10x - var12, var12x - 8.0 - var8, 8.0, var10, 8.0);
    }
 

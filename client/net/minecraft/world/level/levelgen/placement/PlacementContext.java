@@ -35,8 +35,8 @@ public class PlacementContext extends WorldGenerationContext {
       return this.level.getBlockState(var1);
    }
 
-   public int getMinBuildHeight() {
-      return this.level.getMinBuildHeight();
+   public int getMinY() {
+      return this.level.getMinY();
    }
 
    public WorldGenLevel getLevel() {

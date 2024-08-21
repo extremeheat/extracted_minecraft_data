@@ -277,19 +277,20 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       var2.isInWater = var1.isInWater();
       var2.isAutoSpinAttack = var1.isAutoSpinAttack();
       var2.hasRedOverlay = var1.hurtTime > 0 || var1.deathTime > 0;
-      var2.headItem = var1.getItemBySlot(EquipmentSlot.HEAD).copy();
-      var2.headItemModel = this.itemRenderer.resolveItemModel(var2.headItem, var1, ItemDisplayContext.HEAD);
+      ItemStack var9 = var1.getItemBySlot(EquipmentSlot.HEAD);
+      var2.headItem = var9.copy();
+      var2.headItemModel = this.itemRenderer.resolveItemModel(var9, var1, ItemDisplayContext.HEAD);
       var2.mainArm = var1.getMainArm();
-      ItemStack var8 = var1.getItemHeldByArm(HumanoidArm.RIGHT);
-      ItemStack var9 = var1.getItemHeldByArm(HumanoidArm.LEFT);
-      var2.rightHandItem = var8.copy();
-      var2.leftHandItem = var9.copy();
-      var2.rightHandItemModel = this.itemRenderer.resolveItemModel(var8, var1, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
-      var2.leftHandItemModel = this.itemRenderer.resolveItemModel(var9, var1, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+      ItemStack var10 = var1.getItemHeldByArm(HumanoidArm.RIGHT);
+      ItemStack var7 = var1.getItemHeldByArm(HumanoidArm.LEFT);
+      var2.rightHandItem = var10.copy();
+      var2.leftHandItem = var7.copy();
+      var2.rightHandItemModel = this.itemRenderer.resolveItemModel(var10, var1, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+      var2.leftHandItemModel = this.itemRenderer.resolveItemModel(var7, var1, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
       var2.deathTime = var1.deathTime > 0 ? (float)var1.deathTime + var3 : 0.0F;
-      Minecraft var7 = Minecraft.getInstance();
-      var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var7.player);
-      var2.appearsGlowing = var7.shouldEntityAppearGlowing(var1);
+      Minecraft var8 = Minecraft.getInstance();
+      var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var8.player);
+      var2.appearsGlowing = var8.shouldEntityAppearGlowing(var1);
    }
 
    private static float solveBodyRot(LivingEntity var0, float var1, float var2) {

@@ -226,8 +226,8 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    @Override
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.CROSSBOW;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.CROSSBOW;
    }
 
    CrossbowItem.ChargingSounds getChargingSounds(ItemStack var1) {

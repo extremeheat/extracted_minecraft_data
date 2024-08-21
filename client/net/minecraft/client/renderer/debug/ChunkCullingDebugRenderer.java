@@ -60,7 +60,7 @@ public class ChunkCullingDebugRenderer implements DebugRenderer.SimpleDebugRende
                   }
                }
 
-               if (this.minecraft.sectionVisibility && !var12.getCompiled().hasNoRenderableLayers()) {
+               if (this.minecraft.sectionVisibility && var12.getCompiled().hasRenderableLayers()) {
                   VertexConsumer var32 = var2.getBuffer(RenderType.lines());
                   int var33 = 0;
 

@@ -113,7 +113,7 @@ public class WeatherEffectRenderer {
       RenderSystem.enableBlend();
       RenderSystem.enableDepthTest();
       RenderSystem.depthMask(Minecraft.useShaderTransparency());
-      RenderSystem.setShader(GameRenderer::getParticleShader);
+      RenderSystem.setShader(CoreShaders.PARTICLE);
       if (!var5.isEmpty()) {
          RenderSystem.setShaderTexture(0, RAIN_LOCATION);
          this.renderInstances(var7, var5, var2, 1.0F, var3, var4);
@@ -195,7 +195,7 @@ public class WeatherEffectRenderer {
             int var11 = var6.nextInt(21) - 10;
             int var12 = var6.nextInt(21) - 10;
             BlockPos var13 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var7.offset(var11, 0, var12));
-            if (var13.getY() > var1.getMinBuildHeight()
+            if (var13.getY() > var1.getMinY()
                && var13.getY() <= var7.getY() + 10
                && var13.getY() >= var7.getY() - 10
                && this.getPrecipitationAt(var1, var13) == Biome.Precipitation.RAIN) {

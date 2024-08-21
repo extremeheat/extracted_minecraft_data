@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface NeighborUpdater {
@@ -32,8 +33,10 @@ public interface NeighborUpdater {
 
    static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
       BlockState var7 = var0.getBlockState(var3);
-      BlockState var8 = var7.updateShape(var1, var2, var0, var3, var4);
-      Block.updateOrDestroy(var7, var8, var0, var3, var5, var6);
+      if ((var5 & 128) == 0 || !var2.is(Blocks.REDSTONE_WIRE)) {
+         BlockState var8 = var7.updateShape(var1, var2, var0, var3, var4);
+         Block.updateOrDestroy(var7, var8, var0, var3, var5, var6);
+      }
    }
 
    static void executeUpdate(Level var0, BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {

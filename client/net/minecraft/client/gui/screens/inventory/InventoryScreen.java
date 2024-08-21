@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -150,7 +149,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       }
 
       var8.setRenderShadow(false);
-      RenderSystem.runAsFancy(() -> var8.render(var7, 0.0, 0.0, 0.0, 1.0F, var0.pose(), var0.bufferSource(), 15728880));
+      var8.render(var7, 0.0, 0.0, 0.0, 1.0F, var0.pose(), var0.bufferSource(), 15728880);
       var0.flush();
       var8.setRenderShadow(true);
       var0.pose().popPose();

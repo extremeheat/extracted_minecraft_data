@@ -39,8 +39,8 @@ import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
@@ -83,32 +83,32 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          return HumanoidModel.ArmPose.EMPTY;
       } else {
          if (var0.useItemHand == var2 && var0.useItemRemainingTicks > 0) {
-            UseAnim var3 = var1.useAnimation;
-            if (var3 == UseAnim.BLOCK) {
+            ItemUseAnimation var3 = var1.useAnimation;
+            if (var3 == ItemUseAnimation.BLOCK) {
                return HumanoidModel.ArmPose.BLOCK;
             }
 
-            if (var3 == UseAnim.BOW) {
+            if (var3 == ItemUseAnimation.BOW) {
                return HumanoidModel.ArmPose.BOW_AND_ARROW;
             }
 
-            if (var3 == UseAnim.SPEAR) {
+            if (var3 == ItemUseAnimation.SPEAR) {
                return HumanoidModel.ArmPose.THROW_SPEAR;
             }
 
-            if (var3 == UseAnim.CROSSBOW) {
+            if (var3 == ItemUseAnimation.CROSSBOW) {
                return HumanoidModel.ArmPose.CROSSBOW_CHARGE;
             }
 
-            if (var3 == UseAnim.SPYGLASS) {
+            if (var3 == ItemUseAnimation.SPYGLASS) {
                return HumanoidModel.ArmPose.SPYGLASS;
             }
 
-            if (var3 == UseAnim.TOOT_HORN) {
+            if (var3 == ItemUseAnimation.TOOT_HORN) {
                return HumanoidModel.ArmPose.TOOT_HORN;
             }
 
-            if (var3 == UseAnim.BRUSH) {
+            if (var3 == ItemUseAnimation.BRUSH) {
                return HumanoidModel.ArmPose.BRUSH;
             }
          } else if (!var0.swinging && var1.holdsChargedCrossbow) {
@@ -151,7 +151,6 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.stingerCount = var1.getStingerCount();
       var2.useItemRemainingTicks = var1.getUseItemRemainingTicks();
       var2.swinging = var1.swinging;
-      var2.isVisuallySwimming = var1.isVisuallySwimming();
       var2.isSpectator = var1.isSpectator();
       var2.showHat = var1.isModelPartShown(PlayerModelPart.HAT);
       var2.showJacket = var1.isModelPartShown(PlayerModelPart.JACKET);
@@ -234,20 +233,22 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          : null;
    }
 
-   public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4) {
-      this.renderHand(var1, var2, var3, var4, this.model.rightArm);
+   public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
+      this.renderHand(var1, var2, var3, var4, this.model.rightArm, var5);
    }
 
-   public void renderLeftHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4) {
-      this.renderHand(var1, var2, var3, var4, this.model.leftArm);
+   public void renderLeftHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
+      this.renderHand(var1, var2, var3, var4, this.model.leftArm, var5);
    }
 
-   private void renderHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, ModelPart var5) {
-      PlayerModel var6 = this.getModel();
-      var6.leftArm.resetPose();
-      var6.rightArm.resetPose();
-      var6.leftArm.zRot = -0.1F;
-      var6.rightArm.zRot = 0.1F;
+   private void renderHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, ModelPart var5, boolean var6) {
+      PlayerModel var7 = this.getModel();
+      var5.resetPose();
+      var5.visible = true;
+      var7.leftSleeve.visible = var6;
+      var7.rightSleeve.visible = var6;
+      var7.leftArm.zRot = -0.1F;
+      var7.rightArm.zRot = 0.1F;
       var5.render(var1, var2.getBuffer(RenderType.entityTranslucent(var4)), var3, OverlayTexture.NO_OVERLAY);
    }
 

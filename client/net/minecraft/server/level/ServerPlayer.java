@@ -340,11 +340,11 @@ public class ServerPlayer extends Player {
          var4 = var2;
       }
 
-      while (!this.noCollisionNoLiquid(var1, var3.move(var4.getBottomCenter())) && var4.getY() < var1.getMaxBuildHeight() - 1) {
+      while (!this.noCollisionNoLiquid(var1, var3.move(var4.getBottomCenter())) && var4.getY() < var1.getMaxY()) {
          var4 = var4.above();
       }
 
-      while (this.noCollisionNoLiquid(var1, var3.move(var4.below().getBottomCenter())) && var4.getY() > var1.getMinBuildHeight() + 1) {
+      while (this.noCollisionNoLiquid(var1, var3.move(var4.below().getBottomCenter())) && var4.getY() > var1.getMinY() + 1) {
          var4 = var4.below();
       }
 
@@ -1404,11 +1404,14 @@ public class ServerPlayer extends Player {
    }
 
    @Override
-   protected void onEffectRemoved(MobEffectInstance var1) {
-      super.onEffectRemoved(var1);
-      this.connection.send(new ClientboundRemoveMobEffectPacket(this.getId(), var1.getEffect()));
-      if (var1.is(MobEffects.LEVITATION)) {
-         this.levitationStartPos = null;
+   protected void onEffectsRemoved(Collection<MobEffectInstance> var1) {
+      super.onEffectsRemoved(var1);
+
+      for (MobEffectInstance var3 : var1) {
+         this.connection.send(new ClientboundRemoveMobEffectPacket(this.getId(), var3.getEffect()));
+         if (var3.is(MobEffects.LEVITATION)) {
+            this.levitationStartPos = null;
+         }
       }
 
       CriteriaTriggers.EFFECTS_CHANGED.trigger(this, null);

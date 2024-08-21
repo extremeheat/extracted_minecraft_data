@@ -206,13 +206,13 @@ public class SectionStorage<R, P> implements AutoCloseable {
 
    private void unpackChunk(ChunkPos var1, @Nullable SectionStorage.PackedChunk<P> var2) {
       if (var2 == null) {
-         for (int var3 = this.levelHeightAccessor.getMinSection(); var3 < this.levelHeightAccessor.getMaxSection(); var3++) {
+         for (int var3 = this.levelHeightAccessor.getMinSectionY(); var3 <= this.levelHeightAccessor.getMaxSectionY(); var3++) {
             this.storage.put(getKey(var1, var3), Optional.empty());
          }
       } else {
          boolean var8 = var2.versionChanged();
 
-         for (int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); var4++) {
+         for (int var4 = this.levelHeightAccessor.getMinSectionY(); var4 <= this.levelHeightAccessor.getMaxSectionY(); var4++) {
             long var5 = getKey(var1, var4);
             Optional var7 = Optional.ofNullable(var2.sectionsByY.get(var4)).map(var3x -> this.unpacker.apply((P)var3x, () -> this.setDirty(var5)));
             this.storage.put(var5, var7);
@@ -243,7 +243,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
    private <T> Dynamic<T> writeChunk(ChunkPos var1, DynamicOps<T> var2) {
       HashMap var3 = Maps.newHashMap();
 
-      for (int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); var4++) {
+      for (int var4 = this.levelHeightAccessor.getMinSectionY(); var4 <= this.levelHeightAccessor.getMaxSectionY(); var4++) {
          long var5 = getKey(var1, var4);
          Optional var7 = (Optional)this.storage.get(var5);
          if (var7 != null && !var7.isEmpty()) {

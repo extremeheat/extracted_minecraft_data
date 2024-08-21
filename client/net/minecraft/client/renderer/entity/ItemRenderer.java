@@ -32,16 +32,12 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HalfTransparentBlock;
-import net.minecraft.world.level.block.StainedGlassPaneBlock;
 
 public class ItemRenderer implements ResourceManagerReloadListener {
    public static final ResourceLocation ENCHANTED_GLINT_ENTITY = ResourceLocation.withDefaultNamespace("textures/misc/enchanted_glint_entity.png");
@@ -147,32 +143,22 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
    private void renderItem(ItemStack var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, BakedModel var7, boolean var8) {
       if (!var7.isCustomRenderer() && (!var1.is(Items.TRIDENT) || var8)) {
-         boolean var9;
-         if (var2 != ItemDisplayContext.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem var10) {
-            Block var14 = var10.getBlock();
-            var9 = !(var14 instanceof HalfTransparentBlock) && !(var14 instanceof StainedGlassPaneBlock);
-         } else {
-            var9 = true;
-         }
-
-         RenderType var13 = ItemBlockRenderTypes.getRenderType(var1, var9);
-         VertexConsumer var15;
+         RenderType var9 = ItemBlockRenderTypes.getRenderType(var1);
+         VertexConsumer var10;
          if (hasAnimatedTexture(var1) && var1.hasFoil()) {
-            PoseStack.Pose var12 = var3.last().copy();
+            PoseStack.Pose var11 = var3.last().copy();
             if (var2 == ItemDisplayContext.GUI) {
-               MatrixUtil.mulComponentWise(var12.pose(), 0.5F);
+               MatrixUtil.mulComponentWise(var11.pose(), 0.5F);
             } else if (var2.firstPerson()) {
-               MatrixUtil.mulComponentWise(var12.pose(), 0.75F);
+               MatrixUtil.mulComponentWise(var11.pose(), 0.75F);
             }
 
-            var15 = getCompassFoilBuffer(var4, var13, var12);
-         } else if (var9) {
-            var15 = getFoilBufferDirect(var4, var13, true, var1.hasFoil());
+            var10 = getCompassFoilBuffer(var4, var9, var11);
          } else {
-            var15 = getFoilBuffer(var4, var13, true, var1.hasFoil());
+            var10 = getFoilBuffer(var4, var9, true, var1.hasFoil());
          }
 
-         this.renderModelLists(var7, var1, var5, var6, var3, var15);
+         this.renderModelLists(var7, var1, var5, var6, var3, var10);
       } else {
          this.blockEntityRenderer.renderByItem(var1, var2, var3, var4, var5, var6);
       }
@@ -198,12 +184,6 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       } else {
          return var0.getBuffer(var1);
       }
-   }
-
-   public static VertexConsumer getFoilBufferDirect(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
-      return var3
-         ? VertexMultiConsumer.create(var0.getBuffer(var2 ? RenderType.glint() : RenderType.entityGlintDirect()), var0.getBuffer(var1))
-         : var0.getBuffer(var1);
    }
 
    private void renderQuadList(PoseStack var1, VertexConsumer var2, List<BakedQuad> var3, ItemStack var4, int var5, int var6) {

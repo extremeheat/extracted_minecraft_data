@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.vehicle;
 
 import com.mojang.datafixers.util.Pair;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -8,13 +9,16 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class OldMinecartBehavior extends MinecartBehavior {
@@ -86,7 +90,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
          }
       } else {
          this.minecart.applyGravity();
-         BlockPos var1 = this.minecart.getCurrentBlockPos();
+         BlockPos var1 = this.minecart.getCurrentBlockPosOrRailBelow();
          BlockState var2 = this.level().getBlockState(var1);
          boolean var3 = BaseRailBlock.isRail(var2);
          this.minecart.setOnRails(var3);
@@ -105,7 +109,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
          double var6 = this.minecart.zo - this.getZ();
          if (var4 * var4 + var6 * var6 > 0.001) {
             this.setYRot((float)(Mth.atan2(var6, var4) * 180.0 / 3.141592653589793));
-            if (this.minecart.isflipped()) {
+            if (this.minecart.isFlipped()) {
                this.setYRot(this.getYRot() + 180.0F);
             }
          }
@@ -113,18 +117,18 @@ public class OldMinecartBehavior extends MinecartBehavior {
          double var8 = (double)Mth.wrapDegrees(this.getYRot() - this.minecart.yRotO);
          if (var8 < -170.0 || var8 >= 170.0) {
             this.setYRot(this.getYRot() + 180.0F);
-            this.minecart.setFlipped(!this.minecart.isflipped());
+            this.minecart.setFlipped(!this.minecart.isFlipped());
          }
 
          this.setXRot(this.getXRot() % 360.0F);
          this.setYRot(this.getYRot() % 360.0F);
-         this.minecart.pushOrPickUpEntities(this.minecart.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224), 0.01);
+         this.pushAndPickupEntities();
       }
    }
 
    @Override
    public void moveAlongTrack() {
-      BlockPos var1 = this.minecart.getCurrentBlockPos();
+      BlockPos var1 = this.minecart.getCurrentBlockPosOrRailBelow();
       BlockState var2 = this.level().getBlockState(var1);
       this.minecart.resetFallDistance();
       double var3 = this.minecart.getX();
@@ -301,7 +305,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
       if (BaseRailBlock.isRail(var12)) {
          RailShape var13 = var12.getValue(((BaseRailBlock)var12.getBlock()).getShapeProperty());
          var3 = (double)var10;
-         if (var13.isAscending()) {
+         if (var13.isSlope()) {
             var3 = (double)(var10 + 1);
          }
 
@@ -383,8 +387,37 @@ public class OldMinecartBehavior extends MinecartBehavior {
    }
 
    @Override
+   public boolean pushAndPickupEntities() {
+      AABB var1 = this.minecart.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224);
+      if (this.minecart.getMinecartType() == AbstractMinecart.Type.RIDEABLE && this.getDeltaMovement().horizontalDistanceSqr() >= 0.01) {
+         List var5 = this.level().getEntities(this.minecart, var1, EntitySelector.pushableBy(this.minecart));
+         if (!var5.isEmpty()) {
+            for (Entity var4 : var5) {
+               if (!(var4 instanceof Player)
+                  && !(var4 instanceof IronGolem)
+                  && !(var4 instanceof AbstractMinecart)
+                  && !this.minecart.isVehicle()
+                  && !var4.isPassenger()) {
+                  var4.startRiding(this.minecart);
+               } else {
+                  var4.push(this.minecart);
+               }
+            }
+         }
+      } else {
+         for (Entity var3 : this.level().getEntities(this.minecart, var1)) {
+            if (!this.minecart.hasPassenger(var3) && var3.isPushable() && var3 instanceof AbstractMinecart) {
+               var3.push(this.minecart);
+            }
+         }
+      }
+
+      return false;
+   }
+
+   @Override
    public Direction getMotionDirection() {
-      return this.minecart.isflipped() ? this.minecart.getDirection().getOpposite().getClockWise() : this.minecart.getDirection().getClockWise();
+      return this.minecart.isFlipped() ? this.minecart.getDirection().getOpposite().getClockWise() : this.minecart.getDirection().getClockWise();
    }
 
    @Override

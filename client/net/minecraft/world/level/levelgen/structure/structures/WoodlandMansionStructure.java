@@ -46,7 +46,7 @@ public class WoodlandMansionStructure extends Structure {
       WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, PiecesContainer var7
    ) {
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
-      int var9 = var1.getMinBuildHeight();
+      int var9 = var1.getMinY();
       BoundingBox var10 = var7.calculateBoundingBox();
       int var11 = var10.minY();
 

@@ -70,7 +70,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       int var5 = var4.getRadius();
 
       for (BlockPos var7 : BlockPos.betweenClosed(
-         new BlockPos(var4.getCenterX() - var5, var1.getMinBuildHeight(), var4.getCenterZ() - var5),
+         new BlockPos(var4.getCenterX() - var5, var1.getMinY(), var4.getCenterZ() - var5),
          new BlockPos(var4.getCenterX() + var5, var4.getHeight() + 10, var4.getCenterZ() + var5)
       )) {
          if (var7.distToLowCornerSqr((double)var4.getCenterX(), (double)var7.getY(), (double)var4.getCenterZ()) <= (double)(var5 * var5 + 1)

@@ -45,7 +45,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
       var2.ageInTicks = (float)var1.getAge() + var3;
       var2.bobOffset = var1.bobOffs;
       ItemStack var4 = var1.getItem();
-      var2.item = var4;
+      var2.item = var4.copy();
       var2.itemModel = this.itemRenderer.getModel(var4, var1.level(), null, var1.getId());
    }
 

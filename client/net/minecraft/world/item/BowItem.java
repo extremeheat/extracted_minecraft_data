@@ -72,8 +72,8 @@ public class BowItem extends ProjectileWeaponItem {
    }
 
    @Override
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.BOW;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.BOW;
    }
 
    @Override

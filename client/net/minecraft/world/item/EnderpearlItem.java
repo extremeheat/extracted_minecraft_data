@@ -29,7 +29,7 @@ public class EnderpearlItem extends Item {
          0.5F,
          0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
       );
-      var2.getCooldowns().addCooldown(this, 20);
+      var2.getCooldowns().addCooldown(var4, 20);
       if (var1 instanceof ServerLevel var5) {
          Projectile.spawnProjectileFromRotation(ThrownEnderpearl::new, var5, var4, var2, 0.0F, 1.5F, 1.0F);
       }

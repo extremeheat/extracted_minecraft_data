@@ -76,9 +76,12 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TooltipProvider;
+import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantable;
@@ -368,11 +371,34 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      return this.getItem().use(var1, var2, var3);
+      ItemStack var4 = this.copy();
+      boolean var5 = this.getUseDuration(var2) <= 0;
+      InteractionResult var6 = this.getItem().use(var1, var2, var3);
+      return (InteractionResult)(var5 && var6 instanceof InteractionResult.Success var7
+         ? var7.heldItemTransformedTo(this.applyAfterUseComponentSideEffects(var2, var4))
+         : var6);
    }
 
    public ItemStack finishUsingItem(Level var1, LivingEntity var2) {
-      return this.getItem().finishUsingItem(this, var1, var2);
+      ItemStack var3 = this.copy();
+      ItemStack var4 = this.getItem().finishUsingItem(this, var1, var2);
+      return var4.applyAfterUseComponentSideEffects(var2, var3);
+   }
+
+   private ItemStack applyAfterUseComponentSideEffects(LivingEntity var1, ItemStack var2) {
+      UseRemainder var3 = var2.get(DataComponents.USE_REMAINDER);
+      UseCooldown var4 = var2.get(DataComponents.USE_COOLDOWN);
+      int var5 = var2.getCount();
+      ItemStack var6 = this;
+      if (var3 != null) {
+         var6 = var3.convertIntoRemainder(var1, this, var5);
+      }
+
+      if (var4 != null) {
+         var4.apply(var2, var1);
+      }
+
+      return var6;
    }
 
    public Tag save(HolderLookup.Provider var1, Tag var2) {
@@ -665,12 +691,17 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().getUseDuration(this, var1);
    }
 
-   public UseAnim getUseAnimation() {
+   public ItemUseAnimation getUseAnimation() {
       return this.getItem().getUseAnimation(this);
    }
 
    public void releaseUsing(Level var1, LivingEntity var2, int var3) {
+      ItemStack var4 = this.copy();
       this.getItem().releaseUsing(this, var1, var2, var3);
+      ItemStack var5 = this.applyAfterUseComponentSideEffects(var2, var4);
+      if (var5 != this) {
+         var2.setItemInHand(var2.getUsedItemHand(), var5);
+      }
    }
 
    public boolean useOnRelease() {
@@ -721,20 +752,20 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public Component getHoverName() {
-      WrittenBookContent var1 = this.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      Component var1 = this.get(DataComponents.CUSTOM_NAME);
       if (var1 != null) {
-         String var2 = var1.title().raw();
-         if (!StringUtil.isBlank(var2)) {
-            return Component.literal(var2);
-         }
-      }
-
-      Component var4 = this.get(DataComponents.CUSTOM_NAME);
-      if (var4 != null) {
-         return var4;
+         return var1;
       } else {
-         Component var3 = this.get(DataComponents.ITEM_NAME);
-         return var3 != null ? var3 : this.getItem().getName(this);
+         WrittenBookContent var2 = this.get(DataComponents.WRITTEN_BOOK_CONTENT);
+         if (var2 != null) {
+            String var3 = var2.title().raw();
+            if (!StringUtil.isBlank(var3)) {
+               return Component.literal(var3);
+            }
+         }
+
+         Component var4 = this.get(DataComponents.ITEM_NAME);
+         return var4 != null ? var4 : this.getItem().getName(this);
       }
    }
 
@@ -776,6 +807,8 @@ public final class ItemStack implements DataComponentHolder {
          this.addToTooltip(DataComponents.LORE, var1, var10, var3);
          this.addAttributeTooltips(var10, var2);
          this.addToTooltip(DataComponents.UNBREAKABLE, var1, var10, var3);
+         this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var10, var3);
+         this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var10, var3);
          AdventureModePredicate var7 = this.get(DataComponents.CAN_BREAK);
          if (var7 != null && var7.showInTooltip()) {
             var10.accept(CommonComponents.EMPTY);
@@ -903,8 +936,6 @@ public final class ItemStack implements DataComponentHolder {
 
    public boolean isEnchantable() {
       if (!this.has(DataComponents.ENCHANTABLE)) {
-         return false;
-      } else if (!this.getItem().isEnchantable(this)) {
          return false;
       } else {
          ItemEnchantments var1 = this.get(DataComponents.ENCHANTMENTS);
@@ -1034,19 +1065,16 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public void onUseTick(Level var1, LivingEntity var2, int var3) {
+      Consumable var4 = this.get(DataComponents.CONSUMABLE);
+      if (var4 != null && var4.shouldEmitParticlesAndSounds(var3)) {
+         var4.emitParticlesAndSounds(var2.getRandom(), var2, this, 5);
+      }
+
       this.getItem().onUseTick(var1, var2, this, var3);
    }
 
    public void onDestroyed(ItemEntity var1) {
       this.getItem().onDestroyed(var1);
-   }
-
-   public SoundEvent getDrinkingSound() {
-      return this.getItem().getDrinkingSound();
-   }
-
-   public SoundEvent getEatingSound() {
-      return this.getItem().getEatingSound();
    }
 
    public SoundEvent getBreakingSound() {
@@ -1064,6 +1092,6 @@ public final class ItemStack implements DataComponentHolder {
 
    public int getEnchantmentValue() {
       Enchantable var1 = this.get(DataComponents.ENCHANTABLE);
-      return var1 != null ? var1.value() : this.getItem().getEnchantmentValue();
+      return var1 != null ? var1.value() : 0;
    }
 }

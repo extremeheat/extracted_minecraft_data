@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 
 public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity, FireworkRocketRenderState> {
    private final ItemRenderer itemRenderer;
@@ -43,7 +44,8 @@ public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity,
    public void extractRenderState(FireworkRocketEntity var1, FireworkRocketRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
       var2.isShotAtAngle = var1.isShotAtAngle();
-      var2.item = var1.getItem();
-      var2.itemModel = !var2.item.isEmpty() ? this.itemRenderer.getModel(var2.item, var1.level(), null, var1.getId()) : null;
+      ItemStack var4 = var1.getItem();
+      var2.item = var4.copy();
+      var2.itemModel = !var4.isEmpty() ? this.itemRenderer.getModel(var4, var1.level(), null, var1.getId()) : null;
    }
 }

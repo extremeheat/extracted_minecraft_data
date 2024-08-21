@@ -18,7 +18,7 @@ public class TrappedChestBlockEntity extends ChestBlockEntity {
    protected void signalOpenCount(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {
       super.signalOpenCount(var1, var2, var3, var4, var5);
       if (var4 != var5) {
-         Orientation var6 = ExperimentalRedstoneUtils.randomOrientation(var1, var3.getValue(TrappedChestBlock.FACING).getOpposite(), Direction.UP);
+         Orientation var6 = ExperimentalRedstoneUtils.initialOrientation(var1, var3.getValue(TrappedChestBlock.FACING).getOpposite(), Direction.UP);
          Block var7 = var3.getBlock();
          var1.updateNeighborsAt(var2, var7, var6);
          var1.updateNeighborsAt(var2.below(), var7, var6);

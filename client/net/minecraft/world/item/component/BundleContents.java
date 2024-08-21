@@ -66,7 +66,7 @@ public final class BundleContents implements TooltipComponent {
 
    public int getNumberOfItemsToShow() {
       int var1 = this.size();
-      int var2 = var1 > 8 ? 7 : 8;
+      int var2 = var1 > 12 ? 11 : 12;
       int var3 = var1 % 4;
       int var4 = var3 == 0 ? 0 : 4 - var3;
       return Math.min(var1, var2 - var4);

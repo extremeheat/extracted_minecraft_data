@@ -164,7 +164,7 @@ public class RuinedPortalStructure extends Structure {
       LevelHeightAccessor var7,
       RandomState var8
    ) {
-      int var10 = var7.getMinBuildHeight() + 15;
+      int var10 = var7.getMinY() + 15;
       int var9;
       if (var2 == RuinedPortalPiece.VerticalPlacement.IN_NETHER) {
          if (var3) {

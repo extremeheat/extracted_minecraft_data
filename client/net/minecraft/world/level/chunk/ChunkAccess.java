@@ -148,7 +148,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    )
    public int getHighestSectionPosition() {
       int var1 = this.getHighestFilledSectionIndex();
-      return var1 == -1 ? this.getMinBuildHeight() : SectionPos.sectionToBlockCoord(this.getSectionYFromSectionIndex(var1));
+      return var1 == -1 ? this.getMinY() : SectionPos.sectionToBlockCoord(this.getSectionYFromSectionIndex(var1));
    }
 
    public Set<BlockPos> getBlockEntitiesPos() {
@@ -245,12 +245,12 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    }
 
    public boolean isYSpaceEmpty(int var1, int var2) {
-      if (var1 < this.getMinBuildHeight()) {
-         var1 = this.getMinBuildHeight();
+      if (var1 < this.getMinY()) {
+         var1 = this.getMinY();
       }
 
-      if (var2 >= this.getMaxBuildHeight()) {
-         var2 = this.getMaxBuildHeight() - 1;
+      if (var2 > this.getMaxY()) {
+         var2 = this.getMaxY();
       }
 
       for (int var3 = var1; var3 <= var2; var3 += 16) {
@@ -321,7 +321,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    public void findBlocks(Predicate<BlockState> var1, BiConsumer<BlockPos, BlockState> var2) {
       BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
 
-      for (int var4 = this.getMinSection(); var4 < this.getMaxSection(); var4++) {
+      for (int var4 = this.getMinSectionY(); var4 <= this.getMaxSectionY(); var4++) {
          LevelChunkSection var5 = this.getSection(this.getSectionIndexFromSectionY(var4));
          if (var5.maybeHas(var1)) {
             BlockPos var6 = SectionPos.of(this.chunkPos, var4).origin();
@@ -389,8 +389,8 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    }
 
    @Override
-   public int getMinBuildHeight() {
-      return this.levelHeightAccessor.getMinBuildHeight();
+   public int getMinY() {
+      return this.levelHeightAccessor.getMinY();
    }
 
    @Override
@@ -418,7 +418,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    @Override
    public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
       try {
-         int var4 = QuartPos.fromBlock(this.getMinBuildHeight());
+         int var4 = QuartPos.fromBlock(this.getMinY());
          int var9 = var4 + QuartPos.fromBlock(this.getHeight()) - 1;
          int var10 = Mth.clamp(var2, var4, var9);
          int var7 = this.getSectionIndex(QuartPos.toBlock(var10));
@@ -437,7 +437,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       int var5 = QuartPos.fromBlock(var3.getMinBlockZ());
       LevelHeightAccessor var6 = this.getHeightAccessorForGeneration();
 
-      for (int var7 = var6.getMinSection(); var7 < var6.getMaxSection(); var7++) {
+      for (int var7 = var6.getMinSectionY(); var7 <= var6.getMaxSectionY(); var7++) {
          LevelChunkSection var8 = this.getSection(this.getSectionIndexFromSectionY(var7));
          int var9 = QuartPos.fromSection(var7);
          var8.fillBiomesFromNoise(var1, var2, var4, var9, var5);

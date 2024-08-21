@@ -41,12 +41,13 @@ public class MobAppearanceParticle extends Particle {
       PoseStack var7 = new PoseStack();
       var7.mulPose(var2.rotation());
       var7.mulPose(Axis.XP.rotationDegrees(60.0F - 150.0F * var4));
-      var7.scale(1.0F, -1.0F, -1.0F);
-      var7.translate(0.0F, -1.101F, 1.5F);
-      MultiBufferSource.BufferSource var8 = Minecraft.getInstance().renderBuffers().bufferSource();
-      VertexConsumer var9 = var8.getBuffer(this.renderType);
-      this.model.renderToBuffer(var7, var9, 15728880, OverlayTexture.NO_OVERLAY, var6);
-      var8.endBatch();
+      float var8 = 0.42553192F;
+      var7.scale(0.42553192F, -0.42553192F, -0.42553192F);
+      var7.translate(0.0F, -0.56F, 3.5F);
+      MultiBufferSource.BufferSource var9 = Minecraft.getInstance().renderBuffers().bufferSource();
+      VertexConsumer var10 = var9.getBuffer(this.renderType);
+      this.model.renderToBuffer(var7, var10, 15728880, OverlayTexture.NO_OVERLAY, var6);
+      var9.endBatch();
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {

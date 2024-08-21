@@ -134,7 +134,7 @@ public class DoorBlock extends Block {
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
       Level var3 = var1.getLevel();
-      if (var2.getY() < var3.getMaxBuildHeight() - 1 && var3.getBlockState(var2.above()).canBeReplaced(var1)) {
+      if (var2.getY() < var3.getMaxY() && var3.getBlockState(var2.above()).canBeReplaced(var1)) {
          boolean var4 = var3.hasNeighborSignal(var2) || var3.hasNeighborSignal(var2.above());
          return this.defaultBlockState()
             .setValue(FACING, var1.getHorizontalDirection())

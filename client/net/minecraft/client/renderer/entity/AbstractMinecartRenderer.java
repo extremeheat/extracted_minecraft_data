@@ -128,8 +128,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
          var2.yRot = var1.getCartLerpYRot(var3);
       } else {
          var2.renderPos = null;
-         var2.xRot = var0.getXRot(var3);
-         var2.yRot = var0.getYRot(var3);
+         var2.xRot = var0.getXRot();
+         var2.yRot = var0.getYRot();
       }
    }
 

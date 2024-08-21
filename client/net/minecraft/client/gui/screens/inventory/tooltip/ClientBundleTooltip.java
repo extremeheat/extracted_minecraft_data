@@ -65,7 +65,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    private int slotCount() {
-      return Math.min(8, this.contents.size());
+      return Math.min(12, this.contents.size());
    }
 
    @Override
@@ -83,7 +83,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    private void renderBundleWithItemsTooltip(Font var1, int var2, int var3, GuiGraphics var4) {
-      boolean var5 = this.contents.size() > 8;
+      boolean var5 = this.contents.size() > 12;
       List var6 = this.getShownItems(this.contents.getNumberOfItemsToShow());
       int var7 = var2 + 96;
       int var8 = var3 + this.gridSizeY() * 24;

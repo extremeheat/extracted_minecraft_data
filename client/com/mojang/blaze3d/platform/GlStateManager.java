@@ -6,7 +6,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
@@ -144,44 +143,38 @@ public class GlStateManager {
       return GL20.glCreateShader(var0);
    }
 
-   public static void glShaderSource(int var0, List<String> var1) {
+   public static void glShaderSource(int var0, String var1) {
       RenderSystem.assertOnRenderThread();
-      StringBuilder var2 = new StringBuilder();
-
-      for (String var4 : var1) {
-         var2.append(var4);
-      }
-
-      byte[] var15 = var2.toString().getBytes(Charsets.UTF_8);
-      ByteBuffer var16 = MemoryUtil.memAlloc(var15.length + 1);
-      var16.put(var15);
-      var16.put((byte)0);
-      var16.flip();
+      byte[] var2 = var1.getBytes(Charsets.UTF_8);
+      ByteBuffer var3 = MemoryUtil.memAlloc(var2.length + 1);
+      var3.put(var2);
+      var3.put((byte)0);
+      var3.flip();
 
       try {
-         MemoryStack var5 = MemoryStack.stackPush();
+         MemoryStack var4 = MemoryStack.stackPush();
 
          try {
-            PointerBuffer var6 = var5.mallocPointer(1);
-            var6.put(var16);
-            GL20C.nglShaderSource(var0, 1, var6.address0(), 0L);
-         } catch (Throwable var13) {
-            if (var5 != null) {
+            PointerBuffer var5 = var4.mallocPointer(1);
+            var5.put(var3);
+            GL20C.nglShaderSource(var0, 1, var5.address0(), 0L);
+         } catch (Throwable var12) {
+            if (var4 != null) {
                try {
-                  var5.close();
-               } catch (Throwable var12) {
-                  var13.addSuppressed(var12);
+                  var4.close();
+               } catch (Throwable var11) {
+                  var12.addSuppressed(var11);
                }
             }
 
-            throw var13;
+            throw var12;
          }
 
-         if (var5 != null) {
-            var5.close();
+         if (var4 != null) {
+            var4.close();
          }
       } finally {
-         MemoryUtil.memFree(var16);
+         MemoryUtil.memFree(var3);
       }
    }
 

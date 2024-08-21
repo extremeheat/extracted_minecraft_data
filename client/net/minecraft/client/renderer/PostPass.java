@@ -4,99 +4,115 @@ import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.ResourceHandle;
+import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import java.io.IOException;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceProvider;
 import org.joml.Matrix4f;
 
-public class PostPass implements AutoCloseable {
-   private final EffectInstance effect;
-   public final ResourceLocation outputTargetId;
+public class PostPass {
+   private final String name;
+   private final CompiledShaderProgram shader;
+   private final ResourceLocation outputTargetId;
+   private final List<PostChainConfig.Uniform> uniforms;
    private final List<PostPass.Input> inputs = new ArrayList<>();
 
-   public PostPass(ResourceProvider var1, String var2, ResourceLocation var3) throws IOException {
+   public PostPass(String var1, CompiledShaderProgram var2, ResourceLocation var3, List<PostChainConfig.Uniform> var4) {
       super();
-      this.effect = new EffectInstance(var1, var2);
+      this.name = var1;
+      this.shader = var2;
       this.outputTargetId = var3;
-   }
-
-   @Override
-   public void close() {
-      this.effect.close();
-   }
-
-   public final String getName() {
-      return this.effect.getName();
+      this.uniforms = var4;
    }
 
    public void addInput(PostPass.Input var1) {
       this.inputs.add(var1);
    }
 
-   public void addToFrame(FrameGraphBuilder var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2, Matrix4f var3, float var4) {
-      FramePass var5 = var1.addPass(this.getName());
+   public void addToFrame(FrameGraphBuilder var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2, Matrix4f var3) {
+      FramePass var4 = var1.addPass(this.name);
 
-      for (PostPass.Input var7 : this.inputs) {
-         var7.addToPass(var5, var2);
+      for (PostPass.Input var6 : this.inputs) {
+         var6.addToPass(var4, var2);
       }
 
-      ResourceHandle var8 = var2.computeIfPresent(this.outputTargetId, (var1x, var2x) -> var5.readsAndWrites(var2x));
-      if (var8 == null) {
+      ResourceHandle var7 = var2.computeIfPresent(this.outputTargetId, (var1x, var2x) -> var4.readsAndWrites(var2x));
+      if (var7 == null) {
          throw new IllegalStateException("Missing handle for target " + this.outputTargetId);
       } else {
-         var5.executes(() -> {
-            RenderTarget var5x = (RenderTarget)var8.get();
-            RenderSystem.viewport(0, 0, var5x.width, var5x.height);
+         var4.executes(() -> {
+            RenderTarget var4x = (RenderTarget)var7.get();
+            RenderSystem.viewport(0, 0, var4x.width, var4x.height);
 
-            for (PostPass.Input var7x : this.inputs) {
-               var7x.bindTo(this.effect, var2);
+            for (PostPass.Input var6x : this.inputs) {
+               var6x.bindTo(this.shader, var2);
             }
 
-            this.effect.safeGetUniform("ProjMat").set(var3);
-            this.effect.safeGetUniform("OutSize").set((float)var5x.width, (float)var5x.height);
-            this.effect.safeGetUniform("Time").set(var4);
-            Minecraft var10 = Minecraft.getInstance();
-            this.effect.safeGetUniform("ScreenSize").set((float)var10.getWindow().getWidth(), (float)var10.getWindow().getHeight());
-            this.effect.apply();
-            var5x.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            var5x.clear();
-            var5x.bindWrite(false);
-            RenderSystem.depthFunc(519);
-            BufferBuilder var11 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-            var11.addVertex(0.0F, 0.0F, 500.0F);
-            var11.addVertex((float)var5x.width, 0.0F, 500.0F);
-            var11.addVertex((float)var5x.width, (float)var5x.height, 500.0F);
-            var11.addVertex(0.0F, (float)var5x.height, 500.0F);
-            BufferUploader.draw(var11.buildOrThrow());
-            RenderSystem.depthFunc(515);
-            this.effect.clear();
-            var5x.unbindWrite();
+            this.shader.safeGetUniform("OutSize").set((float)var4x.width, (float)var4x.height);
 
-            for (PostPass.Input var9 : this.inputs) {
-               var9.cleanup(var2);
+            for (PostChainConfig.Uniform var10 : this.uniforms) {
+               Uniform var7x = this.shader.getUniform(var10.name());
+               if (var7x != null) {
+                  storeUniform(var7x, var10.values());
+               }
+            }
+
+            var4x.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+            var4x.clear();
+            var4x.bindWrite(false);
+            RenderSystem.depthFunc(519);
+            RenderSystem.setShader(this.shader);
+            RenderSystem.backupProjectionMatrix();
+            RenderSystem.setProjectionMatrix(var3, VertexSorting.ORTHOGRAPHIC_Z);
+            BufferBuilder var9 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            var9.addVertex(0.0F, 0.0F, 500.0F);
+            var9.addVertex((float)var4x.width, 0.0F, 500.0F);
+            var9.addVertex((float)var4x.width, (float)var4x.height, 500.0F);
+            var9.addVertex(0.0F, (float)var4x.height, 500.0F);
+            BufferUploader.drawWithShader(var9.buildOrThrow());
+            RenderSystem.depthFunc(515);
+            RenderSystem.restoreProjectionMatrix();
+            var4x.unbindWrite();
+
+            for (PostPass.Input var12 : this.inputs) {
+               var12.cleanup(var2);
             }
          });
       }
    }
 
-   public EffectInstance getEffect() {
-      return this.effect;
+   private static void storeUniform(Uniform var0, List<Float> var1) {
+      switch (var1.size()) {
+         case 1:
+            var0.set((Float)var1.getFirst());
+            break;
+         case 2:
+            var0.set((Float)var1.get(0), (Float)var1.get(1));
+            break;
+         case 3:
+            var0.set((Float)var1.get(0), (Float)var1.get(1), (Float)var1.get(2));
+            break;
+         case 4:
+            var0.set((Float)var1.get(0), (Float)var1.get(1), (Float)var1.get(2), (Float)var1.get(3));
+      }
+   }
+
+   public CompiledShaderProgram getShader() {
+      return this.shader;
    }
 
    public interface Input {
       void addToPass(FramePass var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
 
-      void bindTo(EffectInstance var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
+      void bindTo(CompiledShaderProgram var1, Map<ResourceLocation, ResourceHandle<RenderTarget>> var2);
 
       default void cleanup(Map<ResourceLocation, ResourceHandle<RenderTarget>> var1) {
       }

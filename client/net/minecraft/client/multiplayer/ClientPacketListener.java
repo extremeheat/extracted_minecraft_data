@@ -759,7 +759,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       for (ClientboundChunksBiomesPacket.ChunkBiomeData var10 : var1.chunkBiomeData()) {
          for (int var4 = -1; var4 <= 1; var4++) {
             for (int var5 = -1; var5 <= 1; var5++) {
-               for (int var6 = this.level.getMinSection(); var6 < this.level.getMaxSection(); var6++) {
+               for (int var6 = this.level.getMinSectionY(); var6 <= this.level.getMaxSectionY(); var6++) {
                   this.minecraft.levelRenderer.setSectionDirty(var10.pos().x + var4, var6, var10.pos().z + var5);
                }
             }
@@ -782,7 +782,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var4.updateSectionStatus(SectionPos.of(var6, var9), var8.hasOnlyAir());
       }
 
-      this.level.setSectionRangeDirty(var2 - 1, this.level.getMinSection(), var3 - 1, var2 + 1, this.level.getMaxSection(), var3 + 1);
+      this.level.setSectionRangeDirty(var2 - 1, this.level.getMinSectionY(), var3 - 1, var2 + 1, this.level.getMaxSectionY(), var3 + 1);
    }
 
    @Override
@@ -804,7 +804,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             var2x.queueSectionData(LightLayer.SKY, var4, null);
          }
 
-         for (int var5 = this.level.getMinSection(); var5 < this.level.getMaxSection(); var5++) {
+         for (int var5 = this.level.getMinSectionY(); var5 <= this.level.getMaxSectionY(); var5++) {
             var2x.updateSectionStatus(SectionPos.of(var2, var5), true);
          }
       });
@@ -1904,9 +1904,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleItemCooldown(ClientboundCooldownPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       if (var1.duration() == 0) {
-         this.minecraft.player.getCooldowns().removeCooldown(var1.item());
+         this.minecraft.player.getCooldowns().removeCooldown(var1.cooldownGroup());
       } else {
-         this.minecraft.player.getCooldowns().addCooldown(var1.item(), var1.duration());
+         this.minecraft.player.getCooldowns().addCooldown(var1.cooldownGroup(), var1.duration());
       }
    }
 

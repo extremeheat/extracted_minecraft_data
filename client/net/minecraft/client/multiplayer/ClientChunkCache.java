@@ -1,6 +1,7 @@
 package net.minecraft.client.multiplayer;
 
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.EmptyLevelChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.slf4j.Logger;
@@ -59,7 +61,7 @@ public class ClientChunkCache extends ChunkSource {
          int var2 = this.storage.getIndex(var1.x, var1.z);
          LevelChunk var3 = this.storage.getChunk(var2);
          if (isValidChunk(var3, var1.x, var1.z)) {
-            this.storage.replace(var2, var3, null);
+            this.storage.drop(var2, var3);
          }
       }
    }
@@ -169,8 +171,18 @@ public class ClientChunkCache extends ChunkSource {
       Minecraft.getInstance().levelRenderer.setSectionDirty(var2.x(), var2.y(), var2.z());
    }
 
+   public LongOpenHashSet getLoadedEmptySections() {
+      return this.storage.loadedEmptySections;
+   }
+
+   @Override
+   public void onSectionEmptinessChanged(int var1, int var2, int var3, boolean var4) {
+      this.storage.onSectionEmptinessChanged(var1, var2, var3, var4);
+   }
+
    final class Storage {
       final AtomicReferenceArray<LevelChunk> chunks;
+      final LongOpenHashSet loadedEmptySections = new LongOpenHashSet();
       final int chunkRadius;
       private final int viewRange;
       volatile int viewCenterX;
@@ -188,25 +200,59 @@ public class ClientChunkCache extends ChunkSource {
          return Math.floorMod(var2, this.viewRange) * this.viewRange + Math.floorMod(var1, this.viewRange);
       }
 
-      protected void replace(int var1, @Nullable LevelChunk var2) {
+      void replace(int var1, @Nullable LevelChunk var2) {
          LevelChunk var3 = this.chunks.getAndSet(var1, var2);
          if (var3 != null) {
             this.chunkCount--;
+            this.dropEmptySections(var3);
             ClientChunkCache.this.level.unload(var3);
          }
 
          if (var2 != null) {
             this.chunkCount++;
+            this.addEmptySections(var2);
          }
       }
 
-      protected LevelChunk replace(int var1, LevelChunk var2, @Nullable LevelChunk var3) {
-         if (this.chunks.compareAndSet(var1, var2, var3) && var3 == null) {
+      void drop(int var1, LevelChunk var2) {
+         if (this.chunks.compareAndSet(var1, var2, null)) {
             this.chunkCount--;
+            this.dropEmptySections(var2);
          }
 
          ClientChunkCache.this.level.unload(var2);
-         return var2;
+      }
+
+      public void onSectionEmptinessChanged(int var1, int var2, int var3, boolean var4) {
+         if (this.inRange(var1, var3)) {
+            long var5 = SectionPos.asLong(var1, var2, var3);
+            if (var4) {
+               this.loadedEmptySections.add(var5);
+            } else if (this.loadedEmptySections.remove(var5)) {
+               ClientChunkCache.this.level.onSectionBecomingNonEmpty(var5);
+            }
+         }
+      }
+
+      private void dropEmptySections(LevelChunk var1) {
+         LevelChunkSection[] var2 = var1.getSections();
+
+         for (int var3 = 0; var3 < var2.length; var3++) {
+            ChunkPos var4 = var1.getPos();
+            this.loadedEmptySections.remove(SectionPos.asLong(var4.x, var1.getSectionYFromSectionIndex(var3), var4.z));
+         }
+      }
+
+      private void addEmptySections(LevelChunk var1) {
+         LevelChunkSection[] var2 = var1.getSections();
+
+         for (int var3 = 0; var3 < var2.length; var3++) {
+            LevelChunkSection var4 = var2[var3];
+            if (var4.hasOnlyAir()) {
+               ChunkPos var5 = var1.getPos();
+               this.loadedEmptySections.add(SectionPos.asLong(var5.x, var1.getSectionYFromSectionIndex(var3), var5.z));
+            }
+         }
       }
 
       boolean inRange(int var1, int var2) {

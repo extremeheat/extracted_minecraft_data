@@ -243,15 +243,15 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    public static boolean isPushable(BlockState var0, Level var1, BlockPos var2, Direction var3, boolean var4, Direction var5) {
-      if (var2.getY() < var1.getMinBuildHeight() || var2.getY() > var1.getMaxBuildHeight() - 1 || !var1.getWorldBorder().isWithinBounds(var2)) {
+      if (var2.getY() < var1.getMinY() || var2.getY() > var1.getMaxY() || !var1.getWorldBorder().isWithinBounds(var2)) {
          return false;
       } else if (var0.isAir()) {
          return true;
       } else if (var0.is(Blocks.OBSIDIAN) || var0.is(Blocks.CRYING_OBSIDIAN) || var0.is(Blocks.RESPAWN_ANCHOR) || var0.is(Blocks.REINFORCED_DEEPSLATE)) {
          return false;
-      } else if (var3 == Direction.DOWN && var2.getY() == var1.getMinBuildHeight()) {
+      } else if (var3 == Direction.DOWN && var2.getY() == var1.getMinY()) {
          return false;
-      } else if (var3 == Direction.UP && var2.getY() == var1.getMaxBuildHeight() - 1) {
+      } else if (var3 == Direction.UP && var2.getY() == var1.getMaxY()) {
          return false;
       } else {
          if (!var0.is(Blocks.PISTON) && !var0.is(Blocks.STICKY_PISTON)) {
@@ -351,7 +351,7 @@ public class PistonBaseBlock extends DirectionalBlock {
             var25.updateIndirectNeighbourShapes(var1, var39, 2);
          }
 
-         Orientation var31 = ExperimentalRedstoneUtils.randomOrientation(var1, var6.getPushDirection(), null);
+         Orientation var31 = ExperimentalRedstoneUtils.initialOrientation(var1, var6.getPushDirection(), null);
          var13 = 0;
 
          for (int var36 = var19.size() - 1; var36 >= 0; var36--) {

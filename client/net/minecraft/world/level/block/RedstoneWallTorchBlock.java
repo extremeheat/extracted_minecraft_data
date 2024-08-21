@@ -104,6 +104,6 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
    @Nullable
    @Override
    protected Orientation randomOrientation(Level var1, BlockState var2) {
-      return ExperimentalRedstoneUtils.randomOrientation(var1, var2.getValue(FACING).getOpposite(), Direction.UP);
+      return ExperimentalRedstoneUtils.initialOrientation(var1, var2.getValue(FACING).getOpposite(), Direction.UP);
    }
 }

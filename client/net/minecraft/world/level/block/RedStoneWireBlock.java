@@ -278,11 +278,11 @@ public class RedStoneWireBlock extends Block {
       return var3.isFaceSturdy(var1, var2, Direction.UP) || var3.is(Blocks.HOPPER);
    }
 
-   private void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4) {
+   private void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4, boolean var5) {
       if (useExperimentalEvaluator(var1)) {
-         new ExperimentalRedstoneWireEvaluator(this).updatePowerStrength(var1, var2, var3, var4);
+         new ExperimentalRedstoneWireEvaluator(this).updatePowerStrength(var1, var2, var3, var4, var5);
       } else {
-         this.evaluator.updatePowerStrength(var1, var2, var3, var4);
+         this.evaluator.updatePowerStrength(var1, var2, var3, var4, var5);
       }
    }
 
@@ -306,7 +306,7 @@ public class RedStoneWireBlock extends Block {
    @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock()) && !var2.isClientSide) {
-         this.updatePowerStrength(var2, var3, var1, null);
+         this.updatePowerStrength(var2, var3, var1, null, true);
 
          for (Direction var7 : Direction.Plane.VERTICAL) {
             var2.updateNeighborsAt(var3.relative(var7), this);
@@ -325,7 +325,7 @@ public class RedStoneWireBlock extends Block {
                var2.updateNeighborsAt(var3.relative(var9), this);
             }
 
-            this.updatePowerStrength(var2, var3, var1, null);
+            this.updatePowerStrength(var2, var3, var1, null, false);
             this.updateNeighborsOfNeighboringWires(var2, var3);
          }
       }
@@ -351,7 +351,7 @@ public class RedStoneWireBlock extends Block {
       if (!var2.isClientSide) {
          if (var4 != this || !useExperimentalEvaluator(var2)) {
             if (var1.canSurvive(var2, var3)) {
-               this.updatePowerStrength(var2, var3, var1, var5);
+               this.updatePowerStrength(var2, var3, var1, var5, false);
             } else {
                dropResources(var1, var2, var3);
                var2.removeBlock(var3, false);
@@ -505,7 +505,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    private void updatesOnShapeChange(Level var1, BlockPos var2, BlockState var3, BlockState var4) {
-      Orientation var5 = ExperimentalRedstoneUtils.randomOrientation(var1, null, Direction.UP);
+      Orientation var5 = ExperimentalRedstoneUtils.initialOrientation(var1, null, Direction.UP);
 
       for (Direction var7 : Direction.Plane.HORIZONTAL) {
          BlockPos var8 = var2.relative(var7);

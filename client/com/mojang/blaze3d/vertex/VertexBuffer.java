@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.CompiledShaderProgram;
 import org.joml.Matrix4f;
 
 public class VertexBuffer implements AutoCloseable {
@@ -165,7 +165,7 @@ public class VertexBuffer implements AutoCloseable {
       return var1 != null ? var1.type() : this.indexType;
    }
 
-   public void drawWithShader(Matrix4f var1, Matrix4f var2, ShaderInstance var3) {
+   public void drawWithShader(Matrix4f var1, Matrix4f var2, CompiledShaderProgram var3) {
       RenderSystem.assertOnRenderThread();
       var3.setDefaultUniforms(this.mode, var1, var2, Minecraft.getInstance().getWindow());
       var3.apply();

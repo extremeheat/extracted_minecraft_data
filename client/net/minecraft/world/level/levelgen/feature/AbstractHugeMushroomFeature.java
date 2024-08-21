@@ -37,7 +37,7 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
 
    protected boolean isValidPosition(LevelAccessor var1, BlockPos var2, int var3, BlockPos.MutableBlockPos var4, HugeMushroomFeatureConfiguration var5) {
       int var6 = var2.getY();
-      if (var6 >= var1.getMinBuildHeight() + 1 && var6 + var3 + 1 < var1.getMaxBuildHeight()) {
+      if (var6 >= var1.getMinY() + 1 && var6 + var3 + 1 <= var1.getMaxY()) {
          BlockState var7 = var1.getBlockState(var2.below());
          if (!isDirt(var7) && !var7.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
             return false;

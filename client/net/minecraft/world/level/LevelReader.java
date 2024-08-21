@@ -69,7 +69,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
    DimensionType dimensionType();
 
    @Override
-   default int getMinBuildHeight() {
+   default int getMinY() {
       return this.dimensionType().minY();
    }
 
@@ -187,7 +187,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
 
    @Deprecated
    default boolean hasChunksAt(int var1, int var2, int var3, int var4, int var5, int var6) {
-      return var5 >= this.getMinBuildHeight() && var2 < this.getMaxBuildHeight() ? this.hasChunksAt(var1, var3, var4, var6) : false;
+      return var5 >= this.getMinY() && var2 <= this.getMaxY() ? this.hasChunksAt(var1, var3, var4, var6) : false;
    }
 
    @Deprecated

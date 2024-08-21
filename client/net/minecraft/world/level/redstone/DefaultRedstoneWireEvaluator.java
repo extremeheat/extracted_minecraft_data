@@ -15,22 +15,22 @@ public class DefaultRedstoneWireEvaluator extends RedstoneWireEvaluator {
    }
 
    @Override
-   public void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4) {
-      int var5 = this.calculateTargetStrength(var1, var2);
-      if (var3.getValue(RedStoneWireBlock.POWER) != var5) {
+   public void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4, boolean var5) {
+      int var6 = this.calculateTargetStrength(var1, var2);
+      if (var3.getValue(RedStoneWireBlock.POWER) != var6) {
          if (var1.getBlockState(var2) == var3) {
-            var1.setBlock(var2, var3.setValue(RedStoneWireBlock.POWER, Integer.valueOf(var5)), 2);
+            var1.setBlock(var2, var3.setValue(RedStoneWireBlock.POWER, Integer.valueOf(var6)), 2);
          }
 
-         HashSet var6 = Sets.newHashSet();
-         var6.add(var2);
+         HashSet var7 = Sets.newHashSet();
+         var7.add(var2);
 
-         for (Direction var10 : Direction.values()) {
-            var6.add(var2.relative(var10));
+         for (Direction var11 : Direction.values()) {
+            var7.add(var2.relative(var11));
          }
 
-         for (BlockPos var12 : var6) {
-            var1.updateNeighborsAt(var12, this.wireBlock);
+         for (BlockPos var13 : var7) {
+            var1.updateNeighborsAt(var13, this.wireBlock);
          }
       }
    }

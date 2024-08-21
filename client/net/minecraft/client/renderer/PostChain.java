@@ -4,18 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Sets.SetView;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.serialization.JsonOps;
-import java.io.BufferedReader;
-import java.io.IOException;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,325 +19,258 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.ChainedJsonException;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceProvider;
-import net.minecraft.util.GsonHelper;
 import org.joml.Matrix4f;
 
-public class PostChain implements AutoCloseable {
+public class PostChain {
    public static final ResourceLocation MAIN_TARGET_ID = ResourceLocation.withDefaultNamespace("main");
-   private final ResourceLocation id;
    private final List<PostPass> passes;
    private final Map<ResourceLocation, PostChainConfig.InternalTarget> internalTargets;
    private final Set<ResourceLocation> externalTargets;
-   private float time;
 
-   private PostChain(ResourceLocation var1, List<PostPass> var2, Map<ResourceLocation, PostChainConfig.InternalTarget> var3, Set<ResourceLocation> var4) {
+   private PostChain(List<PostPass> var1, Map<ResourceLocation, PostChainConfig.InternalTarget> var2, Set<ResourceLocation> var3) {
       super();
-      this.id = var1;
-      this.passes = var2;
-      this.internalTargets = var3;
-      this.externalTargets = var4;
+      this.passes = var1;
+      this.internalTargets = var2;
+      this.externalTargets = var3;
    }
 
-   public static PostChain load(ResourceProvider var0, TextureManager var1, ResourceLocation var2, Set<ResourceLocation> var3) throws IOException, JsonSyntaxException {
-      Resource var4 = var0.getResourceOrThrow(var2);
+   public static PostChain load(PostChainConfig var0, TextureManager var1, ShaderManager var2, Set<ResourceLocation> var3) throws ShaderManager.CompilationException {
+      Stream var4 = var0.passes().stream().flatMap(var0x -> var0x.inputs().stream()).flatMap(var0x -> var0x.referencedTargets().stream());
+      Set var5 = var4.filter(var1x -> !var0.internalTargets().containsKey(var1x)).collect(Collectors.toSet());
+      SetView var6 = Sets.difference(var5, var3);
+      if (!var6.isEmpty()) {
+         throw new ShaderManager.CompilationException("Referenced external targets are not available in this context: " + var6);
+      } else {
+         Builder var7 = ImmutableList.builder();
 
-      try {
-         PostChain var18;
-         try (BufferedReader var5 = var4.openAsReader()) {
-            JsonObject var17 = GsonHelper.parse(var5);
-            PostChainConfig var7 = (PostChainConfig)PostChainConfig.CODEC.parse(JsonOps.INSTANCE, var17).getOrThrow(JsonSyntaxException::new);
-            Stream var8 = var7.passes().stream().flatMap(var0x -> var0x.inputs().stream()).flatMap(var0x -> var0x.referencedTargets().stream());
-            Set var9 = var8.filter(var1x -> !var7.internalTargets().containsKey(var1x)).collect(Collectors.toSet());
-            SetView var10 = Sets.difference(var9, var3);
-            if (!var10.isEmpty()) {
-               throw new ChainedJsonException("Referenced external targets are not available in this context: " + var10);
-            }
-
-            Builder var11 = ImmutableList.builder();
-
-            for (PostChainConfig.Pass var13 : var7.passes()) {
-               var11.add(createPass(var0, var1, var13));
-            }
-
-            var18 = new PostChain(var2, var11.build(), var7.internalTargets(), var9);
+         for (PostChainConfig.Pass var9 : var0.passes()) {
+            var7.add(createPass(var1, var2, var9));
          }
 
-         return var18;
-      } catch (Exception var16) {
-         ChainedJsonException var6 = ChainedJsonException.forException(var16);
-         var6.setFilenameAndFlush(var2.getPath() + " (" + var4.sourcePackId() + ")");
-         throw var6;
+         return new PostChain(var7.build(), var0.internalTargets(), var5);
       }
    }
 
    // $VF: Inserted dummy exception handlers to handle obfuscated exceptions
-   private static PostPass createPass(ResourceProvider var0, TextureManager var1, PostChainConfig.Pass var2) throws IOException {
-      PostPass var3 = new PostPass(var0, var2.name(), var2.outputTarget());
-
-      for (Object var5 : var2.inputs()) {
-         Objects.requireNonNull(var5);
-         Throwable var43;
-         switch (var5) {
-            case PostChainConfig.TextureInput var8:
-               PostChainConfig.TextureInput var51 = var8;
-
-               try {
-                  var52 = var51.samplerName();
-               } catch (Throwable var28) {
-                  var43 = var28;
-                  boolean var64 = false;
-                  break;
-               }
-
-               String var33 = var52;
-               PostChainConfig.TextureInput var53 = var8;
-
-               try {
-                  var54 = var53.location();
-               } catch (Throwable var27) {
-                  var43 = var27;
-                  boolean var65 = false;
-                  break;
-               }
-
-               ResourceLocation var34 = var54;
-               ResourceLocation var10 = var34;
-               PostChainConfig.TextureInput var55 = var8;
-
-               try {
-                  var56 = var55.width();
-               } catch (Throwable var26) {
-                  var43 = var26;
-                  boolean var66 = false;
-                  break;
-               }
-
-               int var35 = var56;
-               PostChainConfig.TextureInput var57 = var8;
-
-               try {
-                  var58 = var57.height();
-               } catch (Throwable var25) {
-                  var43 = var25;
-                  boolean var67 = false;
-                  break;
-               }
-
-               int var36 = var58;
-               PostChainConfig.TextureInput var59 = var8;
-
-               try {
-                  var60 = var59.bilinear();
-               } catch (Throwable var24) {
-                  var43 = var24;
-                  boolean var68 = false;
-                  break;
-               }
-
-               boolean var37 = var60;
-               ResourceLocation var38 = var10.withPath(var0x -> "textures/effect/" + var0x + ".png");
-               var0.getResource(var38).orElseThrow(() -> new ChainedJsonException("Texture '" + var10 + "' does not exist"));
-               RenderSystem.setShaderTexture(0, var38);
-               var1.bindForSetup(var38);
-               AbstractTexture var39 = var1.getTexture(var38);
-               if (var37) {
-                  RenderSystem.texParameter(3553, 10241, 9729);
-                  RenderSystem.texParameter(3553, 10240, 9729);
-               } else {
-                  RenderSystem.texParameter(3553, 10241, 9728);
-                  RenderSystem.texParameter(3553, 10240, 9728);
-               }
-
-               var3.addInput(new PostPass.TextureInput(var33, var39, var35, var36));
-               continue;
-            case PostChainConfig.TargetInput var14:
-               PostChainConfig.TargetInput var10000 = var14;
-
-               try {
-                  var44 = var10000.samplerName();
-               } catch (Throwable var23) {
-                  var43 = var23;
-                  boolean var10001 = false;
-                  break;
-               }
-
-               String var19 = var44;
-               PostChainConfig.TargetInput var45 = var14;
-
-               try {
-                  var46 = var45.targetId();
-               } catch (Throwable var22) {
-                  var43 = var22;
-                  boolean var61 = false;
-                  break;
-               }
-
-               ResourceLocation var40 = var46;
-               PostChainConfig.TargetInput var47 = var14;
-
-               try {
-                  var48 = var47.useDepthBuffer();
-               } catch (Throwable var21) {
-                  var43 = var21;
-                  boolean var62 = false;
-                  break;
-               }
-
-               boolean var41 = var48;
-               PostChainConfig.TargetInput var49 = var14;
-
-               try {
-                  var50 = var49.bilinear();
-               } catch (Throwable var20) {
-                  var43 = var20;
-                  boolean var63 = false;
-                  break;
-               }
-
-               boolean var42 = var50;
-               var3.addInput(new PostPass.TargetInput(var19, var40, var41, var42));
-               continue;
-            default:
-               throw new MatchException(null, null);
+   private static PostPass createPass(TextureManager var0, ShaderManager var1, PostChainConfig.Pass var2) throws ShaderManager.CompilationException {
+      ResourceLocation var3 = var2.program();
+      CompiledShaderProgram var4 = var1.getProgram(new ShaderProgram(var3, DefaultVertexFormat.POSITION, ShaderDefines.EMPTY));
+      if (var4 == null) {
+         throw new ShaderManager.CompilationException("Shader '" + var3 + "' could not be loaded");
+      } else {
+         for (PostChainConfig.Uniform var6 : var2.uniforms()) {
+            String var7 = var6.name();
+            if (var4.getUniform(var7) == null) {
+               throw new ShaderManager.CompilationException("Uniform '" + var7 + "' does not exist for " + var3);
+            }
          }
 
-         Throwable var29 = var43;
-         throw new MatchException(var29.toString(), var29);
-      }
+         String var32 = var3.toString();
+         PostPass var33 = new PostPass(var32, var4, var2.outputTarget(), var2.uniforms());
 
-      for (PostChainConfig.Uniform var31 : var2.uniforms()) {
-         String var6 = var31.name();
-         Uniform var32 = var3.getEffect().getUniform(var6);
-         if (var32 == null) {
-            throw new ChainedJsonException("Uniform '" + var6 + "' does not exist");
+         for (Object var8 : var2.inputs()) {
+            Objects.requireNonNull(var8);
+            Throwable var45;
+            switch (var8) {
+               case PostChainConfig.TextureInput var11:
+                  PostChainConfig.TextureInput var53 = var11;
+
+                  try {
+                     var54 = var53.samplerName();
+                  } catch (Throwable var31) {
+                     var45 = var31;
+                     boolean var66 = false;
+                     break;
+                  }
+
+                  String var36 = var54;
+                  PostChainConfig.TextureInput var55 = var11;
+
+                  try {
+                     var56 = var55.location();
+                  } catch (Throwable var30) {
+                     var45 = var30;
+                     boolean var67 = false;
+                     break;
+                  }
+
+                  ResourceLocation var37 = var56;
+                  PostChainConfig.TextureInput var57 = var11;
+
+                  try {
+                     var58 = var57.width();
+                  } catch (Throwable var29) {
+                     var45 = var29;
+                     boolean var68 = false;
+                     break;
+                  }
+
+                  int var38 = var58;
+                  PostChainConfig.TextureInput var59 = var11;
+
+                  try {
+                     var60 = var59.height();
+                  } catch (Throwable var28) {
+                     var45 = var28;
+                     boolean var69 = false;
+                     break;
+                  }
+
+                  int var39 = var60;
+                  PostChainConfig.TextureInput var61 = var11;
+
+                  try {
+                     var62 = var61.bilinear();
+                  } catch (Throwable var27) {
+                     var45 = var27;
+                     boolean var70 = false;
+                     break;
+                  }
+
+                  boolean var40 = var62;
+                  AbstractTexture var41 = var0.getTexture(var37.withPath(var0x -> "textures/effect/" + var0x + ".png"));
+                  var41.setFilter(var40, false);
+                  var33.addInput(new PostPass.TextureInput(var36, var41, var38, var39));
+                  continue;
+               case PostChainConfig.TargetInput var17:
+                  PostChainConfig.TargetInput var10000 = var17;
+
+                  try {
+                     var46 = var10000.samplerName();
+                  } catch (Throwable var26) {
+                     var45 = var26;
+                     boolean var10001 = false;
+                     break;
+                  }
+
+                  String var22 = var46;
+                  PostChainConfig.TargetInput var47 = var17;
+
+                  try {
+                     var48 = var47.targetId();
+                  } catch (Throwable var25) {
+                     var45 = var25;
+                     boolean var63 = false;
+                     break;
+                  }
+
+                  ResourceLocation var42 = var48;
+                  PostChainConfig.TargetInput var49 = var17;
+
+                  try {
+                     var50 = var49.useDepthBuffer();
+                  } catch (Throwable var24) {
+                     var45 = var24;
+                     boolean var64 = false;
+                     break;
+                  }
+
+                  boolean var43 = var50;
+                  PostChainConfig.TargetInput var51 = var17;
+
+                  try {
+                     var52 = var51.bilinear();
+                  } catch (Throwable var23) {
+                     var45 = var23;
+                     boolean var65 = false;
+                     break;
+                  }
+
+                  boolean var44 = var52;
+                  var33.addInput(new PostPass.TargetInput(var22, var42, var43, var44));
+                  continue;
+               default:
+                  throw new MatchException(null, null);
+            }
+
+            Throwable var35 = var45;
+            throw new MatchException(var35.toString(), var35);
          }
 
-         storeUniform(var32, var31.values());
-      }
-
-      return var3;
-   }
-
-   private static void storeUniform(Uniform var0, List<Float> var1) {
-      switch (var1.size()) {
-         case 0:
-         default:
-            break;
-         case 1:
-            var0.set((Float)var1.getFirst());
-            break;
-         case 2:
-            var0.set((Float)var1.get(0), (Float)var1.get(1));
-            break;
-         case 3:
-            var0.set((Float)var1.get(0), (Float)var1.get(1), (Float)var1.get(2));
-            break;
-         case 4:
-            var0.set((Float)var1.get(0), (Float)var1.get(1), (Float)var1.get(2), (Float)var1.get(3));
-      }
-   }
-
-   @Override
-   public void close() {
-      for (PostPass var2 : this.passes) {
-         var2.close();
+         return var33;
       }
    }
 
    // $VF: Inserted dummy exception handlers to handle obfuscated exceptions
-   public void addToFrame(FrameGraphBuilder var1, DeltaTracker var2, int var3, int var4, PostChain.TargetBundle var5) {
-      Matrix4f var6 = new Matrix4f().setOrtho(0.0F, (float)var3, 0.0F, (float)var4, 0.1F, 1000.0F);
-      this.time = this.time + var2.getRealtimeDeltaTicks();
+   public void addToFrame(FrameGraphBuilder var1, int var2, int var3, PostChain.TargetBundle var4) {
+      Matrix4f var5 = new Matrix4f().setOrtho(0.0F, (float)var2, 0.0F, (float)var3, 0.1F, 1000.0F);
+      HashMap var6 = new HashMap(this.internalTargets.size() + this.externalTargets.size());
 
-      while (this.time > 20.0F) {
-         this.time -= 20.0F;
+      for (ResourceLocation var8 : this.externalTargets) {
+         var6.put(var8, var4.getOrThrow(var8));
       }
 
-      HashMap var7 = new HashMap(this.internalTargets.size() + this.externalTargets.size());
+      for (Entry var23 : this.internalTargets.entrySet()) {
+         ResourceLocation var9 = (ResourceLocation)var23.getKey();
+         PostChainConfig.InternalTarget var35;
+         Objects.requireNonNull(var35);
+         Object var11 = var35;
 
-      for (ResourceLocation var9 : this.externalTargets) {
-         var7.put(var9, var5.getOrThrow(var9));
-      }
+         var35 = (PostChainConfig.InternalTarget)var23.getValue();
+         RenderTargetDescriptor var10 = switch (var11) {
+            case PostChainConfig.FixedSizedTarget var13 -> {
+               PostChainConfig.FixedSizedTarget var29 = var13;
 
-      for (Entry var24 : this.internalTargets.entrySet()) {
-         ResourceLocation var10 = (ResourceLocation)var24.getKey();
-         PostChainConfig.InternalTarget var36;
-         Objects.requireNonNull(var36);
-         Object var12 = var36;
-
-         var36 = (PostChainConfig.InternalTarget)var24.getValue();
-         RenderTargetDescriptor var11 = switch (var12) {
-            case PostChainConfig.FixedSizedTarget var14 -> {
-               PostChainConfig.FixedSizedTarget var30 = var14;
-
-               int var27;
-               label59: {
-                  label85: {
+               int var26;
+               label56: {
+                  label76: {
                      try {
-                        var32 = var30.width();
-                     } catch (Throwable var19) {
-                        var31 = var19;
+                        var31 = var29.width();
+                     } catch (Throwable var18) {
+                        var30 = var18;
                         boolean var10001 = false;
-                        break label85;
+                        break label76;
                      }
 
-                     var27 = var32;
-                     PostChainConfig.FixedSizedTarget var33 = var14;
+                     var26 = var31;
+                     PostChainConfig.FixedSizedTarget var32 = var13;
 
                      try {
-                        var34 = var33.height();
-                        break label59;
-                     } catch (Throwable var18) {
-                        var31 = var18;
-                        boolean var35 = false;
+                        var33 = var32.height();
+                        break label56;
+                     } catch (Throwable var17) {
+                        var30 = var17;
+                        boolean var34 = false;
                      }
                   }
 
-                  Throwable var21 = var31;
-                  throw new MatchException(var21.toString(), var21);
+                  Throwable var20 = var30;
+                  throw new MatchException(var20.toString(), var20);
                }
 
-               int var28 = var34;
-               yield new RenderTargetDescriptor(var27, var28, true);
+               int var27 = var33;
+               yield new RenderTargetDescriptor(var26, var27, true);
             }
-            case PostChainConfig.FullScreenTarget var17 -> new RenderTargetDescriptor(var3, var4, true);
+            case PostChainConfig.FullScreenTarget var16 -> new RenderTargetDescriptor(var2, var3, true);
             default -> throw new MatchException(null, null);
          };
-         var7.put(var10, var1.createInternal(var10.toString(), var11));
+         var6.put(var9, var1.createInternal(var9.toString(), var10));
       }
 
-      for (PostPass var25 : this.passes) {
-         var25.addToFrame(var1, var7, var6, this.time / 20.0F);
+      for (PostPass var24 : this.passes) {
+         var24.addToFrame(var1, var6, var5);
       }
 
-      for (ResourceLocation var26 : this.externalTargets) {
-         var5.replace(var26, (ResourceHandle<RenderTarget>)var7.get(var26));
+      for (ResourceLocation var25 : this.externalTargets) {
+         var4.replace(var25, (ResourceHandle<RenderTarget>)var6.get(var25));
       }
    }
 
    @Deprecated
-   public void process(RenderTarget var1, GraphicsResourceAllocator var2, DeltaTracker var3) {
-      FrameGraphBuilder var4 = new FrameGraphBuilder();
-      PostChain.TargetBundle var5 = PostChain.TargetBundle.of(MAIN_TARGET_ID, var4.importExternal("main", var1));
-      this.addToFrame(var4, var3, var1.width, var1.height, var5);
-      var4.execute(var2);
+   public void process(RenderTarget var1, GraphicsResourceAllocator var2) {
+      FrameGraphBuilder var3 = new FrameGraphBuilder();
+      PostChain.TargetBundle var4 = PostChain.TargetBundle.of(MAIN_TARGET_ID, var3.importExternal("main", var1));
+      this.addToFrame(var3, var1.width, var1.height, var4);
+      var3.execute(var2);
    }
 
    public void setUniform(String var1, float var2) {
       for (PostPass var4 : this.passes) {
-         var4.getEffect().safeGetUniform(var1).set(var2);
+         var4.getShader().safeGetUniform(var1).set(var2);
       }
-   }
-
-   public final ResourceLocation getId() {
-      return this.id;
    }
 
    public interface TargetBundle {

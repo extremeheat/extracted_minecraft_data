@@ -11,6 +11,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -47,7 +48,9 @@ public class DebugRenderer {
    public final LightSectionDebugRenderer skyLightSectionDebugRenderer;
    public final BreezeDebugRenderer breezeDebugRenderer;
    public final ChunkCullingDebugRenderer chunkCullingDebugRenderer;
+   public final OctreeDebugRenderer octreeDebugRenderer;
    private boolean renderChunkborder;
+   private boolean renderOctree;
 
    public DebugRenderer(Minecraft var1) {
       super();
@@ -73,6 +76,7 @@ public class DebugRenderer {
       this.skyLightSectionDebugRenderer = new LightSectionDebugRenderer(var1, LightLayer.SKY);
       this.breezeDebugRenderer = new BreezeDebugRenderer(var1);
       this.chunkCullingDebugRenderer = new ChunkCullingDebugRenderer(var1);
+      this.octreeDebugRenderer = new OctreeDebugRenderer(var1);
    }
 
    public void clear() {
@@ -105,12 +109,20 @@ public class DebugRenderer {
       return this.renderChunkborder;
    }
 
-   public void render(PoseStack var1, MultiBufferSource.BufferSource var2, double var3, double var5, double var7) {
+   public boolean toggleRenderOctree() {
+      return this.renderOctree = !this.renderOctree;
+   }
+
+   public void render(PoseStack var1, Frustum var2, MultiBufferSource.BufferSource var3, double var4, double var6, double var8) {
       if (this.renderChunkborder && !Minecraft.getInstance().showOnlyReducedInfo()) {
-         this.chunkBorderRenderer.render(var1, var2, var3, var5, var7);
+         this.chunkBorderRenderer.render(var1, var3, var4, var6, var8);
       }
 
-      this.gameTestDebugRenderer.render(var1, var2, var3, var5, var7);
+      if (this.renderOctree) {
+         this.octreeDebugRenderer.render(var1, var2, var3, var4, var6, var8);
+      }
+
+      this.gameTestDebugRenderer.render(var1, var3, var4, var6, var8);
    }
 
    public void renderAfterTranslucents(PoseStack var1, MultiBufferSource.BufferSource var2, double var3, double var5, double var7) {

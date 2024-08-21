@@ -24,21 +24,26 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
    }
 
    @Override
-   public void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4) {
-      Orientation var5 = getInitialOrientation(var1, var4);
-      this.calculateCurrentChanges(var1, var2, var5);
-      ObjectIterator var6 = this.updatedWires.object2IntEntrySet().iterator();
+   public void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4, boolean var5) {
+      Orientation var6 = getInitialOrientation(var1, var4);
+      this.calculateCurrentChanges(var1, var2, var6);
+      ObjectIterator var7 = this.updatedWires.object2IntEntrySet().iterator();
 
-      while (var6.hasNext()) {
-         Entry var7 = (Entry)var6.next();
-         BlockPos var8 = (BlockPos)var7.getKey();
-         int var9 = var7.getIntValue();
-         int var10 = unpackPower(var9);
-         BlockState var11 = var1.getBlockState(var8);
-         if (var11.is(this.wireBlock) && !var11.getValue(RedStoneWireBlock.POWER).equals(var10)) {
-            var1.setBlock(var8, var11.setValue(RedStoneWireBlock.POWER, Integer.valueOf(var10)), 2);
+      for (boolean var8 = true; var7.hasNext(); var8 = false) {
+         Entry var9 = (Entry)var7.next();
+         BlockPos var10 = (BlockPos)var9.getKey();
+         int var11 = var9.getIntValue();
+         int var12 = unpackPower(var11);
+         BlockState var13 = var1.getBlockState(var10);
+         if (var13.is(this.wireBlock) && !var13.getValue(RedStoneWireBlock.POWER).equals(var12)) {
+            short var14 = 2;
+            if (!var5 || !var8) {
+               var14 |= 128;
+            }
+
+            var1.setBlock(var10, var13.setValue(RedStoneWireBlock.POWER, Integer.valueOf(var12)), var14);
          } else {
-            var6.remove();
+            var7.remove();
          }
       }
 
@@ -54,12 +59,12 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
             if (isConnected(var5, var7)) {
                BlockPos var8 = var2.relative(var7);
                BlockState var9 = var1.getBlockState(var8);
-               Orientation var10 = var4.withFront(var7);
+               Orientation var10 = var4.withFrontPreserveUp(var7);
                var1.neighborChanged(var9, var8, this.wireBlock, var10, false);
                if (var9.isRedstoneConductor(var1, var8)) {
                   for (Direction var12 : var10.getDirections()) {
                      if (var12 != var7.getOpposite()) {
-                        var1.neighborChanged(var8.relative(var12), this.wireBlock, var10.withFront(var12));
+                        var1.neighborChanged(var8.relative(var12), this.wireBlock, var10.withFrontPreserveUp(var12));
                      }
                   }
                }
@@ -81,7 +86,7 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
          var2 = Orientation.random(var0.random);
       }
 
-      return var2.withUp(Direction.UP);
+      return var2.withUp(Direction.UP).withSideBias(Orientation.SideBias.LEFT);
    }
 
    private void calculateCurrentChanges(Level var1, BlockPos var2, Orientation var3) {
@@ -116,7 +121,7 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
             this.setPower(var5, var12, var7);
          }
 
-         this.propagateChangeToNeighbors(var1, var5, var12, var7, true);
+         this.propagateChangeToNeighbors(var1, var5, var12, var7, var8 > var11);
       }
 
       while (!this.wiresToTurnOn.isEmpty()) {
@@ -166,7 +171,10 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
 
          for (Direction var11 : var4.getHorizontalDirections()) {
             BlockPos var12 = var2.relative(var11);
-            if (var15 == Direction.UP && !var9 || var15 == Direction.DOWN && var9 && !var1.getBlockState(var12).isRedstoneConductor(var1, var12)) {
+            if (var15 == Direction.UP && !var9) {
+               BlockPos var17 = var16.relative(var11);
+               this.enqueueNeighborWire(var1, var17, var3, var4.withFront(var11), var5);
+            } else if (var15 == Direction.DOWN && !var1.getBlockState(var12).isRedstoneConductor(var1, var12)) {
                BlockPos var13 = var16.relative(var11);
                this.enqueueNeighborWire(var1, var13, var3, var4.withFront(var11), var5);
             }

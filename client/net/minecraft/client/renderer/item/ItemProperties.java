@@ -82,7 +82,7 @@ public class ItemProperties {
       );
       registerGeneric(
          ResourceLocation.withDefaultNamespace("cooldown"),
-         (var0x, var1, var2, var3) -> var2 instanceof Player ? ((Player)var2).getCooldowns().getCooldownPercent(var0x.getItem(), 0.0F) : 0.0F
+         (var0x, var1, var2, var3) -> var2 instanceof Player ? ((Player)var2).getCooldowns().getCooldownPercent(var0x, 0.0F) : 0.0F
       );
       ClampedItemPropertyFunction var0 = (var0x, var1, var2, var3) -> {
          ArmorTrim var4 = var0x.get(DataComponents.TRIM);

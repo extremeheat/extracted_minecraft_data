@@ -11,9 +11,9 @@ public class ExperimentalRedstoneUtils {
    }
 
    @Nullable
-   public static Orientation randomOrientation(Level var0, @Nullable Direction var1, @Nullable Direction var2) {
+   public static Orientation initialOrientation(Level var0, @Nullable Direction var1, @Nullable Direction var2) {
       if (var0.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS)) {
-         Orientation var3 = Orientation.random(var0.random);
+         Orientation var3 = Orientation.random(var0.random).withSideBias(Orientation.SideBias.LEFT);
          if (var2 != null) {
             var3 = var3.withUp(var2);
          }

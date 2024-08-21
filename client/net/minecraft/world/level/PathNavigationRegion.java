@@ -119,8 +119,8 @@ public class PathNavigationRegion implements CollisionGetter {
    }
 
    @Override
-   public int getMinBuildHeight() {
-      return this.level.getMinBuildHeight();
+   public int getMinY() {
+      return this.level.getMinY();
    }
 
    @Override

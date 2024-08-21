@@ -346,7 +346,7 @@ public abstract class StructurePiece {
    protected void fillColumnDown(WorldGenLevel var1, BlockState var2, int var3, int var4, int var5, BoundingBox var6) {
       BlockPos.MutableBlockPos var7 = this.getWorldPos(var3, var4, var5);
       if (var6.isInside(var7)) {
-         while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinBuildHeight() + 1) {
+         while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinY() + 1) {
             var1.setBlock(var7, var2, 2);
             var7.move(Direction.DOWN);
          }

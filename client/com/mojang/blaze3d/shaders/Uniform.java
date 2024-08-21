@@ -32,15 +32,12 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    private final IntBuffer intValues;
    private final FloatBuffer floatValues;
    private final String name;
-   private boolean dirty;
-   private final Shader parent;
 
-   public Uniform(String var1, int var2, int var3, Shader var4) {
+   public Uniform(String var1, int var2, int var3) {
       super();
       this.name = var1;
       this.count = var3;
       this.type = var2;
-      this.parent = var4;
       if (var2 <= 3) {
          this.intValues = MemoryUtil.memAllocInt(var3);
          this.floatValues = null;
@@ -61,14 +58,6 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
       RenderSystem.glUniform1i(var0, var1);
    }
 
-   public static int glGetAttribLocation(int var0, CharSequence var1) {
-      return GlStateManager._glGetAttribLocation(var0, var1);
-   }
-
-   public static void glBindAttribLocation(int var0, int var1, CharSequence var2) {
-      GlStateManager._glBindAttribLocation(var0, var1, var2);
-   }
-
    @Override
    public void close() {
       if (this.intValues != null) {
@@ -81,10 +70,6 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    }
 
    private void markDirty() {
-      this.dirty = true;
-      if (this.parent != null) {
-         this.parent.markDirty();
-      }
    }
 
    public static int getTypeFromString(String var0) {
@@ -430,10 +415,6 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    }
 
    public void upload() {
-      if (!this.dirty) {
-      }
-
-      this.dirty = false;
       if (this.type <= 3) {
          this.uploadAsInteger();
       } else if (this.type <= 7) {

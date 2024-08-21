@@ -32,8 +32,8 @@ public class ShieldItem extends Item implements Equipable {
    }
 
    @Override
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.BLOCK;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.BLOCK;
    }
 
    @Override

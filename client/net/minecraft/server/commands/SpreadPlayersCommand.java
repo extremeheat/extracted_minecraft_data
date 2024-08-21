@@ -69,7 +69,7 @@ public class SpreadPlayersCommand {
                                                       Vec2Argument.getVec2(var0x, "center"),
                                                       FloatArgumentType.getFloat(var0x, "spreadDistance"),
                                                       FloatArgumentType.getFloat(var0x, "maxRange"),
-                                                      ((CommandSourceStack)var0x.getSource()).getLevel().getMaxBuildHeight(),
+                                                      ((CommandSourceStack)var0x.getSource()).getLevel().getMaxY() + 1,
                                                       BoolArgumentType.getBool(var0x, "respectTeams"),
                                                       EntityArgument.getEntities(var0x, "targets")
                                                    )
@@ -107,7 +107,7 @@ public class SpreadPlayersCommand {
 
    private static int spreadPlayers(CommandSourceStack var0, Vec2 var1, float var2, float var3, int var4, boolean var5, Collection<? extends Entity> var6) throws CommandSyntaxException {
       ServerLevel var7 = var0.getLevel();
-      int var8 = var7.getMinBuildHeight();
+      int var8 = var7.getMinY();
       if (var4 < var8) {
          throw ERROR_INVALID_MAX_HEIGHT.create(var4, var8);
       } else {
@@ -335,7 +335,7 @@ public class SpreadPlayersCommand {
          var3.move(Direction.DOWN);
          boolean var5 = var1.getBlockState(var3).isAir();
 
-         while (var3.getY() > var1.getMinBuildHeight()) {
+         while (var3.getY() > var1.getMinY()) {
             var3.move(Direction.DOWN);
             boolean var6 = var1.getBlockState(var3).isAir();
             if (!var6 && var5 && var4) {

@@ -153,10 +153,9 @@ public class LevelLightEngine implements LightEventListener {
       return Math.max(var4, var3);
    }
 
-   public boolean lightOnInSection(SectionPos var1) {
-      long var2 = var1.asLong();
+   public boolean lightOnInColumn(long var1) {
       return this.blockEngine == null
-         || this.blockEngine.storage.lightOnInSection(var2) && (this.skyEngine == null || this.skyEngine.storage.lightOnInSection(var2));
+         || this.blockEngine.storage.lightOnInColumn(var1) && (this.skyEngine == null || this.skyEngine.storage.lightOnInColumn(var1));
    }
 
    public int getLightSectionCount() {
@@ -164,7 +163,7 @@ public class LevelLightEngine implements LightEventListener {
    }
 
    public int getMinLightSection() {
-      return this.levelHeightAccessor.getMinSection() - 1;
+      return this.levelHeightAccessor.getMinSectionY() - 1;
    }
 
    public int getMaxLightSection() {

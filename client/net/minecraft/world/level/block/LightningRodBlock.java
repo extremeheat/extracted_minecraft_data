@@ -82,7 +82,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
 
    private void updateNeighbours(BlockState var1, Level var2, BlockPos var3) {
       Direction var4 = var1.getValue(FACING).getOpposite();
-      var2.updateNeighborsAt(var3.relative(var4), this, ExperimentalRedstoneUtils.randomOrientation(var2, var4, null));
+      var2.updateNeighborsAt(var3.relative(var4), this, ExperimentalRedstoneUtils.initialOrientation(var2, var4, null));
    }
 
    @Override

@@ -221,20 +221,30 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    protected ProjectileDeflection hitTargetOrDeflectSelf(HitResult var1) {
       if (var1.getType() == HitResult.Type.ENTITY) {
-         EntityHitResult var2 = (EntityHitResult)var1;
-         Entity var3 = var2.getEntity();
-         ProjectileDeflection var4 = var3.deflection(this);
-         if (var4 != ProjectileDeflection.NONE) {
-            if (var3 != this.lastDeflectedBy && this.deflect(var4, var3, this.getOwner(), false)) {
-               this.lastDeflectedBy = var3;
+         EntityHitResult var3 = (EntityHitResult)var1;
+         Entity var4 = var3.getEntity();
+         ProjectileDeflection var5 = var4.deflection(this);
+         if (var5 != ProjectileDeflection.NONE) {
+            if (var4 != this.lastDeflectedBy && this.deflect(var5, var4, this.getOwner(), false)) {
+               this.lastDeflectedBy = var4;
             }
 
-            return var4;
+            return var5;
+         }
+      } else if (this.shouldBounceOnWorldBorder() && var1 instanceof BlockHitResult var2 && var2.isWorldBorderHit()) {
+         ProjectileDeflection var6 = ProjectileDeflection.REVERSE;
+         if (this.deflect(var6, null, this.getOwner(), false)) {
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
+            return var6;
          }
       }
 
       this.onHit(var1);
       return ProjectileDeflection.NONE;
+   }
+
+   protected boolean shouldBounceOnWorldBorder() {
+      return false;
    }
 
    public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {

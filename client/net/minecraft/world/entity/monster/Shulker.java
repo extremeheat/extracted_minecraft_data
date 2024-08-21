@@ -378,7 +378,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
             BlockPos var3 = var1.offset(
                Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8)
             );
-            if (var3.getY() > this.level().getMinBuildHeight()
+            if (var3.getY() > this.level().getMinY()
                && this.level().isEmptyBlock(var3)
                && this.level().getWorldBorder().isWithinBounds(var3)
                && this.level().noCollision(this, new AABB(var3).deflate(1.0E-6))) {

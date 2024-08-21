@@ -20,7 +20,7 @@ public class IceSpikeFeature extends Feature<NoneFeatureConfiguration> {
       RandomSource var3 = var1.random();
       WorldGenLevel var4 = var1.level();
 
-      while (var4.isEmptyBlock(var2) && var2.getY() > var4.getMinBuildHeight() + 2) {
+      while (var4.isEmptyBlock(var2) && var2.getY() > var4.getMinY() + 2) {
          var2 = var2.below();
       }
 

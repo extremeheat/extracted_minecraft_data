@@ -198,7 +198,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       for (int var5 = -var2; var5 <= var2; var5++) {
          for (int var6 = -var2; var6 <= var2; var6++) {
             if (var5 != 0 || var6 != 0 || var3) {
-               for (int var7 = var0.getMaxBuildHeight() - 1; var7 > (var4 == null ? var0.getMinBuildHeight() : var4.getY()); var7--) {
+               for (int var7 = var0.getMaxY(); var7 > (var4 == null ? var0.getMinY() : var4.getY()); var7--) {
                   BlockPos var8 = new BlockPos(var1.getX() + var5, var7, var1.getZ() + var6);
                   BlockState var9 = var0.getBlockState(var8);
                   if (var9.isCollisionShapeFullBlock(var0, var8) && (var3 || !var9.is(Blocks.BEDROCK))) {

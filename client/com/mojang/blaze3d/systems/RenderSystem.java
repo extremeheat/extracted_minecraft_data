@@ -18,14 +18,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.OptionInstance;
+import net.minecraft.client.renderer.CompiledShaderProgram;
 import net.minecraft.client.renderer.FogParameters;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.ShaderProgram;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
@@ -81,7 +79,7 @@ public class RenderSystem {
    private static float shaderLineWidth = 1.0F;
    private static String apiDescription = "Unknown";
    @Nullable
-   private static ShaderInstance shader;
+   private static CompiledShaderProgram shader;
    private static final AtomicLong pollEventsWaitStart = new AtomicLong();
    private static final AtomicBoolean pollingEvents = new AtomicBoolean(false);
 
@@ -364,7 +362,7 @@ public class RenderSystem {
       shaderLightDirections[1] = var1;
    }
 
-   public static void setupShaderLights(ShaderInstance var0) {
+   public static void setupShaderLights(CompiledShaderProgram var0) {
       assertOnRenderThread();
       if (var0.LIGHT0_DIRECTION != null) {
          var0.LIGHT0_DIRECTION.set(shaderLightDirections[0]);
@@ -618,27 +616,26 @@ public class RenderSystem {
       blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
    }
 
-   @Deprecated
-   public static void runAsFancy(Runnable var0) {
-      boolean var1 = Minecraft.useShaderTransparency();
-      if (!var1) {
-         var0.run();
-      } else {
-         OptionInstance var2 = Minecraft.getInstance().options.graphicsMode();
-         GraphicsStatus var3 = (GraphicsStatus)var2.get();
-         var2.set(GraphicsStatus.FANCY);
-         var0.run();
-         var2.set(var3);
-      }
+   @Nullable
+   public static CompiledShaderProgram setShader(ShaderProgram var0) {
+      assertOnRenderThread();
+      CompiledShaderProgram var1 = Minecraft.getInstance().getShaderManager().getProgram(var0);
+      shader = var1;
+      return var1;
    }
 
-   public static void setShader(Supplier<ShaderInstance> var0) {
+   public static void setShader(CompiledShaderProgram var0) {
       assertOnRenderThread();
-      shader = (ShaderInstance)var0.get();
+      shader = var0;
+   }
+
+   public static void clearShader() {
+      assertOnRenderThread();
+      shader = null;
    }
 
    @Nullable
-   public static ShaderInstance getShader() {
+   public static CompiledShaderProgram getShader() {
       assertOnRenderThread();
       return shader;
    }

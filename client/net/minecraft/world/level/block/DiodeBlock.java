@@ -173,7 +173,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    protected void updateNeighborsInFront(Level var1, BlockPos var2, BlockState var3) {
       Direction var4 = var3.getValue(FACING);
       BlockPos var5 = var2.relative(var4.getOpposite());
-      Orientation var6 = ExperimentalRedstoneUtils.randomOrientation(var1, var4.getOpposite(), Direction.UP);
+      Orientation var6 = ExperimentalRedstoneUtils.initialOrientation(var1, var4.getOpposite(), Direction.UP);
       var1.neighborChanged(var5, this, var6);
       var1.updateNeighborsAtExceptFromFacing(var5, this, var4, var6);
    }

@@ -209,7 +209,7 @@ public class FallingBlockEntity extends Entity {
                   }
                }
             } else if (!this.level().isClientSide
-               && (this.time > 100 && (var2.getY() <= this.level().getMinBuildHeight() || var2.getY() > this.level().getMaxBuildHeight()) || this.time > 600)) {
+               && (this.time > 100 && (var2.getY() <= this.level().getMinY() || var2.getY() > this.level().getMaxY()) || this.time > 600)) {
                if (this.dropItem && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                   this.spawnAtLocation(var1);
                }

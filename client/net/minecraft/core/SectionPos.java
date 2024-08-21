@@ -58,7 +58,7 @@ public class SectionPos extends Vec3i {
    }
 
    public static SectionPos bottomOf(ChunkAccess var0) {
-      return of(var0.getPos(), var0.getMinSection());
+      return of(var0.getPos(), var0.getMinSectionY());
    }
 
    public static long offset(long var0, Direction var2) {
@@ -234,7 +234,7 @@ public class SectionPos extends Vec3i {
    public static Stream<SectionPos> aroundChunk(ChunkPos var0, int var1, int var2, int var3) {
       int var4 = var0.x;
       int var5 = var0.z;
-      return betweenClosedStream(var4 - var1, var2, var5 - var1, var4 + var1, var3 - 1, var5 + var1);
+      return betweenClosedStream(var4 - var1, var2, var5 - var1, var4 + var1, var3, var5 + var1);
    }
 
    public static Stream<SectionPos> betweenClosedStream(final int var0, final int var1, final int var2, final int var3, final int var4, final int var5) {

@@ -136,7 +136,7 @@ public final class Biome {
       if (this.warmEnoughToRain(var2, var1.getSeaLevel())) {
          return false;
       } else {
-         if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
+         if (var1.isInsideBuildHeight(var2.getY()) && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
             BlockState var4 = var1.getBlockState(var2);
             FluidState var5 = var1.getFluidState(var2);
             if (var5.getType() == Fluids.WATER && var4.getBlock() instanceof LiquidBlock) {
@@ -171,7 +171,7 @@ public final class Biome {
       if (this.warmEnoughToRain(var2, var1.getSeaLevel())) {
          return false;
       } else {
-         if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
+         if (var1.isInsideBuildHeight(var2.getY()) && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
             BlockState var3 = var1.getBlockState(var2);
             if ((var3.isAir() || var3.is(Blocks.SNOW)) && Blocks.SNOW.defaultBlockState().canSurvive(var1, var2)) {
                return true;

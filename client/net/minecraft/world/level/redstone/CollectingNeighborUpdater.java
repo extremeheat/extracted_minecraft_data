@@ -131,7 +131,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
          Orientation var5 = null;
          if (var1.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS)) {
             if (this.orientation == null) {
-               this.orientation = ExperimentalRedstoneUtils.randomOrientation(var1, this.skipDirection == null ? null : this.skipDirection.getOpposite(), null);
+               this.orientation = ExperimentalRedstoneUtils.initialOrientation(var1, this.skipDirection == null ? null : this.skipDirection.getOpposite(), null);
             }
 
             var5 = this.orientation.withFront(var2);

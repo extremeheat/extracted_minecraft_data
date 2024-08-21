@@ -3,9 +3,7 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -366,26 +364,17 @@ public class ItemBlockRenderTypes {
       }
    }
 
-   public static RenderType getRenderType(BlockState var0, boolean var1) {
-      RenderType var2 = getChunkRenderType(var0);
-      if (var2 == RenderType.translucent()) {
-         if (!Minecraft.useShaderTransparency()) {
-            return Sheets.translucentCullBlockSheet();
-         } else {
-            return var1 ? Sheets.translucentCullBlockSheet() : Sheets.translucentItemSheet();
-         }
-      } else {
-         return Sheets.cutoutBlockSheet();
-      }
+   public static RenderType getRenderType(BlockState var0) {
+      RenderType var1 = getChunkRenderType(var0);
+      return var1 == RenderType.translucent() ? Sheets.translucentItemSheet() : Sheets.cutoutBlockSheet();
    }
 
-   public static RenderType getRenderType(ItemStack var0, boolean var1) {
-      Item var2 = var0.getItem();
-      if (var2 instanceof BlockItem) {
-         Block var3 = ((BlockItem)var2).getBlock();
-         return getRenderType(var3.defaultBlockState(), var1);
+   public static RenderType getRenderType(ItemStack var0) {
+      if (var0.getItem() instanceof BlockItem var2) {
+         Block var3 = var2.getBlock();
+         return getRenderType(var3.defaultBlockState());
       } else {
-         return var1 ? Sheets.translucentCullBlockSheet() : Sheets.translucentItemSheet();
+         return Sheets.translucentItemSheet();
       }
    }
 

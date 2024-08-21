@@ -62,7 +62,7 @@ public class ChorusFlowerBlock extends Block {
    @Override
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockPos var5 = var3.above();
-      if (var2.isEmptyBlock(var5) && var5.getY() < var2.getMaxBuildHeight()) {
+      if (var2.isEmptyBlock(var5) && var5.getY() <= var2.getMaxY()) {
          int var6 = var1.getValue(AGE);
          if (var6 < 5) {
             boolean var7 = false;

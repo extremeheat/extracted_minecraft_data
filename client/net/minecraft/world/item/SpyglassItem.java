@@ -22,8 +22,8 @@ public class SpyglassItem extends Item {
    }
 
    @Override
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.SPYGLASS;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.SPYGLASS;
    }
 
    @Override

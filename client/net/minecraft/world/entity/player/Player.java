@@ -17,7 +17,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -83,7 +82,6 @@ import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.food.FoodData;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -873,8 +871,9 @@ public abstract class Player extends LivingEntity {
    @Override
    protected void blockUsingShield(LivingEntity var1) {
       super.blockUsingShield(var1);
-      if (var1.canDisableShield()) {
-         this.disableShield();
+      ItemStack var2 = this.getItemBlockingWith();
+      if (var1.canDisableShield() && var2 != null) {
+         this.disableShield(var2);
       }
    }
 
@@ -1291,8 +1290,8 @@ public abstract class Player extends LivingEntity {
       this.attack(var1);
    }
 
-   public void disableShield() {
-      this.getCooldowns().addCooldown(Items.SHIELD, 100);
+   public void disableShield(ItemStack var1) {
+      this.getCooldowns().addCooldown(var1, 100);
       this.stopUsingItem();
       this.level().broadcastEntityEvent(this, (byte)30);
    }
@@ -1987,30 +1986,6 @@ public abstract class Player extends LivingEntity {
             return this.abilities.instabuild ? new ItemStack(Items.ARROW) : ItemStack.EMPTY;
          }
       }
-   }
-
-   @Override
-   public ItemStack eat(Level var1, ItemStack var2, FoodProperties var3) {
-      this.getFoodData().eat(var3);
-      this.awardStat(Stats.ITEM_USED.get(var2.getItem()));
-      var1.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, var1.random.nextFloat() * 0.1F + 0.9F);
-      if (this instanceof ServerPlayer) {
-         CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer)this, var2);
-      }
-
-      ItemStack var4 = super.eat(var1, var2, var3);
-      Optional var5 = var3.usingConvertsTo();
-      if (var5.isPresent() && !this.hasInfiniteMaterials()) {
-         if (var4.isEmpty()) {
-            return ((ItemStack)var5.get()).copy();
-         }
-
-         if (!this.level().isClientSide()) {
-            this.getInventory().add(((ItemStack)var5.get()).copy());
-         }
-      }
-
-      return var4;
    }
 
    @Override

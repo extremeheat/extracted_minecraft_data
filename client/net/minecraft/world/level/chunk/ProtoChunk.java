@@ -111,7 +111,9 @@ public class ProtoChunk extends ChunkAccess {
       int var4 = var1.getX();
       int var5 = var1.getY();
       int var6 = var1.getZ();
-      if (var5 >= this.getMinBuildHeight() && var5 < this.getMaxBuildHeight()) {
+      if (this.isOutsideBuildHeight(var5)) {
+         return Blocks.VOID_AIR.defaultBlockState();
+      } else {
          int var7 = this.getSectionIndex(var5);
          LevelChunkSection var8 = this.getSection(var7);
          boolean var9 = var8.hasOnlyAir();
@@ -158,8 +160,6 @@ public class ProtoChunk extends ChunkAccess {
 
             return var13;
          }
-      } else {
-         return Blocks.VOID_AIR.defaultBlockState();
       }
    }
 
@@ -197,7 +197,7 @@ public class ProtoChunk extends ChunkAccess {
       if (var3 != null && var2.isValid()) {
          BoundingBox var4 = var2.getBoundingBox();
          LevelHeightAccessor var5 = this.getHeightAccessorForGeneration();
-         if (var4.minY() < var5.getMinBuildHeight() || var4.maxY() >= var5.getMaxBuildHeight()) {
+         if (var4.minY() < var5.getMinY() || var4.maxY() > var5.getMaxY()) {
             return;
          }
       }
@@ -285,7 +285,7 @@ public class ProtoChunk extends ChunkAccess {
 
    public CarvingMask getOrCreateCarvingMask() {
       if (this.carvingMask == null) {
-         this.carvingMask = new CarvingMask(this.getHeight(), this.getMinBuildHeight());
+         this.carvingMask = new CarvingMask(this.getHeight(), this.getMinY());
       }
 
       return this.carvingMask;

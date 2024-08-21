@@ -70,7 +70,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       BlockPos var12 = var7.rootPlacer.<BlockPos>map(var2x -> var2x.getTrunkOrigin(var3, var2)).orElse(var3);
       int var13 = Math.min(var3.getY(), var12.getY());
       int var14 = Math.max(var3.getY(), var12.getY()) + var8 + 1;
-      if (var13 >= var1.getMinBuildHeight() + 1 && var14 <= var1.getMaxBuildHeight()) {
+      if (var13 >= var1.getMinY() + 1 && var14 <= var1.getMaxY() + 1) {
          OptionalInt var15 = var7.minimumSize.minClippedHeight();
          int var16 = this.getMaxFreeTreeHeight(var1, var8, var12, var7);
          if (var16 >= var8 || !var15.isEmpty() && var16 >= var15.getAsInt()) {

@@ -89,7 +89,7 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
 
    @VisibleForDebug
    public Stream<PoiRecord> getInChunk(Predicate<Holder<PoiType>> var1, ChunkPos var2, PoiManager.Occupancy var3) {
-      return IntStream.range(this.levelHeightAccessor.getMinSection(), this.levelHeightAccessor.getMaxSection())
+      return IntStream.rangeClosed(this.levelHeightAccessor.getMinSectionY(), this.levelHeightAccessor.getMaxSectionY())
          .boxed()
          .map(var2x -> this.getOrLoad(SectionPos.of(var2, var2x).asLong()))
          .filter(Optional::isPresent)
@@ -227,7 +227,7 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
    }
 
    public void ensureLoadedAndValid(LevelReader var1, BlockPos var2, int var3) {
-      SectionPos.aroundChunk(new ChunkPos(var2), Math.floorDiv(var3, 16), this.levelHeightAccessor.getMinSection(), this.levelHeightAccessor.getMaxSection())
+      SectionPos.aroundChunk(new ChunkPos(var2), Math.floorDiv(var3, 16), this.levelHeightAccessor.getMinSectionY(), this.levelHeightAccessor.getMaxSectionY())
          .map(var1x -> Pair.of(var1x, this.getOrLoad(var1x.asLong())))
          .filter(var0 -> !((Optional)var0.getSecond()).map(PoiSection::isValid).orElse(false))
          .map(var0 -> ((SectionPos)var0.getFirst()).chunk())

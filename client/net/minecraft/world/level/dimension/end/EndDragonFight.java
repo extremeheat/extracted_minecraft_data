@@ -295,7 +295,7 @@ public class EndDragonFight {
       BlockPos var9 = EndPodiumFeature.getLocation(this.origin);
       int var10 = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var9).getY();
 
-      for (int var11 = var10; var11 >= this.level.getMinBuildHeight(); var11--) {
+      for (int var11 = var10; var11 >= this.level.getMinY(); var11--) {
          BlockPattern.BlockPatternMatch var12 = this.exitPortalPattern.find(this.level, new BlockPos(var9.getX(), var11, var9.getZ()));
          if (var12 != null) {
             if (this.portalLocation == null) {

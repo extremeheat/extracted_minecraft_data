@@ -34,7 +34,6 @@ import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,6 +41,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerTickRateManager;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -370,7 +370,7 @@ public class DebugScreenOverlay {
             }
 
             var16.add(var23.toString());
-            if (var28.getY() >= this.minecraft.level.getMinBuildHeight() && var28.getY() < this.minecraft.level.getMaxBuildHeight()) {
+            if (this.minecraft.level.isInsideBuildHeight(var28.getY())) {
                var16.add("Biome: " + printBiome(this.minecraft.level.getBiome(var28)));
                if (var22 != null) {
                   float var38 = var14.getMoonBrightness();
@@ -421,9 +421,9 @@ public class DebugScreenOverlay {
             }
          }
 
-         PostChain var33 = this.minecraft.gameRenderer.currentEffect();
+         ResourceLocation var33 = this.minecraft.gameRenderer.currentPostEffect();
          if (var33 != null) {
-            var16.add("Shader: " + var33.getId());
+            var16.add("Post: " + var33);
          }
 
          var16.add(

@@ -44,8 +44,12 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.Repairable;
@@ -144,22 +148,13 @@ public class Item implements FeatureElement, ItemLike {
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      FoodProperties var5 = var4.get(DataComponents.FOOD);
-      if (var5 != null) {
-         if (var2.canEat(var5.canAlwaysEat())) {
-            var2.startUsingItem(var3);
-            return InteractionResult.CONSUME;
-         } else {
-            return InteractionResult.FAIL;
-         }
-      } else {
-         return InteractionResult.PASS;
-      }
+      Consumable var5 = var4.get(DataComponents.CONSUMABLE);
+      return (InteractionResult)(var5 != null ? var5.startConsuming(var2, var4, var3) : InteractionResult.PASS);
    }
 
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      FoodProperties var4 = var1.get(DataComponents.FOOD);
-      return var4 != null ? var3.eat(var2, var1, var4) : var1;
+      Consumable var4 = var1.get(DataComponents.CONSUMABLE);
+      return var4 != null ? var4.onConsume(var2, var3, var1) : var1;
    }
 
    public boolean isBarVisible(ItemStack var1) {
@@ -265,13 +260,14 @@ public class Item implements FeatureElement, ItemLike {
       return false;
    }
 
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return var1.has(DataComponents.FOOD) ? UseAnim.EAT : UseAnim.NONE;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      Consumable var2 = var1.get(DataComponents.CONSUMABLE);
+      return var2 != null ? var2.animation() : ItemUseAnimation.NONE;
    }
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
-      FoodProperties var3 = var1.get(DataComponents.FOOD);
-      return var3 != null ? var3.eatDurationTicks() : 0;
+      Consumable var3 = var1.get(DataComponents.CONSUMABLE);
+      return var3 != null ? var3.consumeTicks() : 0;
    }
 
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
@@ -292,21 +288,10 @@ public class Item implements FeatureElement, ItemLike {
       return var1.isEnchanted();
    }
 
-   public boolean isEnchantable(ItemStack var1) {
-      return var1.getMaxStackSize() == 1 && var1.has(DataComponents.MAX_DAMAGE);
-   }
-
    protected static BlockHitResult getPlayerPOVHitResult(Level var0, Player var1, ClipContext.Fluid var2) {
       Vec3 var3 = var1.getEyePosition();
       Vec3 var4 = var3.add(var1.calculateViewVector(var1.getXRot(), var1.getYRot()).scale(var1.blockInteractionRange()));
       return var0.clip(new ClipContext(var3, var4, ClipContext.Block.OUTLINE, var2, var1));
-   }
-
-   @Deprecated(
-      forRemoval = true
-   )
-   public int getEnchantmentValue() {
-      return 0;
    }
 
    @Deprecated(
@@ -327,14 +312,6 @@ public class Item implements FeatureElement, ItemLike {
 
    public ItemStack getDefaultInstance() {
       return new ItemStack(this);
-   }
-
-   public SoundEvent getDrinkingSound() {
-      return SoundEvents.GENERIC_DRINK;
-   }
-
-   public SoundEvent getEatingSound() {
-      return SoundEvents.GENERIC_EAT;
    }
 
    public SoundEvent getBreakingSound() {
@@ -363,7 +340,19 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Item.Properties food(FoodProperties var1) {
-         return this.component(DataComponents.FOOD, var1);
+         return this.food(var1, Consumables.DEFAULT_FOOD);
+      }
+
+      public Item.Properties food(FoodProperties var1, Consumable var2) {
+         return this.component(DataComponents.FOOD, var1).component(DataComponents.CONSUMABLE, var2);
+      }
+
+      public Item.Properties usingConvertsTo(Item var1) {
+         return this.component(DataComponents.USE_REMAINDER, new UseRemainder(new ItemStack(var1)));
+      }
+
+      public Item.Properties useCooldown(float var1) {
+         return this.component(DataComponents.USE_COOLDOWN, new UseCooldown(var1));
       }
 
       public Item.Properties stacksTo(int var1) {

@@ -75,7 +75,7 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
                   BlockPos var33 = var3.offset(var25, var28, var31);
                   BlockState var35 = var5.getBlockState(var33);
                   if (var25 == var8 || var28 == -1 || var31 == var13 || var25 == var9 || var28 == 4 || var31 == var14) {
-                     if (var33.getY() >= var5.getMinBuildHeight() && !var5.getBlockState(var33.below()).isSolid()) {
+                     if (var33.getY() >= var5.getMinY() && !var5.getBlockState(var33.below()).isSolid()) {
                         var5.setBlock(var33, AIR, 2);
                      } else if (var35.isSolid() && !var35.is(Blocks.CHEST)) {
                         if (var28 == -1 && var4.nextInt(4) != 0) {

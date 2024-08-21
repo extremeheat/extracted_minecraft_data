@@ -106,7 +106,7 @@ public interface CollisionGetter extends BlockGetter {
          Vec3 var4 = var2.getLocation().subtract(var1.getFrom());
          Direction var5 = Direction.getApproximateNearest(var4.x, var4.y, var4.z);
          Vec3 var6 = var3.clampVec3ToBound(var2.getLocation());
-         return new BlockHitResult(var6, var5, BlockPos.containing(var6), false);
+         return new BlockHitResult(var6, var5, BlockPos.containing(var6), false, true);
       } else {
          return var2;
       }

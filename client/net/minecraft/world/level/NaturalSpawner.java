@@ -123,7 +123,7 @@ public final class NaturalSpawner {
       MobCategory var0, ServerLevel var1, LevelChunk var2, NaturalSpawner.SpawnPredicate var3, NaturalSpawner.AfterSpawnCallback var4
    ) {
       BlockPos var5 = getRandomPosWithin(var1, var2);
-      if (var5.getY() >= var1.getMinBuildHeight() + 1) {
+      if (var5.getY() >= var1.getMinY() + 1) {
          spawnCategoryForPosition(var0, var1, var2, var5, var3, var4);
       }
    }
@@ -298,7 +298,7 @@ public final class NaturalSpawner {
       int var3 = var2.getMinBlockX() + var0.random.nextInt(16);
       int var4 = var2.getMinBlockZ() + var0.random.nextInt(16);
       int var5 = var1.getHeight(Heightmap.Types.WORLD_SURFACE, var3, var4) + 1;
-      int var6 = Mth.randomBetweenInclusive(var0.random, var0.getMinBuildHeight(), var5);
+      int var6 = Mth.randomBetweenInclusive(var0.random, var0.getMinY(), var5);
       return new BlockPos(var3, var6, var4);
    }
 
@@ -393,7 +393,7 @@ public final class NaturalSpawner {
 
          do {
             var5.move(Direction.DOWN);
-         } while (var0.getBlockState(var5).isAir() && var5.getY() > var0.getMinBuildHeight());
+         } while (var0.getBlockState(var5).isAir() && var5.getY() > var0.getMinY());
       }
 
       return SpawnPlacements.getPlacementType(var1).adjustSpawnPosition(var0, var5.immutable());

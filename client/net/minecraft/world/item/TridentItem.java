@@ -61,8 +61,8 @@ public class TridentItem extends Item implements ProjectileItem {
    }
 
    @Override
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.SPEAR;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.SPEAR;
    }
 
    @Override

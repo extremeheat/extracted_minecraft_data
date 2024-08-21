@@ -45,10 +45,6 @@ public class BakedQuad {
       return this.shade;
    }
 
-   public boolean emitsLight() {
-      return this.lightEmission > 0;
-   }
-
    public int getLightEmission() {
       return this.lightEmission;
    }

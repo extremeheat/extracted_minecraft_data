@@ -92,7 +92,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
                float var10 = (float)(var8 >> 8 & 0xFF) / 255.0F;
                float var11 = (float)(var8 & 0xFF) / 255.0F;
                this.modelRenderer
-                  .renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1, false)), var1, var7, var9, var10, var11, var4, var5);
+                  .renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var1, var7, var9, var10, var11, var4, var5);
                break;
             case ENTITYBLOCK_ANIMATED:
                this.blockEntityRenderer.renderByItem(new ItemStack(var1.getBlock()), ItemDisplayContext.NONE, var2, var3, var4, var5);

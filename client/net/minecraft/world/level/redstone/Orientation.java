@@ -64,6 +64,10 @@ public class Orientation {
       return this.withFront.get(var1);
    }
 
+   public Orientation withFrontPreserveUp(Direction var1) {
+      return var1.getAxis() == this.up.getAxis() ? this : this.withFront.get(var1);
+   }
+
    public Orientation withFrontAdjustSideBias(Direction var1) {
       Orientation var2 = this.withFront(var1);
       return this.front == var2.side ? var2.withMirror() : var2;

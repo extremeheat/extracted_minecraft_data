@@ -54,6 +54,8 @@ public abstract class MinecartBehavior {
 
    public abstract double stepAlongTrack(BlockPos var1, RailShape var2, double var3);
 
+   public abstract boolean pushAndPickupEntities();
+
    public Vec3 getDeltaMovement() {
       return this.minecart.getDeltaMovement();
    }

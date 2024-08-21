@@ -206,7 +206,7 @@ public class TripWireHookBlock extends Block {
 
    private static void notifyNeighbors(Block var0, Level var1, BlockPos var2, Direction var3) {
       Direction var4 = var3.getOpposite();
-      Orientation var5 = ExperimentalRedstoneUtils.randomOrientation(var1, var4, Direction.UP);
+      Orientation var5 = ExperimentalRedstoneUtils.initialOrientation(var1, var4, Direction.UP);
       var1.updateNeighborsAt(var2, var0, var5);
       var1.updateNeighborsAt(var2.relative(var4), var0, var5);
    }

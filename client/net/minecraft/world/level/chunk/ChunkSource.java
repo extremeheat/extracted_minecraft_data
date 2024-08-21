@@ -37,6 +37,9 @@ public abstract class ChunkSource implements LightChunkGetter, AutoCloseable {
 
    public abstract void tick(BooleanSupplier var1, boolean var2);
 
+   public void onSectionEmptinessChanged(int var1, int var2, int var3, boolean var4) {
+   }
+
    public abstract String gatherStats();
 
    public abstract int getLoadedChunksCount();

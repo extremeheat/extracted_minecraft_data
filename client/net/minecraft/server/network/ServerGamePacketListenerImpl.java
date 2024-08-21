@@ -766,7 +766,7 @@ public class ServerGamePacketListenerImpl
          ArrayList var3 = Lists.newArrayList();
          Optional var4 = var1.title();
          var4.ifPresent(var3::add);
-         var1.pages().stream().limit(100L).forEach(var3::add);
+         var3.addAll(var1.pages());
          Consumer var5 = var4.isPresent()
             ? var2x -> this.signBook((FilteredText)var2x.get(0), var2x.subList(1, var2x.size()), var2)
             : var2x -> this.updateBookContents(var2x, var2);
@@ -1047,7 +1047,7 @@ public class ServerGamePacketListenerImpl
          case START_DESTROY_BLOCK:
          case ABORT_DESTROY_BLOCK:
          case STOP_DESTROY_BLOCK:
-            this.player.gameMode.handleBlockBreakAction(var2, var3, var1.getDirection(), this.player.level().getMaxBuildHeight(), var1.getSequence());
+            this.player.gameMode.handleBlockBreakAction(var2, var3, var1.getDirection(), this.player.level().getMaxY(), var1.getSequence());
             this.player.connection.ackBlockChangesUpTo(var1.getSequence());
             return;
          default:
@@ -1060,7 +1060,7 @@ public class ServerGamePacketListenerImpl
          return false;
       } else {
          Item var2 = var1.getItem();
-         return (var2 instanceof BlockItem || var2 instanceof BucketItem) && !var0.getCooldowns().isOnCooldown(var2);
+         return (var2 instanceof BlockItem || var2 instanceof BucketItem) && !var0.getCooldowns().isOnCooldown(var1);
       }
    }
 
@@ -1081,23 +1081,23 @@ public class ServerGamePacketListenerImpl
             if (Math.abs(var8.x()) < 1.0000001 && Math.abs(var8.y()) < 1.0000001 && Math.abs(var8.z()) < 1.0000001) {
                Direction var11 = var5.getDirection();
                this.player.resetLastActionTime();
-               int var12 = this.player.level().getMaxBuildHeight();
-               if (var7.getY() < var12) {
+               int var12 = this.player.level().getMaxY();
+               if (var7.getY() <= var12) {
                   if (this.awaitingPositionFromClient == null && var2.mayInteract(this.player, var7)) {
                      InteractionResult var13 = this.player.gameMode.useItemOn(this.player, var2, var4, var3, var5);
                      if (var13.consumesAction()) {
                         CriteriaTriggers.ANY_BLOCK_USE.trigger(this.player, var5.getBlockPos(), var4.copy());
                      }
 
-                     if (var11 == Direction.UP && !var13.consumesAction() && var7.getY() >= var12 - 1 && wasBlockPlacementAttempt(this.player, var4)) {
-                        MutableComponent var15 = Component.translatable("build.tooHigh", var12 - 1).withStyle(ChatFormatting.RED);
+                     if (var11 == Direction.UP && !var13.consumesAction() && var7.getY() >= var12 && wasBlockPlacementAttempt(this.player, var4)) {
+                        MutableComponent var15 = Component.translatable("build.tooHigh", var12).withStyle(ChatFormatting.RED);
                         this.player.sendSystemMessage(var15, true);
                      } else if (var13 instanceof InteractionResult.Success var14 && var14.swingSource() == InteractionResult.SwingSource.SERVER) {
                         this.player.swing(var3, true);
                      }
                   }
                } else {
-                  MutableComponent var16 = Component.translatable("build.tooHigh", var12 - 1).withStyle(ChatFormatting.RED);
+                  MutableComponent var16 = Component.translatable("build.tooHigh", var12).withStyle(ChatFormatting.RED);
                   this.player.sendSystemMessage(var16, true);
                }
 

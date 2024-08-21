@@ -37,15 +37,15 @@ public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
 
    @Override
    public void tick() {
-      boolean var1 = !this.minecart.isOnRails() && this.minecart.getBehavior() instanceof NewMinecartBehavior;
-      if (this.minecart.isRemoved() || !this.player.isPassenger() || this.player.getVehicle() != this.minecart || var1) {
+      if (this.minecart.isRemoved() || !this.player.isPassenger() || this.player.getVehicle() != this.minecart) {
          this.stop();
       } else if (this.underwaterSound != this.player.isUnderWater()) {
          this.volume = 0.0F;
       } else {
-         float var2 = (float)this.minecart.getDeltaMovement().horizontalDistance();
-         if (var2 >= 0.01F) {
-            this.volume = Mth.clampedLerp(0.0F, 0.75F, var2);
+         float var1 = (float)this.minecart.getDeltaMovement().horizontalDistance();
+         boolean var2 = !this.minecart.isOnRails() && this.minecart.getBehavior() instanceof NewMinecartBehavior;
+         if (var1 >= 0.01F && !var2) {
+            this.volume = Mth.clampedLerp(0.0F, 0.75F, var1);
          } else {
             this.volume = 0.0F;
          }

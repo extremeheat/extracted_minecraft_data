@@ -120,6 +120,7 @@ import net.minecraft.util.datafix.fixes.FeatureFlagRemoveFix;
 import net.minecraft.util.datafix.fixes.FilteredBooksFix;
 import net.minecraft.util.datafix.fixes.FilteredSignsFix;
 import net.minecraft.util.datafix.fixes.FixProjectileStoredItem;
+import net.minecraft.util.datafix.fixes.FoodToConsumableFix;
 import net.minecraft.util.datafix.fixes.ForcePoiRebuild;
 import net.minecraft.util.datafix.fixes.FurnaceRecipeFix;
 import net.minecraft.util.datafix.fixes.GoatHornIdFix;
@@ -217,6 +218,7 @@ import net.minecraft.util.datafix.fixes.VariantRenameFix;
 import net.minecraft.util.datafix.fixes.VillagerDataFix;
 import net.minecraft.util.datafix.fixes.VillagerFollowRangeFix;
 import net.minecraft.util.datafix.fixes.VillagerRebuildLevelAndXpFix;
+import net.minecraft.util.datafix.fixes.VillagerSetCanPickUpLootFix;
 import net.minecraft.util.datafix.fixes.VillagerTradeFix;
 import net.minecraft.util.datafix.fixes.WallPropertyFix;
 import net.minecraft.util.datafix.fixes.WeaponSmithChestLootTableFix;
@@ -305,6 +307,7 @@ import net.minecraft.util.datafix.schemas.V3818_4;
 import net.minecraft.util.datafix.schemas.V3818_5;
 import net.minecraft.util.datafix.schemas.V3825;
 import net.minecraft.util.datafix.schemas.V3938;
+import net.minecraft.util.datafix.schemas.V4059;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -352,6 +355,7 @@ public class DataFixers {
       var0.addFixer(new EntityEquipmentToArmorAndHandFix(var1, true));
       Schema var2 = var0.addSchema(101, SAME);
       var0.addFixer(new BlockEntitySignTextStrictJsonFix(var2, false));
+      var0.addFixer(new VillagerSetCanPickUpLootFix(var2));
       Schema var3 = var0.addSchema(102, V102::new);
       var0.addFixer(new ItemIdFix(var3, true));
       var0.addFixer(new ItemPotionFix(var3, false));
@@ -1338,6 +1342,8 @@ public class DataFixers {
       var0.addFixer(new AttributeIdPrefixFix(var236));
       Schema var237 = var0.addSchema(4057, SAME_NAMESPACED);
       var0.addFixer(new CarvingStepRemoveFix(var237));
+      Schema var238 = var0.addSchema(4059, V4059::new);
+      var0.addFixer(new FoodToConsumableFix(var238));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {
