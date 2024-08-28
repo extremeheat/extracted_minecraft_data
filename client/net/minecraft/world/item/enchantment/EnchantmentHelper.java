@@ -199,14 +199,28 @@ public class EnchantmentHelper {
    }
 
    public static void doPostAttackEffectsWithItemSource(ServerLevel var0, Entity var1, DamageSource var2, @Nullable ItemStack var3) {
-      if (var1 instanceof LivingEntity var4) {
-         runIterationOnEquipment(var4, (var3x, var4x, var5) -> var3x.value().doPostAttack(var0, var4x, var5, EnchantmentTarget.VICTIM, var1, var2));
+      doPostAttackEffectsWithItemSourceOnBreak(var0, var1, var2, var3, null);
+   }
+
+   public static void doPostAttackEffectsWithItemSourceOnBreak(
+      ServerLevel var0, Entity var1, DamageSource var2, @Nullable ItemStack var3, @Nullable Consumer<Item> var4
+   ) {
+      if (var1 instanceof LivingEntity var5) {
+         runIterationOnEquipment(var5, (var3x, var4x, var5x) -> var3x.value().doPostAttack(var0, var4x, var5x, EnchantmentTarget.VICTIM, var1, var2));
       }
 
-      if (var3 != null && var2.getEntity() instanceof LivingEntity var6) {
-         runIterationOnItem(
-            var3, EquipmentSlot.MAINHAND, var6, (var3x, var4x, var5) -> var3x.value().doPostAttack(var0, var4x, var5, EnchantmentTarget.ATTACKER, var1, var2)
-         );
+      if (var3 != null) {
+         if (var2.getEntity() instanceof LivingEntity var7) {
+            runIterationOnItem(
+               var3,
+               EquipmentSlot.MAINHAND,
+               var7,
+               (var3x, var4x, var5x) -> var3x.value().doPostAttack(var0, var4x, var5x, EnchantmentTarget.ATTACKER, var1, var2)
+            );
+         } else if (var4 != null) {
+            EnchantedItemInUse var8 = new EnchantedItemInUse(var3, null, null, var4);
+            runIterationOnItem(var3, (var4x, var5x) -> var4x.value().doPostAttack(var0, var5x, var8, EnchantmentTarget.ATTACKER, var1, var2));
+         }
       }
    }
 
@@ -442,7 +456,7 @@ public class EnchantmentHelper {
          var0,
          var1,
          var2,
-         var4.map(HolderSet::stream).orElseGet(() -> var3.registryOrThrow(Registries.ENCHANTMENT).holders().map(var0xx -> (Holder<Enchantment>)var0xx))
+         var4.map(HolderSet::stream).orElseGet(() -> var3.lookupOrThrow(Registries.ENCHANTMENT).listElements().map(var0xx -> (Holder<Enchantment>)var0xx))
       );
    }
 
@@ -523,7 +537,7 @@ public class EnchantmentHelper {
    public static void enchantItemFromProvider(
       ItemStack var0, RegistryAccess var1, ResourceKey<EnchantmentProvider> var2, DifficultyInstance var3, RandomSource var4
    ) {
-      EnchantmentProvider var5 = var1.registryOrThrow(Registries.ENCHANTMENT_PROVIDER).get(var2);
+      EnchantmentProvider var5 = var1.lookupOrThrow(Registries.ENCHANTMENT_PROVIDER).getValue(var2);
       if (var5 != null) {
          updateEnchantments(var0, var4x -> var5.enchant(var0, var4x, var4, var3));
       }

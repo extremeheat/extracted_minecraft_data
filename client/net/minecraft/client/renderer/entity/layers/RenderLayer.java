@@ -39,9 +39,5 @@ public abstract class RenderLayer<S extends EntityRenderState, M extends EntityM
       return this.renderer.getModel();
    }
 
-   protected ResourceLocation getTextureLocation(S var1) {
-      return this.renderer.getTextureLocation((S)var1);
-   }
-
    public abstract void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6);
 }

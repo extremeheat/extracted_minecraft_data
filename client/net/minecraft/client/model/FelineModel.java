@@ -23,7 +23,6 @@ public class FelineModel<T extends FelineRenderState> extends EntityModel<T> {
    private static final float FRONT_LEG_Z = -5.0F;
    private static final String TAIL_1 = "tail1";
    private static final String TAIL_2 = "tail2";
-   protected final ModelPart root;
    protected final ModelPart leftHindLeg;
    protected final ModelPart rightHindLeg;
    protected final ModelPart leftFrontLeg;
@@ -34,8 +33,7 @@ public class FelineModel<T extends FelineRenderState> extends EntityModel<T> {
    protected final ModelPart body;
 
    public FelineModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.body = var1.getChild("body");
       this.tail1 = var1.getChild("tail1");
@@ -82,14 +80,7 @@ public class FelineModel<T extends FelineRenderState> extends EntityModel<T> {
    }
 
    public void setupAnim(T var1) {
-      this.body.resetPose();
-      this.head.resetPose();
-      this.tail1.resetPose();
-      this.tail2.resetPose();
-      this.leftFrontLeg.resetPose();
-      this.rightFrontLeg.resetPose();
-      this.leftHindLeg.resetPose();
-      this.rightHindLeg.resetPose();
+      super.setupAnim((T)var1);
       if (var1.isCrouching) {
          this.body.y++;
          this.head.y += 2.0F;
@@ -176,10 +167,5 @@ public class FelineModel<T extends FelineRenderState> extends EntityModel<T> {
       if (var1.relaxStateOneAmount > 0.0F) {
          this.head.xRot = Mth.rotLerp(var1.relaxStateOneAmount, this.head.xRot, -0.58177644F);
       }
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

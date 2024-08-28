@@ -14,23 +14,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 
 public class VexModel extends EntityModel<VexRenderState> implements ArmedModel {
-   private final ModelPart root;
-   private final ModelPart body;
-   private final ModelPart rightArm;
-   private final ModelPart leftArm;
-   private final ModelPart rightWing;
-   private final ModelPart leftWing;
-   private final ModelPart head;
+   private final ModelPart body = this.root.getChild("body");
+   private final ModelPart rightArm = this.body.getChild("right_arm");
+   private final ModelPart leftArm = this.body.getChild("left_arm");
+   private final ModelPart rightWing = this.body.getChild("right_wing");
+   private final ModelPart leftWing = this.body.getChild("left_wing");
+   private final ModelPart head = this.root.getChild("head");
 
    public VexModel(ModelPart var1) {
-      super(RenderType::entityTranslucent);
-      this.root = var1.getChild("root");
-      this.body = this.root.getChild("body");
-      this.rightArm = this.body.getChild("right_arm");
-      this.leftArm = this.body.getChild("left_arm");
-      this.rightWing = this.body.getChild("right_wing");
-      this.leftWing = this.body.getChild("left_wing");
-      this.head = this.root.getChild("head");
+      super(var1.getChild("root"), RenderType::entityTranslucent);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -75,7 +67,7 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel 
    }
 
    public void setupAnim(VexRenderState var1) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
+      super.setupAnim(var1);
       this.head.yRot = var1.yRot * 0.017453292F;
       this.head.xRot = var1.xRot * 0.017453292F;
       float var2 = Mth.cos(var1.ageInTicks * 5.5F * 0.017453292F) * 0.1F;
@@ -117,11 +109,6 @@ public class VexModel extends EntityModel<VexRenderState> implements ArmedModel 
             this.leftArm.zRot = 0.47123888F + var3;
          }
       }
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 
    @Override

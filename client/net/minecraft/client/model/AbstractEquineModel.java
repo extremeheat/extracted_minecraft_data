@@ -26,7 +26,6 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
    private static final String HEAD_SADDLE = "head_saddle";
    private static final String MOUTH_SADDLE_WRAP = "mouth_saddle_wrap";
    protected static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 16.2F, 1.36F, 2.7272F, 2.0F, 20.0F, Set.of("head_parts"));
-   private final ModelPart root;
    protected final ModelPart body;
    protected final ModelPart headParts;
    private final ModelPart rightHindLeg;
@@ -38,8 +37,7 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
    private final ModelPart[] ridingParts;
 
    public AbstractEquineModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.body = var1.getChild("body");
       this.headParts = var1.getChild("head_parts");
       this.rightHindLeg = var1.getChild("right_hind_leg");
@@ -156,69 +154,58 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       return var1;
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(T var1) {
-      boolean var2 = var1.isSaddled;
-      boolean var3 = var1.isRidden;
+      super.setupAnim((T)var1);
 
-      for (ModelPart var7 : this.saddleParts) {
-         var7.visible = var2;
+      for (ModelPart var5 : this.saddleParts) {
+         var5.visible = var1.isSaddled;
       }
 
-      for (ModelPart var28 : this.ridingParts) {
-         var28.visible = var3 && var2;
+      for (ModelPart var26 : this.ridingParts) {
+         var26.visible = var1.isRidden && var1.isSaddled;
       }
 
-      float var23 = Mth.clamp(var1.yRot, -20.0F, 20.0F);
-      float var25 = var1.xRot * 0.017453292F;
-      float var27 = var1.walkAnimationSpeed;
-      float var29 = var1.walkAnimationPos;
-      if (var27 > 0.2F) {
-         var25 += Mth.cos(var29 * 0.8F) * 0.15F * var27;
+      float var21 = Mth.clamp(var1.yRot, -20.0F, 20.0F);
+      float var23 = var1.xRot * 0.017453292F;
+      float var25 = var1.walkAnimationSpeed;
+      float var27 = var1.walkAnimationPos;
+      if (var25 > 0.2F) {
+         var23 += Mth.cos(var27 * 0.8F) * 0.15F * var25;
       }
 
-      float var8 = var1.eatAnimation;
-      float var9 = var1.standAnimation;
-      float var10 = 1.0F - var9;
-      float var11 = var1.feedingAnimation;
-      boolean var12 = var1.animateTail;
-      this.headParts.resetPose();
-      this.body.xRot = 0.0F;
-      this.headParts.xRot = 0.5235988F + var25;
-      this.headParts.yRot = var23 * 0.017453292F;
-      float var13 = var1.isInWater ? 0.2F : 1.0F;
-      float var14 = Mth.cos(var13 * var29 * 0.6662F + 3.1415927F);
-      float var15 = var14 * 0.8F * var27;
-      float var16 = (1.0F - Math.max(var9, var8)) * (0.5235988F + var25 + var11 * Mth.sin(var1.ageInTicks) * 0.05F);
-      this.headParts.xRot = var9 * (0.2617994F + var25) + var8 * (2.1816616F + Mth.sin(var1.ageInTicks) * 0.05F) + var16;
-      this.headParts.yRot = var9 * var23 * 0.017453292F + (1.0F - Math.max(var9, var8)) * this.headParts.yRot;
-      float var17 = var1.ageScale;
-      this.headParts.y = this.headParts.y + Mth.lerp(var8, Mth.lerp(var9, 0.0F, -8.0F * var17), 7.0F * var17);
-      this.headParts.z = Mth.lerp(var9, this.headParts.z, -4.0F * var17);
-      this.body.xRot = var9 * -0.7853982F + var10 * this.body.xRot;
-      float var18 = 0.2617994F * var9;
-      float var19 = Mth.cos(var1.ageInTicks * 0.6F + 3.1415927F);
-      this.leftFrontLeg.resetPose();
-      this.leftFrontLeg.y -= 12.0F * var17 * var9;
-      this.leftFrontLeg.z += 4.0F * var17 * var9;
-      this.rightFrontLeg.resetPose();
+      float var6 = var1.eatAnimation;
+      float var7 = var1.standAnimation;
+      float var8 = 1.0F - var7;
+      float var9 = var1.feedingAnimation;
+      boolean var10 = var1.animateTail;
+      this.headParts.xRot = 0.5235988F + var23;
+      this.headParts.yRot = var21 * 0.017453292F;
+      float var11 = var1.isInWater ? 0.2F : 1.0F;
+      float var12 = Mth.cos(var11 * var27 * 0.6662F + 3.1415927F);
+      float var13 = var12 * 0.8F * var25;
+      float var14 = (1.0F - Math.max(var7, var6)) * (0.5235988F + var23 + var9 * Mth.sin(var1.ageInTicks) * 0.05F);
+      this.headParts.xRot = var7 * (0.2617994F + var23) + var6 * (2.1816616F + Mth.sin(var1.ageInTicks) * 0.05F) + var14;
+      this.headParts.yRot = var7 * var21 * 0.017453292F + (1.0F - Math.max(var7, var6)) * this.headParts.yRot;
+      float var15 = var1.ageScale;
+      this.headParts.y = this.headParts.y + Mth.lerp(var6, Mth.lerp(var7, 0.0F, -8.0F * var15), 7.0F * var15);
+      this.headParts.z = Mth.lerp(var7, this.headParts.z, -4.0F * var15);
+      this.body.xRot = var7 * -0.7853982F + var8 * this.body.xRot;
+      float var16 = 0.2617994F * var7;
+      float var17 = Mth.cos(var1.ageInTicks * 0.6F + 3.1415927F);
+      this.leftFrontLeg.y -= 12.0F * var15 * var7;
+      this.leftFrontLeg.z += 4.0F * var15 * var7;
       this.rightFrontLeg.y = this.leftFrontLeg.y;
       this.rightFrontLeg.z = this.leftFrontLeg.z;
-      float var20 = (-1.0471976F + var19) * var9 + var15 * var10;
-      float var21 = (-1.0471976F - var19) * var9 - var15 * var10;
-      this.leftHindLeg.xRot = var18 - var14 * 0.5F * var27 * var10;
-      this.rightHindLeg.xRot = var18 + var14 * 0.5F * var27 * var10;
-      this.leftFrontLeg.xRot = var20;
-      this.rightFrontLeg.xRot = var21;
-      this.tail.resetPose();
-      this.tail.xRot = 0.5235988F + var27 * 0.75F;
-      this.tail.y += var27 * var17;
-      this.tail.z += var27 * 2.0F * var17;
-      if (var12) {
+      float var18 = (-1.0471976F + var17) * var7 + var13 * var8;
+      float var19 = (-1.0471976F - var17) * var7 - var13 * var8;
+      this.leftHindLeg.xRot = var16 - var12 * 0.5F * var25 * var8;
+      this.rightHindLeg.xRot = var16 + var12 * 0.5F * var25 * var8;
+      this.leftFrontLeg.xRot = var18;
+      this.rightFrontLeg.xRot = var19;
+      this.tail.xRot = 0.5235988F + var25 * 0.75F;
+      this.tail.y += var25 * var15;
+      this.tail.z += var25 * 2.0F * var15;
+      if (var10) {
          this.tail.yRot = Mth.cos(var1.ageInTicks * 0.7F);
       } else {
          this.tail.yRot = 0.0F;

@@ -286,7 +286,7 @@ public final class NaturalSpawner {
 
    public static boolean isInNetherFortressBounds(BlockPos var0, ServerLevel var1, MobCategory var2, StructureManager var3) {
       if (var2 == MobCategory.MONSTER && var1.getBlockState(var0.below()).is(Blocks.NETHER_BRICKS)) {
-         Structure var4 = var3.registryAccess().registryOrThrow(Registries.STRUCTURE).get(BuiltinStructures.FORTRESS);
+         Structure var4 = var3.registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.FORTRESS);
          return var4 == null ? false : var3.getStructureAt(var0, var4).isValid();
       } else {
          return false;

@@ -13,12 +13,10 @@ import net.minecraft.world.level.block.entity.BellBlockEntity;
 
 public class BellModel extends Model {
    private static final String BELL_BODY = "bell_body";
-   private final ModelPart root;
    private final ModelPart bellBody;
 
    public BellModel(ModelPart var1) {
-      super(RenderType::entitySolid);
-      this.root = var1;
+      super(var1, RenderType::entitySolid);
       this.bellBody = var1.getChild("bell_body");
    }
 
@@ -53,10 +51,5 @@ public class BellModel extends Model {
 
       this.bellBody.xRot = var4;
       this.bellBody.zRot = var5;
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

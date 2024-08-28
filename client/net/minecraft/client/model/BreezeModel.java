@@ -16,7 +16,6 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
    private static final float WIND_TOP_SPEED = 0.6F;
    private static final float WIND_MIDDLE_SPEED = 0.8F;
    private static final float WIND_BOTTOM_SPEED = 1.0F;
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart eyes;
    private final ModelPart wind;
@@ -26,8 +25,7 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
    private final ModelPart rods;
 
    public BreezeModel(ModelPart var1) {
-      super(RenderType::entityTranslucent);
-      this.root = var1;
+      super(var1, RenderType::entityTranslucent);
       this.wind = var1.getChild("wind_body");
       this.windBottom = this.wind.getChild("wind_bottom");
       this.windMid = this.windBottom.getChild("wind_mid");
@@ -107,7 +105,7 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
    }
 
    public void setupAnim(BreezeRenderState var1) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
+      super.setupAnim(var1);
       float var2 = var1.ageInTicks * 3.1415927F * -0.1F;
       this.windTop.x = Mth.cos(var2) * 1.0F * 0.6F;
       this.windTop.z = Mth.sin(var2) * 1.0F * 0.6F;
@@ -122,11 +120,6 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
       this.animate(var1.slideBack, BreezeAnimation.SLIDE_BACK, var1.ageInTicks);
       this.animate(var1.inhale, BreezeAnimation.INHALE, var1.ageInTicks);
       this.animate(var1.longJump, BreezeAnimation.JUMP, var1.ageInTicks);
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 
    public ModelPart head() {

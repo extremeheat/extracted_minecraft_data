@@ -1823,8 +1823,11 @@ public class BlockModelGenerators {
    private void createBeeNest(Block var1, Function<Block, TextureMapping> var2) {
       TextureMapping var3 = ((TextureMapping)var2.apply(var1)).copyForced(TextureSlot.SIDE, TextureSlot.PARTICLE);
       TextureMapping var4 = var3.copyAndUpdate(TextureSlot.FRONT, TextureMapping.getBlockTexture(var1, "_front_honey"));
-      ResourceLocation var5 = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(var1, var3, this.modelOutput);
+      ResourceLocation var5 = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.createWithSuffix(var1, "_empty", var3, this.modelOutput);
       ResourceLocation var6 = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.createWithSuffix(var1, "_honey", var4, this.modelOutput);
+      this.skipAutoItemBlock(var1);
+      ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(ModelLocationUtils.getModelLocation(var1.asItem(), "_empty"), var3, this.modelOutput);
+      ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(ModelLocationUtils.getModelLocation(var1.asItem(), "_honey"), var4, this.modelOutput);
       this.blockStateOutput
          .accept(
             MultiVariantGenerator.multiVariant(var1)

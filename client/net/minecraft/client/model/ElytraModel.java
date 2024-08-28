@@ -12,13 +12,11 @@ import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 
 public class ElytraModel extends EntityModel<HumanoidRenderState> {
    public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
-   private final ModelPart root;
    private final ModelPart rightWing;
    private final ModelPart leftWing;
 
    public ElytraModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.leftWing = var1.getChild("left_wing");
       this.rightWing = var1.getChild("right_wing");
    }
@@ -41,6 +39,7 @@ public class ElytraModel extends EntityModel<HumanoidRenderState> {
    }
 
    public void setupAnim(HumanoidRenderState var1) {
+      super.setupAnim(var1);
       this.leftWing.y = var1.isCrouching ? 3.0F : 0.0F;
       this.leftWing.xRot = var1.elytraRotX;
       this.leftWing.zRot = var1.elytraRotZ;
@@ -49,10 +48,5 @@ public class ElytraModel extends EntityModel<HumanoidRenderState> {
       this.rightWing.y = this.leftWing.y;
       this.rightWing.xRot = this.leftWing.xRot;
       this.rightWing.zRot = -this.leftWing.zRot;
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

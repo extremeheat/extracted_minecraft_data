@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -90,8 +89,6 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static final int UPDATE_LIMIT = 512;
    protected final StateDefinition<Block, BlockState> stateDefinition;
    private BlockState defaultBlockState;
-   @Nullable
-   private String descriptionId;
    @Nullable
    private Item item;
    private static final int CACHE_SIZE = 256;
@@ -360,14 +357,6 @@ public class Block extends BlockBehaviour implements ItemLike {
       return Component.translatable(this.getDescriptionId());
    }
 
-   public String getDescriptionId() {
-      if (this.descriptionId == null) {
-         this.descriptionId = Util.makeDescriptionId("block", BuiltInRegistries.BLOCK.getKey(this));
-      }
-
-      return this.descriptionId;
-   }
-
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
       var4.causeFallDamage(var5, 1.0F, var4.damageSources().fall());
    }
@@ -483,37 +472,6 @@ public class Block extends BlockBehaviour implements ItemLike {
       int var5 = EnchantmentHelper.processBlockExperience(var1, var3, var4.sample(var1.getRandom()));
       if (var5 > 0) {
          this.popExperience(var1, var2, var5);
-      }
-   }
-
-   public static final class BlockStatePairKey {
-      private final BlockState first;
-      private final BlockState second;
-      private final Direction direction;
-
-      public BlockStatePairKey(BlockState var1, BlockState var2, Direction var3) {
-         super();
-         this.first = var1;
-         this.second = var2;
-         this.direction = var3;
-      }
-
-      @Override
-      public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else {
-            return !(var1 instanceof Block.BlockStatePairKey var2)
-               ? false
-               : this.first == var2.first && this.second == var2.second && this.direction == var2.direction;
-         }
-      }
-
-      @Override
-      public int hashCode() {
-         int var1 = this.first.hashCode();
-         var1 = 31 * var1 + this.second.hashCode();
-         return 31 * var1 + this.direction.hashCode();
       }
    }
 

@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 
 public class SlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
@@ -24,9 +25,9 @@ public class SlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
       if (!var4.isInvisible || var7) {
          VertexConsumer var8;
          if (var7) {
-            var8 = var2.getBuffer(RenderType.outline(this.getTextureLocation(var4)));
+            var8 = var2.getBuffer(RenderType.outline(SlimeRenderer.SLIME_LOCATION));
          } else {
-            var8 = var2.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(var4)));
+            var8 = var2.getBuffer(RenderType.entityTranslucent(SlimeRenderer.SLIME_LOCATION));
          }
 
          this.model.setupAnim(var4);

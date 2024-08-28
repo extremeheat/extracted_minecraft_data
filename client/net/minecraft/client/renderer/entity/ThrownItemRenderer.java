@@ -4,9 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.state.ThrownItemRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -54,9 +52,5 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
       ItemStack var4 = ((ItemSupplier)var1).getItem();
       var2.itemModel = !var4.isEmpty() ? this.itemRenderer.getModel(var4, var1.level(), null, var1.getId()) : null;
       var2.item = var4.copy();
-   }
-
-   public ResourceLocation getTextureLocation(ThrownItemRenderState var1) {
-      return TextureAtlas.LOCATION_BLOCKS;
    }
 }

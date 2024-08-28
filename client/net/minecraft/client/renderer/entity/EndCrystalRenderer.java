@@ -51,10 +51,6 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
       return var1 - 1.4F;
    }
 
-   public ResourceLocation getTextureLocation(EndCrystalRenderState var1) {
-      return END_CRYSTAL_LOCATION;
-   }
-
    public EndCrystalRenderState createRenderState() {
       return new EndCrystalRenderState();
    }

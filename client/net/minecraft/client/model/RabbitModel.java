@@ -21,7 +21,6 @@ public class RabbitModel extends EntityModel<RabbitRenderState> {
    );
    private static final String LEFT_HAUNCH = "left_haunch";
    private static final String RIGHT_HAUNCH = "right_haunch";
-   private final ModelPart root;
    private final ModelPart leftRearFoot;
    private final ModelPart rightRearFoot;
    private final ModelPart leftHaunch;
@@ -34,8 +33,7 @@ public class RabbitModel extends EntityModel<RabbitRenderState> {
    private final ModelPart nose;
 
    public RabbitModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.leftRearFoot = var1.getChild("left_hind_foot");
       this.rightRearFoot = var1.getChild("right_hind_foot");
       this.leftHaunch = var1.getChild("left_haunch");
@@ -102,12 +100,8 @@ public class RabbitModel extends EntityModel<RabbitRenderState> {
       return LayerDefinition.create(var1, 64, 32).apply(var0 ? BABY_TRANSFORMER : ADULT_TRANSFORMER);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(RabbitRenderState var1) {
+      super.setupAnim(var1);
       this.nose.xRot = var1.xRot * 0.017453292F;
       this.head.xRot = var1.xRot * 0.017453292F;
       this.rightEar.xRot = var1.xRot * 0.017453292F;

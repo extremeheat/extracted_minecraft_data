@@ -12,12 +12,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class GhastModel extends EntityModel<GhastRenderState> {
-   private final ModelPart root;
    private final ModelPart[] tentacles = new ModelPart[9];
 
    public GhastModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
 
       for (int var2 = 0; var2 < this.tentacles.length; var2++) {
          this.tentacles[var2] = var1.getChild(createTentacleName(var2));
@@ -51,13 +49,10 @@ public class GhastModel extends EntityModel<GhastRenderState> {
    }
 
    public void setupAnim(GhastRenderState var1) {
+      super.setupAnim(var1);
+
       for (int var2 = 0; var2 < this.tentacles.length; var2++) {
          this.tentacles[var2].xRot = 0.2F * Mth.sin(var1.ageInTicks * 0.3F + (float)var2) + 0.4F;
       }
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

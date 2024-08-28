@@ -100,7 +100,7 @@ public class Goat extends Animal {
       TagKey var2 = this.isScreamingGoat() ? InstrumentTags.SCREAMING_GOAT_HORNS : InstrumentTags.REGULAR_GOAT_HORNS;
       return this.level()
          .registryAccess()
-         .registryOrThrow(Registries.INSTRUMENT)
+         .lookupOrThrow(Registries.INSTRUMENT)
          .getRandomElementOf(var2, var1)
          .map(var0 -> InstrumentItem.create(Items.GOAT_HORN, (Holder<Instrument>)var0))
          .orElseGet(() -> new ItemStack(Items.GOAT_HORN));

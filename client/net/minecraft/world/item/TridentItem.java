@@ -71,51 +71,61 @@ public class TridentItem extends Item implements ProjectileItem {
    }
 
    @Override
-   public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       if (var3 instanceof Player var5) {
          int var6 = this.getUseDuration(var1, var3) - var4;
-         if (var6 >= 10) {
+         if (var6 < 10) {
+            return false;
+         } else {
             float var7 = EnchantmentHelper.getTridentSpinAttackStrength(var1, var5);
-            if (!(var7 > 0.0F) || var5.isInWaterOrRain()) {
-               if (!isTooDamagedToUse(var1)) {
-                  Holder var8 = EnchantmentHelper.pickHighestLevel(var1, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
-                  if (var2 instanceof ServerLevel var9) {
-                     var1.hurtWithoutBreaking(1, var5);
-                     if (var7 == 0.0F) {
-                        ThrownTrident var10 = Projectile.spawnProjectileFromRotation(ThrownTrident::new, var9, var1, var5, 0.0F, 2.5F, 1.0F);
-                        if (var5.hasInfiniteMaterials()) {
-                           var10.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-                        } else {
-                           var5.getInventory().removeItem(var1);
-                        }
-
-                        var2.playSound(null, var10, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
-                     }
-                  }
-
-                  var5.awardStat(Stats.ITEM_USED.get(this));
-                  if (var7 > 0.0F) {
-                     float var16 = var5.getYRot();
-                     float var17 = var5.getXRot();
-                     float var11 = -Mth.sin(var16 * 0.017453292F) * Mth.cos(var17 * 0.017453292F);
-                     float var12 = -Mth.sin(var17 * 0.017453292F);
-                     float var13 = Mth.cos(var16 * 0.017453292F) * Mth.cos(var17 * 0.017453292F);
-                     float var14 = Mth.sqrt(var11 * var11 + var12 * var12 + var13 * var13);
-                     var11 *= var7 / var14;
-                     var12 *= var7 / var14;
-                     var13 *= var7 / var14;
-                     var5.push((double)var11, (double)var12, (double)var13);
-                     var5.startAutoSpinAttack(20, 8.0F, var1);
-                     if (var5.onGround()) {
-                        float var15 = 1.1999999F;
-                        var5.move(MoverType.SELF, new Vec3(0.0, 1.1999999284744263, 0.0));
+            if (var7 > 0.0F && !var5.isInWaterOrRain()) {
+               return false;
+            } else if (isTooDamagedToUse(var1)) {
+               return false;
+            } else {
+               Holder var8 = EnchantmentHelper.pickHighestLevel(var1, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
+               if (var2 instanceof ServerLevel var9) {
+                  var1.hurtWithoutBreaking(1, var5);
+                  if (var7 == 0.0F) {
+                     ThrownTrident var17 = Projectile.spawnProjectileFromRotation(ThrownTrident::new, var9, var1, var5, 0.0F, 2.5F, 1.0F);
+                     if (var5.hasInfiniteMaterials()) {
+                        var17.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+                     } else {
+                        var5.getInventory().removeItem(var1);
                      }
 
-                     var2.playSound(null, var5, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                     var2.playSound(null, var17, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                     return true;
                   }
+               }
+
+               var5.awardStat(Stats.ITEM_USED.get(this));
+               if (var7 > 0.0F) {
+                  float var16 = var5.getYRot();
+                  float var10 = var5.getXRot();
+                  float var11 = -Mth.sin(var16 * 0.017453292F) * Mth.cos(var10 * 0.017453292F);
+                  float var12 = -Mth.sin(var10 * 0.017453292F);
+                  float var13 = Mth.cos(var16 * 0.017453292F) * Mth.cos(var10 * 0.017453292F);
+                  float var14 = Mth.sqrt(var11 * var11 + var12 * var12 + var13 * var13);
+                  var11 *= var7 / var14;
+                  var12 *= var7 / var14;
+                  var13 *= var7 / var14;
+                  var5.push((double)var11, (double)var12, (double)var13);
+                  var5.startAutoSpinAttack(20, 8.0F, var1);
+                  if (var5.onGround()) {
+                     float var15 = 1.1999999F;
+                     var5.move(MoverType.SELF, new Vec3(0.0, 1.1999999284744263, 0.0));
+                  }
+
+                  var2.playSound(null, var5, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                  return true;
+               } else {
+                  return false;
                }
             }
          }
+      } else {
+         return false;
       }
    }
 

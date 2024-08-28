@@ -14,7 +14,6 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.AbstractIllager;
 
 public class IllagerModel<S extends IllagerRenderState> extends EntityModel<S> implements ArmedModel, HeadedModel {
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart hat;
    private final ModelPart arms;
@@ -24,8 +23,7 @@ public class IllagerModel<S extends IllagerRenderState> extends EntityModel<S> i
    private final ModelPart leftArm;
 
    public IllagerModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.hat = this.head.getChild("hat");
       this.hat.visible = false;
@@ -76,12 +74,8 @@ public class IllagerModel<S extends IllagerRenderState> extends EntityModel<S> i
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(S var1) {
+      super.setupAnim(var1);
       this.head.yRot = var1.yRot * 0.017453292F;
       this.head.xRot = var1.xRot * 0.017453292F;
       if (var1.isRiding) {

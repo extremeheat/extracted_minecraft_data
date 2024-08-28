@@ -61,13 +61,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 public class Raid {
+   public static final SpawnPlacementType RAVAGER_SPAWN_PLACEMENT_TYPE = SpawnPlacements.getPlacementType(EntityType.RAVAGER);
+   private static final int ALLOW_SPAWNING_WITHIN_VILLAGE_SECONDS_THRESHOLD = 7;
    private static final int SECTION_RADIUS_FOR_FINDING_NEW_VILLAGE_CENTER = 2;
-   private static final int ATTEMPT_RAID_FARTHEST = 0;
-   private static final int ATTEMPT_RAID_CLOSE = 1;
-   private static final int ATTEMPT_RAID_INSIDE = 2;
    private static final int VILLAGE_SEARCH_RADIUS = 32;
    private static final int RAID_TIMEOUT_TICKS = 48000;
-   private static final int NUM_SPAWN_ATTEMPTS = 3;
+   private static final int NUM_SPAWN_ATTEMPTS = 5;
    private static final Component OMINOUS_BANNER_PATTERN_NAME = Component.translatable("block.minecraft.ominous_banner");
    private static final String RAIDERS_REMAINING = "event.minecraft.raid.raiders_remaining";
    public static final int VILLAGE_RADIUS_BUFFER = 16;
@@ -83,6 +82,7 @@ public class Raid {
    private static final Component RAID_BAR_VICTORY_COMPONENT = Component.translatable("event.minecraft.raid.victory.full");
    private static final Component RAID_BAR_DEFEAT_COMPONENT = Component.translatable("event.minecraft.raid.defeat.full");
    private static final int HERO_OF_THE_VILLAGE_DURATION = 48000;
+   private static final int VALID_RAID_RADIUS = 96;
    public static final int VALID_RAID_RADIUS_SQR = 9216;
    public static final int RAID_REMOVAL_THRESHOLD_SQR = 12544;
    private final Map<Integer, Raider> groupToLeaderMap = Maps.newHashMap();
@@ -301,14 +301,7 @@ public class Raid {
                   }
 
                   if (var4) {
-                     byte var5 = 0;
-                     if (this.raidCooldownTicks < 100) {
-                        var5 = 1;
-                     } else if (this.raidCooldownTicks < 40) {
-                        var5 = 2;
-                     }
-
-                     this.waveSpawnPos = this.getValidSpawnPos(var5);
+                     this.waveSpawnPos = this.getValidSpawnPos();
                   }
 
                   if (this.raidCooldownTicks == 300 || this.raidCooldownTicks % 20 == 0) {
@@ -339,19 +332,19 @@ public class Raid {
             int var11 = 0;
 
             while (this.shouldSpawnGroup()) {
-               BlockPos var12 = this.waveSpawnPos.isPresent() ? this.waveSpawnPos.get() : this.findRandomSpawnPos(var11, 20);
-               if (var12 != null) {
+               BlockPos var5 = this.waveSpawnPos.orElseGet(() -> this.findRandomSpawnPos(20));
+               if (var5 != null) {
                   this.started = true;
-                  this.spawnGroup(var12);
+                  this.spawnGroup(var5);
                   if (!var10) {
-                     this.playSound(var12);
+                     this.playSound(var5);
                      var10 = true;
                   }
                } else {
                   var11++;
                }
 
-               if (var11 > 3) {
+               if (var11 > 5) {
                   this.stop();
                   break;
                }
@@ -409,15 +402,9 @@ public class Raid {
          .ifPresent(this::setCenter);
    }
 
-   private Optional<BlockPos> getValidSpawnPos(int var1) {
-      for (int var2 = 0; var2 < 3; var2++) {
-         BlockPos var3 = this.findRandomSpawnPos(var1, 1);
-         if (var3 != null) {
-            return Optional.of(var3);
-         }
-      }
-
-      return Optional.empty();
+   private Optional<BlockPos> getValidSpawnPos() {
+      BlockPos var1 = this.findRandomSpawnPos(8);
+      return var1 != null ? Optional.of(var1) : Optional.empty();
    }
 
    private boolean hasMoreWaves() {
@@ -631,24 +618,25 @@ public class Raid {
    }
 
    @Nullable
-   private BlockPos findRandomSpawnPos(int var1, int var2) {
-      int var3 = var1 == 0 ? 2 : 2 - var1;
+   private BlockPos findRandomSpawnPos(int var1) {
+      int var2 = this.raidCooldownTicks / 20;
+      float var3 = 0.22F * (float)var2 - 0.24F;
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
-      SpawnPlacementType var8 = SpawnPlacements.getPlacementType(EntityType.RAVAGER);
+      float var8 = this.level.random.nextFloat() * 6.2831855F;
 
-      for (int var9 = 0; var9 < var2; var9++) {
-         float var10 = this.level.random.nextFloat() * 6.2831855F;
-         int var4 = this.center.getX() + Mth.floor(Mth.cos(var10) * 32.0F * (float)var3) + this.level.random.nextInt(5);
-         int var6 = this.center.getZ() + Mth.floor(Mth.sin(var10) * 32.0F * (float)var3) + this.level.random.nextInt(5);
+      for (int var9 = 0; var9 < var1; var9++) {
+         float var10 = var8 + 3.1415927F * (float)var9 / 8.0F;
+         int var4 = this.center.getX() + Mth.floor(Mth.cos(var10) * 32.0F * var3) + this.level.random.nextInt(3) * Mth.floor(var3);
+         int var6 = this.center.getZ() + Mth.floor(Mth.sin(var10) * 32.0F * var3) + this.level.random.nextInt(3) * Mth.floor(var3);
          int var5 = this.level.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var6);
-         if (Mth.abs(var5 - this.center.getY()) <= 32 * var3) {
+         if (Mth.abs(var5 - this.center.getY()) <= 96) {
             var7.set(var4, var5, var6);
-            if (!this.level.isVillage(var7) || var1 >= 2) {
+            if (!this.level.isVillage(var7) || var2 <= 7) {
                byte var11 = 10;
                if (this.level.hasChunksAt(var7.getX() - 10, var7.getZ() - 10, var7.getX() + 10, var7.getZ() + 10)
                   && this.level.isPositionEntityTicking(var7)
                   && (
-                     var8.isSpawnPositionOk(this.level, var7, EntityType.RAVAGER)
+                     RAVAGER_SPAWN_PLACEMENT_TYPE.isSpawnPositionOk(this.level, var7, EntityType.RAVAGER)
                         || this.level.getBlockState(var7.below()).is(Blocks.SNOW) && this.level.getBlockState(var7).isAir()
                   )) {
                   return var7;

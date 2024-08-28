@@ -12,15 +12,13 @@ import net.minecraft.util.Mth;
 
 public class SilverfishModel extends EntityModel<EntityRenderState> {
    private static final int BODY_COUNT = 7;
-   private final ModelPart root;
    private final ModelPart[] bodyParts = new ModelPart[7];
    private final ModelPart[] bodyLayers = new ModelPart[3];
    private static final int[][] BODY_SIZES = new int[][]{{3, 2, 2}, {4, 3, 2}, {6, 4, 3}, {3, 3, 3}, {2, 2, 3}, {2, 1, 2}, {1, 1, 2}};
    private static final int[][] BODY_TEXS = new int[][]{{0, 0}, {0, 4}, {0, 9}, {0, 16}, {0, 22}, {11, 0}, {13, 4}};
 
    public SilverfishModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       Arrays.setAll(this.bodyParts, var1x -> var1.getChild(getSegmentName(var1x)));
       Arrays.setAll(this.bodyLayers, var1x -> var1.getChild(getLayerName(var1x)));
    }
@@ -79,12 +77,9 @@ public class SilverfishModel extends EntityModel<EntityRenderState> {
    }
 
    @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
-   @Override
    public void setupAnim(EntityRenderState var1) {
+      super.setupAnim(var1);
+
       for (int var2 = 0; var2 < this.bodyParts.length; var2++) {
          this.bodyParts[var2].yRot = Mth.cos(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F) * 3.1415927F * 0.05F * (float)(1 + Math.abs(var2 - 2));
          this.bodyParts[var2].x = Mth.sin(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F) * 3.1415927F * 0.2F * (float)Math.abs(var2 - 2);

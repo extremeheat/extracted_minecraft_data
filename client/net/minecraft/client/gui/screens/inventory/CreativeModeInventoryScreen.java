@@ -394,9 +394,6 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          } else {
             return super.keyPressed(var1, var2, var3);
          }
-      } else if (super.checkItemSlotActionKeyPressed(var1, var2)) {
-         this.ignoreTextInput = true;
-         return true;
       } else {
          boolean var4 = !this.isCreativeSlot(this.hoveredSlot) || this.hoveredSlot.hasItem();
          boolean var5 = InputConstants.getKey(var1, var2).getNumericKeyValue().isPresent();

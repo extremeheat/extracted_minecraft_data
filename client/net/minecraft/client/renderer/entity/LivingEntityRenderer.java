@@ -112,6 +112,8 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       return -1;
    }
 
+   public abstract ResourceLocation getTextureLocation(S var1);
+
    @Nullable
    protected RenderType getRenderType(S var1, boolean var2, boolean var3, boolean var4) {
       ResourceLocation var5 = this.getTextureLocation((S)var1);

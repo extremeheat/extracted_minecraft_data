@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.entity.state.BeeRenderState;
 import net.minecraft.util.Mth;
 
 public class BeeModel extends EntityModel<BeeRenderState> {
-   private static final float BEE_Y_BASE = 19.0F;
    public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private static final String BONE = "bone";
    private static final String STINGER = "stinger";
@@ -21,7 +20,6 @@ public class BeeModel extends EntityModel<BeeRenderState> {
    private static final String FRONT_LEGS = "front_legs";
    private static final String MIDDLE_LEGS = "middle_legs";
    private static final String BACK_LEGS = "back_legs";
-   private final ModelPart root;
    private final ModelPart bone;
    private final ModelPart rightWing;
    private final ModelPart leftWing;
@@ -34,8 +32,7 @@ public class BeeModel extends EntityModel<BeeRenderState> {
    private float rollAmount;
 
    public BeeModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.bone = var1.getChild("bone");
       ModelPart var2 = this.bone.getChild("body");
       this.stinger = var2.getChild("stinger");
@@ -80,22 +77,10 @@ public class BeeModel extends EntityModel<BeeRenderState> {
    }
 
    public void setupAnim(BeeRenderState var1) {
+      super.setupAnim(var1);
       this.rollAmount = var1.rollAmount;
       this.stinger.visible = var1.hasStinger;
-      this.rightWing.xRot = 0.0F;
-      this.leftAntenna.xRot = 0.0F;
-      this.rightAntenna.xRot = 0.0F;
-      this.bone.xRot = 0.0F;
-      if (var1.isOnGround) {
-         this.rightWing.yRot = -0.2618F;
-         this.rightWing.zRot = 0.0F;
-         this.leftWing.xRot = 0.0F;
-         this.leftWing.yRot = 0.2618F;
-         this.leftWing.zRot = 0.0F;
-         this.frontLeg.xRot = 0.0F;
-         this.midLeg.xRot = 0.0F;
-         this.backLeg.xRot = 0.0F;
-      } else {
+      if (!var1.isOnGround) {
          float var2 = var1.ageInTicks * 120.32113F * 0.017453292F;
          this.rightWing.yRot = 0.0F;
          this.rightWing.zRot = Mth.cos(var2) * 3.1415927F * 0.15F;
@@ -105,33 +90,20 @@ public class BeeModel extends EntityModel<BeeRenderState> {
          this.frontLeg.xRot = 0.7853982F;
          this.midLeg.xRot = 0.7853982F;
          this.backLeg.xRot = 0.7853982F;
-         this.bone.xRot = 0.0F;
-         this.bone.yRot = 0.0F;
-         this.bone.zRot = 0.0F;
       }
 
-      if (!var1.isAngry) {
-         this.bone.xRot = 0.0F;
-         this.bone.yRot = 0.0F;
-         this.bone.zRot = 0.0F;
-         if (!var1.isOnGround) {
-            float var3 = Mth.cos(var1.ageInTicks * 0.18F);
-            this.bone.xRot = 0.1F + var3 * 3.1415927F * 0.025F;
-            this.leftAntenna.xRot = var3 * 3.1415927F * 0.03F;
-            this.rightAntenna.xRot = var3 * 3.1415927F * 0.03F;
-            this.frontLeg.xRot = -var3 * 3.1415927F * 0.1F + 0.3926991F;
-            this.backLeg.xRot = -var3 * 3.1415927F * 0.05F + 0.7853982F;
-            this.bone.y = 19.0F - Mth.cos(var1.ageInTicks * 0.18F) * 0.9F;
-         }
+      if (!var1.isAngry && !var1.isOnGround) {
+         float var3 = Mth.cos(var1.ageInTicks * 0.18F);
+         this.bone.xRot = 0.1F + var3 * 3.1415927F * 0.025F;
+         this.leftAntenna.xRot = var3 * 3.1415927F * 0.03F;
+         this.rightAntenna.xRot = var3 * 3.1415927F * 0.03F;
+         this.frontLeg.xRot = -var3 * 3.1415927F * 0.1F + 0.3926991F;
+         this.backLeg.xRot = -var3 * 3.1415927F * 0.05F + 0.7853982F;
+         this.bone.y = this.bone.y - Mth.cos(var1.ageInTicks * 0.18F) * 0.9F;
       }
 
       if (this.rollAmount > 0.0F) {
          this.bone.xRot = Mth.rotLerpRad(this.rollAmount, this.bone.xRot, 3.0915928F);
       }
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

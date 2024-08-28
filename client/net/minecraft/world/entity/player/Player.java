@@ -342,6 +342,20 @@ public abstract class Player extends LivingEntity {
       return this.wasUnderwater;
    }
 
+   @Override
+   public void onAboveBubbleCol(boolean var1) {
+      if (!this.isCreative()) {
+         super.onAboveBubbleCol(var1);
+      }
+   }
+
+   @Override
+   public void onInsideBubbleColumn(boolean var1) {
+      if (!this.isCreative()) {
+         super.onInsideBubbleColumn(var1);
+      }
+   }
+
    private void turtleHelmetTick() {
       ItemStack var1 = this.getItemBySlot(EquipmentSlot.HEAD);
       if (var1.is(Items.TURTLE_HELMET) && !this.isEyeInFluid(FluidTags.WATER)) {
@@ -714,12 +728,13 @@ public abstract class Player extends LivingEntity {
       }
 
       if (this.hasEffect(MobEffects.DIG_SLOWDOWN)) {
-         var2 *= switch (this.getEffect(MobEffects.DIG_SLOWDOWN).getAmplifier()) {
+         float var3 = switch (this.getEffect(MobEffects.DIG_SLOWDOWN).getAmplifier()) {
             case 0 -> 0.3F;
             case 1 -> 0.09F;
             case 2 -> 0.0027F;
             default -> 8.1E-4F;
          };
+         var2 *= var3;
       }
 
       var2 *= (float)this.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
@@ -1661,12 +1676,7 @@ public abstract class Player extends LivingEntity {
 
    @Override
    protected int getBaseExperienceReward() {
-      if (!this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && !this.isSpectator()) {
-         int var1 = this.experienceLevel * 7;
-         return var1 > 100 ? 100 : var1;
-      } else {
-         return 0;
-      }
+      return !this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && !this.isSpectator() ? Math.min(this.experienceLevel * 7, 100) : 0;
    }
 
    @Override
@@ -1701,7 +1711,7 @@ public abstract class Player extends LivingEntity {
       if (var1 == EquipmentSlot.MAINHAND) {
          return this.inventory.getSelected();
       } else if (var1 == EquipmentSlot.OFFHAND) {
-         return this.inventory.offhand.get(0);
+         return (ItemStack)this.inventory.offhand.getFirst();
       } else {
          return var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR ? this.inventory.armor.get(var1.getIndex()) : ItemStack.EMPTY;
       }

@@ -86,7 +86,7 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
    }
 
    public boolean growMushroom(ServerLevel var1, BlockPos var2, BlockState var3, RandomSource var4) {
-      Optional var5 = var1.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE).getHolder(this.feature);
+      Optional var5 = var1.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
       if (var5.isEmpty()) {
          return false;
       } else {

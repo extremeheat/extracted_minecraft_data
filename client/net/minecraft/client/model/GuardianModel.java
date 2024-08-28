@@ -23,16 +23,13 @@ public class GuardianModel extends EntityModel<GuardianRenderState> {
    private static final String TAIL_0 = "tail0";
    private static final String TAIL_1 = "tail1";
    private static final String TAIL_2 = "tail2";
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart eye;
-   private final ModelPart[] spikeParts;
+   private final ModelPart[] spikeParts = new ModelPart[12];
    private final ModelPart[] tailParts;
 
    public GuardianModel(ModelPart var1) {
-      super();
-      this.root = var1;
-      this.spikeParts = new ModelPart[12];
+      super(var1);
       this.head = var1.getChild("head");
 
       for (int var2 = 0; var2 < this.spikeParts.length; var2++) {
@@ -99,12 +96,8 @@ public class GuardianModel extends EntityModel<GuardianRenderState> {
       return createBodyLayer().apply(ELDER_GUARDIAN_SCALE);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(GuardianRenderState var1) {
+      super.setupAnim(var1);
       this.head.yRot = var1.yRot * 0.017453292F;
       this.head.xRot = var1.xRot * 0.017453292F;
       float var2 = (1.0F - var1.spikesAnimation) * 0.55F;

@@ -119,9 +119,9 @@ public class StructureManager {
    }
 
    public StructureStart getStructureWithPieceAt(BlockPos var1, Predicate<Holder<Structure>> var2) {
-      Registry var3 = this.registryAccess().registryOrThrow(Registries.STRUCTURE);
+      Registry var3 = this.registryAccess().lookupOrThrow(Registries.STRUCTURE);
 
-      for (StructureStart var5 : this.startsForStructure(new ChunkPos(var1), var2x -> var3.getHolder(var3.getId(var2x)).map(var2::test).orElse(false))) {
+      for (StructureStart var5 : this.startsForStructure(new ChunkPos(var1), var2x -> var3.get(var3.getId(var2x)).map(var2::test).orElse(false))) {
          if (this.structureHasPieceAt(var1, var5)) {
             return var5;
          }

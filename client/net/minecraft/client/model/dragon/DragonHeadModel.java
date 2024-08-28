@@ -13,7 +13,7 @@ public class DragonHeadModel extends SkullModelBase {
    private final ModelPart jaw;
 
    public DragonHeadModel(ModelPart var1) {
-      super();
+      super(var1);
       this.head = var1.getChild("head");
       this.jaw = this.head.getChild("jaw");
    }
@@ -46,10 +46,5 @@ public class DragonHeadModel extends SkullModelBase {
       this.jaw.xRot = (float)(Math.sin((double)(var1 * 3.1415927F * 0.2F)) + 1.0) * 0.2F;
       this.head.yRot = var2 * 0.017453292F;
       this.head.xRot = var3 * 0.017453292F;
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.head;
    }
 }

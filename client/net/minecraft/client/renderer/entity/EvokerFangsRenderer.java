@@ -35,10 +35,6 @@ public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs, EvokerFangs
       }
    }
 
-   public ResourceLocation getTextureLocation(EvokerFangsRenderState var1) {
-      return TEXTURE_LOCATION;
-   }
-
    public EvokerFangsRenderState createRenderState() {
       return new EvokerFangsRenderState();
    }

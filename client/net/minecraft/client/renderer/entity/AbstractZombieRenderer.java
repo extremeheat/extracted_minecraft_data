@@ -20,6 +20,7 @@ public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieR
 
    public void extractRenderState(T var1, S var2, float var3) {
       super.extractRenderState((T)var1, (S)var2, var3);
+      var2.isAggressive = var1.isAggressive();
       var2.isConverting = var1.isUnderWaterConverting();
    }
 

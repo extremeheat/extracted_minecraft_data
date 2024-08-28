@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -22,8 +24,8 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
@@ -70,7 +72,6 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.redstone.Orientation;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -96,13 +97,14 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected final boolean dynamicShape;
    protected final FeatureFlagSet requiredFeatures;
    protected final BlockBehaviour.Properties properties;
-   @Nullable
-   protected ResourceKey<LootTable> drops;
+   protected final Optional<ResourceKey<LootTable>> drops;
+   protected final String descriptionId;
 
    public BlockBehaviour(BlockBehaviour.Properties var1) {
       super();
       this.hasCollision = var1.hasCollision;
-      this.drops = var1.drops;
+      this.drops = var1.effectiveDrops();
+      this.descriptionId = var1.effectiveDescriptionId();
       this.explosionResistance = var1.explosionResistance;
       this.isRandomlyTicking = var1.isRandomlyTicking;
       this.soundType = var1.soundType;
@@ -250,14 +252,13 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
-      ResourceKey var3 = this.getLootTable();
-      if (var3 == BuiltInLootTables.EMPTY) {
+      if (this.drops.isEmpty()) {
          return Collections.emptyList();
       } else {
-         LootParams var4 = var2.withParameter(LootContextParams.BLOCK_STATE, var1).create(LootContextParamSets.BLOCK);
-         ServerLevel var5 = var4.getLevel();
-         LootTable var6 = var5.getServer().reloadableRegistries().getLootTable(var3);
-         return var6.getRandomItems(var4);
+         LootParams var3 = var2.withParameter(LootContextParams.BLOCK_STATE, var1).create(LootContextParamSets.BLOCK);
+         ServerLevel var4 = var3.getLevel();
+         LootTable var5 = var4.getServer().reloadableRegistries().getLootTable(this.drops.get());
+         return var5.getRandomItems(var3);
       }
    }
 
@@ -351,13 +352,12 @@ public abstract class BlockBehaviour implements FeatureElement {
       return 0;
    }
 
-   public final ResourceKey<LootTable> getLootTable() {
-      if (this.drops == null) {
-         ResourceLocation var1 = BuiltInRegistries.BLOCK.getKey(this.asBlock());
-         this.drops = ResourceKey.create(Registries.LOOT_TABLE, var1.withPrefix("blocks/"));
-      }
-
+   public final Optional<ResourceKey<LootTable>> getLootTable() {
       return this.drops;
+   }
+
+   public final String getDescriptionId() {
+      return this.descriptionId;
    }
 
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
@@ -691,7 +691,7 @@ public abstract class BlockBehaviour implements FeatureElement {
 
          for (Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
             var5.setWithOffset(var2, var9);
-            var1.neighborShapeChanged(var9.getOpposite(), this.asState(), var5, var2, var3, var4);
+            var1.neighborShapeChanged(var9.getOpposite(), var5, var2, this.asState(), var3, var4);
          }
       }
 
@@ -916,6 +916,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
    }
 
+   @FunctionalInterface
    public interface OffsetFunction {
       Vec3 evaluate(BlockState var1, BlockPos var2);
    }
@@ -942,7 +943,12 @@ public abstract class BlockBehaviour implements FeatureElement {
       float friction = 0.6F;
       float speedFactor = 1.0F;
       float jumpFactor = 1.0F;
-      ResourceKey<LootTable> drops;
+      @Nullable
+      private ResourceKey<Block> id;
+      private DependantName<Block, Optional<ResourceKey<LootTable>>> drops = var0 -> Optional.of(
+            ResourceKey.create(Registries.LOOT_TABLE, var0.location().withPrefix("blocks/"))
+         );
+      private DependantName<Block, String> descriptionId = var0 -> Util.makeDescriptionId("block", var0.location());
       boolean canOcclude = true;
       boolean isAir;
       boolean ignitedByLava;
@@ -985,6 +991,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          var1.isSuffocating = var2.isSuffocating;
          var1.isViewBlocking = var2.isViewBlocking;
          var1.drops = var2.drops;
+         var1.descriptionId = var2.descriptionId;
          return var1;
       }
 
@@ -1094,13 +1101,17 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public BlockBehaviour.Properties noLootTable() {
-         this.drops = BuiltInLootTables.EMPTY;
+         this.drops = DependantName.fixed(Optional.empty());
          return this;
       }
 
-      public BlockBehaviour.Properties dropsLike(Block var1) {
-         this.drops = var1.getLootTable();
+      public BlockBehaviour.Properties overrideLootTable(Optional<ResourceKey<LootTable>> var1) {
+         this.drops = DependantName.fixed(var1);
          return this;
+      }
+
+      protected Optional<ResourceKey<LootTable>> effectiveDrops() {
+         return this.drops.get(Objects.requireNonNull(this.id, "Block id not set"));
       }
 
       public BlockBehaviour.Properties ignitedByLava() {
@@ -1222,12 +1233,28 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.replaceable = true;
          return this;
       }
+
+      public BlockBehaviour.Properties setId(ResourceKey<Block> var1) {
+         this.id = var1;
+         return this;
+      }
+
+      public BlockBehaviour.Properties overrideDescription(String var1) {
+         this.descriptionId = DependantName.fixed(var1);
+         return this;
+      }
+
+      protected String effectiveDescriptionId() {
+         return this.descriptionId.get(Objects.requireNonNull(this.id, "Block id not set"));
+      }
    }
 
+   @FunctionalInterface
    public interface StateArgumentPredicate<A> {
       boolean test(BlockState var1, BlockGetter var2, BlockPos var3, A var4);
    }
 
+   @FunctionalInterface
    public interface StatePredicate {
       boolean test(BlockState var1, BlockGetter var2, BlockPos var3);
    }

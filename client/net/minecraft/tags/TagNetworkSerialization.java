@@ -54,7 +54,7 @@ public class TagNetworkSerialization {
       HashMap var3 = new HashMap();
       var1.tags.forEach((var3x, var4) -> {
          TagKey var5 = TagKey.create(var2, var3x);
-         List var6 = var4.intStream().mapToObj(var0::getHolder).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+         List var6 = var4.intStream().mapToObj(var0::get).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
          var3.put(var5, var6);
       });
       return new TagLoader.LoadResult<>(var2, var3);

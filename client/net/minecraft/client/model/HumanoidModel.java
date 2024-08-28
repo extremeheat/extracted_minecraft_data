@@ -31,7 +31,6 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    private static final float HORIZONTAL_SHIELD_MOVEMENT_LIMIT = 0.5235988F;
    public static final float TOOT_HORN_XROT_BASE = 1.4835298F;
    public static final float TOOT_HORN_YROT_BASE = 0.5235988F;
-   private final ModelPart root;
    public final ModelPart head;
    public final ModelPart hat;
    public final ModelPart body;
@@ -45,8 +44,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    }
 
    public HumanoidModel(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
-      super(var2);
-      this.root = var1;
+      super(var1, var2);
       this.head = var1.getChild("head");
       this.hat = this.head.getChild("hat");
       this.body = var1.getChild("body");
@@ -85,26 +83,15 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       return var2;
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    protected HumanoidModel.ArmPose getArmPose(T var1, HumanoidArm var2) {
       return HumanoidModel.ArmPose.EMPTY;
    }
 
    public void setupAnim(T var1) {
+      super.setupAnim((T)var1);
       HumanoidModel.ArmPose var2 = this.getArmPose((T)var1, HumanoidArm.LEFT);
       HumanoidModel.ArmPose var3 = this.getArmPose((T)var1, HumanoidArm.RIGHT);
       float var4 = var1.swimAmount;
-      this.body.resetPose();
-      this.head.resetPose();
-      this.hat.resetPose();
-      this.rightLeg.resetPose();
-      this.leftLeg.resetPose();
-      this.rightArm.resetPose();
-      this.leftArm.resetPose();
       boolean var5 = var1.isFallFlying;
       this.head.yRot = var1.yRot * 0.017453292F;
       if (var5) {
@@ -344,15 +331,6 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
 
    private float quadraticArmUpdate(float var1) {
       return -65.0F * var1 + var1 * var1;
-   }
-
-   public void copyPropertiesTo(HumanoidModel<T> var1) {
-      var1.head.copyFrom(this.head);
-      var1.body.copyFrom(this.body);
-      var1.rightArm.copyFrom(this.rightArm);
-      var1.leftArm.copyFrom(this.leftArm);
-      var1.rightLeg.copyFrom(this.rightLeg);
-      var1.leftLeg.copyFrom(this.leftLeg);
    }
 
    public void setAllVisible(boolean var1) {

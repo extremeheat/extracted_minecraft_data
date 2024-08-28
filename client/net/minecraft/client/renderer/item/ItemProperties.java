@@ -26,6 +26,7 @@ import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.LightBlock;
 
 public class ItemProperties {
@@ -53,6 +54,12 @@ public class ItemProperties {
 
    private static void register(Item var0, ResourceLocation var1, ClampedItemPropertyFunction var2) {
       PROPERTIES.computeIfAbsent(var0, var0x -> Maps.newHashMap()).put(var1, var2);
+   }
+
+   private static int honeyLevelProperty(ItemStack var0) {
+      BlockItemStateProperties var1 = var0.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+      Integer var2 = var1.get(BeehiveBlock.HONEY_LEVEL);
+      return var2 != null && var2 == 5 ? 1 : 0;
    }
 
    @Nullable
@@ -218,5 +225,7 @@ public class ItemProperties {
          ResourceLocation.withDefaultNamespace("tooting"),
          (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
       );
+      register(Items.BEE_NEST, ResourceLocation.withDefaultNamespace("honey_level"), (var0x, var1, var2, var3) -> (float)honeyLevelProperty(var0x));
+      register(Items.BEEHIVE, ResourceLocation.withDefaultNamespace("honey_level"), (var0x, var1, var2, var3) -> (float)honeyLevelProperty(var0x));
    }
 }

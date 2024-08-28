@@ -12,7 +12,6 @@ import net.minecraft.util.Mth;
 
 public class WitchModel extends EntityModel<WitchRenderState> implements HeadedModel, VillagerHeadModel {
    protected final ModelPart nose;
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart hat;
    private final ModelPart hatRim;
@@ -20,8 +19,7 @@ public class WitchModel extends EntityModel<WitchRenderState> implements HeadedM
    private final ModelPart leftLeg;
 
    public WitchModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.hat = this.head.getChild("hat");
       this.hatRim = this.hat.getChild("hat_rim");
@@ -64,17 +62,13 @@ public class WitchModel extends EntityModel<WitchRenderState> implements HeadedM
    }
 
    public void setupAnim(WitchRenderState var1) {
+      super.setupAnim(var1);
       this.head.yRot = var1.yRot * 0.017453292F;
       this.head.xRot = var1.xRot * 0.017453292F;
-      this.head.zRot = 0.0F;
       this.rightLeg.xRot = Mth.cos(var1.walkAnimationPos * 0.6662F) * 1.4F * var1.walkAnimationSpeed * 0.5F;
       this.leftLeg.xRot = Mth.cos(var1.walkAnimationPos * 0.6662F + 3.1415927F) * 1.4F * var1.walkAnimationSpeed * 0.5F;
-      this.rightLeg.yRot = 0.0F;
-      this.leftLeg.yRot = 0.0F;
-      this.nose.setPos(0.0F, -2.0F, 0.0F);
       float var2 = 0.01F * (float)(var1.entityId % 10);
       this.nose.xRot = Mth.sin(var1.ageInTicks * var2) * 4.5F * 0.017453292F;
-      this.nose.yRot = 0.0F;
       this.nose.zRot = Mth.cos(var1.ageInTicks * var2) * 2.5F * 0.017453292F;
       if (var1.isHoldingItem) {
          this.nose.setPos(0.0F, 1.0F, -1.5F);
@@ -84,11 +78,6 @@ public class WitchModel extends EntityModel<WitchRenderState> implements HeadedM
 
    public ModelPart getNose() {
       return this.nose;
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 
    @Override

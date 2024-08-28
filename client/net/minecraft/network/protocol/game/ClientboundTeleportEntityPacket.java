@@ -4,6 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
@@ -26,8 +27,8 @@ public class ClientboundTeleportEntityPacket implements Packet<ClientGamePacketL
       this.x = var2.x;
       this.y = var2.y;
       this.z = var2.z;
-      this.yRot = (byte)((int)(var1.getYRot() * 256.0F / 360.0F));
-      this.xRot = (byte)((int)(var1.getXRot() * 256.0F / 360.0F));
+      this.yRot = Mth.packDegrees(var1.getYRot());
+      this.xRot = Mth.packDegrees(var1.getXRot());
       this.onGround = var1.onGround();
    }
 
@@ -77,12 +78,12 @@ public class ClientboundTeleportEntityPacket implements Packet<ClientGamePacketL
       return this.z;
    }
 
-   public byte getyRot() {
-      return this.yRot;
+   public float getyRot() {
+      return Mth.unpackDegrees(this.yRot);
    }
 
-   public byte getxRot() {
-      return this.xRot;
+   public float getxRot() {
+      return Mth.unpackDegrees(this.xRot);
    }
 
    public boolean isOnGround() {

@@ -68,9 +68,9 @@ public class GoatModel extends QuadrupedModel<GoatRenderState> {
    }
 
    public void setupAnim(GoatRenderState var1) {
+      super.setupAnim(var1);
       this.head.getChild("left_horn").visible = var1.hasLeftHorn;
       this.head.getChild("right_horn").visible = var1.hasRightHorn;
-      super.setupAnim(var1);
       if (var1.rammingXHeadRot != 0.0F) {
          this.head.xRot = var1.rammingXHeadRot;
       }

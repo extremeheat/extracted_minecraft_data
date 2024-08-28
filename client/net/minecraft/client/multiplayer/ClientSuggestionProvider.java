@@ -99,7 +99,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    public CompletableFuture<Suggestions> suggestRegistryElements(
       ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4
    ) {
-      return this.registryAccess().registry(var1).map(var3x -> {
+      return this.registryAccess().lookup(var1).map(var3x -> {
          this.suggestRegistryElements((Registry<?>)var3x, var2, var3);
          return var3.buildFuture();
       }).orElseGet(() -> this.customSuggestion(var4));

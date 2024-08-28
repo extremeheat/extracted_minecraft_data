@@ -182,7 +182,7 @@ public class Main {
                   var6x -> WorldLoader.load(
                         var34,
                         var5xx -> {
-                           Registry var6xx = var5xx.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
+                           Registry var6xx = var5xx.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
                            if (var43 != null) {
                               LevelDataAndDimensions var12x = LevelStorageSource.getLevelDataAndDimensions(
                                  var43, var5xx.dataConfiguration(), var6xx, var5xx.datapackWorldgen()

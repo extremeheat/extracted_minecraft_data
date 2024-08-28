@@ -9,20 +9,17 @@ public class CompileTaskDynamicQueue {
    private static final int MAX_RECOMPILE_QUOTA = 2;
    private int recompileQuota = 2;
    private final List<SectionRenderDispatcher.RenderSection.CompileTask> tasks = new ObjectArrayList();
-   private final Object writeLock = new Object();
 
    public CompileTaskDynamicQueue() {
       super();
    }
 
-   public void add(SectionRenderDispatcher.RenderSection.CompileTask var1) {
-      synchronized (this.writeLock) {
-         this.tasks.add(var1);
-      }
+   public synchronized void add(SectionRenderDispatcher.RenderSection.CompileTask var1) {
+      this.tasks.add(var1);
    }
 
    @Nullable
-   public SectionRenderDispatcher.RenderSection.CompileTask poll(Vec3 var1) {
+   public synchronized SectionRenderDispatcher.RenderSection.CompileTask poll(Vec3 var1) {
       int var2 = -1;
       int var3 = -1;
       double var4 = 1.7976931348623157E308;
@@ -59,22 +56,14 @@ public class CompileTaskDynamicQueue {
 
    @Nullable
    private SectionRenderDispatcher.RenderSection.CompileTask removeTaskByIndex(int var1) {
-      if (var1 >= 0) {
-         synchronized (this.writeLock) {
-            return this.tasks.remove(var1);
-         }
-      } else {
-         return null;
-      }
+      return var1 >= 0 ? this.tasks.remove(var1) : null;
    }
 
-   public void clear() {
-      synchronized (this.writeLock) {
-         for (SectionRenderDispatcher.RenderSection.CompileTask var3 : this.tasks) {
-            var3.cancel();
-         }
-
-         this.tasks.clear();
+   public synchronized void clear() {
+      for (SectionRenderDispatcher.RenderSection.CompileTask var2 : this.tasks) {
+         var2.cancel();
       }
+
+      this.tasks.clear();
    }
 }

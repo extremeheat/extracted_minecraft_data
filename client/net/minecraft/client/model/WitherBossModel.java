@@ -17,7 +17,6 @@ public class WitherBossModel extends EntityModel<WitherRenderState> {
    private static final String LEFT_HEAD = "left_head";
    private static final float RIBCAGE_X_ROT_OFFSET = 0.065F;
    private static final float TAIL_X_ROT_OFFSET = 0.265F;
-   private final ModelPart root;
    private final ModelPart centerHead;
    private final ModelPart rightHead;
    private final ModelPart leftHead;
@@ -25,8 +24,7 @@ public class WitherBossModel extends EntityModel<WitherRenderState> {
    private final ModelPart tail;
 
    public WitherBossModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.ribcage = var1.getChild("ribcage");
       this.tail = var1.getChild("tail");
       this.centerHead = var1.getChild("center_head");
@@ -64,12 +62,8 @@ public class WitherBossModel extends EntityModel<WitherRenderState> {
       return LayerDefinition.create(var1, 64, 64);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(WitherRenderState var1) {
+      super.setupAnim(var1);
       setupHeadRotation(var1, this.rightHead, 0);
       setupHeadRotation(var1, this.leftHead, 1);
       float var2 = Mth.cos(var1.ageInTicks * 0.1F);

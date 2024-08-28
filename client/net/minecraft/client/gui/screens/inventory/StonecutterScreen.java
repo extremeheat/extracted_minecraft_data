@@ -160,14 +160,18 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
 
    @Override
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
-      if (this.isScrollBarActive()) {
-         int var9 = this.getOffscreenRows();
-         float var10 = (float)var7 / (float)var9;
-         this.scrollOffs = Mth.clamp(this.scrollOffs - var10, 0.0F, 1.0F);
-         this.startIndex = (int)((double)(this.scrollOffs * (float)var9) + 0.5) * 4;
-      }
+      if (super.mouseScrolled(var1, var3, var5, var7)) {
+         return true;
+      } else {
+         if (this.isScrollBarActive()) {
+            int var9 = this.getOffscreenRows();
+            float var10 = (float)var7 / (float)var9;
+            this.scrollOffs = Mth.clamp(this.scrollOffs - var10, 0.0F, 1.0F);
+            this.startIndex = (int)((double)(this.scrollOffs * (float)var9) + 0.5) * 4;
+         }
 
-      return true;
+         return true;
+      }
    }
 
    private boolean isScrollBarActive() {

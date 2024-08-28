@@ -108,8 +108,8 @@ public class SpawnArmorTrimsCommand {
    private static int spawnArmorTrims(CommandSourceStack var0, Player var1) {
       Level var2 = var1.level();
       NonNullList var3 = NonNullList.create();
-      Registry var4 = var2.registryAccess().registryOrThrow(Registries.TRIM_PATTERN);
-      Registry var5 = var2.registryAccess().registryOrThrow(Registries.TRIM_MATERIAL);
+      Registry var4 = var2.registryAccess().lookupOrThrow(Registries.TRIM_PATTERN);
+      Registry var5 = var2.registryAccess().lookupOrThrow(Registries.TRIM_MATERIAL);
       var4.stream()
          .sorted(Comparator.comparing(var1x -> TRIM_PATTERN_ORDER.applyAsInt(var4.getResourceKey(var1x).orElse(null))))
          .forEachOrdered(
@@ -118,7 +118,7 @@ public class SpawnArmorTrimsCommand {
                   .forEachOrdered(var4x -> var3.add(new ArmorTrim(var5.wrapAsHolder(var4x), var4.wrapAsHolder(var3x))))
          );
       BlockPos var6 = var1.blockPosition().relative(var1.getDirection(), 5);
-      Registry var7 = var0.registryAccess().registryOrThrow(Registries.ARMOR_MATERIAL);
+      Registry var7 = var0.registryAccess().lookupOrThrow(Registries.ARMOR_MATERIAL);
       int var8 = var7.size() - 1;
       double var9 = 3.0;
       int var11 = 0;

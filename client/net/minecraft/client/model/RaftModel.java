@@ -10,13 +10,11 @@ import net.minecraft.client.renderer.entity.state.BoatRenderState;
 import net.minecraft.util.Mth;
 
 public class RaftModel extends EntityModel<BoatRenderState> {
-   private final ModelPart root;
    private final ModelPart leftPaddle;
    private final ModelPart rightPaddle;
 
    public RaftModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.leftPaddle = var1.getChild("left_paddle");
       this.rightPaddle = var1.getChild("right_paddle");
    }
@@ -77,13 +75,9 @@ public class RaftModel extends EntityModel<BoatRenderState> {
    }
 
    public void setupAnim(BoatRenderState var1) {
+      super.setupAnim(var1);
       animatePaddle(var1.rowingTimeLeft, 0, this.leftPaddle);
       animatePaddle(var1.rowingTimeRight, 1, this.rightPaddle);
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 
    private static void animatePaddle(float var0, int var1, ModelPart var2) {

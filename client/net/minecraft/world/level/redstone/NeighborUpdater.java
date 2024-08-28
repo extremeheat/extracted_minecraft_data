@@ -31,11 +31,11 @@ public interface NeighborUpdater {
       }
    }
 
-   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
-      BlockState var7 = var0.getBlockState(var3);
-      if ((var5 & 128) == 0 || !var2.is(Blocks.REDSTONE_WIRE)) {
-         BlockState var8 = var7.updateShape(var1, var2, var0, var3, var4);
-         Block.updateOrDestroy(var7, var8, var0, var3, var5, var6);
+   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+      BlockState var7 = var0.getBlockState(var2);
+      if ((var5 & 128) == 0 || !var7.is(Blocks.REDSTONE_WIRE)) {
+         BlockState var8 = var7.updateShape(var1, var4, var0, var2, var3);
+         Block.updateOrDestroy(var7, var8, var0, var2, var5, var6);
       }
    }
 

@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
 
 public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityModel<T> {
-   protected final ModelPart root;
    protected final ModelPart head;
    protected final ModelPart body;
    protected final ModelPart rightHindLeg;
@@ -19,8 +18,7 @@ public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityMod
    protected final ModelPart leftFrontLeg;
 
    protected QuadrupedModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.body = var1.getChild("body");
       this.rightHindLeg = var1.getChild("right_hind_leg");
@@ -49,6 +47,7 @@ public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityMod
    }
 
    public void setupAnim(T var1) {
+      super.setupAnim((T)var1);
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
       float var2 = var1.walkAnimationPos;
@@ -57,10 +56,5 @@ public class QuadrupedModel<T extends LivingEntityRenderState> extends EntityMod
       this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
       this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
       this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

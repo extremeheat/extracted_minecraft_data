@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
@@ -192,8 +191,6 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    protected boolean shouldShowName(T var1, double var2) {
       return var1.shouldShowName() || var1.hasCustomName() && var1 == this.entityRenderDispatcher.crosshairPickEntity;
    }
-
-   public abstract ResourceLocation getTextureLocation(S var1);
 
    public Font getFont() {
       return this.font;

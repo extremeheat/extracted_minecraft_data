@@ -31,11 +31,6 @@ public class LeashKnotRenderer extends EntityRenderer<LeashFenceKnotEntity, Enti
    }
 
    @Override
-   public ResourceLocation getTextureLocation(EntityRenderState var1) {
-      return KNOT_LOCATION;
-   }
-
-   @Override
    public EntityRenderState createRenderState() {
       return new EntityRenderState();
    }

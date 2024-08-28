@@ -12,7 +12,6 @@ import net.minecraft.util.Mth;
 public class PhantomModel extends EntityModel<PhantomRenderState> {
    private static final String TAIL_BASE = "tail_base";
    private static final String TAIL_TIP = "tail_tip";
-   private final ModelPart root;
    private final ModelPart leftWingBase;
    private final ModelPart leftWingTip;
    private final ModelPart rightWingBase;
@@ -21,8 +20,7 @@ public class PhantomModel extends EntityModel<PhantomRenderState> {
    private final ModelPart tailTip;
 
    public PhantomModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       ModelPart var2 = var1.getChild("body");
       this.tailBase = var2.getChild("tail_base");
       this.tailTip = this.tailBase.getChild("tail_tip");
@@ -70,12 +68,8 @@ public class PhantomModel extends EntityModel<PhantomRenderState> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(PhantomRenderState var1) {
+      super.setupAnim(var1);
       float var2 = var1.flapTime * 7.448451F * 0.017453292F;
       float var3 = 16.0F;
       this.leftWingBase.zRot = Mth.cos(var2) * 16.0F * 0.017453292F;

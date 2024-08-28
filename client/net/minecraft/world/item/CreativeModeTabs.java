@@ -1808,7 +1808,7 @@ public class CreativeModeTabs {
       HashMap var0 = new HashMap();
 
       for (ResourceKey var2 : BuiltInRegistries.CREATIVE_MODE_TAB.registryKeySet()) {
-         CreativeModeTab var3 = BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(var2);
+         CreativeModeTab var3 = BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(var2);
          String var4 = var3.getDisplayName().getString();
          String var5 = var0.put(Pair.of(var3.row(), var3.column()), var4);
          if (var5 != null) {
@@ -1818,7 +1818,7 @@ public class CreativeModeTabs {
    }
 
    public static CreativeModeTab getDefaultTab() {
-      return BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(BUILDING_BLOCKS);
+      return BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(BUILDING_BLOCKS);
    }
 
    private static void generatePotionEffectTypes(
@@ -1916,7 +1916,7 @@ public class CreativeModeTabs {
    }
 
    public static CreativeModeTab searchTab() {
-      return BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(SEARCH);
+      return BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(SEARCH);
    }
 
    private static void buildAllTabContents(CreativeModeTab.ItemDisplayParameters var0) {

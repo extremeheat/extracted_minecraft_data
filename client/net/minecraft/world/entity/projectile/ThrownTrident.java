@@ -120,7 +120,7 @@ public class ThrownTrident extends AbstractArrow {
          }
 
          if (this.level() instanceof ServerLevel var8) {
-            EnchantmentHelper.doPostAttackEffectsWithItemSource(var8, var2, var5, this.getWeaponItem());
+            EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak(var8, var2, var5, this.getWeaponItem(), var1x -> this.kill());
          }
 
          if (var2 instanceof LivingEntity var9) {

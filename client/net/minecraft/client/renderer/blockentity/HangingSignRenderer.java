@@ -116,14 +116,12 @@ public class HangingSignRenderer extends SignRenderer {
    }
 
    public static final class HangingSignModel extends Model {
-      public final ModelPart root;
       public final ModelPart plank;
       public final ModelPart vChains;
       public final ModelPart normalChains;
 
       public HangingSignModel(ModelPart var1) {
-         super(RenderType::entityCutoutNoCull);
-         this.root = var1;
+         super(var1, RenderType::entityCutoutNoCull);
          this.plank = var1.getChild("plank");
          this.normalChains = var1.getChild("normalChains");
          this.vChains = var1.getChild("vChains");
@@ -139,11 +137,6 @@ public class HangingSignRenderer extends SignRenderer {
             this.normalChains.visible = !var3;
             this.vChains.visible = var3;
          }
-      }
-
-      @Override
-      public ModelPart root() {
-         return this.root;
       }
    }
 }

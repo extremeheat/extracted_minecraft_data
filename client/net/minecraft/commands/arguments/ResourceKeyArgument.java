@@ -58,14 +58,14 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    }
 
    private static <T> Registry<T> getRegistry(CommandContext<CommandSourceStack> var0, ResourceKey<? extends Registry<T>> var1) {
-      return ((CommandSourceStack)var0.getSource()).getServer().registryAccess().registryOrThrow(var1);
+      return ((CommandSourceStack)var0.getSource()).getServer().registryAccess().lookupOrThrow(var1);
    }
 
    private static <T> Holder.Reference<T> resolveKey(
       CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3
    ) throws CommandSyntaxException {
       ResourceKey var4 = getRegistryKey(var0, var1, var2, var3);
-      return getRegistry(var0, var2).getHolder(var4).orElseThrow(() -> var3.create(var4.location()));
+      return getRegistry(var0, var2).get(var4).orElseThrow(() -> var3.create(var4.location()));
    }
 
    public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {

@@ -375,7 +375,11 @@ public final class ItemStack implements DataComponentHolder {
       boolean var5 = this.getUseDuration(var2) <= 0;
       InteractionResult var6 = this.getItem().use(var1, var2, var3);
       return (InteractionResult)(var5 && var6 instanceof InteractionResult.Success var7
-         ? var7.heldItemTransformedTo(this.applyAfterUseComponentSideEffects(var2, var4))
+         ? var7.heldItemTransformedTo(
+            var7.heldItemTransformedTo() == null
+               ? this.applyAfterUseComponentSideEffects(var2, var4)
+               : var7.heldItemTransformedTo().applyAfterUseComponentSideEffects(var2, var4)
+         )
          : var6);
    }
 
@@ -697,10 +701,11 @@ public final class ItemStack implements DataComponentHolder {
 
    public void releaseUsing(Level var1, LivingEntity var2, int var3) {
       ItemStack var4 = this.copy();
-      this.getItem().releaseUsing(this, var1, var2, var3);
-      ItemStack var5 = this.applyAfterUseComponentSideEffects(var2, var4);
-      if (var5 != this) {
-         var2.setItemInHand(var2.getUsedItemHand(), var5);
+      if (this.getItem().releaseUsing(this, var1, var2, var3)) {
+         ItemStack var5 = this.applyAfterUseComponentSideEffects(var2, var4);
+         if (var5 != this) {
+            var2.setItemInHand(var2.getUsedItemHand(), var5);
+         }
       }
    }
 
@@ -769,6 +774,15 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
+   public Component getStyledHoverName() {
+      MutableComponent var1 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
+      if (this.has(DataComponents.CUSTOM_NAME)) {
+         var1.withStyle(ChatFormatting.ITALIC);
+      }
+
+      return var1;
+   }
+
    private <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Item.TooltipContext var2, Consumer<Component> var3, TooltipFlag var4) {
       TooltipProvider var5 = this.get(var1);
       if (var5 != null) {
@@ -781,46 +795,41 @@ public final class ItemStack implements DataComponentHolder {
          return List.of();
       } else {
          ArrayList var4 = Lists.newArrayList();
-         MutableComponent var5 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
-         if (this.has(DataComponents.CUSTOM_NAME)) {
-            var5.withStyle(ChatFormatting.ITALIC);
-         }
-
-         var4.add(var5);
+         var4.add(this.getStyledHoverName());
          if (!var3.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME) && this.is(Items.FILLED_MAP)) {
-            MapId var6 = this.get(DataComponents.MAP_ID);
-            if (var6 != null) {
-               var4.add(MapItem.getTooltipForId(var6));
+            MapId var5 = this.get(DataComponents.MAP_ID);
+            if (var5 != null) {
+               var4.add(MapItem.getTooltipForId(var5));
             }
          }
 
-         Consumer var10 = var4::add;
+         Consumer var9 = var4::add;
          if (!this.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)) {
             this.getItem().appendHoverText(this, var1, var4, var3);
          }
 
-         this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var10, var3);
-         this.addToTooltip(DataComponents.TRIM, var1, var10, var3);
-         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var10, var3);
-         this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var10, var3);
-         this.addToTooltip(DataComponents.DYED_COLOR, var1, var10, var3);
-         this.addToTooltip(DataComponents.LORE, var1, var10, var3);
-         this.addAttributeTooltips(var10, var2);
-         this.addToTooltip(DataComponents.UNBREAKABLE, var1, var10, var3);
-         this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var10, var3);
-         this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var10, var3);
-         AdventureModePredicate var7 = this.get(DataComponents.CAN_BREAK);
-         if (var7 != null && var7.showInTooltip()) {
-            var10.accept(CommonComponents.EMPTY);
-            var10.accept(AdventureModePredicate.CAN_BREAK_HEADER);
-            var7.addToTooltip(var10);
+         this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var9, var3);
+         this.addToTooltip(DataComponents.TRIM, var1, var9, var3);
+         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var9, var3);
+         this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var9, var3);
+         this.addToTooltip(DataComponents.DYED_COLOR, var1, var9, var3);
+         this.addToTooltip(DataComponents.LORE, var1, var9, var3);
+         this.addAttributeTooltips(var9, var2);
+         this.addToTooltip(DataComponents.UNBREAKABLE, var1, var9, var3);
+         this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var9, var3);
+         this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var9, var3);
+         AdventureModePredicate var6 = this.get(DataComponents.CAN_BREAK);
+         if (var6 != null && var6.showInTooltip()) {
+            var9.accept(CommonComponents.EMPTY);
+            var9.accept(AdventureModePredicate.CAN_BREAK_HEADER);
+            var6.addToTooltip(var9);
          }
 
-         AdventureModePredicate var8 = this.get(DataComponents.CAN_PLACE_ON);
-         if (var8 != null && var8.showInTooltip()) {
-            var10.accept(CommonComponents.EMPTY);
-            var10.accept(AdventureModePredicate.CAN_PLACE_HEADER);
-            var8.addToTooltip(var10);
+         AdventureModePredicate var7 = this.get(DataComponents.CAN_PLACE_ON);
+         if (var7 != null && var7.showInTooltip()) {
+            var9.accept(CommonComponents.EMPTY);
+            var9.accept(AdventureModePredicate.CAN_PLACE_HEADER);
+            var7.addToTooltip(var9);
          }
 
          if (var3.isAdvanced()) {
@@ -829,9 +838,9 @@ public final class ItemStack implements DataComponentHolder {
             }
 
             var4.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
-            int var9 = this.components.size();
-            if (var9 > 0) {
-               var4.add(Component.translatable("item.components", var9).withStyle(ChatFormatting.DARK_GRAY));
+            int var8 = this.components.size();
+            if (var8 > 0) {
+               var4.add(Component.translatable("item.components", var8).withStyle(ChatFormatting.DARK_GRAY));
             }
          }
 

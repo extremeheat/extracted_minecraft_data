@@ -185,7 +185,7 @@ public class SurfaceSystem {
       SurfaceRules.RuleSource var1, CarvingContext var2, Function<BlockPos, Holder<Biome>> var3, ChunkAccess var4, NoiseChunk var5, BlockPos var6, boolean var7
    ) {
       SurfaceRules.Context var8 = new SurfaceRules.Context(
-         this, var2.randomState(), var4, var5, var3, var2.registryAccess().registryOrThrow(Registries.BIOME), var2
+         this, var2.randomState(), var4, var5, var3, var2.registryAccess().lookupOrThrow(Registries.BIOME), var2
       );
       SurfaceRules.SurfaceRule var9 = var1.apply(var8);
       int var10 = var6.getX();

@@ -4,9 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.state.OminousItemSpawnerRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.OminousItemSpawner;
@@ -20,10 +18,6 @@ public class OminousItemSpawnerRenderer extends EntityRenderer<OminousItemSpawne
    protected OminousItemSpawnerRenderer(EntityRendererProvider.Context var1) {
       super(var1);
       this.itemRenderer = var1.getItemRenderer();
-   }
-
-   public ResourceLocation getTextureLocation(OminousItemSpawnerRenderState var1) {
-      return TextureAtlas.LOCATION_BLOCKS;
    }
 
    public OminousItemSpawnerRenderState createRenderState() {

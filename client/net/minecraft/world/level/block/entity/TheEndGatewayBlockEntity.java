@@ -160,8 +160,8 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
          BlockPos var5 = BlockPos.containing(var2.x + 0.5, 75.0, var2.z + 0.5);
          LOGGER.debug("Failed to find a suitable block to teleport to, spawning an island on {}", var5);
          var0.registryAccess()
-            .registry(Registries.CONFIGURED_FEATURE)
-            .flatMap(var0x -> var0x.getHolder(EndFeatures.END_ISLAND))
+            .lookup(Registries.CONFIGURED_FEATURE)
+            .flatMap(var0x -> var0x.get(EndFeatures.END_ISLAND))
             .ifPresent(var2x -> var2x.value().place(var0, var0.getChunkSource().getGenerator(), RandomSource.create(var5.asLong()), var5));
          var4 = var5;
       } else {

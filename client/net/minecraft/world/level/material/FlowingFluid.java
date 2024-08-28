@@ -34,8 +34,8 @@ public abstract class FlowingFluid extends Fluid {
    public static final BooleanProperty FALLING = BlockStateProperties.FALLING;
    public static final IntegerProperty LEVEL = BlockStateProperties.LEVEL_FLOWING;
    private static final int CACHE_SIZE = 200;
-   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<Block.BlockStatePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
-      Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<Block.BlockStatePairKey>(200) {
+   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<FlowingFluid.BlockStatePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
+      Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<FlowingFluid.BlockStatePairKey>(200) {
          protected void rehash(int var1) {
          }
       };
@@ -214,9 +214,9 @@ public abstract class FlowingFluid extends Fluid {
                var8 = null;
             }
 
-            Block.BlockStatePairKey var9;
+            FlowingFluid.BlockStatePairKey var9;
             if (var8 != null) {
-               var9 = new Block.BlockStatePairKey(var3, var5, var0);
+               var9 = new FlowingFluid.BlockStatePairKey(var3, var5, var0);
                byte var10 = var8.getAndMoveToFirst(var9);
                if (var10 != 127) {
                   return var10 != 0;
@@ -450,6 +450,19 @@ public abstract class FlowingFluid extends Fluid {
          ? Shapes.block()
          : this.shapes.computeIfAbsent(var1, var2x -> Shapes.box(0.0, 0.0, 0.0, 1.0, (double)var2x.getHeight(var2, var3), 1.0));
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    protected class SpreadContext {
       private final BlockGetter level;

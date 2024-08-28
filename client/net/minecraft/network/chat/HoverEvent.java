@@ -175,7 +175,7 @@ public class HoverEvent {
             CompoundTag var2 = TagParser.parseTag(var0.getString());
             Object var3 = var1 != null ? var1.withParent(JsonOps.INSTANCE) : JsonOps.INSTANCE;
             DataResult var4 = ComponentSerialization.CODEC.parse((DynamicOps)var3, JsonParser.parseString(var2.getString("name")));
-            EntityType var5 = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(var2.getString("type")));
+            EntityType var5 = BuiltInRegistries.ENTITY_TYPE.getValue(ResourceLocation.parse(var2.getString("type")));
             UUID var6 = UUID.fromString(var2.getString("id"));
             return var4.map(var2x -> new HoverEvent.EntityTooltipInfo(var5, var6, var2x));
          } catch (Exception var7) {

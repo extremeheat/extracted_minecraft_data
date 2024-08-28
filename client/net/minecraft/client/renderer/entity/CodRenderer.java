@@ -16,6 +16,7 @@ public class CodRenderer extends MobRenderer<Cod, LivingEntityRenderState, CodMo
       super(var1, new CodModel(var1.bakeLayer(ModelLayers.COD)), 0.3F);
    }
 
+   @Override
    public ResourceLocation getTextureLocation(LivingEntityRenderState var1) {
       return COD_LOCATION;
    }

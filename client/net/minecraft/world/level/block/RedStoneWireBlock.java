@@ -231,14 +231,14 @@ public class RedStoneWireBlock extends Block {
             BlockState var10 = var2.getBlockState(var6);
             if (var10.is(this)) {
                BlockPos var11 = var6.relative(var8.getOpposite());
-               var2.neighborShapeChanged(var8.getOpposite(), var2.getBlockState(var11), var6, var11, var4, var5);
+               var2.neighborShapeChanged(var8.getOpposite(), var6, var11, var2.getBlockState(var11), var4, var5);
             }
 
             var6.setWithOffset(var3, var8).move(Direction.UP);
             BlockState var13 = var2.getBlockState(var6);
             if (var13.is(this)) {
                BlockPos var12 = var6.relative(var8.getOpposite());
-               var2.neighborShapeChanged(var8.getOpposite(), var2.getBlockState(var12), var6, var12, var4, var5);
+               var2.neighborShapeChanged(var8.getOpposite(), var6, var12, var2.getBlockState(var12), var4, var5);
             }
          }
       }

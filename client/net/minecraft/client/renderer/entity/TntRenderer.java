@@ -5,8 +5,6 @@ import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.TntRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.PrimedTnt;
 
@@ -41,10 +39,6 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
 
       var2.popPose();
       super.render(var1, var2, var3, var4);
-   }
-
-   public ResourceLocation getTextureLocation(TntRenderState var1) {
-      return TextureAtlas.LOCATION_BLOCKS;
    }
 
    public TntRenderState createRenderState() {

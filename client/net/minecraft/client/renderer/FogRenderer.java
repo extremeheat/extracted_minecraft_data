@@ -34,6 +34,7 @@ public class FogRenderer {
    private static int targetBiomeFog = -1;
    private static int previousBiomeFog = -1;
    private static long biomeChangedTime = -1L;
+   private static boolean fogEnabled = true;
 
    public FogRenderer() {
       super();
@@ -192,71 +193,79 @@ public class FogRenderer {
       return new Vector4f(var7, var8, var9, 1.0F);
    }
 
+   public static boolean toggleFog() {
+      return fogEnabled = !fogEnabled;
+   }
+
    @Nullable
    private static FogRenderer.MobEffectFogFunction getPriorityFogFunction(Entity var0, float var1) {
       return var0 instanceof LivingEntity var2 ? MOB_EFFECT_FOG.stream().filter(var2x -> var2x.isEnabled(var2, var1)).findFirst().orElse(null) : null;
    }
 
    public static FogParameters setupFog(Camera var0, FogRenderer.FogMode var1, Vector4f var2, float var3, boolean var4, float var5) {
-      FogType var6 = var0.getFluidInCamera();
-      Entity var7 = var0.getEntity();
-      FogRenderer.FogData var8 = new FogRenderer.FogData(var1);
-      FogRenderer.MobEffectFogFunction var9 = getPriorityFogFunction(var7, var5);
-      if (var6 == FogType.LAVA) {
-         if (var7.isSpectator()) {
-            var8.start = -8.0F;
-            var8.end = var3 * 0.5F;
-         } else if (var7 instanceof LivingEntity && ((LivingEntity)var7).hasEffect(MobEffects.FIRE_RESISTANCE)) {
-            var8.start = 0.0F;
-            var8.end = 5.0F;
-         } else {
-            var8.start = 0.25F;
-            var8.end = 1.0F;
-         }
-      } else if (var6 == FogType.POWDER_SNOW) {
-         if (var7.isSpectator()) {
-            var8.start = -8.0F;
-            var8.end = var3 * 0.5F;
-         } else {
-            var8.start = 0.0F;
-            var8.end = 2.0F;
-         }
-      } else if (var9 != null) {
-         LivingEntity var10 = (LivingEntity)var7;
-         MobEffectInstance var11 = var10.getEffect(var9.getMobEffect());
-         if (var11 != null) {
-            var9.setupFog(var8, var10, var11, var3, var5);
-         }
-      } else if (var6 == FogType.WATER) {
-         var8.start = -8.0F;
-         var8.end = 96.0F;
-         if (var7 instanceof LocalPlayer var12) {
-            var8.end = var8.end * Math.max(0.25F, var12.getWaterVision());
-            Holder var14 = var12.level().getBiome(var12.blockPosition());
-            if (var14.is(BiomeTags.HAS_CLOSER_WATER_FOG)) {
-               var8.end *= 0.85F;
+      if (!fogEnabled) {
+         return FogParameters.NO_FOG;
+      } else {
+         FogType var6 = var0.getFluidInCamera();
+         Entity var7 = var0.getEntity();
+         FogRenderer.FogData var8 = new FogRenderer.FogData(var1);
+         FogRenderer.MobEffectFogFunction var9 = getPriorityFogFunction(var7, var5);
+         if (var6 == FogType.LAVA) {
+            if (var7.isSpectator()) {
+               var8.start = -8.0F;
+               var8.end = var3 * 0.5F;
+            } else if (var7 instanceof LivingEntity && ((LivingEntity)var7).hasEffect(MobEffects.FIRE_RESISTANCE)) {
+               var8.start = 0.0F;
+               var8.end = 5.0F;
+            } else {
+               var8.start = 0.25F;
+               var8.end = 1.0F;
             }
-         }
+         } else if (var6 == FogType.POWDER_SNOW) {
+            if (var7.isSpectator()) {
+               var8.start = -8.0F;
+               var8.end = var3 * 0.5F;
+            } else {
+               var8.start = 0.0F;
+               var8.end = 2.0F;
+            }
+         } else if (var9 != null) {
+            LivingEntity var10 = (LivingEntity)var7;
+            MobEffectInstance var11 = var10.getEffect(var9.getMobEffect());
+            if (var11 != null) {
+               var9.setupFog(var8, var10, var11, var3, var5);
+            }
+         } else if (var6 == FogType.WATER) {
+            var8.start = -8.0F;
+            var8.end = 96.0F;
+            if (var7 instanceof LocalPlayer var12) {
+               var8.end = var8.end * Math.max(0.25F, var12.getWaterVision());
+               Holder var14 = var12.level().getBiome(var12.blockPosition());
+               if (var14.is(BiomeTags.HAS_CLOSER_WATER_FOG)) {
+                  var8.end *= 0.85F;
+               }
+            }
 
-         if (var8.end > var3) {
+            if (var8.end > var3) {
+               var8.end = var3;
+               var8.shape = FogShape.CYLINDER;
+            }
+         } else if (var4) {
+            var8.start = var3 * 0.05F;
+            var8.end = Math.min(var3, 192.0F) * 0.5F;
+         } else if (var1 == FogRenderer.FogMode.FOG_SKY) {
+            var8.start = 0.0F;
+            var8.end = var3;
+            var8.shape = FogShape.CYLINDER;
+         } else if (var1 == FogRenderer.FogMode.FOG_TERRAIN) {
+            float var13 = Mth.clamp(var3 / 10.0F, 4.0F, 64.0F);
+            var8.start = var3 - var13;
             var8.end = var3;
             var8.shape = FogShape.CYLINDER;
          }
-      } else if (var4) {
-         var8.start = var3 * 0.05F;
-         var8.end = Math.min(var3, 192.0F) * 0.5F;
-      } else if (var1 == FogRenderer.FogMode.FOG_SKY) {
-         var8.start = 0.0F;
-         var8.end = var3;
-         var8.shape = FogShape.CYLINDER;
-      } else if (var1 == FogRenderer.FogMode.FOG_TERRAIN) {
-         float var13 = Mth.clamp(var3 / 10.0F, 4.0F, 64.0F);
-         var8.start = var3 - var13;
-         var8.end = var3;
-         var8.shape = FogShape.CYLINDER;
-      }
 
-      return new FogParameters(var8.start, var8.end, var8.shape, var2.x, var2.y, var2.z, var2.w);
+         return new FogParameters(var8.start, var8.end, var8.shape, var2.x, var2.y, var2.z, var2.w);
+      }
    }
 
    static class BlindnessFogFunction implements FogRenderer.MobEffectFogFunction {

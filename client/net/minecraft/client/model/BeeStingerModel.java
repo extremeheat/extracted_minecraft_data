@@ -9,11 +9,8 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 
 public class BeeStingerModel extends Model {
-   private final ModelPart root;
-
    public BeeStingerModel(ModelPart var1) {
-      super(RenderType::entityCutout);
-      this.root = var1;
+      super(var1, RenderType::entityCutout);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -23,10 +20,5 @@ public class BeeStingerModel extends Model {
       var1.addOrReplaceChild("cross_1", var2, PartPose.rotation(0.7853982F, 0.0F, 0.0F));
       var1.addOrReplaceChild("cross_2", var2, PartPose.rotation(2.3561945F, 0.0F, 0.0F));
       return LayerDefinition.create(var0, 16, 16);
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

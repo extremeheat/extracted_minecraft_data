@@ -8,13 +8,14 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BundleContents;
 import org.apache.commons.lang3.math.Fraction;
 
 public class ClientBundleTooltip implements ClientTooltipComponent {
    private static final ResourceLocation PROGRESSBAR_BORDER_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/bundle_progressbar_border");
+   private static final ResourceLocation PROGRESSBAR_FILL_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/bundle_progressbar_fill");
+   private static final ResourceLocation PROGRESSBAR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/bundle_progressbar_full");
    private static final int SLOT_MARGIN = 4;
    private static final int SLOT_SIZE = 24;
    private static final int GRID_WIDTH = 96;
@@ -60,6 +61,10 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       return this.gridSizeY() * 24;
    }
 
+   private int getContentXOffset(int var1) {
+      return (var1 - 96) / 2;
+   }
+
    private int gridSizeY() {
       return Mth.positiveCeilDiv(this.slotCount(), 4);
    }
@@ -69,41 +74,41 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    @Override
-   public void renderImage(Font var1, int var2, int var3, GuiGraphics var4) {
+   public void renderImage(Font var1, int var2, int var3, int var4, int var5, GuiGraphics var6) {
       if (this.contents.isEmpty()) {
-         this.renderEmptyBundleTooltip(var1, var2, var3, var4);
+         this.renderEmptyBundleTooltip(var1, var2, var3, var4, var5, var6);
       } else {
-         this.renderBundleWithItemsTooltip(var1, var2, var3, var4);
+         this.renderBundleWithItemsTooltip(var1, var2, var3, var4, var5, var6);
       }
    }
 
-   private void renderEmptyBundleTooltip(Font var1, int var2, int var3, GuiGraphics var4) {
-      drawEmptyBundleDescriptionText(var2, var3, var1, var4);
-      this.drawProgressbar(var2, var3 + getEmptyBundleDescriptionTextHeight(var1) + 4, var1, var4);
+   private void renderEmptyBundleTooltip(Font var1, int var2, int var3, int var4, int var5, GuiGraphics var6) {
+      drawEmptyBundleDescriptionText(var2 + this.getContentXOffset(var4), var3, var1, var6);
+      this.drawProgressbar(var2 + this.getContentXOffset(var4), var3 + getEmptyBundleDescriptionTextHeight(var1) + 4, var1, var6);
    }
 
-   private void renderBundleWithItemsTooltip(Font var1, int var2, int var3, GuiGraphics var4) {
-      boolean var5 = this.contents.size() > 12;
-      List var6 = this.getShownItems(this.contents.getNumberOfItemsToShow());
-      int var7 = var2 + 96;
-      int var8 = var3 + this.gridSizeY() * 24;
-      int var9 = 1;
+   private void renderBundleWithItemsTooltip(Font var1, int var2, int var3, int var4, int var5, GuiGraphics var6) {
+      boolean var7 = this.contents.size() > 12;
+      List var8 = this.getShownItems(this.contents.getNumberOfItemsToShow());
+      int var9 = var2 + this.getContentXOffset(var4) + 96;
+      int var10 = var3 + this.gridSizeY() * 24;
+      int var11 = 1;
 
-      for (int var10 = 1; var10 <= this.gridSizeY(); var10++) {
-         for (int var11 = 1; var11 <= 4; var11++) {
-            int var12 = var7 - var11 * 24;
-            int var13 = var8 - var10 * 24;
-            if (shouldRenderSurplusText(var5, var11, var10)) {
-               renderCount(var12, var13, this.getAmountOfHiddenItems(var6), var1, var4);
-            } else if (shouldRenderItemSlot(var6, var9)) {
-               this.renderSlot(var9, var12, var13, var6, var9, var1, var4);
-               var9++;
+      for (int var12 = 1; var12 <= this.gridSizeY(); var12++) {
+         for (int var13 = 1; var13 <= 4; var13++) {
+            int var14 = var9 - var13 * 24;
+            int var15 = var10 - var12 * 24;
+            if (shouldRenderSurplusText(var7, var13, var12)) {
+               renderCount(var14, var15, this.getAmountOfHiddenItems(var8), var1, var6);
+            } else if (shouldRenderItemSlot(var8, var11)) {
+               this.renderSlot(var11, var14, var15, var8, var11, var1, var6);
+               var11++;
             }
          }
       }
 
-      this.drawSelectedItemTooltip(var1, var4, var2, var3);
-      this.drawProgressbar(var2, var3 + this.itemGridHeight() + 4, var1, var4);
+      this.drawSelectedItemTooltip(var1, var6, var2, var3, var4);
+      this.drawProgressbar(var2 + this.getContentXOffset(var4), var3 + this.itemGridHeight() + 4, var1, var6);
    }
 
    private List<ItemStack> getShownItems(int var1) {
@@ -141,18 +146,18 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       }
    }
 
-   private void drawSelectedItemTooltip(Font var1, GuiGraphics var2, int var3, int var4) {
+   private void drawSelectedItemTooltip(Font var1, GuiGraphics var2, int var3, int var4, int var5) {
       if (this.contents.hasSelectedItem()) {
-         ItemStack var5 = this.contents.getItemUnsafe(this.contents.getSelectedItem());
-         Component var6 = var5.getHoverName();
-         int var7 = var1.width(var6.getVisualOrderText());
-         int var8 = var3 + this.getWidth(var1) / 2 - 12;
-         var2.renderTooltip(var1, var6, var8 - var7 / 2, var4 - 15);
+         ItemStack var6 = this.contents.getItemUnsafe(this.contents.getSelectedItem());
+         Component var7 = var6.getStyledHoverName();
+         int var8 = var1.width(var7.getVisualOrderText());
+         int var9 = var3 + var5 / 2 - 12;
+         var2.renderTooltip(var1, var7, var9 - var8 / 2, var4 - 15);
       }
    }
 
    private void drawProgressbar(int var1, int var2, Font var3, GuiGraphics var4) {
-      var4.fill(RenderType.gui(), var1 + 1, var2, var1 + 1 + this.getProgressBarFill(), var2 + 13, BundleItem.getBarColor(this.contents.weight()) | 0xFF000000);
+      var4.blitSprite(RenderType::guiTextured, this.getProgressBarTexture(), var1 + 1, var2, this.getProgressBarFill(), 13);
       var4.blitSprite(RenderType::guiTextured, PROGRESSBAR_BORDER_SPRITE, var1, var2, 96, 13);
       Component var5 = this.getProgressBarFillText();
       if (var5 != null) {
@@ -169,7 +174,11 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    private int getProgressBarFill() {
-      return Mth.mulAndTruncate(this.contents.weight(), 94);
+      return Mth.clamp(Mth.mulAndTruncate(this.contents.weight(), 94), 0, 94);
+   }
+
+   private ResourceLocation getProgressBarTexture() {
+      return this.contents.weight().compareTo(Fraction.ONE) >= 0 ? PROGRESSBAR_FULL_SPRITE : PROGRESSBAR_FILL_SPRITE;
    }
 
    @Nullable

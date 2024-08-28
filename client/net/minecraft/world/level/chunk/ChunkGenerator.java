@@ -287,7 +287,7 @@ public abstract class ChunkGenerator {
       if (!SharedConstants.debugVoidTerrain(var4)) {
          SectionPos var5 = SectionPos.of(var4, var1.getMinSectionY());
          BlockPos var6 = var5.origin();
-         Registry var7 = var1.registryAccess().registryOrThrow(Registries.STRUCTURE);
+         Registry var7 = var1.registryAccess().lookupOrThrow(Registries.STRUCTURE);
          Map var8 = var7.stream().collect(Collectors.groupingBy(var0 -> var0.step().ordinal()));
          List var9 = this.featuresPerStep.get();
          WorldgenRandom var10 = new WorldgenRandom(new XoroshiroRandomSource(RandomSupport.generateUniqueSeed()));
@@ -304,7 +304,7 @@ public abstract class ChunkGenerator {
          int var14 = var9.size();
 
          try {
-            Registry var15 = var1.registryAccess().registryOrThrow(Registries.PLACED_FEATURE);
+            Registry var15 = var1.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
             int var32 = Math.max(GenerationStep.Decoration.values().length, var14);
 
             for (int var17 = 0; var17 < var32; var17++) {
@@ -526,7 +526,7 @@ public abstract class ChunkGenerator {
                } catch (Exception var21) {
                   CrashReport var18 = CrashReport.forThrowable(var21, "Generating structure reference");
                   CrashReportCategory var19 = var18.addCategory("Structure");
-                  Optional var20 = var1.registryAccess().registry(Registries.STRUCTURE);
+                  Optional var20 = var1.registryAccess().lookup(Registries.STRUCTURE);
                   var19.setDetail("Id", () -> var20.<String>map(var1xx -> var1xx.getKey(var16.getStructure()).toString()).orElse("UNKNOWN"));
                   var19.setDetail("Name", () -> BuiltInRegistries.STRUCTURE_TYPE.getKey(var16.getStructure().type()).toString());
                   var19.setDetail("Class", () -> var16.getStructure().getClass().getCanonicalName());

@@ -473,7 +473,7 @@ public class EntitySelectorOptions {
                         return false;
                      } else {
                         ServerLevel var3 = (ServerLevel)var2x.level();
-                        Optional var4 = var3.getServer().reloadableRegistries().lookup().get(Registries.PREDICATE, var2).map(Holder::value);
+                        Optional var4 = var3.getServer().reloadableRegistries().lookup().get(var2).map(Holder::value);
                         if (var4.isEmpty()) {
                            return false;
                         } else {

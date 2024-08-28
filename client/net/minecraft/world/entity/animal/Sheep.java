@@ -11,7 +11,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -53,7 +52,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootTable;
 
 public class Sheep extends Animal implements Shearable {
    private static final int EAT_ANIMATION_TICKS = 40;
@@ -127,11 +125,6 @@ public class Sheep extends Animal implements Shearable {
    }
 
    @Override
-   public ResourceKey<LootTable> getDefaultLootTable() {
-      return this.isSheared() ? this.getType().getDefaultLootTable() : BuiltInLootTables.SHEEP_BY_DYE.get(this.getColor());
-   }
-
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 10) {
          this.eatAnimationTick = 40;
@@ -179,9 +172,8 @@ public class Sheep extends Animal implements Shearable {
    @Override
    public void shear(SoundSource var1) {
       this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, var1, 1.0F, 1.0F);
-      this.setSheared(true);
       this.dropFromShearingLootTable(
-         BuiltInLootTables.SHEAR_SHEEP_BY_DYE.get(this.getColor()),
+         BuiltInLootTables.SHEAR_SHEEP,
          var1x -> {
             for (int var2 = 0; var2 < var1x.getCount(); var2++) {
                ItemEntity var3 = this.spawnAtLocation(var1x.copyWithCount(1), 1.0F);
@@ -198,6 +190,7 @@ public class Sheep extends Animal implements Shearable {
             }
          }
       );
+      this.setSheared(true);
    }
 
    @Override

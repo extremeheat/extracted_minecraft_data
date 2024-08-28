@@ -139,7 +139,7 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
             var3.scale(1.0F, -1.0F, -1.0F);
             Material var11 = var10 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
             VertexConsumer var12 = var11.sprite()
-               .wrap(ItemRenderer.getFoilBuffer(var4, this.shieldModel.renderType(var11.atlasLocation()), false, var1.hasFoil()));
+               .wrap(ItemRenderer.getFoilBuffer(var4, this.shieldModel.renderType(var11.atlasLocation()), var2 == ItemDisplayContext.GUI, var1.hasFoil()));
             this.shieldModel.handle().render(var3, var12, var5, var6);
             if (var10) {
                BannerRenderer.renderPatterns(

@@ -1409,10 +1409,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
    }
 
-   public ResourceKey<LootTable> getLootTable() {
-      return this.getType().getDefaultLootTable();
-   }
-
    public long getLootTableSeed() {
       return 0L;
    }
@@ -1423,20 +1419,22 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void dropFromLootTable(DamageSource var1, boolean var2) {
-      ResourceKey var3 = this.getLootTable();
-      LootTable var4 = this.level().getServer().reloadableRegistries().getLootTable(var3);
-      LootParams.Builder var5 = new LootParams.Builder((ServerLevel)this.level())
-         .withParameter(LootContextParams.THIS_ENTITY, this)
-         .withParameter(LootContextParams.ORIGIN, this.position())
-         .withParameter(LootContextParams.DAMAGE_SOURCE, var1)
-         .withOptionalParameter(LootContextParams.ATTACKING_ENTITY, var1.getEntity())
-         .withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, var1.getDirectEntity());
-      if (var2 && this.lastHurtByPlayer != null) {
-         var5 = var5.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, this.lastHurtByPlayer).withLuck(this.lastHurtByPlayer.getLuck());
-      }
+      Optional var3 = this.getLootTable();
+      if (!var3.isEmpty()) {
+         LootTable var4 = this.level().getServer().reloadableRegistries().getLootTable((ResourceKey<LootTable>)var3.get());
+         LootParams.Builder var5 = new LootParams.Builder((ServerLevel)this.level())
+            .withParameter(LootContextParams.THIS_ENTITY, this)
+            .withParameter(LootContextParams.ORIGIN, this.position())
+            .withParameter(LootContextParams.DAMAGE_SOURCE, var1)
+            .withOptionalParameter(LootContextParams.ATTACKING_ENTITY, var1.getEntity())
+            .withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, var1.getDirectEntity());
+         if (var2 && this.lastHurtByPlayer != null) {
+            var5 = var5.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, this.lastHurtByPlayer).withLuck(this.lastHurtByPlayer.getLuck());
+         }
 
-      LootParams var6 = var5.create(LootContextParamSets.ENTITY);
-      var4.getRandomItems(var6, this.getLootTableSeed(), this::spawnAtLocation);
+         LootParams var6 = var5.create(LootContextParamSets.ENTITY);
+         var4.getRandomItems(var6, this.getLootTableSeed(), this::spawnAtLocation);
+      }
    }
 
    protected void dropFromShearingLootTable(ResourceKey<LootTable> var1, Consumer<ItemStack> var2) {
@@ -3258,6 +3256,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public boolean canTakeItem(ItemStack var1) {
+      return false;
+   }
+
+   public boolean canPickUpLoot() {
       return false;
    }
 

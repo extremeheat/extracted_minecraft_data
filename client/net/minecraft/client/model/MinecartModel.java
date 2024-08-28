@@ -9,11 +9,8 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
 
 public class MinecartModel extends EntityModel<MinecartRenderState> {
-   private final ModelPart root;
-
    public MinecartModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -45,13 +42,5 @@ public class MinecartModel extends EntityModel<MinecartRenderState> {
       );
       var1.addOrReplaceChild("right", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -9.0F, -1.0F, 16.0F, 8.0F, 2.0F), PartPose.offset(0.0F, 4.0F, 7.0F));
       return LayerDefinition.create(var0, 64, 32);
-   }
-
-   public void setupAnim(MinecartRenderState var1) {
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

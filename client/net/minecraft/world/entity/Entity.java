@@ -60,6 +60,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SyncedDataHolder;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerEntity;
@@ -117,6 +118,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.level.portal.PortalShape;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -3411,7 +3413,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       if (!Float.isFinite(var1)) {
          Util.logAndPauseIfInIde("Invalid entity rotation: " + var1 + ", discarding.");
       } else {
-         this.xRot = var1;
+         this.xRot = Math.clamp(var1 % 360.0F, -90.0F, 90.0F);
       }
    }
 
@@ -3518,6 +3520,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    @Nullable
    public ItemStack getWeaponItem() {
       return null;
+   }
+
+   public Optional<ResourceKey<LootTable>> getLootTable() {
+      return this.type.getDefaultLootTable();
    }
 
    @FunctionalInterface

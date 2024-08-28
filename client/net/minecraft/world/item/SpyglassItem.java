@@ -40,8 +40,9 @@ public class SpyglassItem extends Item {
    }
 
    @Override
-   public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       this.stopUsing(var3);
+      return true;
    }
 
    private void stopUsing(LivingEntity var1) {

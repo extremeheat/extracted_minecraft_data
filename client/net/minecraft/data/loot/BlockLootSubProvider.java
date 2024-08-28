@@ -45,7 +45,6 @@ import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -641,17 +640,21 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
 
       for (Block var4 : BuiltInRegistries.BLOCK) {
          if (var4.isEnabled(this.enabledFeatures)) {
-            ResourceKey var5 = var4.getLootTable();
-            if (var5 != BuiltInLootTables.EMPTY && var2.add(var5)) {
-               LootTable.Builder var6 = this.map.remove(var5);
-               if (var6 == null) {
-                  throw new IllegalStateException(
-                     String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var5.location(), BuiltInRegistries.BLOCK.getKey(var4))
-                  );
-               }
+            var4.getLootTable()
+               .ifPresent(
+                  var4x -> {
+                     if (var2.add(var4x)) {
+                        LootTable.Builder var5 = this.map.remove(var4x);
+                        if (var5 == null) {
+                           throw new IllegalStateException(
+                              String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var4x.location(), BuiltInRegistries.BLOCK.getKey(var4))
+                           );
+                        }
 
-               var1.accept(var5, var6);
-            }
+                        var1.accept(var4x, var5);
+                     }
+                  }
+               );
          }
       }
 
@@ -699,6 +702,6 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected void add(Block var1, LootTable.Builder var2) {
-      this.map.put(var1.getLootTable(), var2);
+      this.map.put(var1.getLootTable().orElseThrow(() -> new IllegalStateException("Block " + var1 + " does not have loot table")), var2);
    }
 }

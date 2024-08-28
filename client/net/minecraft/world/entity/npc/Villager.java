@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -97,7 +96,6 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private static final int MAX_GOSSIP_TOPICS = 10;
    private static final int GOSSIP_COOLDOWN = 1200;
    private static final int GOSSIP_DECAY_INTERVAL = 24000;
-   private static final int REPUTATION_CHANGE_PER_EVENT = 25;
    private static final int HOW_FAR_AWAY_TO_TALK_TO_OTHER_VILLAGERS_ABOUT_GOLEMS = 10;
    private static final int HOW_MANY_VILLAGERS_NEED_TO_AGREE_TO_SPAWN_A_GOLEM = 5;
    private static final long TIME_SINCE_SLEEPING_FOR_GOLEM_SPAWNING = 24000L;
@@ -376,11 +374,6 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return true;
    }
 
-   @Override
-   public boolean isClientSide() {
-      return this.level().isClientSide;
-   }
-
    public void restock() {
       this.updateDemand();
 
@@ -592,14 +585,6 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       if (var1.shouldRewardExp()) {
          this.level().addFreshEntity(new ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5, this.getZ(), var2));
       }
-   }
-
-   public void setChasing(boolean var1) {
-      this.chasing = var1;
-   }
-
-   public boolean isChasing() {
-      return this.chasing;
    }
 
    @Override
@@ -875,7 +860,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       if (this.wantsToSpawnGolem(var2)) {
          AABB var5 = this.getBoundingBox().inflate(10.0, 10.0, 10.0);
          List var6 = var1.getEntitiesOfClass(Villager.class, var5);
-         List var7 = var6.stream().filter(var2x -> var2x.wantsToSpawnGolem(var2)).limit(5L).collect(Collectors.toList());
+         List var7 = var6.stream().filter(var2x -> var2x.wantsToSpawnGolem(var2)).limit(5L).toList();
          if (var7.size() >= var4) {
             if (!SpawnUtil.trySpawnMob(
                   EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM
@@ -949,6 +934,6 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private boolean golemSpawnConditionsMet(long var1) {
       Optional var3 = this.brain.getMemory(MemoryModuleType.LAST_SLEPT);
-      return var3.isPresent() ? var1 - (Long)var3.get() < 24000L : false;
+      return var3.filter(var2 -> var1 - var2 < 24000L).isPresent();
    }
 }

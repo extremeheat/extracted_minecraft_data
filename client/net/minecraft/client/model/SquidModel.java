@@ -14,11 +14,9 @@ import net.minecraft.client.renderer.entity.state.SquidRenderState;
 public class SquidModel extends EntityModel<SquidRenderState> {
    public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private final ModelPart[] tentacles = new ModelPart[8];
-   private final ModelPart root;
 
    public SquidModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       Arrays.setAll(this.tentacles, var1x -> var1.getChild(createTentacleName(var1x)));
    }
 
@@ -51,15 +49,10 @@ public class SquidModel extends EntityModel<SquidRenderState> {
    }
 
    public void setupAnim(SquidRenderState var1) {
-      float var2 = var1.tentacleAngle;
+      super.setupAnim(var1);
 
-      for (ModelPart var6 : this.tentacles) {
-         var6.xRot = var2;
+      for (ModelPart var5 : this.tentacles) {
+         var5.xRot = var1.tentacleAngle;
       }
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

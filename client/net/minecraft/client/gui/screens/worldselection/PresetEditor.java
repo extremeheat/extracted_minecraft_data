@@ -6,7 +6,6 @@ import net.minecraft.client.gui.screens.CreateBuffetWorldScreen;
 import net.minecraft.client.gui.screens.CreateFlatWorldScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -27,9 +26,9 @@ public interface PresetEditor {
       (var0, var1) -> {
          ChunkGenerator var2 = var1.selectedDimensions().overworld();
          RegistryAccess.Frozen var3 = var1.worldgenLoadContext();
-         HolderLookup.RegistryLookup var4 = var3.lookupOrThrow(Registries.BIOME);
-         HolderLookup.RegistryLookup var5 = var3.lookupOrThrow(Registries.STRUCTURE_SET);
-         HolderLookup.RegistryLookup var6 = var3.lookupOrThrow(Registries.PLACED_FEATURE);
+         Registry var4 = var3.lookupOrThrow(Registries.BIOME);
+         Registry var5 = var3.lookupOrThrow(Registries.STRUCTURE_SET);
+         Registry var6 = var3.lookupOrThrow(Registries.PLACED_FEATURE);
          return new CreateFlatWorldScreen(
             var0,
             var1x -> var0.getUiState().updateDimensions(flatWorldConfigurator(var1x)),
@@ -51,8 +50,8 @@ public interface PresetEditor {
 
    private static WorldCreationContext.DimensionsUpdater fixedBiomeConfigurator(Holder<Biome> var0) {
       return (var1, var2) -> {
-         Registry var3 = var1.registryOrThrow(Registries.NOISE_SETTINGS);
-         Holder.Reference var4 = var3.getHolderOrThrow(NoiseGeneratorSettings.OVERWORLD);
+         Registry var3 = var1.lookupOrThrow(Registries.NOISE_SETTINGS);
+         Holder.Reference var4 = var3.getOrThrow(NoiseGeneratorSettings.OVERWORLD);
          FixedBiomeSource var5 = new FixedBiomeSource(var0);
          NoiseBasedChunkGenerator var6 = new NoiseBasedChunkGenerator(var5, var4);
          return var2.replaceOverworldGenerator(var1, var6);

@@ -16,7 +16,6 @@ public class StriderModel extends EntityModel<StriderRenderState> {
    private static final String LEFT_TOP_BRISTLE = "left_top_bristle";
    private static final String LEFT_MIDDLE_BRISTLE = "left_middle_bristle";
    private static final String LEFT_BOTTOM_BRISTLE = "left_bottom_bristle";
-   private final ModelPart root;
    private final ModelPart rightLeg;
    private final ModelPart leftLeg;
    private final ModelPart body;
@@ -28,8 +27,7 @@ public class StriderModel extends EntityModel<StriderRenderState> {
    private final ModelPart leftBottomBristle;
 
    public StriderModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.rightLeg = var1.getChild("right_leg");
       this.leftLeg = var1.getChild("left_leg");
       this.body = var1.getChild("body");
@@ -87,6 +85,7 @@ public class StriderModel extends EntityModel<StriderRenderState> {
    }
 
    public void setupAnim(StriderRenderState var1) {
+      super.setupAnim(var1);
       float var2 = var1.walkAnimationPos;
       float var3 = Math.min(var1.walkAnimationSpeed, 0.25F);
       if (!var1.isRidden) {
@@ -128,10 +127,5 @@ public class StriderModel extends EntityModel<StriderRenderState> {
       this.leftTopBristle.zRot = this.leftTopBristle.zRot + 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.4F);
       this.leftMiddleBristle.zRot = this.leftMiddleBristle.zRot + 0.1F * Mth.sin(var1.ageInTicks * 1.0F * 0.2F);
       this.leftBottomBristle.zRot = this.leftBottomBristle.zRot + 0.05F * Mth.sin(var1.ageInTicks * 1.0F * -0.4F);
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

@@ -58,7 +58,7 @@ public class SessionSearchTrees {
          RECIPE_COLLECTIONS,
          () -> {
             List var3 = var1.getCollections();
-            Registry var4 = var2.registryOrThrow(Registries.ITEM);
+            Registry var4 = var2.lookupOrThrow(Registries.ITEM);
             Item.TooltipContext var5 = Item.TooltipContext.of(var2);
             TooltipFlag.Default var6 = TooltipFlag.Default.NORMAL;
             CompletableFuture var7 = this.recipeSearch;

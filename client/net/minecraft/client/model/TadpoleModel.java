@@ -11,12 +11,10 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
 
 public class TadpoleModel extends EntityModel<LivingEntityRenderState> {
-   private final ModelPart root;
    private final ModelPart tail;
 
    public TadpoleModel(ModelPart var1) {
-      super(RenderType::entityCutoutNoCull);
-      this.root = var1;
+      super(var1, RenderType::entityCutoutNoCull);
       this.tail = var1.getChild("tail");
    }
 
@@ -31,12 +29,8 @@ public class TadpoleModel extends EntityModel<LivingEntityRenderState> {
       return LayerDefinition.create(var0, 16, 16);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(LivingEntityRenderState var1) {
+      super.setupAnim(var1);
       float var2 = var1.isInWater ? 1.0F : 1.5F;
       this.tail.yRot = -var2 * 0.25F * Mth.sin(0.3F * var1.ageInTicks);
    }

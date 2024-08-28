@@ -45,33 +45,33 @@ public class HumanoidArmorLayer<S extends HumanoidRenderState, M extends Humanoi
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
-      this.renderArmorPiece(var1, var2, var4.chestItem, EquipmentSlot.CHEST, var3, this.getArmorModel((S)var4, EquipmentSlot.CHEST));
-      this.renderArmorPiece(var1, var2, var4.legsItem, EquipmentSlot.LEGS, var3, this.getArmorModel((S)var4, EquipmentSlot.LEGS));
-      this.renderArmorPiece(var1, var2, var4.feetItem, EquipmentSlot.FEET, var3, this.getArmorModel((S)var4, EquipmentSlot.FEET));
-      this.renderArmorPiece(var1, var2, var4.headItem, EquipmentSlot.HEAD, var3, this.getArmorModel((S)var4, EquipmentSlot.HEAD));
+      this.renderArmorPiece(var1, var2, (S)var4, var4.chestItem, EquipmentSlot.CHEST, var3, this.getArmorModel((S)var4, EquipmentSlot.CHEST));
+      this.renderArmorPiece(var1, var2, (S)var4, var4.legsItem, EquipmentSlot.LEGS, var3, this.getArmorModel((S)var4, EquipmentSlot.LEGS));
+      this.renderArmorPiece(var1, var2, (S)var4, var4.feetItem, EquipmentSlot.FEET, var3, this.getArmorModel((S)var4, EquipmentSlot.FEET));
+      this.renderArmorPiece(var1, var2, (S)var4, var4.headItem, EquipmentSlot.HEAD, var3, this.getArmorModel((S)var4, EquipmentSlot.HEAD));
    }
 
-   private void renderArmorPiece(PoseStack var1, MultiBufferSource var2, ItemStack var3, EquipmentSlot var4, int var5, A var6) {
-      if (var3.getItem() instanceof ArmorItem var7) {
-         if (var7.getEquipmentSlot() == var4) {
-            this.getParentModel().copyPropertiesTo(var6);
-            this.setPartVisibility((A)var6, var4);
-            boolean var14 = this.usesInnerModel(var4);
-            ArmorMaterial var9 = var7.getMaterial().value();
-            int var10 = var3.is(ItemTags.DYEABLE) ? ARGB.opaque(DyedItemColor.getOrDefault(var3, -6265536)) : -1;
+   private void renderArmorPiece(PoseStack var1, MultiBufferSource var2, S var3, ItemStack var4, EquipmentSlot var5, int var6, A var7) {
+      if (var4.getItem() instanceof ArmorItem var8) {
+         if (var8.getEquipmentSlot() == var5) {
+            var7.setupAnim(var3);
+            this.setPartVisibility((A)var7, var5);
+            boolean var15 = this.usesInnerModel(var5);
+            ArmorMaterial var10 = var8.getMaterial().value();
+            int var11 = var4.is(ItemTags.DYEABLE) ? ARGB.opaque(DyedItemColor.getOrDefault(var4, -6265536)) : -1;
 
-            for (ArmorMaterial.Layer var12 : var9.layers()) {
-               int var13 = var12.dyeable() ? var10 : -1;
-               this.renderModel(var1, var2, var5, (A)var6, var13, var12.texture(var14));
+            for (ArmorMaterial.Layer var13 : var10.layers()) {
+               int var14 = var13.dyeable() ? var11 : -1;
+               this.renderModel(var1, var2, var6, (A)var7, var14, var13.texture(var15));
             }
 
-            ArmorTrim var15 = var3.get(DataComponents.TRIM);
-            if (var15 != null) {
-               this.renderTrim(var7.getMaterial(), var1, var2, var5, var15, (A)var6, var14);
+            ArmorTrim var16 = var4.get(DataComponents.TRIM);
+            if (var16 != null) {
+               this.renderTrim(var8.getMaterial(), var1, var2, var6, var16, (A)var7, var15);
             }
 
-            if (var3.hasFoil()) {
-               this.renderGlint(var1, var2, var5, (A)var6);
+            if (var4.hasFoil()) {
+               this.renderGlint(var1, var2, var6, (A)var7);
             }
          }
       }

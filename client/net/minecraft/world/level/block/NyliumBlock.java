@@ -58,7 +58,7 @@ public class NyliumBlock extends Block implements BonemealableBlock {
       BlockState var5 = var1.getBlockState(var3);
       BlockPos var6 = var3.above();
       ChunkGenerator var7 = var1.getChunkSource().getGenerator();
-      Registry var8 = var1.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE);
+      Registry var8 = var1.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE);
       if (var5.is(Blocks.CRIMSON_NYLIUM)) {
          this.place(var8, NetherFeatures.CRIMSON_FOREST_VEGETATION_BONEMEAL, var1, var7, var2, var6);
       } else if (var5.is(Blocks.WARPED_NYLIUM)) {
@@ -78,7 +78,7 @@ public class NyliumBlock extends Block implements BonemealableBlock {
       RandomSource var5,
       BlockPos var6
    ) {
-      var1.getHolder(var2).ifPresent(var4x -> ((ConfiguredFeature)var4x.value()).place(var3, var4, var5, var6));
+      var1.get(var2).ifPresent(var4x -> ((ConfiguredFeature)var4x.value()).place(var3, var4, var5, var6));
    }
 
    @Override

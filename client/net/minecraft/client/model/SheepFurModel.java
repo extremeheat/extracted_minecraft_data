@@ -36,9 +36,8 @@ public class SheepFurModel extends QuadrupedModel<SheepRenderState> {
    }
 
    public void setupAnim(SheepRenderState var1) {
-      this.head.resetPose();
-      this.head.y = this.head.y + var1.headEatPositionScale * 9.0F * var1.ageScale;
       super.setupAnim(var1);
+      this.head.y = this.head.y + var1.headEatPositionScale * 9.0F * var1.ageScale;
       this.head.xRot = var1.headEatAngleScale;
    }
 }

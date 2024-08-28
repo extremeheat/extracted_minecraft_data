@@ -50,7 +50,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    }
 
    public WorldDimensions(Registry<LevelStem> var1) {
-      this(var1.holders().collect(Collectors.toMap(Holder.Reference::key, Holder.Reference::value)));
+      this(var1.listElements().collect(Collectors.toMap(Holder.Reference::key, Holder.Reference::value)));
    }
 
    public static Stream<ResourceKey<LevelStem>> keysInOrder(Stream<ResourceKey<LevelStem>> var0) {

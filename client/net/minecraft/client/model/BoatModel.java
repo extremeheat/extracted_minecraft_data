@@ -20,13 +20,11 @@ public class BoatModel extends EntityModel<BoatRenderState> {
    private static final String FRONT = "front";
    private static final String RIGHT = "right";
    private static final String LEFT = "left";
-   private final ModelPart root;
    private final ModelPart leftPaddle;
    private final ModelPart rightPaddle;
 
    public BoatModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.leftPaddle = var1.getChild("left_paddle");
       this.rightPaddle = var1.getChild("right_paddle");
    }
@@ -113,13 +111,9 @@ public class BoatModel extends EntityModel<BoatRenderState> {
    }
 
    public void setupAnim(BoatRenderState var1) {
+      super.setupAnim(var1);
       animatePaddle(var1.rowingTimeLeft, 0, this.leftPaddle);
       animatePaddle(var1.rowingTimeRight, 1, this.rightPaddle);
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 
    private static void animatePaddle(float var0, int var1, ModelPart var2) {

@@ -9,6 +9,7 @@ import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -17,10 +18,9 @@ import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.phys.AABB;
@@ -43,8 +43,19 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       return var1.affectedByCulling();
    }
 
-   public ResourceLocation getTextureLocation(DisplayEntityRenderState var1) {
-      return TextureAtlas.LOCATION_BLOCKS;
+   private static int getBrightnessOverride(Display var0) {
+      Display.RenderState var1 = var0.renderState();
+      return var1 != null ? var1.brightnessOverride() : -1;
+   }
+
+   protected int getSkyLightLevel(T var1, BlockPos var2) {
+      int var3 = getBrightnessOverride(var1);
+      return var3 != -1 ? LightTexture.sky(var3) : super.getSkyLightLevel((T)var1, var2);
+   }
+
+   protected int getBlockLightLevel(T var1, BlockPos var2) {
+      int var3 = getBrightnessOverride(var1);
+      return var3 != -1 ? LightTexture.block(var3) : super.getBlockLightLevel((T)var1, var2);
    }
 
    public void render(ST var1, PoseStack var2, MultiBufferSource var3, int var4) {
@@ -54,14 +65,12 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
             float var6 = var1.interpolationProgress;
             this.shadowRadius = var5.shadowRadius().get(var6);
             this.shadowStrength = var5.shadowStrength().get(var6);
-            int var7 = var5.brightnessOverride();
-            int var8 = var7 != -1 ? var7 : var4;
-            super.render(var1, var2, var3, var8);
+            super.render(var1, var2, var3, var4);
             var2.pushPose();
             var2.mulPose(this.calculateOrientation(var5, (ST)var1, new Quaternionf()));
-            Transformation var9 = var5.transformation().get(var6);
-            var2.mulPose(var9.getMatrix());
-            this.renderInner((ST)var1, var2, var3, var8, var6);
+            Transformation var7 = var5.transformation().get(var6);
+            var2.mulPose(var7.getMatrix());
+            this.renderInner((ST)var1, var2, var3, var4, var6);
             var2.popPose();
          }
       }

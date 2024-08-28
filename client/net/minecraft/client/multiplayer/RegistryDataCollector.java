@@ -45,7 +45,7 @@ public class RegistryDataCollector {
    private static <T> Registry.PendingTags<T> resolveRegistryTags(
       RegistryAccess.Frozen var0, ResourceKey<? extends Registry<? extends T>> var1, TagNetworkSerialization.NetworkPayload var2
    ) {
-      Registry var3 = var0.registryOrThrow(var1);
+      Registry var3 = var0.lookupOrThrow(var1);
       return var3.prepareTagReload(var2.resolve(var3));
    }
 

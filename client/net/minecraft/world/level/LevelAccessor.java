@@ -86,7 +86,7 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
    default void blockUpdated(BlockPos var1, Block var2) {
    }
 
-   default void neighborShapeChanged(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
+   default void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
       NeighborUpdater.executeShapeUpdate(this, var1, var2, var3, var4, var5, var6 - 1);
    }
 
@@ -119,6 +119,6 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
    }
 
    default void gameEvent(ResourceKey<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
-      this.gameEvent(this.registryAccess().registryOrThrow(Registries.GAME_EVENT).getHolderOrThrow(var1), var2, var3);
+      this.gameEvent(this.registryAccess().lookupOrThrow(Registries.GAME_EVENT).getOrThrow(var1), var2, var3);
    }
 }

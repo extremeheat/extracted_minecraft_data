@@ -132,7 +132,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(DEFAULT_VARIANT));
+      var1.define(DATA_VARIANT_ID, BuiltInRegistries.FROG_VARIANT.getOrThrow(DEFAULT_VARIANT));
       var1.define(DATA_TONGUE_TARGET_ID, OptionalInt.empty());
    }
 
@@ -177,7 +177,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       super.readAdditionalSaveData(var1);
       Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant")))
          .map(var0 -> ResourceKey.create(Registries.FROG_VARIANT, var0))
-         .flatMap(BuiltInRegistries.FROG_VARIANT::getHolder)
+         .flatMap(BuiltInRegistries.FROG_VARIANT::get)
          .ifPresent(this::setVariant);
    }
 
@@ -274,11 +274,11 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       Holder var5 = var1.getBiome(this.blockPosition());
       if (var5.is(BiomeTags.SPAWNS_COLD_VARIANT_FROGS)) {
-         this.setVariant(BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(FrogVariant.COLD));
+         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.COLD));
       } else if (var5.is(BiomeTags.SPAWNS_WARM_VARIANT_FROGS)) {
-         this.setVariant(BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(FrogVariant.WARM));
+         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.WARM));
       } else {
-         this.setVariant(BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(DEFAULT_VARIANT));
+         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(DEFAULT_VARIANT));
       }
 
       FrogAi.initMemories(this, var1.getRandom());

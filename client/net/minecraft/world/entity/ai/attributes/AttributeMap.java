@@ -139,7 +139,7 @@ public class AttributeMap {
          String var4 = var3.getString("id");
          ResourceLocation var5 = ResourceLocation.tryParse(var4);
          if (var5 != null) {
-            Util.ifElse(BuiltInRegistries.ATTRIBUTE.getHolder(var5), var2x -> {
+            Util.ifElse(BuiltInRegistries.ATTRIBUTE.get(var5), var2x -> {
                AttributeInstance var3x = this.getInstance(var2x);
                if (var3x != null) {
                   var3x.load(var3);

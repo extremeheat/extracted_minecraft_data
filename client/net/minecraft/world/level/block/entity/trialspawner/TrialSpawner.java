@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -52,8 +53,8 @@ public final class TrialSpawner {
    private static final int MAX_MOB_TRACKING_DISTANCE = 47;
    private static final int MAX_MOB_TRACKING_DISTANCE_SQR = Mth.square(47);
    private static final float SPAWNING_AMBIENT_SOUND_CHANCE = 0.02F;
-   private final TrialSpawnerConfig normalConfig;
-   private final TrialSpawnerConfig ominousConfig;
+   private final Holder<TrialSpawnerConfig> normalConfig;
+   private final Holder<TrialSpawnerConfig> ominousConfig;
    private final TrialSpawnerData data;
    private final int requiredPlayerRange;
    private final int targetCooldownLength;
@@ -66,10 +67,8 @@ public final class TrialSpawner {
    public Codec<TrialSpawner> codec() {
       return RecordCodecBuilder.create(
          var1 -> var1.group(
-                  TrialSpawnerConfig.CODEC.optionalFieldOf("normal_config", TrialSpawnerConfig.DEFAULT).forGetter(TrialSpawner::getNormalConfig),
-                  TrialSpawnerConfig.CODEC
-                     .optionalFieldOf("ominous_config", TrialSpawnerConfig.DEFAULT)
-                     .forGetter(TrialSpawner::getOminousConfigForSerialization),
+                  TrialSpawnerConfig.CODEC.optionalFieldOf("normal_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter(var0 -> var0.normalConfig),
+                  TrialSpawnerConfig.CODEC.optionalFieldOf("ominous_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter(var0 -> var0.ominousConfig),
                   TrialSpawnerData.MAP_CODEC.forGetter(TrialSpawner::getData),
                   Codec.intRange(0, 2147483647).optionalFieldOf("target_cooldown_length", 36000).forGetter(TrialSpawner::getTargetCooldownLength),
                   Codec.intRange(1, 128).optionalFieldOf("required_player_range", 14).forGetter(TrialSpawner::getRequiredPlayerRange)
@@ -84,12 +83,12 @@ public final class TrialSpawner {
    }
 
    public TrialSpawner(TrialSpawner.StateAccessor var1, PlayerDetector var2, PlayerDetector.EntitySelector var3) {
-      this(TrialSpawnerConfig.DEFAULT, TrialSpawnerConfig.DEFAULT, new TrialSpawnerData(), 36000, 14, var1, var2, var3);
+      this(Holder.direct(TrialSpawnerConfig.DEFAULT), Holder.direct(TrialSpawnerConfig.DEFAULT), new TrialSpawnerData(), 36000, 14, var1, var2, var3);
    }
 
    public TrialSpawner(
-      TrialSpawnerConfig var1,
-      TrialSpawnerConfig var2,
+      Holder<TrialSpawnerConfig> var1,
+      Holder<TrialSpawnerConfig> var2,
       TrialSpawnerData var3,
       int var4,
       int var5,
@@ -109,21 +108,17 @@ public final class TrialSpawner {
    }
 
    public TrialSpawnerConfig getConfig() {
-      return this.isOminous ? this.ominousConfig : this.normalConfig;
+      return this.isOminous ? this.getOminousConfig() : this.getNormalConfig();
    }
 
    @VisibleForTesting
    public TrialSpawnerConfig getNormalConfig() {
-      return this.normalConfig;
+      return this.normalConfig.value();
    }
 
    @VisibleForTesting
    public TrialSpawnerConfig getOminousConfig() {
-      return this.ominousConfig;
-   }
-
-   private TrialSpawnerConfig getOminousConfigForSerialization() {
-      return !this.ominousConfig.equals(this.normalConfig) ? this.ominousConfig : TrialSpawnerConfig.DEFAULT;
+      return this.ominousConfig.value();
    }
 
    public void applyOminous(ServerLevel var1, BlockPos var2) {

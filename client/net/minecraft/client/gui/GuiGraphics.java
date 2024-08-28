@@ -719,9 +719,11 @@ public class GuiGraphics {
             var7 += var9.getHeight(var1);
          }
 
-         Vector2ic var17 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var6, var7);
-         int var11 = var17.x();
-         int var12 = var17.y();
+         int var17 = var6;
+         int var18 = var7;
+         Vector2ic var19 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var6, var7);
+         int var11 = var19.x();
+         int var12 = var19.y();
          this.pose.pushPose();
          short var13 = 400;
          TooltipRenderUtil.renderTooltipBackground(this, var11, var12, var6, var7, 400);
@@ -736,10 +738,10 @@ public class GuiGraphics {
 
          var14 = var12;
 
-         for (int var19 = 0; var19 < var2.size(); var19++) {
-            ClientTooltipComponent var20 = (ClientTooltipComponent)var2.get(var19);
-            var20.renderImage(var1, var11, var14, this);
-            var14 += var20.getHeight(var1) + (var19 == 0 ? 2 : 0);
+         for (int var21 = 0; var21 < var2.size(); var21++) {
+            ClientTooltipComponent var22 = (ClientTooltipComponent)var2.get(var21);
+            var22.renderImage(var1, var11, var14, var17, var18, this);
+            var14 += var22.getHeight(var1) + (var21 == 0 ? 2 : 0);
          }
 
          this.pose.popPose();

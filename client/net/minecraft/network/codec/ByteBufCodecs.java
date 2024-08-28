@@ -38,6 +38,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -61,6 +62,7 @@ public interface ByteBufCodecs {
          var1.writeByte(var2);
       }
    };
+   StreamCodec<ByteBuf, Float> ROTATION_BYTE = BYTE.map(Mth::unpackDegrees, Mth::packDegrees);
    StreamCodec<ByteBuf, Short> SHORT = new StreamCodec<ByteBuf, Short>() {
       public Short decode(ByteBuf var1) {
          return var1.readShort();
@@ -470,7 +472,7 @@ public interface ByteBufCodecs {
    ) {
       return new StreamCodec<RegistryFriendlyByteBuf, R>() {
          private IdMap<R> getRegistryOrThrow(RegistryFriendlyByteBuf var1x) {
-            return (IdMap<R>)var1.apply(var1x.registryAccess().registryOrThrow(var0));
+            return (IdMap<R>)var1.apply(var1x.registryAccess().lookupOrThrow(var0));
          }
 
          public R decode(RegistryFriendlyByteBuf var1x) {
@@ -500,7 +502,7 @@ public interface ByteBufCodecs {
          private static final int DIRECT_HOLDER_ID = 0;
 
          private IdMap<Holder<T>> getRegistryOrThrow(RegistryFriendlyByteBuf var1x) {
-            return var1x.registryAccess().<T>registryOrThrow(var0).asHolderIdMap();
+            return var1x.registryAccess().<T>lookupOrThrow(var0).asHolderIdMap();
          }
 
          public Holder<T> decode(RegistryFriendlyByteBuf var1x) {
@@ -530,8 +532,8 @@ public interface ByteBufCodecs {
          public HolderSet<T> decode(RegistryFriendlyByteBuf var1) {
             int var2 = VarInt.read(var1) - 1;
             if (var2 == -1) {
-               Registry var5 = var1.registryAccess().registryOrThrow(var0);
-               return var5.getTag(TagKey.create(var0, ResourceLocation.STREAM_CODEC.decode(var1))).orElseThrow();
+               Registry var5 = var1.registryAccess().lookupOrThrow(var0);
+               return var5.get(TagKey.create(var0, ResourceLocation.STREAM_CODEC.decode(var1))).orElseThrow();
             } else {
                ArrayList var3 = new ArrayList(Math.min(var2, 65536));
 

@@ -72,7 +72,7 @@ public class JigsawPlacement {
       StructureTemplateManager var13 = var0.structureTemplateManager();
       LevelHeightAccessor var14 = var0.heightAccessor();
       WorldgenRandom var15 = var0.random();
-      Registry var16 = var11.registryOrThrow(Registries.TEMPLATE_POOL);
+      Registry var16 = var11.lookupOrThrow(Registries.TEMPLATE_POOL);
       Rotation var17 = Rotation.getRandom(var15);
       StructureTemplatePool var18 = var1.unwrapKey()
          .flatMap(var2x -> var16.getOptional(var8.lookup((ResourceKey<StructureTemplatePool>)var2x)))
@@ -283,7 +283,7 @@ public class JigsawPlacement {
             int var22 = var20.getY() - var16;
             int var23 = -2147483648;
             ResourceKey var24 = readPoolKey(var18, var7);
-            Optional var25 = this.pools.getHolder(var24);
+            Optional var25 = this.pools.get(var24);
             if (var25.isEmpty()) {
                JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var24.location());
             } else {
@@ -332,7 +332,7 @@ public class JigsawPlacement {
                                           return 0;
                                        } else {
                                           ResourceKey var4x = readPoolKey(var3x, var7);
-                                          Optional var5x = this.pools.getHolder(var4x);
+                                          Optional var5x = this.pools.get(var4x);
                                           Optional var6x = var5x.map(var0 -> ((StructureTemplatePool)var0.value()).getFallback());
                                           int var7x = var5x.<Integer>map(
                                                 var1xx -> ((StructureTemplatePool)var1xx.value()).getMaxSize(this.structureTemplateManager)

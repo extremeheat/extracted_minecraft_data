@@ -14,7 +14,6 @@ import net.minecraft.world.entity.boss.enderdragon.DragonFlightHistory;
 public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
    private static final int NECK_PART_COUNT = 5;
    private static final int TAIL_PART_COUNT = 12;
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart[] neckParts = new ModelPart[5];
    private final ModelPart[] tailParts = new ModelPart[12];
@@ -46,8 +45,7 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
    }
 
    public EnderDragonModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.jaw = this.head.getChild("jaw");
 
@@ -201,7 +199,7 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
    }
 
    public void setupAnim(EnderDragonRenderState var1) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
+      super.setupAnim(var1);
       float var2 = var1.flapTime * 6.2831855F;
       this.jaw.xRot = (Mth.sin(var2) + 1.0F) * 0.2F;
       float var3 = Mth.sin(var2 - 1.0F) + 1.0F;
@@ -279,10 +277,5 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
       var2.xRot = 1.3F + var1 * 0.1F;
       var3.xRot = -0.5F - var1 * 0.1F;
       var4.xRot = 0.75F + var1 * 0.1F;
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

@@ -936,9 +936,7 @@ public class GameTestHelper {
       AABB var2 = this.getBounds();
       BlockPos var3 = BlockPos.containing(var2.minX, var2.minY, var2.minZ);
       BlockPos var4 = BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ);
-      Either var5 = FillBiomeCommand.fill(
-         this.getLevel(), var3, var4, this.getLevel().registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(var1)
-      );
+      Either var5 = FillBiomeCommand.fill(this.getLevel(), var3, var4, this.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(var1));
       if (var5.right().isPresent()) {
          this.fail("Failed to set biome for test");
       }

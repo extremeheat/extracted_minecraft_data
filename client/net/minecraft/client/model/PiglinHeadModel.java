@@ -10,7 +10,7 @@ public class PiglinHeadModel extends SkullModelBase {
    private final ModelPart rightEar;
 
    public PiglinHeadModel(ModelPart var1) {
-      super();
+      super(var1);
       this.head = var1.getChild("head");
       this.leftEar = this.head.getChild("left_ear");
       this.rightEar = this.head.getChild("right_ear");
@@ -29,10 +29,5 @@ public class PiglinHeadModel extends SkullModelBase {
       float var4 = 1.2F;
       this.leftEar.zRot = (float)(-(Math.cos((double)(var1 * 3.1415927F * 0.2F * 1.2F)) + 2.5)) * 0.2F;
       this.rightEar.zRot = (float)(Math.cos((double)(var1 * 3.1415927F * 0.2F)) + 2.5) * 0.2F;
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.head;
    }
 }

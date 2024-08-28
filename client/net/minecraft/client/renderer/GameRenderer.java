@@ -601,7 +601,7 @@ public class GameRenderer implements AutoCloseable {
                   var2 = var6.getMenuProvider(this.minecraft.level, var5) != null;
                } else {
                   BlockInWorld var7 = new BlockInWorld(this.minecraft.level, var5, false);
-                  Registry var8 = this.minecraft.level.registryAccess().registryOrThrow(Registries.BLOCK);
+                  Registry var8 = this.minecraft.level.registryAccess().lookupOrThrow(Registries.BLOCK);
                   var2 = !var3.isEmpty() && (var3.canBreakBlockInAdventureMode(var7) || var3.canPlaceOnBlockInAdventureMode(var7));
                }
             }

@@ -172,10 +172,6 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       var4.popPose();
    }
 
-   public ResourceLocation getTextureLocation(EnderDragonRenderState var1) {
-      return DRAGON_LOCATION;
-   }
-
    public EnderDragonRenderState createRenderState() {
       return new EnderDragonRenderState();
    }

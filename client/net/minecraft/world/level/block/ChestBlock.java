@@ -52,7 +52,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
-   public static final MapCodec<ChestBlock> CODEC = simpleCodec(var0 -> new ChestBlock(var0, () -> BlockEntityType.CHEST));
+   public static final MapCodec<ChestBlock> CODEC = simpleCodec(var0 -> new ChestBlock(() -> BlockEntityType.CHEST, var0));
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    public static final EnumProperty<ChestType> TYPE = BlockStateProperties.CHEST_TYPE;
    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -118,8 +118,8 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return CODEC;
    }
 
-   protected ChestBlock(BlockBehaviour.Properties var1, Supplier<BlockEntityType<? extends ChestBlockEntity>> var2) {
-      super(var1, var2);
+   protected ChestBlock(Supplier<BlockEntityType<? extends ChestBlockEntity>> var1, BlockBehaviour.Properties var2) {
+      super(var2, var1);
       this.registerDefaultState(
          this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(TYPE, ChestType.SINGLE).setValue(WATERLOGGED, Boolean.valueOf(false))
       );

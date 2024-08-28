@@ -46,7 +46,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
 
    @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_PAINTING_VARIANT_ID, this.registryAccess().registryOrThrow(Registries.PAINTING_VARIANT).getAny().orElseThrow());
+      var1.define(DATA_PAINTING_VARIANT_ID, this.registryAccess().lookupOrThrow(Registries.PAINTING_VARIANT).getAny().orElseThrow());
    }
 
    @Override
@@ -67,7 +67,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    public static Optional<Painting> create(Level var0, BlockPos var1, Direction var2) {
       Painting var3 = new Painting(var0, var1);
       ArrayList var4 = new ArrayList();
-      var0.registryAccess().registryOrThrow(Registries.PAINTING_VARIANT).getTagOrEmpty(PaintingVariantTags.PLACEABLE).forEach(var4::add);
+      var0.registryAccess().lookupOrThrow(Registries.PAINTING_VARIANT).getTagOrEmpty(PaintingVariantTags.PLACEABLE).forEach(var4::add);
       if (var4.isEmpty()) {
          return Optional.empty();
       } else {

@@ -13,13 +13,11 @@ import net.minecraft.util.Mth;
 public class ShulkerModel extends EntityModel<ShulkerRenderState> {
    public static final String LID = "lid";
    private static final String BASE = "base";
-   private final ModelPart root;
    private final ModelPart lid;
    private final ModelPart head;
 
    public ShulkerModel(ModelPart var1) {
-      super(RenderType::entityCutoutNoCullZOffset);
-      this.root = var1;
+      super(var1, RenderType::entityCutoutNoCullZOffset);
       this.lid = var1.getChild("lid");
       this.head = var1.getChild("head");
    }
@@ -49,6 +47,7 @@ public class ShulkerModel extends EntityModel<ShulkerRenderState> {
    }
 
    public void setupAnim(ShulkerRenderState var1) {
+      super.setupAnim(var1);
       float var2 = (0.5F + var1.peekAmount) * 3.1415927F;
       float var3 = -1.0F + Mth.sin(var2);
       float var4 = 0.0F;
@@ -65,10 +64,5 @@ public class ShulkerModel extends EntityModel<ShulkerRenderState> {
 
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = (var1.yHeadRot - 180.0F - var1.yBodyRot) * 0.017453292F;
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

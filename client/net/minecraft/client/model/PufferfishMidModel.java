@@ -10,13 +10,11 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.util.Mth;
 
 public class PufferfishMidModel extends EntityModel<EntityRenderState> {
-   private final ModelPart root;
    private final ModelPart leftBlueFin;
    private final ModelPart rightBlueFin;
 
    public PufferfishMidModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.leftBlueFin = var1.getChild("left_blue_fin");
       this.rightBlueFin = var1.getChild("right_blue_fin");
    }
@@ -76,12 +74,8 @@ public class PufferfishMidModel extends EntityModel<EntityRenderState> {
    }
 
    @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
-   @Override
    public void setupAnim(EntityRenderState var1) {
+      super.setupAnim(var1);
       this.rightBlueFin.zRot = -0.2F + 0.4F * Mth.sin(var1.ageInTicks * 0.2F);
       this.leftBlueFin.zRot = 0.2F - 0.4F * Mth.sin(var1.ageInTicks * 0.2F);
    }

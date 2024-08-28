@@ -168,7 +168,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
 
       for (int var8 = 0; var8 < 3; var8++) {
          int var9 = this.menu.costs[var8];
-         Optional var10 = this.minecraft.level.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolder(this.menu.enchantClue[var8]);
+         Optional var10 = this.minecraft.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(this.menu.enchantClue[var8]);
          if (!var10.isEmpty()) {
             int var11 = this.menu.levelClue[var8];
             int var12 = var8 + 1;

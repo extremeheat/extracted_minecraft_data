@@ -37,11 +37,6 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
    }
 
    @Override
-   public String getDescriptionId() {
-      return this.asItem().getDescriptionId();
-   }
-
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return WallTorchBlock.getShape(var1);
    }

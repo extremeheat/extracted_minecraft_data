@@ -17,7 +17,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -75,7 +74,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
             .getModelRenderer()
             .renderModel(
                var2.last(),
-               var3.getBuffer(RenderType.entitySolidZOffsetForward(this.getTextureLocation(var1))),
+               var3.getBuffer(RenderType.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS)),
                null,
                var12.getModel(var13),
                1.0F,
@@ -129,10 +128,6 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
 
    public Vec3 getRenderOffset(ItemFrameRenderState var1) {
       return new Vec3((double)((float)var1.direction.getStepX() * 0.3F), -0.25, (double)((float)var1.direction.getStepZ() * 0.3F));
-   }
-
-   public ResourceLocation getTextureLocation(ItemFrameRenderState var1) {
-      return TextureAtlas.LOCATION_BLOCKS;
    }
 
    protected boolean shouldShowName(T var1, double var2) {

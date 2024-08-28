@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.util.Mth;
 
 public class IronGolemModel extends EntityModel<IronGolemRenderState> {
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart rightArm;
    private final ModelPart leftArm;
@@ -19,8 +18,7 @@ public class IronGolemModel extends EntityModel<IronGolemRenderState> {
    private final ModelPart leftLeg;
 
    public IronGolemModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.rightArm = var1.getChild("right_arm");
       this.leftArm = var1.getChild("left_arm");
@@ -60,12 +58,8 @@ public class IronGolemModel extends EntityModel<IronGolemRenderState> {
       return LayerDefinition.create(var0, 128, 128);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(IronGolemRenderState var1) {
+      super.setupAnim(var1);
       float var2 = var1.attackTicksRemaining;
       float var3 = var1.walkAnimationSpeed;
       float var4 = var1.walkAnimationPos;

@@ -87,7 +87,7 @@ public class WorldOpenFlows {
                var9,
                var3x -> {
                   WorldDimensions.Complete var4x = ((WorldDimensions)var4.apply(var3x.datapackWorldgen()))
-                     .bake(var3x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM));
+                     .bake(var3x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM));
                   return new WorldLoader.DataLoadOutput<>(
                      new PrimaryLevelData(var2, var3, var4x.specialWorldProperty(), var4x.lifecycle()), var4x.dimensionsRegistryAccess()
                   );
@@ -132,7 +132,7 @@ public class WorldOpenFlows {
    public WorldStem loadWorldStem(Dynamic<?> var1, boolean var2, PackRepository var3) throws Exception {
       WorldLoader.PackConfig var4 = LevelStorageSource.getPackConfig(var1, var3, var2);
       return this.loadWorldDataBlocking(var4, var1x -> {
-         Registry var2x = var1x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
+         Registry var2x = var1x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
          LevelDataAndDimensions var3x = LevelStorageSource.getLevelDataAndDimensions(var1, var1x.dataConfiguration(), var2x, var1x.datapackWorldgen());
          return new WorldLoader.DataLoadOutput<>(var3x.worldData(), var3x.dimensions().dimensionsRegistryAccess());
       }, WorldStem::new);
@@ -317,7 +317,7 @@ public class WorldOpenFlows {
       try {
          var6 = this.loadWorldStem(var2, var3, var5);
 
-         for (LevelStem var8 : var6.registries().compositeAccess().registryOrThrow(Registries.LEVEL_STEM)) {
+         for (LevelStem var8 : var6.registries().compositeAccess().lookupOrThrow(Registries.LEVEL_STEM)) {
             var8.generator().validate();
          }
       } catch (Exception var9) {

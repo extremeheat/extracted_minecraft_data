@@ -59,32 +59,26 @@ public class TurtleModel extends QuadrupedModel<TurtleRenderState> {
       super.setupAnim(var1);
       float var2 = var1.walkAnimationPos;
       float var3 = var1.walkAnimationSpeed;
-      this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F * 0.6F) * 0.5F * var3;
-      this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F * 0.6F + 3.1415927F) * 0.5F * var3;
-      this.rightFrontLeg.zRot = Mth.cos(var2 * 0.6662F * 0.6F + 3.1415927F) * 0.5F * var3;
-      this.leftFrontLeg.zRot = Mth.cos(var2 * 0.6662F * 0.6F) * 0.5F * var3;
-      this.rightFrontLeg.xRot = 0.0F;
-      this.leftFrontLeg.xRot = 0.0F;
-      this.rightFrontLeg.yRot = 0.0F;
-      this.leftFrontLeg.yRot = 0.0F;
-      this.rightHindLeg.yRot = 0.0F;
-      this.leftHindLeg.yRot = 0.0F;
       if (var1.isOnLand) {
          float var4 = var1.isLayingEgg ? 4.0F : 1.0F;
          float var5 = var1.isLayingEgg ? 2.0F : 1.0F;
-         float var6 = 5.0F;
-         this.rightFrontLeg.yRot = Mth.cos(var4 * var2 * 5.0F + 3.1415927F) * 8.0F * var3 * var5;
-         this.rightFrontLeg.zRot = 0.0F;
-         this.leftFrontLeg.yRot = Mth.cos(var4 * var2 * 5.0F) * 8.0F * var3 * var5;
-         this.leftFrontLeg.zRot = 0.0F;
-         this.rightHindLeg.yRot = Mth.cos(var2 * 5.0F + 3.1415927F) * 3.0F * var3;
-         this.rightHindLeg.xRot = 0.0F;
-         this.leftHindLeg.yRot = Mth.cos(var2 * 5.0F) * 3.0F * var3;
-         this.leftHindLeg.xRot = 0.0F;
+         float var6 = var2 * 5.0F;
+         float var7 = Mth.cos(var4 * var6);
+         float var8 = Mth.cos(var6);
+         this.rightFrontLeg.yRot = -var7 * 8.0F * var3 * var5;
+         this.leftFrontLeg.yRot = var7 * 8.0F * var3 * var5;
+         this.rightHindLeg.yRot = -var8 * 3.0F * var3;
+         this.leftHindLeg.yRot = var8 * 3.0F * var3;
+      } else {
+         float var9 = 0.5F * var3;
+         float var10 = Mth.cos(var2 * 0.6662F * 0.6F) * var9;
+         this.rightHindLeg.xRot = var10;
+         this.leftHindLeg.xRot = -var10;
+         this.rightFrontLeg.zRot = -var10;
+         this.leftFrontLeg.zRot = var10;
       }
 
       this.eggBelly.visible = var1.hasEgg;
-      this.root.resetPose();
       if (this.eggBelly.visible) {
          this.root.y--;
       }

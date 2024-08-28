@@ -1238,7 +1238,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       if (!this.server.getWorldData().worldGenOptions().generateStructures()) {
          return null;
       } else {
-         Optional var5 = this.registryAccess().registryOrThrow(Registries.STRUCTURE).getTag(var1);
+         Optional var5 = this.registryAccess().lookupOrThrow(Registries.STRUCTURE).get(var1);
          if (var5.isEmpty()) {
             return null;
          } else {

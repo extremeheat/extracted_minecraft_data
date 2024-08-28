@@ -16,7 +16,6 @@ public class HoglinModel extends EntityModel<HoglinRenderState> {
    public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 8.0F, 6.0F, 1.9F, 2.0F, 24.0F, Set.of("head"));
    private static final float DEFAULT_HEAD_X_ROT = 0.87266463F;
    private static final float ATTACK_HEAD_X_ROT_END = -0.34906584F;
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart rightEar;
    private final ModelPart leftEar;
@@ -28,8 +27,7 @@ public class HoglinModel extends EntityModel<HoglinRenderState> {
    private final ModelPart mane;
 
    public HoglinModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.body = var1.getChild("body");
       this.mane = this.body.getChild("mane");
       this.head = var1.getChild("head");
@@ -106,14 +104,8 @@ public class HoglinModel extends EntityModel<HoglinRenderState> {
       return LayerDefinition.create(var0, 128, 64).apply(BABY_TRANSFORMER);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(HoglinRenderState var1) {
-      this.head.resetPose();
-      this.mane.resetPose();
+      super.setupAnim(var1);
       float var2 = var1.walkAnimationSpeed;
       float var3 = var1.walkAnimationPos;
       this.rightEar.zRot = -0.6981317F - var2 * Mth.sin(var3);

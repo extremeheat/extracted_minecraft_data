@@ -61,7 +61,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.server.level.ParticleStatus;
@@ -183,18 +182,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       } else {
          PostChain var1 = this.minecraft.getShaderManager().getPostChain(TRANSPARENCY_POST_CHAIN_ID, LevelTargetBundle.SORTING_TARGETS);
          if (var1 == null) {
-            String var2 = "Failed to load shader: " + TRANSPARENCY_POST_CHAIN_ID;
-            LevelRenderer.TransparencyShaderException var3 = new LevelRenderer.TransparencyShaderException(var2);
-            if (this.minecraft.getResourcePackRepository().getSelectedIds().size() > 1) {
-               Component var4 = this.minecraft.getResourceManager().listPacks().findFirst().map(var0 -> Component.literal(var0.packId())).orElse(null);
-               this.minecraft.options.graphicsMode().set(GraphicsStatus.FANCY);
-               this.minecraft.clearResourcePacksOnError(var3, var4, null);
-            } else {
-               this.minecraft.options.graphicsMode().set(GraphicsStatus.FANCY);
-               this.minecraft.options.save();
-               LOGGER.error(LogUtils.FATAL_MARKER, var2, var3);
-               this.minecraft.emergencySaveAndCrash(new CrashReport(var2, var3));
-            }
+            this.minecraft.options.graphicsMode().set(GraphicsStatus.FANCY);
+            this.minecraft.options.save();
          }
 
          return var1;
@@ -342,47 +331,44 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
       ProfilerFiller var6 = this.level.getProfiler();
       var6.push("camera");
-      double var7 = this.minecraft.player.getX();
-      double var9 = this.minecraft.player.getY();
-      double var11 = this.minecraft.player.getZ();
-      int var13 = SectionPos.posToSectionCoord(var7);
-      int var14 = SectionPos.posToSectionCoord(var9);
-      int var15 = SectionPos.posToSectionCoord(var11);
-      if (this.lastCameraSectionX != var13 || this.lastCameraSectionY != var14 || this.lastCameraSectionZ != var15) {
-         this.lastCameraSectionX = var13;
-         this.lastCameraSectionY = var14;
-         this.lastCameraSectionZ = var15;
-         this.viewArea.repositionCamera(SectionPos.of(this.minecraft.player));
+      int var7 = SectionPos.posToSectionCoord(var5.x());
+      int var8 = SectionPos.posToSectionCoord(var5.y());
+      int var9 = SectionPos.posToSectionCoord(var5.z());
+      if (this.lastCameraSectionX != var7 || this.lastCameraSectionY != var8 || this.lastCameraSectionZ != var9) {
+         this.lastCameraSectionX = var7;
+         this.lastCameraSectionY = var8;
+         this.lastCameraSectionZ = var9;
+         this.viewArea.repositionCamera(SectionPos.of(var5));
       }
 
       this.sectionRenderDispatcher.setCamera(var5);
       var6.popPush("cull");
-      double var16 = Math.floor(var5.x / 8.0);
-      double var18 = Math.floor(var5.y / 8.0);
-      double var20 = Math.floor(var5.z / 8.0);
-      if (var16 != this.prevCamX || var18 != this.prevCamY || var20 != this.prevCamZ) {
+      double var10 = Math.floor(var5.x / 8.0);
+      double var12 = Math.floor(var5.y / 8.0);
+      double var14 = Math.floor(var5.z / 8.0);
+      if (var10 != this.prevCamX || var12 != this.prevCamY || var14 != this.prevCamZ) {
          this.sectionOcclusionGraph.invalidate();
       }
 
-      this.prevCamX = var16;
-      this.prevCamY = var18;
-      this.prevCamZ = var20;
+      this.prevCamX = var10;
+      this.prevCamY = var12;
+      this.prevCamZ = var14;
       var6.popPush("update");
       if (!var3) {
-         boolean var22 = this.minecraft.smartCull;
+         boolean var16 = this.minecraft.smartCull;
          if (var4 && this.level.getBlockState(var1.getBlockPosition()).isSolidRender()) {
-            var22 = false;
+            var16 = false;
          }
 
          var6.push("section_occlusion_graph");
-         this.sectionOcclusionGraph.update(var22, var1, var2, this.visibleSections, this.level.getChunkSource().getLoadedEmptySections());
+         this.sectionOcclusionGraph.update(var16, var1, var2, this.visibleSections, this.level.getChunkSource().getLoadedEmptySections());
          var6.pop();
-         double var23 = Math.floor((double)(var1.getXRot() / 2.0F));
-         double var25 = Math.floor((double)(var1.getYRot() / 2.0F));
-         if (this.sectionOcclusionGraph.consumeFrustumUpdate() || var23 != this.prevCamRotX || var25 != this.prevCamRotY) {
+         double var17 = Math.floor((double)(var1.getXRot() / 2.0F));
+         double var19 = Math.floor((double)(var1.getYRot() / 2.0F));
+         if (this.sectionOcclusionGraph.consumeFrustumUpdate() || var17 != this.prevCamRotX || var19 != this.prevCamRotY) {
             this.applyFrustum(offsetFrustum(var2));
-            this.prevCamRotX = var23;
-            this.prevCamRotY = var25;
+            this.prevCamRotX = var17;
+            this.prevCamRotY = var19;
          }
       }
 
@@ -939,35 +925,39 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       ObjectListIterator var11 = this.visibleSections.listIterator(var10 ? 0 : this.visibleSections.size());
       var1.setupRenderState();
       CompiledShaderProgram var12 = RenderSystem.getShader();
-      var12.setDefaultUniforms(VertexFormat.Mode.QUADS, var8, var9, this.minecraft.getWindow());
-      var12.apply();
-      Uniform var13 = var12.MODEL_OFFSET;
+      if (var12 == null) {
+         var1.clearRenderState();
+      } else {
+         var12.setDefaultUniforms(VertexFormat.Mode.QUADS, var8, var9, this.minecraft.getWindow());
+         var12.apply();
+         Uniform var13 = var12.MODEL_OFFSET;
 
-      while (var10 ? var11.hasNext() : var11.hasPrevious()) {
-         SectionRenderDispatcher.RenderSection var14 = var10
-            ? (SectionRenderDispatcher.RenderSection)var11.next()
-            : (SectionRenderDispatcher.RenderSection)var11.previous();
-         if (!var14.getCompiled().isEmpty(var1)) {
-            VertexBuffer var15 = var14.getBuffer(var1);
-            BlockPos var16 = var14.getOrigin();
-            if (var13 != null) {
-               var13.set((float)((double)var16.getX() - var2), (float)((double)var16.getY() - var4), (float)((double)var16.getZ() - var6));
-               var13.upload();
+         while (var10 ? var11.hasNext() : var11.hasPrevious()) {
+            SectionRenderDispatcher.RenderSection var14 = var10
+               ? (SectionRenderDispatcher.RenderSection)var11.next()
+               : (SectionRenderDispatcher.RenderSection)var11.previous();
+            if (!var14.getCompiled().isEmpty(var1)) {
+               VertexBuffer var15 = var14.getBuffer(var1);
+               BlockPos var16 = var14.getOrigin();
+               if (var13 != null) {
+                  var13.set((float)((double)var16.getX() - var2), (float)((double)var16.getY() - var4), (float)((double)var16.getZ() - var6));
+                  var13.upload();
+               }
+
+               var15.bind();
+               var15.draw();
             }
-
-            var15.bind();
-            var15.draw();
          }
-      }
 
-      if (var13 != null) {
-         var13.set(0.0F, 0.0F, 0.0F);
-      }
+         if (var13 != null) {
+            var13.set(0.0F, 0.0F, 0.0F);
+         }
 
-      var12.clear();
-      VertexBuffer.unbind();
-      this.minecraft.getProfiler().pop();
-      var1.clearRenderState();
+         var12.clear();
+         VertexBuffer.unbind();
+         this.minecraft.getProfiler().pop();
+         var1.clearRenderState();
+      }
    }
 
    public void captureFrustum() {
@@ -1358,11 +1348,5 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    public CloudRenderer getCloudRenderer() {
       return this.cloudRenderer;
-   }
-
-   public static class TransparencyShaderException extends RuntimeException {
-      public TransparencyShaderException(String var1) {
-         super(var1);
-      }
    }
 }

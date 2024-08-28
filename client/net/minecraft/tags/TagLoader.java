@@ -138,7 +138,7 @@ public class TagLoader<T> {
 
    private static <T> Optional<Registry.PendingTags<T>> loadPendingTags(ResourceManager var0, Registry<T> var1) {
       ResourceKey var2 = var1.key();
-      TagLoader var3 = new TagLoader<>(var1::getHolder, Registries.tagsDirPath(var2));
+      TagLoader var3 = new TagLoader<>(var1::get, Registries.tagsDirPath(var2));
       TagLoader.LoadResult var4 = new TagLoader.LoadResult(var2, wrapTags(var1.key(), var3.build(var3.load(var0))));
       return var4.tags().isEmpty() ? Optional.empty() : Optional.of(var1.prepareTagReload(var4));
    }
@@ -147,7 +147,7 @@ public class TagLoader<T> {
       ArrayList var2 = new ArrayList();
       var0.registries().forEach(var2x -> {
          Registry.PendingTags var3 = findTagsForRegistry(var1, var2x.key());
-         var2.add(var3 != null ? var3.lookup() : var2x.value().asLookup());
+         var2.add(var3 != null ? var3.lookup() : var2x.value());
       });
       return var2;
    }

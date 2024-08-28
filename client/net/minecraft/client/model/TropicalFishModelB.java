@@ -11,12 +11,10 @@ import net.minecraft.client.renderer.entity.state.TropicalFishRenderState;
 import net.minecraft.util.Mth;
 
 public class TropicalFishModelB extends EntityModel<TropicalFishRenderState> {
-   private final ModelPart root;
    private final ModelPart tail;
 
    public TropicalFishModelB(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.tail = var1.getChild("tail");
    }
 
@@ -49,12 +47,8 @@ public class TropicalFishModelB extends EntityModel<TropicalFishRenderState> {
       return LayerDefinition.create(var1, 32, 32);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(TropicalFishRenderState var1) {
+      super.setupAnim(var1);
       float var2 = var1.isInWater ? 1.0F : 1.5F;
       this.tail.yRot = -var2 * 0.45F * Mth.sin(0.6F * var1.ageInTicks);
    }

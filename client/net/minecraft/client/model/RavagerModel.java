@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.entity.state.RavagerRenderState;
 import net.minecraft.util.Mth;
 
 public class RavagerModel extends EntityModel<RavagerRenderState> {
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart mouth;
    private final ModelPart rightHindLeg;
@@ -20,8 +19,7 @@ public class RavagerModel extends EntityModel<RavagerRenderState> {
    private final ModelPart neck;
 
    public RavagerModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.neck = var1.getChild("neck");
       this.head = this.neck.getChild("head");
       this.mouth = this.head.getChild("mouth");
@@ -80,12 +78,8 @@ public class RavagerModel extends EntityModel<RavagerRenderState> {
       return LayerDefinition.create(var0, 128, 128);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(RavagerRenderState var1) {
+      super.setupAnim(var1);
       float var2 = var1.stunnedTicksRemaining;
       float var3 = var1.attackTicksRemaining;
       byte var4 = 10;

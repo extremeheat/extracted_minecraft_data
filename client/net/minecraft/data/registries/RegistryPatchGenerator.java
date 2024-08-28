@@ -1,14 +1,18 @@
 package net.minecraft.data.registries;
 
+import com.mojang.datafixers.DataFixUtils;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.Cloner;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryDataLoader;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RegistryPatchGenerator {
    public RegistryPatchGenerator() {
@@ -27,7 +31,8 @@ public class RegistryPatchGenerator {
             Optional var7 = var5.lookup(Registries.PLACED_FEATURE);
             if (var6.isPresent() || var7.isPresent()) {
                VanillaRegistries.validateThatAllBiomeFeaturesHaveBiomeFilter(
-                  var7.orElseGet(() -> var1x.lookupOrThrow(Registries.PLACED_FEATURE)), var6.orElseGet(() -> var1x.lookupOrThrow(Registries.BIOME))
+                  (HolderGetter<PlacedFeature>)DataFixUtils.orElseGet(var7, () -> var1x.lookupOrThrow(Registries.PLACED_FEATURE)),
+                  (HolderLookup<Biome>)DataFixUtils.orElseGet(var6, () -> var1x.lookupOrThrow(Registries.BIOME))
                );
             }
 

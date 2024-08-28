@@ -209,7 +209,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    public void buildSurface(WorldGenRegion var1, StructureManager var2, RandomState var3, ChunkAccess var4) {
       if (!SharedConstants.debugVoidTerrain(var4.getPos())) {
          WorldGenerationContext var5 = new WorldGenerationContext(this, var1);
-         this.buildSurface(var4, var5, var3, var2, var1.getBiomeManager(), var1.registryAccess().registryOrThrow(Registries.BIOME), Blender.of(var1));
+         this.buildSurface(var4, var5, var3, var2, var1.getBiomeManager(), var1.registryAccess().lookupOrThrow(Registries.BIOME), Blender.of(var1));
       }
    }
 

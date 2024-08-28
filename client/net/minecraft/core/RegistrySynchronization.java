@@ -40,11 +40,11 @@ public class RegistrySynchronization {
       Set<KnownPack> var3,
       BiConsumer<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> var4
    ) {
-      var2.registry(var1.key())
+      var2.lookup(var1.key())
          .ifPresent(
             var4x -> {
                ArrayList var5 = new ArrayList(var4x.size());
-               var4x.holders()
+               var4x.listElements()
                   .forEach(
                      var5x -> {
                         boolean var6 = var4x.registrationInfo(var5x.key()).flatMap(RegistrationInfo::knownPackInfo).filter(var3::contains).isPresent();

@@ -25,6 +25,7 @@ public class SpiderRenderer<T extends Spider> extends MobRenderer<T, LivingEntit
       return 180.0F;
    }
 
+   @Override
    public ResourceLocation getTextureLocation(LivingEntityRenderState var1) {
       return SPIDER_LOCATION;
    }

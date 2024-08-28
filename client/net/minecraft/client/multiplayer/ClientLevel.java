@@ -649,7 +649,7 @@ public class ClientLevel extends Level {
 
    @Override
    public Holder<Biome> getUncachedNoiseBiome(int var1, int var2, int var3) {
-      return this.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
+      return this.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
    }
 
    public float getSkyDarken(float var1) {

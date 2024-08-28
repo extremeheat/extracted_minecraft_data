@@ -35,6 +35,6 @@ public interface ClientTooltipComponent {
    default void renderText(Font var1, int var2, int var3, Matrix4f var4, MultiBufferSource.BufferSource var5) {
    }
 
-   default void renderImage(Font var1, int var2, int var3, GuiGraphics var4) {
+   default void renderImage(Font var1, int var2, int var3, int var4, int var5, GuiGraphics var6) {
    }
 }

@@ -557,8 +557,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          double var7 = var1.getZ();
          var2.syncPacketPositionCodec(var3, var5, var7);
          if (!var2.isControlledByLocalInstance()) {
-            float var9 = (float)(var1.getyRot() * 360) / 256.0F;
-            float var10 = (float)(var1.getxRot() * 360) / 256.0F;
+            float var9 = var1.getyRot();
+            float var10 = var1.getxRot();
             if (this.level.isTickingEntity(var2)) {
                var2.lerpTo(var3, var5, var7, var9, var10, 3);
             } else {
@@ -607,13 +607,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                VecDeltaCodec var3 = var2.getPositionCodec();
                Vec3 var4 = var3.decode((long)var1.getXa(), (long)var1.getYa(), (long)var1.getZa());
                var3.setBase(var4);
-               float var5 = var1.hasRotation() ? (float)(var1.getyRot() * 360) / 256.0F : var2.lerpTargetYRot();
-               float var6 = var1.hasRotation() ? (float)(var1.getxRot() * 360) / 256.0F : var2.lerpTargetXRot();
+               float var5 = var1.hasRotation() ? var1.getyRot() : var2.lerpTargetYRot();
+               float var6 = var1.hasRotation() ? var1.getxRot() : var2.lerpTargetXRot();
                var2.lerpTo(var4.x(), var4.y(), var4.z(), var5, var6, 3);
             } else if (var1.hasRotation()) {
-               float var7 = (float)(var1.getyRot() * 360) / 256.0F;
-               float var8 = (float)(var1.getxRot() * 360) / 256.0F;
-               var2.lerpTo(var2.lerpTargetX(), var2.lerpTargetY(), var2.lerpTargetZ(), var7, var8, 3);
+               var2.lerpTo(var2.lerpTargetX(), var2.lerpTargetY(), var2.lerpTargetZ(), var1.getyRot(), var1.getxRot(), 3);
             }
 
             var2.setOnGround(var1.isOnGround());
@@ -637,8 +635,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       Entity var2 = var1.getEntity(this.level);
       if (var2 != null) {
-         float var3 = (float)(var1.getYHeadRot() * 360) / 256.0F;
-         var2.lerpHeadTo(var3, 3);
+         var2.lerpHeadTo(var1.getYHeadRot(), 3);
       }
    }
 
@@ -1601,7 +1598,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private <T> Registry.PendingTags<T> updateTags(ResourceKey<? extends Registry<? extends T>> var1, TagNetworkSerialization.NetworkPayload var2) {
-      Registry var3 = this.registryAccess.registryOrThrow(var1);
+      Registry var3 = this.registryAccess.lookupOrThrow(var1);
       return var3.prepareTagReload(var2.resolve(var3));
    }
 

@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
@@ -41,15 +42,14 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
    private static final FileToIdConverter PROGRAM_ID_CONVERTER = FileToIdConverter.json("shaders");
    private static final FileToIdConverter POST_CHAIN_ID_CONVERTER = FileToIdConverter.json("post_effect");
    public static final int MAX_LOG_LENGTH = 32768;
-   private final TextureManager textureManager;
-   private ShaderManager.Configs configs = ShaderManager.Configs.EMPTY;
-   private final Map<ShaderProgram, Optional<CompiledShaderProgram>> compiledPrograms = new HashMap<>();
-   private final Map<ShaderManager.ShaderCompilationKey, CompiledShader> compiledShaders = new HashMap<>();
-   private final Map<ResourceLocation, Optional<PostChain>> postChains = new HashMap<>();
+   final TextureManager textureManager;
+   private final Consumer<Exception> recoveryHandler;
+   private ShaderManager.CompilationCache compilationCache = new ShaderManager.CompilationCache(ShaderManager.Configs.EMPTY);
 
-   public ShaderManager(TextureManager var1) {
+   public ShaderManager(TextureManager var1, Consumer<Exception> var2) {
       super();
       this.textureManager = var1;
+      this.recoveryHandler = var2;
    }
 
    protected ShaderManager.Configs prepare(ResourceManager var1, ProfilerFiller var2) {
@@ -160,26 +160,29 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
    }
 
    protected void apply(ShaderManager.Configs var1, ResourceManager var2, ProfilerFiller var3) {
-      this.clearCompilationCache();
-      this.configs = var1;
-      HashMap var4 = new HashMap();
+      ShaderManager.CompilationCache var4 = new ShaderManager.CompilationCache(var1);
+      HashMap var5 = new HashMap();
 
-      for (ShaderProgram var6 : CoreShaders.getProgramsToPreload()) {
+      for (ShaderProgram var7 : CoreShaders.getProgramsToPreload()) {
          try {
-            this.compiledPrograms.put(var6, Optional.of(this.compileProgram(var6)));
-         } catch (ShaderManager.CompilationException var8) {
-            var4.put(var6, var8);
+            var4.programs.put(var7, Optional.of(var4.compileProgram(var7)));
+         } catch (ShaderManager.CompilationException var9) {
+            var5.put(var7, var9);
          }
       }
 
-      if (!var4.isEmpty()) {
+      if (!var5.isEmpty()) {
+         var4.close();
          throw new RuntimeException(
             "Failed to load required shader programs:\n"
-               + var4.entrySet()
+               + var5.entrySet()
                   .stream()
                   .map(var0 -> " - " + var0.getKey() + ": " + ((ShaderManager.CompilationException)var0.getValue()).getMessage())
                   .collect(Collectors.joining("\n"))
          );
+      } else {
+         this.compilationCache.close();
+         this.compilationCache = var4;
       }
    }
 
@@ -198,8 +201,8 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
             ShaderDefines var11 = var10.defines().withOverrides(var6.defines());
             CompiledShader var12 = this.preloadShader(var1, var10.vertex(), CompiledShader.Type.VERTEX, var11);
             CompiledShader var13 = this.preloadShader(var1, var10.fragment(), CompiledShader.Type.FRAGMENT, var11);
-            CompiledShaderProgram var14 = this.linkProgram(var6, var10, var12, var13);
-            this.compiledPrograms.put(var6, Optional.of(var14));
+            CompiledShaderProgram var14 = linkProgram(var6, var10, var12, var13);
+            this.compilationCache.programs.put(var6, Optional.of(var14));
          }
       }
    }
@@ -212,7 +215,7 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
          String var7 = IOUtils.toString(var6);
          String var8 = GlslPreprocessor.injectDefines(var7, var4);
          CompiledShader var9 = CompiledShader.compile(var2, var3, var8);
-         this.compiledShaders.put(new ShaderManager.ShaderCompilationKey(var2, var3, var4), var9);
+         this.compilationCache.shaders.put(new ShaderManager.ShaderCompilationKey(var2, var3, var4), var9);
          var10 = var9;
       }
 
@@ -221,100 +224,133 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
 
    @Nullable
    public CompiledShaderProgram getProgram(ShaderProgram var1) {
-      Optional var2 = this.compiledPrograms.get(var1);
-      if (var2 != null) {
-         return (CompiledShaderProgram)var2.orElse(null);
-      } else {
-         try {
-            CompiledShaderProgram var3 = this.compileProgram(var1);
-            this.compiledPrograms.put(var1, Optional.of(var3));
-            return var3;
-         } catch (ShaderManager.CompilationException var4) {
-            LOGGER.error("Failed to load shader program: {}", var1, var4);
-            this.compiledPrograms.put(var1, Optional.empty());
-            return null;
-         }
+      try {
+         return this.compilationCache.getOrCompileProgram(var1);
+      } catch (ShaderManager.CompilationException var3) {
+         LOGGER.error("Failed to load shader program: {}", var1, var3);
+         this.recoveryHandler.accept(var3);
+         return null;
       }
    }
 
-   private CompiledShaderProgram compileProgram(ShaderProgram var1) throws ShaderManager.CompilationException {
-      ShaderProgramConfig var2 = this.configs.programs.get(var1.configId());
-      if (var2 == null) {
-         throw new ShaderManager.CompilationException("Could not find program with id: " + var1.configId());
-      } else {
-         ShaderDefines var3 = var2.defines().withOverrides(var1.defines());
-         CompiledShader var4 = this.getOrCompileShader(var2.vertex(), CompiledShader.Type.VERTEX, var3);
-         CompiledShader var5 = this.getOrCompileShader(var2.fragment(), CompiledShader.Type.FRAGMENT, var3);
-         return this.linkProgram(var1, var2, var4, var5);
-      }
-   }
-
-   private CompiledShaderProgram linkProgram(ShaderProgram var1, ShaderProgramConfig var2, CompiledShader var3, CompiledShader var4) throws ShaderManager.CompilationException {
-      CompiledShaderProgram var5 = CompiledShaderProgram.link(var3, var4, var1.vertexFormat());
-      var5.setupUniforms(var2.uniforms(), var2.samplers());
-      return var5;
-   }
-
-   private CompiledShader getOrCompileShader(ResourceLocation var1, CompiledShader.Type var2, ShaderDefines var3) throws ShaderManager.CompilationException {
-      ShaderManager.ShaderCompilationKey var4 = new ShaderManager.ShaderCompilationKey(var1, var2, var3);
-      CompiledShader var5 = this.compiledShaders.get(var4);
-      if (var5 == null) {
-         var5 = this.compileShader(var4);
-         this.compiledShaders.put(var4, var5);
-      }
-
-      return var5;
-   }
-
-   private CompiledShader compileShader(ShaderManager.ShaderCompilationKey var1) throws ShaderManager.CompilationException {
-      String var2 = this.configs.shaderSources.get(new ShaderManager.ShaderSourceKey(var1.id, var1.type));
-      if (var2 == null) {
-         throw new ShaderManager.CompilationException("Could not find shader: " + var1);
-      } else {
-         String var3 = GlslPreprocessor.injectDefines(var2, var1.defines);
-         return CompiledShader.compile(var1.id, var1.type, var3);
-      }
+   static CompiledShaderProgram linkProgram(ShaderProgram var0, ShaderProgramConfig var1, CompiledShader var2, CompiledShader var3) throws ShaderManager.CompilationException {
+      CompiledShaderProgram var4 = CompiledShaderProgram.link(var2, var3, var0.vertexFormat());
+      var4.setupUniforms(var1.uniforms(), var1.samplers());
+      return var4;
    }
 
    @Nullable
    public PostChain getPostChain(ResourceLocation var1, Set<ResourceLocation> var2) {
-      Optional var3 = this.postChains.get(var1);
-      if (var3 != null) {
-         return (PostChain)var3.orElse(null);
-      } else {
-         try {
-            PostChain var4 = this.loadPostChain(var1, var2);
-            this.postChains.put(var1, Optional.of(var4));
-            return var4;
-         } catch (ShaderManager.CompilationException var5) {
-            LOGGER.error("Failed to load post chain: {}", var1, var5);
-            this.postChains.put(var1, Optional.empty());
-            return null;
-         }
+      try {
+         return this.compilationCache.getOrLoadPostChain(var1, var2);
+      } catch (ShaderManager.CompilationException var4) {
+         LOGGER.error("Failed to load post chain: {}", var1, var4);
+         this.recoveryHandler.accept(var4);
+         return null;
       }
-   }
-
-   private PostChain loadPostChain(ResourceLocation var1, Set<ResourceLocation> var2) throws ShaderManager.CompilationException {
-      PostChainConfig var3 = this.configs.postChains.get(var1);
-      if (var3 == null) {
-         throw new ShaderManager.CompilationException("Could not find post chain with id: " + var1);
-      } else {
-         return PostChain.load(var3, this.textureManager, this, var2);
-      }
-   }
-
-   private void clearCompilationCache() {
-      RenderSystem.assertOnRenderThread();
-      this.compiledPrograms.values().forEach(var0 -> var0.ifPresent(CompiledShaderProgram::close));
-      this.compiledShaders.values().forEach(CompiledShader::close);
-      this.compiledPrograms.clear();
-      this.compiledShaders.clear();
-      this.postChains.clear();
    }
 
    @Override
    public void close() {
-      this.clearCompilationCache();
+      this.compilationCache.close();
+   }
+
+   class CompilationCache implements AutoCloseable {
+      private final ShaderManager.Configs configs;
+      final Map<ShaderProgram, Optional<CompiledShaderProgram>> programs = new HashMap<>();
+      final Map<ShaderManager.ShaderCompilationKey, CompiledShader> shaders = new HashMap<>();
+      private final Map<ResourceLocation, Optional<PostChain>> postChains = new HashMap<>();
+
+      CompilationCache(final ShaderManager.Configs nullx) {
+         super();
+         this.configs = nullx;
+      }
+
+      @Nullable
+      public CompiledShaderProgram getOrCompileProgram(ShaderProgram var1) throws ShaderManager.CompilationException {
+         Optional var2 = this.programs.get(var1);
+         if (var2 != null) {
+            return (CompiledShaderProgram)var2.orElse(null);
+         } else {
+            try {
+               CompiledShaderProgram var3 = this.compileProgram(var1);
+               this.programs.put(var1, Optional.of(var3));
+               return var3;
+            } catch (ShaderManager.CompilationException var4) {
+               this.programs.put(var1, Optional.empty());
+               throw var4;
+            }
+         }
+      }
+
+      CompiledShaderProgram compileProgram(ShaderProgram var1) throws ShaderManager.CompilationException {
+         ShaderProgramConfig var2 = this.configs.programs.get(var1.configId());
+         if (var2 == null) {
+            throw new ShaderManager.CompilationException("Could not find program with id: " + var1.configId());
+         } else {
+            ShaderDefines var3 = var2.defines().withOverrides(var1.defines());
+            CompiledShader var4 = this.getOrCompileShader(var2.vertex(), CompiledShader.Type.VERTEX, var3);
+            CompiledShader var5 = this.getOrCompileShader(var2.fragment(), CompiledShader.Type.FRAGMENT, var3);
+            return ShaderManager.linkProgram(var1, var2, var4, var5);
+         }
+      }
+
+      private CompiledShader getOrCompileShader(ResourceLocation var1, CompiledShader.Type var2, ShaderDefines var3) throws ShaderManager.CompilationException {
+         ShaderManager.ShaderCompilationKey var4 = new ShaderManager.ShaderCompilationKey(var1, var2, var3);
+         CompiledShader var5 = this.shaders.get(var4);
+         if (var5 == null) {
+            var5 = this.compileShader(var4);
+            this.shaders.put(var4, var5);
+         }
+
+         return var5;
+      }
+
+      private CompiledShader compileShader(ShaderManager.ShaderCompilationKey var1) throws ShaderManager.CompilationException {
+         String var2 = this.configs.shaderSources.get(new ShaderManager.ShaderSourceKey(var1.id, var1.type));
+         if (var2 == null) {
+            throw new ShaderManager.CompilationException("Could not find shader: " + var1);
+         } else {
+            String var3 = GlslPreprocessor.injectDefines(var2, var1.defines);
+            return CompiledShader.compile(var1.id, var1.type, var3);
+         }
+      }
+
+      @Nullable
+      public PostChain getOrLoadPostChain(ResourceLocation var1, Set<ResourceLocation> var2) throws ShaderManager.CompilationException {
+         Optional var3 = this.postChains.get(var1);
+         if (var3 != null) {
+            return (PostChain)var3.orElse(null);
+         } else {
+            try {
+               PostChain var4 = this.loadPostChain(var1, var2);
+               this.postChains.put(var1, Optional.of(var4));
+               return var4;
+            } catch (ShaderManager.CompilationException var5) {
+               this.postChains.put(var1, Optional.empty());
+               throw var5;
+            }
+         }
+      }
+
+      private PostChain loadPostChain(ResourceLocation var1, Set<ResourceLocation> var2) throws ShaderManager.CompilationException {
+         PostChainConfig var3 = this.configs.postChains.get(var1);
+         if (var3 == null) {
+            throw new ShaderManager.CompilationException("Could not find post chain with id: " + var1);
+         } else {
+            return PostChain.load(var3, ShaderManager.this.textureManager, ShaderManager.this, var2);
+         }
+      }
+
+      @Override
+      public void close() {
+         RenderSystem.assertOnRenderThread();
+         this.programs.values().forEach(var0 -> var0.ifPresent(CompiledShaderProgram::close));
+         this.shaders.values().forEach(CompiledShader::close);
+         this.programs.clear();
+         this.shaders.clear();
+         this.postChains.clear();
+      }
    }
 
    public static class CompilationException extends Exception {

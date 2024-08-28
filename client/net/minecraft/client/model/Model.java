@@ -2,6 +2,7 @@ package net.minecraft.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.client.animation.AnimationDefinition;
@@ -14,11 +15,15 @@ import org.joml.Vector3f;
 
 public abstract class Model {
    private static final Vector3f ANIMATION_VECTOR_CACHE = new Vector3f();
+   protected final ModelPart root;
    protected final Function<ResourceLocation, RenderType> renderType;
+   private final List<ModelPart> allParts;
 
-   public Model(Function<ResourceLocation, RenderType> var1) {
+   public Model(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
       super();
-      this.renderType = var1;
+      this.root = var1;
+      this.renderType = var2;
+      this.allParts = var1.getAllParts().toList();
    }
 
    public final RenderType renderType(ResourceLocation var1) {
@@ -33,12 +38,24 @@ public abstract class Model {
       this.renderToBuffer(var1, var2, var3, var4, -1);
    }
 
-   public abstract ModelPart root();
+   public final ModelPart root() {
+      return this.root;
+   }
 
    public Optional<ModelPart> getAnyDescendantWithName(String var1) {
       return var1.equals("root")
          ? Optional.of(this.root())
          : this.root().getAllParts().filter(var1x -> var1x.hasChild(var1)).findFirst().map(var1x -> var1x.getChild(var1));
+   }
+
+   public final List<ModelPart> allParts() {
+      return this.allParts;
+   }
+
+   public final void resetPose() {
+      for (ModelPart var2 : this.allParts) {
+         var2.resetPose();
+      }
    }
 
    protected void animate(AnimationState var1, AnimationDefinition var2, float var3) {
@@ -60,16 +77,8 @@ public abstract class Model {
    }
 
    public static class Simple extends Model {
-      private final ModelPart root;
-
       public Simple(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
-         super(var2);
-         this.root = var1;
-      }
-
-      @Override
-      public ModelPart root() {
-         return this.root;
+         super(var1, var2);
       }
    }
 }

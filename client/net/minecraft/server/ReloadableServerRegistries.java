@@ -30,7 +30,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.tags.TagLoader;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -92,15 +91,13 @@ public class ReloadableServerRegistries {
 
    private static void validateLootRegistries(HolderLookup.Provider var0) {
       ProblemReporter.Collector var1 = new ProblemReporter.Collector();
-      ValidationContext var2 = new ValidationContext(var1, LootContextParamSets.ALL_PARAMS, var0.asGetterLookup());
+      ValidationContext var2 = new ValidationContext(var1, LootContextParamSets.ALL_PARAMS, var0);
       LootDataType.values().forEach(var2x -> validateRegistry(var2, (LootDataType<?>)var2x, var0));
       var1.get().forEach((var0x, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x));
    }
 
    private static LayeredRegistryAccess<RegistryLayer> createUpdatedRegistries(LayeredRegistryAccess<RegistryLayer> var0, List<WritableRegistry<?>> var1) {
-      RegistryAccess.ImmutableRegistryAccess var2 = new RegistryAccess.ImmutableRegistryAccess(var1);
-      ((WritableRegistry)var2.<LootTable>registryOrThrow(Registries.LOOT_TABLE)).register(BuiltInLootTables.EMPTY, LootTable.EMPTY, DEFAULT_REGISTRATION_INFO);
-      return var0.replaceFrom(RegistryLayer.RELOADABLE, var2.freeze());
+      return var0.replaceFrom(RegistryLayer.RELOADABLE, new RegistryAccess.ImmutableRegistryAccess(var1).freeze());
    }
 
    private static <T> void validateRegistry(ValidationContext var0, LootDataType<T> var1, HolderLookup.Provider var2) {
@@ -117,7 +114,7 @@ public class ReloadableServerRegistries {
       }
 
       public HolderGetter.Provider lookup() {
-         return this.registries.asGetterLookup();
+         return this.registries;
       }
 
       public Collection<ResourceLocation> getKeys(ResourceKey<? extends Registry<?>> var1) {

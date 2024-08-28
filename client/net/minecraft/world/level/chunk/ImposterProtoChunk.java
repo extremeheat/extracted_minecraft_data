@@ -36,7 +36,7 @@ public class ImposterProtoChunk extends ProtoChunk {
 
    public ImposterProtoChunk(LevelChunk var1, boolean var2) {
       super(
-         var1.getPos(), UpgradeData.EMPTY, var1.levelHeightAccessor, var1.getLevel().registryAccess().registryOrThrow(Registries.BIOME), var1.getBlendingData()
+         var1.getPos(), UpgradeData.EMPTY, var1.levelHeightAccessor, var1.getLevel().registryAccess().lookupOrThrow(Registries.BIOME), var1.getBlendingData()
       );
       this.wrapped = var1;
       this.allowWrites = var2;

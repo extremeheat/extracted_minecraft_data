@@ -870,7 +870,6 @@ public class ServerPlayer extends Player {
          ServerLevel var2 = var1.newLevel();
          ServerLevel var3 = this.serverLevel();
          ResourceKey var4 = var3.dimension();
-         this.teleportSetPosition(var1);
          if (var2.dimension() == var4) {
             this.connection.teleport(var1.pos().x, var1.pos().y, var1.pos().z, var1.yRot(), var1.xRot());
             this.connection.resetPosition();
@@ -890,6 +889,7 @@ public class ServerPlayer extends Player {
                this.enteredNetherPosition = this.position();
             }
 
+            this.teleportSetPosition(var1);
             var3.getProfiler().pop();
             var3.getProfiler().push("placing");
             this.setServerLevel(var2);

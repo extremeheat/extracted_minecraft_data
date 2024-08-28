@@ -79,9 +79,9 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       this.x = var3;
       this.y = var5;
       this.z = var7;
-      this.xRot = (byte)Mth.floor(var9 * 256.0F / 360.0F);
-      this.yRot = (byte)Mth.floor(var10 * 256.0F / 360.0F);
-      this.yHeadRot = (byte)Mth.floor(var14 * 256.0 / 360.0);
+      this.xRot = Mth.packDegrees(var9);
+      this.yRot = Mth.packDegrees(var10);
+      this.yHeadRot = Mth.packDegrees((float)var14);
       this.type = var11;
       this.data = var12;
       this.xa = (int)(Mth.clamp(var13.x, -3.9, 3.9) * 8000.0);
@@ -168,15 +168,15 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
    }
 
    public float getXRot() {
-      return (float)(this.xRot * 360) / 256.0F;
+      return Mth.unpackDegrees(this.xRot);
    }
 
    public float getYRot() {
-      return (float)(this.yRot * 360) / 256.0F;
+      return Mth.unpackDegrees(this.yRot);
    }
 
    public float getYHeadRot() {
-      return (float)(this.yHeadRot * 360) / 256.0F;
+      return Mth.unpackDegrees(this.yHeadRot);
    }
 
    public int getData() {

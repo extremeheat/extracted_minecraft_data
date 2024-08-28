@@ -10,12 +10,10 @@ import net.minecraft.client.renderer.entity.state.ShulkerBulletRenderState;
 
 public class ShulkerBulletModel extends EntityModel<ShulkerBulletRenderState> {
    private static final String MAIN = "main";
-   private final ModelPart root;
    private final ModelPart main;
 
    public ShulkerBulletModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.main = var1.getChild("main");
    }
 
@@ -36,12 +34,8 @@ public class ShulkerBulletModel extends EntityModel<ShulkerBulletRenderState> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(ShulkerBulletRenderState var1) {
+      super.setupAnim(var1);
       this.main.yRot = var1.yRot * 0.017453292F;
       this.main.xRot = var1.xRot * 0.017453292F;
    }

@@ -663,7 +663,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
 
    private static Advancement.Builder addLeashedFrogVariants(HolderGetter<EntityType<?>> var0, HolderGetter<Item> var1, Advancement.Builder var2) {
       BuiltInRegistries.FROG_VARIANT
-         .holders()
+         .listElements()
          .forEach(
             var3 -> var2.addCriterion(
                   var3.key().location().toString(),
@@ -733,7 +733,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
 
    private static Advancement.Builder addCatVariants(Advancement.Builder var0) {
       BuiltInRegistries.CAT_VARIANT
-         .holders()
+         .listElements()
          .sorted(Comparator.comparing(var0x -> var0x.key().location()))
          .forEach(
             var1 -> var0.addCriterion(

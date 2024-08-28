@@ -18,6 +18,7 @@ public class BlazeRenderer extends MobRenderer<Blaze, LivingEntityRenderState, B
       return 15;
    }
 
+   @Override
    public ResourceLocation getTextureLocation(LivingEntityRenderState var1) {
       return BLAZE_LOCATION;
    }

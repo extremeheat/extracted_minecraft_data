@@ -32,10 +32,6 @@ public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit, LlamaSpitRender
       super.render(var1, var2, var3, var4);
    }
 
-   public ResourceLocation getTextureLocation(LlamaSpitRenderState var1) {
-      return LLAMA_SPIT_LOCATION;
-   }
-
    public LlamaSpitRenderState createRenderState() {
       return new LlamaSpitRenderState();
    }

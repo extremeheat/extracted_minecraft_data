@@ -1456,7 +1456,7 @@ public class VillagerTrades {
 
       @Override
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         Optional var3 = var1.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT).getRandomElementOf(this.tradeableEnchantments, var2);
+         Optional var3 = var1.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getRandomElementOf(this.tradeableEnchantments, var2);
          int var4;
          ItemStack var5;
          if (!var3.isEmpty()) {
@@ -1507,7 +1507,7 @@ public class VillagerTrades {
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          int var3 = 5 + var2.nextInt(15);
          RegistryAccess var4 = var1.level().registryAccess();
-         Optional var5 = var4.registryOrThrow(Registries.ENCHANTMENT).getTag(EnchantmentTags.ON_TRADED_EQUIPMENT);
+         Optional var5 = var4.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.ON_TRADED_EQUIPMENT);
          ItemStack var6 = EnchantmentHelper.enchantItem(var2, new ItemStack(this.itemStack.getItem()), var3, var4, var5);
          int var7 = Math.min(this.baseEmeraldCost + var3, 64);
          ItemCost var8 = new ItemCost(Items.EMERALD, var7);
@@ -1692,7 +1692,7 @@ public class VillagerTrades {
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemCost var3 = new ItemCost(Items.EMERALD, this.emeraldCost);
          List var4 = BuiltInRegistries.POTION
-            .holders()
+            .listElements()
             .filter(var1x -> !var1x.value().getEffects().isEmpty() && var1.level().potionBrewing().isBrewablePotion(var1x))
             .collect(Collectors.toList());
          Holder var5 = Util.getRandom(var4, var2);

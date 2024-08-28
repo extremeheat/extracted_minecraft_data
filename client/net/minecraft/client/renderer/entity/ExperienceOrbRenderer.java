@@ -63,10 +63,6 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
          .setNormal(var1, 0.0F, 1.0F, 0.0F);
    }
 
-   public ResourceLocation getTextureLocation(ExperienceOrbRenderState var1) {
-      return EXPERIENCE_ORB_LOCATION;
-   }
-
    public ExperienceOrbRenderState createRenderState() {
       return new ExperienceOrbRenderState();
    }

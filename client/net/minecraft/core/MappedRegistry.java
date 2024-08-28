@@ -31,7 +31,7 @@ import net.minecraft.tags.TagLoader;
 import net.minecraft.util.RandomSource;
 
 public class MappedRegistry<T> implements WritableRegistry<T> {
-   final ResourceKey<? extends Registry<T>> key;
+   private final ResourceKey<? extends Registry<T>> key;
    private final ObjectList<Holder.Reference<T>> byId = new ObjectArrayList(256);
    private final Reference2IntMap<T> toId = Util.make(new Reference2IntOpenHashMap(), var0 -> var0.defaultReturnValue(-1));
    private final Map<ResourceLocation, Holder.Reference<T>> byLocation = new HashMap<>();
@@ -44,37 +44,11 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    private boolean frozen;
    @Nullable
    private Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
-   private final HolderLookup.RegistryLookup<T> lookup = new HolderLookup.RegistryLookup<T>() {
-      @Override
-      public ResourceKey<? extends Registry<? extends T>> key() {
-         return MappedRegistry.this.key;
-      }
 
-      @Override
-      public Lifecycle registryLifecycle() {
-         return MappedRegistry.this.registryLifecycle();
-      }
-
-      @Override
-      public Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
-         return MappedRegistry.this.getHolder(var1);
-      }
-
-      @Override
-      public Stream<Holder.Reference<T>> listElements() {
-         return MappedRegistry.this.holders();
-      }
-
-      @Override
-      public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
-         return MappedRegistry.this.getTag(var1);
-      }
-
-      @Override
-      public Stream<HolderSet.Named<T>> listTags() {
-         return MappedRegistry.this.getTags();
-      }
-   };
+   @Override
+   public Stream<HolderSet.Named<T>> listTags() {
+      return this.getTags();
+   }
 
    public MappedRegistry(ResourceKey<? extends Registry<T>> var1, Lifecycle var2) {
       this(var1, var2, false);
@@ -130,7 +104,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
             var4.bindKey(var1);
          } else {
-            var4 = this.byKey.computeIfAbsent(var1, var1x -> Holder.Reference.createStandAlone(this.holderOwner(), (ResourceKey<T>)var1x));
+            var4 = this.byKey.computeIfAbsent(var1, var1x -> Holder.Reference.createStandAlone(this, (ResourceKey<T>)var1x));
          }
 
          this.byKey.put(var1, var4);
@@ -164,7 +138,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Nullable
    @Override
-   public T get(@Nullable ResourceKey<T> var1) {
+   public T getValue(@Nullable ResourceKey<T> var1) {
       return getValueFromNullable(this.byKey.get(var1));
    }
 
@@ -175,17 +149,17 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    @Override
-   public Optional<Holder.Reference<T>> getHolder(int var1) {
+   public Optional<Holder.Reference<T>> get(int var1) {
       return var1 >= 0 && var1 < this.byId.size() ? Optional.ofNullable((Holder.Reference<T>)this.byId.get(var1)) : Optional.empty();
    }
 
    @Override
-   public Optional<Holder.Reference<T>> getHolder(ResourceLocation var1) {
+   public Optional<Holder.Reference<T>> get(ResourceLocation var1) {
       return Optional.ofNullable(this.byLocation.get(var1));
    }
 
    @Override
-   public Optional<Holder.Reference<T>> getHolder(ResourceKey<T> var1) {
+   public Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
       return Optional.ofNullable(this.byKey.get(var1));
    }
 
@@ -206,7 +180,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
             throw new IllegalStateException("This registry can't create new holders without value");
          } else {
             this.validateWrite((ResourceKey<T>)var1x);
-            return Holder.Reference.createStandAlone(this.holderOwner(), (ResourceKey<T>)var1x);
+            return Holder.Reference.createStandAlone(this, (ResourceKey<T>)var1x);
          }
       });
    }
@@ -233,7 +207,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Nullable
    @Override
-   public T get(@Nullable ResourceLocation var1) {
+   public T getValue(@Nullable ResourceLocation var1) {
       Holder.Reference var2 = this.byLocation.get(var1);
       return getValueFromNullable(var2);
    }
@@ -259,7 +233,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    @Override
-   public Stream<Holder.Reference<T>> holders() {
+   public Stream<Holder.Reference<T>> listElements() {
       return this.byId.stream();
    }
 
@@ -273,7 +247,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    private HolderSet.Named<T> createTag(TagKey<T> var1) {
-      return new HolderSet.Named<>(this.holderOwner(), (TagKey<T>)var1);
+      return new HolderSet.Named<>(this, (TagKey<T>)var1);
    }
 
    @Override
@@ -343,17 +317,17 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          throw new IllegalStateException("This registry can't create intrusive holders");
       } else {
          this.validateWrite();
-         return this.unregisteredIntrusiveHolders.computeIfAbsent((T)var1, var1x -> Holder.Reference.createIntrusive(this.asLookup(), (T)var1x));
+         return this.unregisteredIntrusiveHolders.computeIfAbsent((T)var1, var1x -> Holder.Reference.createIntrusive(this, (T)var1x));
       }
    }
 
    @Override
-   public Optional<HolderSet.Named<T>> getTag(TagKey<T> var1) {
+   public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
       return this.allTags.get(var1);
    }
 
    private Holder.Reference<T> validateAndUnwrapTagElement(TagKey<T> var1, Holder<T> var2) {
-      if (!var2.canSerializeIn(this.holderOwner())) {
+      if (!var2.canSerializeIn(this)) {
          throw new IllegalStateException("Can't create named set " + var1 + " containing value " + var2 + " from outside registry " + this);
       } else if (var2 instanceof Holder.Reference) {
          return (Holder.Reference<T>)var2;
@@ -412,16 +386,6 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    @Override
-   public HolderOwner<T> holderOwner() {
-      return this.lookup;
-   }
-
-   @Override
-   public HolderLookup.RegistryLookup<T> asLookup() {
-      return this.lookup;
-   }
-
-   @Override
    public Registry.PendingTags<T> prepareTagReload(TagLoader.LoadResult<T> var1) {
       if (!this.frozen) {
          throw new IllegalStateException("Invalid method used for tag loading");
@@ -441,7 +405,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          final HolderLookup.RegistryLookup.Delegate var5 = new HolderLookup.RegistryLookup.Delegate<T>() {
             @Override
             public HolderLookup.RegistryLookup<T> parent() {
-               return MappedRegistry.this.asLookup();
+               return MappedRegistry.this;
             }
 
             @Override

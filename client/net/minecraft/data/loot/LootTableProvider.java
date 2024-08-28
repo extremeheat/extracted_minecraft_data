@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
@@ -66,14 +65,14 @@ public class LootTableProvider implements DataProvider {
          }));
       var3.freeze();
       ProblemReporter.Collector var5 = new ProblemReporter.Collector();
-      HolderGetter.Provider var6 = new RegistryAccess.ImmutableRegistryAccess(List.of(var3)).freeze().asGetterLookup();
+      RegistryAccess.Frozen var6 = new RegistryAccess.ImmutableRegistryAccess(List.of(var3)).freeze();
       ValidationContext var7 = new ValidationContext(var5, LootContextParamSets.ALL_PARAMS, var6);
 
       for (ResourceKey var10 : Sets.difference(this.requiredTables, var3.registryKeySet())) {
          var5.report("Missing built-in table: " + var10.location());
       }
 
-      var3.holders()
+      var3.listElements()
          .forEach(
             var1x -> ((LootTable)var1x.value())
                   .validate(var7.setParams(((LootTable)var1x.value()).getParamSet()).enterElement("{" + var1x.key().location() + "}", var1x.key()))

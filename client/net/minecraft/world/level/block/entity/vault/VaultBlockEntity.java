@@ -36,7 +36,6 @@ import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -324,7 +323,7 @@ public class VaultBlockEntity extends BlockEntity {
       }
 
       private static boolean canEjectReward(VaultConfig var0, VaultState var1) {
-         return var0.lootTable() != BuiltInLootTables.EMPTY && !var0.keyItem().isEmpty() && var1 != VaultState.INACTIVE;
+         return !var0.keyItem().isEmpty() && var1 != VaultState.INACTIVE;
       }
 
       private static boolean isValidToInsert(VaultConfig var0, ItemStack var1) {

@@ -1,7 +1,5 @@
 package net.minecraft.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -14,7 +12,6 @@ import net.minecraft.world.entity.animal.Parrot;
 
 public class ParrotModel extends EntityModel<ParrotRenderState> {
    private static final String FEATHER = "feather";
-   private final ModelPart root;
    private final ModelPart body;
    private final ModelPart tail;
    private final ModelPart leftWing;
@@ -24,8 +21,7 @@ public class ParrotModel extends EntityModel<ParrotRenderState> {
    private final ModelPart rightLeg;
 
    public ParrotModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.body = var1.getChild("body");
       this.tail = var1.getChild("tail");
       this.leftWing = var1.getChild("left_wing");
@@ -81,76 +77,53 @@ public class ParrotModel extends EntityModel<ParrotRenderState> {
       return LayerDefinition.create(var0, 32, 32);
    }
 
-   @Override
-   public ModelPart root() {
-      return this.root;
-   }
-
    public void setupAnim(ParrotRenderState var1) {
+      super.setupAnim(var1);
       this.prepare(var1.pose);
-      float var2 = var1.walkAnimationPos;
-      float var3 = var1.walkAnimationSpeed;
-      this.setupAnim(var1.pose, var1.ageInTicks, var2, var3, var1.flapAngle, var1.yRot, var1.xRot);
-   }
-
-   public void renderOnShoulder(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8, float var9) {
-      this.prepare(ParrotModel.Pose.ON_SHOULDER);
-      this.setupAnim(ParrotModel.Pose.ON_SHOULDER, var9, var5, var6, 0.0F, var7, var8);
-      this.root.render(var1, var2, var3, var4);
-   }
-
-   private void setupAnim(ParrotModel.Pose var1, float var2, float var3, float var4, float var5, float var6, float var7) {
-      this.head.xRot = var7 * 0.017453292F;
-      this.head.yRot = var6 * 0.017453292F;
-      switch (var1) {
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.head.yRot = var1.yRot * 0.017453292F;
+      switch (var1.pose) {
          case STANDING:
-            this.leftLeg.xRot = this.leftLeg.xRot + Mth.cos(var3 * 0.6662F) * 1.4F * var4;
-            this.rightLeg.xRot = this.rightLeg.xRot + Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var4;
+            this.leftLeg.xRot = this.leftLeg.xRot + Mth.cos(var1.walkAnimationPos * 0.6662F) * 1.4F * var1.walkAnimationSpeed;
+            this.rightLeg.xRot = this.rightLeg.xRot + Mth.cos(var1.walkAnimationPos * 0.6662F + 3.1415927F) * 1.4F * var1.walkAnimationSpeed;
          case FLYING:
          case ON_SHOULDER:
          default:
-            float var10 = var5 * 0.3F;
-            this.head.y += var10;
-            this.tail.xRot = this.tail.xRot + Mth.cos(var3 * 0.6662F) * 0.3F * var4;
-            this.tail.y += var10;
-            this.body.y += var10;
-            this.leftWing.zRot = -0.0873F - var5;
-            this.leftWing.y += var10;
-            this.rightWing.zRot = 0.0873F + var5;
-            this.rightWing.y += var10;
-            this.leftLeg.y += var10;
-            this.rightLeg.y += var10;
+            float var4 = var1.flapAngle * 0.3F;
+            this.head.y += var4;
+            this.tail.xRot = this.tail.xRot + Mth.cos(var1.walkAnimationPos * 0.6662F) * 0.3F * var1.walkAnimationSpeed;
+            this.tail.y += var4;
+            this.body.y += var4;
+            this.leftWing.zRot = -0.0873F - var1.flapAngle;
+            this.leftWing.y += var4;
+            this.rightWing.zRot = 0.0873F + var1.flapAngle;
+            this.rightWing.y += var4;
+            this.leftLeg.y += var4;
+            this.rightLeg.y += var4;
          case SITTING:
             break;
          case PARTY:
-            float var8 = Mth.cos(var2);
-            float var9 = Mth.sin(var2);
-            this.head.x += var8;
-            this.head.y += var9;
+            float var2 = Mth.cos(var1.ageInTicks);
+            float var3 = Mth.sin(var1.ageInTicks);
+            this.head.x += var2;
+            this.head.y += var3;
             this.head.xRot = 0.0F;
             this.head.yRot = 0.0F;
-            this.head.zRot = Mth.sin(var2) * 0.4F;
-            this.body.x += var8;
-            this.body.y += var9;
-            this.leftWing.zRot = -0.0873F - var5;
-            this.leftWing.x += var8;
-            this.leftWing.y += var9;
-            this.rightWing.zRot = 0.0873F + var5;
-            this.rightWing.x += var8;
-            this.rightWing.y += var9;
-            this.tail.x += var8;
-            this.tail.y += var9;
+            this.head.zRot = Mth.sin(var1.ageInTicks) * 0.4F;
+            this.body.x += var2;
+            this.body.y += var3;
+            this.leftWing.zRot = -0.0873F - var1.flapAngle;
+            this.leftWing.x += var2;
+            this.leftWing.y += var3;
+            this.rightWing.zRot = 0.0873F + var1.flapAngle;
+            this.rightWing.x += var2;
+            this.rightWing.y += var3;
+            this.tail.x += var2;
+            this.tail.y += var3;
       }
    }
 
    private void prepare(ParrotModel.Pose var1) {
-      this.body.resetPose();
-      this.head.resetPose();
-      this.tail.resetPose();
-      this.rightWing.resetPose();
-      this.leftWing.resetPose();
-      this.leftLeg.resetPose();
-      this.rightLeg.resetPose();
       switch (var1) {
          case FLYING:
             this.leftLeg.xRot += 0.6981317F;

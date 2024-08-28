@@ -13,6 +13,7 @@ public class TadpoleRenderer extends MobRenderer<Tadpole, LivingEntityRenderStat
       super(var1, new TadpoleModel(var1.bakeLayer(ModelLayers.TADPOLE)), 0.14F);
    }
 
+   @Override
    public ResourceLocation getTextureLocation(LivingEntityRenderState var1) {
       return TADPOLE_TEXTURE;
    }

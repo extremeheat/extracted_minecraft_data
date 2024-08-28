@@ -19,14 +19,12 @@ public class CamelModel extends EntityModel<CamelRenderState> {
    private static final String SADDLE = "saddle";
    private static final String BRIDLE = "bridle";
    private static final String REINS = "reins";
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart[] saddleParts;
    private final ModelPart[] ridingParts;
 
    public CamelModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       ModelPart var2 = var1.getChild("body");
       this.head = var2.getChild("head");
       this.saddleParts = new ModelPart[]{var2.getChild("saddle"), this.head.getChild("bridle")};
@@ -115,7 +113,7 @@ public class CamelModel extends EntityModel<CamelRenderState> {
    }
 
    public void setupAnim(CamelRenderState var1) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
+      super.setupAnim(var1);
       this.applyHeadRotation(var1, var1.yRot, var1.xRot);
       this.toggleInvisibleParts(var1);
       this.animateWalk(CamelAnimation.CAMEL_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 2.0F, 2.5F);
@@ -149,10 +147,5 @@ public class CamelModel extends EntityModel<CamelRenderState> {
       for (ModelPart var11 : this.ridingParts) {
          var11.visible = var3 && var2;
       }
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

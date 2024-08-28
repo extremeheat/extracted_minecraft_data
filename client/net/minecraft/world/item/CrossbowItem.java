@@ -83,7 +83,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    @Override
-   public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       int var5 = this.getUseDuration(var1, var3) - var4;
       float var6 = getPowerForTime(var5, var1, var3);
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
@@ -101,6 +101,9 @@ public class CrossbowItem extends ProjectileWeaponItem {
                      1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F
                   )
             );
+         return true;
+      } else {
+         return false;
       }
    }
 

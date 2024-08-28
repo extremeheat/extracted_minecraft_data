@@ -80,11 +80,6 @@ public class WallHangingSignBlock extends SignBlock {
    }
 
    @Override
-   public String getDescriptionId() {
-      return this.asItem().getDescriptionId();
-   }
-
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return AABBS.get(var1.getValue(FACING));
    }

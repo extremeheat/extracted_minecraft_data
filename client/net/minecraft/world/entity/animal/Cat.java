@@ -152,7 +152,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
    @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, BuiltInRegistries.CAT_VARIANT.getHolderOrThrow(DEFAULT_VARIANT));
+      var1.define(DATA_VARIANT_ID, BuiltInRegistries.CAT_VARIANT.getOrThrow(DEFAULT_VARIANT));
       var1.define(IS_LYING, false);
       var1.define(RELAX_STATE_ONE, false);
       var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
@@ -170,7 +170,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       super.readAdditionalSaveData(var1);
       Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant")))
          .map(var0 -> ResourceKey.create(Registries.CAT_VARIANT, var0))
-         .flatMap(BuiltInRegistries.CAT_VARIANT::getHolder)
+         .flatMap(BuiltInRegistries.CAT_VARIANT::get)
          .ifPresent(this::setVariant);
       if (var1.contains("CollarColor", 99)) {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
@@ -351,7 +351,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       BuiltInRegistries.CAT_VARIANT.getRandomElementOf(var6, var1.getRandom()).ifPresent(this::setVariant);
       ServerLevel var7 = var1.getLevel();
       if (var7.structureManager().getStructureWithPieceAt(this.blockPosition(), StructureTags.CATS_SPAWN_AS_BLACK).isValid()) {
-         this.setVariant(BuiltInRegistries.CAT_VARIANT.getHolderOrThrow(CatVariant.ALL_BLACK));
+         this.setVariant(BuiltInRegistries.CAT_VARIANT.getOrThrow(CatVariant.ALL_BLACK));
          this.setPersistenceRequired();
       }
 

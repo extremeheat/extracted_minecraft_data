@@ -166,8 +166,8 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       RegistryAccess var2 = this.registryAccess();
-      Registry var3 = var2.registryOrThrow(Registries.WOLF_VARIANT);
-      var1.define(DATA_VARIANT_ID, var3.getHolder(WolfVariants.DEFAULT).or(var3::getAny).orElseThrow());
+      Registry var3 = var2.lookupOrThrow(Registries.WOLF_VARIANT);
+      var1.define(DATA_VARIANT_ID, var3.get(WolfVariants.DEFAULT).or(var3::getAny).orElseThrow());
       var1.define(DATA_INTERESTED_ID, false);
       var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
       var1.define(DATA_REMAINING_ANGER_TIME, 0);
@@ -191,7 +191,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       super.readAdditionalSaveData(var1);
       Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant")))
          .map(var0 -> ResourceKey.create(Registries.WOLF_VARIANT, var0))
-         .flatMap(var1x -> this.registryAccess().registryOrThrow(Registries.WOLF_VARIANT).getHolder((ResourceKey<WolfVariant>)var1x))
+         .flatMap(var1x -> this.registryAccess().lookupOrThrow(Registries.WOLF_VARIANT).get((ResourceKey<WolfVariant>)var1x))
          .ifPresent(this::setVariant);
       if (var1.contains("CollarColor", 99)) {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
