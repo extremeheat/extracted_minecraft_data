@@ -1,18 +1,17 @@
 package net.minecraft.client.renderer.block.model.multipart;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.UnbakedBlockStateModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -52,23 +51,20 @@ public class MultiPart implements UnbakedBlockStateModel {
    }
 
    @Override
-   public void resolveDependencies(UnbakedModel.Resolver var1, UnbakedModel.ResolutionContext var2) {
-      this.selectors.forEach(var2x -> var2x.variant.resolveDependencies(var1, var2));
+   public void resolveDependencies(UnbakedModel.Resolver var1) {
+      this.selectors.forEach(var1x -> var1x.variant.resolveDependencies(var1));
    }
 
-   @Nullable
    @Override
    public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
-      MultiPartBakedModel.Builder var4 = new MultiPartBakedModel.Builder();
+      ArrayList var4 = new ArrayList(this.selectors.size());
 
       for (MultiPart.InstantiatedSelector var6 : this.selectors) {
          BakedModel var7 = var6.variant.bake(var1, var2, var3);
-         if (var7 != null) {
-            var4.add(var6.predicate, var7);
-         }
+         var4.add(new MultiPartBakedModel.Selector(var6.predicate, var7));
       }
 
-      return var4.build();
+      return new MultiPartBakedModel(var4);
    }
 
 // $VF: Couldn't be decompiled
@@ -94,13 +90,16 @@ public class MultiPart implements UnbakedBlockStateModel {
       }
 
       private List<Selector> getSelectors(JsonDeserializationContext var1, JsonArray var2) {
-         ArrayList var3 = Lists.newArrayList();
+         ArrayList var3 = new ArrayList();
+         if (var2.isEmpty()) {
+            throw new JsonSyntaxException("Empty selector array");
+         } else {
+            for (JsonElement var5 : var2) {
+               var3.add((Selector)var1.deserialize(var5, Selector.class));
+            }
 
-         for (JsonElement var5 : var2) {
-            var3.add((Selector)var1.deserialize(var5, Selector.class));
+            return var3;
          }
-
-         return var3;
       }
    }
 

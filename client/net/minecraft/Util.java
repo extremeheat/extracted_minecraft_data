@@ -37,6 +37,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -542,6 +543,16 @@ public class Util {
    public static <T> T make(T var0, Consumer<? super T> var1) {
       var1.accept(var0);
       return (T)var0;
+   }
+
+   public static <K extends Enum<K>, V> EnumMap<K, V> makeEnumMap(Class<K> var0, Function<K, V> var1) {
+      EnumMap var2 = new EnumMap(var0);
+
+      for (Enum var6 : (Enum[])var0.getEnumConstants()) {
+         var2.put((K)var6, var1.apply(var6));
+      }
+
+      return var2;
    }
 
    public static <V> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> var0) {

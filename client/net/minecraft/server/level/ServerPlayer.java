@@ -107,7 +107,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -118,6 +119,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Strider;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.player.ChatVisiblity;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -169,7 +171,8 @@ public class ServerPlayer extends Player {
    private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
    private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_Y = 10;
    private static final int FLY_STAT_RECORDING_SPEED = 25;
-   public static final double INTERACTION_DISTANCE_VERIFICATION_BUFFER = 1.0;
+   public static final double BLOCK_INTERACTION_DISTANCE_VERIFICATION_BUFFER = 1.0;
+   public static final double ENTITY_INTERACTION_DISTANCE_VERIFICATION_BUFFER = 3.0;
    private static final AttributeModifier CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER = new AttributeModifier(
       ResourceLocation.withDefaultNamespace("creative_mode_block_range"), 0.5, AttributeModifier.Operation.ADD_VALUE
    );
@@ -228,6 +231,7 @@ public class ServerPlayer extends Player {
    @Nullable
    private BlockPos raidOmenPosition;
    private Vec3 lastKnownClientMovement = Vec3.ZERO;
+   private Input lastClientInput = Input.EMPTY;
    private final ContainerSynchronizer containerSynchronizer = new ContainerSynchronizer() {
       @Override
       public void sendInitialData(AbstractContainerMenu var1, NonNullList<ItemStack> var2, ItemStack var3, int[] var4) {
@@ -870,8 +874,9 @@ public class ServerPlayer extends Player {
          ServerLevel var2 = var1.newLevel();
          ServerLevel var3 = this.serverLevel();
          ResourceKey var4 = var3.dimension();
+         this.stopRiding();
          if (var2.dimension() == var4) {
-            this.connection.teleport(var1.pos().x, var1.pos().y, var1.pos().z, var1.yRot(), var1.xRot());
+            this.connection.teleport(PositionMoveRotation.of(var1), var1.relatives());
             this.connection.resetPosition();
             var1.postDimensionTransition().onTransition(this);
             return this;
@@ -893,7 +898,7 @@ public class ServerPlayer extends Player {
             var3.getProfiler().pop();
             var3.getProfiler().push("placing");
             this.setServerLevel(var2);
-            this.connection.teleport(var1.pos().x, var1.pos().y, var1.pos().z, var1.yRot(), var1.xRot());
+            this.connection.teleport(PositionMoveRotation.of(var1), var1.relatives());
             this.connection.resetPosition();
             var2.addDuringTeleport(this);
             var3.getProfiler().pop();
@@ -1419,25 +1424,32 @@ public class ServerPlayer extends Player {
 
    @Override
    public void teleportTo(double var1, double var3, double var5) {
-      this.connection.teleport(var1, var3, var5, this.getYRot(), this.getXRot(), RelativeMovement.ROTATION);
+      this.connection.teleport(new PositionMoveRotation(new Vec3(var1, var3, var5), Vec3.ZERO, 0.0F, 0.0F), Relative.union(Relative.DELTA, Relative.ROTATION));
    }
 
    @Override
    public void teleportRelative(double var1, double var3, double var5) {
-      this.connection.teleport(this.getX() + var1, this.getY() + var3, this.getZ() + var5, this.getYRot(), this.getXRot(), RelativeMovement.ALL);
+      this.connection.teleport(new PositionMoveRotation(new Vec3(var1, var3, var5), Vec3.ZERO, 0.0F, 0.0F), Relative.ALL);
    }
 
    @Override
-   public boolean teleportTo(ServerLevel var1, double var2, double var4, double var6, Set<RelativeMovement> var8, float var9, float var10, boolean var11) {
+   public boolean teleportTo(ServerLevel var1, double var2, double var4, double var6, Set<Relative> var8, float var9, float var10, boolean var11) {
       ChunkPos var12 = new ChunkPos(BlockPos.containing(var2, var4, var6));
       var1.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var12, 1, this.getId());
       if (this.isSleeping()) {
          this.stopSleepInBed(true, true);
       }
 
-      this.teleportTo(var1, var2, var4, var6, var9, var10, var11);
-      this.setYHeadRot(var9);
-      return true;
+      if (var11) {
+         this.setCamera(this);
+      }
+
+      boolean var13 = super.teleportTo(var1, var2, var4, var6, var8, var9, var10, var11);
+      if (var13) {
+         this.setYHeadRot(var8.contains(Relative.Y_ROT) ? this.getYHeadRot() + var9 : var9);
+      }
+
+      return var13;
    }
 
    @Override
@@ -1678,15 +1690,6 @@ public class ServerPlayer extends Player {
       return this.advancements;
    }
 
-   public void teleportTo(ServerLevel var1, double var2, double var4, double var6, float var8, float var9, boolean var10) {
-      if (var10) {
-         this.setCamera(this);
-      }
-
-      this.stopRiding();
-      this.changeDimension(new DimensionTransition(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var8, var9, DimensionTransition.DO_NOTHING));
-   }
-
    @Nullable
    public BlockPos getRespawnPosition() {
       return this.respawnPosition;
@@ -1912,7 +1915,7 @@ public class ServerPlayer extends Player {
    public boolean startRiding(Entity var1, boolean var2) {
       if (super.startRiding(var1, var2)) {
          var1.positionRider(this);
-         this.connection.teleport(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
+         this.connection.teleport(new PositionMoveRotation(this.position(), Vec3.ZERO, 0.0F, 0.0F), Relative.ROTATION);
          if (var1 instanceof LivingEntity var3) {
             this.server.getPlayerList().sendActiveEffects(var3, this.connection);
          }
@@ -1981,6 +1984,20 @@ public class ServerPlayer extends Player {
    public void onEquippedItemBroken(Item var1, EquipmentSlot var2) {
       super.onEquippedItemBroken(var1, var2);
       this.awardStat(Stats.ITEM_BROKEN.get(var1));
+   }
+
+   public Input getLastClientInput() {
+      return this.lastClientInput;
+   }
+
+   public void setLastClientInput(Input var1) {
+      this.lastClientInput = var1;
+   }
+
+   public Vec3 getLastClientMoveIntent() {
+      float var1 = this.lastClientInput.left() == this.lastClientInput.right() ? 0.0F : (this.lastClientInput.left() ? 1.0F : -1.0F);
+      float var2 = this.lastClientInput.forward() == this.lastClientInput.backward() ? 0.0F : (this.lastClientInput.forward() ? 1.0F : -1.0F);
+      return getInputVector(new Vec3((double)var1, 0.0, (double)var2), 1.0F, this.getYRot());
    }
 
 // $VF: Couldn't be decompiled

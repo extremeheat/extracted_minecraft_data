@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -48,7 +47,7 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
       ItemStack var7 = var4.headItem;
       BakedModel var8 = var4.headItemModel;
       if (!var7.isEmpty() && var8 != null) {
-         label26: {
+         label17: {
             Item var9 = var7.getItem();
             var1.pushPose();
             var1.scale(this.transforms.horizontalScale(), 1.0F, this.transforms.horizontalScale());
@@ -58,16 +57,16 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
             if (var9 instanceof BlockItem var11 && var11.getBlock() instanceof AbstractSkullBlock var12) {
                var1.translate(0.0F, this.transforms.skullYOffset(), 0.0F);
                var1.scale(1.1875F, -1.1875F, -1.1875F);
-               ResolvableProfile var18 = var7.get(DataComponents.PROFILE);
+               ResolvableProfile var17 = var7.get(DataComponents.PROFILE);
                var1.translate(-0.5, 0.0, -0.5);
-               SkullBlock.Type var15 = var12.getType();
-               SkullModelBase var16 = this.skullModels.get(var15);
-               RenderType var17 = SkullBlockRenderer.getRenderType(var15, var18);
-               SkullBlockRenderer.renderSkull(null, 180.0F, var4.wornHeadAnimationPos, var1, var2, var3, var16, var17);
-               break label26;
+               SkullBlock.Type var14 = var12.getType();
+               SkullModelBase var15 = this.skullModels.get(var14);
+               RenderType var16 = SkullBlockRenderer.getRenderType(var14, var17);
+               SkullBlockRenderer.renderSkull(null, 180.0F, var4.wornHeadAnimationPos, var1, var2, var3, var15, var16);
+               break label17;
             }
 
-            if (!(var9 instanceof ArmorItem var13) || var13.getEquipmentSlot() != EquipmentSlot.HEAD) {
+            if (!HumanoidArmorLayer.shouldRender(var7, EquipmentSlot.HEAD)) {
                translateToHead(var1, this.transforms);
                this.itemRenderer.render(var7, ItemDisplayContext.HEAD, false, var1, var2, var3, OverlayTexture.NO_OVERLAY, var8);
             }

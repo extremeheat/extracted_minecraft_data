@@ -16,16 +16,13 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.DispensibleContainerItem;
 import net.minecraft.world.item.DyeColor;
@@ -136,43 +133,6 @@ public interface DispenseItemBehavior {
             }
          }
       );
-      OptionalDispenseItemBehavior var8 = new OptionalDispenseItemBehavior() {
-         @Override
-         protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
-
-            for (AbstractHorse var6 : var1.level()
-               .getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canUseSlot(EquipmentSlot.BODY))) {
-               if (var6.isBodyArmorItem(var2) && !var6.isWearingBodyArmor() && var6.isTamed()) {
-                  var6.setBodyArmorItem(var2.split(1));
-                  this.setSuccess(true);
-                  return var2;
-               }
-            }
-
-            return super.execute(var1, var2);
-         }
-      };
-      DispenserBlock.registerBehavior(Items.LEATHER_HORSE_ARMOR, var8);
-      DispenserBlock.registerBehavior(Items.IRON_HORSE_ARMOR, var8);
-      DispenserBlock.registerBehavior(Items.GOLDEN_HORSE_ARMOR, var8);
-      DispenserBlock.registerBehavior(Items.DIAMOND_HORSE_ARMOR, var8);
-      DispenserBlock.registerBehavior(Items.WHITE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.ORANGE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.CYAN_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.BLUE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.BROWN_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.BLACK_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.GRAY_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.GREEN_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.LIGHT_BLUE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.LIGHT_GRAY_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.LIME_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.MAGENTA_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.PINK_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.PURPLE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.RED_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.YELLOW_CARPET, var8);
       DispenserBlock.registerBehavior(
          Items.CHEST,
          new OptionalDispenseItemBehavior() {
@@ -211,7 +171,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.CHERRY_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.CHERRY, true));
       DispenserBlock.registerBehavior(Items.MANGROVE_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.MANGROVE, true));
       DispenserBlock.registerBehavior(Items.BAMBOO_CHEST_RAFT, new BoatDispenseItemBehavior(Boat.Type.BAMBOO, true));
-      DefaultDispenseItemBehavior var9 = new DefaultDispenseItemBehavior() {
+      DefaultDispenseItemBehavior var6 = new DefaultDispenseItemBehavior() {
          private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
 
          @Override
@@ -227,15 +187,15 @@ public interface DispenseItemBehavior {
             }
          }
       };
-      DispenserBlock.registerBehavior(Items.LAVA_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.WATER_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.POWDER_SNOW_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.SALMON_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.COD_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.PUFFERFISH_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, var9);
+      DispenserBlock.registerBehavior(Items.LAVA_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.WATER_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.POWDER_SNOW_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.SALMON_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.COD_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.PUFFERFISH_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, var6);
       DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
@@ -313,19 +273,6 @@ public interface DispenseItemBehavior {
             return var2;
          }
       });
-      OptionalDispenseItemBehavior var3 = new OptionalDispenseItemBehavior() {
-         @Override
-         protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
-            return var2;
-         }
-      };
-      DispenserBlock.registerBehavior(Items.CREEPER_HEAD, var3);
-      DispenserBlock.registerBehavior(Items.ZOMBIE_HEAD, var3);
-      DispenserBlock.registerBehavior(Items.DRAGON_HEAD, var3);
-      DispenserBlock.registerBehavior(Items.SKELETON_SKULL, var3);
-      DispenserBlock.registerBehavior(Items.PIGLIN_HEAD, var3);
-      DispenserBlock.registerBehavior(Items.PLAYER_HEAD, var3);
       DispenserBlock.registerBehavior(
          Items.WITHER_SKELETON_SKULL,
          new OptionalDispenseItemBehavior() {
@@ -349,7 +296,7 @@ public interface DispenseItemBehavior {
                   var2.shrink(1);
                   this.setSuccess(true);
                } else {
-                  this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
+                  this.setSuccess(EquipmentDispenseItemBehavior.dispenseEquipment(var1, var2));
                }
 
                return var2;
@@ -371,7 +318,7 @@ public interface DispenseItemBehavior {
                var2.shrink(1);
                this.setSuccess(true);
             } else {
-               this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
+               this.setSuccess(EquipmentDispenseItemBehavior.dispenseEquipment(var1, var2));
             }
 
             return var2;
@@ -379,8 +326,8 @@ public interface DispenseItemBehavior {
       });
       DispenserBlock.registerBehavior(Blocks.SHULKER_BOX.asItem(), new ShulkerBoxDispenseBehavior());
 
-      for (DyeColor var7 : DyeColor.values()) {
-         DispenserBlock.registerBehavior(ShulkerBoxBlock.getBlockByColor(var7).asItem(), new ShulkerBoxDispenseBehavior());
+      for (DyeColor var5 : DyeColor.values()) {
+         DispenserBlock.registerBehavior(ShulkerBoxBlock.getBlockByColor(var5).asItem(), new ShulkerBoxDispenseBehavior());
       }
 
       DispenserBlock.registerBehavior(

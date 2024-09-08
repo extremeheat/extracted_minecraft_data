@@ -34,7 +34,7 @@ public class ZombifiedPiglinRenderer extends HumanoidMobRenderer<ZombifiedPiglin
             new HumanoidArmorModel(var1.bakeLayer(var5)),
             new HumanoidArmorModel(var1.bakeLayer(var6)),
             new HumanoidArmorModel(var1.bakeLayer(var6)),
-            var1.getModelManager()
+            var1.getEquipmentRenderer()
          )
       );
    }

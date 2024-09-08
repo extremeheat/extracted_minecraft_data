@@ -58,11 +58,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       if (this.replace) {
          var1.set(DataComponents.ATTRIBUTE_MODIFIERS, this.updateModifiers(var2, ItemAttributeModifiers.EMPTY));
       } else {
-         var1.update(
-            DataComponents.ATTRIBUTE_MODIFIERS,
-            ItemAttributeModifiers.EMPTY,
-            var3 -> var3.modifiers().isEmpty() ? this.updateModifiers(var2, var1.getItem().getDefaultAttributeModifiers()) : this.updateModifiers(var2, var3)
-         );
+         var1.update(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY, var2x -> this.updateModifiers(var2, var2x));
       }
 
       return var1;

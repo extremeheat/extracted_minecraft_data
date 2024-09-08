@@ -1,11 +1,10 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
@@ -19,7 +18,9 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -53,6 +54,7 @@ import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.Repairable;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -76,8 +78,7 @@ public class Item implements FeatureElement, ItemLike {
    private final DataComponentMap components;
    @Nullable
    private final Item craftingRemainingItem;
-   @Nullable
-   private String descriptionId;
+   protected final String descriptionId;
    private final FeatureFlagSet requiredFeatures;
 
    public static int getId(Item var0) {
@@ -95,7 +96,8 @@ public class Item implements FeatureElement, ItemLike {
 
    public Item(Item.Properties var1) {
       super();
-      this.components = var1.buildAndValidateComponents();
+      this.descriptionId = var1.effectiveDescriptionId();
+      this.components = var1.buildAndValidateComponents(Component.translatable(this.descriptionId), var1.effectiveModel());
       this.craftingRemainingItem = var1.craftingRemainingItem;
       this.requiredFeatures = var1.requiredFeatures;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
@@ -149,7 +151,12 @@ public class Item implements FeatureElement, ItemLike {
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       Consumable var5 = var4.get(DataComponents.CONSUMABLE);
-      return (InteractionResult)(var5 != null ? var5.startConsuming(var2, var4, var3) : InteractionResult.PASS);
+      if (var5 != null) {
+         return var5.startConsuming(var2, var4, var3);
+      } else {
+         Equippable var6 = var4.get(DataComponents.EQUIPPABLE);
+         return (InteractionResult)(var6 != null ? var6.swapWithEquipmentSlot(var4, var2) : InteractionResult.PASS);
+      }
    }
 
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
@@ -212,29 +219,9 @@ public class Item implements FeatureElement, ItemLike {
       return InteractionResult.PASS;
    }
 
-   public Component getDescription() {
-      return Component.translatable(this.getDescriptionId());
-   }
-
    @Override
    public String toString() {
       return BuiltInRegistries.ITEM.wrapAsHolder(this).getRegisteredName();
-   }
-
-   protected String getOrCreateDescriptionId() {
-      if (this.descriptionId == null) {
-         this.descriptionId = Util.makeDescriptionId("item", BuiltInRegistries.ITEM.getKey(this));
-      }
-
-      return this.descriptionId;
-   }
-
-   public String getDescriptionId() {
-      return this.getOrCreateDescriptionId();
-   }
-
-   public String getDescriptionId(ItemStack var1) {
-      return this.getDescriptionId();
    }
 
    @Nullable
@@ -281,8 +268,16 @@ public class Item implements FeatureElement, ItemLike {
       return Optional.empty();
    }
 
+   public final String getDescriptionId() {
+      return this.descriptionId;
+   }
+
+   public final Component getName() {
+      return this.components.getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
+   }
+
    public Component getName(ItemStack var1) {
-      return Component.translatable(this.getDescriptionId(var1));
+      return var1.getComponents().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
    }
 
    public boolean isFoil(ItemStack var1) {
@@ -293,18 +288,6 @@ public class Item implements FeatureElement, ItemLike {
       Vec3 var3 = var1.getEyePosition();
       Vec3 var4 = var3.add(var1.calculateViewVector(var1.getXRot(), var1.getYRot()).scale(var1.blockInteractionRange()));
       return var0.clip(new ClipContext(var3, var4, ClipContext.Block.OUTLINE, var2, var1));
-   }
-
-   @Deprecated(
-      forRemoval = true
-   )
-   public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return false;
-   }
-
-   @Deprecated
-   public ItemAttributeModifiers getDefaultAttributeModifiers() {
-      return ItemAttributeModifiers.EMPTY;
    }
 
    public boolean useOnRelease(ItemStack var1) {
@@ -329,12 +312,16 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public static class Properties {
-      private static final Interner<DataComponentMap> COMPONENT_INTERNER = Interners.newStrongInterner();
-      @Nullable
-      private DataComponentMap.Builder components;
+      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = var0 -> Util.makeDescriptionId("block", var0.location());
+      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = var0 -> Util.makeDescriptionId("item", var0.location());
+      private final DataComponentMap.Builder components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
       @Nullable
       Item craftingRemainingItem;
       FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
+      @Nullable
+      private ResourceKey<Item> id;
+      private DependantName<Item, String> descriptionId = ITEM_DESCRIPTION_ID;
+      private DependantName<Item, ResourceLocation> model = ResourceKey::location;
 
       public Properties() {
          super();
@@ -397,16 +384,53 @@ public class Item implements FeatureElement, ItemLike {
          return this.component(DataComponents.REPAIRABLE, new Repairable(var2.getOrThrow(var1)));
       }
 
+      public Item.Properties equippable(EquipmentSlot var1, Holder<SoundEvent> var2, ResourceLocation var3) {
+         return this.component(DataComponents.EQUIPPABLE, new Equippable(var1, var2, Optional.of(var3), Optional.empty(), true));
+      }
+
+      public Item.Properties equippable(EquipmentSlot var1) {
+         return this.component(DataComponents.EQUIPPABLE, new Equippable(var1, SoundEvents.ARMOR_EQUIP_GENERIC, Optional.empty(), Optional.empty(), true));
+      }
+
       public Item.Properties requiredFeatures(FeatureFlag... var1) {
          this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
          return this;
       }
 
-      public <T> Item.Properties component(DataComponentType<T> var1, T var2) {
-         if (this.components == null) {
-            this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
-         }
+      public Item.Properties setId(ResourceKey<Item> var1) {
+         this.id = var1;
+         return this;
+      }
 
+      public Item.Properties overrideDescription(String var1) {
+         this.descriptionId = DependantName.fixed(var1);
+         return this;
+      }
+
+      public Item.Properties useBlockDescriptionPrefix() {
+         this.descriptionId = BLOCK_DESCRIPTION_ID;
+         return this;
+      }
+
+      public Item.Properties useItemDescriptionPrefix() {
+         this.descriptionId = ITEM_DESCRIPTION_ID;
+         return this;
+      }
+
+      protected String effectiveDescriptionId() {
+         return this.descriptionId.get(Objects.requireNonNull(this.id, "Item id not set"));
+      }
+
+      public Item.Properties overrideModel(ResourceLocation var1) {
+         this.model = DependantName.fixed(var1);
+         return this;
+      }
+
+      public ResourceLocation effectiveModel() {
+         return this.model.get(Objects.requireNonNull(this.id, "Item id not set"));
+      }
+
+      public <T> Item.Properties component(DataComponentType<T> var1, T var2) {
          this.components.set(var1, var2);
          return this;
       }
@@ -415,17 +439,13 @@ public class Item implements FeatureElement, ItemLike {
          return this.component(DataComponents.ATTRIBUTE_MODIFIERS, var1);
       }
 
-      DataComponentMap buildAndValidateComponents() {
-         DataComponentMap var1 = this.buildComponents();
-         if (var1.has(DataComponents.DAMAGE) && var1.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
+      DataComponentMap buildAndValidateComponents(Component var1, ResourceLocation var2) {
+         DataComponentMap var3 = this.components.set(DataComponents.ITEM_NAME, var1).set(DataComponents.ITEM_MODEL, var2).build();
+         if (var3.has(DataComponents.DAMAGE) && var3.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
             throw new IllegalStateException("Item cannot have both durability and be stackable");
          } else {
-            return var1;
+            return var3;
          }
-      }
-
-      private DataComponentMap buildComponents() {
-         return this.components == null ? DataComponents.COMMON_ITEM_COMPONENTS : (DataComponentMap)COMPONENT_INTERNER.intern(this.components.build());
       }
    }
 

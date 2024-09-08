@@ -12,7 +12,7 @@ import net.minecraft.world.entity.animal.Wolf;
 public class WolfRenderer extends AgeableMobRenderer<Wolf, WolfRenderState, WolfModel> {
    public WolfRenderer(EntityRendererProvider.Context var1) {
       super(var1, new WolfModel(var1.bakeLayer(ModelLayers.WOLF)), new WolfModel(var1.bakeLayer(ModelLayers.WOLF_BABY)), 0.5F);
-      this.addLayer(new WolfArmorLayer(this, var1.getModelSet()));
+      this.addLayer(new WolfArmorLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
       this.addLayer(new WolfCollarLayer(this));
    }
 

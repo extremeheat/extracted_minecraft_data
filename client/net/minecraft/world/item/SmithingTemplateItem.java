@@ -6,7 +6,6 @@ import net.minecraft.Util;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.flag.FeatureFlag;
 
 public class SmithingTemplateItem extends Item {
    private static final ChatFormatting TITLE_FORMAT = ChatFormatting.GRAY;
@@ -75,46 +74,38 @@ public class SmithingTemplateItem extends Item {
    private final List<ResourceLocation> additionalSlotEmptyIcons;
 
    public SmithingTemplateItem(
-      Item.Properties var1,
-      Component var2,
-      Component var3,
-      Component var4,
-      Component var5,
-      List<ResourceLocation> var6,
-      List<ResourceLocation> var7,
-      FeatureFlag... var8
+      Component var1, Component var2, Component var3, Component var4, List<ResourceLocation> var5, List<ResourceLocation> var6, Item.Properties var7
    ) {
-      super(var1.requiredFeatures(var8));
-      this.appliesTo = var2;
-      this.ingredients = var3;
-      this.baseSlotDescription = var4;
-      this.additionsSlotDescription = var5;
-      this.baseSlotEmptyIcons = var6;
-      this.additionalSlotEmptyIcons = var7;
+      super(var7);
+      this.appliesTo = var1;
+      this.ingredients = var2;
+      this.baseSlotDescription = var3;
+      this.additionsSlotDescription = var4;
+      this.baseSlotEmptyIcons = var5;
+      this.additionalSlotEmptyIcons = var6;
    }
 
-   public static SmithingTemplateItem createArmorTrimTemplate(Item.Properties var0, FeatureFlag... var1) {
+   public static SmithingTemplateItem createArmorTrimTemplate(Item.Properties var0) {
       return new SmithingTemplateItem(
-         var0,
          ARMOR_TRIM_APPLIES_TO,
          ARMOR_TRIM_INGREDIENTS,
          ARMOR_TRIM_BASE_SLOT_DESCRIPTION,
          ARMOR_TRIM_ADDITIONS_SLOT_DESCRIPTION,
          createTrimmableArmorIconList(),
          createTrimmableMaterialIconList(),
-         var1
+         var0
       );
    }
 
    public static SmithingTemplateItem createNetheriteUpgradeTemplate(Item.Properties var0) {
       return new SmithingTemplateItem(
-         var0,
          NETHERITE_UPGRADE_APPLIES_TO,
          NETHERITE_UPGRADE_INGREDIENTS,
          NETHERITE_UPGRADE_BASE_SLOT_DESCRIPTION,
          NETHERITE_UPGRADE_ADDITIONS_SLOT_DESCRIPTION,
          createNetheriteUpgradeIconList(),
-         createNetheriteUpgradeMaterialList()
+         createNetheriteUpgradeMaterialList(),
+         var0
       );
    }
 

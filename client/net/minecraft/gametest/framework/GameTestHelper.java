@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -513,7 +514,7 @@ public class GameTestHelper {
 
       if (var8 != var5) {
          throw new GameTestAssertPosException(
-            "Expected " + var5 + " " + var1.getDescription().getString() + " items to exist (found " + var8 + ")", var6, var2, this.testInfo.getTick()
+            "Expected " + var5 + " " + var1.getName().getString() + " items to exist (found " + var8 + ")", var6, var2, this.testInfo.getTick()
          );
       }
    }
@@ -528,7 +529,7 @@ public class GameTestHelper {
          }
       }
 
-      throw new GameTestAssertPosException("Expected " + var1.getDescription().getString() + " item", var5, var2, this.testInfo.getTick());
+      throw new GameTestAssertPosException("Expected " + var1.getName().getString() + " item", var5, var2, this.testInfo.getTick());
    }
 
    public void assertItemEntityNotPresent(Item var1, BlockPos var2, double var3) {
@@ -537,7 +538,7 @@ public class GameTestHelper {
       for (Entity var8 : this.getLevel().getEntities(EntityType.ITEM, new AABB(var5).inflate(var3), Entity::isAlive)) {
          ItemEntity var9 = (ItemEntity)var8;
          if (var9.getItem().getItem().equals(var1)) {
-            throw new GameTestAssertPosException("Did not expect " + var1.getDescription().getString() + " item", var5, var2, this.testInfo.getTick());
+            throw new GameTestAssertPosException("Did not expect " + var1.getName().getString() + " item", var5, var2, this.testInfo.getTick());
          }
       }
    }
@@ -550,14 +551,14 @@ public class GameTestHelper {
          }
       }
 
-      throw new GameTestAssertException("Expected " + var1.getDescription().getString() + " item");
+      throw new GameTestAssertException("Expected " + var1.getName().getString() + " item");
    }
 
    public void assertItemEntityNotPresent(Item var1) {
       for (Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
          ItemEntity var5 = (ItemEntity)var4;
          if (var5.getItem().getItem().equals(var1)) {
-            throw new GameTestAssertException("Did not expect " + var1.getDescription().getString() + " item");
+            throw new GameTestAssertException("Did not expect " + var1.getName().getString() + " item");
          }
       }
    }
@@ -611,6 +612,20 @@ public class GameTestHelper {
       }
    }
 
+   public <E extends Entity, T> void assertEntityData(BlockPos var1, EntityType<E> var2, Predicate<E> var3) {
+      BlockPos var4 = this.absolutePos(var1);
+      List var5 = this.getLevel().getEntities(var2, new AABB(var4), Entity::isAlive);
+      if (var5.isEmpty()) {
+         throw new GameTestAssertPosException("Expected " + var2.toShortString(), var4, var1, this.testInfo.getTick());
+      } else {
+         for (Entity var7 : var5) {
+            if (!var3.test(var7)) {
+               throw new GameTestAssertException("Test failed for entity " + var7);
+            }
+         }
+      }
+   }
+
    public <E extends Entity, T> void assertEntityData(BlockPos var1, EntityType<E> var2, Function<? super E, T> var3, @Nullable T var4) {
       BlockPos var5 = this.absolutePos(var1);
       List var6 = this.getLevel().getEntities(var2, new AABB(var5), Entity::isAlive);
@@ -619,11 +634,7 @@ public class GameTestHelper {
       } else {
          for (Entity var8 : var6) {
             Object var9 = var3.apply(var8);
-            if (var9 == null) {
-               if (var4 != null) {
-                  throw new GameTestAssertException("Expected entity data to be: " + var4 + ", but was: " + var9);
-               }
-            } else if (!var9.equals(var4)) {
+            if (!Objects.equals(var9, var4)) {
                throw new GameTestAssertException("Expected entity data to be: " + var4 + ", but was: " + var9);
             }
          }

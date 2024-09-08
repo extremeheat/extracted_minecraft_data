@@ -198,7 +198,7 @@ public final class ModelPart {
    }
 
    public static class Cube {
-      private final ModelPart.Polygon[] polygons;
+      public final ModelPart.Polygon[] polygons;
       public final float minX;
       public final float minY;
       public final float minZ;
@@ -322,56 +322,31 @@ public final class ModelPart {
       }
    }
 
-   static class Polygon {
-      public final ModelPart.Vertex[] vertices;
-      public final Vector3f normal;
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public Polygon(ModelPart.Vertex[] var1, float var2, float var3, float var4, float var5, float var6, float var7, boolean var8, Direction var9) {
-         super();
-         this.vertices = var1;
-         float var10 = 0.0F / var6;
-         float var11 = 0.0F / var7;
-         var1[0] = var1[0].remap(var4 / var6 - var10, var3 / var7 + var11);
-         var1[1] = var1[1].remap(var2 / var6 + var10, var3 / var7 + var11);
-         var1[2] = var1[2].remap(var2 / var6 + var10, var5 / var7 - var11);
-         var1[3] = var1[3].remap(var4 / var6 - var10, var5 / var7 - var11);
-         if (var8) {
-            int var12 = var1.length;
-
-            for (int var13 = 0; var13 < var12 / 2; var13++) {
-               ModelPart.Vertex var14 = var1[var13];
-               var1[var13] = var1[var12 - 1 - var13];
-               var1[var12 - 1 - var13] = var14;
-            }
-         }
-
-         this.normal = var9.step();
-         if (var8) {
-            this.normal.mul(-1.0F, 1.0F, 1.0F);
-         }
-      }
-   }
-
-   static class Vertex {
-      public final Vector3f pos;
-      public final float u;
-      public final float v;
-
-      public Vertex(float var1, float var2, float var3, float var4, float var5) {
-         this(new Vector3f(var1, var2, var3), var4, var5);
-      }
-
-      public ModelPart.Vertex remap(float var1, float var2) {
-         return new ModelPart.Vertex(this.pos, var1, var2);
-      }
-
-      public Vertex(Vector3f var1, float var2, float var3) {
-         super();
-         this.pos = var1;
-         this.u = var2;
-         this.v = var3;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    @FunctionalInterface
    public interface Visitor {

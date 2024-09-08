@@ -22,27 +22,30 @@ public class LocalCoordinates implements Coordinates {
    }
 
    @Override
-   public Vec3 getPosition(CommandSourceStack var1) {
-      Vec2 var2 = var1.getRotation();
-      Vec3 var3 = var1.getAnchor().apply(var1);
-      float var4 = Mth.cos((var2.y + 90.0F) * 0.017453292F);
-      float var5 = Mth.sin((var2.y + 90.0F) * 0.017453292F);
-      float var6 = Mth.cos(-var2.x * 0.017453292F);
-      float var7 = Mth.sin(-var2.x * 0.017453292F);
-      float var8 = Mth.cos((-var2.x + 90.0F) * 0.017453292F);
-      float var9 = Mth.sin((-var2.x + 90.0F) * 0.017453292F);
-      Vec3 var10 = new Vec3((double)(var4 * var6), (double)var7, (double)(var5 * var6));
-      Vec3 var11 = new Vec3((double)(var4 * var8), (double)var9, (double)(var5 * var8));
-      Vec3 var12 = var10.cross(var11).scale(-1.0);
-      double var13 = var10.x * this.forwards + var11.x * this.up + var12.x * this.left;
-      double var15 = var10.y * this.forwards + var11.y * this.up + var12.y * this.left;
-      double var17 = var10.z * this.forwards + var11.z * this.up + var12.z * this.left;
-      return new Vec3(var3.x + var13, var3.y + var15, var3.z + var17);
+   public Vec3 getPosition(CommandSourceStack var1, boolean var2) {
+      Vec2 var3 = var1.getRotation();
+      Vec3 var4 = var1.getAnchor().apply(var1);
+      float var5 = Mth.cos((var3.y + 90.0F) * 0.017453292F);
+      float var6 = Mth.sin((var3.y + 90.0F) * 0.017453292F);
+      float var7 = Mth.cos(-var3.x * 0.017453292F);
+      float var8 = Mth.sin(-var3.x * 0.017453292F);
+      float var9 = Mth.cos((-var3.x + 90.0F) * 0.017453292F);
+      float var10 = Mth.sin((-var3.x + 90.0F) * 0.017453292F);
+      Vec3 var11 = new Vec3((double)(var5 * var7), (double)var8, (double)(var6 * var7));
+      Vec3 var12 = new Vec3((double)(var5 * var9), (double)var10, (double)(var6 * var9));
+      Vec3 var13 = var11.cross(var12).scale(-1.0);
+      double var14 = var11.x * this.forwards + var12.x * this.up + var13.x * this.left;
+      double var16 = var11.y * this.forwards + var12.y * this.up + var13.y * this.left;
+      double var18 = var11.z * this.forwards + var12.z * this.up + var13.z * this.left;
+      double var20 = var2 ? 0.0 : var4.x;
+      double var22 = var2 ? 0.0 : var4.y;
+      double var24 = var2 ? 0.0 : var4.z;
+      return new Vec3(var20 + var14, var22 + var16, var24 + var18);
    }
 
    @Override
-   public Vec2 getRotation(CommandSourceStack var1) {
-      return Vec2.ZERO;
+   public Vec2 getRotation(CommandSourceStack var1, boolean var2) {
+      return !var2 ? Vec2.ZERO : new Vec2(this.isXRelative() ? -var1.getRotation().x : 0.0F, this.isYRelative() ? -var1.getRotation().y : 0.0F);
    }
 
    @Override

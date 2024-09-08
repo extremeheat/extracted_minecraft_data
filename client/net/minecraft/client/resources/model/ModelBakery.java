@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BlockModel;
@@ -90,8 +89,7 @@ public class ModelBakery {
          this.modelTextureGetter = var2 -> nullx.get(nullxx, var2);
       }
 
-      @Override
-      public UnbakedModel getModel(ResourceLocation var1) {
+      private UnbakedModel getModel(ResourceLocation var1) {
          UnbakedModel var2 = ModelBakery.this.unbakedModels.get(var1);
          if (var2 == null) {
             ModelBakery.LOGGER.warn("Requested a model that was not discovered previously: {}", var1);
@@ -115,10 +113,9 @@ public class ModelBakery {
          }
       }
 
-      @Nullable
       BakedModel bakeUncached(UnbakedModel var1, ModelState var2) {
          if (var1 instanceof BlockModel var3 && var3.getRootModel() == SpecialModels.GENERATED_MARKER) {
-            return ModelBakery.ITEM_MODEL_GENERATOR.generateBlockModel(this.modelTextureGetter, var3).bake(this, var3, this.modelTextureGetter, var2, false);
+            return ModelBakery.ITEM_MODEL_GENERATOR.generateBlockModel(this.modelTextureGetter, var3).bake(this.modelTextureGetter, var2, false);
          }
 
          return var1.bake(this, this.modelTextureGetter, var2);

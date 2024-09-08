@@ -156,7 +156,7 @@ public class GoatAi {
                   3.0F,
                   var0x -> var0x.isBaby() ? 1.0 : 2.5,
                   var0x -> var0x.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_RAM_IMPACT : SoundEvents.GOAT_RAM_IMPACT,
-                  var0x -> var0x.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_HORN_BREAK : SoundEvents.GOAT_HORN_BREAK
+                  var0x -> SoundEvents.GOAT_HORN_BREAK
                )
             ),
             Pair.of(

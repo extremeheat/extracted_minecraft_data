@@ -65,7 +65,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
          float var6 = var1.attackTime * 0.5F % 1.0F;
          var2.pushPose();
          var2.translate(0.0F, var1.eyeHeight, 0.0F);
-         renderBeam(var2, var3.getBuffer(BEAM_RENDER_TYPE), var5.subtract(var1.eyePosition), var1.attackTime, var1.scale, var6);
+         renderBeam(var2, var3.getBuffer(BEAM_RENDER_TYPE), var5.subtract(var1.eyePosition), var1.attackTime, var1.attackScale, var6);
          var2.popPose();
       }
    }

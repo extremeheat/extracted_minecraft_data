@@ -21,6 +21,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public interface BlockGetter extends LevelHeightAccessor {
+   int MAX_BLOCK_ITERATIONS_ALONG_TRAVEL = 16;
+
    @Nullable
    BlockEntity getBlockEntity(BlockPos var1);
 
@@ -168,23 +170,22 @@ public interface BlockGetter extends LevelHeightAccessor {
    }
 
    static Iterable<BlockPos> boxTraverseBlocks(Vec3 var0, Vec3 var1, AABB var2) {
-      AABB var3 = var2.inflate(9.999999747378752E-6);
-      Vec3 var4 = var1.subtract(var0);
-      Iterable var5 = BlockPos.betweenClosed(var3);
-      if (var4.lengthSqr() < (double)Mth.square(0.99999F)) {
-         return var5;
+      Vec3 var3 = var1.subtract(var0);
+      Iterable var4 = BlockPos.betweenClosed(var2);
+      if (var3.lengthSqr() < (double)Mth.square(0.99999F)) {
+         return var4;
       } else {
-         ObjectOpenHashSet var6 = new ObjectOpenHashSet();
+         ObjectOpenHashSet var5 = new ObjectOpenHashSet();
 
-         for (BlockPos var8 : var5) {
-            var6.add(var8.immutable());
+         for (BlockPos var7 : var4) {
+            var5.add(var7.immutable());
          }
 
-         Vec3 var10 = var4.normalize().scale(1.0E-7);
-         Vec3 var11 = var2.getMinPosition().add(var10);
-         Vec3 var9 = var2.getMinPosition().subtract(var4).subtract(var10);
-         addCollisionsAlongTravel(var6, var9, var11, var3);
-         return var6;
+         Vec3 var9 = var3.normalize().scale(1.0E-7);
+         Vec3 var10 = var2.getMinPosition().add(var9);
+         Vec3 var8 = var2.getMinPosition().subtract(var3).subtract(var9);
+         addCollisionsAlongTravel(var5, var8, var10, var2);
+         return var5;
       }
    }
 
@@ -202,6 +203,7 @@ public interface BlockGetter extends LevelHeightAccessor {
       double var17 = var11 * (var8 > 0 ? 1.0 - Mth.frac(var1.x) : Mth.frac(var1.x));
       double var19 = var13 * (var9 > 0 ? 1.0 - Mth.frac(var1.y) : Mth.frac(var1.y));
       double var21 = var15 * (var10 > 0 ? 1.0 - Mth.frac(var1.z) : Mth.frac(var1.z));
+      int var23 = 0;
 
       while (var17 <= 1.0 || var19 <= 1.0 || var21 <= 1.0) {
          if (var17 < var19) {
@@ -220,20 +222,24 @@ public interface BlockGetter extends LevelHeightAccessor {
             var21 += var15;
          }
 
-         Optional var23 = AABB.clip((double)var5, (double)var6, (double)var7, (double)(var5 + 1), (double)(var6 + 1), (double)(var7 + 1), var1, var2);
-         if (!var23.isEmpty()) {
-            Vec3 var24 = (Vec3)var23.get();
-            double var25 = Mth.clamp(var24.x, (double)var5 + 9.999999747378752E-6, (double)var5 + 1.0 - 9.999999747378752E-6);
-            double var27 = Mth.clamp(var24.y, (double)var6 + 9.999999747378752E-6, (double)var6 + 1.0 - 9.999999747378752E-6);
-            double var29 = Mth.clamp(var24.z, (double)var7 + 9.999999747378752E-6, (double)var7 + 1.0 - 9.999999747378752E-6);
-            int var31 = Mth.floor(var25 + var3.getXsize());
-            int var32 = Mth.floor(var27 + var3.getYsize());
-            int var33 = Mth.floor(var29 + var3.getZsize());
+         if (var23++ > 16) {
+            break;
+         }
 
-            for (int var34 = var5; var34 <= var31; var34++) {
-               for (int var35 = var6; var35 <= var32; var35++) {
-                  for (int var36 = var7; var36 <= var33; var36++) {
-                     var0.add(new BlockPos(var34, var35, var36));
+         Optional var24 = AABB.clip((double)var5, (double)var6, (double)var7, (double)(var5 + 1), (double)(var6 + 1), (double)(var7 + 1), var1, var2);
+         if (!var24.isEmpty()) {
+            Vec3 var25 = (Vec3)var24.get();
+            double var26 = Mth.clamp(var25.x, (double)var5 + 9.999999747378752E-6, (double)var5 + 1.0 - 9.999999747378752E-6);
+            double var28 = Mth.clamp(var25.y, (double)var6 + 9.999999747378752E-6, (double)var6 + 1.0 - 9.999999747378752E-6);
+            double var30 = Mth.clamp(var25.z, (double)var7 + 9.999999747378752E-6, (double)var7 + 1.0 - 9.999999747378752E-6);
+            int var32 = Mth.floor(var26 + var3.getXsize());
+            int var33 = Mth.floor(var28 + var3.getYsize());
+            int var34 = Mth.floor(var30 + var3.getZsize());
+
+            for (int var35 = var5; var35 <= var32; var35++) {
+               for (int var36 = var6; var36 <= var33; var36++) {
+                  for (int var37 = var7; var37 <= var34; var37++) {
+                     var0.add(new BlockPos(var35, var36, var37));
                   }
                }
             }

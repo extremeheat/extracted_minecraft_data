@@ -73,13 +73,16 @@ public class SectionOcclusionGraph {
       this.needsFullUpdate = true;
    }
 
-   public void addSectionsInFrustum(Frustum var1, List<SectionRenderDispatcher.RenderSection> var2) {
-      this.currentGraph.get().storage().sectionTree.visitNodes((var1x, var2x, var3) -> {
-         SectionRenderDispatcher.RenderSection var4 = var1x.getSection();
-         if (var4 != null) {
-            var2.add(var4);
+   public void addSectionsInFrustum(Frustum var1, List<SectionRenderDispatcher.RenderSection> var2, List<SectionRenderDispatcher.RenderSection> var3) {
+      this.currentGraph.get().storage().sectionTree.visitNodes((var2x, var3x, var4, var5) -> {
+         SectionRenderDispatcher.RenderSection var6 = var2x.getSection();
+         if (var6 != null) {
+            var2.add(var6);
+            if (var5) {
+               var3.add(var6);
+            }
          }
-      }, var1);
+      }, var1, 32);
    }
 
    public boolean consumeFrustumUpdate() {
@@ -153,7 +156,7 @@ public class SectionOcclusionGraph {
          Frustum var10 = LevelRenderer.offsetFrustum(var2);
          Consumer var11 = var2x -> {
             if (var10.isVisible(var2x.getBoundingBox())) {
-               var3.add(var2x);
+               this.needsFrustumUpdate.set(true);
             }
          };
          this.runUpdates(var6.storage, var4, var7, var1, var11, var5);

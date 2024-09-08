@@ -1,12 +1,14 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -96,15 +98,17 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
    public DimensionTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       if (var1.getBlockEntity(var3) instanceof TheEndGatewayBlockEntity var5) {
          Vec3 var6 = var5.getPortalPosition(var1, var3);
-         return var6 != null
-            ? new DimensionTransition(var1, var6, calculateExitMovement(var2), var2.getYRot(), var2.getXRot(), DimensionTransition.PLACE_PORTAL_TICKET)
-            : null;
+         if (var6 == null) {
+            return null;
+         } else {
+            return var2 instanceof ThrownEnderpearl
+               ? new DimensionTransition(var1, var6, Vec3.ZERO, 0.0F, 0.0F, Set.of(), DimensionTransition.PLACE_PORTAL_TICKET)
+               : new DimensionTransition(
+                  var1, var6, Vec3.ZERO, 0.0F, 0.0F, Relative.union(Relative.DELTA, Relative.ROTATION), DimensionTransition.PLACE_PORTAL_TICKET
+               );
+         }
       } else {
          return null;
       }
-   }
-
-   private static Vec3 calculateExitMovement(Entity var0) {
-      return var0 instanceof ThrownEnderpearl ? new Vec3(0.0, -1.0, 0.0) : var0.getDeltaMovement();
    }
 }

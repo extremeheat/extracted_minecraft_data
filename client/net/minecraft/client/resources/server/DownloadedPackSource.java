@@ -82,7 +82,7 @@ public class DownloadedPackSource implements AutoCloseable {
          throw new UncheckedIOException("Failed to open download queue in directory " + var2, var5);
       }
 
-      Executor var4 = var1::tell;
+      Executor var4 = var1::schedule;
       this.manager = new ServerPackManager(this.createDownloader(this.downloadQueue, var4, var3.user, var3.proxy), new PackLoadFeedback() {
          @Override
          public void reportUpdate(UUID var1, PackLoadFeedback.Update var2) {

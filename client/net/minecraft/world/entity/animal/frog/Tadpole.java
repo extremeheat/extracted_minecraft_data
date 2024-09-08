@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
@@ -225,22 +226,12 @@ public class Tadpole extends AbstractFish {
 
    private void ageUp() {
       if (this.level() instanceof ServerLevel var1) {
-         Frog var3 = EntityType.FROG.create(this.level(), EntitySpawnReason.CONVERSION);
-         if (var3 != null) {
-            var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var3.finalizeSpawn(var1, this.level().getCurrentDifficultyAt(var3.blockPosition()), EntitySpawnReason.CONVERSION, null);
-            var3.setNoAi(this.isNoAi());
-            if (this.hasCustomName()) {
-               var3.setCustomName(this.getCustomName());
-               var3.setCustomNameVisible(this.isCustomNameVisible());
-            }
-
-            var3.setPersistenceRequired();
-            var3.fudgePositionAfterSizeChange(this.getDimensions(this.getPose()));
+         this.convertTo(EntityType.FROG, ConversionParams.single(this, false, false), var2 -> {
+            var2.finalizeSpawn(var1, this.level().getCurrentDifficultyAt(var2.blockPosition()), EntitySpawnReason.CONVERSION, null);
+            var2.setPersistenceRequired();
+            var2.fudgePositionAfterSizeChange(this.getDimensions(this.getPose()));
             this.playSound(SoundEvents.TADPOLE_GROW_UP, 0.15F, 1.0F);
-            var1.addFreshEntityWithPassengers(var3);
-            this.discard();
-         }
+         });
       }
    }
 

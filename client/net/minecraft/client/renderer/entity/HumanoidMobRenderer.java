@@ -2,8 +2,8 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
-import net.minecraft.client.renderer.entity.layers.ElytraLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
+import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -24,7 +24,7 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
    public HumanoidMobRenderer(EntityRendererProvider.Context var1, M var2, M var3, float var4, CustomHeadLayer.Transforms var5) {
       super(var1, (M)var2, (M)var3, var4);
       this.addLayer(new CustomHeadLayer<>(this, var1.getModelSet(), var5, var1.getItemRenderer()));
-      this.addLayer(new ElytraLayer<>(this, var1.getModelSet()));
+      this.addLayer(new WingsLayer<>(this, var1.getModelSet(), var1.getEquipmentRenderer()));
       this.addLayer(new ItemInHandLayer<>(this, var1.getItemRenderer()));
    }
 

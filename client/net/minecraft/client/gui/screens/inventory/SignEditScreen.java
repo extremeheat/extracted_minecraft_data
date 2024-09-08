@@ -45,9 +45,11 @@ public class SignEditScreen extends AbstractSignEditScreen {
       if (this.signModel != null) {
          var1.pose().translate(0.0F, 31.0F, 0.0F);
          var1.pose().scale(62.500004F, 62.500004F, -62.500004F);
-         Material var2 = Sheets.getSignMaterial(this.woodType);
-         VertexConsumer var3 = var2.buffer(var1.bufferSource(), this.signModel::renderType);
-         this.signModel.renderToBuffer(var1.pose(), var3, 15728880, OverlayTexture.NO_OVERLAY);
+         var1.drawSpecial(var2 -> {
+            Material var3 = Sheets.getSignMaterial(this.woodType);
+            VertexConsumer var4 = var3.buffer(var2, this.signModel::renderType);
+            this.signModel.renderToBuffer(var1.pose(), var4, 15728880, OverlayTexture.NO_OVERLAY);
+         });
       }
    }
 

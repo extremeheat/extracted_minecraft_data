@@ -28,9 +28,9 @@ import net.minecraft.world.level.gameevent.GameEvent;
 public class InstrumentItem extends Item {
    private final TagKey<Instrument> instruments;
 
-   public InstrumentItem(Item.Properties var1, TagKey<Instrument> var2) {
-      super(var1);
-      this.instruments = var2;
+   public InstrumentItem(TagKey<Instrument> var1, Item.Properties var2) {
+      super(var2);
+      this.instruments = var1;
    }
 
    @Override

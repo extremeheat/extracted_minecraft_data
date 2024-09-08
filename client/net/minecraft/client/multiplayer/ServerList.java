@@ -11,12 +11,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.util.thread.ProcessorMailbox;
+import net.minecraft.util.thread.ConsecutiveExecutor;
 import org.slf4j.Logger;
 
 public class ServerList {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ProcessorMailbox<Runnable> IO_MAILBOX = ProcessorMailbox.create(Util.backgroundExecutor(), "server-list-io");
+   private static final ConsecutiveExecutor IO_EXECUTOR = new ConsecutiveExecutor(Util.backgroundExecutor(), "server-list-io");
    private static final int MAX_HIDDEN_SERVERS = 16;
    private final Minecraft minecraft;
    private final List<ServerData> serverList = Lists.newArrayList();
@@ -162,7 +162,7 @@ public class ServerList {
    }
 
    public static void saveSingleServer(ServerData var0) {
-      IO_MAILBOX.tell(() -> {
+      IO_EXECUTOR.schedule(() -> {
          ServerList var1 = new ServerList(Minecraft.getInstance());
          var1.load();
          if (!set(var0, var1.serverList)) {

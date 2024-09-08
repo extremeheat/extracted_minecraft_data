@@ -339,19 +339,20 @@ public class NewMinecartBehavior extends MinecartBehavior {
    }
 
    private Vec3 calculatePlayerInputSpeed(Vec3 var1) {
-      Entity var2 = this.minecart.getFirstPassenger();
-      Vec3 var3 = this.minecart.getPassengerMoveIntent();
-      if (var2 instanceof ServerPlayer && var3.lengthSqr() > 0.0) {
-         Vec3 var4 = var3.normalize();
-         double var5 = var1.horizontalDistanceSqr();
-         if (var4.lengthSqr() > 0.0 && var5 < 0.01) {
-            return var1.add(new Vec3(var4.x, 0.0, var4.z).normalize().scale(0.001));
+      if (this.minecart.getFirstPassenger() instanceof ServerPlayer var2) {
+         Vec3 var7 = var2.getLastClientMoveIntent();
+         if (var7.lengthSqr() > 0.0) {
+            Vec3 var4 = var7.normalize();
+            double var5 = var1.horizontalDistanceSqr();
+            if (var4.lengthSqr() > 0.0 && var5 < 0.01) {
+               return var1.add(new Vec3(var4.x, 0.0, var4.z).normalize().scale(0.001));
+            }
          }
-      } else {
-         this.minecart.setPassengerMoveIntent(Vec3.ZERO);
-      }
 
-      return var1;
+         return var1;
+      } else {
+         return var1;
+      }
    }
 
    private Vec3 calculateHaltTrackSpeed(Vec3 var1, BlockState var2) {

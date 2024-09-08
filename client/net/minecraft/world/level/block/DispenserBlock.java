@@ -2,16 +2,17 @@ package net.minecraft.world.level.block;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.dispenser.EquipmentDispenseItemBehavior;
 import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
@@ -47,9 +48,7 @@ public class DispenserBlock extends BaseEntityBlock {
    public static final DirectionProperty FACING = DirectionalBlock.FACING;
    public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
    private static final DefaultDispenseItemBehavior DEFAULT_BEHAVIOR = new DefaultDispenseItemBehavior();
-   public static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY = Util.make(
-      new Object2ObjectOpenHashMap(), var0 -> var0.defaultReturnValue(DEFAULT_BEHAVIOR)
-   );
+   public static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY = new IdentityHashMap<>();
    private static final int TRIGGER_DURATION = 4;
 
    @Override
@@ -101,7 +100,16 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    protected DispenseItemBehavior getDispenseMethod(Level var1, ItemStack var2) {
-      return (DispenseItemBehavior)(!var2.isItemEnabled(var1.enabledFeatures()) ? DEFAULT_BEHAVIOR : DISPENSER_REGISTRY.get(var2.getItem()));
+      if (!var2.isItemEnabled(var1.enabledFeatures())) {
+         return DEFAULT_BEHAVIOR;
+      } else {
+         DispenseItemBehavior var3 = DISPENSER_REGISTRY.get(var2.getItem());
+         return var3 != null ? var3 : getDefaultDispenseMethod(var2);
+      }
+   }
+
+   private static DispenseItemBehavior getDefaultDispenseMethod(ItemStack var0) {
+      return (DispenseItemBehavior)(var0.has(DataComponents.EQUIPPABLE) ? EquipmentDispenseItemBehavior.INSTANCE : DEFAULT_BEHAVIOR);
    }
 
    @Override

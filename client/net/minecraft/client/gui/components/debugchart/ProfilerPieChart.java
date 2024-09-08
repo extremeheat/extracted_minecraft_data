@@ -51,79 +51,80 @@ public class ProfilerPieChart {
          byte var10 = 62;
          int var11 = var9 - 62 - 5;
          var1.fill(var5 - 5, var11 - 62 - 5, var6 + 5, var8 + 5, -1873784752);
-         double var12 = 0.0;
+         var1.drawSpecial(var4x -> {
+            double var5x = 0.0;
 
-         for (ResultField var15 : var2) {
-            int var16 = Mth.floor(var15.percentage / 4.0) + 1;
-            VertexConsumer var17 = var1.bufferSource().getBuffer(RenderType.debugTriangleFan());
-            int var18 = ARGB.opaque(var15.getColor());
-            int var19 = ARGB.multiply(var18, -8355712);
-            PoseStack.Pose var20 = var1.pose().last();
-            var17.addVertex(var20, (float)var4, (float)var11, 10.0F).setColor(var18);
+            for (ResultField var8x : var2) {
+               int var9x = Mth.floor(var8x.percentage / 4.0) + 1;
+               VertexConsumer var10x = var4x.getBuffer(RenderType.debugTriangleFan());
+               int var11x = ARGB.opaque(var8x.getColor());
+               int var12x = ARGB.multiply(var11x, -8355712);
+               PoseStack.Pose var13x = var1.pose().last();
+               var10x.addVertex(var13x, (float)var4, (float)var11, 10.0F).setColor(var11x);
 
-            for (int var21 = var16; var21 >= 0; var21--) {
-               float var22 = (float)((var12 + var15.percentage * (double)var21 / (double)var16) * 6.2831854820251465 / 100.0);
-               float var23 = Mth.sin(var22) * 105.0F;
-               float var24 = Mth.cos(var22) * 105.0F * 0.5F;
-               var17.addVertex(var20, (float)var4 + var23, (float)var11 - var24, 10.0F).setColor(var18);
-            }
-
-            var17 = var1.bufferSource().getBuffer(RenderType.debugQuads());
-
-            for (int var38 = var16; var38 > 0; var38--) {
-               float var40 = (float)((var12 + var15.percentage * (double)var38 / (double)var16) * 6.2831854820251465 / 100.0);
-               float var44 = Mth.sin(var40) * 105.0F;
-               float var46 = Mth.cos(var40) * 105.0F * 0.5F;
-               float var25 = (float)((var12 + var15.percentage * (double)(var38 - 1) / (double)var16) * 6.2831854820251465 / 100.0);
-               float var26 = Mth.sin(var25) * 105.0F;
-               float var27 = Mth.cos(var25) * 105.0F * 0.5F;
-               if (!((var46 + var27) / 2.0F > 0.0F)) {
-                  var17.addVertex(var20, (float)var4 + var44, (float)var11 - var46, 10.0F).setColor(var19);
-                  var17.addVertex(var20, (float)var4 + var44, (float)var11 - var46 + 10.0F, 10.0F).setColor(var19);
-                  var17.addVertex(var20, (float)var4 + var26, (float)var11 - var27 + 10.0F, 10.0F).setColor(var19);
-                  var17.addVertex(var20, (float)var4 + var26, (float)var11 - var27, 10.0F).setColor(var19);
+               for (int var14x = var9x; var14x >= 0; var14x--) {
+                  float var15x = (float)((var5x + var8x.percentage * (double)var14x / (double)var9x) * 6.2831854820251465 / 100.0);
+                  float var16x = Mth.sin(var15x) * 105.0F;
+                  float var17x = Mth.cos(var15x) * 105.0F * 0.5F;
+                  var10x.addVertex(var13x, (float)var4 + var16x, (float)var11 - var17x, 10.0F).setColor(var11x);
                }
+
+               var10x = var4x.getBuffer(RenderType.debugQuads());
+
+               for (int var22x = var9x; var22x > 0; var22x--) {
+                  float var23x = (float)((var5x + var8x.percentage * (double)var22x / (double)var9x) * 6.2831854820251465 / 100.0);
+                  float var24x = Mth.sin(var23x) * 105.0F;
+                  float var25x = Mth.cos(var23x) * 105.0F * 0.5F;
+                  float var18x = (float)((var5x + var8x.percentage * (double)(var22x - 1) / (double)var9x) * 6.2831854820251465 / 100.0);
+                  float var19x = Mth.sin(var18x) * 105.0F;
+                  float var20x = Mth.cos(var18x) * 105.0F * 0.5F;
+                  if (!((var25x + var20x) / 2.0F > 0.0F)) {
+                     var10x.addVertex(var13x, (float)var4 + var24x, (float)var11 - var25x, 10.0F).setColor(var12x);
+                     var10x.addVertex(var13x, (float)var4 + var24x, (float)var11 - var25x + 10.0F, 10.0F).setColor(var12x);
+                     var10x.addVertex(var13x, (float)var4 + var19x, (float)var11 - var20x + 10.0F, 10.0F).setColor(var12x);
+                     var10x.addVertex(var13x, (float)var4 + var19x, (float)var11 - var20x, 10.0F).setColor(var12x);
+                  }
+               }
+
+               var5x += var8x.percentage;
             }
-
-            var12 += var15.percentage;
+         });
+         DecimalFormat var12 = new DecimalFormat("##0.00");
+         var12.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
+         String var13 = ProfileResults.demanglePath(var3.name);
+         String var14 = "";
+         if (!"unspecified".equals(var13)) {
+            var14 = var14 + "[0] ";
          }
 
-         DecimalFormat var28 = new DecimalFormat("##0.00");
-         var28.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
-         String var29 = ProfileResults.demanglePath(var3.name);
-         String var30 = "";
-         if (!"unspecified".equals(var29)) {
-            var30 = var30 + "[0] ";
-         }
-
-         if (var29.isEmpty()) {
-            var30 = var30 + "ROOT ";
+         if (var13.isEmpty()) {
+            var14 = var14 + "ROOT ";
          } else {
-            var30 = var30 + var29 + " ";
+            var14 = var14 + var13 + " ";
          }
 
-         int var34 = 16777215;
-         int var35 = var11 - 62;
-         var1.drawString(this.font, var30, var5, var35, 16777215);
-         var30 = var28.format(var3.globalPercentage) + "%";
-         var1.drawString(this.font, var30, var6 - this.font.width(var30), var35, 16777215);
+         int var15 = 16777215;
+         int var16 = var11 - 62;
+         var1.drawString(this.font, var14, var5, var16, 16777215);
+         var14 = var12.format(var3.globalPercentage) + "%";
+         var1.drawString(this.font, var14, var6 - this.font.width(var14), var16, 16777215);
 
-         for (int var36 = 0; var36 < var2.size(); var36++) {
-            ResultField var37 = (ResultField)var2.get(var36);
-            StringBuilder var39 = new StringBuilder();
-            if ("unspecified".equals(var37.name)) {
-               var39.append("[?] ");
+         for (int var17 = 0; var17 < var2.size(); var17++) {
+            ResultField var18 = (ResultField)var2.get(var17);
+            StringBuilder var19 = new StringBuilder();
+            if ("unspecified".equals(var18.name)) {
+               var19.append("[?] ");
             } else {
-               var39.append("[").append(var36 + 1).append("] ");
+               var19.append("[").append(var17 + 1).append("] ");
             }
 
-            String var41 = var39.append(var37.name).toString();
-            int var45 = var9 + var36 * 9;
-            var1.drawString(this.font, var41, var5, var45, var37.getColor());
-            var41 = var28.format(var37.percentage) + "%";
-            var1.drawString(this.font, var41, var6 - 50 - this.font.width(var41), var45, var37.getColor());
-            var41 = var28.format(var37.globalPercentage) + "%";
-            var1.drawString(this.font, var41, var6 - this.font.width(var41), var45, var37.getColor());
+            String var20 = var19.append(var18.name).toString();
+            int var21 = var9 + var17 * 9;
+            var1.drawString(this.font, var20, var5, var21, var18.getColor());
+            var20 = var12.format(var18.percentage) + "%";
+            var1.drawString(this.font, var20, var6 - 50 - this.font.width(var20), var21, var18.getColor());
+            var20 = var12.format(var18.globalPercentage) + "%";
+            var1.drawString(this.font, var20, var6 - this.font.width(var20), var21, var18.getColor());
          }
       }
    }

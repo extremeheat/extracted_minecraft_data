@@ -40,33 +40,42 @@ public abstract class ThrowableProjectile extends Projectile {
 
    @Override
    public void tick() {
-      super.tick();
       HitResult var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+      Vec3 var2;
       if (var1.getType() != HitResult.Type.MISS) {
+         var2 = var1.getLocation();
+      } else {
+         var2 = this.position().add(this.getDeltaMovement());
+      }
+
+      this.setPos(var2);
+      this.updateRotation();
+      this.applyEffectsFromBlocks();
+      super.tick();
+      if (var1.getType() != HitResult.Type.MISS && this.isAlive()) {
          this.hitTargetOrDeflectSelf(var1);
       }
 
-      Vec3 var2 = this.getDeltaMovement();
-      double var3 = this.getX() + var2.x;
-      double var5 = this.getY() + var2.y;
-      double var7 = this.getZ() + var2.z;
-      this.updateRotation();
-      float var9;
+      this.applyInertia();
+      this.applyGravity();
+   }
+
+   private void applyInertia() {
+      Vec3 var1 = this.getDeltaMovement();
+      Vec3 var2 = this.position();
+      float var3;
       if (this.isInWater()) {
-         for (int var10 = 0; var10 < 4; var10++) {
-            float var11 = 0.25F;
-            this.level().addParticle(ParticleTypes.BUBBLE, var3 - var2.x * 0.25, var5 - var2.y * 0.25, var7 - var2.z * 0.25, var2.x, var2.y, var2.z);
+         for (int var4 = 0; var4 < 4; var4++) {
+            float var5 = 0.25F;
+            this.level().addParticle(ParticleTypes.BUBBLE, var2.x - var1.x * 0.25, var2.y - var1.y * 0.25, var2.z - var1.z * 0.25, var1.x, var1.y, var1.z);
          }
 
-         var9 = 0.8F;
+         var3 = 0.8F;
       } else {
-         var9 = 0.99F;
+         var3 = 0.99F;
       }
 
-      this.setDeltaMovement(var2.scale((double)var9));
-      this.applyGravity();
-      this.setPos(var3, var5, var7);
-      this.checkInsideBlocks();
+      this.setDeltaMovement(var1.scale((double)var3));
    }
 
    @Override

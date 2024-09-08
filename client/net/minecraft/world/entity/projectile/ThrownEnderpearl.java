@@ -11,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.monster.Endermite;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -86,43 +88,54 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
             );
       }
 
-      if (this.level() instanceof ServerLevel var6 && !this.isRemoved()) {
-         Entity var7 = this.getOwner();
-         if (var7 != null && isAllowedToTeleportOwner(var7, var6)) {
-            if (var7.isPassenger()) {
-               var7.unRide();
+      if (this.level() instanceof ServerLevel var8 && !this.isRemoved()) {
+         Entity var9 = this.getOwner();
+         if (var9 != null && isAllowedToTeleportOwner(var9, var8)) {
+            if (var9.isPassenger()) {
+               var9.unRide();
             }
 
-            if (var7 instanceof ServerPlayer var4) {
-               if (var4.connection.isAcceptingMessages()) {
-                  if (this.random.nextFloat() < 0.05F && var6.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                     Endermite var5 = EntityType.ENDERMITE.create(var6, EntitySpawnReason.TRIGGERED);
-                     if (var5 != null) {
-                        var5.moveTo(var7.getX(), var7.getY(), var7.getZ(), var7.getYRot(), var7.getXRot());
-                        var6.addFreshEntity(var5);
+            Vec3 var4;
+            if (this.getDeltaMovement().lengthSqr() > 0.0) {
+               AABB var5 = var9.getBoundingBox();
+               Vec3 var6 = new Vec3(var5.getXsize(), var5.getYsize(), var5.getZsize()).scale(0.5000099999997474);
+               Vec3 var7 = new Vec3(Math.signum(this.getDeltaMovement().x), Math.signum(this.getDeltaMovement().y), Math.signum(this.getDeltaMovement().z));
+               var4 = var7.multiply(var6).add(0.0, var5.getYsize() * 0.5, 0.0);
+            } else {
+               var4 = Vec3.ZERO;
+            }
+
+            Vec3 var10 = this.position().subtract(var4);
+            if (var9 instanceof ServerPlayer var11) {
+               if (var11.connection.isAcceptingMessages()) {
+                  if (this.random.nextFloat() < 0.05F && var8.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                     Endermite var12 = EntityType.ENDERMITE.create(var8, EntitySpawnReason.TRIGGERED);
+                     if (var12 != null) {
+                        var12.moveTo(var9.getX(), var9.getY(), var9.getZ(), var9.getYRot(), var9.getXRot());
+                        var8.addFreshEntity(var12);
                      }
                   }
 
-                  Player var8 = var4.changeDimension(
-                     new DimensionTransition(var6, this.position(), var7.getDeltaMovement(), var7.getYRot(), var7.getXRot(), DimensionTransition.DO_NOTHING)
+                  Player var13 = var11.changeDimension(
+                     new DimensionTransition(var8, var10, Vec3.ZERO, 0.0F, 0.0F, Relative.ALL, DimensionTransition.DO_NOTHING)
                   );
-                  if (var8 != null) {
-                     var8.resetFallDistance();
-                     var8.resetCurrentImpulseContext();
-                     var8.hurt(this.damageSources().enderPearl(), 5.0F);
+                  if (var13 != null) {
+                     var13.resetFallDistance();
+                     var13.resetCurrentImpulseContext();
+                     var13.hurt(this.damageSources().enderPearl(), 5.0F);
                   }
 
-                  this.playSound(var6, this.position());
+                  this.playSound(var8, var10);
                }
             } else {
-               Entity var9 = var7.changeDimension(
-                  new DimensionTransition(var6, this.position(), var7.getDeltaMovement(), var7.getYRot(), var7.getXRot(), DimensionTransition.DO_NOTHING)
+               Entity var14 = var9.changeDimension(
+                  new DimensionTransition(var8, var10, var9.getDeltaMovement(), var9.getYRot(), var9.getXRot(), DimensionTransition.DO_NOTHING)
                );
-               if (var9 != null) {
-                  var9.resetFallDistance();
+               if (var14 != null) {
+                  var14.resetFallDistance();
                }
 
-               this.playSound(var6, this.position());
+               this.playSound(var8, var10);
             }
 
             this.discard();

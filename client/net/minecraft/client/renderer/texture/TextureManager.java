@@ -171,7 +171,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
             }
          }
 
-         Minecraft.getInstance().tell(() -> var7.complete(null));
+         Minecraft.getInstance().schedule(() -> var7.complete(null));
       }, var0 -> RenderSystem.recordRenderCall(var0::run));
       return var7;
    }

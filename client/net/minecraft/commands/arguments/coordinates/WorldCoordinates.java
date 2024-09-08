@@ -19,15 +19,18 @@ public class WorldCoordinates implements Coordinates {
    }
 
    @Override
-   public Vec3 getPosition(CommandSourceStack var1) {
-      Vec3 var2 = var1.getPosition();
-      return new Vec3(this.x.get(var2.x), this.y.get(var2.y), this.z.get(var2.z));
+   public Vec3 getPosition(CommandSourceStack var1, boolean var2) {
+      double var3 = this.x.isRelative() && var2 ? 0.0 : var1.getPosition().x;
+      double var5 = this.y.isRelative() && var2 ? 0.0 : var1.getPosition().y;
+      double var7 = this.z.isRelative() && var2 ? 0.0 : var1.getPosition().z;
+      return new Vec3(this.x.get(var3), this.y.get(var5), this.z.get(var7));
    }
 
    @Override
-   public Vec2 getRotation(CommandSourceStack var1) {
-      Vec2 var2 = var1.getRotation();
-      return new Vec2((float)this.x.get((double)var2.x), (float)this.y.get((double)var2.y));
+   public Vec2 getRotation(CommandSourceStack var1, boolean var2) {
+      double var3 = this.x.isRelative() && var2 ? 0.0 : (double)var1.getRotation().x;
+      double var5 = this.y.isRelative() && var2 ? 0.0 : (double)var1.getRotation().y;
+      return new Vec2((float)this.x.get(var3), (float)this.y.get(var5));
    }
 
    @Override

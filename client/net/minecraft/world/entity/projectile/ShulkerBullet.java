@@ -199,6 +199,7 @@ public class ShulkerBullet extends Projectile {
    @Override
    public void tick() {
       super.tick();
+      HitResult var1 = null;
       if (!this.level().isClientSide) {
          if (this.finalTarget == null && this.targetId != null) {
             this.finalTarget = ((ServerLevel)this.level()).getEntity(this.targetId);
@@ -213,20 +214,20 @@ public class ShulkerBullet extends Projectile {
             this.targetDeltaX = Mth.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
             this.targetDeltaY = Mth.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
             this.targetDeltaZ = Mth.clamp(this.targetDeltaZ * 1.025, -1.0, 1.0);
-            Vec3 var1 = this.getDeltaMovement();
-            this.setDeltaMovement(var1.add((this.targetDeltaX - var1.x) * 0.2, (this.targetDeltaY - var1.y) * 0.2, (this.targetDeltaZ - var1.z) * 0.2));
+            Vec3 var2 = this.getDeltaMovement();
+            this.setDeltaMovement(var2.add((this.targetDeltaX - var2.x) * 0.2, (this.targetDeltaY - var2.y) * 0.2, (this.targetDeltaZ - var2.z) * 0.2));
          }
 
-         HitResult var5 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-         if (var5.getType() != HitResult.Type.MISS) {
-            this.hitTargetOrDeflectSelf(var5);
-         }
-
-         this.applyEffectsFromBlocks();
+         var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       }
 
       Vec3 var6 = this.getDeltaMovement();
-      this.setPos(this.getX() + var6.x, this.getY() + var6.y, this.getZ() + var6.z);
+      this.setPos(this.position().add(var6));
+      this.applyEffectsFromBlocks();
+      if (var1 != null && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
+         this.hitTargetOrDeflectSelf(var1);
+      }
+
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
       if (this.level().isClientSide) {
          this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var6.x, this.getY() - var6.y + 0.15, this.getZ() - var6.z, 0.0, 0.0, 0.0);
@@ -239,16 +240,16 @@ public class ShulkerBullet extends Projectile {
          }
 
          if (this.currentMoveDirection != null) {
-            BlockPos var2 = this.blockPosition();
-            Direction.Axis var3 = this.currentMoveDirection.getAxis();
-            if (this.level().loadedAndEntityCanStandOn(var2.relative(this.currentMoveDirection), this)) {
-               this.selectNextMoveDirection(var3);
+            BlockPos var3 = this.blockPosition();
+            Direction.Axis var4 = this.currentMoveDirection.getAxis();
+            if (this.level().loadedAndEntityCanStandOn(var3.relative(this.currentMoveDirection), this)) {
+               this.selectNextMoveDirection(var4);
             } else {
-               BlockPos var4 = this.finalTarget.blockPosition();
-               if (var3 == Direction.Axis.X && var2.getX() == var4.getX()
-                  || var3 == Direction.Axis.Z && var2.getZ() == var4.getZ()
-                  || var3 == Direction.Axis.Y && var2.getY() == var4.getY()) {
-                  this.selectNextMoveDirection(var3);
+               BlockPos var5 = this.finalTarget.blockPosition();
+               if (var4 == Direction.Axis.X && var3.getX() == var5.getX()
+                  || var4 == Direction.Axis.Z && var3.getZ() == var5.getZ()
+                  || var4 == Direction.Axis.Y && var3.getY() == var5.getY()) {
+                  this.selectNextMoveDirection(var4);
                }
             }
          }

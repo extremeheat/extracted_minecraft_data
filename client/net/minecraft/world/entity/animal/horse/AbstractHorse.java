@@ -255,10 +255,14 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public void equipBodyArmor(Player var1, ItemStack var2) {
-      if (this.isBodyArmorItem(var2)) {
-         this.setBodyArmorItem(var2.copyWithCount(1));
-         var2.consume(1, var1);
+      if (this.isEquippableInSlot(var2, EquipmentSlot.BODY)) {
+         this.setBodyArmorItem(var2.consumeAndReturn(1, var1));
       }
+   }
+
+   @Override
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return var1 == EquipmentSlot.BODY && this.isTamed() || super.canDispenserEquipIntoSlot(var1);
    }
 
    @Override
@@ -701,7 +705,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
                return var4;
             }
 
-            if (this.canUseSlot(EquipmentSlot.BODY) && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
+            if (this.isEquippableInSlot(var3, EquipmentSlot.BODY) && !this.isWearingBodyArmor()) {
                this.equipBodyArmor(var1, var3);
                return InteractionResult.SUCCESS;
             }

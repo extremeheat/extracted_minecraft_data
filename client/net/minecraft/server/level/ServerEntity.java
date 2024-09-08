@@ -303,18 +303,18 @@ public class ServerEntity {
          var2.accept(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
       }
 
-      if (this.entity instanceof LivingEntity) {
-         ArrayList var11 = Lists.newArrayList();
+      if (this.entity instanceof LivingEntity var10) {
+         ArrayList var12 = Lists.newArrayList();
 
-         for (EquipmentSlot var9 : EquipmentSlot.values()) {
-            ItemStack var10 = ((LivingEntity)this.entity).getItemBySlot(var9);
-            if (!var10.isEmpty()) {
-               var11.add(Pair.of(var9, var10.copy()));
+         for (EquipmentSlot var8 : EquipmentSlot.VALUES) {
+            ItemStack var9 = var10.getItemBySlot(var8);
+            if (!var9.isEmpty()) {
+               var12.add(Pair.of(var8, var9.copy()));
             }
          }
 
-         if (!var11.isEmpty()) {
-            var2.accept(new ClientboundSetEquipmentPacket(this.entity.getId(), var11));
+         if (!var12.isEmpty()) {
+            var2.accept(new ClientboundSetEquipmentPacket(this.entity.getId(), var12));
          }
       }
 
@@ -326,8 +326,8 @@ public class ServerEntity {
          var2.accept(new ClientboundSetPassengersPacket(this.entity.getVehicle()));
       }
 
-      if (this.entity instanceof Leashable var12 && var12.isLeashed()) {
-         var2.accept(new ClientboundSetEntityLinkPacket(this.entity, var12.getLeashHolder()));
+      if (this.entity instanceof Leashable var11 && var11.isLeashed()) {
+         var2.accept(new ClientboundSetEntityLinkPacket(this.entity, var11.getLeashHolder()));
       }
    }
 

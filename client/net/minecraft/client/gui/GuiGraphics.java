@@ -1,6 +1,5 @@
 package net.minecraft.client.gui;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -11,6 +10,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -32,6 +32,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.HoverEvent;
@@ -80,10 +81,6 @@ public class GuiGraphics {
 
    public PoseStack pose() {
       return this.pose;
-   }
-
-   public MultiBufferSource.BufferSource bufferSource() {
-      return this.bufferSource;
    }
 
    public void flush() {
@@ -364,8 +361,9 @@ public class GuiGraphics {
          this.blitSprite(var1, var2, var3.width(), var3.height(), 0, 0, var4, var5, var6, var7, var8);
       } else if (var7 == var3.height()) {
          this.blitSprite(var1, var2, var3.width(), var3.height(), 0, 0, var4, var5, var10, var7, var8);
-         this.blitTiledSprite(
+         this.blitNineSliceInnerSegment(
             var1,
+            var3,
             var2,
             var4 + var10,
             var5,
@@ -382,8 +380,9 @@ public class GuiGraphics {
          this.blitSprite(var1, var2, var3.width(), var3.height(), var3.width() - var11, 0, var4 + var6 - var11, var5, var11, var7, var8);
       } else if (var6 == var3.width()) {
          this.blitSprite(var1, var2, var3.width(), var3.height(), 0, 0, var4, var5, var6, var12, var8);
-         this.blitTiledSprite(
+         this.blitNineSliceInnerSegment(
             var1,
+            var3,
             var2,
             var4,
             var5 + var12,
@@ -400,13 +399,14 @@ public class GuiGraphics {
          this.blitSprite(var1, var2, var3.width(), var3.height(), 0, var3.height() - var13, var4, var5 + var7 - var13, var6, var13, var8);
       } else {
          this.blitSprite(var1, var2, var3.width(), var3.height(), 0, 0, var4, var5, var10, var12, var8);
-         this.blitTiledSprite(
-            var1, var2, var4 + var10, var5, var6 - var11 - var10, var12, var10, 0, var3.width() - var11 - var10, var12, var3.width(), var3.height(), var8
+         this.blitNineSliceInnerSegment(
+            var1, var3, var2, var4 + var10, var5, var6 - var11 - var10, var12, var10, 0, var3.width() - var11 - var10, var12, var3.width(), var3.height(), var8
          );
          this.blitSprite(var1, var2, var3.width(), var3.height(), var3.width() - var11, 0, var4 + var6 - var11, var5, var11, var12, var8);
          this.blitSprite(var1, var2, var3.width(), var3.height(), 0, var3.height() - var13, var4, var5 + var7 - var13, var10, var13, var8);
-         this.blitTiledSprite(
+         this.blitNineSliceInnerSegment(
             var1,
+            var3,
             var2,
             var4 + var10,
             var5 + var7 - var13,
@@ -423,11 +423,25 @@ public class GuiGraphics {
          this.blitSprite(
             var1, var2, var3.width(), var3.height(), var3.width() - var11, var3.height() - var13, var4 + var6 - var11, var5 + var7 - var13, var11, var13, var8
          );
-         this.blitTiledSprite(
-            var1, var2, var4, var5 + var12, var10, var7 - var13 - var12, 0, var12, var10, var3.height() - var13 - var12, var3.width(), var3.height(), var8
-         );
-         this.blitTiledSprite(
+         this.blitNineSliceInnerSegment(
             var1,
+            var3,
+            var2,
+            var4,
+            var5 + var12,
+            var10,
+            var7 - var13 - var12,
+            0,
+            var12,
+            var10,
+            var3.height() - var13 - var12,
+            var3.width(),
+            var3.height(),
+            var8
+         );
+         this.blitNineSliceInnerSegment(
+            var1,
+            var3,
             var2,
             var4 + var10,
             var5 + var12,
@@ -441,8 +455,9 @@ public class GuiGraphics {
             var3.height(),
             var8
          );
-         this.blitTiledSprite(
+         this.blitNineSliceInnerSegment(
             var1,
+            var3,
             var2,
             var4 + var6 - var11,
             var5 + var12,
@@ -456,6 +471,43 @@ public class GuiGraphics {
             var3.height(),
             var8
          );
+      }
+   }
+
+   private void blitNineSliceInnerSegment(
+      Function<ResourceLocation, RenderType> var1,
+      GuiSpriteScaling.NineSlice var2,
+      TextureAtlasSprite var3,
+      int var4,
+      int var5,
+      int var6,
+      int var7,
+      int var8,
+      int var9,
+      int var10,
+      int var11,
+      int var12,
+      int var13,
+      int var14
+   ) {
+      if (var6 > 0 && var7 > 0) {
+         if (var2.stretchInner()) {
+            this.innerBlit(
+               var1,
+               var3.atlasLocation(),
+               var4,
+               var4 + var6,
+               var5,
+               var5 + var7,
+               var3.getU((float)var8 / (float)var12),
+               var3.getU((float)(var8 + var10) / (float)var12),
+               var3.getV((float)var9 / (float)var13),
+               var3.getV((float)(var9 + var11) / (float)var13),
+               var14
+            );
+         } else {
+            this.blitTiledSprite(var1, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14);
+         }
       }
    }
 
@@ -625,7 +677,7 @@ public class GuiGraphics {
 
             this.minecraft
                .getItemRenderer()
-               .render(var3, ItemDisplayContext.GUI, false, this.pose, this.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, var8);
+               .render(var3, ItemDisplayContext.GUI, false, this.pose, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY, var8);
             this.flush();
             if (var9) {
                Lighting.setupFor3DItems();
@@ -678,13 +730,17 @@ public class GuiGraphics {
    }
 
    public void renderTooltip(Font var1, ItemStack var2, int var3, int var4) {
-      this.renderTooltip(var1, Screen.getTooltipFromItem(this.minecraft, var2), var2.getTooltipImage(), var3, var4);
+      this.renderTooltip(var1, Screen.getTooltipFromItem(this.minecraft, var2), var2.getTooltipImage(), var3, var4, var2.get(DataComponents.TOOLTIP_STYLE));
    }
 
    public void renderTooltip(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5) {
-      List var6 = var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
-      var3.ifPresent(var1x -> var6.add(var6.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
-      this.renderTooltipInternal(var1, var6, var4, var5, DefaultTooltipPositioner.INSTANCE);
+      this.renderTooltip(var1, var2, var3, var4, var5, null);
+   }
+
+   public void renderTooltip(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5, @Nullable ResourceLocation var6) {
+      List var7 = var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
+      var3.ifPresent(var1x -> var7.add(var7.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
+      this.renderTooltipInternal(var1, var7, var4, var5, DefaultTooltipPositioner.INSTANCE, var6);
    }
 
    public void renderTooltip(Font var1, Component var2, int var3, int var4) {
@@ -692,56 +748,69 @@ public class GuiGraphics {
    }
 
    public void renderComponentTooltip(Font var1, List<Component> var2, int var3, int var4) {
-      this.renderTooltip(var1, Lists.transform(var2, Component::getVisualOrderText), var3, var4);
+      this.renderComponentTooltip(var1, var2, var3, var4, null);
+   }
+
+   public void renderComponentTooltip(Font var1, List<Component> var2, int var3, int var4, @Nullable ResourceLocation var5) {
+      this.renderTooltipInternal(
+         var1,
+         var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).toList(),
+         var3,
+         var4,
+         DefaultTooltipPositioner.INSTANCE,
+         var5
+      );
    }
 
    public void renderTooltip(Font var1, List<? extends FormattedCharSequence> var2, int var3, int var4) {
       this.renderTooltipInternal(
-         var1, var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var3, var4, DefaultTooltipPositioner.INSTANCE
+         var1, var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var3, var4, DefaultTooltipPositioner.INSTANCE, null
       );
    }
 
    public void renderTooltip(Font var1, List<FormattedCharSequence> var2, ClientTooltipPositioner var3, int var4, int var5) {
-      this.renderTooltipInternal(var1, var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var4, var5, var3);
+      this.renderTooltipInternal(var1, var2.stream().map(ClientTooltipComponent::create).collect(Collectors.toList()), var4, var5, var3, null);
    }
 
-   private void renderTooltipInternal(Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5) {
+   private void renderTooltipInternal(
+      Font var1, List<ClientTooltipComponent> var2, int var3, int var4, ClientTooltipPositioner var5, @Nullable ResourceLocation var6
+   ) {
       if (!var2.isEmpty()) {
-         int var6 = 0;
-         int var7 = var2.size() == 1 ? -2 : 0;
+         int var7 = 0;
+         int var8 = var2.size() == 1 ? -2 : 0;
 
-         for (ClientTooltipComponent var9 : var2) {
-            int var10 = var9.getWidth(var1);
-            if (var10 > var6) {
-               var6 = var10;
+         for (ClientTooltipComponent var10 : var2) {
+            int var11 = var10.getWidth(var1);
+            if (var11 > var7) {
+               var7 = var11;
             }
 
-            var7 += var9.getHeight(var1);
+            var8 += var10.getHeight(var1);
          }
 
-         int var17 = var6;
          int var18 = var7;
-         Vector2ic var19 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var6, var7);
-         int var11 = var19.x();
-         int var12 = var19.y();
+         int var19 = var8;
+         Vector2ic var20 = var5.positionTooltip(this.guiWidth(), this.guiHeight(), var3, var4, var7, var8);
+         int var12 = var20.x();
+         int var13 = var20.y();
          this.pose.pushPose();
-         short var13 = 400;
-         TooltipRenderUtil.renderTooltipBackground(this, var11, var12, var6, var7, 400);
+         short var14 = 400;
+         TooltipRenderUtil.renderTooltipBackground(this, var12, var13, var7, var8, 400, var6);
          this.pose.translate(0.0F, 0.0F, 400.0F);
-         int var14 = var12;
+         int var15 = var13;
 
-         for (int var15 = 0; var15 < var2.size(); var15++) {
-            ClientTooltipComponent var16 = (ClientTooltipComponent)var2.get(var15);
-            var16.renderText(var1, var11, var14, this.pose.last().pose(), this.bufferSource);
-            var14 += var16.getHeight(var1) + (var15 == 0 ? 2 : 0);
+         for (int var16 = 0; var16 < var2.size(); var16++) {
+            ClientTooltipComponent var17 = (ClientTooltipComponent)var2.get(var16);
+            var17.renderText(var1, var12, var15, this.pose.last().pose(), this.bufferSource);
+            var15 += var17.getHeight(var1) + (var16 == 0 ? 2 : 0);
          }
 
-         var14 = var12;
+         var15 = var13;
 
-         for (int var21 = 0; var21 < var2.size(); var21++) {
-            ClientTooltipComponent var22 = (ClientTooltipComponent)var2.get(var21);
-            var22.renderImage(var1, var11, var14, var17, var18, this);
-            var14 += var22.getHeight(var1) + (var21 == 0 ? 2 : 0);
+         for (int var22 = 0; var22 < var2.size(); var22++) {
+            ClientTooltipComponent var23 = (ClientTooltipComponent)var2.get(var22);
+            var23.renderImage(var1, var12, var15, var18, var19, this);
+            var15 += var23.getHeight(var1) + (var22 == 0 ? 2 : 0);
          }
 
          this.pose.popPose();
@@ -768,6 +837,11 @@ public class GuiGraphics {
             }
          }
       }
+   }
+
+   public void drawSpecial(Consumer<MultiBufferSource> var1) {
+      var1.accept(this.bufferSource);
+      this.bufferSource.endBatch();
    }
 
    static class ScissorStack {

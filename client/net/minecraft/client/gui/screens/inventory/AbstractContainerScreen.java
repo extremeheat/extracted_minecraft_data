@@ -17,6 +17,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -185,7 +186,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       if (this.hoveredSlot != null && this.hoveredSlot.hasItem()) {
          ItemStack var4 = this.hoveredSlot.getItem();
          if (this.menu.getCarried().isEmpty() || this.showTooltipWithItemInHand(var4)) {
-            var1.renderTooltip(this.font, this.getTooltipFromContainerItem(var4), var4.getTooltipImage(), var2, var3);
+            var1.renderTooltip(this.font, this.getTooltipFromContainerItem(var4), var4.getTooltipImage(), var2, var3, var4.get(DataComponents.TOOLTIP_STYLE));
          }
       }
    }

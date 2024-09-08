@@ -5,9 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
@@ -24,7 +21,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -33,10 +29,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
-public class RecipeManager extends SimpleJsonResourceReloadListener {
-   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+public class RecipeManager extends SimpleJsonResourceReloadListener<Recipe<?>> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final HolderLookup.Provider registries;
    private Multimap<RecipeType<?>, RecipeHolder<?>> byType = ImmutableMultimap.of();
    private Map<ResourceLocation, RecipeHolder<?>> byName = ImmutableMap.of();
    @Nullable
@@ -44,26 +38,24 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
    private boolean hasErrors;
 
    public RecipeManager(HolderLookup.Provider var1) {
-      super(GSON, Registries.elementsDirPath(Registries.RECIPE));
-      this.registries = var1;
+      super(var1, Recipe.CODEC, Registries.elementsDirPath(Registries.RECIPE));
    }
 
-   protected void apply(Map<ResourceLocation, JsonElement> var1, ResourceManager var2, ProfilerFiller var3) {
+   protected void apply(Map<ResourceLocation, Recipe<?>> var1, ResourceManager var2, ProfilerFiller var3) {
       this.hasErrors = false;
       Builder var4 = ImmutableMultimap.builder();
       com.google.common.collect.ImmutableMap.Builder var5 = ImmutableMap.builder();
-      RegistryOps var6 = this.registries.createSerializationContext(JsonOps.INSTANCE);
 
-      for (Entry var8 : var1.entrySet()) {
-         ResourceLocation var9 = (ResourceLocation)var8.getKey();
+      for (Entry var7 : var1.entrySet()) {
+         ResourceLocation var8 = (ResourceLocation)var7.getKey();
+         Recipe var9 = (Recipe)var7.getValue();
 
          try {
-            Recipe var10 = (Recipe)Recipe.CODEC.parse(var6, (JsonElement)var8.getValue()).getOrThrow(JsonParseException::new);
-            RecipeHolder var11 = new RecipeHolder(var9, var10);
-            var4.put(var10.getType(), var11);
-            var5.put(var9, var11);
-         } catch (IllegalArgumentException | JsonParseException var12) {
-            LOGGER.error("Parsing error loading recipe {}", var9, var12);
+            RecipeHolder var10 = new RecipeHolder(var8, var9);
+            var4.put(var9.getType(), var10);
+            var5.put(var8, var10);
+         } catch (IllegalArgumentException | JsonParseException var11) {
+            LOGGER.error("Parsing error loading recipe {}", var8, var11);
          }
       }
 
@@ -117,7 +109,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       return this.byType(var1)
          .stream()
          .filter(var2x -> var2x.value().matches(var2, var3))
-         .sorted(Comparator.comparing(var1x -> var1x.value().getResultItem(var3.registryAccess()).getDescriptionId()))
+         .sorted(Comparator.comparing(var1x -> var1x.value().getResultItem(var3.registryAccess()).getItem().getDescriptionId()))
          .collect(Collectors.toList());
    }
 

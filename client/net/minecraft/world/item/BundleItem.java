@@ -2,7 +2,7 @@ package net.minecraft.world.item;
 
 import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ARGB;
@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -28,13 +29,16 @@ public class BundleItem extends Item {
    public static final int OVERFLOWING_MAX_SHOWN_GRID_ITEMS = 11;
    private static final int FULL_BAR_COLOR = ARGB.colorFromFloat(1.0F, 1.0F, 0.33F, 0.33F);
    private static final int BAR_COLOR = ARGB.colorFromFloat(1.0F, 0.44F, 0.53F, 1.0F);
-   private final String openBundleModelFrontLocation;
-   private final String openBundleModelBackLocation;
+   private static final int TICKS_AFTER_FIRST_THROW = 10;
+   private static final int TICKS_BETWEEN_THROWS = 2;
+   private static final int TICKS_MAX_THROW_DURATION = 60;
+   private final ResourceLocation openFrontModel;
+   private final ResourceLocation openBackModel;
 
-   public BundleItem(String var1, String var2, Item.Properties var3) {
+   public BundleItem(ResourceLocation var1, ResourceLocation var2, Item.Properties var3) {
       super(var3);
-      this.openBundleModelFrontLocation = var1;
-      this.openBundleModelBackLocation = var2;
+      this.openFrontModel = var1;
+      this.openBackModel = var2;
    }
 
    public static float getFullnessDisplay(ItemStack var0) {
@@ -42,12 +46,12 @@ public class BundleItem extends Item {
       return var1.weight().floatValue();
    }
 
-   public String getOpenBundleModelFrontLocation() {
-      return this.openBundleModelFrontLocation;
+   public ResourceLocation openFrontModel() {
+      return this.openFrontModel;
    }
 
-   public String getOpenBundleModelBackLocation() {
-      return this.openBundleModelBackLocation;
+   public ResourceLocation openBackModel() {
+      return this.openBackModel;
    }
 
    @Override
@@ -60,7 +64,7 @@ public class BundleItem extends Item {
          BundleContents.Mutable var7 = new BundleContents.Mutable(var5);
          if (var3 == ClickAction.PRIMARY && !var6.isEmpty()) {
             if (var7.tryTransfer(var2, var4) > 0) {
-               this.playInsertSound(var4);
+               playInsertSound(var4);
             } else {
                playInsertFailSound(var4);
             }
@@ -74,7 +78,7 @@ public class BundleItem extends Item {
                if (var9.getCount() > 0) {
                   var7.tryInsert(var9);
                } else {
-                  this.playRemoveOneSound(var4);
+                  playRemoveOneSound(var4);
                }
             }
 
@@ -99,7 +103,7 @@ public class BundleItem extends Item {
             BundleContents.Mutable var8 = new BundleContents.Mutable(var7);
             if (var4 == ClickAction.PRIMARY && !var2.isEmpty()) {
                if (var3.allowModification(var5) && var8.tryInsert(var2) > 0) {
-                  this.playInsertSound(var5);
+                  playInsertSound(var5);
                } else {
                   playInsertFailSound(var5);
                }
@@ -110,7 +114,7 @@ public class BundleItem extends Item {
                if (var3.allowModification(var5)) {
                   ItemStack var9 = var8.removeOne();
                   if (var9 != null) {
-                     this.playRemoveOneSound(var5);
+                     playRemoveOneSound(var5);
                      var6.set(var9);
                   }
                }
@@ -126,13 +130,18 @@ public class BundleItem extends Item {
 
    @Override
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      if (dropContents(var4, var2)) {
-         this.playDropContentsSound(var2);
-         var2.awardStat(Stats.ITEM_USED.get(this));
-         return InteractionResult.SUCCESS;
+      if (var1.isClientSide) {
+         return InteractionResult.CONSUME;
       } else {
-         return InteractionResult.FAIL;
+         var2.startUsingItem(var3);
+         return InteractionResult.SUCCESS_SERVER;
+      }
+   }
+
+   private void dropContent(Player var1, ItemStack var2) {
+      if (this.dropContent(var2, var1)) {
+         playDropContentsSound(var1);
+         var1.awardStat(Stats.ITEM_USED.get(this));
       }
    }
 
@@ -183,18 +192,47 @@ public class BundleItem extends Item {
       return var1.getNumberOfItemsToShow();
    }
 
-   private static boolean dropContents(ItemStack var0, Player var1) {
-      BundleContents var2 = var0.get(DataComponents.BUNDLE_CONTENTS);
-      if (var2 != null && !var2.isEmpty()) {
-         var0.set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-         if (var1 instanceof ServerPlayer) {
-            var2.itemsCopy().forEach(var1x -> var1.drop(var1x, true));
+   private boolean dropContent(ItemStack var1, Player var2) {
+      BundleContents var3 = var1.get(DataComponents.BUNDLE_CONTENTS);
+      if (var3 != null && !var3.isEmpty()) {
+         Optional var4 = removeOneItemFromBundle(var1, var2, var3);
+         if (var4.isPresent()) {
+            var2.drop((ItemStack)var4.get(), true);
+            return true;
+         } else {
+            return false;
          }
-
-         return true;
       } else {
          return false;
       }
+   }
+
+   private static Optional<ItemStack> removeOneItemFromBundle(ItemStack var0, Player var1, BundleContents var2) {
+      BundleContents.Mutable var3 = new BundleContents.Mutable(var2);
+      ItemStack var4 = var3.removeOne();
+      if (var4 != null) {
+         playRemoveOneSound(var1);
+         var0.set(DataComponents.BUNDLE_CONTENTS, var3.toImmutable());
+         return Optional.of(var4);
+      } else {
+         return Optional.empty();
+      }
+   }
+
+   @Override
+   public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
+      if (!var1.isClientSide && var2 instanceof Player var5) {
+         int var6 = this.getUseDuration(var3, var2);
+         boolean var7 = var4 == var6;
+         if (var7 || var4 < var6 - 10 && var4 % 2 == 0) {
+            this.dropContent(var5, var3);
+         }
+      }
+   }
+
+   @Override
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+      return 60;
    }
 
    @Override
@@ -213,19 +251,19 @@ public class BundleItem extends Item {
       }
    }
 
-   private void playRemoveOneSound(Entity var1) {
-      var1.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
+   private static void playRemoveOneSound(Entity var0) {
+      var0.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + var0.level().getRandom().nextFloat() * 0.4F);
    }
 
-   private void playInsertSound(Entity var1) {
-      var1.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
+   private static void playInsertSound(Entity var0) {
+      var0.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + var0.level().getRandom().nextFloat() * 0.4F);
    }
 
    private static void playInsertFailSound(Entity var0) {
       var0.playSound(SoundEvents.BUNDLE_INSERT_FAIL, 1.0F, 1.0F);
    }
 
-   private void playDropContentsSound(Entity var1) {
-      var1.playSound(SoundEvents.BUNDLE_DROP_CONTENTS, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
+   private static void playDropContentsSound(Entity var0) {
+      var0.playSound(SoundEvents.BUNDLE_DROP_CONTENTS, 0.8F, 0.8F + var0.level().getRandom().nextFloat() * 0.4F);
    }
 }

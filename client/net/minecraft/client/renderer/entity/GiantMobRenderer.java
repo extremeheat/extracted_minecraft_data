@@ -20,7 +20,7 @@ public class GiantMobRenderer extends MobRenderer<Giant, ZombieRenderState, Huma
             this,
             new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT_INNER_ARMOR)),
             new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT_OUTER_ARMOR)),
-            var1.getModelManager()
+            var1.getEquipmentRenderer()
          )
       );
    }

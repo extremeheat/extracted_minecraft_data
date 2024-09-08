@@ -18,7 +18,7 @@ import net.minecraft.util.profiling.metrics.MetricsRegistry;
 import net.minecraft.util.profiling.metrics.ProfilerMeasured;
 import org.slf4j.Logger;
 
-public abstract class BlockableEventLoop<R extends Runnable> implements ProfilerMeasured, ProcessorHandle<R>, Executor {
+public abstract class BlockableEventLoop<R extends Runnable> implements ProfilerMeasured, TaskScheduler<R>, Executor {
    public static final long BLOCK_TIME_NANOS = 100000L;
    private final String name;
    private static final Logger LOGGER = LogUtils.getLogger();
@@ -30,8 +30,6 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       this.name = var1;
       MetricsRegistry.INSTANCE.add(this);
    }
-
-   protected abstract R wrapRunnable(Runnable var1);
 
    protected abstract boolean shouldRun(R var1);
 
@@ -83,7 +81,8 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       }
    }
 
-   public void tell(R var1) {
+   @Override
+   public void schedule(R var1) {
       this.pendingRunnables.add((R)var1);
       LockSupport.unpark(this.getRunningThread());
    }
@@ -91,7 +90,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
    @Override
    public void execute(Runnable var1) {
       if (this.scheduleExecutables()) {
-         this.tell(this.wrapRunnable(var1));
+         this.schedule(this.wrapRunnable(var1));
       } else {
          var1.run();
       }

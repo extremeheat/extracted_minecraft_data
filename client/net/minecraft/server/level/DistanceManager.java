@@ -1,7 +1,6 @@
 package net.minecraft.server.level;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
@@ -30,7 +29,7 @@ import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.SortedArraySet;
-import net.minecraft.util.thread.ProcessorHandle;
+import net.minecraft.util.thread.TaskScheduler;
 import net.minecraft.world.level.ChunkPos;
 import org.slf4j.Logger;
 
@@ -45,9 +44,7 @@ public abstract class DistanceManager {
    private final TickingTracker tickingTicketsTracker = new TickingTracker();
    private final DistanceManager.PlayerTicketTracker playerTicketManager = new DistanceManager.PlayerTicketTracker(32);
    final Set<ChunkHolder> chunksToUpdateFutures = new ReferenceOpenHashSet();
-   final ChunkTaskPriorityQueueSorter ticketThrottler;
-   final ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<Runnable>> ticketThrottlerInput;
-   final ProcessorHandle<ChunkTaskPriorityQueueSorter.Release> ticketThrottlerReleaser;
+   final ThrottlingChunkTaskDispatcher ticketDispatcher;
    final LongSet ticketsToRelease = new LongOpenHashSet();
    final Executor mainThreadExecutor;
    private long ticketTickCounter;
@@ -55,11 +52,8 @@ public abstract class DistanceManager {
 
    protected DistanceManager(Executor var1, Executor var2) {
       super();
-      ProcessorHandle var3 = ProcessorHandle.of("player ticket throttler", var2::execute);
-      ChunkTaskPriorityQueueSorter var4 = new ChunkTaskPriorityQueueSorter(ImmutableList.of(var3), var1, 4);
-      this.ticketThrottler = var4;
-      this.ticketThrottlerInput = var4.getProcessor(var3, true);
-      this.ticketThrottlerReleaser = var4.getReleaseProcessor(var3);
+      TaskScheduler var3 = TaskScheduler.wrapExecutor("player ticket throttler", var2);
+      this.ticketDispatcher = new ThrottlingChunkTaskDispatcher(var3, var1, 4);
       this.mainThreadExecutor = var2;
    }
 
@@ -136,8 +130,8 @@ public abstract class DistanceManager {
                   }
 
                   CompletableFuture var8 = var7.getEntityTickingChunkFuture();
-                  var8.thenAccept(var3x -> this.mainThreadExecutor.execute(() -> this.ticketThrottlerReleaser.tell(ChunkTaskPriorityQueueSorter.release(() -> {
-                        }, var5, false))));
+                  var8.thenAccept(var3x -> this.mainThreadExecutor.execute(() -> this.ticketDispatcher.release(var5, () -> {
+                        }, false)));
                }
             }
 
@@ -275,7 +269,7 @@ public abstract class DistanceManager {
    }
 
    public String getDebugStatus() {
-      return this.ticketThrottler.getDebugStatus();
+      return this.ticketDispatcher.getDebugStatus();
    }
 
    private void dumpTickets(String var1) {
@@ -475,23 +469,18 @@ public abstract class DistanceManager {
          if (var4 != var5) {
             Ticket var6 = new Ticket<>(TicketType.PLAYER, DistanceManager.PLAYER_TICKET_LEVEL, new ChunkPos(var1));
             if (var5) {
-               DistanceManager.this.ticketThrottlerInput
-                  .tell(ChunkTaskPriorityQueueSorter.message(() -> DistanceManager.this.mainThreadExecutor.execute(() -> {
-                        if (this.haveTicketFor(this.getLevel(var1))) {
-                           DistanceManager.this.addTicket(var1, var6);
-                           DistanceManager.this.ticketsToRelease.add(var1);
-                        } else {
-                           DistanceManager.this.ticketThrottlerReleaser.tell(ChunkTaskPriorityQueueSorter.release(() -> {
-                           }, var1, false));
-                        }
-                     }), var1, () -> var3));
+               DistanceManager.this.ticketDispatcher.submit(() -> DistanceManager.this.mainThreadExecutor.execute(() -> {
+                     if (this.haveTicketFor(this.getLevel(var1))) {
+                        DistanceManager.this.addTicket(var1, var6);
+                        DistanceManager.this.ticketsToRelease.add(var1);
+                     } else {
+                        DistanceManager.this.ticketDispatcher.release(var1, () -> {
+                        }, false);
+                     }
+                  }), var1, () -> var3);
             } else {
-               DistanceManager.this.ticketThrottlerReleaser
-                  .tell(
-                     ChunkTaskPriorityQueueSorter.release(
-                        () -> DistanceManager.this.mainThreadExecutor.execute(() -> DistanceManager.this.removeTicket(var1, var6)), var1, true
-                     )
-                  );
+               DistanceManager.this.ticketDispatcher
+                  .release(var1, () -> DistanceManager.this.mainThreadExecutor.execute(() -> DistanceManager.this.removeTicket(var1, var6)), true);
             }
          }
       }
@@ -507,7 +496,7 @@ public abstract class DistanceManager {
                int var4 = this.queueLevels.get(var2);
                int var5 = this.getLevel(var2);
                if (var4 != var5) {
-                  DistanceManager.this.ticketThrottler.onLevelChange(new ChunkPos(var2), () -> this.queueLevels.get(var2), var5, var3 -> {
+                  DistanceManager.this.ticketDispatcher.onLevelChange(new ChunkPos(var2), () -> this.queueLevels.get(var2), var5, var3 -> {
                      if (var3 >= this.queueLevels.defaultReturnValue()) {
                         this.queueLevels.remove(var2);
                      } else {

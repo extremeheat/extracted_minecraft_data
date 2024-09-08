@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -185,32 +186,36 @@ public class OldMinecartBehavior extends MinecartBehavior {
       var14 = new Vec3(var27 * var19 / var23, var14.y, var27 * var21 / var23);
       this.setDeltaMovement(var14);
       Entity var29 = this.minecart.getFirstPassenger();
-      Vec3 var30 = this.minecart.getPassengerMoveIntent();
+      Vec3 var30;
+      if (this.minecart.getFirstPassenger() instanceof ServerPlayer var31) {
+         var30 = var31.getLastClientMoveIntent();
+      } else {
+         var30 = Vec3.ZERO;
+      }
+
       if (var29 instanceof Player && var30.lengthSqr() > 0.0) {
-         Vec3 var31 = var30.normalize();
-         double var32 = this.getDeltaMovement().horizontalDistanceSqr();
-         if (var31.lengthSqr() > 0.0 && var32 < 0.01) {
+         Vec3 var64 = var30.normalize();
+         double var67 = this.getDeltaMovement().horizontalDistanceSqr();
+         if (var64.lengthSqr() > 0.0 && var67 < 0.01) {
             this.setDeltaMovement(this.getDeltaMovement().add(var30.x * 0.001, 0.0, var30.z * 0.001));
             var11 = false;
          }
-      } else {
-         this.minecart.setPassengerMoveIntent(Vec3.ZERO);
       }
 
       if (var11) {
-         double var64 = this.getDeltaMovement().horizontalDistance();
-         if (var64 < 0.03) {
+         double var65 = this.getDeltaMovement().horizontalDistance();
+         if (var65 < 0.03) {
             this.setDeltaMovement(Vec3.ZERO);
          } else {
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 0.0, 0.5));
          }
       }
 
-      double var65 = (double)var1.getX() + 0.5 + (double)var17.getX() * 0.5;
+      double var66 = (double)var1.getX() + 0.5 + (double)var17.getX() * 0.5;
       double var33 = (double)var1.getZ() + 0.5 + (double)var17.getZ() * 0.5;
       double var35 = (double)var1.getX() + 0.5 + (double)var18.getX() * 0.5;
       double var37 = (double)var1.getZ() + 0.5 + (double)var18.getZ() * 0.5;
-      var19 = var35 - var65;
+      var19 = var35 - var66;
       var21 = var37 - var33;
       double var39;
       if (var19 == 0.0) {
@@ -218,18 +223,18 @@ public class OldMinecartBehavior extends MinecartBehavior {
       } else if (var21 == 0.0) {
          var39 = var3 - (double)var1.getX();
       } else {
-         double var41 = var3 - var65;
+         double var41 = var3 - var66;
          double var43 = var7 - var33;
          var39 = (var41 * var19 + var43 * var21) * 2.0;
       }
 
-      var3 = var65 + var19 * var39;
+      var3 = var66 + var19 * var39;
       var7 = var33 + var21 * var39;
       this.setPos(var3, var5, var7);
-      double var66 = this.minecart.isVehicle() ? 0.75 : 1.0;
-      double var67 = this.minecart.getMaxSpeed();
+      double var68 = this.minecart.isVehicle() ? 0.75 : 1.0;
+      double var69 = this.minecart.getMaxSpeed();
       var14 = this.getDeltaMovement();
-      this.minecart.move(MoverType.SELF, new Vec3(Mth.clamp(var66 * var14.x, -var67, var67), 0.0, Mth.clamp(var66 * var14.z, -var67, var67)));
+      this.minecart.move(MoverType.SELF, new Vec3(Mth.clamp(var68 * var14.x, -var69, var69), 0.0, Mth.clamp(var68 * var14.z, -var69, var69)));
       if (var17.getY() != 0 && Mth.floor(this.minecart.getX()) - var1.getX() == var17.getX() && Mth.floor(this.minecart.getZ()) - var1.getZ() == var17.getZ()) {
          this.setPos(this.minecart.getX(), this.minecart.getY() + (double)var17.getY(), this.minecart.getZ());
       } else if (var18.getY() != 0
@@ -251,24 +256,24 @@ public class OldMinecartBehavior extends MinecartBehavior {
          this.setPos(this.minecart.getX(), var45.y, this.minecart.getZ());
       }
 
-      int var68 = Mth.floor(this.minecart.getX());
+      int var70 = Mth.floor(this.minecart.getX());
       int var47 = Mth.floor(this.minecart.getZ());
-      if (var68 != var1.getX() || var47 != var1.getZ()) {
-         Vec3 var69 = this.getDeltaMovement();
-         double var71 = var69.horizontalDistance();
-         this.setDeltaMovement(var71 * (double)(var68 - var1.getX()), var69.y, var71 * (double)(var47 - var1.getZ()));
+      if (var70 != var1.getX() || var47 != var1.getZ()) {
+         Vec3 var71 = this.getDeltaMovement();
+         double var73 = var71.horizontalDistance();
+         this.setDeltaMovement(var73 * (double)(var70 - var1.getX()), var71.y, var73 * (double)(var47 - var1.getZ()));
       }
 
       if (var10) {
-         Vec3 var70 = this.getDeltaMovement();
-         double var72 = var70.horizontalDistance();
-         if (var72 > 0.01) {
+         Vec3 var72 = this.getDeltaMovement();
+         double var74 = var72.horizontalDistance();
+         if (var74 > 0.01) {
             double var51 = 0.06;
-            this.setDeltaMovement(var70.add(var70.x / var72 * 0.06, 0.0, var70.z / var72 * 0.06));
+            this.setDeltaMovement(var72.add(var72.x / var74 * 0.06, 0.0, var72.z / var74 * 0.06));
          } else {
-            Vec3 var73 = this.getDeltaMovement();
-            double var52 = var73.x;
-            double var54 = var73.z;
+            Vec3 var75 = this.getDeltaMovement();
+            double var52 = var75.x;
+            double var54 = var75.z;
             if (var15 == RailShape.EAST_WEST) {
                if (this.minecart.isRedstoneConductor(var1.west())) {
                   var52 = 0.02;
@@ -287,7 +292,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
                }
             }
 
-            this.setDeltaMovement(var52, var73.y, var54);
+            this.setDeltaMovement(var52, var75.y, var54);
          }
       }
    }

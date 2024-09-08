@@ -14,7 +14,7 @@ import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.thread.ProcessorMailbox;
+import net.minecraft.util.thread.ConsecutiveExecutor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -30,13 +30,13 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    private final ServerLevel level;
    private final SimpleRegionStorage simpleRegionStorage;
    private final LongSet emptyChunks = new LongOpenHashSet();
-   private final ProcessorMailbox<Runnable> entityDeserializerQueue;
+   private final ConsecutiveExecutor entityDeserializerQueue;
 
    public EntityStorage(SimpleRegionStorage var1, ServerLevel var2, Executor var3) {
       super();
       this.simpleRegionStorage = var1;
       this.level = var2;
-      this.entityDeserializerQueue = ProcessorMailbox.create(var3, "entity-deserializer");
+      this.entityDeserializerQueue = new ConsecutiveExecutor(var3, "entity-deserializer");
    }
 
    @Override
@@ -67,7 +67,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                List var5 = EntityType.loadEntitiesRecursive(var4, this.level, EntitySpawnReason.LOAD).collect(ImmutableList.toImmutableList());
                return new ChunkEntities<>(var1, var5);
             }
-         }, this.entityDeserializerQueue::tell);
+         }, this.entityDeserializerQueue::schedule);
       }
    }
 

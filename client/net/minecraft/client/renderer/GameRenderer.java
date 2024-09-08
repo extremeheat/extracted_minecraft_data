@@ -692,7 +692,7 @@ public class GameRenderer implements AutoCloseable {
          float var8 = var7 * 3.1415927F;
          float var9 = this.itemActivationOffX * (float)(var1.guiWidth() / 4);
          float var10 = this.itemActivationOffY * (float)(var1.guiHeight() / 4);
-         PoseStack var11 = new PoseStack();
+         PoseStack var11 = var1.pose();
          var11.pushPose();
          var11.translate(
             (float)(var1.guiWidth() / 2) + var9 * Mth.abs(Mth.sin(var8 * 2.0F)), (float)(var1.guiHeight() / 2) + var10 * Mth.abs(Mth.sin(var8 * 2.0F)), -50.0F
@@ -702,11 +702,11 @@ public class GameRenderer implements AutoCloseable {
          var11.mulPose(Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var8))));
          var11.mulPose(Axis.XP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
          var11.mulPose(Axis.ZP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
-         this.minecraft
-            .getItemRenderer()
-            .renderStatic(
-               this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var11, var1.bufferSource(), this.minecraft.level, 0
-            );
+         var1.drawSpecial(
+            var2x -> this.minecraft
+                  .getItemRenderer()
+                  .renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var11, var2x, this.minecraft.level, 0)
+         );
          var11.popPose();
       }
    }

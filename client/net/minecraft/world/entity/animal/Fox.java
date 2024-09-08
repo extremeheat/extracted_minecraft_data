@@ -450,9 +450,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Variant> {
    }
 
    @Override
-   public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
-      return !this.getItemBySlot(var2).isEmpty() ? false : var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return var1 == EquipmentSlot.MAINHAND && this.canPickUpLoot();
    }
 
    @Override

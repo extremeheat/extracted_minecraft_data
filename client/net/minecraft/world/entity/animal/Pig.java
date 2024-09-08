@@ -18,6 +18,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -210,21 +211,14 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    @Override
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
       if (var1.getDifficulty() != Difficulty.PEACEFUL) {
-         ZombifiedPiglin var3 = EntityType.ZOMBIFIED_PIGLIN.create(var1, EntitySpawnReason.CONVERSION);
-         if (var3 != null) {
-            var3.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
-            var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var3.setNoAi(this.isNoAi());
-            var3.setBaby(this.isBaby());
-            if (this.hasCustomName()) {
-               var3.setCustomName(this.getCustomName());
-               var3.setCustomNameVisible(this.isCustomNameVisible());
+         ZombifiedPiglin var3 = this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, false, true), var1x -> {
+            if (this.getMainHandItem().isEmpty()) {
+               var1x.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
             }
 
-            var3.setPersistenceRequired();
-            var1.addFreshEntity(var3);
-            this.discard();
-         } else {
+            var1x.setPersistenceRequired();
+         });
+         if (var3 == null) {
             super.thunderHit(var1, var2);
          }
       } else {

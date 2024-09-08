@@ -762,10 +762,10 @@ public class ModelBlockRenderer {
             float var61 = var5[var9.vert3Weights[2].shape] * var5[var9.vert3Weights[3].shape];
             float var62 = var5[var9.vert3Weights[4].shape] * var5[var9.vert3Weights[5].shape];
             float var63 = var5[var9.vert3Weights[6].shape] * var5[var9.vert3Weights[7].shape];
-            this.brightness[var43.vert0] = var72 * var48 + var74 * var49 + var76 * var50 + var77 * var51;
-            this.brightness[var43.vert1] = var72 * var52 + var74 * var53 + var76 * var54 + var77 * var55;
-            this.brightness[var43.vert2] = var72 * var56 + var74 * var57 + var76 * var58 + var77 * var59;
-            this.brightness[var43.vert3] = var72 * var60 + var74 * var61 + var76 * var62 + var77 * var63;
+            this.brightness[var43.vert0] = Math.clamp(var72 * var48 + var74 * var49 + var76 * var50 + var77 * var51, 0.0F, 1.0F);
+            this.brightness[var43.vert1] = Math.clamp(var72 * var52 + var74 * var53 + var76 * var54 + var77 * var55, 0.0F, 1.0F);
+            this.brightness[var43.vert2] = Math.clamp(var72 * var56 + var74 * var57 + var76 * var58 + var77 * var59, 0.0F, 1.0F);
+            this.brightness[var43.vert3] = Math.clamp(var72 * var60 + var74 * var61 + var76 * var62 + var77 * var63, 0.0F, 1.0F);
             int var64 = this.blend(var22, var13, var37, var71);
             int var65 = this.blend(var19, var13, var36, var71);
             int var66 = this.blend(var19, var16, var38, var71);

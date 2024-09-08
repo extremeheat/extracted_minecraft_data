@@ -131,10 +131,15 @@ public class TripWireBlock extends Block {
    }
 
    @Override
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, Level var2, BlockPos var3) {
+      return var1.getShape(var2, var3);
+   }
+
+   @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide) {
          if (!var1.getValue(POWERED)) {
-            this.checkPressed(var2, var3);
+            this.checkPressed(var2, var3, List.of(var4));
          }
       }
    }
@@ -148,25 +153,30 @@ public class TripWireBlock extends Block {
 
    private void checkPressed(Level var1, BlockPos var2) {
       BlockState var3 = var1.getBlockState(var2);
-      boolean var4 = var3.getValue(POWERED);
-      boolean var5 = false;
-      List var6 = var1.getEntities(null, var3.getShape(var1, var2).bounds().move(var2));
-      if (!var6.isEmpty()) {
-         for (Entity var8 : var6) {
+      List var4 = var1.getEntities(null, var3.getShape(var1, var2).bounds().move(var2));
+      this.checkPressed(var1, var2, var4);
+   }
+
+   private void checkPressed(Level var1, BlockPos var2, List<? extends Entity> var3) {
+      BlockState var4 = var1.getBlockState(var2);
+      boolean var5 = var4.getValue(POWERED);
+      boolean var6 = false;
+      if (!var3.isEmpty()) {
+         for (Entity var8 : var3) {
             if (!var8.isIgnoringBlockTriggers()) {
-               var5 = true;
+               var6 = true;
                break;
             }
          }
       }
 
-      if (var5 != var4) {
-         var3 = var3.setValue(POWERED, Boolean.valueOf(var5));
-         var1.setBlock(var2, var3, 3);
-         this.updateSource(var1, var2, var3);
+      if (var6 != var5) {
+         var4 = var4.setValue(POWERED, Boolean.valueOf(var6));
+         var1.setBlock(var2, var4, 3);
+         this.updateSource(var1, var2, var4);
       }
 
-      if (var5) {
+      if (var6) {
          var1.scheduleTick(new BlockPos(var2), this, 10);
       }
    }

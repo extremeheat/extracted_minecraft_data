@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
@@ -56,7 +57,7 @@ public class GhostSlots {
          GhostSlots.GhostSlot var6 = (GhostSlots.GhostSlot)this.ingredients.get(var5);
          if (var6 != null) {
             ItemStack var7 = var6.getItem(this.slotSelectTime.currentIndex());
-            var1.renderComponentTooltip(var2.font, Screen.getTooltipFromItem(var2, var7), var3, var4);
+            var1.renderComponentTooltip(var2.font, Screen.getTooltipFromItem(var2, var7), var3, var4, var7.get(DataComponents.TOOLTIP_STYLE));
          }
       }
    }

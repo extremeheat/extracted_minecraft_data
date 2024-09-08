@@ -97,7 +97,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private static final ResourceLocation ENTITY_OUTLINE_POST_CHAIN_ID = ResourceLocation.withDefaultNamespace("entity_outline");
    public static final int SECTION_SIZE = 16;
    public static final int HALF_SECTION_SIZE = 8;
-   private static final int TRANSPARENT_SORT_COUNT = 15;
+   public static final int NEARBY_SECTION_DISTANCE_IN_BLOCKS = 32;
+   private static final int MINIMUM_TRANSPARENT_SORT_COUNT = 15;
    private final Minecraft minecraft;
    private final EntityRenderDispatcher entityRenderDispatcher;
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
@@ -110,6 +111,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private ClientLevel level;
    private final SectionOcclusionGraph sectionOcclusionGraph = new SectionOcclusionGraph();
    private final ObjectArrayList<SectionRenderDispatcher.RenderSection> visibleSections = new ObjectArrayList(10000);
+   private final ObjectArrayList<SectionRenderDispatcher.RenderSection> nearbyVisibleSections = new ObjectArrayList(50);
    private final Set<BlockEntity> globalBlockEntities = Sets.newHashSet();
    @Nullable
    private ViewArea viewArea;
@@ -137,7 +139,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    @Nullable
    private Frustum capturedFrustum;
    @Nullable
-   private Vec3 lastTranslucentSortPos;
+   private BlockPos lastTranslucentSortBlockPos;
+   private int translucencyResortIterationIndex;
 
    public LevelRenderer(Minecraft var1, EntityRenderDispatcher var2, BlockEntityRenderDispatcher var3, RenderBuffers var4) {
       super();
@@ -230,8 +233,13 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.sectionRenderDispatcher = null;
          this.globalBlockEntities.clear();
          this.sectionOcclusionGraph.waitAndReset(null);
-         this.visibleSections.clear();
+         this.clearVisibleSections();
       }
+   }
+
+   private void clearVisibleSections() {
+      this.visibleSections.clear();
+      this.nearbyVisibleSections.clear();
    }
 
    public void allChanged() {
@@ -264,7 +272,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
          this.viewArea = new ViewArea(this.sectionRenderDispatcher, this.level, this.minecraft.options.getEffectiveRenderDistance(), this);
          this.sectionOcclusionGraph.waitAndReset(this.viewArea);
-         this.visibleSections.clear();
+         this.clearVisibleSections();
          Entity var4 = this.minecraft.getCameraEntity();
          if (var4 != null) {
             this.viewArea.repositionCamera(SectionPos.of(var4));
@@ -384,8 +392,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          throw new IllegalStateException("applyFrustum called from wrong thread: " + Thread.currentThread().getName());
       } else {
          this.minecraft.getProfiler().push("apply_frustum");
-         this.visibleSections.clear();
-         this.sectionOcclusionGraph.addSectionsInFrustum(var1, this.visibleSections);
+         this.clearVisibleSections();
+         this.sectionOcclusionGraph.addSectionsInFrustum(var1, this.visibleSections, this.nearbyVisibleSections);
          this.minecraft.getProfiler().pop();
       }
    }
@@ -893,28 +901,40 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          .render(var1, var11 - var2, var13 - var4, var15 - var6, var8, var9, var10, this.entityRenderDispatcher.getPackedLightCoords(var1, var8));
    }
 
-   private void scheduleTranslucentSectionResort(Vec3 var1, RenderType var2) {
-      if (this.lastTranslucentSortPos == null || !(var1.distanceToSqr(this.lastTranslucentSortPos) <= 1.0)) {
+   private void scheduleTranslucentSectionResort(Vec3 var1) {
+      if (!this.visibleSections.isEmpty()) {
+         BlockPos var2 = BlockPos.containing(var1);
+         boolean var3 = !var2.equals(this.lastTranslucentSortBlockPos);
          this.minecraft.getProfiler().push("translucent_sort");
-         int var3 = SectionPos.posToSectionCoord(var1.x);
-         int var4 = SectionPos.posToSectionCoord(var1.y);
-         int var5 = SectionPos.posToSectionCoord(var1.z);
-         boolean var6 = this.lastTranslucentSortPos == null
-            || var3 != SectionPos.posToSectionCoord(this.lastTranslucentSortPos.x)
-            || var5 != SectionPos.posToSectionCoord(this.lastTranslucentSortPos.y)
-            || var4 != SectionPos.posToSectionCoord(this.lastTranslucentSortPos.z);
-         this.lastTranslucentSortPos = var1;
-         int var7 = 0;
-         ObjectListIterator var8 = this.visibleSections.iterator();
+         SectionRenderDispatcher.TranslucencyPointOfView var4 = new SectionRenderDispatcher.TranslucencyPointOfView();
+         ObjectListIterator var5 = this.nearbyVisibleSections.iterator();
 
-         while (var8.hasNext()) {
-            SectionRenderDispatcher.RenderSection var9 = (SectionRenderDispatcher.RenderSection)var8.next();
-            if (var7 < 15 && (var6 || var9.isAxisAlignedWith(var3, var4, var5)) && var9.resortTransparency(var2, this.sectionRenderDispatcher)) {
-               var7++;
-            }
+         while (var5.hasNext()) {
+            SectionRenderDispatcher.RenderSection var6 = (SectionRenderDispatcher.RenderSection)var5.next();
+            this.scheduleResort(var6, var4, var1, var3, true);
          }
 
+         this.translucencyResortIterationIndex = this.translucencyResortIterationIndex % this.visibleSections.size();
+         int var7 = Math.max(this.visibleSections.size() / 8, 15);
+
+         while (var7-- > 0) {
+            int var8 = this.translucencyResortIterationIndex++ % this.visibleSections.size();
+            this.scheduleResort((SectionRenderDispatcher.RenderSection)this.visibleSections.get(var8), var4, var1, var3, false);
+         }
+
+         this.lastTranslucentSortBlockPos = var2;
          this.minecraft.getProfiler().pop();
+      }
+   }
+
+   private void scheduleResort(
+      SectionRenderDispatcher.RenderSection var1, SectionRenderDispatcher.TranslucencyPointOfView var2, Vec3 var3, boolean var4, boolean var5
+   ) {
+      var2.set(var3, var1.getSectionNode());
+      boolean var6 = !var2.equals(var1.pointOfView.get());
+      boolean var7 = var4 && (var2.isAxisAligned() || var5);
+      if ((var7 || var6) && !var1.transparencyResortingScheduled() && var1.hasTranslucentGeometry()) {
+         var1.resortTransparency(this.sectionRenderDispatcher);
       }
    }
 
@@ -1086,7 +1106,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
 
       this.minecraft.getProfiler().pop();
-      this.scheduleTranslucentSectionResort(var1.getPosition(), RenderType.translucent());
+      this.scheduleTranslucentSectionResort(var1.getPosition());
    }
 
    private static boolean isLightOnInSectionAndNeighbors(LevelLightEngine var0, long var1) {

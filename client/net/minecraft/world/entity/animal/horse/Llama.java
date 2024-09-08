@@ -51,14 +51,11 @@ import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.LlamaSpit;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.WoolCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -288,24 +285,8 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   public boolean isBodyArmorItem(ItemStack var1) {
-      return var1.is(ItemTags.WOOL_CARPETS);
-   }
-
-   @Override
    public boolean isSaddleable() {
       return false;
-   }
-
-   @Nullable
-   private static DyeColor getDyeColor(ItemStack var0) {
-      Block var1 = Block.byItem(var0.getItem());
-      return var1 instanceof WoolCarpetBlock ? ((WoolCarpetBlock)var1).getColor() : null;
-   }
-
-   @Nullable
-   public DyeColor getSwag() {
-      return getDyeColor(this.getItemBySlot(EquipmentSlot.BODY));
    }
 
    @Override

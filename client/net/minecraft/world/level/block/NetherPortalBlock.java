@@ -17,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -177,35 +178,26 @@ public class NetherPortalBlock extends Block implements Portal {
          var6 = new Vec3(0.5, 0.0, 0.0);
       }
 
-      return createDimensionTransition(var3, var2, var5, var6, var0, var0.getDeltaMovement(), var0.getYRot(), var0.getXRot(), var4);
+      return createDimensionTransition(var3, var2, var5, var6, var0, var4);
    }
 
    private static DimensionTransition createDimensionTransition(
-      ServerLevel var0,
-      BlockUtil.FoundRectangle var1,
-      Direction.Axis var2,
-      Vec3 var3,
-      Entity var4,
-      Vec3 var5,
-      float var6,
-      float var7,
-      DimensionTransition.PostDimensionTransition var8
+      ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, Entity var4, DimensionTransition.PostDimensionTransition var5
    ) {
-      BlockPos var9 = var1.minCorner;
-      BlockState var10 = var0.getBlockState(var9);
-      Direction.Axis var11 = var10.getOptionalValue(BlockStateProperties.HORIZONTAL_AXIS).orElse(Direction.Axis.X);
-      double var12 = (double)var1.axis1Size;
-      double var14 = (double)var1.axis2Size;
-      EntityDimensions var16 = var4.getDimensions(var4.getPose());
-      int var17 = var2 == var11 ? 0 : 90;
-      Vec3 var18 = var2 == var11 ? var5 : new Vec3(var5.z, var5.y, -var5.x);
-      double var19 = (double)var16.width() / 2.0 + (var12 - (double)var16.width()) * var3.x();
-      double var21 = (var14 - (double)var16.height()) * var3.y();
-      double var23 = 0.5 + var3.z();
-      boolean var25 = var11 == Direction.Axis.X;
-      Vec3 var26 = new Vec3((double)var9.getX() + (var25 ? var19 : var23), (double)var9.getY() + var21, (double)var9.getZ() + (var25 ? var23 : var19));
-      Vec3 var27 = PortalShape.findCollisionFreePosition(var26, var0, var4, var16);
-      return new DimensionTransition(var0, var27, var18, var6 + (float)var17, var7, var8);
+      BlockPos var6 = var1.minCorner;
+      BlockState var7 = var0.getBlockState(var6);
+      Direction.Axis var8 = var7.getOptionalValue(BlockStateProperties.HORIZONTAL_AXIS).orElse(Direction.Axis.X);
+      double var9 = (double)var1.axis1Size;
+      double var11 = (double)var1.axis2Size;
+      EntityDimensions var13 = var4.getDimensions(var4.getPose());
+      int var14 = var2 == var8 ? 0 : 90;
+      double var15 = (double)var13.width() / 2.0 + (var9 - (double)var13.width()) * var3.x();
+      double var17 = (var11 - (double)var13.height()) * var3.y();
+      double var19 = 0.5 + var3.z();
+      boolean var21 = var8 == Direction.Axis.X;
+      Vec3 var22 = new Vec3((double)var6.getX() + (var21 ? var15 : var19), (double)var6.getY() + var17, (double)var6.getZ() + (var21 ? var19 : var15));
+      Vec3 var23 = PortalShape.findCollisionFreePosition(var22, var0, var4, var13);
+      return new DimensionTransition(var0, var23, Vec3.ZERO, (float)var14, 0.0F, Relative.union(Relative.DELTA, Relative.ROTATION), var5);
    }
 
    @Override

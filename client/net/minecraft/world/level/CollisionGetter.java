@@ -12,7 +12,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -99,7 +98,7 @@ public interface CollisionGetter extends BlockGetter {
       return var3.isInsideCloseToBorder(var1, var2) ? var3.getCollisionShape() : null;
    }
 
-   default HitResult clipIncludingBorder(ClipContext var1) {
+   default BlockHitResult clipIncludingBorder(ClipContext var1) {
       BlockHitResult var2 = this.clip(var1);
       WorldBorder var3 = this.getWorldBorder();
       if (var3.isWithinBounds(var1.getFrom()) && !var3.isWithinBounds(var2.getLocation())) {

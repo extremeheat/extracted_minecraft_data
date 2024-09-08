@@ -205,9 +205,9 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
             }
 
             if (var3 == 1) {
-               ItemStack var14 = this.menu.getCarried().split(1);
-               this.minecraft.player.drop(var14, true);
-               this.minecraft.gameMode.handleCreativeModeItemDrop(var14);
+               ItemStack var15 = this.menu.getCarried().split(1);
+               this.minecraft.player.drop(var15, true);
+               this.minecraft.gameMode.handleCreativeModeItemDrop(var15);
             }
          }
       } else {
@@ -216,8 +216,8 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          }
 
          if (var1 == this.destroyItemSlot && var5) {
-            for (int var13 = 0; var13 < this.minecraft.player.inventoryMenu.getItems().size(); var13++) {
-               this.minecraft.gameMode.handleCreativeModeItemAdd(ItemStack.EMPTY, var13);
+            for (int var14 = 0; var14 < this.minecraft.player.inventoryMenu.getItems().size(); var14++) {
+               this.minecraft.gameMode.handleCreativeModeItemAdd(ItemStack.EMPTY, var14);
             }
          } else if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
             if (var1 == this.destroyItemSlot) {
@@ -240,11 +240,11 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
                this.minecraft.player.inventoryMenu.broadcastChanges();
             }
          } else if (var4 != ClickType.QUICK_CRAFT && var1.container == CONTAINER) {
-            ItemStack var12 = this.menu.getCarried();
-            ItemStack var17 = var1.getItem();
+            ItemStack var13 = this.menu.getCarried();
+            ItemStack var18 = var1.getItem();
             if (var4 == ClickType.SWAP) {
-               if (!var17.isEmpty()) {
-                  this.minecraft.player.getInventory().setItem(var3, var17.copyWithCount(var17.getMaxStackSize()));
+               if (!var18.isEmpty()) {
+                  this.minecraft.player.getInventory().setItem(var3, var18.copyWithCount(var18.getMaxStackSize()));
                   this.minecraft.player.inventoryMenu.broadcastChanges();
                }
 
@@ -253,60 +253,62 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
             if (var4 == ClickType.CLONE) {
                if (this.menu.getCarried().isEmpty() && var1.hasItem()) {
-                  ItemStack var20 = var1.getItem();
-                  this.menu.setCarried(var20.copyWithCount(var20.getMaxStackSize()));
+                  ItemStack var21 = var1.getItem();
+                  this.menu.setCarried(var21.copyWithCount(var21.getMaxStackSize()));
                }
 
                return;
             }
 
             if (var4 == ClickType.THROW) {
-               if (!var17.isEmpty()) {
-                  ItemStack var19 = var17.copyWithCount(var3 == 0 ? 1 : var17.getMaxStackSize());
-                  this.minecraft.player.drop(var19, true);
-                  this.minecraft.gameMode.handleCreativeModeItemDrop(var19);
+               if (!var18.isEmpty()) {
+                  ItemStack var20 = var18.copyWithCount(var3 == 0 ? 1 : var18.getMaxStackSize());
+                  this.minecraft.player.drop(var20, true);
+                  this.minecraft.gameMode.handleCreativeModeItemDrop(var20);
                }
 
                return;
             }
 
-            if (!var12.isEmpty() && !var17.isEmpty() && ItemStack.isSameItemSameComponents(var12, var17)) {
+            if (!var13.isEmpty() && !var18.isEmpty() && ItemStack.isSameItemSameComponents(var13, var18)) {
                if (var3 == 0) {
                   if (var5) {
-                     var12.setCount(var12.getMaxStackSize());
-                  } else if (var12.getCount() < var12.getMaxStackSize()) {
-                     var12.grow(1);
+                     var13.setCount(var13.getMaxStackSize());
+                  } else if (var13.getCount() < var13.getMaxStackSize()) {
+                     var13.grow(1);
                   }
                } else {
-                  var12.shrink(1);
+                  var13.shrink(1);
                }
-            } else if (!var17.isEmpty() && var12.isEmpty()) {
-               int var18 = var5 ? var17.getMaxStackSize() : var17.getCount();
-               this.menu.setCarried(var17.copyWithCount(var18));
+            } else if (!var18.isEmpty() && var13.isEmpty()) {
+               int var19 = var5 ? var18.getMaxStackSize() : var18.getCount();
+               this.menu.setCarried(var18.copyWithCount(var19));
             } else if (var3 == 0) {
                this.menu.setCarried(ItemStack.EMPTY);
             } else if (!this.menu.getCarried().isEmpty()) {
                this.menu.getCarried().shrink(1);
             }
          } else if (this.menu != null) {
-            ItemStack var11 = var1 == null ? ItemStack.EMPTY : this.menu.getSlot(var1.index).getItem();
+            ItemStack var12 = var1 == null ? ItemStack.EMPTY : this.menu.getSlot(var1.index).getItem();
             this.menu.clicked(var1 == null ? var2 : var1.index, var3, var4, this.minecraft.player);
             if (AbstractContainerMenu.getQuickcraftHeader(var3) == 2) {
-               for (int var15 = 0; var15 < 9; var15++) {
-                  this.minecraft.gameMode.handleCreativeModeItemAdd(this.menu.getSlot(45 + var15).getItem(), 36 + var15);
+               for (int var16 = 0; var16 < 9; var16++) {
+                  this.minecraft.gameMode.handleCreativeModeItemAdd(this.menu.getSlot(45 + var16).getItem(), 36 + var16);
                }
             } else if (var1 != null) {
-               ItemStack var16 = this.menu.getSlot(var1.index).getItem();
-               this.minecraft.gameMode.handleCreativeModeItemAdd(var16, var1.index - this.menu.slots.size() + 9 + 36);
+               ItemStack var17 = this.menu.getSlot(var1.index).getItem();
                int var8 = 45 + var3;
                if (var4 == ClickType.SWAP) {
-                  this.minecraft.gameMode.handleCreativeModeItemAdd(var11, var8 - this.menu.slots.size() + 9 + 36);
-               } else if (var4 == ClickType.THROW && !var11.isEmpty()) {
-                  ItemStack var9 = var11.copyWithCount(var3 == 0 ? 1 : var11.getMaxStackSize());
-                  this.minecraft.player.drop(var9, true);
-                  this.minecraft.gameMode.handleCreativeModeItemDrop(var9);
+                  this.minecraft.gameMode.handleCreativeModeItemAdd(var12, var8 - this.menu.slots.size() + 9 + 36);
+               } else if (var4 == ClickType.THROW && !var12.isEmpty()) {
+                  int var9 = var3 == 0 ? 1 : var12.getCount();
+                  ItemStack var10 = var12.copyWithCount(var9);
+                  var17.shrink(var9);
+                  this.minecraft.player.drop(var10, true);
+                  this.minecraft.gameMode.handleCreativeModeItemDrop(var10);
                }
 
+               this.minecraft.gameMode.handleCreativeModeItemAdd(var17, var1.index - this.menu.slots.size() + 9 + 36);
                this.minecraft.player.inventoryMenu.broadcastChanges();
             }
          }

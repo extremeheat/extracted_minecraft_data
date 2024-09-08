@@ -446,7 +446,7 @@ public abstract class PlayerList {
          var6.addTag(var8);
       }
 
-      Vec3 var14 = var4.pos();
+      Vec3 var14 = var4.position();
       var6.moveTo(var14.x, var14.y, var14.z, var4.yRot(), var4.xRot());
       if (var4.missingRespawnBlock()) {
          var6.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));

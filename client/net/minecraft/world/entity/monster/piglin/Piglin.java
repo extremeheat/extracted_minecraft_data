@@ -410,22 +410,22 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    protected boolean canReplaceCurrentItem(ItemStack var1) {
       EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       ItemStack var3 = this.getItemBySlot(var2);
-      return this.canReplaceCurrentItem(var1, var3);
+      return this.canReplaceCurrentItem(var1, var3, var2);
    }
 
    @Override
-   protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2) {
+   protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
       if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
          return false;
       } else {
-         boolean var3 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);
-         boolean var4 = PiglinAi.isLovedItem(var2) || var2.is(Items.CROSSBOW);
-         if (var3 && !var4) {
+         boolean var4 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);
+         boolean var5 = PiglinAi.isLovedItem(var2) || var2.is(Items.CROSSBOW);
+         if (var4 && !var5) {
             return true;
-         } else if (!var3 && var4) {
+         } else if (!var4 && var5) {
             return false;
          } else {
-            return this.isAdult() && !var1.is(Items.CROSSBOW) && var2.is(Items.CROSSBOW) ? false : super.canReplaceCurrentItem(var1, var2);
+            return this.isAdult() && !var1.is(Items.CROSSBOW) && var2.is(Items.CROSSBOW) ? false : super.canReplaceCurrentItem(var1, var2, var3);
          }
       }
    }

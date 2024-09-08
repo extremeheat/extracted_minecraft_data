@@ -117,8 +117,10 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          this.flag.xRot = 0.0F;
          this.flag.y = -32.0F;
          DyeColor var14 = ((BannerItem)var10.getItem().getItem()).getColor();
-         BannerRenderer.renderPatterns(
-            var1.pose(), var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns
+         var1.drawSpecial(
+            var3x -> BannerRenderer.renderPatterns(
+                  var1.pose(), var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns
+               )
          );
          var1.pose().popPose();
       } else if (this.hasMaxPatterns) {
@@ -173,8 +175,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       this.flag.xRot = 0.0F;
       this.flag.y = -32.0F;
       BannerPatternLayers var7 = new BannerPatternLayers.Builder().add(var2, DyeColor.WHITE).build();
-      BannerRenderer.renderPatterns(
-         var5, var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7
+      var1.drawSpecial(
+         var3x -> BannerRenderer.renderPatterns(var5, var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7)
       );
       var5.popPose();
       var1.flush();

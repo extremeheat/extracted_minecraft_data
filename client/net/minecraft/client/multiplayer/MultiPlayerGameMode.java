@@ -8,6 +8,8 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.multiplayer.prediction.PredictiveAction;
 import net.minecraft.client.player.LocalPlayer;
@@ -438,7 +440,8 @@ public class MultiPlayerGameMode {
    }
 
    public void handleCreativeModeItemDrop(ItemStack var1) {
-      if (this.localPlayerMode.isCreative() && !var1.isEmpty() && this.connection.isFeatureEnabled(var1.getItem().requiredFeatures())) {
+      boolean var2 = this.minecraft.screen instanceof AbstractContainerScreen && !(this.minecraft.screen instanceof CreativeModeInventoryScreen);
+      if (this.localPlayerMode.isCreative() && !var2 && !var1.isEmpty() && this.connection.isFeatureEnabled(var1.getItem().requiredFeatures())) {
          this.connection.send(new ServerboundSetCreativeModeSlotPacket(-1, var1));
       }
    }

@@ -134,10 +134,10 @@ public class BlockModelDefinition {
          JsonObject var4 = var1.getAsJsonObject();
          Map var5 = this.getVariants(var3, var4);
          MultiPart.Definition var6 = this.getMultiPart(var3, var4);
-         if (!var5.isEmpty() || var6 != null && !var6.getMultiVariants().isEmpty()) {
-            return new BlockModelDefinition(var5, var6);
-         } else {
+         if (var5.isEmpty() && var6 == null) {
             throw new JsonParseException("Neither 'variants' nor 'multipart' found");
+         } else {
+            return new BlockModelDefinition(var5, var6);
          }
       }
 

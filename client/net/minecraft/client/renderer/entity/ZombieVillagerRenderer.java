@@ -26,7 +26,7 @@ public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, 
             new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_OUTER_ARMOR)),
             new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY_INNER_ARMOR)),
             new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY_OUTER_ARMOR)),
-            var1.getModelManager()
+            var1.getEquipmentRenderer()
          )
       );
       this.addLayer(new VillagerProfessionLayer<>(this, var1.getResourceManager(), "zombie_villager"));
@@ -44,6 +44,7 @@ public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, 
       super.extractRenderState(var1, var2, var3);
       var2.isConverting = var1.isConverting();
       var2.villagerData = var1.getVillagerData();
+      var2.isAggressive = var1.isAggressive();
    }
 
    protected boolean isShaking(ZombieVillagerRenderState var1) {

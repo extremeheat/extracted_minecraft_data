@@ -86,7 +86,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
-import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -344,14 +343,14 @@ public abstract class Player extends LivingEntity {
 
    @Override
    public void onAboveBubbleCol(boolean var1) {
-      if (!this.isCreative()) {
+      if (!this.getAbilities().flying) {
          super.onAboveBubbleCol(var1);
       }
    }
 
    @Override
    public void onInsideBubbleColumn(boolean var1) {
-      if (!this.isCreative()) {
+      if (!this.getAbilities().flying) {
          super.onInsideBubbleColumn(var1);
       }
    }
@@ -1453,8 +1452,8 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
-   protected boolean canContinueToGlide(ItemStack var1) {
-      return !this.abilities.flying && super.canContinueToGlide(var1);
+   protected boolean canGlide() {
+      return !this.abilities.flying && super.canGlide();
    }
 
    @Override
@@ -1508,15 +1507,12 @@ public abstract class Player extends LivingEntity {
    }
 
    public boolean tryToStartFallFlying() {
-      if (!this.onGround() && !this.isFallFlying() && !this.isInWater() && !this.hasEffect(MobEffects.LEVITATION)) {
-         ItemStack var1 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if (var1.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var1)) {
-            this.startFallFlying();
-            return true;
-         }
+      if (!this.isFallFlying() && this.canGlide() && !this.isInWater()) {
+         this.startFallFlying();
+         return true;
+      } else {
+         return false;
       }
-
-      return false;
    }
 
    public void startFallFlying() {
@@ -1956,12 +1952,6 @@ public abstract class Player extends LivingEntity {
 
    public boolean canUseGameMasterBlocks() {
       return this.abilities.instabuild && this.getPermissionLevel() >= 2;
-   }
-
-   @Override
-   public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
-      return this.getItemBySlot(var2).isEmpty();
    }
 
    @Override

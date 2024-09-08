@@ -13,7 +13,9 @@ public abstract class AbstractSkeletonRenderer<T extends AbstractSkeleton, S ext
 
    public AbstractSkeletonRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, SkeletonModel<S> var4) {
       super(var1, var4, 0.5F);
-      this.addLayer(new HumanoidArmorLayer<>(this, new SkeletonModel(var1.bakeLayer(var2)), new SkeletonModel(var1.bakeLayer(var3)), var1.getModelManager()));
+      this.addLayer(
+         new HumanoidArmorLayer<>(this, new SkeletonModel(var1.bakeLayer(var2)), new SkeletonModel(var1.bakeLayer(var3)), var1.getEquipmentRenderer())
+      );
    }
 
    public void extractRenderState(T var1, S var2, float var3) {

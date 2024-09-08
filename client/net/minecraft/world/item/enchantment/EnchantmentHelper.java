@@ -149,8 +149,8 @@ public class EnchantmentHelper {
    }
 
    private static void runIterationOnEquipment(LivingEntity var0, EnchantmentHelper.EnchantmentInSlotVisitor var1) {
-      for (EquipmentSlot var5 : EquipmentSlot.values()) {
-         runIterationOnItem(var0.getItemBySlot(var5), var5, var0, var1);
+      for (EquipmentSlot var3 : EquipmentSlot.VALUES) {
+         runIterationOnItem(var0.getItemBySlot(var3), var3, var0, var1);
       }
    }
 
@@ -417,15 +417,15 @@ public class EnchantmentHelper {
    public static Optional<EnchantedItemInUse> getRandomItemWith(DataComponentType<?> var0, LivingEntity var1, Predicate<ItemStack> var2) {
       ArrayList var3 = new ArrayList();
 
-      for (EquipmentSlot var7 : EquipmentSlot.values()) {
-         ItemStack var8 = var1.getItemBySlot(var7);
-         if (var2.test(var8)) {
-            ItemEnchantments var9 = var8.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+      for (EquipmentSlot var5 : EquipmentSlot.VALUES) {
+         ItemStack var6 = var1.getItemBySlot(var5);
+         if (var2.test(var6)) {
+            ItemEnchantments var7 = var6.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 
-            for (Entry var11 : var9.entrySet()) {
-               Holder var12 = (Holder)var11.getKey();
-               if (((Enchantment)var12.value()).effects().has(var0) && ((Enchantment)var12.value()).matchingSlot(var7)) {
-                  var3.add(new EnchantedItemInUse(var8, var7, var1));
+            for (Entry var9 : var7.entrySet()) {
+               Holder var10 = (Holder)var9.getKey();
+               if (((Enchantment)var10.value()).effects().has(var0) && ((Enchantment)var10.value()).matchingSlot(var5)) {
+                  var3.add(new EnchantedItemInUse(var6, var5, var1));
                }
             }
          }
@@ -435,18 +435,19 @@ public class EnchantmentHelper {
    }
 
    public static int getEnchantmentCost(RandomSource var0, int var1, int var2, ItemStack var3) {
-      if (var3.getEnchantmentValue() <= 0) {
+      Enchantable var4 = var3.get(DataComponents.ENCHANTABLE);
+      if (var4 == null) {
          return 0;
       } else {
          if (var2 > 15) {
             var2 = 15;
          }
 
-         int var4 = var0.nextInt(8) + 1 + (var2 >> 1) + var0.nextInt(var2 + 1);
+         int var5 = var0.nextInt(8) + 1 + (var2 >> 1) + var0.nextInt(var2 + 1);
          if (var1 == 0) {
-            return Math.max(var4 / 3, 1);
+            return Math.max(var5 / 3, 1);
          } else {
-            return var1 == 1 ? var4 * 2 / 3 + 1 : Math.max(var4, var2 * 2);
+            return var1 == 1 ? var5 * 2 / 3 + 1 : Math.max(var5, var2 * 2);
          }
       }
    }
@@ -475,11 +476,11 @@ public class EnchantmentHelper {
 
    public static List<EnchantmentInstance> selectEnchantment(RandomSource var0, ItemStack var1, int var2, Stream<Holder<Enchantment>> var3) {
       ArrayList var4 = Lists.newArrayList();
-      int var5 = var1.getEnchantmentValue();
-      if (var5 <= 0) {
+      Enchantable var5 = var1.get(DataComponents.ENCHANTABLE);
+      if (var5 == null) {
          return var4;
       } else {
-         var2 += 1 + var0.nextInt(var5 / 4 + 1) + var0.nextInt(var5 / 4 + 1);
+         var2 += 1 + var0.nextInt(var5.value() / 4 + 1) + var0.nextInt(var5.value() / 4 + 1);
          float var6 = (var0.nextFloat() + var0.nextFloat() - 1.0F) * 0.15F;
          var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var6), 1, 2147483647);
          List var7 = getAvailableEnchantmentResults(var2, var1, var3);

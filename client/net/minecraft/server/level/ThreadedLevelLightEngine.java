@@ -12,8 +12,7 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.util.thread.ProcessorHandle;
-import net.minecraft.util.thread.ProcessorMailbox;
+import net.minecraft.util.thread.ConsecutiveExecutor;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -26,20 +25,18 @@ import org.slf4j.Logger;
 public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCloseable {
    public static final int DEFAULT_BATCH_SIZE = 1000;
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final ProcessorMailbox<Runnable> taskMailbox;
+   private final ConsecutiveExecutor consecutiveExecutor;
    private final ObjectList<Pair<ThreadedLevelLightEngine.TaskType, Runnable>> lightTasks = new ObjectArrayList();
    private final ChunkMap chunkMap;
-   private final ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<Runnable>> sorterMailbox;
+   private final ChunkTaskDispatcher taskDispatcher;
    private final int taskPerBatch = 1000;
    private final AtomicBoolean scheduled = new AtomicBoolean();
 
-   public ThreadedLevelLightEngine(
-      LightChunkGetter var1, ChunkMap var2, boolean var3, ProcessorMailbox<Runnable> var4, ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<Runnable>> var5
-   ) {
+   public ThreadedLevelLightEngine(LightChunkGetter var1, ChunkMap var2, boolean var3, ConsecutiveExecutor var4, ChunkTaskDispatcher var5) {
       super(var1, true, var3);
       this.chunkMap = var2;
-      this.sorterMailbox = var5;
-      this.taskMailbox = var4;
+      this.taskDispatcher = var5;
+      this.consecutiveExecutor = var4;
    }
 
    @Override
@@ -122,12 +119,12 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    }
 
    private void addTask(int var1, int var2, IntSupplier var3, ThreadedLevelLightEngine.TaskType var4, Runnable var5) {
-      this.sorterMailbox.tell(ChunkTaskPriorityQueueSorter.message(() -> {
+      this.taskDispatcher.submit(() -> {
          this.lightTasks.add(Pair.of(var4, var5));
          if (this.lightTasks.size() >= 1000) {
             this.runUpdate();
          }
-      }, ChunkPos.asLong(var1, var2), var3));
+      }, ChunkPos.asLong(var1, var2), var3);
    }
 
    @Override
@@ -173,7 +170,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
 
    public void tryScheduleUpdate() {
       if ((!this.lightTasks.isEmpty() || super.hasLightWork()) && this.scheduled.compareAndSet(false, true)) {
-         this.taskMailbox.tell(() -> {
+         this.consecutiveExecutor.schedule(() -> {
             this.runUpdate();
             this.scheduled.set(false);
          });

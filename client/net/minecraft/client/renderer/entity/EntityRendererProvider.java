@@ -5,7 +5,10 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MapRenderer;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
+import net.minecraft.client.resources.model.EquipmentModelSet;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
@@ -21,10 +24,19 @@ public interface EntityRendererProvider<T extends Entity> {
       private final BlockRenderDispatcher blockRenderDispatcher;
       private final ResourceManager resourceManager;
       private final EntityModelSet modelSet;
+      private final EquipmentModelSet equipmentModels;
       private final Font font;
+      private final EquipmentLayerRenderer equipmentRenderer;
 
       public Context(
-         EntityRenderDispatcher var1, ItemRenderer var2, MapRenderer var3, BlockRenderDispatcher var4, ResourceManager var5, EntityModelSet var6, Font var7
+         EntityRenderDispatcher var1,
+         ItemRenderer var2,
+         MapRenderer var3,
+         BlockRenderDispatcher var4,
+         ResourceManager var5,
+         EntityModelSet var6,
+         EquipmentModelSet var7,
+         Font var8
       ) {
          super();
          this.entityRenderDispatcher = var1;
@@ -33,7 +45,9 @@ public interface EntityRendererProvider<T extends Entity> {
          this.blockRenderDispatcher = var4;
          this.resourceManager = var5;
          this.modelSet = var6;
-         this.font = var7;
+         this.equipmentModels = var7;
+         this.font = var8;
+         this.equipmentRenderer = new EquipmentLayerRenderer(var7, this.getModelManager().getAtlas(Sheets.ARMOR_TRIMS_SHEET));
       }
 
       public EntityRenderDispatcher getEntityRenderDispatcher() {
@@ -58,6 +72,14 @@ public interface EntityRendererProvider<T extends Entity> {
 
       public EntityModelSet getModelSet() {
          return this.modelSet;
+      }
+
+      public EquipmentModelSet getEquipmentModels() {
+         return this.equipmentModels;
+      }
+
+      public EquipmentLayerRenderer getEquipmentRenderer() {
+         return this.equipmentRenderer;
       }
 
       public ModelManager getModelManager() {

@@ -1,7 +1,5 @@
 package net.minecraft.server;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
@@ -38,7 +36,6 @@ import org.slf4j.Logger;
 
 public class ReloadableServerRegistries {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Gson GSON = new GsonBuilder().create();
    private static final RegistrationInfo DEFAULT_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
 
    public ReloadableServerRegistries() {
@@ -59,21 +56,15 @@ public class ReloadableServerRegistries {
    private static <T> CompletableFuture<WritableRegistry<?>> scheduleRegistryLoad(
       LootDataType<T> var0, RegistryOps<JsonElement> var1, ResourceManager var2, Executor var3
    ) {
-      return CompletableFuture.supplyAsync(
-         () -> {
-            MappedRegistry var3x = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
-            HashMap var4 = new HashMap();
-            String var5 = Registries.elementsDirPath(var0.registryKey());
-            SimpleJsonResourceReloadListener.scanDirectory(var2, var5, GSON, var4);
-            var4.forEach(
-               (var3xx, var4x) -> var0.deserialize(var3xx, var1, var4x)
-                     .ifPresent(var3xxx -> var3x.register(ResourceKey.create(var0.registryKey(), var3xx), var3xxx, DEFAULT_REGISTRATION_INFO))
-            );
-            TagLoader.loadTagsForRegistry(var2, var3x);
-            return var3x;
-         },
-         var3
-      );
+      return CompletableFuture.supplyAsync(() -> {
+         MappedRegistry var3x = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
+         HashMap var4 = new HashMap();
+         String var5 = Registries.elementsDirPath(var0.registryKey());
+         SimpleJsonResourceReloadListener.scanDirectory(var2, var5, var1, var0.codec(), var4);
+         var4.forEach((var2xx, var3xx) -> var3x.register(ResourceKey.create(var0.registryKey(), var2xx), var3xx, DEFAULT_REGISTRATION_INFO));
+         TagLoader.loadTagsForRegistry(var2, var3x);
+         return var3x;
+      }, var3);
    }
 
    private static ReloadableServerRegistries.LoadResult createAndValidateFullContext(

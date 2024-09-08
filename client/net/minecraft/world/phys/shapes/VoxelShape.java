@@ -74,6 +74,10 @@ public abstract class VoxelShape {
       return this.shape.isEmpty();
    }
 
+   public VoxelShape move(Vec3 var1) {
+      return this.move(var1.x, var1.y, var1.z);
+   }
+
    public VoxelShape move(double var1, double var3, double var5) {
       return (VoxelShape)(this.isEmpty()
          ? Shapes.empty()

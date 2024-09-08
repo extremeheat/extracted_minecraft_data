@@ -15,16 +15,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.CompassItem;
 import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.LodestoneTracker;
+import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.LightBlock;
@@ -96,6 +95,7 @@ public class ItemProperties {
          return var4 != null ? var4.material().value().itemModelIndex() : -1.0F / 0.0F;
       };
       registerGeneric(ItemModelGenerators.TRIM_TYPE_PREDICATE_ID, var0);
+      registerGeneric(ResourceLocation.withDefaultNamespace("broken"), (var0x, var1, var2, var3) -> var0x.nextDamageWillBreak() ? 1.0F : 0.0F);
       registerCustomModelData((var0x, var1, var2, var3) -> (float)var0x.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value());
       register(Items.BOW, ResourceLocation.withDefaultNamespace("pull"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
@@ -191,7 +191,6 @@ public class ItemProperties {
          ChargedProjectiles var4 = var0x.get(DataComponents.CHARGED_PROJECTILES);
          return var4 != null && var4.contains(Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
       });
-      register(Items.ELYTRA, ResourceLocation.withDefaultNamespace("broken"), (var0x, var1, var2, var3) -> ElytraItem.isFlyEnabled(var0x) ? 0.0F : 1.0F);
       register(Items.FISHING_ROD, ResourceLocation.withDefaultNamespace("cast"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;

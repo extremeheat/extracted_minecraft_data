@@ -9,14 +9,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BundleItem;
-import net.minecraft.world.item.Items;
 import org.slf4j.Logger;
 
 public class ModelDiscovery {
    static final Logger LOGGER = LogUtils.getLogger();
+   public static final String INVENTORY_MODEL_PREFIX = "item/";
    private final Map<ResourceLocation, UnbakedModel> inputModels;
    final UnbakedModel missingModel;
    private final Map<ModelResourceLocation, UnbakedModel> topModels = new HashMap<>();
@@ -30,17 +31,22 @@ public class ModelDiscovery {
       this.referencedModels.put(MissingBlockModel.LOCATION, var2);
    }
 
-   private void registerItemTopModel(ResourceLocation var1) {
-      ModelResourceLocation var2 = ModelResourceLocation.inventory(var1);
-      ResourceLocation var3 = var1.withPrefix("item/");
-      UnbakedModel var4 = this.getBlockModel(var3);
-      this.registerTopModel(var2, var4);
-   }
+   private static Set<ModelResourceLocation> listMandatoryModels() {
+      HashSet var0 = new HashSet();
+      BuiltInRegistries.ITEM.listElements().forEach(var1 -> {
+         ResourceLocation var2 = var1.value().components().get(DataComponents.ITEM_MODEL);
+         if (var2 != null) {
+            var0.add(ModelResourceLocation.inventory(var2));
+         }
 
-   private void registerSpecialItemTopModel(ModelResourceLocation var1) {
-      ResourceLocation var2 = var1.id().withPrefix("item/");
-      UnbakedModel var3 = this.getBlockModel(var2);
-      this.registerTopModel(var1, var3);
+         if (var1.value() instanceof BundleItem var3) {
+            var0.add(ModelResourceLocation.inventory(var3.openFrontModel()));
+            var0.add(ModelResourceLocation.inventory(var3.openBackModel()));
+         }
+      });
+      var0.add(ItemRenderer.TRIDENT_MODEL);
+      var0.add(ItemRenderer.SPYGLASS_MODEL);
+      return var0;
    }
 
    private void registerTopModel(ModelResourceLocation var1, UnbakedModel var2) {
@@ -50,20 +56,25 @@ public class ModelDiscovery {
    public void registerStandardModels(BlockStateModelLoader.LoadedModels var1) {
       this.referencedModels.put(SpecialModels.BUILTIN_GENERATED, SpecialModels.GENERATED_MARKER);
       this.referencedModels.put(SpecialModels.BUILTIN_BLOCK_ENTITY, SpecialModels.BLOCK_ENTITY_MARKER);
-      var1.models().forEach((var1x, var2) -> this.registerTopModel(var1x, var2.model()));
-
-      for (ResourceLocation var3 : BuiltInRegistries.ITEM.keySet()) {
-         this.registerItemTopModel(var3);
+      Set var2 = listMandatoryModels();
+      var1.models().forEach((var2x, var3) -> {
+         this.registerTopModel(var2x, var3.model());
+         var2.remove(var2x);
+      });
+      this.inputModels.keySet().forEach(var2x -> {
+         if (var2x.getPath().startsWith("item/")) {
+            ModelResourceLocation var3 = ModelResourceLocation.inventory(var2x.withPath(var0 -> var0.substring("item/".length())));
+            this.registerTopModel(var3, new ItemModel(var2x));
+            var2.remove(var3);
+         }
+      });
+      if (!var2.isEmpty()) {
+         LOGGER.warn("Missing mandatory models: {}", var2.stream().map(var0 -> "\n\t" + var0).collect(Collectors.joining()));
       }
-
-      this.registerSpecialItemTopModel(ItemRenderer.TRIDENT_IN_HAND_MODEL);
-      this.registerSpecialItemTopModel(ItemRenderer.SPYGLASS_IN_HAND_MODEL);
-      this.registerSpecialItemTopModel(ItemRenderer.getBundleOpenFrontModelLocation((BundleItem)Items.BUNDLE));
-      this.registerSpecialItemTopModel(ItemRenderer.getBundleOpenBackModelLocation((BundleItem)Items.BUNDLE));
    }
 
    public void discoverDependencies() {
-      this.topModels.values().forEach(var1 -> var1.resolveDependencies(new ModelDiscovery.ResolverImpl(), UnbakedModel.ResolutionContext.TOP));
+      this.topModels.values().forEach(var1 -> var1.resolveDependencies(new ModelDiscovery.ResolverImpl()));
    }
 
    public Map<ModelResourceLocation, UnbakedModel> getTopModels() {
@@ -91,7 +102,6 @@ public class ModelDiscovery {
    class ResolverImpl implements UnbakedModel.Resolver {
       private final List<ResourceLocation> stack = new ArrayList<>();
       private final Set<ResourceLocation> resolvedModels = new HashSet<>();
-      private UnbakedModel.ResolutionContext context = UnbakedModel.ResolutionContext.TOP;
 
       ResolverImpl() {
          super();
@@ -99,47 +109,18 @@ public class ModelDiscovery {
 
       @Override
       public UnbakedModel resolve(ResourceLocation var1) {
-         return this.resolve(var1, false);
-      }
-
-      @Override
-      public UnbakedModel resolveForOverride(ResourceLocation var1) {
-         if (this.context == UnbakedModel.ResolutionContext.OVERRIDE) {
-            ModelDiscovery.LOGGER.warn("Re-entrant override in {}->{}", this.stacktraceToString(), var1);
-         }
-
-         this.context = UnbakedModel.ResolutionContext.OVERRIDE;
-         UnbakedModel var2 = this.resolve(var1, true);
-         this.context = UnbakedModel.ResolutionContext.TOP;
-         return var2;
-      }
-
-      private boolean isReferenceRecursive(ResourceLocation var1, boolean var2) {
-         if (this.stack.isEmpty()) {
-            return false;
-         } else if (!this.stack.contains(var1)) {
-            return false;
-         } else if (var2) {
-            ResourceLocation var3 = (ResourceLocation)this.stack.getLast();
-            return !var3.equals(var1);
-         } else {
-            return true;
-         }
-      }
-
-      private UnbakedModel resolve(ResourceLocation var1, boolean var2) {
-         if (this.isReferenceRecursive(var1, var2)) {
+         if (this.stack.contains(var1)) {
             ModelDiscovery.LOGGER.warn("Detected model loading loop: {}->{}", this.stacktraceToString(), var1);
             return ModelDiscovery.this.missingModel;
          } else {
-            UnbakedModel var3 = ModelDiscovery.this.getBlockModel(var1);
+            UnbakedModel var2 = ModelDiscovery.this.getBlockModel(var1);
             if (this.resolvedModels.add(var1)) {
                this.stack.add(var1);
-               var3.resolveDependencies(this, this.context);
+               var2.resolveDependencies(this);
                this.stack.remove(var1);
             }
 
-            return var3;
+            return var2;
          }
       }
 

@@ -5,7 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.ClickAction;
@@ -24,7 +24,7 @@ public class Tutorial {
       this.minecraft = var1;
    }
 
-   public void onInput(Input var1) {
+   public void onInput(ClientInput var1) {
       if (this.instance != null) {
          this.instance.onInput(var1);
       }

@@ -29,6 +29,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.resources.model.EquipmentModelSet;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -73,6 +74,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private final Font font;
    public final Options options;
    private final EntityModelSet entityModels;
+   private final EquipmentModelSet equipmentModels;
    private boolean shouldRenderShadow = true;
    private boolean renderHitBoxes;
 
@@ -81,7 +83,15 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public EntityRenderDispatcher(
-      Minecraft var1, TextureManager var2, ItemRenderer var3, MapRenderer var4, BlockRenderDispatcher var5, Font var6, Options var7, EntityModelSet var8
+      Minecraft var1,
+      TextureManager var2,
+      ItemRenderer var3,
+      MapRenderer var4,
+      BlockRenderDispatcher var5,
+      Font var6,
+      Options var7,
+      EntityModelSet var8,
+      EquipmentModelSet var9
    ) {
       super();
       this.textureManager = var2;
@@ -92,6 +102,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       this.font = var6;
       this.options = var7;
       this.entityModels = var8;
+      this.equipmentModels = var9;
    }
 
    public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T var1) {
@@ -429,7 +440,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    @Override
    public void onResourceManagerReload(ResourceManager var1) {
       EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(
-         this, this.itemRenderer, this.mapRenderer, this.blockRenderDispatcher, var1, this.entityModels, this.font
+         this, this.itemRenderer, this.mapRenderer, this.blockRenderDispatcher, var1, this.entityModels, this.equipmentModels, this.font
       );
       this.renderers = EntityRenderers.createEntityRenderers(var2);
       this.playerRenderers = EntityRenderers.createPlayerRenderers(var2);

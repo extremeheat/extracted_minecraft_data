@@ -1,10 +1,11 @@
 package net.minecraft.world.entity;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 public class ElytraAnimationState {
+   private static final float DEFAULT_X_ROT = 0.2617994F;
+   private static final float DEFAULT_Z_ROT = -0.2617994F;
    private float rotX;
    private float rotY;
    private float rotZ;
@@ -22,34 +23,33 @@ public class ElytraAnimationState {
       this.rotXOld = this.rotX;
       this.rotYOld = this.rotY;
       this.rotZOld = this.rotZ;
-      if (this.entity.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA)) {
-         float var1 = 0.2617994F;
-         float var2 = -0.2617994F;
-         float var3 = 0.0F;
-         if (this.entity.isFallFlying()) {
-            float var4 = 1.0F;
-            Vec3 var5 = this.entity.getDeltaMovement();
-            if (var5.y < 0.0) {
-               Vec3 var6 = var5.normalize();
-               var4 = 1.0F - (float)Math.pow(-var6.y, 1.5);
-            }
-
-            var1 = var4 * 0.34906584F + (1.0F - var4) * var1;
-            var2 = var4 * -1.5707964F + (1.0F - var4) * var2;
-         } else if (this.entity.isCrouching()) {
-            var1 = 0.6981317F;
-            var2 = -0.7853982F;
-            var3 = 0.08726646F;
+      float var1;
+      float var2;
+      float var3;
+      if (this.entity.isFallFlying()) {
+         float var4 = 1.0F;
+         Vec3 var5 = this.entity.getDeltaMovement();
+         if (var5.y < 0.0) {
+            Vec3 var6 = var5.normalize();
+            var4 = 1.0F - (float)Math.pow(-var6.y, 1.5);
          }
 
-         this.rotX = this.rotX + (var1 - this.rotX) * 0.3F;
-         this.rotY = this.rotY + (var3 - this.rotY) * 0.3F;
-         this.rotZ = this.rotZ + (var2 - this.rotZ) * 0.3F;
+         var1 = Mth.lerp(var4, 0.2617994F, 0.34906584F);
+         var2 = Mth.lerp(var4, -0.2617994F, -1.5707964F);
+         var3 = 0.0F;
+      } else if (this.entity.isCrouching()) {
+         var1 = 0.6981317F;
+         var2 = -0.7853982F;
+         var3 = 0.08726646F;
       } else {
-         this.rotX = 0.0F;
-         this.rotY = 0.0F;
-         this.rotZ = 0.0F;
+         var1 = 0.2617994F;
+         var2 = -0.2617994F;
+         var3 = 0.0F;
       }
+
+      this.rotX = this.rotX + (var1 - this.rotX) * 0.3F;
+      this.rotY = this.rotY + (var3 - this.rotY) * 0.3F;
+      this.rotZ = this.rotZ + (var2 - this.rotZ) * 0.3F;
    }
 
    public float getRotX(float var1) {

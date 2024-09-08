@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -22,6 +21,8 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.ConversionType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -44,6 +45,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.PlayerTeam;
 
 public class Slime extends Mob implements Enemy {
    private static final EntityDataAccessor<Integer> ID_SIZE = SynchedEntityData.defineId(Slime.class, EntityDataSerializers.INT);
@@ -197,29 +199,19 @@ public class Slime extends Mob implements Enemy {
    public void remove(Entity.RemovalReason var1) {
       int var2 = this.getSize();
       if (!this.level().isClientSide && var2 > 1 && this.isDeadOrDying()) {
-         Component var3 = this.getCustomName();
-         boolean var4 = this.isNoAi();
-         float var5 = this.getDimensions(this.getPose()).width();
-         float var6 = var5 / 2.0F;
-         int var7 = var2 / 2;
-         int var8 = 2 + this.random.nextInt(3);
+         float var3 = this.getDimensions(this.getPose()).width();
+         float var4 = var3 / 2.0F;
+         int var5 = var2 / 2;
+         int var6 = 2 + this.random.nextInt(3);
+         PlayerTeam var7 = this.getTeam();
 
-         for (int var9 = 0; var9 < var8; var9++) {
-            float var10 = ((float)(var9 % 2) - 0.5F) * var6;
-            float var11 = ((float)(var9 / 2) - 0.5F) * var6;
-            Slime var12 = this.getType().create(this.level(), EntitySpawnReason.TRIGGERED);
-            if (var12 != null) {
-               if (this.isPersistenceRequired()) {
-                  var12.setPersistenceRequired();
-               }
-
-               var12.setCustomName(var3);
-               var12.setNoAi(var4);
-               var12.setInvulnerable(this.isInvulnerable());
-               var12.setSize(var7, true);
-               var12.moveTo(this.getX() + (double)var10, this.getY() + 0.5, this.getZ() + (double)var11, this.random.nextFloat() * 360.0F, 0.0F);
-               this.level().addFreshEntity(var12);
-            }
+         for (int var8 = 0; var8 < var6; var8++) {
+            float var9 = ((float)(var8 % 2) - 0.5F) * var4;
+            float var10 = ((float)(var8 / 2) - 0.5F) * var4;
+            this.convertTo(this.getType(), new ConversionParams(ConversionType.SPLIT_ON_DEATH, false, false, var7), EntitySpawnReason.TRIGGERED, var4x -> {
+               var4x.setSize(var5, true);
+               var4x.moveTo(this.getX() + (double)var9, this.getY() + 0.5, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
+            });
          }
       }
 

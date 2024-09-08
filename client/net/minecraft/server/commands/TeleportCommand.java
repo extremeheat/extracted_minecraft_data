@@ -27,7 +27,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -164,16 +164,7 @@ public class TeleportCommand {
    private static int teleportToEntity(CommandSourceStack var0, Collection<? extends Entity> var1, Entity var2) throws CommandSyntaxException {
       for (Entity var4 : var1) {
          performTeleport(
-            var0,
-            var4,
-            (ServerLevel)var2.level(),
-            var2.getX(),
-            var2.getY(),
-            var2.getZ(),
-            EnumSet.noneOf(RelativeMovement.class),
-            var2.getYRot(),
-            var2.getXRot(),
-            null
+            var0, var4, (ServerLevel)var2.level(), var2.getX(), var2.getY(), var2.getZ(), EnumSet.noneOf(Relative.class), var2.getYRot(), var2.getXRot(), null
          );
       }
 
@@ -197,57 +188,61 @@ public class TeleportCommand {
       @Nullable Coordinates var4,
       @Nullable TeleportCommand.LookAt var5
    ) throws CommandSyntaxException {
-      Vec3 var6 = var3.getPosition(var0);
-      Vec2 var7 = var4 == null ? null : var4.getRotation(var0);
-      EnumSet var8 = EnumSet.noneOf(RelativeMovement.class);
+      Vec3 var6 = var3.getPosition(var0, true);
+      Vec2 var7 = var4 == null ? null : var4.getRotation(var0, true);
+      EnumSet var8 = EnumSet.noneOf(Relative.class);
       if (var3.isXRelative()) {
-         var8.add(RelativeMovement.X);
+         var8.add(Relative.X);
+         var8.add(Relative.DELTA_X);
       }
 
       if (var3.isYRelative()) {
-         var8.add(RelativeMovement.Y);
+         var8.add(Relative.Y);
+         var8.add(Relative.DELTA_Y);
       }
 
       if (var3.isZRelative()) {
-         var8.add(RelativeMovement.Z);
+         var8.add(Relative.Z);
+         var8.add(Relative.DELTA_Z);
       }
 
       if (var4 == null) {
-         var8.add(RelativeMovement.X_ROT);
-         var8.add(RelativeMovement.Y_ROT);
+         var8.add(Relative.X_ROT);
+         var8.add(Relative.Y_ROT);
       } else {
          if (var4.isXRelative()) {
-            var8.add(RelativeMovement.X_ROT);
+            var8.add(Relative.X_ROT);
          }
 
          if (var4.isYRelative()) {
-            var8.add(RelativeMovement.Y_ROT);
+            var8.add(Relative.Y_ROT);
          }
       }
 
       for (Entity var10 : var1) {
          if (var4 == null) {
-            performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var10.getYRot(), var10.getXRot(), var5);
+            performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, 0.0F, 0.0F, var5);
          } else {
             performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var7.y, var7.x, var5);
          }
       }
 
+      Vec3 var11 = var3.getPosition(var0);
       if (var1.size() == 1) {
          var0.sendSuccess(
             () -> Component.translatable(
                   "commands.teleport.success.location.single",
                   ((Entity)var1.iterator().next()).getDisplayName(),
-                  formatDouble(var6.x),
-                  formatDouble(var6.y),
-                  formatDouble(var6.z)
+                  formatDouble(var11.x),
+                  formatDouble(var11.y),
+                  formatDouble(var11.z)
                ),
             true
          );
       } else {
          var0.sendSuccess(
             () -> Component.translatable(
-                  "commands.teleport.success.location.multiple", var1.size(), formatDouble(var6.x), formatDouble(var6.y), formatDouble(var6.z)
+                  "commands.teleport.success.location.multiple", var1.size(), formatDouble(var11.x), formatDouble(var11.y), formatDouble(var11.z)
                ),
             true
          );
@@ -267,7 +262,7 @@ public class TeleportCommand {
       double var3,
       double var5,
       double var7,
-      Set<RelativeMovement> var9,
+      Set<Relative> var9,
       float var10,
       float var11,
       @Nullable TeleportCommand.LookAt var12

@@ -33,8 +33,20 @@ public class Octree {
       return this.root.add(var1);
    }
 
-   public void visitNodes(Octree.OctreeVisitor var1, Frustum var2) {
-      this.root.visitNodes(var1, false, var2, 0);
+   public void visitNodes(Octree.OctreeVisitor var1, Frustum var2, int var3) {
+      this.root.visitNodes(var1, false, var2, 0, var3, true);
+   }
+
+   boolean isClose(double var1, double var3, double var5, double var7, double var9, double var11, int var13) {
+      int var14 = this.cameraSectionCenter.getX();
+      int var15 = this.cameraSectionCenter.getY();
+      int var16 = this.cameraSectionCenter.getZ();
+      return (double)var14 > var1 - (double)var13
+         && (double)var14 < var7 + (double)var13
+         && (double)var15 > var3 - (double)var13
+         && (double)var15 < var9 + (double)var13
+         && (double)var16 > var5 - (double)var13
+         && (double)var16 < var11 + (double)var13;
    }
 
    static enum AxisSorting {
@@ -102,7 +114,7 @@ public class Octree {
          int var8 = getNodeIndex(this.sorting, var5, var6, var7);
          if (this.areChildrenLeaves()) {
             boolean var12 = this.nodes[var8] != null;
-            this.nodes[var8] = new Octree.Leaf(var1);
+            this.nodes[var8] = Octree.this.new Leaf(var1);
             return !var12;
          } else if (this.nodes[var8] != null) {
             Octree.Branch var11 = (Octree.Branch)this.nodes[var8];
@@ -171,20 +183,30 @@ public class Octree {
       }
 
       @Override
-      public void visitNodes(Octree.OctreeVisitor var1, boolean var2, Frustum var3, int var4) {
-         boolean var5 = var2;
+      public void visitNodes(Octree.OctreeVisitor var1, boolean var2, Frustum var3, int var4, int var5, boolean var6) {
+         boolean var7 = var2;
          if (!var2) {
-            int var6 = var3.cubeInFrustum(this.boundingBox);
-            var2 = var6 == -2;
-            var5 = var6 == -2 || var6 == -1;
+            int var8 = var3.cubeInFrustum(this.boundingBox);
+            var2 = var8 == -2;
+            var7 = var8 == -2 || var8 == -1;
          }
 
-         if (var5) {
-            var1.visit(this, var2, var4);
+         if (var7) {
+            var6 = var6
+               && Octree.this.isClose(
+                  (double)this.boundingBox.minX(),
+                  (double)this.boundingBox.minY(),
+                  (double)this.boundingBox.minZ(),
+                  (double)this.boundingBox.maxX(),
+                  (double)this.boundingBox.maxY(),
+                  (double)this.boundingBox.maxZ(),
+                  var5
+               );
+            var1.visit(this, var2, var4, var6);
 
-            for (Octree.Node var9 : this.nodes) {
-               if (var9 != null) {
-                  var9.visitNodes(var1, var2, var3, var4 + 1);
+            for (Octree.Node var11 : this.nodes) {
+               if (var11 != null) {
+                  var11.visitNodes(var1, var2, var3, var4 + 1, var5, var6);
                }
             }
          }
@@ -209,21 +231,36 @@ public class Octree {
       }
    }
 
-// $VF: Couldn't be decompiled
-// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
-//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
-//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
-//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
+   final class Leaf implements Octree.Node {
+      private final SectionRenderDispatcher.RenderSection section;
+
+      Leaf(final SectionRenderDispatcher.RenderSection nullx) {
+         super();
+         this.section = nullx;
+      }
+
+      @Override
+      public void visitNodes(Octree.OctreeVisitor var1, boolean var2, Frustum var3, int var4, int var5, boolean var6) {
+         AABB var7 = this.section.getBoundingBox();
+         if (var2 || var3.isVisible(this.getSection().getBoundingBox())) {
+            var6 = var6 && Octree.this.isClose(var7.minX, var7.minY, var7.minZ, var7.maxX, var7.maxY, var7.maxZ, var5);
+            var1.visit(this, var2, var4, var6);
+         }
+      }
+
+      @Override
+      public SectionRenderDispatcher.RenderSection getSection() {
+         return this.section;
+      }
+
+      @Override
+      public AABB getAABB() {
+         return this.section.getBoundingBox();
+      }
+   }
 
    public interface Node {
-      void visitNodes(Octree.OctreeVisitor var1, boolean var2, Frustum var3, int var4);
+      void visitNodes(Octree.OctreeVisitor var1, boolean var2, Frustum var3, int var4, int var5, boolean var6);
 
       @Nullable
       SectionRenderDispatcher.RenderSection getSection();
@@ -233,6 +270,6 @@ public class Octree {
 
    @FunctionalInterface
    public interface OctreeVisitor {
-      void visit(Octree.Node var1, boolean var2, int var3);
+      void visit(Octree.Node var1, boolean var2, int var3, boolean var4);
    }
 }

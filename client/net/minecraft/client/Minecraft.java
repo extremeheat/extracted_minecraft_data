@@ -153,6 +153,7 @@ import net.minecraft.client.resources.SplashManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.EquipmentModelSet;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.server.IntegratedServer;
@@ -308,6 +309,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final SkinManager skinManager;
    private final ModelManager modelManager;
    private final BlockRenderDispatcher blockRenderer;
+   private final EquipmentModelSet equipmentModels;
    private final PaintingTextureManager paintingTextures;
    private final MobEffectTextureManager mobEffectTextures;
    private final MapTextureManager mapTextureManager;
@@ -514,13 +516,15 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.modelManager);
       this.entityModels = new EntityModelSet();
       this.resourceManager.registerReloadListener(this.entityModels);
+      this.equipmentModels = new EquipmentModelSet();
+      this.resourceManager.registerReloadListener(this.equipmentModels);
       this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(
          this.font, this.entityModels, this::getBlockRenderer, this::getItemRenderer, this::getEntityRenderDispatcher
       );
       this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
       BlockEntityWithoutLevelRenderer var7 = new BlockEntityWithoutLevelRenderer(this.blockEntityRenderDispatcher, this.entityModels);
       this.resourceManager.registerReloadListener(var7);
-      this.itemRenderer = new ItemRenderer(this, this.textureManager, this.modelManager, this.itemColors, var7);
+      this.itemRenderer = new ItemRenderer(this.modelManager, this.itemColors, var7);
       this.resourceManager.registerReloadListener(this.itemRenderer);
       this.mapTextureManager = new MapTextureManager(this.textureManager);
       this.mapDecorationTextures = new MapDecorationTextureManager(this.textureManager);
@@ -547,7 +551,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), var7, this.blockColors);
       this.resourceManager.registerReloadListener(this.blockRenderer);
       this.entityRenderDispatcher = new EntityRenderDispatcher(
-         this, this.textureManager, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.font, this.options, this.entityModels
+         this, this.textureManager, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.font, this.options, this.entityModels, this.equipmentModels
       );
       this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
       this.particleEngine = new ParticleEngine(this.level, this.textureManager);
@@ -770,9 +774,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void triggerResourcePackRecovery(Exception var1) {
-      if (this.getResourcePackRepository().getSelectedIds().size() <= 1) {
-         LOGGER.error(LogUtils.FATAL_MARKER, var1.getMessage(), var1);
-         this.emergencySaveAndCrash(new CrashReport(var1.getMessage(), var1));
+      if (!this.resourcePackRepository.isAbleToClearAnyPack()) {
+         if (this.resourcePackRepository.getSelectedIds().size() <= 1) {
+            LOGGER.error(LogUtils.FATAL_MARKER, var1.getMessage(), var1);
+            this.emergencySaveAndCrash(new CrashReport(var1.getMessage(), var1));
+         } else {
+            this.schedule(this::abortResourcePackRecovery);
+         }
       } else {
          this.clearResourcePacksOnError(var1, Component.translatable("resourcePack.runtime_failure"), null);
       }
@@ -958,27 +966,26 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       TextureAtlasSprite var12 = var3.getParticleIcon();
 
-      for (Block var15 : BuiltInRegistries.BLOCK) {
-         UnmodifiableIterator var17 = var15.getStateDefinition().getPossibleStates().iterator();
+      for (Block var14 : BuiltInRegistries.BLOCK) {
+         UnmodifiableIterator var15 = var14.getStateDefinition().getPossibleStates().iterator();
 
-         while (var17.hasNext()) {
-            BlockState var19 = (BlockState)var17.next();
-            TextureAtlasSprite var9 = var2.getParticleIcon(var19);
-            if (!var19.isAir() && var9 == var12) {
-               LOGGER.debug("Missing particle icon for: {}", var19);
+         while (var15.hasNext()) {
+            BlockState var16 = (BlockState)var15.next();
+            TextureAtlasSprite var9 = var2.getParticleIcon(var16);
+            if (!var16.isAir() && var9 == var12) {
+               LOGGER.debug("Missing particle icon for: {}", var16);
             }
          }
       }
 
-      for (Item var16 : BuiltInRegistries.ITEM) {
-         ItemStack var18 = var16.getDefaultInstance();
-         String var20 = var18.getDescriptionId();
-         String var21 = Component.translatable(var20).getString();
-         if (var21.toLowerCase(Locale.ROOT).equals(var16.getDescriptionId())) {
-            LOGGER.debug("Missing translation for: {} {} {}", new Object[]{var18, var20, var16});
+      BuiltInRegistries.ITEM.listElements().forEach(var0 -> {
+         Item var1x = var0.value();
+         String var2x = var1x.getDescriptionId();
+         String var3x = Component.translatable(var2x).getString();
+         if (var3x.toLowerCase(Locale.ROOT).equals(var1x.getDescriptionId())) {
+            LOGGER.debug("Missing translation for: {} {} {}", new Object[]{var0.key().location(), var2x, var1x});
          }
-      }
-
+      });
       var1 |= MenuScreens.selfTest();
       var1 |= EntityRenderers.validateRegistrations();
       if (var1) {
@@ -2437,7 +2444,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    @Override
-   protected Runnable wrapRunnable(Runnable var1) {
+   public Runnable wrapRunnable(Runnable var1) {
       return var1;
    }
 
@@ -2690,6 +2697,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public EntityModelSet getEntityModels() {
       return this.entityModels;
+   }
+
+   public EquipmentModelSet getEquipmentModels() {
+      return this.equipmentModels;
    }
 
    public boolean isTextFilteringEnabled() {

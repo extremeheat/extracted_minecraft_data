@@ -22,7 +22,6 @@ import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.JukeboxPlayable;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ChargedProjectiles;
@@ -53,6 +52,8 @@ import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.Repairable;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.PotDecorations;
@@ -78,6 +79,9 @@ public class DataComponents {
    );
    public static final DataComponentType<Component> ITEM_NAME = register(
       "item_name", var0 -> var0.persistent(ComponentSerialization.FLAT_CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC).cacheEncoding()
+   );
+   public static final DataComponentType<ResourceLocation> ITEM_MODEL = register(
+      "item_model", var0 -> var0.persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).cacheEncoding()
    );
    public static final DataComponentType<ItemLore> LORE = register(
       "lore", var0 -> var0.persistent(ItemLore.CODEC).networkSynchronized(ItemLore.STREAM_CODEC).cacheEncoding()
@@ -135,8 +139,17 @@ public class DataComponents {
    public static final DataComponentType<Enchantable> ENCHANTABLE = register(
       "enchantable", var0 -> var0.persistent(Enchantable.CODEC).networkSynchronized(Enchantable.STREAM_CODEC).cacheEncoding()
    );
+   public static final DataComponentType<Equippable> EQUIPPABLE = register(
+      "equippable", var0 -> var0.persistent(Equippable.CODEC).networkSynchronized(Equippable.STREAM_CODEC).cacheEncoding()
+   );
    public static final DataComponentType<Repairable> REPAIRABLE = register(
       "repairable", var0 -> var0.persistent(Repairable.CODEC).networkSynchronized(Repairable.STREAM_CODEC).cacheEncoding()
+   );
+   public static final DataComponentType<Unit> GLIDER = register(
+      "glider", var0 -> var0.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE))
+   );
+   public static final DataComponentType<ResourceLocation> TOOLTIP_STYLE = register(
+      "tooltip_style", var0 -> var0.persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).cacheEncoding()
    );
    public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = register(
       "stored_enchantments", var0 -> var0.persistent(ItemEnchantments.CODEC).networkSynchronized(ItemEnchantments.STREAM_CODEC).cacheEncoding()

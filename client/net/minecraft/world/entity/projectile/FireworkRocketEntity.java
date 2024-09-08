@@ -103,6 +103,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    @Override
    public void tick() {
       super.tick();
+      HitResult var1;
       if (this.isAttachedToEntity()) {
          if (this.attachedToEntity == null) {
             this.entityData.get(DATA_ATTACHED_TO_TARGET).ifPresent(var1x -> {
@@ -114,46 +115,45 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
          }
 
          if (this.attachedToEntity != null) {
-            Vec3 var1;
+            Vec3 var2;
             if (this.attachedToEntity.isFallFlying()) {
-               Vec3 var2 = this.attachedToEntity.getLookAngle();
-               double var3 = 1.5;
-               double var5 = 0.1;
-               Vec3 var7 = this.attachedToEntity.getDeltaMovement();
+               Vec3 var3 = this.attachedToEntity.getLookAngle();
+               double var4 = 1.5;
+               double var6 = 0.1;
+               Vec3 var8 = this.attachedToEntity.getDeltaMovement();
                this.attachedToEntity
                   .setDeltaMovement(
-                     var7.add(
-                        var2.x * 0.1 + (var2.x * 1.5 - var7.x) * 0.5,
-                        var2.y * 0.1 + (var2.y * 1.5 - var7.y) * 0.5,
-                        var2.z * 0.1 + (var2.z * 1.5 - var7.z) * 0.5
+                     var8.add(
+                        var3.x * 0.1 + (var3.x * 1.5 - var8.x) * 0.5,
+                        var3.y * 0.1 + (var3.y * 1.5 - var8.y) * 0.5,
+                        var3.z * 0.1 + (var3.z * 1.5 - var8.z) * 0.5
                      )
                   );
-               var1 = this.attachedToEntity.getHandHoldingItemAngle(Items.FIREWORK_ROCKET);
+               var2 = this.attachedToEntity.getHandHoldingItemAngle(Items.FIREWORK_ROCKET);
             } else {
-               var1 = Vec3.ZERO;
+               var2 = Vec3.ZERO;
             }
 
-            this.setPos(this.attachedToEntity.getX() + var1.x, this.attachedToEntity.getY() + var1.y, this.attachedToEntity.getZ() + var1.z);
+            this.setPos(this.attachedToEntity.getX() + var2.x, this.attachedToEntity.getY() + var2.y, this.attachedToEntity.getZ() + var2.z);
             this.setDeltaMovement(this.attachedToEntity.getDeltaMovement());
          }
+
+         var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       } else {
          if (!this.isShotAtAngle()) {
-            double var8 = this.horizontalCollision ? 1.0 : 1.15;
-            this.setDeltaMovement(this.getDeltaMovement().multiply(var8, 1.0, var8).add(0.0, 0.04, 0.0));
+            double var9 = this.horizontalCollision ? 1.0 : 1.15;
+            this.setDeltaMovement(this.getDeltaMovement().multiply(var9, 1.0, var9).add(0.0, 0.04, 0.0));
          }
 
-         Vec3 var9 = this.getDeltaMovement();
-         this.move(MoverType.SELF, var9);
-         if (!this.level().isClientSide()) {
-            this.applyEffectsFromBlocks();
-         }
-
-         this.setDeltaMovement(var9);
+         Vec3 var10 = this.getDeltaMovement();
+         var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+         this.move(MoverType.SELF, var10);
+         this.applyEffectsFromBlocks();
+         this.setDeltaMovement(var10);
       }
 
-      HitResult var10 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-      if (!this.noPhysics) {
-         this.hitTargetOrDeflectSelf(var10);
+      if (!this.noPhysics && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
+         this.hitTargetOrDeflectSelf(var1);
          this.hasImpulse = true;
       }
 

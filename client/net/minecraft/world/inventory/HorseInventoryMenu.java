@@ -35,7 +35,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       this.addSlot(new ArmorSlot(this.armorContainer, var4, EquipmentSlot.BODY, 0, 8, 36, null) {
          @Override
          public boolean mayPlace(ItemStack var1) {
-            return var4.isBodyArmorItem(var1);
+            return var4.isEquippableInSlot(var1, EquipmentSlot.BODY);
          }
 
          @Override

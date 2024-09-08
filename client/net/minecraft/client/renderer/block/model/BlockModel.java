@@ -122,50 +122,42 @@ public class BlockModel implements UnbakedModel {
       return this.overrides;
    }
 
-   private ItemOverrides bakeItemOverrides(ModelBaker var1, BlockModel var2) {
-      return this.overrides.isEmpty() ? ItemOverrides.EMPTY : new ItemOverrides(var1, var2, this.overrides);
-   }
-
    @Override
-   public void resolveDependencies(UnbakedModel.Resolver var1, UnbakedModel.ResolutionContext var2) {
+   public void resolveDependencies(UnbakedModel.Resolver var1) {
       if (this.parentLocation != null) {
-         if (!(var1.resolve(this.parentLocation) instanceof BlockModel var4)) {
+         if (!(var1.resolve(this.parentLocation) instanceof BlockModel var3)) {
             throw new IllegalStateException("BlockModel parent has to be a block model.");
          }
 
-         this.parent = var4;
-      }
-
-      if (var2 != UnbakedModel.ResolutionContext.OVERRIDE) {
-         this.overrides.forEach(var1x -> var1.resolveForOverride(var1x.getModel()));
+         this.parent = var3;
       }
    }
 
    @Override
    public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
-      return this.bake(var1, this, var2, var3, true);
+      return this.bake(var2, var3, true);
    }
 
-   public BakedModel bake(ModelBaker var1, BlockModel var2, Function<Material, TextureAtlasSprite> var3, ModelState var4, boolean var5) {
-      TextureAtlasSprite var6 = (TextureAtlasSprite)var3.apply(this.getMaterial("particle"));
+   public BakedModel bake(Function<Material, TextureAtlasSprite> var1, ModelState var2, boolean var3) {
+      TextureAtlasSprite var4 = (TextureAtlasSprite)var1.apply(this.getMaterial("particle"));
       if (this.getRootModel() == SpecialModels.BLOCK_ENTITY_MARKER) {
-         return new BuiltInModel(this.getTransforms(), this.bakeItemOverrides(var1, var2), var6, this.getGuiLight().lightLikeBlock());
+         return new BuiltInModel(this.getTransforms(), var4, this.getGuiLight().lightLikeBlock());
       } else {
-         SimpleBakedModel.Builder var7 = new SimpleBakedModel.Builder(this, this.bakeItemOverrides(var1, var2), var5).particle(var6);
+         SimpleBakedModel.Builder var5 = new SimpleBakedModel.Builder(this, var3).particle(var4);
 
-         for (BlockElement var9 : this.getElements()) {
-            for (Direction var11 : var9.faces.keySet()) {
-               BlockElementFace var12 = var9.faces.get(var11);
-               TextureAtlasSprite var13 = (TextureAtlasSprite)var3.apply(this.getMaterial(var12.texture()));
-               if (var12.cullForDirection() == null) {
-                  var7.addUnculledFace(bakeFace(var9, var12, var13, var11, var4));
+         for (BlockElement var7 : this.getElements()) {
+            for (Direction var9 : var7.faces.keySet()) {
+               BlockElementFace var10 = var7.faces.get(var9);
+               TextureAtlasSprite var11 = (TextureAtlasSprite)var1.apply(this.getMaterial(var10.texture()));
+               if (var10.cullForDirection() == null) {
+                  var5.addUnculledFace(bakeFace(var7, var10, var11, var9, var2));
                } else {
-                  var7.addCulledFace(Direction.rotate(var4.getRotation().getMatrix(), var12.cullForDirection()), bakeFace(var9, var12, var13, var11, var4));
+                  var5.addCulledFace(Direction.rotate(var2.getRotation().getMatrix(), var10.cullForDirection()), bakeFace(var7, var10, var11, var9, var2));
                }
             }
          }
 
-         return var7.build();
+         return var5.build();
       }
    }
 
@@ -349,12 +341,6 @@ public class BlockModel implements UnbakedModel {
 
       public boolean lightLikeBlock() {
          return this == SIDE;
-      }
-   }
-
-   public static class LoopException extends RuntimeException {
-      public LoopException(String var1) {
-         super(var1);
       }
    }
 }

@@ -560,7 +560,7 @@ public class ServerChunkCache extends ChunkSource {
       }
 
       @Override
-      protected Runnable wrapRunnable(Runnable var1) {
+      public Runnable wrapRunnable(Runnable var1) {
          return var1;
       }
 

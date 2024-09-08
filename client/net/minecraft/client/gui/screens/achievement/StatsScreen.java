@@ -345,7 +345,7 @@ public class StatsScreen extends Screen {
                }
 
                Item var6 = var4.getItem();
-               var1.renderTooltip(StatsScreen.this.font, var6.getDescription(), var2, var3);
+               var1.renderTooltip(StatsScreen.this.font, var6.getName(), var2, var3);
             } else {
                Component var10 = null;
                int var7 = var2 - var5;
@@ -426,7 +426,7 @@ public class StatsScreen extends Screen {
 
          @Override
          public Component getNarration() {
-            return Component.translatable("narrator.select", this.item.getDescription());
+            return Component.translatable("narrator.select", this.item.getName());
          }
       }
 

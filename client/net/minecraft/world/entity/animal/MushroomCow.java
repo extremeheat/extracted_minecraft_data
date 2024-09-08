@@ -22,6 +22,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -163,30 +164,14 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
    public void shear(SoundSource var1) {
       this.level().playSound(null, this, SoundEvents.MOOSHROOM_SHEAR, var1, 1.0F, 1.0F);
       if (!this.level().isClientSide()) {
-         Cow var2 = EntityType.COW.create(this.level(), EntitySpawnReason.CONVERSION);
-         if (var2 != null) {
+         this.convertTo(EntityType.COW, ConversionParams.single(this, false, false), var1x -> {
             ((ServerLevel)this.level()).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
-            this.discard();
-            var2.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var2.setHealth(this.getHealth());
-            var2.yBodyRot = this.yBodyRot;
-            if (this.hasCustomName()) {
-               var2.setCustomName(this.getCustomName());
-               var2.setCustomNameVisible(this.isCustomNameVisible());
-            }
-
-            if (this.isPersistenceRequired()) {
-               var2.setPersistenceRequired();
-            }
-
-            var2.setInvulnerable(this.isInvulnerable());
-            this.level().addFreshEntity(var2);
-            this.dropFromShearingLootTable(BuiltInLootTables.SHEAR_MOOSHROOM, var1x -> {
-               for (int var2x = 0; var2x < var1x.getCount(); var2x++) {
-                  this.level().addFreshEntity(new ItemEntity(this.level(), this.getX(), this.getY(1.0), this.getZ(), var1x.copyWithCount(1)));
+            this.dropFromShearingLootTable(BuiltInLootTables.SHEAR_MOOSHROOM, var1xx -> {
+               for (int var2 = 0; var2 < var1xx.getCount(); var2++) {
+                  this.level().addFreshEntity(new ItemEntity(this.level(), this.getX(), this.getY(1.0), this.getZ(), var1xx.copyWithCount(1)));
                }
             });
-         }
+         });
       }
    }
 

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.monster;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
 import java.util.List;
@@ -22,6 +23,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
@@ -262,11 +264,26 @@ public class Zombie extends Monster {
    }
 
    protected void convertToZombieType(EntityType<? extends Zombie> var1) {
-      Zombie var2 = this.convertTo(var1, true);
-      if (var2 != null) {
-         var2.handleAttributes(var2.level().getCurrentDifficultyAt(var2.blockPosition()).getSpecialMultiplier());
-         var2.setCanBreakDoors(this.canBreakDoors());
-      }
+      this.convertTo(
+         var1,
+         ConversionParams.single(this, true, true),
+         var0 -> var0.handleAttributes(var0.level().getCurrentDifficultyAt(var0.blockPosition()).getSpecialMultiplier())
+      );
+   }
+
+   @VisibleForTesting
+   public boolean convertVillagerToZombieVillager(ServerLevel var1, Villager var2) {
+      ZombieVillager var3 = var2.convertTo(EntityType.ZOMBIE_VILLAGER, ConversionParams.single(var2, true, true), var3x -> {
+         var3x.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3x.blockPosition()), EntitySpawnReason.CONVERSION, new Zombie.ZombieGroupData(false, true));
+         var3x.setVillagerData(var2.getVillagerData());
+         var3x.setGossips(var2.getGossips().store(NbtOps.INSTANCE));
+         var3x.setTradeOffers(var2.getOffers().copy());
+         var3x.setVillagerXp(var2.getVillagerXp());
+         if (!this.isSilent()) {
+            var1.levelEvent(null, 1026, this.blockPosition(), 0);
+         }
+      });
+      return var3 != null;
    }
 
    protected boolean isSunSensitive() {
@@ -412,17 +429,7 @@ public class Zombie extends Monster {
             return var3;
          }
 
-         ZombieVillager var5 = var4.convertTo(EntityType.ZOMBIE_VILLAGER, false);
-         if (var5 != null) {
-            var5.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var5.blockPosition()), EntitySpawnReason.CONVERSION, new Zombie.ZombieGroupData(false, true));
-            var5.setVillagerData(var4.getVillagerData());
-            var5.setGossips(var4.getGossips().store(NbtOps.INSTANCE));
-            var5.setTradeOffers(var4.getOffers().copy());
-            var5.setVillagerXp(var4.getVillagerXp());
-            if (!this.isSilent()) {
-               var1.levelEvent(null, 1026, this.blockPosition(), 0);
-            }
-
+         if (this.convertVillagerToZombieVillager(var1, var4)) {
             var3 = false;
          }
       }
@@ -451,7 +458,10 @@ public class Zombie extends Monster {
       RandomSource var5 = var1.getRandom();
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       float var6 = var2.getSpecialMultiplier();
-      this.setCanPickUpLoot(var5.nextFloat() < 0.55F * var6);
+      if (var3 != EntitySpawnReason.CONVERSION) {
+         this.setCanPickUpLoot(var5.nextFloat() < 0.55F * var6);
+      }
+
       if (var4 == null) {
          var4 = new Zombie.ZombieGroupData(getSpawnAsBabyOdds(var5), true);
       }
@@ -481,8 +491,10 @@ public class Zombie extends Monster {
          }
 
          this.setCanBreakDoors(var5.nextFloat() < var6 * 0.1F);
-         this.populateDefaultEquipmentSlots(var5, var2);
-         this.populateDefaultEquipmentEnchantments(var1, var5, var2);
+         if (var3 != EntitySpawnReason.CONVERSION) {
+            this.populateDefaultEquipmentSlots(var5, var2);
+            this.populateDefaultEquipmentEnchantments(var1, var5, var2);
+         }
       }
 
       if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -497,6 +509,16 @@ public class Zombie extends Monster {
 
       this.handleAttributes(var6);
       return var4;
+   }
+
+   @VisibleForTesting
+   public void setInWaterTime(int var1) {
+      this.inWaterTime = var1;
+   }
+
+   @VisibleForTesting
+   public void setConversionTime(int var1) {
+      this.conversionTime = var1;
    }
 
    public static boolean getSpawnAsBabyOdds(RandomSource var0) {

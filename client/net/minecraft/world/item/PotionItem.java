@@ -13,7 +13,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.context.UseOnContext;
@@ -74,8 +73,11 @@ public class PotionItem extends Item {
    }
 
    @Override
-   public String getDescriptionId(ItemStack var1) {
-      return Potion.getName(var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion(), this.getDescriptionId() + ".effect.");
+   public Component getName(ItemStack var1) {
+      return var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)
+         .potion()
+         .map(var1x -> Component.translatable(this.descriptionId + ".effect." + var1x.value().name()))
+         .orElseGet(() -> Component.translatable(this.descriptionId + ".effect.empty"));
    }
 
    @Override

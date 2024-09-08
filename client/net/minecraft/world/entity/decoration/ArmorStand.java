@@ -155,7 +155,7 @@ public class ArmorStand extends LivingEntity {
 
    @Override
    public boolean canUseSlot(EquipmentSlot var1) {
-      return var1 != EquipmentSlot.BODY;
+      return var1 != EquipmentSlot.BODY && !this.isDisabled(var1);
    }
 
    @Override
@@ -168,12 +168,6 @@ public class ArmorStand extends LivingEntity {
          case HUMANOID_ARMOR:
             this.onEquipItem(var1, this.armorItems.set(var1.getIndex(), var2), var2);
       }
-   }
-
-   @Override
-   public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
-      return this.getItemBySlot(var2).isEmpty() && !this.isDisabled(var2);
    }
 
    @Override
@@ -355,14 +349,14 @@ public class ArmorStand extends LivingEntity {
    }
 
    private boolean isDisabled(EquipmentSlot var1) {
-      return (this.disabledSlots & 1 << var1.getFilterFlag()) != 0 || var1.getType() == EquipmentSlot.Type.HAND && !this.showArms();
+      return (this.disabledSlots & 1 << var1.getFilterBit(0)) != 0 || var1.getType() == EquipmentSlot.Type.HAND && !this.showArms();
    }
 
    private boolean swapItem(Player var1, EquipmentSlot var2, ItemStack var3, InteractionHand var4) {
       ItemStack var5 = this.getItemBySlot(var2);
-      if (!var5.isEmpty() && (this.disabledSlots & 1 << var2.getFilterFlag() + 8) != 0) {
+      if (!var5.isEmpty() && (this.disabledSlots & 1 << var2.getFilterBit(8)) != 0) {
          return false;
-      } else if (var5.isEmpty() && (this.disabledSlots & 1 << var2.getFilterFlag() + 16) != 0) {
+      } else if (var5.isEmpty() && (this.disabledSlots & 1 << var2.getFilterBit(16)) != 0) {
          return false;
       } else if (var1.hasInfiniteMaterials() && var5.isEmpty() && !var3.isEmpty()) {
          this.setItemSlot(var2, var3.copyWithCount(1));

@@ -38,6 +38,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
@@ -97,10 +98,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.ElytraItem;
-import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
@@ -108,6 +106,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffect;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -650,13 +649,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public void onEquipItem(EquipmentSlot var1, ItemStack var2, ItemStack var3) {
-      boolean var4 = var3.isEmpty() && var2.isEmpty();
-      if (!var4 && !ItemStack.isSameItemSameComponents(var2, var3) && !this.firstTick) {
-         Equipable var5 = Equipable.get(var3);
-         if (!this.level().isClientSide() && !this.isSpectator()) {
-            if (!this.isSilent() && var5 != null && var5.getEquipmentSlot() == var1) {
+      if (!this.level().isClientSide() && !this.isSpectator()) {
+         boolean var4 = var3.isEmpty() && var2.isEmpty();
+         if (!var4 && !ItemStack.isSameItemSameComponents(var2, var3) && !this.firstTick) {
+            Equippable var5 = var3.get(DataComponents.EQUIPPABLE);
+            if (!this.isSilent() && var5 != null && var1 == var5.slot()) {
                this.level()
-                  .playSeededSound(null, this.getX(), this.getY(), this.getZ(), var5.getEquipSound(), this.getSoundSource(), 1.0F, 1.0F, this.random.nextLong());
+                  .playSeededSound(null, this.getX(), this.getY(), this.getZ(), var5.equipSound(), this.getSoundSource(), 1.0F, 1.0F, this.random.nextLong());
             }
 
             if (this.doesEmitEquipEvent(var1)) {
@@ -1625,7 +1624,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
          for (EquipmentSlot var8 : var3) {
             ItemStack var9 = this.getItemBySlot(var8);
-            if (var9.getItem() instanceof ArmorItem && var9.canBeHurtBy(var1)) {
+            if (var9.isDamageableItem() && var9.canBeHurtBy(var1)) {
                var9.hurtAndBreak(var4, this, var8);
             }
          }
@@ -2496,40 +2495,40 @@ public abstract class LivingEntity extends Entity implements Attackable {
    private Map<EquipmentSlot, ItemStack> collectEquipmentChanges() {
       EnumMap var1 = null;
 
-      for (EquipmentSlot var5 : EquipmentSlot.values()) {
-         ItemStack var6 = switch (var5.getType()) {
-            case HAND -> this.getLastHandItem(var5);
-            case HUMANOID_ARMOR -> this.getLastArmorItem(var5);
+      for (EquipmentSlot var3 : EquipmentSlot.VALUES) {
+         ItemStack var4 = switch (var3.getType()) {
+            case HAND -> this.getLastHandItem(var3);
+            case HUMANOID_ARMOR -> this.getLastArmorItem(var3);
             case ANIMAL_ARMOR -> this.lastBodyItemStack;
          };
-         ItemStack var7 = this.getItemBySlot(var5);
-         if (this.equipmentHasChanged(var6, var7)) {
+         ItemStack var5 = this.getItemBySlot(var3);
+         if (this.equipmentHasChanged(var4, var5)) {
             if (var1 == null) {
                var1 = Maps.newEnumMap(EquipmentSlot.class);
             }
 
-            var1.put(var5, var7);
-            AttributeMap var8 = this.getAttributes();
-            if (!var6.isEmpty()) {
-               this.stopLocationBasedEffects(var6, var5, var8);
+            var1.put(var3, var5);
+            AttributeMap var6 = this.getAttributes();
+            if (!var4.isEmpty()) {
+               this.stopLocationBasedEffects(var4, var3, var6);
             }
          }
       }
 
       if (var1 != null) {
-         for (Entry var10 : var1.entrySet()) {
-            EquipmentSlot var11 = (EquipmentSlot)var10.getKey();
-            ItemStack var12 = (ItemStack)var10.getValue();
-            if (!var12.isEmpty() && !var12.isBroken()) {
-               var12.forEachModifier(var11, (var1x, var2) -> {
-                  AttributeInstance var3 = this.attributes.getInstance(var1x);
-                  if (var3 != null) {
-                     var3.removeModifier(var2.id());
-                     var3.addTransientModifier(var2);
+         for (Entry var9 : var1.entrySet()) {
+            EquipmentSlot var10 = (EquipmentSlot)var9.getKey();
+            ItemStack var11 = (ItemStack)var9.getValue();
+            if (!var11.isEmpty() && !var11.isBroken()) {
+               var11.forEachModifier(var10, (var1x, var2) -> {
+                  AttributeInstance var3x = this.attributes.getInstance(var1x);
+                  if (var3x != null) {
+                     var3x.removeModifier(var2.id());
+                     var3x.addTransientModifier(var2);
                   }
                });
-               if (this.level() instanceof ServerLevel var13) {
-                  EnchantmentHelper.runLocationChangedEffects(var13, var12, this, var11);
+               if (this.level() instanceof ServerLevel var12) {
+                  EnchantmentHelper.runLocationChangedEffects(var12, var11, this, var10);
                }
             }
          }
@@ -2757,17 +2756,18 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected void updateFallFlying() {
       this.checkSlowFallDistance();
       if (!this.level().isClientSide) {
-         ItemStack var1 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if (!this.canContinueToGlide(var1)) {
+         if (!this.canGlide()) {
             this.setSharedFlag(7, false);
             return;
          }
 
-         int var2 = this.fallFlyTicks + 1;
-         if (var2 % 10 == 0) {
-            int var3 = var2 / 10;
-            if (var3 % 2 == 0) {
-               var1.hurtAndBreak(1, this, EquipmentSlot.CHEST);
+         int var1 = this.fallFlyTicks + 1;
+         if (var1 % 10 == 0) {
+            int var2 = var1 / 10;
+            if (var2 % 2 == 0) {
+               List var3 = EquipmentSlot.VALUES.stream().filter(var1x -> canGlideUsing(this.getItemBySlot(var1x), var1x)).toList();
+               EquipmentSlot var4 = Util.getRandom(var3, this.random);
+               this.getItemBySlot(var4).hurtAndBreak(1, this, var4);
             }
 
             this.gameEvent(GameEvent.ELYTRA_GLIDE);
@@ -2775,8 +2775,18 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   protected boolean canContinueToGlide(ItemStack var1) {
-      return !this.onGround() && !this.isPassenger() && !this.hasEffect(MobEffects.LEVITATION) ? var1.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var1) : false;
+   protected boolean canGlide() {
+      if (!this.onGround() && !this.isPassenger() && !this.hasEffect(MobEffects.LEVITATION)) {
+         for (EquipmentSlot var2 : EquipmentSlot.VALUES) {
+            if (canGlideUsing(this.getItemBySlot(var2), var2)) {
+               return true;
+            }
+         }
+
+         return false;
+      } else {
+         return false;
+      }
    }
 
    protected void serverAiStep() {
@@ -3255,10 +3265,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
    public void setRecordPlayingNearby(BlockPos var1, boolean var2) {
    }
 
-   public boolean canTakeItem(ItemStack var1) {
-      return false;
-   }
-
    public boolean canPickUpLoot() {
       return false;
    }
@@ -3408,16 +3414,36 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return var0 == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
    }
 
-   public EquipmentSlot getEquipmentSlotForItem(ItemStack var1) {
-      Equipable var2 = Equipable.get(var1);
-      if (var2 != null) {
-         EquipmentSlot var3 = var2.getEquipmentSlot();
-         if (this.canUseSlot(var3)) {
-            return var3;
+   public final boolean canEquipWithDispenser(ItemStack var1) {
+      if (this.isAlive() && !this.isSpectator()) {
+         Equippable var2 = var1.get(DataComponents.EQUIPPABLE);
+         if (var2 != null && var2.dispensable()) {
+            EquipmentSlot var3 = var2.slot();
+            return this.canUseSlot(var3) && var2.canBeEquippedBy(this.getType())
+               ? this.getItemBySlot(var3).isEmpty() && this.canDispenserEquipIntoSlot(var3)
+               : false;
+         } else {
+            return false;
          }
+      } else {
+         return false;
       }
+   }
 
-      return EquipmentSlot.MAINHAND;
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return true;
+   }
+
+   public final EquipmentSlot getEquipmentSlotForItem(ItemStack var1) {
+      Equippable var2 = var1.get(DataComponents.EQUIPPABLE);
+      return var2 != null && this.canUseSlot(var2.slot()) ? var2.slot() : EquipmentSlot.MAINHAND;
+   }
+
+   public final boolean isEquippableInSlot(ItemStack var1, EquipmentSlot var2) {
+      Equippable var3 = var1.get(DataComponents.EQUIPPABLE);
+      return var3 == null
+         ? var2 == EquipmentSlot.MAINHAND && this.canUseSlot(EquipmentSlot.MAINHAND)
+         : var2 == var3.slot() && this.canUseSlot(var3.slot()) && var3.canBeEquippedBy(this.getType());
    }
 
    private static SlotAccess createEquipmentSlotAccess(LivingEntity var0, EquipmentSlot var1) {
@@ -3532,6 +3558,20 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
          return false;
       }
+   }
+
+   public static boolean canGlideUsing(ItemStack var0, EquipmentSlot var1) {
+      if (!var0.has(DataComponents.GLIDER)) {
+         return false;
+      } else {
+         Equippable var2 = var0.get(DataComponents.EQUIPPABLE);
+         return var2 != null && var1 == var2.slot() && !var0.nextDamageWillBreak();
+      }
+   }
+
+   @VisibleForTesting
+   public int getLastHurtByPlayerTime() {
+      return this.lastHurtByPlayerTime;
    }
 
 // $VF: Couldn't be decompiled

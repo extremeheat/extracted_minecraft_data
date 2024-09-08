@@ -45,40 +45,43 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
       BlockState var6 = Blocks.SHORT_GRASS.defaultBlockState();
       Optional var7 = var1.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE).get(VegetationPlacements.GRASS_BONEMEAL);
 
-      label49:
+      label51:
       for (int var8 = 0; var8 < 128; var8++) {
          BlockPos var9 = var5;
 
          for (int var10 = 0; var10 < var8 / 16; var10++) {
             var9 = var9.offset(var2.nextInt(3) - 1, (var2.nextInt(3) - 1) * var2.nextInt(3) / 2, var2.nextInt(3) - 1);
             if (!var1.getBlockState(var9.below()).is(this) || var1.getBlockState(var9).isCollisionShapeFullBlock(var1, var9)) {
-               continue label49;
+               continue label51;
             }
          }
 
          BlockState var13 = var1.getBlockState(var9);
          if (var13.is(var6.getBlock()) && var2.nextInt(10) == 0) {
-            ((BonemealableBlock)var6.getBlock()).performBonemeal(var1, var2, var9, var13);
+            BonemealableBlock var11 = (BonemealableBlock)var6.getBlock();
+            if (var11.isValidBonemealTarget(var1, var9, var13)) {
+               var11.performBonemeal(var1, var2, var9, var13);
+            }
          }
 
          if (var13.isAir()) {
-            Holder var11;
+            Holder var14;
             if (var2.nextInt(8) == 0) {
                List var12 = var1.getBiome(var9).value().getGenerationSettings().getFlowerFeatures();
                if (var12.isEmpty()) {
                   continue;
                }
 
-               var11 = ((RandomPatchConfiguration)((ConfiguredFeature)var12.get(0)).config()).feature();
+               var14 = ((RandomPatchConfiguration)((ConfiguredFeature)var12.get(0)).config()).feature();
             } else {
                if (!var7.isPresent()) {
                   continue;
                }
 
-               var11 = (Holder)var7.get();
+               var14 = (Holder)var7.get();
             }
 
-            ((PlacedFeature)var11.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var9);
+            ((PlacedFeature)var14.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var9);
          }
       }
    }

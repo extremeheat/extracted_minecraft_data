@@ -56,7 +56,7 @@ public class DebugStickItem extends Item {
          StateDefinition var8 = ((Block)var7.value()).getStateDefinition();
          Collection var9 = var8.getProperties();
          if (var9.isEmpty()) {
-            message(var1, Component.translatable(this.getDescriptionId() + ".empty", var7.getRegisteredName()));
+            message(var1, Component.translatable(this.descriptionId + ".empty", var7.getRegisteredName()));
             return false;
          } else {
             DebugStickState var10 = var6.get(DataComponents.DEBUG_STICK_STATE);
@@ -71,11 +71,11 @@ public class DebugStickItem extends Item {
 
                   BlockState var12 = cycleState(var2, var11, var1.isSecondaryUseActive());
                   var3.setBlock(var4, var12, 18);
-                  message(var1, Component.translatable(this.getDescriptionId() + ".update", var11.getName(), getNameHelper(var12, var11)));
+                  message(var1, Component.translatable(this.descriptionId + ".update", var11.getName(), getNameHelper(var12, var11)));
                } else {
                   var11 = getRelative(var9, var11, var1.isSecondaryUseActive());
                   var6.set(DataComponents.DEBUG_STICK_STATE, var10.withProperty(var7, var11));
-                  message(var1, Component.translatable(this.getDescriptionId() + ".select", var11.getName(), getNameHelper(var2, var11)));
+                  message(var1, Component.translatable(this.descriptionId + ".select", var11.getName(), getNameHelper(var2, var11)));
                }
 
                return true;

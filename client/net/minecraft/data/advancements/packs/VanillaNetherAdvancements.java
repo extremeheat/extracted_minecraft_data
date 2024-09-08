@@ -517,28 +517,28 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
          LootItemEntityPropertyCondition.hasProperties(
                LootContext.EntityTarget.THIS,
                EntityPredicate.Builder.entity()
-                  .equipment(EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(var4, Items.GOLDEN_HELMET)))
+                  .equipment(EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(var4, ItemTags.PIGLIN_SAFE_ARMOR)))
             )
             .invert()
             .build(),
          LootItemEntityPropertyCondition.hasProperties(
                LootContext.EntityTarget.THIS,
                EntityPredicate.Builder.entity()
-                  .equipment(EntityEquipmentPredicate.Builder.equipment().chest(ItemPredicate.Builder.item().of(var4, Items.GOLDEN_CHESTPLATE)))
+                  .equipment(EntityEquipmentPredicate.Builder.equipment().chest(ItemPredicate.Builder.item().of(var4, ItemTags.PIGLIN_SAFE_ARMOR)))
             )
             .invert()
             .build(),
          LootItemEntityPropertyCondition.hasProperties(
                LootContext.EntityTarget.THIS,
                EntityPredicate.Builder.entity()
-                  .equipment(EntityEquipmentPredicate.Builder.equipment().legs(ItemPredicate.Builder.item().of(var4, Items.GOLDEN_LEGGINGS)))
+                  .equipment(EntityEquipmentPredicate.Builder.equipment().legs(ItemPredicate.Builder.item().of(var4, ItemTags.PIGLIN_SAFE_ARMOR)))
             )
             .invert()
             .build(),
          LootItemEntityPropertyCondition.hasProperties(
                LootContext.EntityTarget.THIS,
                EntityPredicate.Builder.entity()
-                  .equipment(EntityEquipmentPredicate.Builder.equipment().feet(ItemPredicate.Builder.item().of(var4, Items.GOLDEN_BOOTS)))
+                  .equipment(EntityEquipmentPredicate.Builder.equipment().feet(ItemPredicate.Builder.item().of(var4, ItemTags.PIGLIN_SAFE_ARMOR)))
             )
             .invert()
             .build()

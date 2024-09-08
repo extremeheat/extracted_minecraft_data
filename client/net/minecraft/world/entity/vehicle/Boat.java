@@ -42,8 +42,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -205,17 +203,7 @@ public class Boat extends VehicleEntity implements Leashable, VariantHolder<Boat
 
    @Override
    public Item getDropItem() {
-      return switch (this.getVariant()) {
-         case SPRUCE -> Items.SPRUCE_BOAT;
-         case BIRCH -> Items.BIRCH_BOAT;
-         case JUNGLE -> Items.JUNGLE_BOAT;
-         case ACACIA -> Items.ACACIA_BOAT;
-         case CHERRY -> Items.CHERRY_BOAT;
-         case DARK_OAK -> Items.DARK_OAK_BOAT;
-         case MANGROVE -> Items.MANGROVE_BOAT;
-         case BAMBOO -> Items.BAMBOO_RAFT;
-         default -> Items.OAK_BOAT;
-      };
+      return this.getVariant().getBoat();
    }
 
    @Override
@@ -877,7 +865,7 @@ public class Boat extends VehicleEntity implements Leashable, VariantHolder<Boat
 
    @Override
    protected Component getTypeName() {
-      return Component.translatable(this.getDropItem().getDescriptionId());
+      return this.getVariant().description;
    }
 
    @Override
@@ -902,24 +890,28 @@ public class Boat extends VehicleEntity implements Leashable, VariantHolder<Boat
    }
 
    public static enum Type implements StringRepresentable {
-      OAK(Blocks.OAK_PLANKS, "oak"),
-      SPRUCE(Blocks.SPRUCE_PLANKS, "spruce"),
-      BIRCH(Blocks.BIRCH_PLANKS, "birch"),
-      JUNGLE(Blocks.JUNGLE_PLANKS, "jungle"),
-      ACACIA(Blocks.ACACIA_PLANKS, "acacia"),
-      CHERRY(Blocks.CHERRY_PLANKS, "cherry"),
-      DARK_OAK(Blocks.DARK_OAK_PLANKS, "dark_oak"),
-      MANGROVE(Blocks.MANGROVE_PLANKS, "mangrove"),
-      BAMBOO(Blocks.BAMBOO_PLANKS, "bamboo");
+      OAK(Items.OAK_PLANKS, Items.OAK_BOAT, "oak", "item.minecraft.oak_boat"),
+      SPRUCE(Items.SPRUCE_PLANKS, Items.SPRUCE_BOAT, "spruce", "item.minecaft.spruce_boat"),
+      BIRCH(Items.BIRCH_PLANKS, Items.BIRCH_BOAT, "birch", "item.minecraft.birch_boat"),
+      JUNGLE(Items.JUNGLE_PLANKS, Items.JUNGLE_BOAT, "jungle", "item.minecraft.jungle_boat"),
+      ACACIA(Items.ACACIA_PLANKS, Items.ACACIA_BOAT, "acacia", "item.minecraft.acacia_boat"),
+      CHERRY(Items.CHERRY_PLANKS, Items.CHERRY_BOAT, "cherry", "item.minecraft.cherry_boat"),
+      DARK_OAK(Items.DARK_OAK_PLANKS, Items.DARK_OAK_BOAT, "dark_oak", "item.minecraft.dark_oak_boat"),
+      MANGROVE(Items.MANGROVE_PLANKS, Items.MANGROVE_BOAT, "mangrove", "item.minecraft.mangrove_boat"),
+      BAMBOO(Items.BAMBOO_PLANKS, Items.BAMBOO_RAFT, "bamboo", "item.minecraft.bamboo_raft");
 
       private final String name;
-      private final Block planks;
+      private final Item planks;
+      private final Item boat;
+      final Component description;
       public static final StringRepresentable.EnumCodec<Boat.Type> CODEC = StringRepresentable.fromEnum(Boat.Type::values);
       private static final IntFunction<Boat.Type> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
 
-      private Type(final Block nullxx, final String nullxxx) {
-         this.name = nullxxx;
+      private Type(final Item nullxx, final Item nullxxx, final String nullxxxx, final String nullxxxxx) {
+         this.name = nullxxxx;
          this.planks = nullxx;
+         this.boat = nullxxx;
+         this.description = Component.translatable(nullxxxxx);
       }
 
       @Override
@@ -931,8 +923,12 @@ public class Boat extends VehicleEntity implements Leashable, VariantHolder<Boat
          return this.name;
       }
 
-      public Block getPlanks() {
+      public Item getPlanks() {
          return this.planks;
+      }
+
+      public Item getBoat() {
+         return this.boat;
       }
 
       @Override

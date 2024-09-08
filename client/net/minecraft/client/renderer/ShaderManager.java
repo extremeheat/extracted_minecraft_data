@@ -228,8 +228,18 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
          return this.compilationCache.getOrCompileProgram(var1);
       } catch (ShaderManager.CompilationException var3) {
          LOGGER.error("Failed to load shader program: {}", var1, var3);
+         this.compilationCache.programs.put(var1, Optional.empty());
          this.recoveryHandler.accept(var3);
          return null;
+      }
+   }
+
+   public CompiledShaderProgram getProgramForLoading(ShaderProgram var1) throws ShaderManager.CompilationException {
+      CompiledShaderProgram var2 = this.compilationCache.getOrCompileProgram(var1);
+      if (var2 == null) {
+         throw new ShaderManager.CompilationException("Shader '" + var1 + "' could not be found");
+      } else {
+         return var2;
       }
    }
 
@@ -245,6 +255,7 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
          return this.compilationCache.getOrLoadPostChain(var1, var2);
       } catch (ShaderManager.CompilationException var4) {
          LOGGER.error("Failed to load post chain: {}", var1, var4);
+         this.compilationCache.postChains.put(var1, Optional.empty());
          this.recoveryHandler.accept(var4);
          return null;
       }
@@ -259,7 +270,7 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
       private final ShaderManager.Configs configs;
       final Map<ShaderProgram, Optional<CompiledShaderProgram>> programs = new HashMap<>();
       final Map<ShaderManager.ShaderCompilationKey, CompiledShader> shaders = new HashMap<>();
-      private final Map<ResourceLocation, Optional<PostChain>> postChains = new HashMap<>();
+      final Map<ResourceLocation, Optional<PostChain>> postChains = new HashMap<>();
 
       CompilationCache(final ShaderManager.Configs nullx) {
          super();
@@ -272,14 +283,9 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
          if (var2 != null) {
             return (CompiledShaderProgram)var2.orElse(null);
          } else {
-            try {
-               CompiledShaderProgram var3 = this.compileProgram(var1);
-               this.programs.put(var1, Optional.of(var3));
-               return var3;
-            } catch (ShaderManager.CompilationException var4) {
-               this.programs.put(var1, Optional.empty());
-               throw var4;
-            }
+            CompiledShaderProgram var3 = this.compileProgram(var1);
+            this.programs.put(var1, Optional.of(var3));
+            return var3;
          }
       }
 
@@ -322,14 +328,9 @@ public class ShaderManager extends SimplePreparableReloadListener<ShaderManager.
          if (var3 != null) {
             return (PostChain)var3.orElse(null);
          } else {
-            try {
-               PostChain var4 = this.loadPostChain(var1, var2);
-               this.postChains.put(var1, Optional.of(var4));
-               return var4;
-            } catch (ShaderManager.CompilationException var5) {
-               this.postChains.put(var1, Optional.empty());
-               throw var5;
-            }
+            PostChain var4 = this.loadPostChain(var1, var2);
+            this.postChains.put(var1, Optional.of(var4));
+            return var4;
          }
       }
 

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.monster.hoglin;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
 import javax.annotation.Nullable;
@@ -22,6 +23,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -36,7 +38,6 @@ import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -54,7 +55,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    private static final float KNOCKBACK_RESISTANCE = 0.6F;
    private static final int ATTACK_DAMAGE = 6;
    private static final float BABY_ATTACK_DAMAGE = 0.5F;
-   private static final int CONVERSION_TIME = 300;
+   public static final int CONVERSION_TIME = 300;
    private int attackAnimationRemainingTicks;
    private int timeInOverworld;
    private boolean cannotBeHunted;
@@ -89,6 +90,11 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    public Hoglin(EntityType<? extends Hoglin> var1, Level var2) {
       super(var1, var2);
       this.xpReward = 5;
+   }
+
+   @VisibleForTesting
+   public void setTimeInOverworld(int var1) {
+      this.timeInOverworld = var1;
    }
 
    @Override
@@ -164,7 +170,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
          this.timeInOverworld++;
          if (this.timeInOverworld > 300) {
             this.makeSound(SoundEvents.HOGLIN_CONVERTED_TO_ZOMBIFIED);
-            this.finishConversion((ServerLevel)this.level());
+            this.finishConversion();
          }
       } else {
          this.timeInOverworld = 0;
@@ -254,11 +260,8 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       return this.xpReward;
    }
 
-   private void finishConversion(ServerLevel var1) {
-      Zoglin var2 = this.convertTo(EntityType.ZOGLIN, true);
-      if (var2 != null) {
-         var2.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
-      }
+   private void finishConversion() {
+      this.convertTo(EntityType.ZOGLIN, ConversionParams.single(this, true, false), var0 -> var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0)));
    }
 
    @Override

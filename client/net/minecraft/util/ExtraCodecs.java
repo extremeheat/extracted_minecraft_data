@@ -104,6 +104,9 @@ public class ExtraCodecs {
 
       return var1;
    });
+   public static final Codec<Integer> RGB_COLOR_CODEC = Codec.withAlternative(
+      Codec.INT, VECTOR3F, var0 -> ARGB.colorFromFloat(1.0F, var0.x(), var0.y(), var0.z())
+   );
    public static final Codec<Integer> ARGB_COLOR_CODEC = Codec.withAlternative(
       Codec.INT, VECTOR4F, var0 -> ARGB.colorFromFloat(var0.w(), var0.x(), var0.y(), var0.z())
    );
@@ -348,6 +351,10 @@ public class ExtraCodecs {
       return var0.validate(
          var0x -> var0x.unwrap().right().filter(List::isEmpty).isPresent() ? DataResult.error(() -> "List must have contents") : DataResult.success(var0x)
       );
+   }
+
+   public static <M extends Map<?, ?>> Codec<M> nonEmptyMap(Codec<M> var0) {
+      return var0.validate(var0x -> var0x.isEmpty() ? DataResult.error(() -> "Map must have contents") : DataResult.success(var0x));
    }
 
    public static <E> MapCodec<E> retrieveContext(final Function<DynamicOps<?>, DataResult<E>> var0) {

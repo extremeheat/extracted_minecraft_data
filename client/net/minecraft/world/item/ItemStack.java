@@ -84,7 +84,6 @@ import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -457,6 +456,10 @@ public final class ItemStack implements DataComponentHolder {
       return this.isDamageableItem() && this.getDamageValue() >= this.getMaxDamage();
    }
 
+   public boolean nextDamageWillBreak() {
+      return this.isDamageableItem() && this.getDamageValue() >= this.getMaxDamage() - 1;
+   }
+
    public void hurtAndBreak(int var1, ServerLevel var2, @Nullable ServerPlayer var3, Consumer<Item> var4) {
       int var5 = this.processDurabilityChange(var1, var2, var3);
       if (var5 > 0) {
@@ -663,10 +666,6 @@ public final class ItemStack implements DataComponentHolder {
       return var1;
    }
 
-   public String getDescriptionId() {
-      return this.getItem().getDescriptionId(this);
-   }
-
    @Override
    public String toString() {
       return this.getCount() + " " + this.getItem();
@@ -769,9 +768,12 @@ public final class ItemStack implements DataComponentHolder {
             }
          }
 
-         Component var4 = this.get(DataComponents.ITEM_NAME);
-         return var4 != null ? var4 : this.getItem().getName(this);
+         return this.getItemName();
       }
+   }
+
+   public Component getItemName() {
+      return this.getItem().getName(this);
    }
 
    public Component getStyledHoverName() {
@@ -986,23 +988,13 @@ public final class ItemStack implements DataComponentHolder {
 
    public void forEachModifier(EquipmentSlotGroup var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
       ItemAttributeModifiers var3 = this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-      if (!var3.modifiers().isEmpty()) {
-         var3.forEach(var1, var2);
-      } else {
-         this.getItem().getDefaultAttributeModifiers().forEach(var1, var2);
-      }
-
+      var3.forEach(var1, var2);
       EnchantmentHelper.forEachModifier(this, var1, var2);
    }
 
    public void forEachModifier(EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
       ItemAttributeModifiers var3 = this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-      if (!var3.modifiers().isEmpty()) {
-         var3.forEach(var1, var2);
-      } else {
-         this.getItem().getDefaultAttributeModifiers().forEach(var1, var2);
-      }
-
+      var3.forEach(var1, var2);
       EnchantmentHelper.forEachModifier(this, var1, var2);
    }
 
@@ -1096,11 +1088,6 @@ public final class ItemStack implements DataComponentHolder {
 
    public boolean isValidRepairItem(ItemStack var1) {
       Repairable var2 = this.get(DataComponents.REPAIRABLE);
-      return var2 != null ? var2.isValidRepairItem(var1) : this.getItem().isValidRepairItem(this, var1);
-   }
-
-   public int getEnchantmentValue() {
-      Enchantable var1 = this.get(DataComponents.ENCHANTABLE);
-      return var1 != null ? var1.value() : 0;
+      return var2 != null && var2.isValidRepairItem(var1);
    }
 }

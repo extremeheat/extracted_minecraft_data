@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.chunk;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import javax.annotation.Nullable;
 import net.minecraft.world.phys.Vec3;
 
@@ -24,24 +25,30 @@ public class CompileTaskDynamicQueue {
       int var3 = -1;
       double var4 = 1.7976931348623157E308;
       double var6 = 1.7976931348623157E308;
+      ListIterator var8 = this.tasks.listIterator();
 
-      for (int var8 = 0; var8 < this.tasks.size(); var8++) {
-         SectionRenderDispatcher.RenderSection.CompileTask var9 = this.tasks.get(var8);
-         double var10 = var9.getOrigin().distToCenterSqr(var1);
-         if (!var9.isRecompile() && var10 < var4) {
-            var4 = var10;
-            var2 = var8;
-         }
+      while (var8.hasNext()) {
+         int var9 = var8.nextIndex();
+         SectionRenderDispatcher.RenderSection.CompileTask var10 = (SectionRenderDispatcher.RenderSection.CompileTask)var8.next();
+         if (var10.isCancelled.get()) {
+            var8.remove();
+         } else {
+            double var11 = var10.getOrigin().distToCenterSqr(var1);
+            if (!var10.isRecompile() && var11 < var4) {
+               var4 = var11;
+               var2 = var9;
+            }
 
-         if (var9.isRecompile() && var10 < var6) {
-            var6 = var10;
-            var3 = var8;
+            if (var10.isRecompile() && var11 < var6) {
+               var6 = var11;
+               var3 = var9;
+            }
          }
       }
 
-      boolean var12 = var3 >= 0;
-      boolean var13 = var2 >= 0;
-      if (!var12 || var13 && (this.recompileQuota <= 0 || !(var6 < var4))) {
+      boolean var13 = var3 >= 0;
+      boolean var14 = var2 >= 0;
+      if (!var13 || var14 && (this.recompileQuota <= 0 || !(var6 < var4))) {
          this.recompileQuota = 2;
          return this.removeTaskByIndex(var2);
       } else {

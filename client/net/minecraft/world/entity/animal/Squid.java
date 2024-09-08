@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -194,8 +195,9 @@ public class Squid extends AgeableWaterCreature {
 
       for (int var2 = 0; var2 < 30; var2++) {
          Vec3 var3 = this.rotateVector(new Vec3((double)this.random.nextFloat() * 0.6 - 0.3, -1.0, (double)this.random.nextFloat() * 0.6 - 0.3));
-         Vec3 var4 = var3.scale(0.3 + (double)(this.random.nextFloat() * 2.0F));
-         ((ServerLevel)this.level()).sendParticles(this.getInkParticle(), var1.x, var1.y + 0.5, var1.z, 0, var4.x, var4.y, var4.z, 0.10000000149011612);
+         float var4 = this.isBaby() ? 0.1F : 0.3F;
+         Vec3 var5 = var3.scale((double)(var4 + this.random.nextFloat() * 2.0F));
+         ((ServerLevel)this.level()).sendParticles(this.getInkParticle(), var1.x, var1.y + 0.5, var1.z, 0, var5.x, var5.y, var5.z, 0.10000000149011612);
       }
    }
 
@@ -232,11 +234,8 @@ public class Squid extends AgeableWaterCreature {
    @Nullable
    @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      if (this.random.nextFloat() > 0.95F) {
-         this.setBaby(true);
-      }
-
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      SpawnGroupData var5 = Objects.requireNonNullElseGet(var4, () -> new AgeableMob.AgeableMobGroupData(0.05F));
+      return super.finalizeSpawn(var1, var2, var3, var5);
    }
 
    class SquidFleeGoal extends Goal {

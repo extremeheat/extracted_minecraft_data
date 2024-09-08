@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.io.ByteArrayOutputStream;
@@ -14,11 +15,13 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.ToIntFunction;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import org.slf4j.Logger;
 
@@ -35,10 +38,27 @@ public interface DataProvider {
 
    String getName();
 
+   static <T> CompletableFuture<?> saveAll(CachedOutput var0, Codec<T> var1, PackOutput.PathProvider var2, Map<ResourceLocation, T> var3) {
+      return CompletableFuture.allOf(
+         var3.entrySet()
+            .stream()
+            .map(var3x -> saveStable(var0, var1, var3x.getValue(), var2.json((ResourceLocation)var3x.getKey())))
+            .toArray(CompletableFuture[]::new)
+      );
+   }
+
    static <T> CompletableFuture<?> saveStable(CachedOutput var0, HolderLookup.Provider var1, Codec<T> var2, T var3, Path var4) {
       RegistryOps var5 = var1.createSerializationContext(JsonOps.INSTANCE);
-      JsonElement var6 = (JsonElement)var2.encodeStart(var5, var3).getOrThrow();
-      return saveStable(var0, var6, var4);
+      return saveStable(var0, var5, var2, var3, var4);
+   }
+
+   static <T> CompletableFuture<?> saveStable(CachedOutput var0, Codec<T> var1, T var2, Path var3) {
+      return saveStable(var0, JsonOps.INSTANCE, var1, var2, var3);
+   }
+
+   private static <T> CompletableFuture<?> saveStable(CachedOutput var0, DynamicOps<JsonElement> var1, Codec<T> var2, T var3, Path var4) {
+      JsonElement var5 = (JsonElement)var2.encodeStart(var1, var3).getOrThrow();
+      return saveStable(var0, var5, var4);
    }
 
    static CompletableFuture<?> saveStable(CachedOutput var0, JsonElement var1, Path var2) {
