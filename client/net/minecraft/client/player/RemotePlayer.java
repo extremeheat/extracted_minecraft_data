@@ -5,6 +5,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 
@@ -72,9 +74,10 @@ public class RemotePlayer extends AbstractClientPlayer {
       }
 
       this.bob = this.bob + (var1 - this.bob) * 0.4F;
-      this.level().getProfiler().push("push");
-      this.pushEntities();
-      this.level().getProfiler().pop();
+
+      try (Zone var2 = Profiler.get().zone("push")) {
+         this.pushEntities();
+      }
    }
 
    @Override

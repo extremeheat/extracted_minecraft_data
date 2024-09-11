@@ -2,6 +2,7 @@ package com.mojang.blaze3d.systems;
 
 import com.google.common.collect.Queues;
 import com.mojang.blaze3d.DontObfuscate;
+import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.pipeline.RenderCall;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -134,11 +135,15 @@ public class RenderSystem {
       return pollingEvents.get() && Util.getMillis() - pollEventsWaitStart.get() > 200L;
    }
 
-   public static void flipFrame(long var0) {
+   public static void flipFrame(long var0, @Nullable TracyFrameCapture var2) {
       pollEvents();
       replayQueue();
       Tesselator.getInstance().clear();
       GLFW.glfwSwapBuffers(var0);
+      if (var2 != null) {
+         var2.endFrame();
+      }
+
       pollEvents();
    }
 

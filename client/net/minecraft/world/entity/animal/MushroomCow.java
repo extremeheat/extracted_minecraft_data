@@ -108,7 +108,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
          this.playSound(var7, 1.0F, 1.0F);
          return InteractionResult.SUCCESS;
       } else if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         this.shear(SoundSource.PLAYERS);
+         this.shear(SoundSource.PLAYERS, var3);
          this.gameEvent(GameEvent.SHEAR, var1);
          if (!this.level().isClientSide) {
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
@@ -161,13 +161,13 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
    }
 
    @Override
-   public void shear(SoundSource var1) {
+   public void shear(SoundSource var1, ItemStack var2) {
       this.level().playSound(null, this, SoundEvents.MOOSHROOM_SHEAR, var1, 1.0F, 1.0F);
       if (!this.level().isClientSide()) {
-         this.convertTo(EntityType.COW, ConversionParams.single(this, false, false), var1x -> {
+         this.convertTo(EntityType.COW, ConversionParams.single(this, false, false), var2x -> {
             ((ServerLevel)this.level()).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
-            this.dropFromShearingLootTable(BuiltInLootTables.SHEAR_MOOSHROOM, var1xx -> {
-               for (int var2 = 0; var2 < var1xx.getCount(); var2++) {
+            this.dropFromShearingLootTable(BuiltInLootTables.SHEAR_MOOSHROOM, var2, var1xx -> {
+               for (int var2xx = 0; var2xx < var1xx.getCount(); var2xx++) {
                   this.level().addFreshEntity(new ItemEntity(this.level(), this.getX(), this.getY(1.0), this.getZ(), var1xx.copyWithCount(1)));
                }
             });

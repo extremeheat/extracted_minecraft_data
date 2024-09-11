@@ -218,7 +218,10 @@ public class NewMinecartBehavior extends MinecartBehavior {
 
    @Override
    public void moveAlongTrack() {
-      for (NewMinecartBehavior.TrackIteration var1 = new NewMinecartBehavior.TrackIteration(); var1.shouldIterate(); var1.firstIteration = false) {
+      for (NewMinecartBehavior.TrackIteration var1 = new NewMinecartBehavior.TrackIteration();
+         var1.shouldIterate() && this.minecart.isAlive();
+         var1.firstIteration = false
+      ) {
          Vec3 var2 = this.getDeltaMovement();
          BlockPos var3 = this.minecart.getCurrentBlockPosOrRailBelow();
          BlockState var4 = this.level().getBlockState(var3);
@@ -268,9 +271,14 @@ public class NewMinecartBehavior extends MinecartBehavior {
                this.setRotation(var10, var11);
             }
 
-            this.lerpSteps.add(new NewMinecartBehavior.MinecartStep(var12, this.getDeltaMovement(), this.getYRot(), this.getXRot(), (float)var8));
+            this.lerpSteps
+               .add(
+                  new NewMinecartBehavior.MinecartStep(
+                     var12, this.getDeltaMovement(), this.getYRot(), this.getXRot(), (float)Math.min(var8, this.getMaxSpeed())
+                  )
+               );
          } else if (var2.horizontalDistanceSqr() > 0.0) {
-            this.lerpSteps.add(new NewMinecartBehavior.MinecartStep(var12, this.getDeltaMovement(), this.getYRot(), this.getXRot(), (float)var2.length()));
+            this.lerpSteps.add(new NewMinecartBehavior.MinecartStep(var12, this.getDeltaMovement(), this.getYRot(), this.getXRot(), 1.0F));
          }
 
          if (var8 > 9.999999747378752E-6 || var1.firstIteration) {

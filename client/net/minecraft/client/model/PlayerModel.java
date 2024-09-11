@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 
 public class PlayerModel extends HumanoidModel<PlayerRenderState> {
@@ -132,12 +131,6 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
    }
 
    protected HumanoidModel.ArmPose getArmPose(PlayerRenderState var1, HumanoidArm var2) {
-      HumanoidModel.ArmPose var3 = PlayerRenderer.getArmPose(var1, var1.mainHandState, InteractionHand.MAIN_HAND);
-      HumanoidModel.ArmPose var4 = PlayerRenderer.getArmPose(var1, var1.offhandState, InteractionHand.OFF_HAND);
-      if (var3.isTwoHanded()) {
-         var4 = var1.offhandState.isEmpty ? HumanoidModel.ArmPose.EMPTY : HumanoidModel.ArmPose.ITEM;
-      }
-
-      return var1.mainArm == var2 ? var3 : var4;
+      return PlayerRenderer.getArmPose(var1, var2);
    }
 }

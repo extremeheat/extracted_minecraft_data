@@ -19,11 +19,11 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.LongPredicate;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -32,23 +32,21 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    private static final Comparator<LevelChunkTicks<?>> CONTAINER_DRAIN_ORDER = (var0, var1) -> ScheduledTick.INTRA_TICK_DRAIN_ORDER
          .compare(var0.peek(), var1.peek());
    private final LongPredicate tickCheck;
-   private final Supplier<ProfilerFiller> profiler;
    private final Long2ObjectMap<LevelChunkTicks<T>> allContainers = new Long2ObjectOpenHashMap();
    private final Long2LongMap nextTickForContainer = Util.make(new Long2LongOpenHashMap(), var0 -> var0.defaultReturnValue(9223372036854775807L));
    private final Queue<LevelChunkTicks<T>> containersToTick = new PriorityQueue<>(CONTAINER_DRAIN_ORDER);
    private final Queue<ScheduledTick<T>> toRunThisTick = new ArrayDeque<>();
    private final List<ScheduledTick<T>> alreadyRunThisTick = new ArrayList<>();
    private final Set<ScheduledTick<?>> toRunThisTickSet = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
-   private final BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> chunkScheduleUpdater = (var1x, var2x) -> {
-      if (var2x.equals(var1x.peek())) {
-         this.updateContainerScheduling(var2x);
+   private final BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> chunkScheduleUpdater = (var1x, var2) -> {
+      if (var2.equals(var1x.peek())) {
+         this.updateContainerScheduling(var2);
       }
    };
 
-   public LevelTicks(LongPredicate var1, Supplier<ProfilerFiller> var2) {
+   public LevelTicks(LongPredicate var1) {
       super();
       this.tickCheck = var1;
-      this.profiler = var2;
    }
 
    public void addContainer(ChunkPos var1, LevelChunkTicks<T> var2) {
@@ -83,7 +81,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    }
 
    public void tick(long var1, int var3, BiConsumer<BlockPos, T> var4) {
-      ProfilerFiller var5 = this.profiler.get();
+      ProfilerFiller var5 = Profiler.get();
       var5.push("collect");
       this.collectTicks(var1, var3, var5);
       var5.popPush("run");

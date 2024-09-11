@@ -20,6 +20,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -345,7 +346,7 @@ public class StatsScreen extends Screen {
                }
 
                Item var6 = var4.getItem();
-               var1.renderTooltip(StatsScreen.this.font, var6.getName(), var2, var3);
+               var1.renderTooltip(StatsScreen.this.font, var6.getName(), var2, var3, var6.components().get(DataComponents.TOOLTIP_STYLE));
             } else {
                Component var10 = null;
                int var7 = var2 - var5;

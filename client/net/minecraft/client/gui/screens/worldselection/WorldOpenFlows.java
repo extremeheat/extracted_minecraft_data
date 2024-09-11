@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -169,9 +170,12 @@ public class WorldOpenFlows {
          },
          (var0, var1x, var2x, var3x) -> {
             var0.close();
+            InitialWorldCreationOptions var4x = new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, Set.of(), null);
             return Pair.of(
                var3x.levelSettings,
-               new WorldCreationContext(var3x.options, new WorldDimensions(var3x.existingDimensions), var2x, var1x, var3x.levelSettings.getDataConfiguration())
+               new WorldCreationContext(
+                  var3x.options, new WorldDimensions(var3x.existingDimensions), var2x, var1x, var3x.levelSettings.getDataConfiguration(), var4x
+               )
             );
          }
       );

@@ -28,6 +28,8 @@ import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.component.DamageResistant;
+import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.DebugStickState;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -130,8 +132,8 @@ public class DataComponents {
    public static final DataComponentType<UseCooldown> USE_COOLDOWN = register(
       "use_cooldown", var0 -> var0.persistent(UseCooldown.CODEC).networkSynchronized(UseCooldown.STREAM_CODEC).cacheEncoding()
    );
-   public static final DataComponentType<Unit> FIRE_RESISTANT = register(
-      "fire_resistant", var0 -> var0.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE))
+   public static final DataComponentType<DamageResistant> DAMAGE_RESISTANT = register(
+      "damage_resistant", var0 -> var0.persistent(DamageResistant.CODEC).networkSynchronized(DamageResistant.STREAM_CODEC).cacheEncoding()
    );
    public static final DataComponentType<Tool> TOOL = register(
       "tool", var0 -> var0.persistent(Tool.CODEC).networkSynchronized(Tool.STREAM_CODEC).cacheEncoding()
@@ -150,6 +152,9 @@ public class DataComponents {
    );
    public static final DataComponentType<ResourceLocation> TOOLTIP_STYLE = register(
       "tooltip_style", var0 -> var0.persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).cacheEncoding()
+   );
+   public static final DataComponentType<DeathProtection> DEATH_PROTECTION = register(
+      "death_protection", var0 -> var0.persistent(DeathProtection.CODEC).networkSynchronized(DeathProtection.STREAM_CODEC).cacheEncoding()
    );
    public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = register(
       "stored_enchantments", var0 -> var0.persistent(ItemEnchantments.CODEC).networkSynchronized(ItemEnchantments.STREAM_CODEC).cacheEncoding()

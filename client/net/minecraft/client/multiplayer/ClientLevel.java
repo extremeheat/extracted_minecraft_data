@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -48,7 +47,9 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
@@ -170,20 +171,19 @@ public class ClientLevel extends Level {
       Holder<DimensionType> var4,
       int var5,
       int var6,
-      Supplier<ProfilerFiller> var7,
-      LevelRenderer var8,
-      boolean var9,
-      long var10,
-      int var12
+      LevelRenderer var7,
+      boolean var8,
+      long var9,
+      int var11
    ) {
-      super(var2, var3, var1.registryAccess(), var4, var7, true, var9, var10, 1000000);
+      super(var2, var3, var1.registryAccess(), var4, true, var8, var9, 1000000);
       this.connection = var1;
       this.chunkSource = new ClientChunkCache(this, var5);
       this.tickRateManager = new TickRateManager();
       this.clientLevelData = var2;
-      this.levelRenderer = var8;
-      this.seaLevel = var12;
-      this.levelEventHandler = new LevelEventHandler(this.minecraft, this, var8);
+      this.levelRenderer = var7;
+      this.seaLevel = var11;
+      this.levelEventHandler = new LevelEventHandler(this.minecraft, this, var7);
       this.effects = DimensionSpecialEffects.forType((DimensionType)var4.value());
       this.setDefaultSpawnPos(new BlockPos(8, 64, 8), 0.0F);
       this.serverSimulationDistance = var6;
@@ -223,9 +223,9 @@ public class ClientLevel extends Level {
          this.setSkyFlashTime(this.skyFlashTime - 1);
       }
 
-      this.getProfiler().push("blocks");
-      this.chunkSource.tick(var1, true);
-      this.getProfiler().pop();
+      try (Zone var2 = Profiler.get().zone("blocks")) {
+         this.chunkSource.tick(var1, true);
+      }
    }
 
    private void tickTime() {
@@ -255,7 +255,7 @@ public class ClientLevel extends Level {
    }
 
    public void tickEntities() {
-      ProfilerFiller var1 = this.getProfiler();
+      ProfilerFiller var1 = Profiler.get();
       var1.push("entities");
       this.tickingEntities.forEach(var1x -> {
          if (!var1x.isRemoved() && !var1x.isPassenger() && !this.tickRateManager.isEntityFrozen(var1x)) {
@@ -278,9 +278,9 @@ public class ClientLevel extends Level {
    public void tickNonPassenger(Entity var1) {
       var1.setOldPosAndRot();
       var1.tickCount++;
-      this.getProfiler().push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString());
+      Profiler.get().push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString());
       var1.tick();
-      this.getProfiler().pop();
+      Profiler.get().pop();
 
       for (Entity var3 : var1.getPassengers()) {
          this.tickPassenger(var1, var3);

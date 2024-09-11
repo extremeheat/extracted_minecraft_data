@@ -24,6 +24,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -263,7 +264,7 @@ public class LevelChunk extends ChunkAccess {
             }
 
             if (LightEngine.hasDifferentLightProperties(var10, var2)) {
-               ProfilerFiller var13 = this.level.getProfiler();
+               ProfilerFiller var13 = Profiler.get();
                var13.push("updateSkyLightSources");
                this.skyLightSources.update(this, var7, var4, var9);
                var13.popPush("queueCheckLight");
@@ -686,7 +687,7 @@ public class LevelChunk extends ChunkAccess {
             BlockPos var1 = this.blockEntity.getBlockPos();
             if (LevelChunk.this.isTicking(var1)) {
                try {
-                  ProfilerFiller var2 = LevelChunk.this.level.getProfiler();
+                  ProfilerFiller var2 = Profiler.get();
                   var2.push(this::getType);
                   BlockState var6 = LevelChunk.this.getBlockState(var1);
                   if (this.blockEntity.getType().isValid(var6)) {

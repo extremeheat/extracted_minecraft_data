@@ -35,6 +35,8 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SpawnUtil;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -255,9 +257,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    @Override
    protected void customServerAiStep() {
-      this.level().getProfiler().push("villagerBrain");
+      ProfilerFiller var1 = Profiler.get();
+      var1.push("villagerBrain");
       this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
+      var1.pop();
       if (this.assignProfessionWhenSpawned) {
          this.assignProfessionWhenSpawned = false;
       }
@@ -281,8 +284,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
 
       if (!this.isNoAi() && this.random.nextInt(100) == 0) {
-         Raid var1 = ((ServerLevel)this.level()).getRaidAt(this.blockPosition());
-         if (var1 != null && var1.isActive() && !var1.isOver()) {
+         Raid var2 = ((ServerLevel)this.level()).getRaidAt(this.blockPosition());
+         if (var2 != null && var2.isActive() && !var2.isOver()) {
             this.level().broadcastEntityEvent(this, (byte)42);
          }
       }

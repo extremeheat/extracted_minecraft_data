@@ -42,11 +42,13 @@ public class LootContextParamSets {
       "equipment", var0 -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY)
    );
    public static final LootContextParamSet ARCHAEOLOGY = register(
-      "archaeology", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)
+      "archaeology", var0 -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY).required(LootContextParams.TOOL)
    );
    public static final LootContextParamSet GIFT = register("gift", var0 -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY));
    public static final LootContextParamSet PIGLIN_BARTER = register("barter", var0 -> var0.required(LootContextParams.THIS_ENTITY));
-   public static final LootContextParamSet VAULT = register("vault", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
+   public static final LootContextParamSet VAULT = register(
+      "vault", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY).optional(LootContextParams.TOOL)
+   );
    public static final LootContextParamSet ADVANCEMENT_REWARD = register(
       "advancement_reward", var0 -> var0.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN)
    );
@@ -86,7 +88,7 @@ public class LootContextParamSets {
             .optional(LootContextParams.EXPLOSION_RADIUS)
    );
    public static final LootContextParamSet SHEARING = register(
-      "shearing", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)
+      "shearing", var0 -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY).required(LootContextParams.TOOL)
    );
    public static final LootContextParamSet ENCHANTED_DAMAGE = register(
       "enchanted_damage",

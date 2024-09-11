@@ -79,16 +79,12 @@ public class BookEditScreen extends Screen {
    private Component pageMsg = CommonComponents.EMPTY;
    private final Component ownerText;
 
-   public BookEditScreen(Player var1, ItemStack var2, InteractionHand var3) {
+   public BookEditScreen(Player var1, ItemStack var2, InteractionHand var3, WritableBookContent var4) {
       super(GameNarrator.NO_TITLE);
       this.owner = var1;
       this.book = var2;
       this.hand = var3;
-      WritableBookContent var4 = var2.get(DataComponents.WRITABLE_BOOK_CONTENT);
-      if (var4 != null) {
-         var4.getPages(Minecraft.getInstance().isTextFilteringEnabled()).forEach(this.pages::add);
-      }
-
+      var4.getPages(Minecraft.getInstance().isTextFilteringEnabled()).forEach(this.pages::add);
       if (this.pages.isEmpty()) {
          this.pages.add("");
       }

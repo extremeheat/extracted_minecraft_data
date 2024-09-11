@@ -17,4 +17,9 @@ public class AirItem extends Item {
       super.appendHoverText(var1, var2, var3, var4);
       this.block.appendHoverText(var1, var2, var3, var4);
    }
+
+   @Override
+   public Component getName(ItemStack var1) {
+      return this.getName();
+   }
 }

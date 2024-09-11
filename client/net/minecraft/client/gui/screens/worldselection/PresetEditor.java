@@ -41,7 +41,7 @@ public interface PresetEditor {
 
    Screen createEditScreen(CreateWorldScreen var1, WorldCreationContext var2);
 
-   private static WorldCreationContext.DimensionsUpdater flatWorldConfigurator(FlatLevelGeneratorSettings var0) {
+   static WorldCreationContext.DimensionsUpdater flatWorldConfigurator(FlatLevelGeneratorSettings var0) {
       return (var1, var2) -> {
          FlatLevelSource var3 = new FlatLevelSource(var0);
          return var2.replaceOverworldGenerator(var1, var3);

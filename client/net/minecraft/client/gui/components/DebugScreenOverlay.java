@@ -49,6 +49,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
@@ -128,41 +131,43 @@ public class DebugScreenOverlay {
    }
 
    public void render(GuiGraphics var1) {
-      this.minecraft.getProfiler().push("debug");
-      Entity var2 = this.minecraft.getCameraEntity();
-      this.block = var2.pick(20.0, 0.0F, false);
-      this.liquid = var2.pick(20.0, 0.0F, true);
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("debug");
+      Entity var3 = this.minecraft.getCameraEntity();
+      this.block = var3.pick(20.0, 0.0F, false);
+      this.liquid = var3.pick(20.0, 0.0F, true);
       this.drawGameInformation(var1);
       this.drawSystemInformation(var1);
       this.profilerPieChart.setBottomOffset(10);
       if (this.renderFpsCharts) {
-         int var3 = var1.guiWidth();
-         int var4 = var3 / 2;
-         this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var4));
+         int var4 = var1.guiWidth();
+         int var5 = var4 / 2;
+         this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var5));
          if (this.tickTimeLogger.size() > 0) {
-            int var5 = this.tpsChart.getWidth(var4);
-            this.tpsChart.drawChart(var1, var3 - var5, var5);
+            int var6 = this.tpsChart.getWidth(var5);
+            this.tpsChart.drawChart(var1, var4 - var6, var6);
          }
 
          this.profilerPieChart.setBottomOffset(this.tpsChart.getFullHeight());
       }
 
       if (this.renderNetworkCharts) {
-         int var6 = var1.guiWidth();
-         int var7 = var6 / 2;
+         int var9 = var1.guiWidth();
+         int var11 = var9 / 2;
          if (!this.minecraft.isLocalServer()) {
-            this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var7));
+            this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var11));
          }
 
-         int var8 = this.pingChart.getWidth(var7);
-         this.pingChart.drawChart(var1, var6 - var8, var8);
+         int var12 = this.pingChart.getWidth(var11);
+         this.pingChart.drawChart(var1, var9 - var12, var12);
          this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
       }
 
-      this.minecraft.getProfiler().push("profilerPie");
-      this.profilerPieChart.render(var1);
-      this.minecraft.getProfiler().pop();
-      this.minecraft.getProfiler().pop();
+      try (Zone var10 = var2.zone("profilerPie")) {
+         this.profilerPieChart.render(var1);
+      }
+
+      var2.pop();
    }
 
    protected void drawGameInformation(GuiGraphics var1) {

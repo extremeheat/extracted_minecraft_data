@@ -74,10 +74,8 @@ public class PotionItem extends Item {
 
    @Override
    public Component getName(ItemStack var1) {
-      return var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)
-         .potion()
-         .map(var1x -> Component.translatable(this.descriptionId + ".effect." + var1x.value().name()))
-         .orElseGet(() -> Component.translatable(this.descriptionId + ".effect.empty"));
+      PotionContents var2 = var1.get(DataComponents.POTION_CONTENTS);
+      return var2 != null ? var2.getName(this.descriptionId + ".effect.") : super.getName(var1);
    }
 
    @Override

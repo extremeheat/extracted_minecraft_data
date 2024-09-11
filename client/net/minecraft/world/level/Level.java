@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -34,6 +33,7 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
@@ -109,7 +109,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
    private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
-   private final Supplier<ProfilerFiller> profiler;
    public final boolean isClientSide;
    private final WorldBorder worldBorder;
    private final BiomeManager biomeManager;
@@ -119,33 +118,24 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private long subTickCount;
 
    protected Level(
-      WritableLevelData var1,
-      ResourceKey<Level> var2,
-      RegistryAccess var3,
-      Holder<DimensionType> var4,
-      Supplier<ProfilerFiller> var5,
-      boolean var6,
-      boolean var7,
-      long var8,
-      int var10
+      WritableLevelData var1, ResourceKey<Level> var2, RegistryAccess var3, Holder<DimensionType> var4, boolean var5, boolean var6, long var7, int var9
    ) {
       super();
-      this.profiler = var5;
       this.levelData = var1;
       this.dimensionTypeRegistration = var4;
-      final DimensionType var11 = (DimensionType)var4.value();
+      final DimensionType var10 = (DimensionType)var4.value();
       this.dimension = var2;
-      this.isClientSide = var6;
-      if (var11.coordinateScale() != 1.0) {
+      this.isClientSide = var5;
+      if (var10.coordinateScale() != 1.0) {
          this.worldBorder = new WorldBorder() {
             @Override
             public double getCenterX() {
-               return super.getCenterX() / var11.coordinateScale();
+               return super.getCenterX() / var10.coordinateScale();
             }
 
             @Override
             public double getCenterZ() {
-               return super.getCenterZ() / var11.coordinateScale();
+               return super.getCenterZ() / var10.coordinateScale();
             }
          };
       } else {
@@ -153,9 +143,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
 
       this.thread = Thread.currentThread();
-      this.biomeManager = new BiomeManager(this, var8);
-      this.isDebug = var7;
-      this.neighborUpdater = new CollectingNeighborUpdater(this, var10);
+      this.biomeManager = new BiomeManager(this, var7);
+      this.isDebug = var6;
+      this.neighborUpdater = new CollectingNeighborUpdater(this, var9);
       this.registryAccess = var3;
       this.damageSources = new DamageSources(var3);
    }
@@ -443,7 +433,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    protected void tickBlockEntities() {
-      ProfilerFiller var1 = this.getProfiler();
+      ProfilerFiller var1 = Profiler.get();
       var1.push("blockEntities");
       this.tickingBlockEntities = true;
       if (!this.pendingBlockEntityTickers.isEmpty()) {
@@ -674,7 +664,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    @Override
    public List<Entity> getEntities(@Nullable Entity var1, AABB var2, Predicate<? super Entity> var3) {
-      this.getProfiler().incrementCounter("getEntities");
+      Profiler.get().incrementCounter("getEntities");
       ArrayList var4 = Lists.newArrayList();
       this.getEntities().get(var2, var3x -> {
          if (var3x != var1 && var3.test(var3x)) {
@@ -704,7 +694,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3, List<? super T> var4, int var5) {
-      this.getProfiler().incrementCounter("getEntities");
+      Profiler.get().incrementCounter("getEntities");
       this.getEntities().get(var1, var2, var4x -> {
          if (var3.test(var4x)) {
             var4.add(var4x);
@@ -936,14 +926,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public boolean noSave() {
       return false;
-   }
-
-   public ProfilerFiller getProfiler() {
-      return this.profiler.get();
-   }
-
-   public Supplier<ProfilerFiller> getProfilerSupplier() {
-      return this.profiler;
    }
 
    @Override

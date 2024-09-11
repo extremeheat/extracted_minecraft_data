@@ -10,6 +10,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.BossEvent;
 
 public class BossHealthOverlay {
@@ -55,25 +57,26 @@ public class BossHealthOverlay {
 
    public void render(GuiGraphics var1) {
       if (!this.events.isEmpty()) {
-         this.minecraft.getProfiler().push("bossHealth");
-         int var2 = var1.guiWidth();
-         int var3 = 12;
+         ProfilerFiller var2 = Profiler.get();
+         var2.push("bossHealth");
+         int var3 = var1.guiWidth();
+         int var4 = 12;
 
-         for (LerpingBossEvent var5 : this.events.values()) {
-            int var6 = var2 / 2 - 91;
-            this.drawBar(var1, var6, var3, var5);
-            Component var8 = var5.getName();
-            int var9 = this.minecraft.font.width(var8);
-            int var10 = var2 / 2 - var9 / 2;
-            int var11 = var3 - 9;
-            var1.drawString(this.minecraft.font, var8, var10, var11, 16777215);
-            var3 += 10 + 9;
-            if (var3 >= var1.guiHeight() / 3) {
+         for (LerpingBossEvent var6 : this.events.values()) {
+            int var7 = var3 / 2 - 91;
+            this.drawBar(var1, var7, var4, var6);
+            Component var9 = var6.getName();
+            int var10 = this.minecraft.font.width(var9);
+            int var11 = var3 / 2 - var10 / 2;
+            int var12 = var4 - 9;
+            var1.drawString(this.minecraft.font, var9, var11, var12, 16777215);
+            var4 += 10 + 9;
+            if (var4 >= var1.guiHeight() / 3) {
                break;
             }
          }
 
-         this.minecraft.getProfiler().pop();
+         var2.pop();
       }
    }
 

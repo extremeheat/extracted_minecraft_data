@@ -2,6 +2,8 @@ package net.minecraft.world.entity.projectile;
 
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,6 +30,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class ThrownEnderpearl extends ThrowableItemProjectile {
+   private long ticketTimer = 0L;
+
    public ThrownEnderpearl(EntityType<? extends ThrownEnderpearl> var1, Level var2) {
       super(var1, var2);
    }
@@ -39,6 +43,32 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    @Override
    protected Item getDefaultItem() {
       return Items.ENDER_PEARL;
+   }
+
+   @Override
+   protected void setOwnerThroughUUID(UUID var1) {
+      this.deregisterFromCurrentOwner();
+      super.setOwnerThroughUUID(var1);
+      this.registerToCurrentOwner();
+   }
+
+   @Override
+   public void setOwner(@Nullable Entity var1) {
+      this.deregisterFromCurrentOwner();
+      super.setOwner(var1);
+      this.registerToCurrentOwner();
+   }
+
+   private void deregisterFromCurrentOwner() {
+      if (this.getOwner() instanceof ServerPlayer var2) {
+         var2.deregisterEnderPearl(this);
+      }
+   }
+
+   private void registerToCurrentOwner() {
+      if (this.getOwner() instanceof ServerPlayer var2) {
+         var2.registerEnderPearl(this);
+      }
    }
 
    @Nullable
@@ -117,7 +147,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                   }
 
                   Player var13 = var11.changeDimension(
-                     new DimensionTransition(var8, var10, Vec3.ZERO, 0.0F, 0.0F, Relative.ALL, DimensionTransition.DO_NOTHING)
+                     new DimensionTransition(
+                        var8, var10, Vec3.ZERO, 0.0F, 0.0F, Relative.union(Relative.ROTATION, Relative.DELTA), DimensionTransition.DO_NOTHING
+                     )
                   );
                   if (var13 != null) {
                      var13.resetFallDistance();
@@ -157,16 +189,35 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
    @Override
    public void tick() {
-      Entity var1 = this.getOwner();
-      if (var1 instanceof ServerPlayer && !var1.isAlive() && this.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+      int var1 = SectionPos.blockToSectionCoord(this.position().x());
+      int var2 = SectionPos.blockToSectionCoord(this.position().z());
+      Entity var3 = this.getOwner();
+      if (var3 instanceof ServerPlayer && !var3.isAlive() && this.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
          this.discard();
       } else {
          super.tick();
+      }
+
+      BlockPos var4 = BlockPos.containing(this.position());
+      if ((--this.ticketTimer <= 0L || var1 != SectionPos.blockToSectionCoord(var4.getX()) || var2 != SectionPos.blockToSectionCoord(var4.getZ()))
+         && var3 instanceof ServerPlayer var5) {
+         this.ticketTimer = var5.registerAndUpdateEnderPearlTicket(this);
       }
    }
 
    private void playSound(Level var1, Vec3 var2) {
       var1.playSound(null, var2.x, var2.y, var2.z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
+   }
+
+   @Nullable
+   @Override
+   public Entity changeDimension(DimensionTransition var1) {
+      Entity var2 = super.changeDimension(var1);
+      if (var2 != null) {
+         var2.placePortalTicket(BlockPos.containing(var2.position()));
+      }
+
+      return var2;
    }
 
    @Override
@@ -182,5 +233,14 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       if (var1.is(Blocks.END_GATEWAY) && this.getOwner() instanceof ServerPlayer var2) {
          var2.onInsideBlock(var1);
       }
+   }
+
+   @Override
+   public void remove(Entity.RemovalReason var1) {
+      if (var1 != Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
+         this.deregisterFromCurrentOwner();
+      }
+
+      super.remove(var1);
    }
 }

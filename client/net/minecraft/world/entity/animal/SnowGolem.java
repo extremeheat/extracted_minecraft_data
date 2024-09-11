@@ -132,7 +132,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         this.shear(SoundSource.PLAYERS);
+         this.shear(SoundSource.PLAYERS, var3);
          this.gameEvent(GameEvent.SHEAR, var1);
          if (!this.level().isClientSide) {
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
@@ -145,11 +145,11 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    }
 
    @Override
-   public void shear(SoundSource var1) {
+   public void shear(SoundSource var1, ItemStack var2) {
       this.level().playSound(null, this, SoundEvents.SNOW_GOLEM_SHEAR, var1, 1.0F, 1.0F);
       if (!this.level().isClientSide()) {
          this.setPumpkin(false);
-         this.dropFromShearingLootTable(BuiltInLootTables.SHEAR_SNOW_GOLEM, var1x -> this.spawnAtLocation(var1x, this.getEyeHeight()));
+         this.dropFromShearingLootTable(BuiltInLootTables.SHEAR_SNOW_GOLEM, var2, var1x -> this.spawnAtLocation(var1x, this.getEyeHeight()));
       }
    }
 

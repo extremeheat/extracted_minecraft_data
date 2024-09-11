@@ -126,7 +126,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       }
 
       if (var1.shouldAuthenticate()) {
-         Util.ioPool().submit(() -> {
+         Util.ioPool().execute(() -> {
             Component var5x = this.authenticateServer(var4);
             if (var5x != null) {
                if (this.serverData == null || !this.serverData.isLan()) {

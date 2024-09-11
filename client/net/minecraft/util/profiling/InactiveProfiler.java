@@ -47,6 +47,16 @@ public class InactiveProfiler implements ProfileCollector {
    }
 
    @Override
+   public Zone zone(String var1) {
+      return Zone.INACTIVE;
+   }
+
+   @Override
+   public Zone zone(Supplier<String> var1) {
+      return Zone.INACTIVE;
+   }
+
+   @Override
    public void incrementCounter(String var1, int var2) {
    }
 

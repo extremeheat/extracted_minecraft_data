@@ -70,7 +70,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         this.shear(SoundSource.PLAYERS);
+         this.shear(SoundSource.PLAYERS, var3);
          this.gameEvent(GameEvent.SHEAR, var1);
          if (!this.level().isClientSide) {
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
@@ -123,14 +123,14 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    @Override
-   public void shear(SoundSource var1) {
+   public void shear(SoundSource var1, ItemStack var2) {
       this.level().playSound(null, this, SoundEvents.BOGGED_SHEAR, var1, 1.0F, 1.0F);
-      this.spawnShearedMushrooms();
+      this.spawnShearedMushrooms(var2);
       this.setSheared(true);
    }
 
-   private void spawnShearedMushrooms() {
-      this.dropFromShearingLootTable(BuiltInLootTables.BOGGED_SHEAR, var1 -> this.spawnAtLocation(var1, this.getBbHeight()));
+   private void spawnShearedMushrooms(ItemStack var1) {
+      this.dropFromShearingLootTable(BuiltInLootTables.BOGGED_SHEAR, var1, var1x -> this.spawnAtLocation(var1x, this.getBbHeight()));
    }
 
    @Override

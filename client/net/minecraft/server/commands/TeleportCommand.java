@@ -188,21 +188,18 @@ public class TeleportCommand {
       @Nullable Coordinates var4,
       @Nullable TeleportCommand.LookAt var5
    ) throws CommandSyntaxException {
-      Vec3 var6 = var3.getPosition(var0, true);
-      Vec2 var7 = var4 == null ? null : var4.getRotation(var0, true);
+      Vec3 var6 = var3.getPosition(var0);
+      Vec2 var7 = var4 == null ? null : var4.getRotation(var0);
       EnumSet var8 = EnumSet.noneOf(Relative.class);
       if (var3.isXRelative()) {
-         var8.add(Relative.X);
          var8.add(Relative.DELTA_X);
       }
 
       if (var3.isYRelative()) {
-         var8.add(Relative.Y);
          var8.add(Relative.DELTA_Y);
       }
 
       if (var3.isZRelative()) {
-         var8.add(Relative.Z);
          var8.add(Relative.DELTA_Z);
       }
 
@@ -221,28 +218,27 @@ public class TeleportCommand {
 
       for (Entity var10 : var1) {
          if (var4 == null) {
-            performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, 0.0F, 0.0F, var5);
+            performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var10.getYRot(), var10.getXRot(), var5);
          } else {
             performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var7.y, var7.x, var5);
          }
       }
 
-      Vec3 var11 = var3.getPosition(var0);
       if (var1.size() == 1) {
          var0.sendSuccess(
             () -> Component.translatable(
                   "commands.teleport.success.location.single",
                   ((Entity)var1.iterator().next()).getDisplayName(),
-                  formatDouble(var11.x),
-                  formatDouble(var11.y),
-                  formatDouble(var11.z)
+                  formatDouble(var6.x),
+                  formatDouble(var6.y),
+                  formatDouble(var6.z)
                ),
             true
          );
       } else {
          var0.sendSuccess(
             () -> Component.translatable(
-                  "commands.teleport.success.location.multiple", var1.size(), formatDouble(var11.x), formatDouble(var11.y), formatDouble(var11.z)
+                  "commands.teleport.success.location.multiple", var1.size(), formatDouble(var6.x), formatDouble(var6.y), formatDouble(var6.z)
                ),
             true
          );
@@ -271,20 +267,22 @@ public class TeleportCommand {
       if (!Level.isInSpawnableBounds(var13)) {
          throw INVALID_POSITION.create();
       } else {
-         float var14 = Mth.wrapDegrees(var10);
-         float var15 = Mth.wrapDegrees(var11);
-         if (var1.teleportTo(var2, var3, var5, var7, var9, var14, var15, true)) {
+         float var14 = var9.contains(Relative.Y_ROT) ? var10 - var1.getYRot() : var10;
+         float var15 = var9.contains(Relative.X_ROT) ? var11 - var1.getXRot() : var11;
+         float var16 = Mth.wrapDegrees(var14);
+         float var17 = Mth.wrapDegrees(var15);
+         if (var1.teleportTo(var2, var3, var5, var7, var9, var16, var17, true)) {
             if (var12 != null) {
                var12.perform(var0, var1);
             }
 
-            if (!(var1 instanceof LivingEntity var16) || !var16.isFallFlying()) {
+            if (!(var1 instanceof LivingEntity var18) || !var18.isFallFlying()) {
                var1.setDeltaMovement(var1.getDeltaMovement().multiply(1.0, 0.0, 1.0));
                var1.setOnGround(true);
             }
 
-            if (var1 instanceof PathfinderMob var17) {
-               var17.getNavigation().stop();
+            if (var1 instanceof PathfinderMob var19) {
+               var19.getNavigation().stop();
             }
          }
       }

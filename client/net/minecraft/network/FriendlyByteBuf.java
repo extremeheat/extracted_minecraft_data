@@ -378,6 +378,14 @@ public class FriendlyByteBuf extends ByteBuf {
       return this;
    }
 
+   public static ChunkPos readChunkPos(ByteBuf var0) {
+      return new ChunkPos(var0.readLong());
+   }
+
+   public static void writeChunkPos(ByteBuf var0, ChunkPos var1) {
+      var0.writeLong(var1.toLong());
+   }
+
    public SectionPos readSectionPos() {
       return SectionPos.of(this.readLong());
    }

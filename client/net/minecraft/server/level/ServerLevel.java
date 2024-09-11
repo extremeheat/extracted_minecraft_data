@@ -79,6 +79,7 @@ import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -191,8 +192,8 @@ public class ServerLevel extends Level implements WorldGenLevel {
    private final SleepStatus sleepStatus;
    private int emptyTime;
    private final PortalForcer portalForcer;
-   private final LevelTicks<Block> blockTicks = new LevelTicks<>(this::isPositionTickingWithEntitiesLoaded, this.getProfilerSupplier());
-   private final LevelTicks<Fluid> fluidTicks = new LevelTicks<>(this::isPositionTickingWithEntitiesLoaded, this.getProfilerSupplier());
+   private final LevelTicks<Block> blockTicks = new LevelTicks<>(this::isPositionTickingWithEntitiesLoaded);
+   private final LevelTicks<Fluid> fluidTicks = new LevelTicks<>(this::isPositionTickingWithEntitiesLoaded);
    private final PathTypeCache pathTypesByPosCache = new PathTypeCache();
    final Set<Mob> navigatingMobs = new ObjectOpenHashSet();
    volatile boolean isUpdatingNavigations;
@@ -223,7 +224,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       boolean var12,
       @Nullable RandomSequences var13
    ) {
-      super(var4, var5, var1.registryAccess(), var6.type(), var1::getProfiler, false, var8, var9, var1.getMaxChainedNeighborUpdates());
+      super(var4, var5, var1.registryAccess(), var6.type(), false, var8, var9, var1.getMaxChainedNeighborUpdates());
       this.tickTime = var12;
       this.server = var1;
       this.customSpawners = var11;
@@ -318,7 +319,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
    }
 
    public void tick(BooleanSupplier var1) {
-      ProfilerFiller var2 = this.getProfiler();
+      ProfilerFiller var2 = Profiler.get();
       this.handlingTick = true;
       TickRateManager var3 = this.tickRateManager();
       boolean var4 = var3.runsNormally();
@@ -426,9 +427,9 @@ public class ServerLevel extends Level implements WorldGenLevel {
       if (this.tickTime) {
          long var1 = this.levelData.getGameTime() + 1L;
          this.serverLevelData.setGameTime(var1);
-         this.getProfiler().push("scheduledFunctions");
+         Profiler.get().push("scheduledFunctions");
          this.serverLevelData.getScheduledEvents().tick(this.server, var1);
-         this.getProfiler().pop();
+         Profiler.get().pop();
          if (this.levelData.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
             this.setDayTime(this.levelData.getDayTime() + 1L);
          }
@@ -455,7 +456,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       boolean var4 = this.isRaining();
       int var5 = var3.getMinBlockX();
       int var6 = var3.getMinBlockZ();
-      ProfilerFiller var7 = this.getProfiler();
+      ProfilerFiller var7 = Profiler.get();
       var7.push("thunder");
       if (var4 && this.isThundering() && this.random.nextInt(100000) == 0) {
          BlockPos var8 = this.findLightningTargetAround(this.getBlockRandomPos(var5, 0, var6, 15));
@@ -739,12 +740,12 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    public void tickNonPassenger(Entity var1) {
       var1.setOldPosAndRot();
-      ProfilerFiller var2 = this.getProfiler();
+      ProfilerFiller var2 = Profiler.get();
       var1.tickCount++;
-      this.getProfiler().push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString());
+      var2.push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString());
       var2.incrementCounter("tickNonPassenger");
       var1.tick();
-      this.getProfiler().pop();
+      var2.pop();
 
       for (Entity var4 : var1.getPassengers()) {
          this.tickPassenger(var1, var4);
@@ -757,7 +758,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       } else if (var2 instanceof Player || this.entityTickList.contains(var2)) {
          var2.setOldPosAndRot();
          var2.tickCount++;
-         ProfilerFiller var3 = this.getProfiler();
+         ProfilerFiller var3 = Profiler.get();
          var3.push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var2.getType()).toString());
          var3.incrementCounter("tickPassenger");
          var2.rideTick();

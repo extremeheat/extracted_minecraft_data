@@ -3,6 +3,8 @@ package com.mojang.blaze3d.platform;
 import com.google.common.base.Charsets;
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.jtracy.Plot;
+import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -20,6 +22,7 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -27,6 +30,10 @@ import org.lwjgl.system.MemoryUtil;
 @DontObfuscate
 public class GlStateManager {
    private static final boolean ON_LINUX = Util.getPlatform() == Util.OS.LINUX;
+   private static final Plot PLOT_TEXTURES = TracyClient.createPlot("GPU Textures");
+   private static int numTextures = 0;
+   private static final Plot PLOT_BUFFERS = TracyClient.createPlot("GPU Buffers");
+   private static int numBuffers = 0;
    public static final int TEXTURE_COUNT = 12;
    private static final GlStateManager.BlendState BLEND = new GlStateManager.BlendState();
    private static final GlStateManager.DepthState DEPTH = new GlStateManager.DepthState();
@@ -285,6 +292,8 @@ public class GlStateManager {
 
    public static int _glGenBuffers() {
       RenderSystem.assertOnRenderThreadOrInit();
+      numBuffers++;
+      PLOT_BUFFERS.setValue((double)numBuffers);
       return GL15.glGenBuffers();
    }
 
@@ -319,6 +328,12 @@ public class GlStateManager {
       return GL15.glMapBuffer(var0, var1);
    }
 
+   @Nullable
+   public static ByteBuffer _glMapBufferRange(int var0, int var1, int var2, int var3) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      return GL30.glMapBufferRange(var0, (long)var1, (long)var2, var3);
+   }
+
    public static void _glUnmapBuffer(int var0) {
       RenderSystem.assertOnRenderThreadOrInit();
       GL15.glUnmapBuffer(var0);
@@ -332,6 +347,8 @@ public class GlStateManager {
          GL32C.glBindBuffer(34962, 0);
       }
 
+      numBuffers--;
+      PLOT_BUFFERS.setValue((double)numBuffers);
       GL15.glDeleteBuffers(var0);
    }
 
@@ -527,11 +544,15 @@ public class GlStateManager {
 
    public static int _genTexture() {
       RenderSystem.assertOnRenderThreadOrInit();
+      numTextures++;
+      PLOT_TEXTURES.setValue((double)numTextures);
       return GL11.glGenTextures();
    }
 
    public static void _genTextures(int[] var0) {
       RenderSystem.assertOnRenderThreadOrInit();
+      numTextures += var0.length;
+      PLOT_TEXTURES.setValue((double)numTextures);
       GL11.glGenTextures(var0);
    }
 
@@ -544,6 +565,9 @@ public class GlStateManager {
             var4.binding = -1;
          }
       }
+
+      numTextures--;
+      PLOT_TEXTURES.setValue((double)numTextures);
    }
 
    public static void _deleteTextures(int[] var0) {
@@ -558,6 +582,8 @@ public class GlStateManager {
       }
 
       GL11.glDeleteTextures(var0);
+      numTextures -= var0.length;
+      PLOT_TEXTURES.setValue((double)numTextures);
    }
 
    public static void _bindTexture(int var0) {
@@ -737,6 +763,21 @@ public class GlStateManager {
    public static int _getInteger(int var0) {
       RenderSystem.assertOnRenderThreadOrInit();
       return GL11.glGetInteger(var0);
+   }
+
+   public static long _glFenceSync(int var0, int var1) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      return GL32.glFenceSync(var0, var1);
+   }
+
+   public static int _glClientWaitSync(long var0, int var2, int var3) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      return GL32.glClientWaitSync(var0, var2, (long)var3);
+   }
+
+   public static void _glDeleteSync(long var0) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      GL32.glDeleteSync(var0);
    }
 
    static class BlendState {

@@ -52,7 +52,15 @@ public class WorldCreationUiState {
       this.generateStructures = var2.options().generateStructures();
       this.bonusChest = var2.options().generateBonusChest();
       this.targetFolder = this.findResultFolder(this.name);
+      this.gameMode = var2.initialWorldCreationOptions().selectedGameMode();
       this.gameRules = new GameRules(var2.dataConfiguration().enabledFeatures());
+      var2.initialWorldCreationOptions()
+         .disabledGameRules()
+         .forEach(var1x -> this.gameRules.getRule((GameRules.Key<GameRules.BooleanValue>)var1x).set(false, null));
+      Optional.ofNullable(var2.initialWorldCreationOptions().flatLevelPreset())
+         .flatMap(var1x -> var2.worldgenLoadContext().lookup(Registries.FLAT_LEVEL_GENERATOR_PRESET).flatMap(var1xx -> var1xx.get(var1x)))
+         .map(var0 -> var0.value().settings())
+         .ifPresent(var1x -> this.updateDimensions(PresetEditor.flatWorldConfigurator(var1x)));
    }
 
    public void addListener(Consumer<WorldCreationUiState> var1) {
@@ -192,7 +200,8 @@ public class WorldCreationUiState {
             this.settings.selectedDimensions(),
             this.settings.worldgenRegistries(),
             this.settings.dataPackResources(),
-            var1
+            var1,
+            this.settings.initialWorldCreationOptions()
          );
          return true;
       } else {

@@ -6,7 +6,6 @@ import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -26,8 +25,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.GameEventTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
@@ -54,7 +56,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -77,7 +78,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    private static final int LIFTING_ITEM_ANIMATION_DURATION = 5;
    private static final float DANCING_LOOP_DURATION = 55.0F;
    private static final float SPINNING_ANIMATION_DURATION = 15.0F;
-   private static final Predicate<ItemStack> DUPLICATION_ITEM = var0 -> var0.is(Items.AMETHYST_SHARD);
    private static final int DUPLICATION_COOLDOWN_TICKS = 6000;
    private static final int NUM_OF_DUPLICATION_HEARTS = 3;
    private static final EntityDataAccessor<Boolean> DATA_DANCING = SynchedEntityData.defineId(Allay.class, EntityDataSerializers.BOOLEAN);
@@ -230,12 +230,13 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
 
    @Override
    protected void customServerAiStep() {
-      this.level().getProfiler().push("allayBrain");
+      ProfilerFiller var1 = Profiler.get();
+      var1.push("allayBrain");
       this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("allayActivityUpdate");
+      var1.pop();
+      var1.push("allayActivityUpdate");
       AllayAi.updateActivity(this);
-      this.level().getProfiler().pop();
+      var1.pop();
       super.customServerAiStep();
    }
 
@@ -310,7 +311,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       ItemStack var4 = this.getItemInHand(InteractionHand.MAIN_HAND);
-      if (this.isDancing() && this.isDuplicationItem(var3) && this.canDuplicate()) {
+      if (this.isDancing() && var3.is(ItemTags.DUPLICATES_ALLAYS) && this.canDuplicate()) {
          this.duplicateAllay();
          this.level().broadcastEntityEvent(this, (byte)18);
          this.level().playSound(var1, this, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.0F);
@@ -497,10 +498,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       if (!this.level().isClientSide() && this.duplicationCooldown == 0L && !this.canDuplicate()) {
          this.entityData.set(DATA_CAN_DUPLICATE, true);
       }
-   }
-
-   private boolean isDuplicationItem(ItemStack var1) {
-      return DUPLICATION_ITEM.test(var1);
    }
 
    private void duplicateAllay() {

@@ -2,13 +2,13 @@ package net.minecraft.world.level.block.state.properties;
 
 import com.google.common.collect.Lists;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.Direction;
 
 public class DirectionProperty extends EnumProperty<Direction> {
-   protected DirectionProperty(String var1, Collection<Direction> var2) {
+   protected DirectionProperty(String var1, List<Direction> var2) {
       super(var1, Direction.class, var2);
    }
 
@@ -24,7 +24,7 @@ public class DirectionProperty extends EnumProperty<Direction> {
       return create(var0, Lists.newArrayList(var1));
    }
 
-   public static DirectionProperty create(String var0, Collection<Direction> var1) {
+   public static DirectionProperty create(String var0, List<Direction> var1) {
       return new DirectionProperty(var0, var1);
    }
 }

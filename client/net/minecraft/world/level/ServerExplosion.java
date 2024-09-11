@@ -12,6 +12,8 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -244,9 +246,10 @@ public class ServerExplosion implements Explosion {
       List var1 = this.calculateExplodedPositions();
       this.hurtEntities();
       if (this.interactsWithBlocks()) {
-         this.level.getProfiler().push("explosion_blocks");
+         ProfilerFiller var2 = Profiler.get();
+         var2.push("explosion_blocks");
          this.interactWithBlocks(var1);
-         this.level.getProfiler().pop();
+         var2.pop();
       }
 
       if (this.fire) {

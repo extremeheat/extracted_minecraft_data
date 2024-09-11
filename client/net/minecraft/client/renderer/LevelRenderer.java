@@ -69,7 +69,9 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -337,7 +339,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.allChanged();
       }
 
-      ProfilerFiller var6 = this.level.getProfiler();
+      ProfilerFiller var6 = Profiler.get();
       var6.push("camera");
       int var7 = SectionPos.posToSectionCoord(var5.x());
       int var8 = SectionPos.posToSectionCoord(var5.y());
@@ -391,10 +393,10 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       if (!Minecraft.getInstance().isSameThread()) {
          throw new IllegalStateException("applyFrustum called from wrong thread: " + Thread.currentThread().getName());
       } else {
-         this.minecraft.getProfiler().push("apply_frustum");
+         Profiler.get().push("apply_frustum");
          this.clearVisibleSections();
          this.sectionOcclusionGraph.addSectionsInFrustum(var1, this.visibleSections, this.nearbyVisibleSections);
-         this.minecraft.getProfiler().pop();
+         Profiler.get().pop();
       }
    }
 
@@ -414,7 +416,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       RenderSystem.setShaderGameTime(this.level.getGameTime(), var9);
       this.blockEntityRenderDispatcher.prepare(this.level, var4, this.minecraft.hitResult);
       this.entityRenderDispatcher.prepare(this.level, var4, this.minecraft.crosshairPickEntity);
-      final ProfilerFiller var10 = this.level.getProfiler();
+      final ProfilerFiller var10 = Profiler.get();
       var10.popPush("light_update_queue");
       this.level.pollLightUpdates();
       var10.popPush("light_updates");
@@ -426,7 +428,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       var10.popPush("culling");
       boolean var18 = this.capturedFrustum != null;
       Frustum var19 = var18 ? this.capturedFrustum : this.cullingFrustum;
-      this.minecraft.getProfiler().popPush("captureFrustum");
+      Profiler.get().popPush("captureFrustum");
       if (this.captureFrustum) {
          this.capturedFrustum = var18 ? new Frustum(var7, var8) : var19;
          this.capturedFrustum.prepare(var12, var14, var16);
@@ -905,7 +907,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       if (!this.visibleSections.isEmpty()) {
          BlockPos var2 = BlockPos.containing(var1);
          boolean var3 = !var2.equals(this.lastTranslucentSortBlockPos);
-         this.minecraft.getProfiler().push("translucent_sort");
+         Profiler.get().push("translucent_sort");
          SectionRenderDispatcher.TranslucencyPointOfView var4 = new SectionRenderDispatcher.TranslucencyPointOfView();
          ObjectListIterator var5 = this.nearbyVisibleSections.iterator();
 
@@ -923,7 +925,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
 
          this.lastTranslucentSortBlockPos = var2;
-         this.minecraft.getProfiler().pop();
+         Profiler.get().pop();
       }
    }
 
@@ -940,42 +942,44 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    private void renderSectionLayer(RenderType var1, double var2, double var4, double var6, Matrix4f var8, Matrix4f var9) {
       RenderSystem.assertOnRenderThread();
-      this.minecraft.getProfiler().push(() -> "render_" + var1);
-      boolean var10 = var1 != RenderType.translucent();
-      ObjectListIterator var11 = this.visibleSections.listIterator(var10 ? 0 : this.visibleSections.size());
+      Zone var10 = Profiler.get().zone(() -> "render_" + var1.name);
+      var10.addText(var1::toString);
+      boolean var11 = var1 != RenderType.translucent();
+      ObjectListIterator var12 = this.visibleSections.listIterator(var11 ? 0 : this.visibleSections.size());
       var1.setupRenderState();
-      CompiledShaderProgram var12 = RenderSystem.getShader();
-      if (var12 == null) {
+      CompiledShaderProgram var13 = RenderSystem.getShader();
+      if (var13 == null) {
          var1.clearRenderState();
+         var10.close();
       } else {
-         var12.setDefaultUniforms(VertexFormat.Mode.QUADS, var8, var9, this.minecraft.getWindow());
-         var12.apply();
-         Uniform var13 = var12.MODEL_OFFSET;
+         var13.setDefaultUniforms(VertexFormat.Mode.QUADS, var8, var9, this.minecraft.getWindow());
+         var13.apply();
+         Uniform var14 = var13.MODEL_OFFSET;
 
-         while (var10 ? var11.hasNext() : var11.hasPrevious()) {
-            SectionRenderDispatcher.RenderSection var14 = var10
-               ? (SectionRenderDispatcher.RenderSection)var11.next()
-               : (SectionRenderDispatcher.RenderSection)var11.previous();
-            if (!var14.getCompiled().isEmpty(var1)) {
-               VertexBuffer var15 = var14.getBuffer(var1);
-               BlockPos var16 = var14.getOrigin();
-               if (var13 != null) {
-                  var13.set((float)((double)var16.getX() - var2), (float)((double)var16.getY() - var4), (float)((double)var16.getZ() - var6));
-                  var13.upload();
+         while (var11 ? var12.hasNext() : var12.hasPrevious()) {
+            SectionRenderDispatcher.RenderSection var15 = var11
+               ? (SectionRenderDispatcher.RenderSection)var12.next()
+               : (SectionRenderDispatcher.RenderSection)var12.previous();
+            if (!var15.getCompiled().isEmpty(var1)) {
+               VertexBuffer var16 = var15.getBuffer(var1);
+               BlockPos var17 = var15.getOrigin();
+               if (var14 != null) {
+                  var14.set((float)((double)var17.getX() - var2), (float)((double)var17.getY() - var4), (float)((double)var17.getZ() - var6));
+                  var14.upload();
                }
 
-               var15.bind();
-               var15.draw();
+               var16.bind();
+               var16.draw();
             }
          }
 
-         if (var13 != null) {
-            var13.set(0.0F, 0.0F, 0.0F);
+         if (var14 != null) {
+            var14.set(0.0F, 0.0F, 0.0F);
          }
 
-         var12.clear();
+         var13.clear();
          VertexBuffer.unbind();
-         this.minecraft.getProfiler().pop();
+         var10.close();
          var1.clearRenderState();
       }
    }
@@ -1066,46 +1070,47 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    }
 
    private void compileSections(Camera var1) {
-      this.minecraft.getProfiler().push("populate_sections_to_compile");
-      LevelLightEngine var2 = this.level.getLightEngine();
-      RenderRegionCache var3 = new RenderRegionCache();
-      BlockPos var4 = var1.getBlockPosition();
-      ArrayList var5 = Lists.newArrayList();
-      ObjectListIterator var6 = this.visibleSections.iterator();
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("populate_sections_to_compile");
+      LevelLightEngine var3 = this.level.getLightEngine();
+      RenderRegionCache var4 = new RenderRegionCache();
+      BlockPos var5 = var1.getBlockPosition();
+      ArrayList var6 = Lists.newArrayList();
+      ObjectListIterator var7 = this.visibleSections.iterator();
 
-      while (var6.hasNext()) {
-         SectionRenderDispatcher.RenderSection var7 = (SectionRenderDispatcher.RenderSection)var6.next();
-         long var8 = var7.getSectionNode();
-         if (var7.isDirty() && var7.hasAllNeighbors() && isLightOnInSectionAndNeighbors(var2, var8)) {
-            boolean var10 = false;
+      while (var7.hasNext()) {
+         SectionRenderDispatcher.RenderSection var8 = (SectionRenderDispatcher.RenderSection)var7.next();
+         long var9 = var8.getSectionNode();
+         if (var8.isDirty() && var8.hasAllNeighbors() && isLightOnInSectionAndNeighbors(var3, var9)) {
+            boolean var11 = false;
             if (this.minecraft.options.prioritizeChunkUpdates().get() == PrioritizeChunkUpdates.NEARBY) {
-               BlockPos var11 = var7.getOrigin().offset(8, 8, 8);
-               var10 = var11.distSqr(var4) < 768.0 || var7.isDirtyFromPlayer();
+               BlockPos var12 = var8.getOrigin().offset(8, 8, 8);
+               var11 = var12.distSqr(var5) < 768.0 || var8.isDirtyFromPlayer();
             } else if (this.minecraft.options.prioritizeChunkUpdates().get() == PrioritizeChunkUpdates.PLAYER_AFFECTED) {
-               var10 = var7.isDirtyFromPlayer();
+               var11 = var8.isDirtyFromPlayer();
             }
 
-            if (var10) {
-               this.minecraft.getProfiler().push("build_near_sync");
-               this.sectionRenderDispatcher.rebuildSectionSync(var7, var3);
-               var7.setNotDirty();
-               this.minecraft.getProfiler().pop();
+            if (var11) {
+               var2.push("build_near_sync");
+               this.sectionRenderDispatcher.rebuildSectionSync(var8, var4);
+               var8.setNotDirty();
+               var2.pop();
             } else {
-               var5.add(var7);
+               var6.add(var8);
             }
          }
       }
 
-      this.minecraft.getProfiler().popPush("upload");
+      var2.popPush("upload");
       this.sectionRenderDispatcher.uploadAllPendingUploads();
-      this.minecraft.getProfiler().popPush("schedule_async_compile");
+      var2.popPush("schedule_async_compile");
 
-      for (SectionRenderDispatcher.RenderSection var13 : var5) {
-         var13.rebuildSectionAsync(this.sectionRenderDispatcher, var3);
-         var13.setNotDirty();
+      for (SectionRenderDispatcher.RenderSection var14 : var6) {
+         var14.rebuildSectionAsync(this.sectionRenderDispatcher, var4);
+         var14.setNotDirty();
       }
 
-      this.minecraft.getProfiler().pop();
+      var2.pop();
       this.scheduleTranslucentSectionResort(var1.getPosition());
    }
 

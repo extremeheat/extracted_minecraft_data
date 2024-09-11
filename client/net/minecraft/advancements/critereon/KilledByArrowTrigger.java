@@ -6,29 +6,31 @@ import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 
-public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<KilledByCrossbowTrigger.TriggerInstance> {
-   public KilledByCrossbowTrigger() {
+public class KilledByArrowTrigger extends SimpleCriterionTrigger<KilledByArrowTrigger.TriggerInstance> {
+   public KilledByArrowTrigger() {
       super();
    }
 
    @Override
-   public Codec<KilledByCrossbowTrigger.TriggerInstance> codec() {
-      return KilledByCrossbowTrigger.TriggerInstance.CODEC;
+   public Codec<KilledByArrowTrigger.TriggerInstance> codec() {
+      return KilledByArrowTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, Collection<Entity> var2) {
-      ArrayList var3 = Lists.newArrayList();
-      HashSet var4 = Sets.newHashSet();
+   public void trigger(ServerPlayer var1, Collection<Entity> var2, @Nullable ItemStack var3) {
+      ArrayList var4 = Lists.newArrayList();
+      HashSet var5 = Sets.newHashSet();
 
-      for (Entity var6 : var2) {
-         var4.add(var6.getType());
-         var3.add(EntityPredicate.createContext(var1, var6));
+      for (Entity var7 : var2) {
+         var5.add(var7.getType());
+         var4.add(EntityPredicate.createContext(var1, var7));
       }
 
-      this.trigger(var1, var2x -> var2x.matches(var3, var4.size()));
+      this.trigger(var1, var3x -> var3x.matches(var4, var5.size(), var3));
    }
 
 // $VF: Couldn't be decompiled

@@ -26,7 +26,7 @@ import net.minecraft.advancements.critereon.ItemJukeboxPlayablePredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.ItemSubPredicates;
 import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
-import net.minecraft.advancements.critereon.KilledByCrossbowTrigger;
+import net.minecraft.advancements.critereon.KilledByArrowTrigger;
 import net.minecraft.advancements.critereon.KilledTrigger;
 import net.minecraft.advancements.critereon.LightningBoltPredicate;
 import net.minecraft.advancements.critereon.LightningStrikeTrigger;
@@ -358,7 +358,9 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("kill_pillager", KilledByCrossbowTrigger.TriggerInstance.crossbowKilled(EntityPredicate.Builder.entity().of(var3, EntityType.PILLAGER)))
+         .addCriterion(
+            "kill_pillager", KilledByArrowTrigger.TriggerInstance.crossbowKilled(var4, EntityPredicate.Builder.entity().of(var3, EntityType.PILLAGER))
+         )
          .save(var2, "adventure/whos_the_pillager_now");
       Advancement.Builder.advancement()
          .parent(var12)
@@ -375,8 +377,8 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          .rewards(AdvancementRewards.Builder.experience(65))
          .addCriterion(
             "two_birds",
-            KilledByCrossbowTrigger.TriggerInstance.crossbowKilled(
-               EntityPredicate.Builder.entity().of(var3, EntityType.PHANTOM), EntityPredicate.Builder.entity().of(var3, EntityType.PHANTOM)
+            KilledByArrowTrigger.TriggerInstance.crossbowKilled(
+               var4, EntityPredicate.Builder.entity().of(var3, EntityType.PHANTOM), EntityPredicate.Builder.entity().of(var3, EntityType.PHANTOM)
             )
          )
          .save(var2, "adventure/two_birds_one_arrow");
@@ -393,7 +395,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             true
          )
          .rewards(AdvancementRewards.Builder.experience(85))
-         .addCriterion("arbalistic", KilledByCrossbowTrigger.TriggerInstance.crossbowKilled(MinMaxBounds.Ints.exactly(5)))
+         .addCriterion("arbalistic", KilledByArrowTrigger.TriggerInstance.crossbowKilled(var4, MinMaxBounds.Ints.exactly(5)))
          .save(var2, "adventure/arbalistic");
       HolderLookup.RegistryLookup var13 = var1.lookupOrThrow(Registries.BANNER_PATTERN);
       AdvancementHolder var14 = Advancement.Builder.advancement()

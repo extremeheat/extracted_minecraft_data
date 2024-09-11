@@ -35,6 +35,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.CrossbowItem;
@@ -78,7 +79,17 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       return var1.isCrouching ? var2.add(0.0, (double)(var1.scale * -2.0F) / 16.0, 0.0) : var2;
    }
 
-   public static HumanoidModel.ArmPose getArmPose(PlayerRenderState var0, PlayerRenderState.HandState var1, InteractionHand var2) {
+   public static HumanoidModel.ArmPose getArmPose(PlayerRenderState var0, HumanoidArm var1) {
+      HumanoidModel.ArmPose var2 = getArmPose(var0, var0.mainHandState, InteractionHand.MAIN_HAND);
+      HumanoidModel.ArmPose var3 = getArmPose(var0, var0.offhandState, InteractionHand.OFF_HAND);
+      if (var2.isTwoHanded()) {
+         var3 = var0.offhandState.isEmpty ? HumanoidModel.ArmPose.EMPTY : HumanoidModel.ArmPose.ITEM;
+      }
+
+      return var0.mainArm == var1 ? var2 : var3;
+   }
+
+   private static HumanoidModel.ArmPose getArmPose(PlayerRenderState var0, PlayerRenderState.HandState var1, InteractionHand var2) {
       if (var1.isEmpty) {
          return HumanoidModel.ArmPose.EMPTY;
       } else {
@@ -217,6 +228,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var1.capeFlap = (float)var5 * 10.0F;
       var1.capeFlap = Mth.clamp(var1.capeFlap, -6.0F, 32.0F);
       var1.capeLean = (float)(var3 * var10 + var7 * var12) * 100.0F;
+      var1.capeLean = var1.capeLean * (1.0F - var1.fallFlyingScale());
       var1.capeLean = Mth.clamp(var1.capeLean, 0.0F, 150.0F);
       var1.capeLean2 = (float)(var3 * var12 - var7 * var10) * 100.0F;
       var1.capeLean2 = Mth.clamp(var1.capeLean2, -20.0F, 20.0F);
@@ -257,7 +269,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       float var6 = var1.xRot;
       if (var1.isFallFlying) {
          super.setupRotations(var1, var2, var3, var4);
-         float var7 = Mth.clamp(var1.fallFlyingTimeInTicks * var1.fallFlyingTimeInTicks / 100.0F, 0.0F, 1.0F);
+         float var7 = var1.fallFlyingScale();
          if (!var1.isAutoSpinAttack) {
             var2.mulPose(Axis.XP.rotationDegrees(var7 * (-90.0F - var6)));
          }

@@ -205,7 +205,7 @@ public class LevelStorageSource {
 
                throw new ReportedException(var6);
             }
-         }, Util.backgroundExecutor()));
+         }, Util.backgroundExecutor().forName("loadLevelSummaries")));
       }
 
       return Util.sequenceFailFastAndCancel(var2).thenApply(var0 -> var0.stream().filter(Objects::nonNull).sorted().toList());

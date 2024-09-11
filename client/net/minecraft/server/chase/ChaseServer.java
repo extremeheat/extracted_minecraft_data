@@ -65,7 +65,7 @@ public class ChaseServer {
 
                for (Socket var5 : this.clientSockets) {
                   if (!var5.isClosed()) {
-                     Util.ioPool().submit(() -> {
+                     Util.ioPool().execute(() -> {
                         try {
                            OutputStream var2x = var5.getOutputStream();
                            var2x.write(var3);

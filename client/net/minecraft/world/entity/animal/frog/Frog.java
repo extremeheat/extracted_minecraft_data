@@ -28,6 +28,8 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -183,12 +185,13 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    @Override
    protected void customServerAiStep() {
-      this.level().getProfiler().push("frogBrain");
+      ProfilerFiller var1 = Profiler.get();
+      var1.push("frogBrain");
       this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("frogActivityUpdate");
+      var1.pop();
+      var1.push("frogActivityUpdate");
       FrogAi.updateActivity(this);
-      this.level().getProfiler().pop();
+      var1.pop();
       super.customServerAiStep();
    }
 

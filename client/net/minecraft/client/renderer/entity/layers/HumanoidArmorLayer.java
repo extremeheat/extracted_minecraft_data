@@ -43,20 +43,20 @@ public class HumanoidArmorLayer<S extends HumanoidRenderState, M extends Humanoi
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
-      this.renderArmorPiece(var1, var2, (S)var4, var4.chestItem, EquipmentSlot.CHEST, var3, this.getArmorModel((S)var4, EquipmentSlot.CHEST));
-      this.renderArmorPiece(var1, var2, (S)var4, var4.legsItem, EquipmentSlot.LEGS, var3, this.getArmorModel((S)var4, EquipmentSlot.LEGS));
-      this.renderArmorPiece(var1, var2, (S)var4, var4.feetItem, EquipmentSlot.FEET, var3, this.getArmorModel((S)var4, EquipmentSlot.FEET));
-      this.renderArmorPiece(var1, var2, (S)var4, var4.headItem, EquipmentSlot.HEAD, var3, this.getArmorModel((S)var4, EquipmentSlot.HEAD));
+      this.renderArmorPiece(var1, var2, var4.chestItem, EquipmentSlot.CHEST, var3, this.getArmorModel((S)var4, EquipmentSlot.CHEST));
+      this.renderArmorPiece(var1, var2, var4.legsItem, EquipmentSlot.LEGS, var3, this.getArmorModel((S)var4, EquipmentSlot.LEGS));
+      this.renderArmorPiece(var1, var2, var4.feetItem, EquipmentSlot.FEET, var3, this.getArmorModel((S)var4, EquipmentSlot.FEET));
+      this.renderArmorPiece(var1, var2, var4.headItem, EquipmentSlot.HEAD, var3, this.getArmorModel((S)var4, EquipmentSlot.HEAD));
    }
 
-   private void renderArmorPiece(PoseStack var1, MultiBufferSource var2, S var3, ItemStack var4, EquipmentSlot var5, int var6, A var7) {
-      Equippable var8 = var4.get(DataComponents.EQUIPPABLE);
-      if (var8 != null && shouldRender(var8, var5)) {
-         var7.setupAnim(var3);
-         this.setPartVisibility((A)var7, var5);
-         ResourceLocation var9 = var8.model().orElseThrow();
-         EquipmentModel.LayerType var10 = this.usesInnerModel(var5) ? EquipmentModel.LayerType.HUMANOID_LEGGINGS : EquipmentModel.LayerType.HUMANOID;
-         this.equipmentRenderer.renderLayers(var10, var9, var7, var4, RenderType::armorCutoutNoCull, var1, var2, var6);
+   private void renderArmorPiece(PoseStack var1, MultiBufferSource var2, ItemStack var3, EquipmentSlot var4, int var5, A var6) {
+      Equippable var7 = var3.get(DataComponents.EQUIPPABLE);
+      if (var7 != null && shouldRender(var7, var4)) {
+         this.getParentModel().copyPropertiesTo(var6);
+         this.setPartVisibility((A)var6, var4);
+         ResourceLocation var8 = var7.model().orElseThrow();
+         EquipmentModel.LayerType var9 = this.usesInnerModel(var4) ? EquipmentModel.LayerType.HUMANOID_LEGGINGS : EquipmentModel.LayerType.HUMANOID;
+         this.equipmentRenderer.renderLayers(var9, var8, var6, var3, RenderType::armorCutoutNoCull, var1, var2, var5);
       }
    }
 

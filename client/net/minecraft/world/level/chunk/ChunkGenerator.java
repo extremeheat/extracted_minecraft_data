@@ -111,10 +111,10 @@ public abstract class ChunkGenerator {
    }
 
    public CompletableFuture<ChunkAccess> createBiomes(RandomState var1, Blender var2, StructureManager var3, ChunkAccess var4) {
-      return CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName("init_biomes", () -> {
+      return CompletableFuture.supplyAsync(() -> {
          var4.fillBiomesFromNoise(this.biomeSource, var1.sampler());
          return var4;
-      }), Util.backgroundExecutor());
+      }, Util.backgroundExecutor().forName("init_biomes"));
    }
 
    public abstract void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7);

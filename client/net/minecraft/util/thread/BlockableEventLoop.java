@@ -2,6 +2,8 @@ package net.minecraft.util.thread;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Queues;
+import com.mojang.jtracy.TracyClient;
+import com.mojang.jtracy.Zone;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Queue;
@@ -12,6 +14,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import javax.annotation.CheckReturnValue;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.util.profiling.metrics.MetricSampler;
 import net.minecraft.util.profiling.metrics.MetricsRegistry;
@@ -142,10 +145,28 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
 
    protected void doRunTask(R var1) {
       try {
-         var1.run();
-      } catch (Exception var3) {
-         LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var3);
-         throw var3;
+         Zone var2 = TracyClient.beginZone("Task", SharedConstants.IS_RUNNING_IN_IDE);
+
+         try {
+            var1.run();
+         } catch (Throwable var6) {
+            if (var2 != null) {
+               try {
+                  var2.close();
+               } catch (Throwable var5) {
+                  var6.addSuppressed(var5);
+               }
+            }
+
+            throw var6;
+         }
+
+         if (var2 != null) {
+            var2.close();
+         }
+      } catch (Exception var7) {
+         LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var7);
+         throw var7;
       }
    }
 

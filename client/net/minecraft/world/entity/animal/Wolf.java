@@ -384,7 +384,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    private boolean canArmorAbsorb(DamageSource var1) {
-      return this.hasArmor() && !var1.is(DamageTypeTags.BYPASSES_WOLF_ARMOR);
+      return this.getBodyArmorItem().is(Items.WOLF_ARMOR) && !var1.is(DamageTypeTags.BYPASSES_WOLF_ARMOR);
    }
 
    @Override
@@ -425,13 +425,13 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                return super.mobInteract(var1, var2);
             }
 
-            if (var3.is(Items.WOLF_ARMOR) && this.isOwnedBy(var1) && this.getBodyArmorItem().isEmpty() && !this.isBaby()) {
+            if (this.isEquippableInSlot(var3, EquipmentSlot.BODY) && !this.isWearingBodyArmor() && this.isOwnedBy(var1) && !this.isBaby()) {
                this.setBodyArmorItem(var3.copyWithCount(1));
                var3.consume(1, var1);
                return InteractionResult.SUCCESS;
             } else if (var3.is(Items.SHEARS)
                && this.isOwnedBy(var1)
-               && this.hasArmor()
+               && this.isWearingBodyArmor()
                && (!EnchantmentHelper.has(this.getBodyArmorItem(), EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || var1.isCreative())) {
                var3.hurtAndBreak(1, var1, getSlotForHand(var2));
                this.playSound(SoundEvents.ARMOR_UNEQUIP_WOLF);
@@ -440,7 +440,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                this.spawnAtLocation(var6);
                return InteractionResult.SUCCESS;
             } else if (this.isInSittingPose()
-               && this.hasArmor()
+               && this.isWearingBodyArmor()
                && this.isOwnedBy(var1)
                && this.getBodyArmorItem().isDamaged()
                && this.getBodyArmorItem().isValidRepairItem(var3)) {
@@ -547,10 +547,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
 
    public DyeColor getCollarColor() {
       return DyeColor.byId(this.entityData.get(DATA_COLLAR_COLOR));
-   }
-
-   public boolean hasArmor() {
-      return this.getBodyArmorItem().is(Items.WOLF_ARMOR);
    }
 
    private void setCollarColor(DyeColor var1) {

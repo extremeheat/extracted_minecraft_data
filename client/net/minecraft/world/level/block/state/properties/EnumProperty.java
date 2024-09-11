@@ -1,37 +1,65 @@
 package net.minecraft.world.level.block.state.properties;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.minecraft.util.StringRepresentable;
 
 public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Property<T> {
-   private final ImmutableSet<T> values;
+   private static final int UNABLE_TO_USE_ORDINALS = -1;
+   private final List<T> values;
    private final Map<String, T> names = Maps.newHashMap();
+   @VisibleForTesting
+   protected int minOffset;
+   @VisibleForTesting
+   protected final int maxUsableOrdinal;
 
-   protected EnumProperty(String var1, Class<T> var2, Collection<T> var3) {
+   protected EnumProperty(String var1, Class<T> var2, List<T> var3) {
       super(var1, var2);
-      this.values = ImmutableSet.copyOf(var3);
+      if (var3.isEmpty()) {
+         throw new IllegalArgumentException("Trying to make empty EnumProperty '" + var1 + "'");
+      } else {
+         int[] var4 = new int[]{-1};
+         if (IntStream.range(0, var3.size()).allMatch(var2x -> {
+            int var3x = ((Enum)var3.get(var2x)).ordinal() - var2x;
+            if (var4[0] == -1) {
+               var4[0] = var3x;
+            }
 
-      for (Enum var5 : var3) {
-         String var6 = ((StringRepresentable)var5).getSerializedName();
-         if (this.names.containsKey(var6)) {
-            throw new IllegalArgumentException("Multiple values have the same name '" + var6 + "'");
+            return var3x == var4[0];
+         })) {
+            this.values = Collections.unmodifiableList(var3);
+            this.maxUsableOrdinal = ((Enum)var3.getLast()).ordinal();
+            this.minOffset = var4[0];
+         } else {
+            this.values = new ReferenceArrayList(var3);
+            this.maxUsableOrdinal = -1;
+            this.minOffset = -1;
          }
 
-         this.names.put(var6, (T)var5);
+         for (Enum var6 : var3) {
+            String var7 = ((StringRepresentable)var6).getSerializedName();
+            if (this.names.containsKey(var7)) {
+               throw new IllegalArgumentException("Multiple values have the same name '" + var7 + "'");
+            }
+
+            this.names.put(var7, (T)var6);
+         }
       }
    }
 
    @Override
-   public Collection<T> getPossibleValues() {
-      return this.values;
+   public List<T> getPossibleValues() {
+      return this.maxUsableOrdinal == -1 ? Collections.unmodifiableList(this.values) : this.values;
    }
 
    @Override
@@ -41,6 +69,11 @@ public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Prope
 
    public String getName(T var1) {
       return ((StringRepresentable)var1).getSerializedName();
+   }
+
+   public int getInternalIndex(T var1) {
+      int var2 = var1.ordinal();
+      return var2 <= this.maxUsableOrdinal ? var2 - this.minOffset : this.values.indexOf(var1);
    }
 
    @Override
@@ -75,7 +108,7 @@ public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Prope
       return create(var0, var1, Lists.newArrayList(var2));
    }
 
-   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, Collection<T> var2) {
+   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, List<T> var2) {
       return new EnumProperty<>(var0, var1, var2);
    }
 }

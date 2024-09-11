@@ -773,7 +773,7 @@ public class ServerGamePacketListenerImpl
 
    private void updateBookContents(List<FilteredText> var1, int var2) {
       ItemStack var3 = this.player.getInventory().getItem(var2);
-      if (var3.is(Items.WRITABLE_BOOK)) {
+      if (var3.has(DataComponents.WRITABLE_BOOK_CONTENT)) {
          List var4 = var1.stream().map(this::filterableFromOutgoing).toList();
          var3.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(var4));
       }
@@ -781,7 +781,7 @@ public class ServerGamePacketListenerImpl
 
    private void signBook(FilteredText var1, List<FilteredText> var2, int var3) {
       ItemStack var4 = this.player.getInventory().getItem(var3);
-      if (var4.is(Items.WRITABLE_BOOK)) {
+      if (var4.has(DataComponents.WRITABLE_BOOK_CONTENT)) {
          ItemStack var5 = var4.transmuteCopy(Items.WRITTEN_BOOK);
          var5.remove(DataComponents.WRITABLE_BOOK_CONTENT);
          List var6 = var2.stream().map(var1x -> this.filterableFromOutgoing(var1x).map(Component::literal)).toList();
@@ -930,6 +930,7 @@ public class ServerGamePacketListenerImpl
                         Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
                         this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
                         this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
+                        this.player.recordMovementThroughBlocks(new Vec3(var11, var13, var15), this.player.position());
                         this.handlePlayerKnownMovement(var35);
                         if (var44) {
                            this.player.resetFallDistance();

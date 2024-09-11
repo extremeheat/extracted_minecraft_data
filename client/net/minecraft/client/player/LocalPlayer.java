@@ -34,6 +34,7 @@ import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
@@ -70,7 +71,7 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
@@ -587,8 +588,9 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Override
    public void openItemGui(ItemStack var1, InteractionHand var2) {
-      if (var1.is(Items.WRITABLE_BOOK)) {
-         this.minecraft.setScreen(new BookEditScreen(this, var1, var2));
+      WritableBookContent var3 = var1.get(DataComponents.WRITABLE_BOOK_CONTENT);
+      if (var3 != null) {
+         this.minecraft.setScreen(new BookEditScreen(this, var1, var2, var3));
       }
    }
 

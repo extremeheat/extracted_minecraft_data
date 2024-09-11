@@ -65,10 +65,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 
 public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVariant>> {
@@ -567,25 +563,21 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
                (double)(var2.getX() + var1.nextInt(11) - 5), (double)(var2.getY() + var1.nextInt(5) - 2), (double)(var2.getZ() + var1.nextInt(11) - 5), false
             );
          var2.set(this.cat.blockPosition());
-         LootTable var3 = this.cat.level().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.CAT_MORNING_GIFT);
-         LootParams var4 = new LootParams.Builder((ServerLevel)this.cat.level())
-            .withParameter(LootContextParams.ORIGIN, this.cat.position())
-            .withParameter(LootContextParams.THIS_ENTITY, this.cat)
-            .create(LootContextParamSets.GIFT);
-
-         for (ItemStack var7 : var3.getRandomItems(var4)) {
-            this.cat
-               .level()
-               .addFreshEntity(
-                  new ItemEntity(
-                     this.cat.level(),
-                     (double)var2.getX() - (double)Mth.sin(this.cat.yBodyRot * 0.017453292F),
-                     (double)var2.getY(),
-                     (double)var2.getZ() + (double)Mth.cos(this.cat.yBodyRot * 0.017453292F),
-                     var7
-                  )
-               );
-         }
+         this.cat
+            .dropFromGiftLootTable(
+               BuiltInLootTables.CAT_MORNING_GIFT,
+               var2x -> this.cat
+                     .level()
+                     .addFreshEntity(
+                        new ItemEntity(
+                           this.cat.level(),
+                           (double)var2.getX() - (double)Mth.sin(this.cat.yBodyRot * 0.017453292F),
+                           (double)var2.getY(),
+                           (double)var2.getZ() + (double)Mth.cos(this.cat.yBodyRot * 0.017453292F),
+                           var2x
+                        )
+                     )
+            );
       }
 
       @Override

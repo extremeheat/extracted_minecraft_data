@@ -21,6 +21,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -570,29 +571,36 @@ public abstract class AbstractContainerMenu {
       if (var1 instanceof ServerPlayer) {
          ItemStack var2 = this.getCarried();
          if (!var2.isEmpty()) {
-            if (var1.isAlive() && !((ServerPlayer)var1).hasDisconnected()) {
-               var1.getInventory().placeItemBackInInventory(var2);
-            } else {
-               var1.drop(var2, false);
-            }
-
+            dropOrPlaceInInventory(var1, var2);
             this.setCarried(ItemStack.EMPTY);
          }
       }
    }
 
+   private static void dropOrPlaceInInventory(Player var0, ItemStack var1) {
+      boolean var2;
+      boolean var10000;
+      label27: {
+         var2 = var0.isRemoved() && var0.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION;
+         if (var0 instanceof ServerPlayer var4 && var4.hasDisconnected()) {
+            var10000 = true;
+            break label27;
+         }
+
+         var10000 = false;
+      }
+
+      boolean var3 = var10000;
+      if (var2 || var3) {
+         var0.drop(var1, false);
+      } else if (var0 instanceof ServerPlayer) {
+         var0.getInventory().placeItemBackInInventory(var1);
+      }
+   }
+
    protected void clearContainer(Player var1, Container var2) {
-      if (!var1.isAlive() || var1 instanceof ServerPlayer && ((ServerPlayer)var1).hasDisconnected()) {
-         for (int var5 = 0; var5 < var2.getContainerSize(); var5++) {
-            var1.drop(var2.removeItemNoUpdate(var5), false);
-         }
-      } else {
-         for (int var3 = 0; var3 < var2.getContainerSize(); var3++) {
-            Inventory var4 = var1.getInventory();
-            if (var4.player instanceof ServerPlayer) {
-               var4.placeItemBackInInventory(var2.removeItemNoUpdate(var3));
-            }
-         }
+      for (int var3 = 0; var3 < var2.getContainerSize(); var3++) {
+         dropOrPlaceInInventory(var1, var2.removeItemNoUpdate(var3));
       }
    }
 

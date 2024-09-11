@@ -3,10 +3,10 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.GameRules;
 
 public class GameRuleCommand {
@@ -14,26 +14,22 @@ public class GameRuleCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      final LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("gamerule").requires(var0x -> var0x.hasPermission(2));
-      new GameRules(FeatureFlags.REGISTRY.allFlags())
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
+      final LiteralArgumentBuilder var2 = (LiteralArgumentBuilder)Commands.literal("gamerule").requires(var0x -> var0x.hasPermission(2));
+      new GameRules(var1.enabledFeatures())
          .visitGameRuleTypes(
             new GameRules.GameRuleTypeVisitor() {
                @Override
-               public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1x, GameRules.Type<T> var2) {
-                  LiteralArgumentBuilder var3 = Commands.literal(var1x.getId());
-                  if (!var2.requiredFeatures().isEmpty()) {
-                     var3.requires(var1xxx -> var2.requiredFeatures().isSubsetOf(var1xxx.enabledFeatures()));
-                  }
-
-                  var1.then(
-                     ((LiteralArgumentBuilder)var3.executes(var1xxx -> GameRuleCommand.queryRule((CommandSourceStack)var1xxx.getSource(), var1x)))
-                        .then(var2.createArgument("value").executes(var1xxx -> GameRuleCommand.setRule(var1xxx, var1x)))
+               public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1, GameRules.Type<T> var2x) {
+                  LiteralArgumentBuilder var3 = Commands.literal(var1.getId());
+                  var2.then(
+                     ((LiteralArgumentBuilder)var3.executes(var1x -> GameRuleCommand.queryRule((CommandSourceStack)var1x.getSource(), var1)))
+                        .then(var2x.createArgument("value").executes(var1x -> GameRuleCommand.setRule(var1x, var1)))
                   );
                }
             }
          );
-      var0.register(var1);
+      var0.register(var2);
    }
 
    static <T extends GameRules.Value<T>> int setRule(CommandContext<CommandSourceStack> var0, GameRules.Key<T> var1) {

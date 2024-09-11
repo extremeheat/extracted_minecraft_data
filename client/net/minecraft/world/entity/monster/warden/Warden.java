@@ -31,6 +31,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -280,9 +282,10 @@ public class Warden extends Monster implements VibrationSystem {
    @Override
    protected void customServerAiStep() {
       ServerLevel var1 = (ServerLevel)this.level();
-      var1.getProfiler().push("wardenBrain");
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("wardenBrain");
       this.getBrain().tick(var1, this);
-      this.level().getProfiler().pop();
+      var2.pop();
       super.customServerAiStep();
       if ((this.tickCount + this.getId()) % 120 == 0) {
          applyDarknessAround(var1, this.position(), this, 20);

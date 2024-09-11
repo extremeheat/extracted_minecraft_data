@@ -268,7 +268,7 @@ public class VaultBlockEntity extends BlockEntity {
             } else if (var4.hasRewardedPlayer(var6)) {
                playInsertFailSound(var0, var4, var1, SoundEvents.VAULT_REJECT_REWARDED_PLAYER);
             } else {
-               List var9 = resolveItemsToEject(var0, var3, var1, var6);
+               List var9 = resolveItemsToEject(var0, var3, var1, var6, var7);
                if (!var9.isEmpty()) {
                   var6.awardStat(Stats.ITEM_USED.get(var7.getItem()));
                   var7.consume(var3.keyItem().getCount(), var6);
@@ -312,14 +312,15 @@ public class VaultBlockEntity extends BlockEntity {
          setVaultState(var0, var2, var1, var1.setValue(VaultBlock.STATE, VaultState.UNLOCKING), var3, var5);
       }
 
-      private static List<ItemStack> resolveItemsToEject(ServerLevel var0, VaultConfig var1, BlockPos var2, Player var3) {
-         LootTable var4 = var0.getServer().reloadableRegistries().getLootTable(var1.lootTable());
-         LootParams var5 = new LootParams.Builder(var0)
+      private static List<ItemStack> resolveItemsToEject(ServerLevel var0, VaultConfig var1, BlockPos var2, Player var3, ItemStack var4) {
+         LootTable var5 = var0.getServer().reloadableRegistries().getLootTable(var1.lootTable());
+         LootParams var6 = new LootParams.Builder(var0)
             .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2))
             .withLuck(var3.getLuck())
             .withParameter(LootContextParams.THIS_ENTITY, var3)
+            .withParameter(LootContextParams.TOOL, var4)
             .create(LootContextParamSets.VAULT);
-         return var4.getRandomItems(var5);
+         return var5.getRandomItems(var6);
       }
 
       private static boolean canEjectReward(VaultConfig var0, VaultState var1) {

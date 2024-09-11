@@ -215,6 +215,10 @@ public class StonecutterMenu extends AbstractContainerMenu {
          }
 
          var4.onTake(var1, var5);
+         if (var2 == 1) {
+            var1.drop(var5, false);
+         }
+
          this.broadcastChanges();
       }
 

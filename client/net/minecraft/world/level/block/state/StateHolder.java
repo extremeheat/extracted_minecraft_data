@@ -1,15 +1,12 @@
 package net.minecraft.world.level.block.state;
 
-import com.google.common.collect.ArrayTable;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,7 +35,7 @@ public abstract class StateHolder<O, S> {
    };
    protected final O owner;
    private final Reference2ObjectArrayMap<Property<?>, Comparable<?>> values;
-   private Table<Property<?>, Comparable<?>, S> neighbours;
+   private Map<Property<?>, S[]> neighbours;
    protected final MapCodec<S> propertiesCodec;
 
    protected StateHolder(O var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3) {
@@ -52,20 +49,9 @@ public abstract class StateHolder<O, S> {
       return this.setValue(var1, findNextInCollection(var1.getPossibleValues(), this.getValue(var1)));
    }
 
-   protected static <T> T findNextInCollection(Collection<T> var0, T var1) {
-      Iterator var2 = var0.iterator();
-
-      while (var2.hasNext()) {
-         if (var2.next().equals(var1)) {
-            if (var2.hasNext()) {
-               return (T)var2.next();
-            }
-
-            return (T)var0.iterator().next();
-         }
-      }
-
-      return (T)var2.next();
+   protected static <T> T findNextInCollection(List<T> var0, T var1) {
+      int var2 = var0.indexOf(var1) + 1;
+      return (T)(var2 == var0.size() ? var0.getFirst() : var0.get(var2));
    }
 
    @Override
@@ -116,29 +102,26 @@ public abstract class StateHolder<O, S> {
       Comparable var3 = (Comparable)this.values.get(var1);
       if (var3 == null) {
          throw new IllegalArgumentException("Cannot set property " + var1 + " as it does not exist in " + this.owner);
-      } else if (var3.equals(var2)) {
-         return (S)this;
       } else {
-         Object var4 = this.neighbours.get(var1, var2);
-         if (var4 == null) {
-            throw new IllegalArgumentException("Cannot set property " + var1 + " to " + var2 + " on " + this.owner + ", it is not an allowed value");
-         } else {
-            return (S)var4;
-         }
+         return this.setValueInternal(var1, var2, var3);
       }
    }
 
    public <T extends Comparable<T>, V extends T> S trySetValue(Property<T> var1, V var2) {
       Comparable var3 = (Comparable)this.values.get(var1);
-      if (var3 != null && !var3.equals(var2)) {
-         Object var4 = this.neighbours.get(var1, var2);
-         if (var4 == null) {
+      return (S)(var3 == null ? this : this.setValueInternal(var1, var2, var3));
+   }
+
+   private <T extends Comparable<T>, V extends T> S setValueInternal(Property<T> var1, V var2, Comparable<?> var3) {
+      if (var3.equals(var2)) {
+         return (S)this;
+      } else {
+         int var4 = var1.getInternalIndex((T)var2);
+         if (var4 < 0) {
             throw new IllegalArgumentException("Cannot set property " + var1 + " to " + var2 + " on " + this.owner + ", it is not an allowed value");
          } else {
-            return (S)var4;
+            return (S)this.neighbours.get(var1)[var4];
          }
-      } else {
-         return (S)this;
       }
    }
 
@@ -146,21 +129,16 @@ public abstract class StateHolder<O, S> {
       if (this.neighbours != null) {
          throw new IllegalStateException();
       } else {
-         HashBasedTable var2 = HashBasedTable.create();
+         Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(this.values.size());
          ObjectIterator var3 = this.values.entrySet().iterator();
 
          while (var3.hasNext()) {
             Entry var4 = (Entry)var3.next();
             Property var5 = (Property)var4.getKey();
-
-            for (Comparable var7 : var5.getPossibleValues()) {
-               if (!var7.equals(var4.getValue())) {
-                  var2.put(var5, var7, var1.get(this.makeNeighbourValues(var5, var7)));
-               }
-            }
+            var2.put(var5, var5.getPossibleValues().stream().map(var3x -> var1.get(this.makeNeighbourValues(var5, var3x))).toArray());
          }
 
-         this.neighbours = (Table<Property<?>, Comparable<?>, S>)(var2.isEmpty() ? var2 : ArrayTable.create(var2));
+         this.neighbours = var2;
       }
    }
 

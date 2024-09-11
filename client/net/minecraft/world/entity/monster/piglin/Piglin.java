@@ -15,6 +15,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -305,9 +307,10 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    @Override
    protected void customServerAiStep() {
-      this.level().getProfiler().push("piglinBrain");
+      ProfilerFiller var1 = Profiler.get();
+      var1.push("piglinBrain");
       this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
+      var1.pop();
       PiglinAi.updateActivity(this);
       super.customServerAiStep();
    }

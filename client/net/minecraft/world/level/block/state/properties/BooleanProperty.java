@@ -1,18 +1,18 @@
 package net.minecraft.world.level.block.state.properties;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Collection;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Optional;
 
 public class BooleanProperty extends Property<Boolean> {
-   private final ImmutableSet<Boolean> values = ImmutableSet.of(true, false);
+   private final ImmutableList<Boolean> values = ImmutableList.of(true, false);
 
    protected BooleanProperty(String var1) {
       super(var1, Boolean.class);
    }
 
    @Override
-   public Collection<Boolean> getPossibleValues() {
+   public List<Boolean> getPossibleValues() {
       return this.values;
    }
 
@@ -27,6 +27,10 @@ public class BooleanProperty extends Property<Boolean> {
 
    public String getName(Boolean var1) {
       return var1.toString();
+   }
+
+   public int getInternalIndex(Boolean var1) {
+      return var1 ? 0 : 1;
    }
 
    @Override

@@ -10,6 +10,8 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -153,19 +155,20 @@ public abstract class PathNavigation {
       } else if (this.path != null && !this.path.isDone() && var1.contains(this.targetPos)) {
          return this.path;
       } else {
-         this.level.getProfiler().push("pathfind");
-         BlockPos var6 = var3 ? this.mob.blockPosition().above() : this.mob.blockPosition();
-         int var7 = (int)(var5 + (float)var2);
-         PathNavigationRegion var8 = new PathNavigationRegion(this.level, var6.offset(-var7, -var7, -var7), var6.offset(var7, var7, var7));
-         Path var9 = this.pathFinder.findPath(var8, this.mob, var1, var5, var4, this.maxVisitedNodesMultiplier);
-         this.level.getProfiler().pop();
-         if (var9 != null && var9.getTarget() != null) {
-            this.targetPos = var9.getTarget();
+         ProfilerFiller var6 = Profiler.get();
+         var6.push("pathfind");
+         BlockPos var7 = var3 ? this.mob.blockPosition().above() : this.mob.blockPosition();
+         int var8 = (int)(var5 + (float)var2);
+         PathNavigationRegion var9 = new PathNavigationRegion(this.level, var7.offset(-var8, -var8, -var8), var7.offset(var8, var8, var8));
+         Path var10 = this.pathFinder.findPath(var9, this.mob, var1, var5, var4, this.maxVisitedNodesMultiplier);
+         var6.pop();
+         if (var10 != null && var10.getTarget() != null) {
+            this.targetPos = var10.getTarget();
             this.reachRange = var4;
             this.resetStuckTimeout();
          }
 
-         return var9;
+         return var10;
       }
    }
 

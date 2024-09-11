@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -142,7 +143,7 @@ public class StateDefinition<O, S extends StateHolder<O, S>> {
          if (!StateDefinition.NAME_PATTERN.matcher(var2).matches()) {
             throw new IllegalArgumentException(this.owner + " has invalidly named property: " + var2);
          } else {
-            Collection var3 = var1.getPossibleValues();
+            List var3 = var1.getPossibleValues();
             if (var3.size() <= 1) {
                throw new IllegalArgumentException(this.owner + " attempted use property " + var2 + " with <= 1 possible values");
             } else {

@@ -74,10 +74,10 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
 
    @Override
    public CompletableFuture<ChunkAccess> createBiomes(RandomState var1, Blender var2, StructureManager var3, ChunkAccess var4) {
-      return CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName("init_biomes", () -> {
+      return CompletableFuture.supplyAsync(() -> {
          this.doCreateBiomes(var2, var1, var3, var4);
          return var4;
-      }), Util.backgroundExecutor());
+      }, Util.backgroundExecutor().forName("init_biomes"));
    }
 
    private void doCreateBiomes(Blender var1, RandomState var2, StructureManager var3, ChunkAccess var4) {
@@ -266,7 +266,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       int var6 = var5.minY();
       int var7 = Mth.floorDiv(var6, var5.getCellHeight());
       int var8 = Mth.floorDiv(var5.height(), var5.getCellHeight());
-      return var8 <= 0 ? CompletableFuture.completedFuture(var4) : CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName("wgen_fill_noise", () -> {
+      return var8 <= 0 ? CompletableFuture.completedFuture(var4) : CompletableFuture.supplyAsync(() -> {
          int var9 = var4.getSectionIndex(var8 * var5.getCellHeight() - 1 + var6);
          int var10 = var4.getSectionIndex(var6);
          HashSet var11 = Sets.newHashSet();
@@ -287,7 +287,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
          }
 
          return var20;
-      }), Util.backgroundExecutor());
+      }, Util.backgroundExecutor().forName("wgen_fill_noise"));
    }
 
    private ChunkAccess doFill(Blender var1, StructureManager var2, RandomState var3, ChunkAccess var4, int var5, int var6) {

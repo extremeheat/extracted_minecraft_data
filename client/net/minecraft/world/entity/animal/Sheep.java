@@ -157,7 +157,7 @@ public class Sheep extends Animal implements Shearable {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS)) {
          if (!this.level().isClientSide && this.readyForShearing()) {
-            this.shear(SoundSource.PLAYERS);
+            this.shear(SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
             return InteractionResult.SUCCESS_SERVER;
@@ -170,12 +170,13 @@ public class Sheep extends Animal implements Shearable {
    }
 
    @Override
-   public void shear(SoundSource var1) {
+   public void shear(SoundSource var1, ItemStack var2) {
       this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, var1, 1.0F, 1.0F);
       this.dropFromShearingLootTable(
          BuiltInLootTables.SHEAR_SHEEP,
+         var2,
          var1x -> {
-            for (int var2 = 0; var2 < var1x.getCount(); var2++) {
+            for (int var2x = 0; var2x < var1x.getCount(); var2x++) {
                ItemEntity var3 = this.spawnAtLocation(var1x.copyWithCount(1), 1.0F);
                if (var3 != null) {
                   var3.setDeltaMovement(

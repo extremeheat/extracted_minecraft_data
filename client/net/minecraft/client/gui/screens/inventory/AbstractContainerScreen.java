@@ -29,6 +29,8 @@ import net.minecraft.world.item.ItemStack;
 
 public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
    public static final ResourceLocation INVENTORY_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/inventory.png");
+   private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_back");
+   private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_front");
    protected static final int BACKGROUND_TEXTURE_WIDTH = 256;
    protected static final int BACKGROUND_TEXTURE_HEIGHT = 256;
    private static final float SNAPBACK_SPEED = 100.0F;
@@ -106,20 +108,16 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       var1.pose().pushPose();
       var1.pose().translate((float)var5, (float)var6, 0.0F);
       Slot var7 = this.hoveredSlot;
-      this.hoveredSlot = null;
+      this.hoveredSlot = this.getHoveredSlot((double)var2, (double)var3);
+      this.renderSlotHighlightBack(var1);
 
       for (Slot var9 : this.menu.slots) {
          if (var9.isActive()) {
             this.renderSlot(var1, var9);
-            if (this.isHovering(var9, (double)var2, (double)var3)) {
-               this.hoveredSlot = var9;
-               if (this.hoveredSlot.isHighlightable()) {
-                  renderSlotHighlight(var1, var9.x, var9.y, 0);
-               }
-            }
          }
       }
 
+      this.renderSlotHighlightFront(var1);
       if (var7 != null && var7 != this.hoveredSlot) {
          this.onStopHovering(var7);
       }
@@ -178,8 +176,16 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return false;
    }
 
-   public static void renderSlotHighlight(GuiGraphics var0, int var1, int var2, int var3) {
-      var0.fillGradient(RenderType.guiOverlay(), var1, var2, var1 + 16, var2 + 16, -2130706433, -2130706433, var3);
+   private void renderSlotHighlightBack(GuiGraphics var1) {
+      if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
+         var1.blitSprite(RenderType::guiTextured, SLOT_HIGHLIGHT_BACK_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+      }
+   }
+
+   private void renderSlotHighlightFront(GuiGraphics var1) {
+      if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
+         var1.blitSprite(RenderType::guiTexturedOverlay, SLOT_HIGHLIGHT_FRONT_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+      }
    }
 
    protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
@@ -295,10 +301,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    @Nullable
-   private Slot findSlot(double var1, double var3) {
-      for (int var5 = 0; var5 < this.menu.slots.size(); var5++) {
-         Slot var6 = this.menu.slots.get(var5);
-         if (this.isHovering(var6, var1, var3) && var6.isActive()) {
+   private Slot getHoveredSlot(double var1, double var3) {
+      for (Slot var6 : this.menu.slots) {
+         if (var6.isActive() && this.isHovering(var6, var1, var3)) {
             return var6;
          }
       }
@@ -312,7 +317,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          return true;
       } else {
          boolean var6 = this.minecraft.options.keyPickItem.matchesMouse(var5) && this.minecraft.gameMode.hasInfiniteItems();
-         Slot var7 = this.findSlot(var1, var3);
+         Slot var7 = this.getHoveredSlot(var1, var3);
          long var8 = Util.getMillis();
          this.doubleclick = this.lastClickSlot == var7 && var8 - this.lastClickTime < 250L && this.lastClickButton == var5;
          this.skipNextRelease = false;
@@ -411,7 +416,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    @Override
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      Slot var10 = this.findSlot(var1, var3);
+      Slot var10 = this.getHoveredSlot(var1, var3);
       ItemStack var11 = this.menu.getCarried();
       if (this.clickedSlot != null && this.minecraft.options.touchscreen().get()) {
          if (var5 == 0 || var5 == 1) {
@@ -451,7 +456,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    @Override
    public boolean mouseReleased(double var1, double var3, int var5) {
-      Slot var6 = this.findSlot(var1, var3);
+      Slot var6 = this.getHoveredSlot(var1, var3);
       int var7 = this.leftPos;
       int var8 = this.topPos;
       boolean var9 = this.hasClickedOutside(var1, var3, var7, var8, var5);
@@ -592,7 +597,18 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          var2 = var1.index;
       }
 
+      this.onMouseClickAction(var1, var4);
       this.minecraft.gameMode.handleInventoryMouseClick(this.menu.containerId, var2, var3, var4, this.minecraft.player);
+   }
+
+   void onMouseClickAction(@Nullable Slot var1, ClickType var2) {
+      if (var1 != null && var1.hasItem()) {
+         for (ItemSlotMouseAction var4 : this.itemSlotMouseActions) {
+            if (var4.matches(var1)) {
+               var4.onSlotClicked(var1, var2);
+            }
+         }
+      }
    }
 
    protected void handleSlotStateChanged(int var1, int var2, boolean var3) {

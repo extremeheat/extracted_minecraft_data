@@ -71,10 +71,6 @@ public class ThrownTrident extends AbstractArrow {
             this.setNoPhysics(true);
             Vec3 var3 = var1.getEyePosition().subtract(this.position());
             this.setPosRaw(this.getX(), this.getY() + var3.y * 0.015 * (double)var2, this.getZ());
-            if (this.level().isClientSide) {
-               this.yOld = this.getY();
-            }
-
             double var4 = 0.05 * (double)var2;
             this.setDeltaMovement(this.getDeltaMovement().scale(0.95).add(var3.normalize().scale(var4)));
             if (this.clientSideReturnTridentTickCount == 0) {
@@ -129,7 +125,8 @@ public class ThrownTrident extends AbstractArrow {
          }
       }
 
-      this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
+      this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
+      this.setDeltaMovement(this.getDeltaMovement().multiply(0.02, 0.2, 0.02));
       this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
    }
 

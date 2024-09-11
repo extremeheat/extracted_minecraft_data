@@ -25,6 +25,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.entity.Entity;
@@ -53,7 +54,7 @@ import org.slf4j.Logger;
 public class ServerChunkCache extends ChunkSource {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final DistanceManager distanceManager;
-   final ServerLevel level;
+   private final ServerLevel level;
    final Thread mainThread;
    final ThreadedLevelLightEngine lightEngine;
    private final ServerChunkCache.MainThreadExecutor mainThreadProcessor;
@@ -137,7 +138,7 @@ public class ServerChunkCache extends ChunkSource {
       if (Thread.currentThread() != this.mainThread) {
          return CompletableFuture.<ChunkAccess>supplyAsync(() -> this.getChunk(var1, var2, var3, var4), this.mainThreadProcessor).join();
       } else {
-         ProfilerFiller var5 = this.level.getProfiler();
+         ProfilerFiller var5 = Profiler.get();
          var5.incrementCounter("getChunk");
          long var6 = ChunkPos.asLong(var1, var2);
 
@@ -170,7 +171,7 @@ public class ServerChunkCache extends ChunkSource {
       if (Thread.currentThread() != this.mainThread) {
          return null;
       } else {
-         this.level.getProfiler().incrementCounter("getChunkNow");
+         Profiler.get().incrementCounter("getChunkNow");
          long var3 = ChunkPos.asLong(var1, var2);
 
          for (int var5 = 0; var5 < 4; var5++) {
@@ -227,7 +228,7 @@ public class ServerChunkCache extends ChunkSource {
       if (var4) {
          this.distanceManager.addTicket(TicketType.UNKNOWN, var5, var8, var5);
          if (this.chunkAbsent(var9, var8)) {
-            ProfilerFiller var10 = this.level.getProfiler();
+            ProfilerFiller var10 = Profiler.get();
             var10.push("chunkLoad");
             this.runDistanceManagerUpdates();
             var9 = this.getVisibleChunkIfPresent(var6);
@@ -304,21 +305,22 @@ public class ServerChunkCache extends ChunkSource {
 
    @Override
    public void tick(BooleanSupplier var1, boolean var2) {
-      this.level.getProfiler().push("purge");
+      ProfilerFiller var3 = Profiler.get();
+      var3.push("purge");
       if (this.level.tickRateManager().runsNormally() || !var2) {
          this.distanceManager.purgeStaleTickets();
       }
 
       this.runDistanceManagerUpdates();
-      this.level.getProfiler().popPush("chunks");
+      var3.popPush("chunks");
       if (var2) {
          this.tickChunks();
          this.chunkMap.tick();
       }
 
-      this.level.getProfiler().popPush("unload");
+      var3.popPush("unload");
       this.chunkMap.tick(var1);
-      this.level.getProfiler().pop();
+      var3.pop();
       this.clearCache();
    }
 
@@ -327,7 +329,7 @@ public class ServerChunkCache extends ChunkSource {
       long var3 = var1 - this.lastInhabitedUpdate;
       this.lastInhabitedUpdate = var1;
       if (!this.level.isDebug()) {
-         ProfilerFiller var5 = this.level.getProfiler();
+         ProfilerFiller var5 = Profiler.get();
          var5.push("pollingChunks");
          if (this.level.tickRateManager().runsNormally()) {
             List var6 = this.tickingChunks;
@@ -581,7 +583,7 @@ public class ServerChunkCache extends ChunkSource {
 
       @Override
       protected void doRunTask(Runnable var1) {
-         ServerChunkCache.this.level.getProfiler().incrementCounter("runTask");
+         Profiler.get().incrementCounter("runTask");
          super.doRunTask(var1);
       }
 

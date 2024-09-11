@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -124,9 +125,9 @@ public final class ModelPart {
    }
 
    public void rotateBy(Quaternionf var1) {
-      Quaternionf var2 = new Quaternionf().rotationZYX(this.zRot, this.yRot, this.xRot);
-      Quaternionf var3 = var2.mul(var1);
-      Vector3f var4 = var3.getEulerAnglesXYZ(new Vector3f());
+      Matrix3f var2 = new Matrix3f().rotationZYX(this.zRot, this.yRot, this.xRot);
+      Matrix3f var3 = var2.rotate(var1);
+      Vector3f var4 = var3.getEulerAnglesZYX(new Vector3f());
       this.setRotation(var4.x, var4.y, var4.z);
    }
 

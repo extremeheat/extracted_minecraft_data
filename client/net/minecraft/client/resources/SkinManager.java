@@ -43,23 +43,26 @@ public class SkinManager {
       this.elytraTextures = new SkinManager.TextureCache(var1, var2, Type.ELYTRA);
       this.skinCache = CacheBuilder.newBuilder()
          .expireAfterAccess(Duration.ofSeconds(15L))
-         .build(new CacheLoader<SkinManager.CacheKey, CompletableFuture<PlayerSkin>>() {
-            public CompletableFuture<PlayerSkin> load(SkinManager.CacheKey var1) {
-               return CompletableFuture.<MinecraftProfileTextures>supplyAsync(() -> {
-                  Property var2 = var1.packedTextures();
-                  if (var2 == null) {
-                     return MinecraftProfileTextures.EMPTY;
-                  } else {
-                     MinecraftProfileTextures var3x = var3.unpackTextures(var2);
-                     if (var3x.signatureState() == SignatureState.INVALID) {
-                        SkinManager.LOGGER.warn("Profile contained invalid signature for textures property (profile id: {})", var1.profileId());
-                     }
+         .build(
+            new CacheLoader<SkinManager.CacheKey, CompletableFuture<PlayerSkin>>() {
+               public CompletableFuture<PlayerSkin> load(SkinManager.CacheKey var1) {
+                  return CompletableFuture.<MinecraftProfileTextures>supplyAsync(() -> {
+                        Property var2 = var1.packedTextures();
+                        if (var2 == null) {
+                           return MinecraftProfileTextures.EMPTY;
+                        } else {
+                           MinecraftProfileTextures var3x = var3.unpackTextures(var2);
+                           if (var3x.signatureState() == SignatureState.INVALID) {
+                              SkinManager.LOGGER.warn("Profile contained invalid signature for textures property (profile id: {})", var1.profileId());
+                           }
 
-                     return var3x;
-                  }
-               }, Util.backgroundExecutor()).thenComposeAsync(var2 -> SkinManager.this.registerTextures(var1.profileId(), var2), var4);
+                           return var3x;
+                        }
+                     }, Util.backgroundExecutor().forName("unpackSkinTextures"))
+                     .thenComposeAsync(var2 -> SkinManager.this.registerTextures(var1.profileId(), var2), var4);
+               }
             }
-         });
+         );
    }
 
    public Supplier<PlayerSkin> lookupInsecure(GameProfile var1) {

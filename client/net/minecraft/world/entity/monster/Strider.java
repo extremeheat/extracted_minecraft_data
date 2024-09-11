@@ -324,7 +324,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
       super.tick();
       this.floatStrider();
-      this.checkInsideBlocks();
    }
 
    private boolean isBeingTempted() {

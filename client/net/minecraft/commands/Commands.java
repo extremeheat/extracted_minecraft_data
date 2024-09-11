@@ -132,7 +132,10 @@ import net.minecraft.server.commands.WorldBorderCommand;
 import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.GameRules;
 import org.slf4j.Logger;
 
@@ -169,7 +172,7 @@ public class Commands {
       ForceLoadCommand.register(this.dispatcher);
       FunctionCommand.register(this.dispatcher);
       GameModeCommand.register(this.dispatcher);
-      GameRuleCommand.register(this.dispatcher);
+      GameRuleCommand.register(this.dispatcher, var2);
       GiveCommand.register(this.dispatcher, var2);
       HelpCommand.register(this.dispatcher);
       ItemCommands.register(this.dispatcher, var2);
@@ -264,7 +267,7 @@ public class Commands {
 
    public void performCommand(ParseResults<CommandSourceStack> var1, String var2) {
       CommandSourceStack var3 = (CommandSourceStack)var1.getContext().getSource();
-      var3.getServer().getProfiler().push(() -> "/" + var2);
+      Profiler.get().push(() -> "/" + var2);
       ContextChain var4 = finishParsing(var1, var2, var3);
 
       try {
@@ -293,7 +296,7 @@ public class Commands {
             LOGGER.error("'/{}' threw an exception", var2, var12);
          }
       } finally {
-         var3.getServer().getProfiler().pop();
+         Profiler.get().pop();
       }
    }
 
@@ -336,7 +339,7 @@ public class Commands {
          int var5 = Math.max(1, var2.getGameRules().getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH));
          int var6 = var2.getGameRules().getInt(GameRules.RULE_MAX_COMMAND_FORK_COUNT);
 
-         try (ExecutionContext var7 = new ExecutionContext(var5, var6, var2.getProfiler())) {
+         try (ExecutionContext var7 = new ExecutionContext(var5, var6, Profiler.get())) {
             CURRENT_EXECUTION_CONTEXT.set(var7);
             var1.accept(var7);
             var7.runCommandQueue();
@@ -436,6 +439,11 @@ public class Commands {
 
    public static CommandBuildContext createValidationContext(final HolderLookup.Provider var0) {
       return new CommandBuildContext() {
+         @Override
+         public FeatureFlagSet enabledFeatures() {
+            return FeatureFlags.REGISTRY.allFlags();
+         }
+
          @Override
          public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
             return var0.listRegistryKeys();

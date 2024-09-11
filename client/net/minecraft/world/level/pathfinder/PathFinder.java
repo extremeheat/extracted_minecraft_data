@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.world.entity.Mob;
@@ -48,26 +49,27 @@ public class PathFinder {
             .collect(
                Collectors.toMap(var1x -> this.nodeEvaluator.getTarget((double)var1x.getX(), (double)var1x.getY(), (double)var1x.getZ()), Function.identity())
             );
-         Path var9 = this.findPath(var1.getProfiler(), var7, var8, var4, var5, var6);
+         Path var9 = this.findPath(var7, var8, var4, var5, var6);
          this.nodeEvaluator.done();
          return var9;
       }
    }
 
    @Nullable
-   private Path findPath(ProfilerFiller var1, Node var2, Map<Target, BlockPos> var3, float var4, int var5, float var6) {
-      var1.push("find_path");
-      var1.markForCharting(MetricCategory.PATH_FINDING);
-      Set var7 = var3.keySet();
-      var2.g = 0.0F;
-      var2.h = this.getBestH(var2, var7);
-      var2.f = var2.h;
+   private Path findPath(Node var1, Map<Target, BlockPos> var2, float var3, int var4, float var5) {
+      ProfilerFiller var6 = Profiler.get();
+      var6.push("find_path");
+      var6.markForCharting(MetricCategory.PATH_FINDING);
+      Set var7 = var2.keySet();
+      var1.g = 0.0F;
+      var1.h = this.getBestH(var1, var7);
+      var1.f = var1.h;
       this.openSet.clear();
-      this.openSet.insert(var2);
+      this.openSet.insert(var1);
       ImmutableSet var8 = ImmutableSet.of();
       int var9 = 0;
       HashSet var10 = Sets.newHashSetWithExpectedSize(var7.size());
-      int var11 = (int)((float)this.maxVisitedNodes * var6);
+      int var11 = (int)((float)this.maxVisitedNodes * var5);
 
       while (!this.openSet.isEmpty()) {
          if (++var9 >= var11) {
@@ -78,7 +80,7 @@ public class PathFinder {
          var12.closed = true;
 
          for (Target var14 : var7) {
-            if (var12.distanceManhattan(var14) <= (float)var5) {
+            if (var12.distanceManhattan(var14) <= (float)var4) {
                var14.setReached();
                var10.add(var14);
             }
@@ -88,7 +90,7 @@ public class PathFinder {
             break;
          }
 
-         if (!(var12.distanceTo(var2) >= var4)) {
+         if (!(var12.distanceTo(var1) >= var3)) {
             int var19 = this.nodeEvaluator.getNeighbors(this.neighbors, var12);
 
             for (int var20 = 0; var20 < var19; var20++) {
@@ -96,7 +98,7 @@ public class PathFinder {
                float var16 = this.distance(var12, var15);
                var15.walkedDistance = var12.walkedDistance + var16;
                float var17 = var12.g + var16 + var15.costMalus;
-               if (var15.walkedDistance < var4 && (!var15.inOpenSet() || var17 < var15.g)) {
+               if (var15.walkedDistance < var3 && (!var15.inOpenSet() || var17 < var15.g)) {
                   var15.cameFrom = var12;
                   var15.g = var17;
                   var15.h = this.getBestH(var15, var7) * 1.5F;
@@ -113,12 +115,12 @@ public class PathFinder {
 
       Optional var18 = !var10.isEmpty()
          ? var10.stream()
-            .map(var2x -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var3.get(var2x), true))
+            .map(var2x -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), true))
             .min(Comparator.comparingInt(Path::getNodeCount))
          : var7.stream()
-            .map(var2x -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var3.get(var2x), false))
+            .map(var2x -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), false))
             .min(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getNodeCount));
-      var1.pop();
+      var6.pop();
       return var18.isEmpty() ? null : (Path)var18.get();
    }
 

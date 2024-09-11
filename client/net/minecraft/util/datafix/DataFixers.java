@@ -119,6 +119,7 @@ import net.minecraft.util.datafix.fixes.EntityZombifiedPiglinRenameFix;
 import net.minecraft.util.datafix.fixes.FeatureFlagRemoveFix;
 import net.minecraft.util.datafix.fixes.FilteredBooksFix;
 import net.minecraft.util.datafix.fixes.FilteredSignsFix;
+import net.minecraft.util.datafix.fixes.FireResistantToDamageResistantComponentFix;
 import net.minecraft.util.datafix.fixes.FixProjectileStoredItem;
 import net.minecraft.util.datafix.fixes.FoodToConsumableFix;
 import net.minecraft.util.datafix.fixes.ForcePoiRebuild;
@@ -1347,6 +1348,8 @@ public class DataFixers {
       var0.addFixer(new FoodToConsumableFix(var238));
       Schema var239 = var0.addSchema(4061, SAME_NAMESPACED);
       var0.addFixer(new TrialSpawnerConfigInRegistryFix(var239));
+      Schema var240 = var0.addSchema(4064, SAME_NAMESPACED);
+      var0.addFixer(new FireResistantToDamageResistantComponentFix(var240));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

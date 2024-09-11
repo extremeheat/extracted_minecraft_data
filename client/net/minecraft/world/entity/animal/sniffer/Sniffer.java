@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.sniffer;
 
 import com.mojang.serialization.Dynamic;
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -30,6 +29,8 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -56,10 +57,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 public class Sniffer extends Animal {
@@ -266,21 +263,12 @@ public class Sniffer extends Animal {
 
    private void dropSeed() {
       if (!this.level().isClientSide() && this.entityData.get(DATA_DROP_SEED_AT_TICK) == this.tickCount) {
-         ServerLevel var1 = (ServerLevel)this.level();
-         LootTable var2 = var1.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.SNIFFER_DIGGING);
-         LootParams var3 = new LootParams.Builder(var1)
-            .withParameter(LootContextParams.ORIGIN, this.getHeadPosition())
-            .withParameter(LootContextParams.THIS_ENTITY, this)
-            .create(LootContextParamSets.GIFT);
-         ObjectArrayList var4 = var2.getRandomItems(var3);
-         BlockPos var5 = this.getHeadBlock();
-
-         for (ItemStack var7 : var4) {
-            ItemEntity var8 = new ItemEntity(var1, (double)var5.getX(), (double)var5.getY(), (double)var5.getZ(), var7);
-            var8.setDefaultPickUpDelay();
-            var1.addFreshEntity(var8);
-         }
-
+         BlockPos var1 = this.getHeadBlock();
+         this.dropFromGiftLootTable(BuiltInLootTables.SNIFFER_DIGGING, var2 -> {
+            ItemEntity var3 = new ItemEntity(this.level(), (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var2);
+            var3.setDefaultPickUpDelay();
+            this.level().addFreshEntity(var3);
+         });
          this.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
       }
    }
@@ -451,11 +439,12 @@ public class Sniffer extends Animal {
 
    @Override
    protected void customServerAiStep() {
-      this.level().getProfiler().push("snifferBrain");
+      ProfilerFiller var1 = Profiler.get();
+      var1.push("snifferBrain");
       this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().popPush("snifferActivityUpdate");
+      var1.popPush("snifferActivityUpdate");
       SnifferAi.updateActivity(this);
-      this.level().getProfiler().pop();
+      var1.pop();
       super.customServerAiStep();
    }
 

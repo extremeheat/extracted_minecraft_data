@@ -25,9 +25,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -47,6 +47,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
+import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.UseCooldown;
@@ -155,7 +156,7 @@ public class Item implements FeatureElement, ItemLike {
          return var5.startConsuming(var2, var4, var3);
       } else {
          Equippable var6 = var4.get(DataComponents.EQUIPPABLE);
-         return (InteractionResult)(var6 != null ? var6.swapWithEquipmentSlot(var4, var2) : InteractionResult.PASS);
+         return (InteractionResult)(var6 != null && var6.swappable() ? var6.swapWithEquipmentSlot(var4, var2) : InteractionResult.PASS);
       }
    }
 
@@ -188,6 +189,11 @@ public class Item implements FeatureElement, ItemLike {
 
    public float getAttackDamageBonus(Entity var1, float var2, DamageSource var3) {
       return 0.0F;
+   }
+
+   @Nullable
+   public DamageSource getDamageSource(LivingEntity var1) {
+      return null;
    }
 
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
@@ -241,10 +247,6 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
-   }
-
-   public boolean isComplex() {
-      return false;
    }
 
    public ItemUseAnimation getUseAnimation(ItemStack var1) {
@@ -364,7 +366,7 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Item.Properties fireResistant() {
-         return this.component(DataComponents.FIRE_RESISTANT, Unit.INSTANCE);
+         return this.component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(DamageTypeTags.IS_FIRE));
       }
 
       public Item.Properties jukeboxPlayable(ResourceKey<JukeboxSong> var1) {
@@ -384,12 +386,12 @@ public class Item implements FeatureElement, ItemLike {
          return this.component(DataComponents.REPAIRABLE, new Repairable(var2.getOrThrow(var1)));
       }
 
-      public Item.Properties equippable(EquipmentSlot var1, Holder<SoundEvent> var2, ResourceLocation var3) {
-         return this.component(DataComponents.EQUIPPABLE, new Equippable(var1, var2, Optional.of(var3), Optional.empty(), true));
+      public Item.Properties equippable(EquipmentSlot var1) {
+         return this.component(DataComponents.EQUIPPABLE, Equippable.builder(var1).build());
       }
 
-      public Item.Properties equippable(EquipmentSlot var1) {
-         return this.component(DataComponents.EQUIPPABLE, new Equippable(var1, SoundEvents.ARMOR_EQUIP_GENERIC, Optional.empty(), Optional.empty(), true));
+      public Item.Properties equippableUnswappable(EquipmentSlot var1) {
+         return this.component(DataComponents.EQUIPPABLE, Equippable.builder(var1).setSwappable(false).build());
       }
 
       public Item.Properties requiredFeatures(FeatureFlag... var1) {

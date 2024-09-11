@@ -75,6 +75,10 @@ public class WorldPresets {
       return var0.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(NORMAL).value().overworld().orElseThrow();
    }
 
+   public static WorldDimensions createFlatWorldDimensions(HolderLookup.Provider var0) {
+      return var0.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(FLAT).value().createWorldDimensions();
+   }
+
    static class Bootstrap {
       private final BootstrapContext<WorldPreset> context;
       private final HolderGetter<NoiseGeneratorSettings> noiseSettings;

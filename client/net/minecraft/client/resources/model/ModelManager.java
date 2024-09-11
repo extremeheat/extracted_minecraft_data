@@ -34,6 +34,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -94,34 +95,31 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    }
 
    @Override
-   public final CompletableFuture<Void> reload(
-      PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
-   ) {
-      var3.startTick();
-      UnbakedModel var7 = MissingBlockModel.missingModel();
-      BlockStateModelLoader var8 = new BlockStateModelLoader(var7);
-      CompletableFuture var9 = loadBlockModels(var2, var5);
-      CompletableFuture var10 = loadBlockStates(var8, var2, var5);
-      CompletableFuture var11 = var10.thenCombineAsync(
-         var9, (var2x, var3x) -> this.discoverModelDependencies(var7, (Map<ResourceLocation, UnbakedModel>)var3x, var2x), var5
+   public final CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
+      UnbakedModel var5 = MissingBlockModel.missingModel();
+      BlockStateModelLoader var6 = new BlockStateModelLoader(var5);
+      CompletableFuture var7 = loadBlockModels(var2, var3);
+      CompletableFuture var8 = loadBlockStates(var6, var2, var3);
+      CompletableFuture var9 = var8.thenCombineAsync(
+         var7, (var2x, var3x) -> this.discoverModelDependencies(var5, (Map<ResourceLocation, UnbakedModel>)var3x, var2x), var3
       );
-      CompletableFuture var12 = var10.thenApplyAsync(var1x -> buildModelGroups(this.blockColors, var1x), var5);
-      Map var13 = this.atlases.scheduleLoad(var2, this.maxMipmapLevels, var5);
-      return CompletableFuture.allOf(Stream.concat(var13.values().stream(), Stream.of(var11, var12)).toArray(CompletableFuture[]::new))
+      CompletableFuture var10 = var8.thenApplyAsync(var1x -> buildModelGroups(this.blockColors, var1x), var3);
+      Map var11 = this.atlases.scheduleLoad(var2, this.maxMipmapLevels, var3);
+      return CompletableFuture.allOf(Stream.concat(var11.values().stream(), Stream.of(var9, var10)).toArray(CompletableFuture[]::new))
          .thenApplyAsync(
-            var6x -> {
-               Map var7x = var13.entrySet()
+            var5x -> {
+               Map var6x = var11.entrySet()
                   .stream()
                   .collect(Collectors.toMap(Entry::getKey, var0 -> (AtlasSet.StitchResult)((CompletableFuture)var0.getValue()).join()));
-               ModelDiscovery var8x = (ModelDiscovery)var11.join();
-               Object2IntMap var9x = (Object2IntMap)var12.join();
-               return this.loadModels(var3, var7x, new ModelBakery(var8x.getTopModels(), var8x.getReferencedModels(), var7), var9x);
+               ModelDiscovery var7x = (ModelDiscovery)var9.join();
+               Object2IntMap var8x = (Object2IntMap)var10.join();
+               return this.loadModels(Profiler.get(), var6x, new ModelBakery(var7x.getTopModels(), var7x.getReferencedModels(), var5), var8x);
             },
-            var5
+            var3
          )
          .thenCompose(var0 -> var0.readyForUpload.thenApply(var1x -> (ModelManager.ReloadState)var0))
          .thenCompose(var1::wait)
-         .thenAcceptAsync(var2x -> this.apply(var2x, var4), var6);
+         .thenAcceptAsync(var1x -> this.apply(var1x, Profiler.get()), var4);
    }
 
    private static CompletableFuture<Map<ResourceLocation, UnbakedModel>> loadBlockModels(ResourceManager var0, Executor var1) {
@@ -217,8 +215,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    private ModelManager.ReloadState loadModels(
       ProfilerFiller var1, Map<ResourceLocation, AtlasSet.StitchResult> var2, ModelBakery var3, Object2IntMap<BlockState> var4
    ) {
-      var1.push("load");
-      var1.popPush("baking");
+      var1.push("baking");
       HashMultimap var5 = HashMultimap.create();
       var3.bakeModels((var2x, var3x) -> {
          AtlasSet.StitchResult var4x = (AtlasSet.StitchResult)var2.get(var3x.atlasLocation());
@@ -256,7 +253,6 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
 
       CompletableFuture var11 = CompletableFuture.allOf(var2.values().stream().map(AtlasSet.StitchResult::readyForUpload).toArray(CompletableFuture[]::new));
       var1.pop();
-      var1.endTick();
       return new ModelManager.ReloadState(var3, var4, var7, var8, var2, var11);
    }
 
@@ -265,7 +261,6 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    }
 
    private void apply(ModelManager.ReloadState var1, ProfilerFiller var2) {
-      var2.startTick();
       var2.push("upload");
       var1.atlasPreparations.values().forEach(AtlasSet.StitchResult::upload);
       ModelBakery var3 = var1.modelBakery;
@@ -275,7 +270,6 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       var2.popPush("cache");
       this.blockModelShaper.replaceCache(var1.modelCache);
       var2.pop();
-      var2.endTick();
    }
 
    public boolean requiresRender(BlockState var1, BlockState var2) {

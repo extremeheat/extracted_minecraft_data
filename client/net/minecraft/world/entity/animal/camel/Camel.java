@@ -17,6 +17,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -141,13 +143,14 @@ public class Camel extends AbstractHorse {
 
    @Override
    protected void customServerAiStep() {
-      this.level().getProfiler().push("camelBrain");
-      Brain var1 = this.getBrain();
-      var1.tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("camelActivityUpdate");
+      ProfilerFiller var1 = Profiler.get();
+      var1.push("camelBrain");
+      Brain var2 = this.getBrain();
+      var2.tick((ServerLevel)this.level(), this);
+      var1.pop();
+      var1.push("camelActivityUpdate");
       CamelAi.updateActivity(this);
-      this.level().getProfiler().pop();
+      var1.pop();
       super.customServerAiStep();
    }
 

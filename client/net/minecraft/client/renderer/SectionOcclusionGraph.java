@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -125,7 +126,7 @@ public class SectionOcclusionGraph {
    private void scheduleFullUpdate(boolean var1, Camera var2, Vec3 var3, LongOpenHashSet var4) {
       this.needsFullUpdate = false;
       LongOpenHashSet var5 = var4.clone();
-      this.fullUpdateTask = Util.backgroundExecutor().submit(() -> {
+      this.fullUpdateTask = CompletableFuture.runAsync(() -> {
          SectionOcclusionGraph.GraphState var5x = new SectionOcclusionGraph.GraphState(this.viewArea);
          this.nextGraphEvents.set(var5x.events);
          ArrayDeque var6 = Queues.newArrayDeque();
@@ -136,7 +137,7 @@ public class SectionOcclusionGraph {
          this.currentGraph.set(var5x);
          this.nextGraphEvents.set(null);
          this.needsFrustumUpdate.set(true);
-      });
+      }, Util.backgroundExecutor());
    }
 
    private void runPartialUpdate(boolean var1, Frustum var2, List<SectionRenderDispatcher.RenderSection> var3, Vec3 var4, LongOpenHashSet var5) {

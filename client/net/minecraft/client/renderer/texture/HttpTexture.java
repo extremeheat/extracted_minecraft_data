@@ -123,7 +123,7 @@ public class HttpTexture extends SimpleTexture {
                      var1x.disconnect();
                   }
                }
-            }, Util.backgroundExecutor());
+            }, Util.backgroundExecutor().forName("downloadTexture"));
          }
       }
    }

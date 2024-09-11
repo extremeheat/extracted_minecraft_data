@@ -61,6 +61,7 @@ import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StaticCache2D;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.util.thread.ConsecutiveExecutor;
@@ -415,7 +416,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    }
 
    protected void tick(BooleanSupplier var1) {
-      ProfilerFiller var2 = this.level.getProfiler();
+      ProfilerFiller var2 = Profiler.get();
       var2.push("poi");
       this.poiManager.tick(var1);
       var2.popPush("chunk_unload");
@@ -520,10 +521,10 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
             }
 
             return var3x;
-         }), Util.backgroundExecutor());
+         }), Util.backgroundExecutor().forName("parseChunk"));
       CompletableFuture var3 = this.poiManager.prefetch(var1);
       return var2.<Object, Optional>thenCombine(var3, (var0, var1x) -> (Optional)var0).thenApplyAsync(var2x -> {
-         this.level.getProfiler().incrementCounter("chunkLoad");
+         Profiler.get().incrementCounter("chunkLoad");
          if (var2x.isPresent()) {
             ProtoChunk var3x = ((SerializableChunkData)var2x.get()).read(this.level, this.poiManager, this.storageInfo(), var1);
             this.markPosition(var1, var3x.getPersistedStatus().getChunkType());
@@ -719,7 +720,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
                }
             }
 
-            this.level.getProfiler().incrementCounter("chunkSave");
+            Profiler.get().incrementCounter("chunkSave");
             SerializableChunkData var4 = SerializableChunkData.copyOf(this.level, var1);
             CompletableFuture var5 = CompletableFuture.supplyAsync(var4::write, Util.backgroundExecutor());
             this.write(var2, var5::join).exceptionally(var2x -> {
@@ -873,7 +874,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    }
 
    private CompletableFuture<Optional<CompoundTag>> readChunk(ChunkPos var1) {
-      return this.read(var1).thenApplyAsync(var1x -> var1x.map(this::upgradeChunkTag), Util.backgroundExecutor());
+      return this.read(var1).thenApplyAsync(var1x -> var1x.map(this::upgradeChunkTag), Util.backgroundExecutor().forName("upgradeChunk"));
    }
 
    private CompoundTag upgradeChunkTag(CompoundTag var1) {

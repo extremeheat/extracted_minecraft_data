@@ -12,32 +12,35 @@ public enum ConversionType {
       @Override
       void convert(Mob var1, Mob var2, ConversionParams var3) {
          Entity var4 = var1.getFirstPassenger();
+         var2.copyPosition(var1);
+         var2.setDeltaMovement(var1.getDeltaMovement());
          if (var4 != null) {
             var4.stopRiding();
             var4.boardingCooldown = 0;
+
+            for (Entity var6 : var2.getPassengers()) {
+               var6.stopRiding();
+               var6.remove(Entity.RemovalReason.DISCARDED);
+            }
+
             var4.startRiding(var2);
          }
 
          if (var3.keepEquipment()) {
-            for (EquipmentSlot var6 : EquipmentSlot.VALUES) {
-               ItemStack var7 = var1.getItemBySlot(var6);
+            for (EquipmentSlot var10 : EquipmentSlot.VALUES) {
+               ItemStack var7 = var1.getItemBySlot(var10);
                if (!var7.isEmpty()) {
-                  var2.setItemSlot(var6, var7.copyAndClear());
-                  var2.setDropChance(var6, var1.getEquipmentDropChance(var6));
+                  var2.setItemSlot(var10, var7.copyAndClear());
+                  var2.setDropChance(var10, var1.getEquipmentDropChance(var10));
                }
             }
          }
 
-         var2.getAttributes().assignAllValues(var1.getAttributes());
          var2.fallDistance = var1.fallDistance;
          var2.setSharedFlag(7, var1.isFallFlying());
-         float var8 = var1.getHealth() / var1.getMaxHealth();
-         var2.setHealth(var2.getMaxHealth() * var8);
          var2.lastHurtByPlayerTime = var1.lastHurtByPlayerTime;
          var2.hurtTime = var1.hurtTime;
          var2.yBodyRot = var1.yBodyRot;
-         var2.copyPosition(var1);
-         var2.setDeltaMovement(var1.getDeltaMovement());
          var2.setOnGround(var1.onGround());
          var1.getSleepingPos().ifPresent(var2::setSleepingPos);
          Entity var9 = var1.getLeashHolder();
@@ -110,8 +113,6 @@ public enum ConversionType {
          var2.setPersistenceRequired();
       }
 
-      var2.setLootTable(var1.getLootTable());
-      var2.setLootTableSeed(var1.getLootTableSeed());
       if (var1.hasCustomName()) {
          var2.setCustomName(var1.getCustomName());
          var2.setCustomNameVisible(var1.isCustomNameVisible());

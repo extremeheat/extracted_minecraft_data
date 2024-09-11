@@ -14,8 +14,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -70,6 +72,7 @@ import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPresets;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelResource;
@@ -107,27 +110,52 @@ public class CreateWorldScreen extends Screen {
    private TabNavigationBar tabNavigationBar;
 
    public static void openFresh(Minecraft var0, @Nullable Screen var1) {
+      WorldCreationContextMapper var2 = (var0x, var1x, var2x) -> new WorldCreationContext(var2x.worldGenSettings(), var1x, var0x, var2x.dataConfiguration());
+      Function var3 = var0x -> new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(var0x.datapackWorldgen()));
+      openCreateWorldScreen(var0, var1, var3, var2, WorldPresets.NORMAL);
+   }
+
+   public static void testWorld(Minecraft var0, @Nullable Screen var1) {
+      WorldCreationContextMapper var2 = (var0x, var1x, var2x) -> new WorldCreationContext(
+            var2x.worldGenSettings().options(),
+            var2x.worldGenSettings().dimensions(),
+            var1x,
+            var0x,
+            var2x.dataConfiguration(),
+            new InitialWorldCreationOptions(
+               WorldCreationUiState.SelectedGameMode.CREATIVE,
+               Set.of(GameRules.RULE_DAYLIGHT, GameRules.RULE_WEATHER_CYCLE, GameRules.RULE_DOMOBSPAWNING),
+               FlatLevelGeneratorPresets.REDSTONE_READY
+            )
+         );
+      Function var3 = var0x -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createFlatWorldDimensions(var0x.datapackWorldgen()));
+      openCreateWorldScreen(var0, var1, var3, var2, WorldPresets.FLAT);
+   }
+
+   private static void openCreateWorldScreen(
+      Minecraft var0,
+      @Nullable Screen var1,
+      Function<WorldLoader.DataLoadContext, WorldGenSettings> var2,
+      WorldCreationContextMapper var3,
+      ResourceKey<WorldPreset> var4
+   ) {
       queueLoadScreen(var0, PREPARING_WORLD_DATA);
-      PackRepository var2 = new PackRepository(new ServerPacksSource(var0.directoryValidator()));
-      WorldLoader.InitConfig var3 = createDefaultLoadConfig(var2, WorldDataConfiguration.DEFAULT);
-      CompletableFuture var4 = WorldLoader.load(
-         var3,
-         var0x -> new WorldLoader.DataLoadOutput<>(
-               new CreateWorldScreen.DataPackReloadCookie(
-                  new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(var0x.datapackWorldgen())),
-                  var0x.dataConfiguration()
-               ),
-               var0x.datapackDimensions()
+      PackRepository var5 = new PackRepository(new ServerPacksSource(var0.directoryValidator()));
+      WorldLoader.InitConfig var6 = createDefaultLoadConfig(var5, WorldDataConfiguration.DEFAULT);
+      CompletableFuture var7 = WorldLoader.load(
+         var6,
+         var1x -> new WorldLoader.DataLoadOutput<>(
+               new DataPackReloadCookie((WorldGenSettings)var2.apply(var1x), var1x.dataConfiguration()), var1x.datapackDimensions()
             ),
-         (var0x, var1x, var2x, var3x) -> {
-            var0x.close();
-            return new WorldCreationContext(var3x.worldGenSettings(), var2x, var1x, var3x.dataConfiguration());
+         (var1x, var2x, var3x, var4x) -> {
+            var1x.close();
+            return var3.apply(var2x, var3x, var4x);
          },
          Util.backgroundExecutor(),
          var0
       );
-      var0.managedBlock(var4::isDone);
-      var0.setScreen(new CreateWorldScreen(var0, var1, (WorldCreationContext)var4.join(), Optional.of(WorldPresets.NORMAL), OptionalLong.empty()));
+      var0.managedBlock(var7::isDone);
+      var0.setScreen(new CreateWorldScreen(var0, var1, (WorldCreationContext)var7.join(), Optional.of(var4), OptionalLong.empty()));
    }
 
    public static CreateWorldScreen createFromExisting(Minecraft var0, @Nullable Screen var1, LevelSettings var2, WorldCreationContext var3, @Nullable Path var4) {
@@ -357,7 +385,7 @@ public class CreateWorldScreen extends Screen {
    private void applyNewPackConfig(PackRepository var1, WorldDataConfiguration var2, Consumer<WorldDataConfiguration> var3) {
       this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("dataPack.validation.working")));
       WorldLoader.InitConfig var4 = createDefaultLoadConfig(var1, var2);
-      WorldLoader.<CreateWorldScreen.DataPackReloadCookie, WorldCreationContext>load(
+      WorldLoader.<DataPackReloadCookie, WorldCreationContext>load(
             var4,
             var1x -> {
                if (var1x.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).listElements().findAny().isEmpty()) {
@@ -371,9 +399,7 @@ public class CreateWorldScreen extends Screen {
                   RegistryOps var5 = var1x.datapackWorldgen().createSerializationContext(JsonOps.INSTANCE);
                   WorldGenSettings var6 = (WorldGenSettings)var4x.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
                      .getOrThrow(var0 -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + var0));
-                  return new WorldLoader.DataLoadOutput<>(
-                     new CreateWorldScreen.DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions()
-                  );
+                  return new WorldLoader.DataLoadOutput<>(new DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions());
                }
             },
             (var0, var1x, var2x, var3x) -> {
@@ -526,19 +552,6 @@ public class CreateWorldScreen extends Screen {
          return null;
       }
    }
-
-// $VF: Couldn't be decompiled
-// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
-//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
-//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
-//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    class GameTab extends GridLayoutTab {
       private static final Component TITLE = Component.translatable("createWorld.tab.game.title");

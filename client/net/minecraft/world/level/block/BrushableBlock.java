@@ -77,7 +77,7 @@ public class BrushableBlock extends BaseEntityBlock implements Fallable {
    @Override
    public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.getBlockEntity(var3) instanceof BrushableBlockEntity var5) {
-         var5.checkReset();
+         var5.checkReset(var2);
       }
 
       if (FallingBlock.isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinY()) {

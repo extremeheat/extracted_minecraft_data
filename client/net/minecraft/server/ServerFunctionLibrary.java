@@ -29,7 +29,6 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagLoader;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -69,11 +68,9 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
    }
 
    @Override
-   public CompletableFuture<Void> reload(
-      PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
-   ) {
-      CompletableFuture var7 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var2), var5);
-      CompletableFuture var8 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> LISTER.listMatchingResources(var2), var5)
+   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
+      CompletableFuture var5 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var2), var3);
+      CompletableFuture var6 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> LISTER.listMatchingResources(var2), var3)
          .thenCompose(
             var2x -> {
                HashMap var3x = Maps.newHashMap();
@@ -82,19 +79,19 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
                );
 
                for (Entry var6x : var2x.entrySet()) {
-                  ResourceLocation var7x = (ResourceLocation)var6x.getKey();
-                  ResourceLocation var8x = LISTER.fileToId(var7x);
-                  var3x.put(var8x, CompletableFuture.supplyAsync(() -> {
+                  ResourceLocation var7 = (ResourceLocation)var6x.getKey();
+                  ResourceLocation var8 = LISTER.fileToId(var7);
+                  var3x.put(var8, CompletableFuture.supplyAsync(() -> {
                      List var4xx = readLines((Resource)var6x.getValue());
-                     return CommandFunction.fromLines(var8x, this.dispatcher, var4x, var4xx);
-                  }, var5));
+                     return CommandFunction.fromLines(var8, this.dispatcher, var4x, var4xx);
+                  }, var3));
                }
 
                CompletableFuture[] var9 = var3x.values().toArray(new CompletableFuture[0]);
                return CompletableFuture.allOf(var9).handle((var1xx, var2xx) -> var3x);
             }
          );
-      return var7.thenCombine(var8, Pair::of).thenCompose(var1::wait).thenAcceptAsync(var1x -> {
+      return var5.thenCombine(var6, Pair::of).thenCompose(var1::wait).thenAcceptAsync(var1x -> {
          Map var2x = (Map)var1x.getSecond();
          Builder var3x = ImmutableMap.builder();
          var2x.forEach((var1xx, var2xx) -> var2xx.handle((var2xxx, var3xx) -> {
@@ -108,7 +105,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
             }).join());
          this.functions = var3x.build();
          this.tags = this.tagsLoader.build((Map<ResourceLocation, List<TagLoader.EntryWithSource>>)var1x.getFirst());
-      }, var6);
+      }, var4);
    }
 
    private static List<String> readLines(Resource var0) {

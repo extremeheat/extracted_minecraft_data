@@ -382,7 +382,7 @@ public class ItemInHandRenderer {
             if (var11 && !var1.isInvisible()) {
                this.renderPlayerArm(var8, var9, var10, var7, var5, var12);
             }
-         } else if (var6.is(Items.FILLED_MAP)) {
+         } else if (var6.has(DataComponents.MAP_ID)) {
             if (var11 && this.offHandItem.isEmpty()) {
                this.renderTwoHandedMap(var8, var9, var10, var3, var7, var5);
             } else {

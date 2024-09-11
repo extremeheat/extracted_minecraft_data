@@ -2,7 +2,6 @@ package net.minecraft.world.entity.projectile;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -37,7 +36,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -218,9 +216,18 @@ public abstract class AbstractArrow extends Projectile {
          float var13 = (float)(Mth.atan2(var2.y, var2.horizontalDistance()) * 57.2957763671875);
          this.setXRot(lerpRotation(this.getXRot(), var13));
          this.setYRot(lerpRotation(this.getYRot(), var12));
-         BlockHitResult var14 = this.level()
-            .clipIncludingBorder(new ClipContext(var10, var10.add(var2), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-         this.stepMoveAndHit(var14);
+         if (!var1) {
+            BlockHitResult var14 = this.level()
+               .clipIncludingBorder(new ClipContext(var10, var10.add(var2), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+            this.stepMoveAndHit(var14);
+         } else {
+            this.setPos(var10.add(var2));
+            this.applyEffectsFromBlocks();
+            if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
+               this.handlePortal();
+            }
+         }
+
          super.tick();
          this.applyInertia();
          if (!var1) {
@@ -231,24 +238,25 @@ public abstract class AbstractArrow extends Projectile {
 
    private void stepMoveAndHit(BlockHitResult var1) {
       while (this.isAlive()) {
-         EntityHitResult var2 = this.findHitEntity(this.position(), var1.getLocation());
-         Vec3 var3 = Objects.requireNonNullElse(var2, var1).getLocation();
-         this.setOldPos();
-         this.setPos(var3);
-         this.applyEffectsFromBlocks();
+         Vec3 var2 = this.position();
+         EntityHitResult var3 = this.findHitEntity(var2, var1.getLocation());
+         Vec3 var4 = Objects.requireNonNullElse(var3, var1).getLocation();
+         this.setPos(var4);
+         this.applyEffectsFromBlocks(var2, var4);
          if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
             this.handlePortal();
          }
 
-         if (var2 == null) {
+         if (var3 == null) {
             if (this.isAlive() && var1.getType() != HitResult.Type.MISS) {
                this.hitTargetOrDeflectSelf(var1);
+               this.hasImpulse = true;
             }
             break;
          } else if (this.isAlive() && !this.noPhysics) {
-            ProjectileDeflection var4 = this.hitTargetOrDeflectSelf(var2);
+            ProjectileDeflection var5 = this.hitTargetOrDeflectSelf(var3);
             this.hasImpulse = true;
-            if (var4 == ProjectileDeflection.NONE) {
+            if (this.getPierceLevel() > 0 && var5 == ProjectileDeflection.NONE) {
                continue;
             }
             break;
@@ -390,10 +398,10 @@ public abstract class AbstractArrow extends Projectile {
             }
 
             if (!this.level().isClientSide && var6 instanceof ServerPlayer var18) {
-               if (this.piercedAndKilledEntities != null && this.shotFromCrossbow()) {
-                  CriteriaTriggers.KILLED_BY_CROSSBOW.trigger(var18, this.piercedAndKilledEntities);
-               } else if (!var2.isAlive() && this.shotFromCrossbow()) {
-                  CriteriaTriggers.KILLED_BY_CROSSBOW.trigger(var18, Arrays.asList(var2));
+               if (this.piercedAndKilledEntities != null) {
+                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var18, this.piercedAndKilledEntities, this.firedFromWeapon);
+               } else if (!var2.isAlive()) {
+                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var18, List.of(var2), this.firedFromWeapon);
                }
             }
          }
@@ -444,6 +452,7 @@ public abstract class AbstractArrow extends Projectile {
       Vec3 var7 = new Vec3(Math.signum(var6.x), Math.signum(var6.y), Math.signum(var6.z));
       Vec3 var5 = var7.scale(0.05000000074505806);
       this.setPos(this.position().subtract(var5));
+      this.setDeltaMovement(Vec3.ZERO);
       this.playSound(this.getHitGroundSoundEvent(), 1.0F, 1.2F / (this.random.nextFloat() * 0.2F + 0.9F));
       this.inGround = true;
       this.shakeTime = 7;
@@ -639,10 +648,6 @@ public abstract class AbstractArrow extends Projectile {
    public boolean isCritArrow() {
       byte var1 = this.entityData.get(ID_FLAGS);
       return (var1 & 1) != 0;
-   }
-
-   public boolean shotFromCrossbow() {
-      return this.firedFromWeapon != null && this.firedFromWeapon.is(Items.CROSSBOW);
    }
 
    public byte getPierceLevel() {

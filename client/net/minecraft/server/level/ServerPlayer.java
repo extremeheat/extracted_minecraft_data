@@ -7,10 +7,12 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -25,10 +27,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketSendListener;
@@ -91,6 +95,8 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
@@ -100,6 +106,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -123,6 +130,7 @@ import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -131,11 +139,10 @@ import net.minecraft.world.inventory.ContainerSynchronizer;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ComplexItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.ServerItemCooldowns;
 import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -156,6 +163,8 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -173,6 +182,9 @@ public class ServerPlayer extends Player {
    private static final int FLY_STAT_RECORDING_SPEED = 25;
    public static final double BLOCK_INTERACTION_DISTANCE_VERIFICATION_BUFFER = 1.0;
    public static final double ENTITY_INTERACTION_DISTANCE_VERIFICATION_BUFFER = 3.0;
+   public static final int ENDER_PEARL_TICKET_RADIUS = 2;
+   public static final String ENDER_PEARLS_TAG = "ender_pearls";
+   public static final String ENDER_PEARL_DIMENSION_TAG = "ender_pearl_dimension";
    private static final AttributeModifier CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER = new AttributeModifier(
       ResourceLocation.withDefaultNamespace("creative_mode_block_range"), 0.5, AttributeModifier.Operation.ADD_VALUE
    );
@@ -232,6 +244,7 @@ public class ServerPlayer extends Player {
    private BlockPos raidOmenPosition;
    private Vec3 lastKnownClientMovement = Vec3.ZERO;
    private Input lastClientInput = Input.EMPTY;
+   private final Set<ThrownEnderpearl> enderPearls = new HashSet<>();
    private final ContainerSynchronizer containerSynchronizer = new ContainerSynchronizer() {
       @Override
       public void sendInitialData(AbstractContainerMenu var1, NonNullList<ItemStack> var2, ItemStack var3, int[] var4) {
@@ -423,17 +436,7 @@ public class ServerPlayer extends Player {
          var1.put("enteredNetherPosition", var2);
       }
 
-      Entity var6 = this.getRootVehicle();
-      Entity var3 = this.getVehicle();
-      if (var3 != null && var6 != this && var6.hasExactlyOnePlayerPassenger()) {
-         CompoundTag var4 = new CompoundTag();
-         CompoundTag var5 = new CompoundTag();
-         var6.save(var5);
-         var4.putUUID("Attach", var3.getUUID());
-         var4.put("Entity", var5);
-         var1.put("RootVehicle", var4);
-      }
-
+      this.saveParentVehicle(var1);
       var1.put("recipeBook", this.recipeBook.toNbt());
       var1.putString("Dimension", this.level().dimension().location().toString());
       if (this.respawnPosition != null) {
@@ -454,6 +457,106 @@ public class ServerPlayer extends Player {
             .encodeStart(NbtOps.INSTANCE, this.raidOmenPosition)
             .resultOrPartial(LOGGER::error)
             .ifPresent(var1x -> var1.put("raid_omen_position", var1x));
+      }
+
+      this.saveEnderPearls(var1);
+   }
+
+   private void saveParentVehicle(CompoundTag var1) {
+      Entity var2 = this.getRootVehicle();
+      Entity var3 = this.getVehicle();
+      if (var3 != null && var2 != this && var2.hasExactlyOnePlayerPassenger()) {
+         CompoundTag var4 = new CompoundTag();
+         CompoundTag var5 = new CompoundTag();
+         var2.save(var5);
+         var4.putUUID("Attach", var3.getUUID());
+         var4.put("Entity", var5);
+         var1.put("RootVehicle", var4);
+      }
+   }
+
+   public void loadAndSpawnParentVehicle(Optional<CompoundTag> var1) {
+      if (var1.isPresent() && ((CompoundTag)var1.get()).contains("RootVehicle", 10) && this.level() instanceof ServerLevel var2) {
+         CompoundTag var8 = ((CompoundTag)var1.get()).getCompound("RootVehicle");
+         Entity var4 = EntityType.loadEntityRecursive(
+            var8.getCompound("Entity"), var2, EntitySpawnReason.LOAD, var1x -> !var2.addWithUUID(var1x) ? null : var1x
+         );
+         if (var4 != null) {
+            UUID var5;
+            if (var8.hasUUID("Attach")) {
+               var5 = var8.getUUID("Attach");
+            } else {
+               var5 = null;
+            }
+
+            if (var4.getUUID().equals(var5)) {
+               this.startRiding(var4, true);
+            } else {
+               for (Entity var7 : var4.getIndirectPassengers()) {
+                  if (var7.getUUID().equals(var5)) {
+                     this.startRiding(var7, true);
+                     break;
+                  }
+               }
+            }
+
+            if (!this.isPassenger()) {
+               LOGGER.warn("Couldn't reattach entity to player");
+               var4.discard();
+
+               for (Entity var10 : var4.getIndirectPassengers()) {
+                  var10.discard();
+               }
+            }
+         }
+      }
+   }
+
+   private void saveEnderPearls(CompoundTag var1) {
+      if (!this.enderPearls.isEmpty()) {
+         ListTag var2 = new ListTag();
+
+         for (ThrownEnderpearl var4 : this.enderPearls) {
+            if (var4.isRemoved()) {
+               LOGGER.warn("Trying to save removed ender pearl, skipping");
+            } else {
+               CompoundTag var5 = new CompoundTag();
+               var4.save(var5);
+               ResourceLocation.CODEC
+                  .encodeStart(NbtOps.INSTANCE, var4.level().dimension().location())
+                  .resultOrPartial(LOGGER::error)
+                  .ifPresent(var1x -> var5.put("ender_pearl_dimension", var1x));
+               var2.add(var5);
+            }
+         }
+
+         var1.put("ender_pearls", var2);
+      }
+   }
+
+   public void loadAndSpawnEnderpearls(Optional<CompoundTag> var1) {
+      if (var1.isPresent() && ((CompoundTag)var1.get()).contains("ender_pearls", 9) && ((CompoundTag)var1.get()).get("ender_pearls") instanceof ListTag var3) {
+         var3.forEach(var1x -> {
+            if (var1x instanceof CompoundTag var2 && var2.contains("ender_pearl_dimension")) {
+               Optional var3x = Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, var2.get("ender_pearl_dimension")).resultOrPartial(LOGGER::error);
+               if (var3x.isEmpty()) {
+                  LOGGER.warn("No dimension defined for ender pearl, skipping");
+                  return;
+               }
+
+               ServerLevel var4 = this.level().getServer().getLevel((ResourceKey<Level>)var3x.get());
+               if (var4 != null) {
+                  Entity var5 = EntityType.loadEntityRecursive(var2, var4, EntitySpawnReason.LOAD, var1xx -> !var4.addWithUUID(var1xx) ? null : var1xx);
+                  if (var5 != null) {
+                     placeEnderPearlTicket(var4, var5.chunkPosition());
+                  } else {
+                     LOGGER.warn("Failed to spawn player ender pearl in level ({}), skipping", var3x.get());
+                  }
+               } else {
+                  LOGGER.warn("Trying to load ender pearl without level ({}) being loaded, skipping", var3x.get());
+               }
+            }
+         });
       }
    }
 
@@ -579,11 +682,8 @@ public class ServerPlayer extends Player {
 
          for (int var1 = 0; var1 < this.getInventory().getContainerSize(); var1++) {
             ItemStack var5 = this.getInventory().getItem(var1);
-            if (var5.getItem().isComplex()) {
-               Packet var6 = ((ComplexItem)var5.getItem()).getUpdatePacket(var5, this.level(), this);
-               if (var6 != null) {
-                  this.connection.send(var6);
-               }
+            if (!var5.isEmpty()) {
+               this.synchronizeSpecialItemUpdates(var5);
             }
          }
 
@@ -639,6 +739,17 @@ public class ServerPlayer extends Player {
          CrashReportCategory var3 = var2.addCategory("Player being ticked");
          this.fillCrashReportCategory(var3);
          throw new ReportedException(var2);
+      }
+   }
+
+   private void synchronizeSpecialItemUpdates(ItemStack var1) {
+      MapId var2 = var1.get(DataComponents.MAP_ID);
+      MapItemSavedData var3 = MapItem.getSavedData(var2, this.level());
+      if (var3 != null) {
+         Packet var4 = var3.getUpdatePacket(var2, this);
+         if (var4 != null) {
+            this.connection.send(var4);
+         }
       }
    }
 
@@ -876,6 +987,7 @@ public class ServerPlayer extends Player {
          ResourceKey var4 = var3.dimension();
          this.stopRiding();
          if (var2.dimension() == var4) {
+            this.teleportSetPosition(var1);
             this.connection.teleport(PositionMoveRotation.of(var1), var1.relatives());
             this.connection.resetPosition();
             var1.postDimensionTransition().onTransition(this);
@@ -889,19 +1001,20 @@ public class ServerPlayer extends Player {
             var6.sendPlayerPermissionLevel(this);
             var3.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
             this.unsetRemoved();
-            var3.getProfiler().push("moving");
+            ProfilerFiller var7 = Profiler.get();
+            var7.push("moving");
             if (var4 == Level.OVERWORLD && var2.dimension() == Level.NETHER) {
                this.enteredNetherPosition = this.position();
             }
 
             this.teleportSetPosition(var1);
-            var3.getProfiler().pop();
-            var3.getProfiler().push("placing");
+            var7.pop();
+            var7.push("placing");
             this.setServerLevel(var2);
             this.connection.teleport(PositionMoveRotation.of(var1), var1.relatives());
             this.connection.resetPosition();
             var2.addDuringTeleport(this);
-            var3.getProfiler().pop();
+            var7.pop();
             this.triggerDimensionChangeTriggers(var3);
             this.stopUsingItem();
             this.connection.send(new ClientboundPlayerAbilitiesPacket(this.getAbilities()));
@@ -1142,7 +1255,7 @@ public class ServerPlayer extends Player {
 
    @Override
    public void openItemGui(ItemStack var1, InteractionHand var2) {
-      if (var1.is(Items.WRITTEN_BOOK)) {
+      if (var1.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
          if (WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(), this)) {
             this.containerMenu.broadcastChanges();
          }
@@ -1998,6 +2111,34 @@ public class ServerPlayer extends Player {
       float var1 = this.lastClientInput.left() == this.lastClientInput.right() ? 0.0F : (this.lastClientInput.left() ? 1.0F : -1.0F);
       float var2 = this.lastClientInput.forward() == this.lastClientInput.backward() ? 0.0F : (this.lastClientInput.forward() ? 1.0F : -1.0F);
       return getInputVector(new Vec3((double)var1, 0.0, (double)var2), 1.0F, this.getYRot());
+   }
+
+   public void registerEnderPearl(ThrownEnderpearl var1) {
+      this.enderPearls.add(var1);
+   }
+
+   public void deregisterEnderPearl(ThrownEnderpearl var1) {
+      this.enderPearls.remove(var1);
+   }
+
+   public Set<ThrownEnderpearl> getEnderPearls() {
+      return this.enderPearls;
+   }
+
+   public long registerAndUpdateEnderPearlTicket(ThrownEnderpearl var1) {
+      if (var1.level() instanceof ServerLevel var2) {
+         ChunkPos var4 = var1.chunkPosition();
+         this.registerEnderPearl(var1);
+         var2.resetEmptyTime();
+         return placeEnderPearlTicket(var2, var4) - 1L;
+      } else {
+         return 0L;
+      }
+   }
+
+   public static long placeEnderPearlTicket(ServerLevel var0, ChunkPos var1) {
+      var0.getChunkSource().addRegionTicket(TicketType.ENDER_PEARL, var1, 2, var1);
+      return TicketType.ENDER_PEARL.timeout();
    }
 
 // $VF: Couldn't be decompiled

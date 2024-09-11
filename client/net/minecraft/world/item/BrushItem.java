@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -76,11 +77,11 @@ public class BrushItem extends Item {
                }
 
                var1.playSound(var5, var10, var13, SoundSource.BLOCKS);
-               if (!var1.isClientSide() && var1.getBlockEntity(var10) instanceof BrushableBlockEntity var17) {
-                  boolean var19 = var17.brush(var1.getGameTime(), var5, var7.getDirection());
-                  if (var19) {
-                     EquipmentSlot var16 = var3.equals(var5.getItemBySlot(EquipmentSlot.OFFHAND)) ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
-                     var3.hurtAndBreak(1, var2, var16);
+               if (var1 instanceof ServerLevel var18 && var1.getBlockEntity(var10) instanceof BrushableBlockEntity var19) {
+                  boolean var20 = var19.brush(var1.getGameTime(), var18, var5, var7.getDirection(), var3);
+                  if (var20) {
+                     EquipmentSlot var17 = var3.equals(var5.getItemBySlot(EquipmentSlot.OFFHAND)) ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
+                     var3.hurtAndBreak(1, var5, var17);
                   }
                }
             }

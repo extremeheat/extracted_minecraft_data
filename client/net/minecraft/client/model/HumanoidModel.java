@@ -93,17 +93,12 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       HumanoidModel.ArmPose var3 = this.getArmPose((T)var1, HumanoidArm.RIGHT);
       float var4 = var1.swimAmount;
       boolean var5 = var1.isFallFlying;
+      this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
       if (var5) {
          this.head.xRot = -0.7853982F;
       } else if (var4 > 0.0F) {
-         if (var1.isVisuallySwimming) {
-            this.head.xRot = Mth.rotLerpRad(var4, this.head.xRot, -0.7853982F);
-         } else {
-            this.head.xRot = Mth.rotLerpRad(var4, this.head.xRot, var1.xRot * 0.017453292F);
-         }
-      } else {
-         this.head.xRot = var1.xRot * 0.017453292F;
+         this.head.xRot = Mth.rotLerpRad(var4, this.head.xRot, -0.7853982F);
       }
 
       float var6 = var1.walkAnimationPos;
@@ -331,6 +326,15 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
 
    private float quadraticArmUpdate(float var1) {
       return -65.0F * var1 + var1 * var1;
+   }
+
+   public void copyPropertiesTo(HumanoidModel<T> var1) {
+      var1.head.copyFrom(this.head);
+      var1.body.copyFrom(this.body);
+      var1.rightArm.copyFrom(this.rightArm);
+      var1.leftArm.copyFrom(this.leftArm);
+      var1.rightLeg.copyFrom(this.rightLeg);
+      var1.leftLeg.copyFrom(this.leftLeg);
    }
 
    public void setAllVisible(boolean var1) {

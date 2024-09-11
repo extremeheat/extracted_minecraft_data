@@ -54,6 +54,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
@@ -224,9 +225,7 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    @Override
-   public CompletableFuture<Void> reload(
-      PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
-   ) {
+   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
 // $VF: Couldn't be decompiled
 // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
 // java.lang.NullPointerException
@@ -241,44 +240,44 @@ public class ParticleEngine implements PreparableReloadListener {
 //   at org.jetbrains.java.decompiler.modules.decompiler.stats.RootStatement.toJava(RootStatement.java:36)
 //   at org.jetbrains.java.decompiler.main.ClassWriter.writeMethod(ClassWriter.java:1283)
 
-      CompletableFuture var7 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var2), var5)
+      CompletableFuture var5 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var2), var3)
          .thenCompose(var2x -> {
             ArrayList var3x = new ArrayList(var2x.size());
             var2x.forEach((var3xx, var4x) -> {
                ResourceLocation var5x = PARTICLE_LISTER.fileToId(var3xx);
-               var3x.add(CompletableFuture.supplyAsync(() -> new 1ParticleDefinition(var5x, this.loadParticleDescription(var5x, var4x)), var5));
+               var3x.add(CompletableFuture.supplyAsync(() -> new 1ParticleDefinition(var5x, this.loadParticleDescription(var5x, var4x)), var3));
             });
             return Util.sequence(var3x);
          });
-      CompletableFuture var8 = SpriteLoader.create(this.textureAtlas)
-         .loadAndStitch(var2, PARTICLES_ATLAS_INFO, 0, var5)
+      CompletableFuture var6 = SpriteLoader.create(this.textureAtlas)
+         .loadAndStitch(var2, PARTICLES_ATLAS_INFO, 0, var3)
          .thenCompose(SpriteLoader.Preparations::waitForUpload);
-      return CompletableFuture.allOf(var8, var7).thenCompose(var1::wait).thenAcceptAsync(var4x -> {
+      return CompletableFuture.allOf(var6, var5).thenCompose(var1::wait).thenAcceptAsync(var3x -> {
          this.clearParticles();
-         var4.startTick();
-         var4.push("upload");
-         SpriteLoader.Preparations var5x = (SpriteLoader.Preparations)var8.join();
+         ProfilerFiller var4x = Profiler.get();
+         var4x.push("upload");
+         SpriteLoader.Preparations var5x = (SpriteLoader.Preparations)var6.join();
          this.textureAtlas.upload(var5x);
-         var4.popPush("bindSpriteSets");
+         var4x.popPush("bindSpriteSets");
          HashSet var6x = new HashSet();
-         TextureAtlasSprite var7x = var5x.missing();
-         ((List)var7.join()).forEach(var4xx -> {
+         TextureAtlasSprite var7 = var5x.missing();
+         ((List)var5.join()).forEach(var4xx -> {
             Optional var5xx = var4xx.sprites();
             if (!var5xx.isEmpty()) {
                ArrayList var6xx = new ArrayList();
 
-               for (ResourceLocation var8x : (List)var5xx.get()) {
-                  TextureAtlasSprite var9 = var5x.regions().get(var8x);
+               for (ResourceLocation var8 : (List)var5xx.get()) {
+                  TextureAtlasSprite var9 = var5x.regions().get(var8);
                   if (var9 == null) {
-                     var6x.add(var8x);
-                     var6xx.add(var7x);
+                     var6x.add(var8);
+                     var6xx.add(var7);
                   } else {
                      var6xx.add(var9);
                   }
                }
 
                if (var6xx.isEmpty()) {
-                  var6xx.add(var7x);
+                  var6xx.add(var7);
                }
 
                this.spriteSets.get(var4xx.id()).rebind(var6xx);
@@ -288,9 +287,8 @@ public class ParticleEngine implements PreparableReloadListener {
             LOGGER.warn("Missing particle sprites: {}", var6x.stream().sorted().map(ResourceLocation::toString).collect(Collectors.joining(",")));
          }
 
-         var4.pop();
-         var4.endTick();
-      }, var6);
+         var4x.pop();
+      }, var4);
    }
 
    public void close() {
@@ -355,9 +353,9 @@ public class ParticleEngine implements PreparableReloadListener {
 
    public void tick() {
       this.particles.forEach((var1x, var2) -> {
-         this.level.getProfiler().push(var1x.toString());
+         Profiler.get().push(var1x.toString());
          this.tickParticleList(var2);
-         this.level.getProfiler().pop();
+         Profiler.get().pop();
       });
       if (!this.trackingEmitters.isEmpty()) {
          ArrayList var1 = Lists.newArrayList();

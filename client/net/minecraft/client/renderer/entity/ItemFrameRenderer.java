@@ -21,7 +21,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
@@ -119,7 +118,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
    }
 
    private ModelResourceLocation getFrameModelResourceLoc(boolean var1, ItemStack var2) {
-      if (var2.is(Items.FILLED_MAP)) {
+      if (var2.has(DataComponents.MAP_ID)) {
          return var1 ? BlockStateModelLoader.GLOW_MAP_FRAME_LOCATION : BlockStateModelLoader.MAP_FRAME_LOCATION;
       } else {
          return var1 ? BlockStateModelLoader.GLOW_FRAME_LOCATION : BlockStateModelLoader.FRAME_LOCATION;

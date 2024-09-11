@@ -73,33 +73,37 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
    public void render(ItemStack var1, ItemDisplayContext var2, boolean var3, PoseStack var4, MultiBufferSource var5, int var6, int var7, BakedModel var8) {
       if (!var1.isEmpty()) {
-         boolean var9 = var2 == ItemDisplayContext.GUI || var2 == ItemDisplayContext.GROUND || var2 == ItemDisplayContext.FIXED;
-         if (var9 && var1.is(Items.BUNDLE) && var1.getItem() instanceof BundleItem var10 && BundleItem.hasSelectedItem(var1)) {
-            this.renderBundleWithSelectedItem(var10, var1, var2, var3, var4, var5, var6, var7, var9);
-         } else {
-            var4.pushPose();
-            this.renderSimpleItemModel(var1, var2, var3, var4, var5, var6, var7, var8, var9);
-            var4.popPose();
-         }
+         this.renderSimpleItemModel(var1, var2, var3, var4, var5, var6, var7, var8, shouldRenderItemFlat(var2));
       }
    }
 
-   private void renderBundleWithSelectedItem(
-      BundleItem var1, ItemStack var2, ItemDisplayContext var3, boolean var4, PoseStack var5, MultiBufferSource var6, int var7, int var8, boolean var9
+   public void renderBundleItem(
+      ItemStack var1,
+      ItemDisplayContext var2,
+      boolean var3,
+      PoseStack var4,
+      MultiBufferSource var5,
+      int var6,
+      int var7,
+      BakedModel var8,
+      @Nullable Level var9,
+      @Nullable LivingEntity var10,
+      int var11
    ) {
-      var5.pushPose();
-      BakedModel var10 = this.itemModelShaper.getItemModel(var1.openBackModel());
-      this.renderItemModelRaw(var2, var3, var4, var5, var6, var7, var8, var10, var9, -1.5F);
-      var5.popPose();
-      var5.pushPose();
-      ItemStack var11 = BundleItem.getSelectedItemStack(var2);
-      BakedModel var12 = this.itemModelShaper.getItemModel(var11);
-      this.renderSimpleItemModel(var11, var3, var4, var5, var6, var7, var8, var12, var9);
-      var5.popPose();
-      var5.pushPose();
-      BakedModel var13 = this.itemModelShaper.getItemModel(var1.openFrontModel());
-      this.renderItemModelRaw(var2, var3, var4, var5, var6, var7, var8, var13, var9, 0.5F);
-      var5.popPose();
+      if (var1.getItem() instanceof BundleItem var12) {
+         if (BundleItem.hasSelectedItem(var1)) {
+            boolean var18 = shouldRenderItemFlat(var2);
+            BakedModel var14 = this.resolveModelOverride(this.itemModelShaper.getItemModel(var12.openBackModel()), var1, var9, var10, var11);
+            this.renderItemModelRaw(var1, var2, var3, var4, var5, var6, var7, var14, var18, -1.5F);
+            ItemStack var15 = BundleItem.getSelectedItemStack(var1);
+            BakedModel var16 = this.getModel(var15, var9, var10, var11);
+            this.renderSimpleItemModel(var15, var2, var3, var4, var5, var6, var7, var16, var18);
+            BakedModel var17 = this.resolveModelOverride(this.itemModelShaper.getItemModel(var12.openFrontModel()), var1, var9, var10, var11);
+            this.renderItemModelRaw(var1, var2, var3, var4, var5, var6, var7, var17, var18, 0.5F);
+         } else {
+            this.render(var1, var2, var3, var4, var5, var6, var7, var8);
+         }
+      }
    }
 
    private void renderSimpleItemModel(
@@ -128,9 +132,11 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       boolean var9,
       float var10
    ) {
+      var4.pushPose();
       var8.getTransforms().getTransform(var2).apply(var3, var4);
       var4.translate(-0.5F, -0.5F, var10);
       this.renderItem(var1, var2, var4, var5, var6, var7, var8, var9);
+      var4.popPose();
    }
 
    private void renderItem(ItemStack var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, BakedModel var7, boolean var8) {
@@ -154,6 +160,10 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       } else {
          this.blockEntityRenderer.renderByItem(var1, var2, var3, var4, var5, var6);
       }
+   }
+
+   private static boolean shouldRenderItemFlat(ItemDisplayContext var0) {
+      return var0 == ItemDisplayContext.GUI || var0 == ItemDisplayContext.GROUND || var0 == ItemDisplayContext.FIXED;
    }
 
    private static boolean hasAnimatedTexture(ItemStack var0) {
@@ -198,9 +208,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
    public BakedModel getModel(ItemStack var1, @Nullable Level var2, @Nullable LivingEntity var3, int var4) {
       BakedModel var5 = this.itemModelShaper.getItemModel(var1);
-      ClientLevel var6 = var2 instanceof ClientLevel ? (ClientLevel)var2 : null;
-      BakedModel var7 = var5.overrides().findOverride(var1, var6, var3, var4);
-      return var7 == null ? var5 : var7;
+      return this.resolveModelOverride(var5, var1, var2, var3, var4);
    }
 
    public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8) {
@@ -233,5 +241,11 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    @Nullable
    public BakedModel resolveItemModel(ItemStack var1, LivingEntity var2, ItemDisplayContext var3) {
       return var1.isEmpty() ? null : this.getModel(var1, var2.level(), var2, var2.getId() + var3.ordinal());
+   }
+
+   private BakedModel resolveModelOverride(BakedModel var1, ItemStack var2, @Nullable Level var3, @Nullable LivingEntity var4, int var5) {
+      ClientLevel var6 = var3 instanceof ClientLevel ? (ClientLevel)var3 : null;
+      BakedModel var7 = var1.overrides().findOverride(var2, var6, var4, var5);
+      return var7 == null ? var1 : var7;
    }
 }

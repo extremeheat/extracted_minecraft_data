@@ -12,6 +12,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -94,12 +96,13 @@ public class Tadpole extends AbstractFish {
 
    @Override
    protected void customServerAiStep() {
-      this.level().getProfiler().push("tadpoleBrain");
+      ProfilerFiller var1 = Profiler.get();
+      var1.push("tadpoleBrain");
       this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("tadpoleActivityUpdate");
+      var1.pop();
+      var1.push("tadpoleActivityUpdate");
       TadpoleAi.updateActivity(this);
-      this.level().getProfiler().pop();
+      var1.pop();
       super.customServerAiStep();
    }
 

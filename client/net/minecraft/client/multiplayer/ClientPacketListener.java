@@ -66,6 +66,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -414,17 +415,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       ClientLevel.ClientLevelData var9 = new ClientLevel.ClientLevelData(this.enabledFeatures, Difficulty.NORMAL, var1.hardcore(), var7);
       this.levelData = var9;
       this.level = new ClientLevel(
-         this,
-         var9,
-         var4,
-         var5,
-         this.serverChunkRadius,
-         this.serverSimulationDistance,
-         this.minecraft::getProfiler,
-         this.minecraft.levelRenderer,
-         var6,
-         var2.seed(),
-         var8
+         this, var9, var4, var5, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var6, var2.seed(), var8
       );
       this.minecraft.setLevel(this.level, ReceivingLevelScreen.Reason.OTHER);
       if (this.minecraft.player == null) {
@@ -988,7 +979,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private static ItemStack findTotem(Player var0) {
       for (InteractionHand var4 : InteractionHand.values()) {
          ItemStack var5 = var0.getItemInHand(var4);
-         if (var5.is(Items.TOTEM_OF_UNDYING)) {
+         if (var5.has(DataComponents.DEATH_PROTECTION)) {
             return var5;
          }
       }
@@ -1065,17 +1056,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          );
          this.levelData = var13;
          this.level = new ClientLevel(
-            this,
-            var13,
-            var3,
-            var4,
-            this.serverChunkRadius,
-            this.serverSimulationDistance,
-            this.minecraft::getProfiler,
-            this.minecraft.levelRenderer,
-            var10,
-            var2.seed(),
-            var12
+            this, var13, var3, var4, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var10, var2.seed(), var12
          );
          this.level.addMapData(var9);
          this.minecraft.setLevel(this.level, var8);

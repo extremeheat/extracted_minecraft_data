@@ -81,10 +81,9 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -151,8 +150,8 @@ public abstract class PlayerList {
          var6 = var4.getName();
       }
 
-      Optional var25 = this.load(var2);
-      ResourceKey var8 = var25.<ResourceKey>flatMap(
+      Optional var20 = this.load(var2);
+      ResourceKey var8 = var20.<ResourceKey>flatMap(
             var0 -> DimensionType.parseLegacy(new Dynamic(NbtOps.INSTANCE, var0.get("Dimension"))).resultOrPartial(LOGGER::error)
          )
          .orElse(Level.OVERWORLD);
@@ -172,7 +171,7 @@ public abstract class PlayerList {
          new Object[]{var2.getName().getString(), var11, var2.getId(), var2.getX(), var2.getY(), var2.getZ()}
       );
       LevelData var12 = var10.getLevelData();
-      var2.loadGameTypes((CompoundTag)var25.orElse(null));
+      var2.loadGameTypes((CompoundTag)var20.orElse(null));
       ServerGamePacketListenerImpl var13 = new ServerGamePacketListenerImpl(this.server, var1, var2, var3);
       var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())), var13);
       GameRules var14 = var10.getGameRules();
@@ -225,41 +224,8 @@ public abstract class PlayerList {
       var10.addNewPlayer(var2);
       this.server.getCustomBossEvents().onPlayerConnect(var2);
       this.sendActivePlayerEffects(var2);
-      if (var25.isPresent() && ((CompoundTag)var25.get()).contains("RootVehicle", 10)) {
-         CompoundTag var20 = ((CompoundTag)var25.get()).getCompound("RootVehicle");
-         Entity var21 = EntityType.loadEntityRecursive(
-            var20.getCompound("Entity"), var10, EntitySpawnReason.LOAD, var1x -> !var10.addWithUUID(var1x) ? null : var1x
-         );
-         if (var21 != null) {
-            UUID var22;
-            if (var20.hasUUID("Attach")) {
-               var22 = var20.getUUID("Attach");
-            } else {
-               var22 = null;
-            }
-
-            if (var21.getUUID().equals(var22)) {
-               var2.startRiding(var21, true);
-            } else {
-               for (Entity var24 : var21.getIndirectPassengers()) {
-                  if (var24.getUUID().equals(var22)) {
-                     var2.startRiding(var24, true);
-                     break;
-                  }
-               }
-            }
-
-            if (!var2.isPassenger()) {
-               LOGGER.warn("Couldn't reattach entity to player");
-               var21.discard();
-
-               for (Entity var27 : var21.getIndirectPassengers()) {
-                  var27.discard();
-               }
-            }
-         }
-      }
-
+      var2.loadAndSpawnEnderpearls(var20);
+      var2.loadAndSpawnParentVehicle(var20);
       var2.initInventoryMenu();
    }
 
@@ -360,16 +326,21 @@ public abstract class PlayerList {
       }
 
       var1.unRide();
+
+      for (ThrownEnderpearl var4 : var1.getEnderPearls()) {
+         var4.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER);
+      }
+
       var2.removePlayerImmediately(var1, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
       var1.getAdvancements().stopListening();
       this.players.remove(var1);
       this.server.getCustomBossEvents().onPlayerDisconnect(var1);
-      UUID var5 = var1.getUUID();
-      ServerPlayer var4 = this.playersByUUID.get(var5);
-      if (var4 == var1) {
-         this.playersByUUID.remove(var5);
-         this.stats.remove(var5);
-         this.advancements.remove(var5);
+      UUID var6 = var1.getUUID();
+      ServerPlayer var7 = this.playersByUUID.get(var6);
+      if (var7 == var1) {
+         this.playersByUUID.remove(var6);
+         this.stats.remove(var6);
+         this.advancements.remove(var6);
       }
 
       this.broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(var1.getUUID())));

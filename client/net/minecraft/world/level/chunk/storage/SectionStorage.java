@@ -191,7 +191,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
          .read(var1)
          .thenApplyAsync(
             var2x -> var2x.map(var2xx -> SectionStorage.PackedChunk.parse(this.codec, var2, var2xx, this.simpleRegionStorage, this.levelHeightAccessor)),
-            Util.backgroundExecutor()
+            Util.backgroundExecutor().forName("parseSection")
          )
          .exceptionally(var2x -> {
             if (var2x instanceof IOException var3) {
