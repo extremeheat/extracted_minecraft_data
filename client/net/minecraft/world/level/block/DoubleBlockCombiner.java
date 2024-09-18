@@ -8,7 +8,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 
 public class DoubleBlockCombiner {
    public DoubleBlockCombiner() {
@@ -19,7 +19,7 @@ public class DoubleBlockCombiner {
       BlockEntityType<S> var0,
       Function<BlockState, DoubleBlockCombiner.BlockType> var1,
       Function<BlockState, Direction> var2,
-      DirectionProperty var3,
+      Property<Direction> var3,
       BlockState var4,
       LevelAccessor var5,
       BlockPos var6,

@@ -412,7 +412,7 @@ public abstract class RenderType extends RenderStateShard {
             VertexFormat.Mode.QUADS,
             786432,
             false,
-            true,
+            false,
             RenderType.CompositeState.builder()
                .setShaderState(RENDERTYPE_TEXT_INTENSITY_SHADER)
                .setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false))
@@ -462,7 +462,7 @@ public abstract class RenderType extends RenderStateShard {
             VertexFormat.Mode.QUADS,
             1536,
             false,
-            true,
+            false,
             RenderType.CompositeState.builder()
                .setShaderState(RENDERTYPE_TEXT_SEE_THROUGH_SHADER)
                .setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false))

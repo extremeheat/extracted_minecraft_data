@@ -1,10 +1,14 @@
 package com.mojang.blaze3d;
 
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.jtracy.TracyClient;
-import java.nio.ByteBuffer;
+import javax.annotation.Nullable;
 
 public class TracyFrameCapture implements AutoCloseable {
    private static final int MAX_WIDTH = 320;
@@ -15,9 +19,9 @@ public class TracyFrameCapture implements AutoCloseable {
    private int width;
    private int height;
    private final RenderTarget frameBuffer = new TextureTarget(320, 180, false);
-   private final int pixelbuffer = GlStateManager._glGenBuffers();
-   private long fence;
-   private boolean inProgress;
+   private final GpuBuffer pixelbuffer = new GpuBuffer(BufferType.PIXEL_PACK, BufferUsage.STREAM_READ, 0);
+   @Nullable
+   private GpuFence fence;
    private int lastCaptureDelay;
    private boolean capturedThisFrame;
 
@@ -43,15 +47,16 @@ public class TracyFrameCapture implements AutoCloseable {
          this.width = var1;
          this.height = var2;
          this.frameBuffer.resize(var1, var2);
-         GlStateManager._glBindBuffer(35051, this.pixelbuffer);
-         GlStateManager._glBufferData(35051, (long)var1 * (long)var2 * 4L, 35041);
-         GlStateManager._glBindBuffer(35051, 0);
-         this.inProgress = false;
+         this.pixelbuffer.resize(var1 * var2 * 4);
+         if (this.fence != null) {
+            this.fence.close();
+            this.fence = null;
+         }
       }
    }
 
    public void capture(RenderTarget var1) {
-      if (!this.inProgress && !this.capturedThisFrame) {
+      if (this.fence == null && !this.capturedThisFrame) {
          this.capturedThisFrame = true;
          if (var1.width != this.targetWidth || var1.height != this.targetHeight) {
             this.targetWidth = var1.width;
@@ -64,30 +69,25 @@ public class TracyFrameCapture implements AutoCloseable {
          GlStateManager._glBlitFrameBuffer(0, 0, var1.width, var1.height, 0, 0, this.width, this.height, 16384, 9729);
          GlStateManager._glBindFramebuffer(36008, 0);
          GlStateManager._glBindFramebuffer(36009, 0);
-         GlStateManager._glBindBuffer(35051, this.pixelbuffer);
+         this.pixelbuffer.bind();
          GlStateManager._glBindFramebuffer(36008, this.frameBuffer.frameBufferId);
          GlStateManager._readPixels(0, 0, this.width, this.height, 6408, 5121, 0L);
          GlStateManager._glBindFramebuffer(36008, 0);
-         GlStateManager._glBindBuffer(35051, 0);
-         this.fence = GlStateManager._glFenceSync(37143, 0);
-         this.inProgress = true;
+         this.fence = new GpuFence();
          this.lastCaptureDelay = 0;
       }
    }
 
    public void upload() {
-      if (this.inProgress) {
-         if (GlStateManager._glClientWaitSync(this.fence, 0, 0) != 37147) {
-            GlStateManager._glDeleteSync(this.fence);
-            GlStateManager._glBindBuffer(35051, this.pixelbuffer);
-            ByteBuffer var1 = GlStateManager._glMapBuffer(35051, 35000);
-            if (var1 != null) {
-               TracyClient.frameImage(var1, this.width, this.height, this.lastCaptureDelay, true);
-            }
+      if (this.fence != null) {
+         if (this.fence.awaitCompletion(0L)) {
+            this.fence = null;
 
-            GlStateManager._glUnmapBuffer(35051);
-            GlStateManager._glBindBuffer(35051, 0);
-            this.inProgress = false;
+            try (GpuBuffer.ReadView var1 = this.pixelbuffer.read()) {
+               if (var1 != null) {
+                  TracyClient.frameImage(var1.data(), this.width, this.height, this.lastCaptureDelay, true);
+               }
+            }
          }
       }
    }
@@ -100,12 +100,12 @@ public class TracyFrameCapture implements AutoCloseable {
 
    @Override
    public void close() {
-      if (this.inProgress) {
-         GlStateManager._glDeleteSync(this.fence);
-         this.inProgress = false;
+      if (this.fence != null) {
+         this.fence.close();
+         this.fence = null;
       }
 
-      GlStateManager._glDeleteBuffers(this.pixelbuffer);
+      this.pixelbuffer.close();
       this.frameBuffer.destroyBuffers();
    }
 }

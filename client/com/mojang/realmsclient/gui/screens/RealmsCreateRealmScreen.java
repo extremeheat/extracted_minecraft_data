@@ -1,15 +1,20 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.realmsclient.RealmsMainScreen;
+import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mojang.realmsclient.util.task.CreateSnapshotRealmTask;
+import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.task.RealmCreationTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.Util;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
@@ -27,16 +32,10 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
    private EditBox descriptionBox;
    private final Runnable createWorldRunnable;
 
-   public RealmsCreateRealmScreen(RealmsMainScreen var1, RealmsServer var2) {
+   public RealmsCreateRealmScreen(RealmsMainScreen var1, RealmsServer var2, boolean var3) {
       super(CREATE_REALM_TEXT);
       this.lastScreen = var1;
-      this.createWorldRunnable = () -> this.createWorld(var2);
-   }
-
-   public RealmsCreateRealmScreen(RealmsMainScreen var1, long var2) {
-      super(CREATE_REALM_TEXT);
-      this.lastScreen = var1;
-      this.createWorldRunnable = () -> this.createSnapshotWorld(var2);
+      this.createWorldRunnable = () -> this.createWorld(var2, var3);
    }
 
    @Override
@@ -69,31 +68,51 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
       this.layout.arrangeElements();
    }
 
-   private void createWorld(RealmsServer var1) {
+   private void createWorld(RealmsServer var1, boolean var2) {
+      if (!var1.isSnapshotRealm() && var2) {
+         AtomicBoolean var3 = new AtomicBoolean();
+         this.minecraft.setScreen(new AlertScreen(() -> {
+            var3.set(true);
+            this.lastScreen.resetScreen();
+            this.minecraft.setScreen(this.lastScreen);
+         }, Component.translatable("mco.upload.preparing"), Component.empty()));
+         CompletableFuture.<RealmsServer>supplyAsync(() -> createSnapshotRealm(var1), Util.backgroundExecutor()).thenAcceptAsync(var2x -> {
+            if (!var3.get()) {
+               this.showResetWorldScreen(var2x);
+            }
+         }, this.minecraft).exceptionallyAsync(var1x -> {
+            this.lastScreen.resetScreen();
+            Object var2x;
+            if (var1x.getCause() instanceof RealmsServiceException var3x) {
+               var2x = var3x.realmsError.errorMessage();
+            } else {
+               var2x = Component.translatable("mco.errorMessage.initialize.failed");
+            }
+
+            this.minecraft.setScreen(new RealmsGenericErrorScreen((Component)var2x, this.lastScreen));
+            return null;
+         }, this.minecraft);
+      } else {
+         this.showResetWorldScreen(var1);
+      }
+   }
+
+   private static RealmsServer createSnapshotRealm(RealmsServer var0) {
+      RealmsClient var1 = RealmsClient.create();
+
+      try {
+         return var1.createSnapshotRealm(var0.id);
+      } catch (RealmsServiceException var3) {
+         throw new RuntimeException(var3);
+      }
+   }
+
+   private void showResetWorldScreen(RealmsServer var1) {
       RealmCreationTask var2 = new RealmCreationTask(var1.id, this.nameBox.getValue(), this.descriptionBox.getValue());
       RealmsResetWorldScreen var3 = RealmsResetWorldScreen.forNewRealm(this, var1, var2, () -> this.minecraft.execute(() -> {
             RealmsMainScreen.refreshServerList();
             this.minecraft.setScreen(this.lastScreen);
          }));
-      this.minecraft.setScreen(var3);
-   }
-
-   private void createSnapshotWorld(long var1) {
-      RealmsResetNormalWorldScreen var3 = new RealmsResetNormalWorldScreen(
-         var3x -> {
-            if (var3x == null) {
-               this.minecraft.setScreen(this);
-            } else {
-               this.minecraft
-                  .setScreen(
-                     new RealmsLongRunningMcoTaskScreen(
-                        this, new CreateSnapshotRealmTask(this.lastScreen, var1, var3x, this.nameBox.getValue(), this.descriptionBox.getValue())
-                     )
-                  );
-            }
-         },
-         CREATE_REALM_TEXT
-      );
       this.minecraft.setScreen(var3);
    }
 

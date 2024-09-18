@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -23,15 +24,6 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
 
    public MinecartHopper(EntityType<? extends MinecartHopper> var1, Level var2) {
       super(var1, var2);
-   }
-
-   public MinecartHopper(Level var1, double var2, double var4, double var6) {
-      super(EntityType.HOPPER_MINECART, var2, var4, var6, var1);
-   }
-
-   @Override
-   public AbstractMinecart.Type getMinecartType() {
-      return AbstractMinecart.Type.HOPPER;
    }
 
    @Override
@@ -124,6 +116,11 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
    @Override
    protected Item getDropItem() {
       return Items.HOPPER_MINECART;
+   }
+
+   @Override
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.HOPPER_MINECART);
    }
 
    @Override

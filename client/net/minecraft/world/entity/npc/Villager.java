@@ -738,7 +738,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          this.setVillagerData(this.getVillagerData().setProfession(VillagerProfession.NONE));
       }
 
-      if (var3 == EntitySpawnReason.COMMAND || var3 == EntitySpawnReason.SPAWN_EGG || EntitySpawnReason.isSpawner(var3) || var3 == EntitySpawnReason.DISPENSER) {
+      if (var3 == EntitySpawnReason.COMMAND
+         || var3 == EntitySpawnReason.SPAWN_ITEM_USE
+         || EntitySpawnReason.isSpawner(var3)
+         || var3 == EntitySpawnReason.DISPENSER) {
          this.setVillagerData(this.getVillagerData().setType(VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
       }
 

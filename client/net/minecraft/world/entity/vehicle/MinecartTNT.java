@@ -13,6 +13,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
@@ -30,15 +31,6 @@ public class MinecartTNT extends AbstractMinecart {
 
    public MinecartTNT(EntityType<? extends MinecartTNT> var1, Level var2) {
       super(var1, var2);
-   }
-
-   public MinecartTNT(Level var1, double var2, double var4, double var6) {
-      super(EntityType.TNT_MINECART, var1, var2, var4, var6);
-   }
-
-   @Override
-   public AbstractMinecart.Type getMinecartType() {
-      return AbstractMinecart.Type.TNT;
    }
 
    @Override
@@ -90,6 +82,11 @@ public class MinecartTNT extends AbstractMinecart {
    @Override
    protected Item getDropItem() {
       return Items.TNT_MINECART;
+   }
+
+   @Override
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.TNT_MINECART);
    }
 
    protected void explode(double var1) {

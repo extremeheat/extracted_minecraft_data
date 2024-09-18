@@ -267,6 +267,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    @Override
+   protected boolean shouldPlayLavaHurtSound() {
+      return this.health <= 0 ? true : this.tickCount % 10 == 0;
+   }
+
+   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;

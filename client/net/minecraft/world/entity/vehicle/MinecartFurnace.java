@@ -25,20 +25,15 @@ public class MinecartFurnace extends AbstractMinecart {
    private static final int FUEL_TICKS_PER_ITEM = 3600;
    private static final int MAX_FUEL_TICKS = 32000;
    private int fuel;
-   public double xPush;
-   public double zPush;
+   public Vec3 push = Vec3.ZERO;
 
    public MinecartFurnace(EntityType<? extends MinecartFurnace> var1, Level var2) {
       super(var1, var2);
    }
 
-   public MinecartFurnace(Level var1, double var2, double var4, double var6) {
-      super(EntityType.FURNACE_MINECART, var1, var2, var4, var6);
-   }
-
    @Override
-   public AbstractMinecart.Type getMinecartType() {
-      return AbstractMinecart.Type.FURNACE;
+   public boolean isFurnace() {
+      return true;
    }
 
    @Override
@@ -56,8 +51,7 @@ public class MinecartFurnace extends AbstractMinecart {
          }
 
          if (this.fuel <= 0) {
-            this.xPush = 0.0;
-            this.zPush = 0.0;
+            this.push = Vec3.ZERO;
          }
 
          this.setHasFuel(this.fuel > 0);
@@ -79,38 +73,32 @@ public class MinecartFurnace extends AbstractMinecart {
    }
 
    @Override
-   protected void moveAlongTrack() {
-      double var1 = 1.0E-4;
-      double var3 = 0.001;
-      super.moveAlongTrack();
-      Vec3 var5 = this.getDeltaMovement();
-      double var6 = var5.horizontalDistanceSqr();
-      double var8 = this.xPush * this.xPush + this.zPush * this.zPush;
-      if (var8 > 1.0E-4 && var6 > 0.001) {
-         double var10 = Math.sqrt(var6);
-         double var12 = Math.sqrt(var8);
-         this.xPush = var5.x / var10 * var12;
-         this.zPush = var5.z / var10 * var12;
-      }
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.FURNACE_MINECART);
    }
 
    @Override
    protected Vec3 applyNaturalSlowdown(Vec3 var1) {
-      double var2 = this.xPush * this.xPush + this.zPush * this.zPush;
-      Vec3 var4;
-      if (var2 > 1.0E-7) {
-         var2 = Math.sqrt(var2);
-         this.xPush /= var2;
-         this.zPush /= var2;
-         var4 = var1.multiply(0.8, 0.0, 0.8).add(this.xPush, 0.0, this.zPush);
+      Vec3 var2;
+      if (this.push.lengthSqr() > 1.0E-7) {
+         this.push = this.calculateNewPushAlong(var1);
+         var2 = var1.multiply(0.8, 0.0, 0.8).add(this.push);
          if (this.isInWater()) {
-            var4 = var4.scale(0.1);
+            var2 = var2.scale(0.1);
          }
       } else {
-         var4 = var1.multiply(0.98, 0.0, 0.98);
+         var2 = var1.multiply(0.98, 0.0, 0.98);
       }
 
-      return super.applyNaturalSlowdown(var4);
+      return super.applyNaturalSlowdown(var2);
+   }
+
+   private Vec3 calculateNewPushAlong(Vec3 var1) {
+      double var2 = 1.0E-4;
+      double var4 = 0.001;
+      return this.push.horizontalDistanceSqr() > 1.0E-4 && var1.horizontalDistanceSqr() > 0.001
+         ? this.push.projectedOn(var1).normalize().scale(this.push.length())
+         : this.push;
    }
 
    @Override
@@ -122,8 +110,7 @@ public class MinecartFurnace extends AbstractMinecart {
       }
 
       if (this.fuel > 0) {
-         this.xPush = this.getX() - var1.getX();
-         this.zPush = this.getZ() - var1.getZ();
+         this.push = this.position().subtract(var1.position()).horizontal();
       }
 
       return InteractionResult.SUCCESS;
@@ -132,16 +119,17 @@ public class MinecartFurnace extends AbstractMinecart {
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putDouble("PushX", this.xPush);
-      var1.putDouble("PushZ", this.zPush);
+      var1.putDouble("PushX", this.push.x);
+      var1.putDouble("PushZ", this.push.z);
       var1.putShort("Fuel", (short)this.fuel);
    }
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.xPush = var1.getDouble("PushX");
-      this.zPush = var1.getDouble("PushZ");
+      double var2 = var1.getDouble("PushX");
+      double var4 = var1.getDouble("PushZ");
+      this.push = new Vec3(var2, 0.0, var4);
       this.fuel = var1.getShort("Fuel");
    }
 

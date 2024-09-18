@@ -851,13 +851,13 @@ public class GameTestHelper {
    }
 
    public BlockPos absolutePos(BlockPos var1) {
-      BlockPos var2 = this.testInfo.getStructureBlockPos();
+      BlockPos var2 = this.testInfo.getTestOrigin();
       BlockPos var3 = var2.offset(var1);
       return StructureTemplate.transform(var3, Mirror.NONE, this.testInfo.getRotation(), var2);
    }
 
    public BlockPos relativePos(BlockPos var1) {
-      BlockPos var2 = this.testInfo.getStructureBlockPos();
+      BlockPos var2 = this.testInfo.getTestOrigin();
       Rotation var3 = this.testInfo.getRotation().getRotated(Rotation.CLOCKWISE_180);
       BlockPos var4 = StructureTemplate.transform(var1, Mirror.NONE, var3, var2);
       return var4.subtract(var2);
@@ -876,13 +876,13 @@ public class GameTestHelper {
    }
 
    public Vec3 absoluteVec(Vec3 var1) {
-      Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getStructureBlockPos());
-      return StructureTemplate.transform(var2.add(var1), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getStructureBlockPos());
+      Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getTestOrigin());
+      return StructureTemplate.transform(var2.add(var1), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getTestOrigin());
    }
 
    public Vec3 relativeVec(Vec3 var1) {
-      Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getStructureBlockPos());
-      return StructureTemplate.transform(var1.subtract(var2), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getStructureBlockPos());
+      Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getTestOrigin());
+      return StructureTemplate.transform(var1.subtract(var2), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getTestOrigin());
    }
 
    public Rotation getTestRotation() {
@@ -928,7 +928,7 @@ public class GameTestHelper {
    }
 
    public void forEveryBlockInStructure(Consumer<BlockPos> var1) {
-      AABB var2 = this.getRelativeBounds().contract(1.0, -1.0, 1.0);
+      AABB var2 = this.getRelativeBounds().contract(1.0, 1.0, 1.0);
       BlockPos.MutableBlockPos.betweenClosedStream(var2).forEach(var1);
    }
 

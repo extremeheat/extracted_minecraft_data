@@ -54,6 +54,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.TickThrottler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -100,6 +101,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    public final ClientPacketListener connection;
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
+   private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1280);
    private final List<AmbientSoundHandler> ambientSoundHandlers = Lists.newArrayList();
    private int permissionLevel = 0;
    private double xLast;
@@ -191,6 +193,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Override
    public void tick() {
+      this.dropSpamThrottler.tick();
       if (this.level().hasChunkAt(this.getBlockX(), this.getBlockZ())) {
          super.tick();
          this.sendShiftKeyState();
@@ -1135,5 +1138,14 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public void handleCreativeModeItemDrop(ItemStack var1) {
       this.minecraft.gameMode.handleCreativeModeItemDrop(var1);
+   }
+
+   @Override
+   public boolean canDropItems() {
+      return this.dropSpamThrottler.isUnderThreshold();
+   }
+
+   public TickThrottler getDropSpamThrottler() {
+      return this.dropSpamThrottler;
    }
 }

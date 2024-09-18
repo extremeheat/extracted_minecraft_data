@@ -11,8 +11,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
@@ -31,20 +31,22 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var2 == this.growthDirection.getOpposite() && !var1.canSurvive(var4, var5)) {
-         var4.scheduleTick(var5, this, 1);
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      if (var5 == this.growthDirection.getOpposite() && !var1.canSurvive(var2, var4)) {
+         var3.scheduleTick(var4, this, 1);
       }
 
-      GrowingPlantHeadBlock var7 = this.getHeadBlock();
-      if (var2 == this.growthDirection && !var3.is(this) && !var3.is(var7)) {
-         return this.updateHeadAfterConvertedFromBody(var1, var7.getStateForPlacement(var4));
+      GrowingPlantHeadBlock var9 = this.getHeadBlock();
+      if (var5 == this.growthDirection && !var7.is(this) && !var7.is(var9)) {
+         return this.updateHeadAfterConvertedFromBody(var1, var9.getStateForPlacement(var8));
       } else {
          if (this.scheduleFluidTicks) {
-            var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+            var3.scheduleTick(var4, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
          }
 
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       }
    }
 

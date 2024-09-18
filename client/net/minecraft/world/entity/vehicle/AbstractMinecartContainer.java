@@ -29,10 +29,6 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
       super(var1, var2);
    }
 
-   protected AbstractMinecartContainer(EntityType<?> var1, double var2, double var4, double var6, Level var8) {
-      super(var1, var8, var2, var4, var6);
-   }
-
    @Override
    public void destroy(DamageSource var1) {
       super.destroy(var1);

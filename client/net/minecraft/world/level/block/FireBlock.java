@@ -17,8 +17,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -112,8 +112,10 @@ public class FireBlock extends BaseFireBlock {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return this.canSurvive(var1, var4, var5) ? this.getStateWithAge(var4, var5, var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      return this.canSurvive(var1, var2, var4) ? this.getStateWithAge(var2, var4, var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
    }
 
    @Override
@@ -263,7 +265,7 @@ public class FireBlock extends BaseFireBlock {
       }
    }
 
-   private BlockState getStateWithAge(LevelAccessor var1, BlockPos var2, int var3) {
+   private BlockState getStateWithAge(LevelReader var1, BlockPos var2, int var3) {
       BlockState var4 = getState(var1, var2);
       return var4.is(Blocks.FIRE) ? var4.setValue(AGE, Integer.valueOf(var3)) : var4;
    }

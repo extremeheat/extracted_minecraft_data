@@ -11,16 +11,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -34,7 +35,7 @@ public class AttachedStemBlock extends BushBlock {
             )
             .apply(var0, AttachedStemBlock::new)
    );
-   public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+   public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
    protected static final float AABB_OFFSET = 2.0F;
    private static final Map<Direction, VoxelShape> AABBS = Maps.newEnumMap(
       ImmutableMap.of(
@@ -71,15 +72,17 @@ public class AttachedStemBlock extends BushBlock {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (!var3.is(this.fruit) && var2 == var1.getValue(FACING)) {
-         Optional var7 = var4.registryAccess().lookupOrThrow(Registries.BLOCK).getOptional(this.stem);
-         if (var7.isPresent()) {
-            return ((Block)var7.get()).defaultBlockState().trySetValue(StemBlock.AGE, Integer.valueOf(7));
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      if (!var7.is(this.fruit) && var5 == var1.getValue(FACING)) {
+         Optional var9 = var2.registryAccess().lookupOrThrow(Registries.BLOCK).getOptional(this.stem);
+         if (var9.isPresent()) {
+            return ((Block)var9.get()).defaultBlockState().trySetValue(StemBlock.AGE, Integer.valueOf(7));
          }
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    @Override

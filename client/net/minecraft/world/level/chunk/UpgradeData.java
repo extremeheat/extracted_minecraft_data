@@ -336,7 +336,7 @@ public class UpgradeData {
       DEFAULT {
          @Override
          public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-            return var1.updateShape(var2, var4.getBlockState(var6), var4, var5, var6);
+            return var1.updateShape(var4, var4, var5, var2, var6, var4.getBlockState(var6), var4.getRandom());
          }
       },
       CHEST(Blocks.CHEST, Blocks.TRAPPED_CHEST) {
@@ -379,7 +379,7 @@ public class UpgradeData {
 
          @Override
          public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-            BlockState var7 = var1.updateShape(var2, var4.getBlockState(var6), var4, var5, var6);
+            BlockState var7 = var1.updateShape(var4, var4, var5, var2, var6, var4.getBlockState(var6), var4.getRandom());
             if (var1 != var7) {
                int var8 = var7.getValue(BlockStateProperties.DISTANCE);
                List var9 = this.queue.get();

@@ -40,6 +40,7 @@ import net.minecraft.data.structures.SnbtToNbt;
 import net.minecraft.data.structures.StructureUpdater;
 import net.minecraft.data.tags.BannerPatternTagsProvider;
 import net.minecraft.data.tags.BiomeTagsProvider;
+import net.minecraft.data.tags.BundlesItemTagsProvider;
 import net.minecraft.data.tags.CatVariantTagsProvider;
 import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
@@ -155,6 +156,7 @@ public class Main {
       var16.addProvider(DatapackStructureReport::new);
       var16 = var9.getBuiltinDatapack(var3, "bundle");
       var16.addProvider(bindRegistries(BundleRecipeProvider.Runner::new, var19));
+      var16.addProvider(var3x -> new BundlesItemTagsProvider(var3x, var19, var12.contentsGetter(), var20.contentsGetter()));
       var16.addProvider(
          var0x -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.bundle.description"), FeatureFlagSet.of(FeatureFlags.BUNDLE))
       );

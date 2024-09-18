@@ -6,6 +6,9 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.util.StringUtil;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LevelSettings;
 
 public class RealmsWorldOptions extends ValueObject {
    public final boolean pvp;
@@ -15,6 +18,7 @@ public class RealmsWorldOptions extends ValueObject {
    public final boolean forceGameMode;
    public final int difficulty;
    public final int gameMode;
+   public final boolean hardcore;
    private final String slotName;
    public final String version;
    public final RealmsServer.Compatibility compatibility;
@@ -29,6 +33,7 @@ public class RealmsWorldOptions extends ValueObject {
    private static final boolean DEFAULT_COMMAND_BLOCKS = false;
    private static final int DEFAULT_DIFFICULTY = 2;
    private static final int DEFAULT_GAME_MODE = 0;
+   private static final boolean DEFAULT_HARDCORE_MODE = false;
    private static final String DEFAULT_SLOT_NAME = "";
    private static final String DEFAULT_VERSION = "";
    private static final RealmsServer.Compatibility DEFAULT_COMPATIBILITY = RealmsServer.Compatibility.UNVERIFIABLE;
@@ -36,7 +41,17 @@ public class RealmsWorldOptions extends ValueObject {
    private static final String DEFAULT_TEMPLATE_IMAGE = null;
 
    public RealmsWorldOptions(
-      boolean var1, boolean var2, int var3, boolean var4, int var5, int var6, boolean var7, String var8, String var9, RealmsServer.Compatibility var10
+      boolean var1,
+      boolean var2,
+      int var3,
+      boolean var4,
+      int var5,
+      int var6,
+      boolean var7,
+      boolean var8,
+      String var9,
+      String var10,
+      RealmsServer.Compatibility var11
    ) {
       super();
       this.pvp = var1;
@@ -45,14 +60,23 @@ public class RealmsWorldOptions extends ValueObject {
       this.commandBlocks = var4;
       this.difficulty = var5;
       this.gameMode = var6;
-      this.forceGameMode = var7;
-      this.slotName = var8;
-      this.version = var9;
-      this.compatibility = var10;
+      this.hardcore = var7;
+      this.forceGameMode = var8;
+      this.slotName = var9;
+      this.version = var10;
+      this.compatibility = var11;
    }
 
    public static RealmsWorldOptions createDefaults() {
-      return new RealmsWorldOptions(true, true, 0, false, 2, 0, false, "", "", DEFAULT_COMPATIBILITY);
+      return new RealmsWorldOptions(true, true, 0, false, 2, 0, false, false, "", "", DEFAULT_COMPATIBILITY);
+   }
+
+   public static RealmsWorldOptions createDefaultsWith(GameType var0, Difficulty var1, boolean var2, String var3, String var4) {
+      return new RealmsWorldOptions(true, true, 0, false, var1.getId(), var0.getId(), var2, false, var4, var3, DEFAULT_COMPATIBILITY);
+   }
+
+   public static RealmsWorldOptions createFromSettings(LevelSettings var0, String var1) {
+      return createDefaultsWith(var0.gameType(), var0.difficulty(), var0.hardcore(), var1, var0.levelName());
    }
 
    public static RealmsWorldOptions createEmptyDefaults() {
@@ -73,6 +97,7 @@ public class RealmsWorldOptions extends ValueObject {
          JsonUtils.getBooleanOr("commandBlocks", var0, false),
          JsonUtils.getIntOr("difficulty", var0, 2),
          JsonUtils.getIntOr("gameMode", var0, 0),
+         JsonUtils.getBooleanOr("hardcore", var0, false),
          JsonUtils.getBooleanOr("forceGameMode", var0, false),
          JsonUtils.getRequiredStringOr("slotName", var0, ""),
          JsonUtils.getRequiredStringOr("version", var0, ""),
@@ -121,6 +146,10 @@ public class RealmsWorldOptions extends ValueObject {
          var1.addProperty("gameMode", this.gameMode);
       }
 
+      if (this.hardcore) {
+         var1.addProperty("hardcore", this.hardcore);
+      }
+
       if (this.forceGameMode) {
          var1.addProperty("forceGameMode", this.forceGameMode);
       }
@@ -148,6 +177,7 @@ public class RealmsWorldOptions extends ValueObject {
          this.commandBlocks,
          this.difficulty,
          this.gameMode,
+         this.hardcore,
          this.forceGameMode,
          this.slotName,
          this.version,

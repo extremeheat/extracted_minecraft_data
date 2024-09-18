@@ -12,8 +12,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
@@ -54,15 +54,15 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (!var1.canSurvive(var4, var5)) {
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      if (!var1.canSurvive(var2, var4)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         if (var2 == Direction.UP && var3.is(Blocks.BAMBOO)) {
-            var4.setBlock(var5, Blocks.BAMBOO.defaultBlockState(), 2);
-         }
-
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+         return var5 == Direction.UP && var7.is(Blocks.BAMBOO)
+            ? Blocks.BAMBOO.defaultBlockState()
+            : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       }
    }
 

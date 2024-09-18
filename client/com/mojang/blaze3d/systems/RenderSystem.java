@@ -3,6 +3,9 @@ package com.mojang.blaze3d.systems;
 import com.google.common.collect.Queues;
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.TracyFrameCapture;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderCall;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -35,6 +38,7 @@ import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
+import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 @DontObfuscate
@@ -743,7 +747,8 @@ public class RenderSystem {
       private final int vertexStride;
       private final int indexStride;
       private final RenderSystem.AutoStorageIndexBuffer.IndexGenerator generator;
-      private int name;
+      @Nullable
+      private GpuBuffer buffer;
       private VertexFormat.IndexType type = VertexFormat.IndexType.SHORT;
       private int indexCount;
 
@@ -759,11 +764,11 @@ public class RenderSystem {
       }
 
       public void bind(int var1) {
-         if (this.name == 0) {
-            this.name = GlStateManager._glGenBuffers();
+         if (this.buffer == null) {
+            this.buffer = new GpuBuffer(BufferType.INDICES, BufferUsage.DYNAMIC_WRITE, 0);
          }
 
-         GlStateManager._glBindBuffer(34963, this.name);
+         this.buffer.bind();
          this.ensureStorage(var1);
       }
 
@@ -775,11 +780,9 @@ public class RenderSystem {
             int var3 = var2 * this.vertexStride;
             VertexFormat.IndexType var4 = VertexFormat.IndexType.least(var3);
             int var5 = Mth.roundToward(var1 * var4.bytes, 4);
-            GlStateManager._glBufferData(34963, (long)var5, 35048);
-            ByteBuffer var6 = GlStateManager._glMapBuffer(34963, 35001);
-            if (var6 == null) {
-               throw new RuntimeException("Failed to map GL buffer");
-            } else {
+            ByteBuffer var6 = MemoryUtil.memAlloc(var5);
+
+            try {
                this.type = var4;
                it.unimi.dsi.fastutil.ints.IntConsumer var7 = this.intConsumer(var6);
 
@@ -787,9 +790,14 @@ public class RenderSystem {
                   this.generator.accept(var7, var8 * this.vertexStride / this.indexStride);
                }
 
-               GlStateManager._glUnmapBuffer(34963);
-               this.indexCount = var1;
+               var6.flip();
+               this.buffer.resize(var5);
+               this.buffer.write(var6, 0);
+            } finally {
+               MemoryUtil.memFree(var6);
             }
+
+            this.indexCount = var1;
          }
       }
 

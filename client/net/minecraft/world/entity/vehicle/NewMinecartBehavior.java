@@ -492,7 +492,7 @@ public class NewMinecartBehavior extends MinecartBehavior {
    }
 
    public boolean pickupEntities(AABB var1) {
-      if (this.minecart.getMinecartType() == AbstractMinecart.Type.RIDEABLE && !this.minecart.isVehicle()) {
+      if (this.minecart.isRideable() && !this.minecart.isVehicle()) {
          List var2 = this.level().getEntities(this.minecart, var1, EntitySelector.pushableBy(this.minecart));
          if (!var2.isEmpty()) {
             for (Entity var4 : var2) {
@@ -515,7 +515,7 @@ public class NewMinecartBehavior extends MinecartBehavior {
 
    public boolean pushEntities(AABB var1) {
       boolean var2 = false;
-      if (this.minecart.getMinecartType() == AbstractMinecart.Type.RIDEABLE) {
+      if (this.minecart.isRideable()) {
          List var3 = this.level().getEntities(this.minecart, var1, EntitySelector.pushableBy(this.minecart));
          if (!var3.isEmpty()) {
             for (Entity var5 : var3) {

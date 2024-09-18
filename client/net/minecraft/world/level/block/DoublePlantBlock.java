@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,12 +38,14 @@ public class DoublePlantBlock extends BushBlock {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      DoubleBlockHalf var7 = var1.getValue(HALF);
-      if (var2.getAxis() != Direction.Axis.Y || var7 == DoubleBlockHalf.LOWER != (var2 == Direction.UP) || var3.is(this) && var3.getValue(HALF) != var7) {
-         return var7 == DoubleBlockHalf.LOWER && var2 == Direction.DOWN && !var1.canSurvive(var4, var5)
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      DoubleBlockHalf var9 = var1.getValue(HALF);
+      if (var5.getAxis() != Direction.Axis.Y || var9 == DoubleBlockHalf.LOWER != (var5 == Direction.UP) || var7.is(this) && var7.getValue(HALF) != var9) {
+         return var9 == DoubleBlockHalf.LOWER && var5 == Direction.DOWN && !var1.canSurvive(var2, var4)
             ? Blocks.AIR.defaultBlockState()
-            : super.updateShape(var1, var2, var3, var4, var5, var6);
+            : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       } else {
          return Blocks.AIR.defaultBlockState();
       }

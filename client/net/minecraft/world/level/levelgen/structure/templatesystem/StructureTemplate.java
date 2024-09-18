@@ -355,12 +355,12 @@ public class StructureTemplate {
          var7.setWithOffset(var6, var7x);
          BlockState var11 = var0.getBlockState(var6);
          BlockState var12 = var0.getBlockState(var7);
-         BlockState var13 = var11.updateShape(var7x, var12, var0, var6, var7);
+         BlockState var13 = var11.updateShape(var0, var0, var6, var7x, var7, var12, var0.getRandom());
          if (var11 != var13) {
             var0.setBlock(var6, var13, var1 & -2);
          }
 
-         BlockState var14 = var12.updateShape(var7x.getOpposite(), var13, var0, var7, var6);
+         BlockState var14 = var12.updateShape(var0, var0, var7, var7x.getOpposite(), var6, var13, var0.getRandom());
          if (var12 != var14) {
             var0.setBlock(var7, var14, var1 & -2);
          }

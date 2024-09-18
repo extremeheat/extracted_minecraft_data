@@ -3538,11 +3538,11 @@ public class BlockModelGenerators {
       TextureMapping var1 = TextureMapping.torch(Blocks.REDSTONE_TORCH);
       TextureMapping var2 = TextureMapping.torch(TextureMapping.getBlockTexture(Blocks.REDSTONE_TORCH, "_off"));
       ResourceLocation var3 = ModelTemplates.REDSTONE_TORCH.create(Blocks.REDSTONE_TORCH, var1, this.modelOutput);
-      ResourceLocation var4 = ModelTemplates.REDSTONE_TORCH.createWithSuffix(Blocks.REDSTONE_TORCH, "_off", var2, this.modelOutput);
+      ResourceLocation var4 = ModelTemplates.TORCH_UNLIT.createWithSuffix(Blocks.REDSTONE_TORCH, "_off", var2, this.modelOutput);
       this.blockStateOutput
          .accept(MultiVariantGenerator.multiVariant(Blocks.REDSTONE_TORCH).with(createBooleanModelDispatch(BlockStateProperties.LIT, var3, var4)));
       ResourceLocation var5 = ModelTemplates.REDSTONE_WALL_TORCH.create(Blocks.REDSTONE_WALL_TORCH, var1, this.modelOutput);
-      ResourceLocation var6 = ModelTemplates.REDSTONE_WALL_TORCH.createWithSuffix(Blocks.REDSTONE_WALL_TORCH, "_off", var2, this.modelOutput);
+      ResourceLocation var6 = ModelTemplates.WALL_TORCH_UNLIT.createWithSuffix(Blocks.REDSTONE_WALL_TORCH, "_off", var2, this.modelOutput);
       this.blockStateOutput
          .accept(
             MultiVariantGenerator.multiVariant(Blocks.REDSTONE_WALL_TORCH)

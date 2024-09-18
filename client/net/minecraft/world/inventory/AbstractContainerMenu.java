@@ -508,16 +508,24 @@ public abstract class AbstractContainerMenu {
       } else if (var3 == ClickType.THROW && this.getCarried().isEmpty() && var1 >= 0) {
          Slot var16 = this.slots.get(var1);
          int var23 = var2 == 0 ? 1 : var16.getItem().getCount();
-         ItemStack var30 = var16.safeTake(var23, 2147483647, var4);
-         var4.drop(var30, true);
-         if (var2 == 1) {
-            while (!var30.isEmpty() && ItemStack.isSameItem(var16.getItem(), var30)) {
-               var30 = var16.safeTake(var23, 2147483647, var4);
-               var4.drop(var30, true);
-            }
+         if (!var4.canDropItems()) {
+            return;
          }
 
+         ItemStack var30 = var16.safeTake(var23, 2147483647, var4);
+         var4.drop(var30, true);
          var4.handleCreativeModeItemDrop(var30);
+         if (var2 == 1) {
+            while (!var30.isEmpty() && ItemStack.isSameItem(var16.getItem(), var30)) {
+               if (!var4.canDropItems()) {
+                  return;
+               }
+
+               var30 = var16.safeTake(var23, 2147483647, var4);
+               var4.drop(var30, true);
+               var4.handleCreativeModeItemDrop(var30);
+            }
+         }
       } else if (var3 == ClickType.PICKUP_ALL && var1 >= 0) {
          Slot var15 = this.slots.get(var1);
          ItemStack var22 = this.getCarried();

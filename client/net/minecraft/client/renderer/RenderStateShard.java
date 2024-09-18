@@ -330,11 +330,14 @@ public abstract class RenderStateShard {
       "main_target", () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false), () -> {
       }
    );
-   protected static final RenderStateShard.OutputStateShard OUTLINE_TARGET = new RenderStateShard.OutputStateShard(
-      "outline_target",
-      () -> Minecraft.getInstance().levelRenderer.entityOutlineTarget().bindWrite(false),
-      () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false)
-   );
+   protected static final RenderStateShard.OutputStateShard OUTLINE_TARGET = new RenderStateShard.OutputStateShard("outline_target", () -> {
+      RenderTarget var0 = Minecraft.getInstance().levelRenderer.entityOutlineTarget();
+      if (var0 != null) {
+         var0.bindWrite(false);
+      } else {
+         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+      }
+   }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
    protected static final RenderStateShard.OutputStateShard TRANSLUCENT_TARGET = new RenderStateShard.OutputStateShard("translucent_target", () -> {
       RenderTarget var0 = Minecraft.getInstance().levelRenderer.getTranslucentTarget();
       if (var0 != null) {

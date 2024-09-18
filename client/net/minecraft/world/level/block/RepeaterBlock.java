@@ -9,8 +9,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -63,13 +63,15 @@ public class RepeaterBlock extends DiodeBlock {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var2 == Direction.DOWN && !this.canSurviveOn(var4, var6, var3)) {
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      if (var5 == Direction.DOWN && !this.canSurviveOn(var2, var6, var7)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         return !var4.isClientSide() && var2.getAxis() != var1.getValue(FACING).getAxis()
-            ? var1.setValue(LOCKED, Boolean.valueOf(this.isLocked(var4, var5, var1)))
-            : super.updateShape(var1, var2, var3, var4, var5, var6);
+         return !var2.isClientSide() && var5.getAxis() != var1.getValue(FACING).getAxis()
+            ? var1.setValue(LOCKED, Boolean.valueOf(this.isLocked(var2, var4, var1)))
+            : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       }
    }
 

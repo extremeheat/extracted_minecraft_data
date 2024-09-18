@@ -42,9 +42,7 @@ public class Squid extends AgeableWaterCreature {
    private float speed;
    private float tentacleSpeed;
    private float rotateSpeed;
-   private float tx;
-   private float ty;
-   private float tz;
+   Vec3 movementVector = Vec3.ZERO;
 
    public Squid(EntityType<? extends Squid> var1, Level var2) {
       super(var1, var2);
@@ -133,19 +131,21 @@ public class Squid extends AgeableWaterCreature {
             float var1 = this.tentacleMovement / 3.1415927F;
             this.tentacleAngle = Mth.sin(var1 * var1 * 3.1415927F) * 3.1415927F * 0.25F;
             if ((double)var1 > 0.75) {
-               this.speed = 1.0F;
+               if (this.isControlledByLocalInstance()) {
+                  this.setDeltaMovement(this.movementVector);
+               }
+
                this.rotateSpeed = 1.0F;
             } else {
                this.rotateSpeed *= 0.8F;
             }
          } else {
             this.tentacleAngle = 0.0F;
-            this.speed *= 0.9F;
-            this.rotateSpeed *= 0.99F;
-         }
+            if (this.isControlledByLocalInstance()) {
+               this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
+            }
 
-         if (!this.level().isClientSide) {
-            this.setDeltaMovement((double)(this.tx * this.speed), (double)(this.ty * this.speed), (double)(this.tz * this.speed));
+            this.rotateSpeed *= 0.99F;
          }
 
          Vec3 var4 = this.getDeltaMovement();
@@ -221,14 +221,8 @@ public class Squid extends AgeableWaterCreature {
       }
    }
 
-   public void setMovementVector(float var1, float var2, float var3) {
-      this.tx = var1;
-      this.ty = var2;
-      this.tz = var3;
-   }
-
    public boolean hasMovementVector() {
-      return this.tx != 0.0F || this.ty != 0.0F || this.tz != 0.0F;
+      return this.movementVector.lengthSqr() > 9.999999747378752E-6;
    }
 
    @Nullable
@@ -292,7 +286,7 @@ public class Squid extends AgeableWaterCreature {
                   var2 = var2.subtract(0.0, var2.y, 0.0);
                }
 
-               Squid.this.setMovementVector((float)var2.x / 20.0F, (float)var2.y / 20.0F, (float)var2.z / 20.0F);
+               Squid.this.movementVector = new Vec3(var2.x / 20.0, var2.y / 20.0, var2.z / 20.0);
             }
 
             if (this.fleeTicks % 10 == 5) {
@@ -319,13 +313,12 @@ public class Squid extends AgeableWaterCreature {
       public void tick() {
          int var1 = this.squid.getNoActionTime();
          if (var1 > 100) {
-            this.squid.setMovementVector(0.0F, 0.0F, 0.0F);
+            this.squid.movementVector = Vec3.ZERO;
          } else if (this.squid.getRandom().nextInt(reducedTickDelay(50)) == 0 || !this.squid.wasTouchingWater || !this.squid.hasMovementVector()) {
             float var2 = this.squid.getRandom().nextFloat() * 6.2831855F;
-            float var3 = Mth.cos(var2) * 0.2F;
-            float var4 = -0.1F + this.squid.getRandom().nextFloat() * 0.2F;
-            float var5 = Mth.sin(var2) * 0.2F;
-            this.squid.setMovementVector(var3, var4, var5);
+            this.squid.movementVector = new Vec3(
+               (double)(Mth.cos(var2) * 0.2F), (double)(-0.1F + this.squid.getRandom().nextFloat() * 0.2F), (double)(Mth.sin(var2) * 0.2F)
+            );
          }
       }
    }

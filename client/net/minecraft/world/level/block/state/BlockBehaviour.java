@@ -52,6 +52,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -146,7 +147,9 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
       return var1;
    }
 
@@ -763,8 +766,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.isViewBlocking.test(this.asState(), var1, var2);
       }
 
-      public BlockState updateShape(Direction var1, BlockState var2, LevelAccessor var3, BlockPos var4, BlockPos var5) {
-         return this.getBlock().updateShape(this.asState(), var1, var2, var3, var4, var5);
+      public BlockState updateShape(
+         LevelReader var1, ScheduledTickAccess var2, BlockPos var3, Direction var4, BlockPos var5, BlockState var6, RandomSource var7
+      ) {
+         return this.getBlock().updateShape(this.asState(), var1, var2, var3, var4, var5, var6, var7);
       }
 
       public boolean isPathfindable(PathComputationType var1) {

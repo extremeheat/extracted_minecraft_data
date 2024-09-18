@@ -1293,6 +1293,22 @@ public class CreativeModeTabs {
                   var1.accept(Items.LEAD);
                   if (var0x.enabledFeatures().contains(FeatureFlags.BUNDLE)) {
                      var1.accept(Items.BUNDLE);
+                     var1.accept(Items.WHITE_BUNDLE);
+                     var1.accept(Items.LIGHT_GRAY_BUNDLE);
+                     var1.accept(Items.GRAY_BUNDLE);
+                     var1.accept(Items.BLACK_BUNDLE);
+                     var1.accept(Items.BROWN_BUNDLE);
+                     var1.accept(Items.RED_BUNDLE);
+                     var1.accept(Items.ORANGE_BUNDLE);
+                     var1.accept(Items.YELLOW_BUNDLE);
+                     var1.accept(Items.LIME_BUNDLE);
+                     var1.accept(Items.GREEN_BUNDLE);
+                     var1.accept(Items.CYAN_BUNDLE);
+                     var1.accept(Items.LIGHT_BLUE_BUNDLE);
+                     var1.accept(Items.BLUE_BUNDLE);
+                     var1.accept(Items.PURPLE_BUNDLE);
+                     var1.accept(Items.MAGENTA_BUNDLE);
+                     var1.accept(Items.PINK_BUNDLE);
                   }
 
                   var1.accept(Items.COMPASS);

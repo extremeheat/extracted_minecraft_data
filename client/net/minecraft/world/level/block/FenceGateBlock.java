@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,7 +17,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -75,13 +77,15 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      Direction.Axis var7 = var2.getAxis();
-      if (var1.getValue(FACING).getClockWise().getAxis() != var7) {
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      Direction.Axis var9 = var5.getAxis();
+      if (var1.getValue(FACING).getClockWise().getAxis() != var9) {
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       } else {
-         boolean var8 = this.isWall(var3) || this.isWall(var4.getBlockState(var5.relative(var2.getOpposite())));
-         return var1.setValue(IN_WALL, Boolean.valueOf(var8));
+         boolean var10 = this.isWall(var7) || this.isWall(var2.getBlockState(var4.relative(var5.getOpposite())));
+         return var1.setValue(IN_WALL, Boolean.valueOf(var10));
       }
    }
 

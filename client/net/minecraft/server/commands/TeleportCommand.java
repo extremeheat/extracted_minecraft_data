@@ -19,7 +19,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.RotationArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
-import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -53,7 +52,7 @@ public class TeleportCommand {
                                  Collections.singleton(((CommandSourceStack)var0x.getSource()).getEntityOrException()),
                                  ((CommandSourceStack)var0x.getSource()).getLevel(),
                                  Vec3Argument.getCoordinates(var0x, "location"),
-                                 WorldCoordinates.current(),
+                                 null,
                                  null
                               )
                         )
@@ -190,31 +189,7 @@ public class TeleportCommand {
    ) throws CommandSyntaxException {
       Vec3 var6 = var3.getPosition(var0);
       Vec2 var7 = var4 == null ? null : var4.getRotation(var0);
-      EnumSet var8 = EnumSet.noneOf(Relative.class);
-      if (var3.isXRelative()) {
-         var8.add(Relative.DELTA_X);
-      }
-
-      if (var3.isYRelative()) {
-         var8.add(Relative.DELTA_Y);
-      }
-
-      if (var3.isZRelative()) {
-         var8.add(Relative.DELTA_Z);
-      }
-
-      if (var4 == null) {
-         var8.add(Relative.X_ROT);
-         var8.add(Relative.Y_ROT);
-      } else {
-         if (var4.isXRelative()) {
-            var8.add(Relative.X_ROT);
-         }
-
-         if (var4.isYRelative()) {
-            var8.add(Relative.Y_ROT);
-         }
-      }
+      Set var8 = getRelatives(var3, var4);
 
       for (Entity var10 : var1) {
          if (var4 == null) {
@@ -247,6 +222,39 @@ public class TeleportCommand {
       return var1.size();
    }
 
+   private static Set<Relative> getRelatives(Coordinates var0, @Nullable Coordinates var1) {
+      EnumSet var2 = EnumSet.noneOf(Relative.class);
+      if (var0.isXRelative()) {
+         var2.add(Relative.DELTA_X);
+         var2.add(Relative.X);
+      }
+
+      if (var0.isYRelative()) {
+         var2.add(Relative.DELTA_Y);
+         var2.add(Relative.Y);
+      }
+
+      if (var0.isZRelative()) {
+         var2.add(Relative.DELTA_Z);
+         var2.add(Relative.Z);
+      }
+
+      if (var1 == null) {
+         var2.add(Relative.X_ROT);
+         var2.add(Relative.Y_ROT);
+      } else {
+         if (var1.isXRelative()) {
+            var2.add(Relative.X_ROT);
+         }
+
+         if (var1.isYRelative()) {
+            var2.add(Relative.Y_ROT);
+         }
+      }
+
+      return var2;
+   }
+
    private static String formatDouble(double var0) {
       return String.format(Locale.ROOT, "%f", var0);
    }
@@ -267,22 +275,25 @@ public class TeleportCommand {
       if (!Level.isInSpawnableBounds(var13)) {
          throw INVALID_POSITION.create();
       } else {
-         float var14 = var9.contains(Relative.Y_ROT) ? var10 - var1.getYRot() : var10;
-         float var15 = var9.contains(Relative.X_ROT) ? var11 - var1.getXRot() : var11;
-         float var16 = Mth.wrapDegrees(var14);
-         float var17 = Mth.wrapDegrees(var15);
-         if (var1.teleportTo(var2, var3, var5, var7, var9, var16, var17, true)) {
+         double var14 = var9.contains(Relative.X) ? var3 - var1.getX() : var3;
+         double var16 = var9.contains(Relative.Y) ? var5 - var1.getY() : var5;
+         double var18 = var9.contains(Relative.Z) ? var7 - var1.getZ() : var7;
+         float var20 = var9.contains(Relative.Y_ROT) ? var10 - var1.getYRot() : var10;
+         float var21 = var9.contains(Relative.X_ROT) ? var11 - var1.getXRot() : var11;
+         float var22 = Mth.wrapDegrees(var20);
+         float var23 = Mth.wrapDegrees(var21);
+         if (var1.teleportTo(var2, var14, var16, var18, var9, var22, var23, true)) {
             if (var12 != null) {
                var12.perform(var0, var1);
             }
 
-            if (!(var1 instanceof LivingEntity var18) || !var18.isFallFlying()) {
+            if (!(var1 instanceof LivingEntity var24) || !var24.isFallFlying()) {
                var1.setDeltaMovement(var1.getDeltaMovement().multiply(1.0, 0.0, 1.0));
                var1.setOnGround(true);
             }
 
-            if (var1 instanceof PathfinderMob var19) {
-               var19.getNavigation().stop();
+            if (var1 instanceof PathfinderMob var25) {
+               var25.getNavigation().stop();
             }
          }
       }

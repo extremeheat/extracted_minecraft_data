@@ -4,11 +4,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.ScrollWheelHandler;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ServerboundSelectBundleItemPacket;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import org.joml.Vector2i;
 
 public class BundleMouseActions implements ItemSlotMouseAction {
@@ -23,7 +23,7 @@ public class BundleMouseActions implements ItemSlotMouseAction {
 
    @Override
    public boolean matches(Slot var1) {
-      return var1.getItem().is(Items.BUNDLE);
+      return var1.getItem().is(ItemTags.BUNDLES);
    }
 
    @Override

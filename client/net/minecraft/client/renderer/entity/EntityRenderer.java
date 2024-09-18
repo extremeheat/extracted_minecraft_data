@@ -212,7 +212,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          float var13 = (float)(-var12.width(var2) / 2);
          var12.drawInBatch(var2, var13, (float)var8, -2130706433, false, var9, var4, var7 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var11, var5);
          if (var7) {
-            var12.drawInBatch(var2, var13, (float)var8, -1, false, var9, var4, Font.DisplayMode.NORMAL, 0, var5);
+            var12.drawInBatch(var2, var13, (float)var8, -1, false, var9, var4, Font.DisplayMode.NORMAL, 0, LightTexture.lightCoordsWithEmission(var5, 2));
          }
 
          var3.popPose();

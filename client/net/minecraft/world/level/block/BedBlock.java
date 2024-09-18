@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -22,7 +23,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.CollisionGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -154,11 +156,13 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var2 == getNeighbourDirection(var1.getValue(PART), var1.getValue(FACING))) {
-         return var3.is(this) && var3.getValue(PART) != var1.getValue(PART) ? var1.setValue(OCCUPIED, var3.getValue(OCCUPIED)) : Blocks.AIR.defaultBlockState();
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      if (var5 == getNeighbourDirection(var1.getValue(PART), var1.getValue(FACING))) {
+         return var7.is(this) && var7.getValue(PART) != var1.getValue(PART) ? var1.setValue(OCCUPIED, var7.getValue(OCCUPIED)) : Blocks.AIR.defaultBlockState();
       } else {
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       }
    }
 

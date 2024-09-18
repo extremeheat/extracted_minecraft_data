@@ -770,7 +770,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   this.postDisconnectScreen,
                   this.serverCookies,
                   var2,
-                  this.strictErrorHandling,
                   this.customReportDetails,
                   this.serverLinks
                )
@@ -1184,8 +1183,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var5 = false;
       }
 
-      if (var1.getContainerId() == 0 && InventoryMenu.isHotbarSlot(var4)) {
-         if (!var3.isEmpty()) {
+      if (var1.getContainerId() == 0) {
+         if (InventoryMenu.isHotbarSlot(var4) && !var3.isEmpty()) {
             ItemStack var8 = var2.inventoryMenu.getSlot(var4).getItem();
             if (var8.isEmpty() || var8.getCount() < var3.getCount()) {
                var3.setPopTime(5);
@@ -1198,6 +1197,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       if (this.minecraft.screen instanceof CreativeModeInventoryScreen) {
+         var2.inventoryMenu.setRemoteSlot(var4, var3);
          var2.inventoryMenu.broadcastChanges();
       }
    }

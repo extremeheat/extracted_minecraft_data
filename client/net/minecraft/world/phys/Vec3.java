@@ -302,4 +302,8 @@ public class Vec3 implements Position {
    public Vector3f toVector3f() {
       return new Vector3f((float)this.x, (float)this.y, (float)this.z);
    }
+
+   public Vec3 projectedOn(Vec3 var1) {
+      return var1.lengthSqr() == 0.0 ? var1 : var1.scale(this.dot(var1)).scale(1.0 / var1.lengthSqr());
+   }
 }

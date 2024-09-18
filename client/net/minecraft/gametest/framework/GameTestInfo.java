@@ -179,6 +179,10 @@ public class GameTestInfo {
       return this.structureBlockPos;
    }
 
+   public BlockPos getTestOrigin() {
+      return StructureUtils.getStructureOrigin(this.structureBlockEntity);
+   }
+
    public AABB getStructureBounds() {
       StructureBlockEntity var1 = this.getStructureBlockEntity();
       return StructureUtils.getStructureBounds(var1);

@@ -38,6 +38,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -45,7 +46,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import org.joml.Matrix4f;
 import org.joml.Vector2ic;
@@ -676,7 +676,7 @@ public class GuiGraphics {
                Lighting.setupForFlatItems();
             }
 
-            if (var3.is(Items.BUNDLE)) {
+            if (var3.is(ItemTags.BUNDLES)) {
                this.minecraft
                   .getItemRenderer()
                   .renderBundleItem(

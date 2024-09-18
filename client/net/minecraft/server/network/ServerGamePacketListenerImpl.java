@@ -137,6 +137,7 @@ import net.minecraft.util.FutureChain;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.TickThrottler;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
@@ -208,8 +209,8 @@ public class ServerGamePacketListenerImpl
    public final PlayerChunkSender chunkSender;
    private int tickCount;
    private int ackBlockChangesUpTo = -1;
-   private int chatSpamTickCount;
-   private int dropSpamTickCount;
+   private final TickThrottler chatSpamThrottler = new TickThrottler(20, 200);
+   private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1480);
    private double firstGoodX;
    private double firstGoodY;
    private double firstGoodZ;
@@ -304,14 +305,8 @@ public class ServerGamePacketListenerImpl
       }
 
       this.keepConnectionAlive();
-      if (this.chatSpamTickCount > 0) {
-         this.chatSpamTickCount--;
-      }
-
-      if (this.dropSpamTickCount > 0) {
-         this.dropSpamTickCount--;
-      }
-
+      this.chatSpamThrottler.tick();
+      this.dropSpamThrottler.tick();
       if (this.player.getLastActionTime() > 0L
          && this.server.getPlayerIdleTimeout() > 0
          && Util.getMillis() - this.player.getLastActionTime() > (long)this.server.getPlayerIdleTimeout() * 1000L * 60L) {
@@ -1363,8 +1358,8 @@ public class ServerGamePacketListenerImpl
    }
 
    private void detectRateSpam() {
-      this.chatSpamTickCount += 20;
-      if (this.chatSpamTickCount > 200
+      this.chatSpamThrottler.increment();
+      if (!this.chatSpamThrottler.isUnderThreshold()
          && !this.server.getPlayerList().isOp(this.player.getGameProfile())
          && !this.server.isSingleplayerOwner(this.player.getGameProfile())) {
          this.disconnect(Component.translatable("disconnect.spam"));
@@ -1704,9 +1699,13 @@ public class ServerGamePacketListenerImpl
             this.player.inventoryMenu.getSlot(var1.slotNum()).setByPlayer(var3);
             this.player.inventoryMenu.setRemoteSlot(var1.slotNum(), var3);
             this.player.inventoryMenu.broadcastChanges();
-         } else if (var2 && var8 && this.dropSpamTickCount < 200) {
-            this.dropSpamTickCount += 20;
-            this.player.drop(var3, true);
+         } else if (var2 && var8) {
+            if (this.dropSpamThrottler.isUnderThreshold()) {
+               this.dropSpamThrottler.increment();
+               this.player.drop(var3, true);
+            } else {
+               LOGGER.warn("Player {} was dropping items too fast in creative mode, ignoring.", this.player.getName().getString());
+            }
          }
       }
    }

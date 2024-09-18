@@ -225,7 +225,7 @@ public class AnvilMenu extends ItemCombinerMenu {
             var6.remove(DataComponents.CUSTOM_NAME);
          }
 
-         int var23 = (int)Mth.clamp(var3 + (long)var2, 0L, 2147483647L);
+         int var23 = var2 <= 0 ? 0 : (int)Mth.clamp(var3 + (long)var2, 0L, 2147483647L);
          this.cost.set(var23);
          if (var2 <= 0) {
             var6 = ItemStack.EMPTY;

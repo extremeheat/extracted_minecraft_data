@@ -76,7 +76,7 @@ public class SpawnEggItem extends Item {
 
             EntityType var10 = this.getType(var3);
             if (var10.spawn(
-                  (ServerLevel)var2, var3, var1.getPlayer(), var7, EntitySpawnReason.SPAWN_EGG, true, !Objects.equals(var4, var7) && var5 == Direction.UP
+                  (ServerLevel)var2, var3, var1.getPlayer(), var7, EntitySpawnReason.SPAWN_ITEM_USE, true, !Objects.equals(var4, var7) && var5 == Direction.UP
                )
                != null) {
                var3.shrink(1);
@@ -102,7 +102,7 @@ public class SpawnEggItem extends Item {
             return InteractionResult.PASS;
          } else if (var1.mayInteract(var2, var7) && var2.mayUseItemAt(var7, var5.getDirection(), var4)) {
             EntityType var8 = this.getType(var4);
-            Entity var9 = var8.spawn((ServerLevel)var1, var4, var2, var7, EntitySpawnReason.SPAWN_EGG, false, false);
+            Entity var9 = var8.spawn((ServerLevel)var1, var4, var2, var7, EntitySpawnReason.SPAWN_ITEM_USE, false, false);
             if (var9 == null) {
                return InteractionResult.PASS;
             } else {
@@ -152,7 +152,7 @@ public class SpawnEggItem extends Item {
          if (var2 instanceof AgeableMob) {
             var7 = ((AgeableMob)var2).getBreedOffspring(var4, (AgeableMob)var2);
          } else {
-            var7 = (Mob)var3.create(var4, EntitySpawnReason.SPAWN_EGG);
+            var7 = (Mob)var3.create(var4, EntitySpawnReason.SPAWN_ITEM_USE);
          }
 
          if (var7 == null) {

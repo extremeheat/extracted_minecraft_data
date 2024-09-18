@@ -149,7 +149,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
       for (Direction var8 : UPDATE_SHAPE_ORDER) {
          var4.setWithOffset(var2, var8);
-         var3 = var3.updateShape(var8, var1.getBlockState(var4), var1, var2, var4);
+         var3 = var3.updateShape(var1, var1, var2, var8, var4, var1.getBlockState(var4), var1.getRandom());
       }
 
       return var3;

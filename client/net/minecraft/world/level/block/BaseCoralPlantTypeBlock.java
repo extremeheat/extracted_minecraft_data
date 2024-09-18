@@ -5,10 +5,11 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -31,9 +32,9 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
    @Override
    protected abstract MapCodec<? extends BaseCoralPlantTypeBlock> codec();
 
-   protected void tryScheduleDieTick(BlockState var1, LevelAccessor var2, BlockPos var3) {
-      if (!scanForWater(var1, var2, var3)) {
-         var2.scheduleTick(var3, this, 60 + var2.getRandom().nextInt(40));
+   protected void tryScheduleDieTick(BlockState var1, BlockGetter var2, ScheduledTickAccess var3, RandomSource var4, BlockPos var5) {
+      if (!scanForWater(var1, var2, var5)) {
+         var3.scheduleTick(var5, this, 60 + var4.nextInt(40));
       }
    }
 
@@ -64,14 +65,16 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
       if (var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      return var2 == Direction.DOWN && !this.canSurvive(var1, var4, var5)
+      return var5 == Direction.DOWN && !this.canSurvive(var1, var2, var4)
          ? Blocks.AIR.defaultBlockState()
-         : super.updateShape(var1, var2, var3, var4, var5, var6);
+         : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    @Override

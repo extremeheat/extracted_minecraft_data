@@ -21,6 +21,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -196,16 +197,18 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var2 == Direction.DOWN) {
-         return !this.canSurviveOn(var4, var6, var3) ? Blocks.AIR.defaultBlockState() : var1;
-      } else if (var2 == Direction.UP) {
-         return this.getConnectionState(var4, var1, var5);
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      if (var5 == Direction.DOWN) {
+         return !this.canSurviveOn(var2, var6, var7) ? Blocks.AIR.defaultBlockState() : var1;
+      } else if (var5 == Direction.UP) {
+         return this.getConnectionState(var2, var1, var4);
       } else {
-         RedstoneSide var7 = this.getConnectingSide(var4, var5, var2);
-         return var7.isConnected() == var1.getValue(PROPERTY_BY_DIRECTION.get(var2)).isConnected() && !isCross(var1)
-            ? var1.setValue(PROPERTY_BY_DIRECTION.get(var2), var7)
-            : this.getConnectionState(var4, this.crossState.setValue(POWER, var1.getValue(POWER)).setValue(PROPERTY_BY_DIRECTION.get(var2), var7), var5);
+         RedstoneSide var9 = this.getConnectingSide(var2, var4, var5);
+         return var9.isConnected() == var1.getValue(PROPERTY_BY_DIRECTION.get(var5)).isConnected() && !isCross(var1)
+            ? var1.setValue(PROPERTY_BY_DIRECTION.get(var5), var9)
+            : this.getConnectionState(var2, this.crossState.setValue(POWER, var1.getValue(POWER)).setValue(PROPERTY_BY_DIRECTION.get(var5), var9), var4);
       }
    }
 

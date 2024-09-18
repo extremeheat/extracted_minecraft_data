@@ -15,7 +15,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -81,10 +82,12 @@ public class TripWireBlock extends Block {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2.getAxis().isHorizontal()
-         ? var1.setValue(PROPERTY_BY_DIRECTION.get(var2), Boolean.valueOf(this.shouldConnectTo(var3, var2)))
-         : super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      return var5.getAxis().isHorizontal()
+         ? var1.setValue(PROPERTY_BY_DIRECTION.get(var5), Boolean.valueOf(this.shouldConnectTo(var7, var5)))
+         : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    @Override

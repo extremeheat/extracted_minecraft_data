@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,15 +19,14 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -42,7 +42,7 @@ public class DoorBlock extends Block {
    public static final MapCodec<DoorBlock> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(DoorBlock::type), propertiesCodec()).apply(var0, DoorBlock::new)
    );
-   public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+   public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
    public static final EnumProperty<DoorHingeSide> HINGE = BlockStateProperties.DOOR_HINGE;
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -92,14 +92,16 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      DoubleBlockHalf var7 = var1.getValue(HALF);
-      if (var2.getAxis() != Direction.Axis.Y || var7 == DoubleBlockHalf.LOWER != (var2 == Direction.UP)) {
-         return var7 == DoubleBlockHalf.LOWER && var2 == Direction.DOWN && !var1.canSurvive(var4, var5)
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      DoubleBlockHalf var9 = var1.getValue(HALF);
+      if (var5.getAxis() != Direction.Axis.Y || var9 == DoubleBlockHalf.LOWER != (var5 == Direction.UP)) {
+         return var9 == DoubleBlockHalf.LOWER && var5 == Direction.DOWN && !var1.canSurvive(var2, var4)
             ? Blocks.AIR.defaultBlockState()
-            : super.updateShape(var1, var2, var3, var4, var5, var6);
+            : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       } else {
-         return var3.getBlock() instanceof DoorBlock && var3.getValue(HALF) != var7 ? var3.setValue(HALF, var7) : Blocks.AIR.defaultBlockState();
+         return var7.getBlock() instanceof DoorBlock && var7.getValue(HALF) != var9 ? var7.setValue(HALF, var9) : Blocks.AIR.defaultBlockState();
       }
    }
 

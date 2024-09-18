@@ -21,6 +21,8 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.CommonInputs;
+import net.minecraft.client.gui.navigation.ScreenAxis;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.RenderType;
@@ -51,6 +53,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    public static final int IMAGE_WIDTH = 147;
    public static final int IMAGE_HEIGHT = 166;
    private static final int OFFSET_X_POSITION = 86;
+   private static final int BORDER_WIDTH = 8;
    private static final Component ALL_RECIPES_TOOLTIP = Component.translatable("gui.recipebook.toggleRecipes.all");
    private static final int TICKS_TO_SWAP_SLOT = 30;
    private int xOffset;
@@ -80,6 +83,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    private boolean ignoreTextInput;
    private boolean visible;
    private boolean widthTooNarrow;
+   @Nullable
+   private ScreenRectangle magnifierIconPlacement;
 
    public RecipeBookComponent(T var1) {
       super();
@@ -105,8 +110,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    private void initVisuals() {
       boolean var1 = this.isFiltering();
       this.xOffset = this.widthTooNarrow ? 0 : 86;
-      int var2 = (this.width - 147) / 2 - this.xOffset;
-      int var3 = (this.height - 166) / 2;
+      int var2 = this.getXOrigin();
+      int var3 = this.getYOrigin();
       this.stackedContents.clear();
       this.minecraft.player.getInventory().fillStackedContents(this.stackedContents);
       this.menu.fillCraftSlotsStackedContents(this.stackedContents);
@@ -117,6 +122,9 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       this.searchBox.setTextColor(16777215);
       this.searchBox.setValue(var4);
       this.searchBox.setHint(SEARCH_HINT);
+      this.magnifierIconPlacement = ScreenRectangle.of(
+         ScreenAxis.HORIZONTAL, var2 + 8, this.searchBox.getY(), this.searchBox.getX() - this.getXOrigin(), this.searchBox.getHeight()
+      );
       this.recipeBookPage.init(this.minecraft, var2, var3);
       this.recipeBookPage.addListener(this);
       this.filterButton = new StateSwitchingButton(var2 + 110, var3 + 12, 26, 16, var1);
@@ -139,6 +147,14 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       this.selectedTab.setStateTriggered(true);
       this.updateCollections(false, var1);
       this.updateTabs(var1);
+   }
+
+   private int getYOrigin() {
+      return (this.height - 166) / 2;
+   }
+
+   private int getXOrigin() {
+      return (this.width - 147) / 2 - this.xOffset;
    }
 
    private void updateFilterButtonTooltip() {
@@ -271,8 +287,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
 
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, 100.0F);
-         int var5 = (this.width - 147) / 2 - this.xOffset;
-         int var6 = (this.height - 166) / 2;
+         int var5 = this.getXOrigin();
+         int var6 = this.getYOrigin();
          var1.blit(RenderType::guiTextured, RECIPE_BOOK_LOCATION, var5, var6, 1.0F, 1.0F, 147, 166, 256, 256);
          this.searchBox.render(var1, var2, var3, var4);
 
@@ -302,33 +318,39 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.isVisible() && !this.minecraft.player.isSpectator()) {
-         if (this.recipeBookPage.mouseClicked(var1, var3, var5, (this.width - 147) / 2 - this.xOffset, (this.height - 166) / 2, 147, 166)) {
-            RecipeHolder var9 = this.recipeBookPage.getLastClickedRecipe();
-            RecipeCollection var10 = this.recipeBookPage.getLastClickedRecipeCollection();
-            if (var9 != null && var10 != null) {
-               if (!this.tryPlaceRecipe(var10, var9)) {
+         if (this.recipeBookPage.mouseClicked(var1, var3, var5, this.getXOrigin(), this.getYOrigin(), 147, 166)) {
+            RecipeHolder var10 = this.recipeBookPage.getLastClickedRecipe();
+            RecipeCollection var11 = this.recipeBookPage.getLastClickedRecipeCollection();
+            if (var10 != null && var11 != null) {
+               if (!this.tryPlaceRecipe(var11, var10)) {
                   return false;
                }
 
-               this.lastRecipeCollection = var10;
-               this.lastRecipe = var9;
+               this.lastRecipeCollection = var11;
+               this.lastRecipe = var10;
                if (!this.isOffsetNextToMainGUI()) {
                   this.setVisible(false);
                }
             }
 
             return true;
-         } else if (this.searchBox.mouseClicked(var1, var3, var5)) {
-            this.searchBox.setFocused(true);
-            return true;
          } else {
-            this.searchBox.setFocused(false);
+            if (this.searchBox != null) {
+               boolean var6 = this.magnifierIconPlacement != null && this.magnifierIconPlacement.containsPoint(Mth.floor(var1), Mth.floor(var3));
+               if (var6 || this.searchBox.mouseClicked(var1, var3, var5)) {
+                  this.searchBox.setFocused(true);
+                  return true;
+               }
+
+               this.searchBox.setFocused(false);
+            }
+
             if (this.filterButton.mouseClicked(var1, var3, var5)) {
-               boolean var8 = this.toggleFiltering();
-               this.filterButton.setStateTriggered(var8);
+               boolean var9 = this.toggleFiltering();
+               this.filterButton.setStateTriggered(var9);
                this.updateFilterButtonTooltip();
                this.sendUpdateSettings();
-               this.updateCollections(false, var8);
+               this.updateCollections(false, var9);
                return true;
             } else {
                for (RecipeBookTabButton var7 : this.tabButtons) {

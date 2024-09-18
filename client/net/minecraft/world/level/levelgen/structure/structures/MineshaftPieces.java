@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.vehicle.MinecartChest;
 import net.minecraft.world.level.BlockGetter;
@@ -309,9 +310,13 @@ public class MineshaftPieces {
          if (var2.isInside(var8) && var1.getBlockState(var8).isAir() && !var1.getBlockState(var8.below()).isAir()) {
             BlockState var9 = Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, var3.nextBoolean() ? RailShape.NORTH_SOUTH : RailShape.EAST_WEST);
             this.placeBlock(var1, var9, var4, var5, var6, var2);
-            MinecartChest var10 = new MinecartChest(var1.getLevel(), (double)var8.getX() + 0.5, (double)var8.getY() + 0.5, (double)var8.getZ() + 0.5);
-            var10.setLootTable(var7, var3.nextLong());
-            var1.addFreshEntity(var10);
+            MinecartChest var10 = EntityType.CHEST_MINECART.create(var1.getLevel(), EntitySpawnReason.CHUNK_GENERATION);
+            if (var10 != null) {
+               var10.setInitialPos((double)var8.getX() + 0.5, (double)var8.getY() + 0.5, (double)var8.getZ() + 0.5);
+               var10.setLootTable(var7, var3.nextLong());
+               var1.addFreshEntity(var10);
+            }
+
             return true;
          } else {
             return false;
