@@ -2,6 +2,7 @@ package net.minecraft.world.effect;
 
 import java.util.function.ToIntFunction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -10,7 +11,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Silverfish;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
@@ -25,17 +25,17 @@ class InfestedMobEffect extends MobEffect {
    }
 
    @Override
-   public void onMobHurt(LivingEntity var1, int var2, DamageSource var3, float var4) {
-      if (var1.getRandom().nextFloat() <= this.chanceToSpawn) {
-         int var5 = this.spawnedCount.applyAsInt(var1.getRandom());
+   public void onMobHurt(ServerLevel var1, LivingEntity var2, int var3, DamageSource var4, float var5) {
+      if (var2.getRandom().nextFloat() <= this.chanceToSpawn) {
+         int var6 = this.spawnedCount.applyAsInt(var2.getRandom());
 
-         for (int var6 = 0; var6 < var5; var6++) {
-            this.spawnSilverfish(var1.level(), var1, var1.getX(), var1.getY() + (double)var1.getBbHeight() / 2.0, var1.getZ());
+         for (int var7 = 0; var7 < var6; var7++) {
+            this.spawnSilverfish(var1, var2, var2.getX(), var2.getY() + (double)var2.getBbHeight() / 2.0, var2.getZ());
          }
       }
    }
 
-   private void spawnSilverfish(Level var1, LivingEntity var2, double var3, double var5, double var7) {
+   private void spawnSilverfish(ServerLevel var1, LivingEntity var2, double var3, double var5, double var7) {
       Silverfish var9 = EntityType.SILVERFISH.create(var1, EntitySpawnReason.TRIGGERED);
       if (var9 != null) {
          RandomSource var10 = var2.getRandom();

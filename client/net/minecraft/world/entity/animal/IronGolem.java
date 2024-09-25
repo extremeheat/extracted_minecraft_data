@@ -74,7 +74,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
       this.targetSelector
-         .addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, var0 -> var0 instanceof Enemy && !(var0 instanceof Creeper)));
+         .addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (var0, var1) -> var0 instanceof Enemy && !(var0 instanceof Creeper)));
       this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
    }
 
@@ -182,35 +182,33 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
       this.attackAnimationTick = 10;
-      this.level().broadcastEntityEvent(this, (byte)4);
-      float var2 = this.getAttackDamage();
-      float var3 = (int)var2 > 0 ? var2 / 2.0F + (float)this.random.nextInt((int)var2) : var2;
-      DamageSource var4 = this.damageSources().mobAttack(this);
-      boolean var5 = var1.hurt(var4, var3);
-      if (var5) {
-         double var6 = var1 instanceof LivingEntity var8 ? var8.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) : 0.0;
-         double var12 = Math.max(0.0, 1.0 - var6);
-         var1.setDeltaMovement(var1.getDeltaMovement().add(0.0, 0.4000000059604645 * var12, 0.0));
-         if (this.level() instanceof ServerLevel var10) {
-            EnchantmentHelper.doPostAttackEffects(var10, var1, var4);
-         }
+      var1.broadcastEntityEvent(this, (byte)4);
+      float var3 = this.getAttackDamage();
+      float var4 = (int)var3 > 0 ? var3 / 2.0F + (float)this.random.nextInt((int)var3) : var3;
+      DamageSource var5 = this.damageSources().mobAttack(this);
+      boolean var6 = var2.hurtServer(var1, var5, var4);
+      if (var6) {
+         double var7 = var2 instanceof LivingEntity var9 ? var9.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) : 0.0;
+         double var11 = Math.max(0.0, 1.0 - var7);
+         var2.setDeltaMovement(var2.getDeltaMovement().add(0.0, 0.4000000059604645 * var11, 0.0));
+         EnchantmentHelper.doPostAttackEffects(var1, var2, var5);
       }
 
       this.playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 1.0F);
-      return var5;
+      return var6;
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      Crackiness.Level var3 = this.getCrackiness();
-      boolean var4 = super.hurt(var1, var2);
-      if (var4 && this.getCrackiness() != var3) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      Crackiness.Level var4 = this.getCrackiness();
+      boolean var5 = super.hurtServer(var1, var2, var3);
+      if (var5 && this.getCrackiness() != var4) {
          this.playSound(SoundEvents.IRON_GOLEM_DAMAGE, 1.0F, 1.0F);
       }
 
-      return var4;
+      return var5;
    }
 
    public Crackiness.Level getCrackiness() {

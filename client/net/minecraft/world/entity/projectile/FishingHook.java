@@ -565,7 +565,7 @@ public class FishingHook extends Projectile {
       if (this.getPlayerOwner() == null) {
          int var2 = var1.getData();
          LOGGER.error("Failed to recreate fishing hook on client. {} (id: {}) is not a valid owner.", this.level().getEntity(var2), var2);
-         this.kill();
+         this.discard();
       }
    }
 

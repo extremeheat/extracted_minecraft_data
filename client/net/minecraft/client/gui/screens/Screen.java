@@ -597,6 +597,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.setTooltipForNextRenderPass(var1.toCharSequence(this.minecraft), var2, var3);
    }
 
+   public Font getFont() {
+      return this.font;
+   }
+
+   public boolean showsActiveEffects() {
+      return false;
+   }
+
    @Override
    public ScreenRectangle getRectangle() {
       return new ScreenRectangle(0, 0, this.width, this.height);

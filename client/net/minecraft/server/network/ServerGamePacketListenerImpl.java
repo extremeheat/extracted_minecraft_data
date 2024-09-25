@@ -155,7 +155,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.BeaconMenu;
 import net.minecraft.world.inventory.CrafterMenu;
@@ -868,7 +868,7 @@ public class ServerGamePacketListenerImpl
                         }
 
                         if (!this.player.isChangingDimension()
-                           && (!this.player.level().getGameRules().getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK) || !var27)) {
+                           && (!this.player.serverLevel().getGameRules().getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK) || !var27)) {
                            float var29 = var27 ? 300.0F : 100.0F;
                            if (var25 - var23 > (double)(var29 * (float)var28) && !this.isSingleplayerOwner()) {
                               LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getName().getString(), var17, var19, var21});
@@ -925,7 +925,10 @@ public class ServerGamePacketListenerImpl
                         Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
                         this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
                         this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
-                        this.player.recordMovementThroughBlocks(new Vec3(var11, var13, var15), this.player.position());
+                        if (!this.player.isSpectator()) {
+                           this.player.recordMovementThroughBlocks(new Vec3(var11, var13, var15), this.player.position());
+                        }
+
                         this.handlePlayerKnownMovement(var35);
                         if (var44) {
                            this.player.resetFallDistance();
@@ -994,11 +997,8 @@ public class ServerGamePacketListenerImpl
          this.awaitingTeleport = 0;
       }
 
-      PositionMoveRotation var3 = PositionMoveRotation.of(this.player);
-      PositionMoveRotation var4 = PositionMoveRotation.calculateAbsolute(var3, var1, var2);
-      this.awaitingPositionFromClient = var4.position();
-      this.player.setDeltaMovement(var4.deltaMovement());
-      this.player.absMoveTo(var4.position().x, var4.position().y, var4.position().z, var4.yRot(), var4.xRot());
+      this.player.teleportSetPosition(var1, var2);
+      this.awaitingPositionFromClient = this.player.position();
       this.player.connection.send(ClientboundPlayerPositionPacket.of(this.awaitingTeleport, var1, var2));
    }
 
@@ -1141,7 +1141,7 @@ public class ServerGamePacketListenerImpl
    @Override
    public void handlePaddleBoat(ServerboundPaddleBoatPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      if (this.player.getControlledVehicle() instanceof Boat var3) {
+      if (this.player.getControlledVehicle() instanceof AbstractBoat var3) {
          var3.setPaddleState(var1.getLeft(), var1.getRight());
       }
    }
@@ -1562,6 +1562,7 @@ public class ServerGamePacketListenerImpl
             if (this.player.wonGame) {
                this.player.wonGame = false;
                this.player = this.server.getPlayerList().respawn(this.player, true, Entity.RemovalReason.CHANGED_DIMENSION);
+               this.resetPosition();
                CriteriaTriggers.CHANGED_DIMENSION.trigger(this.player, Level.END, Level.OVERWORLD);
             } else {
                if (this.player.getHealth() > 0.0F) {
@@ -1569,9 +1570,10 @@ public class ServerGamePacketListenerImpl
                }
 
                this.player = this.server.getPlayerList().respawn(this.player, false, Entity.RemovalReason.KILLED);
+               this.resetPosition();
                if (this.server.isHardcore()) {
                   this.player.setGameMode(GameType.SPECTATOR);
-                  this.player.level().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(false, this.server);
+                  this.player.serverLevel().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(false, this.server);
                }
             }
             break;

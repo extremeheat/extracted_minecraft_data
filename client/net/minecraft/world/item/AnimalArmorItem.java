@@ -14,6 +14,11 @@ public class AnimalArmorItem extends Item {
       this.bodyType = var2;
    }
 
+   public AnimalArmorItem(ArmorMaterial var1, AnimalArmorItem.BodyType var2, SoundEvent var3, Item.Properties var4) {
+      super(var1.animalProperties(var4, var3, var2.allowedEntities));
+      this.bodyType = var2;
+   }
+
    @Override
    public SoundEvent getBreakingSound() {
       return this.bodyType.breakingSound;

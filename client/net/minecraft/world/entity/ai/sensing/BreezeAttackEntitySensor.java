@@ -27,7 +27,7 @@ public class BreezeAttackEntitySensor extends NearestLivingEntitySensor<Breeze> 
          .stream()
          .flatMap(Collection::stream)
          .filter(EntitySelector.NO_CREATIVE_OR_SPECTATOR)
-         .filter(var1x -> Sensor.isEntityAttackable(var2, var1x))
+         .filter(var2x -> Sensor.isEntityAttackable(var1, var2, var2x))
          .findFirst()
          .ifPresentOrElse(
             var1x -> var2.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, var1x),

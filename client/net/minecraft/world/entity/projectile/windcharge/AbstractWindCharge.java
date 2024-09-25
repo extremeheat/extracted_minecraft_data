@@ -79,16 +79,16 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      if (!this.level().isClientSide) {
-         LivingEntity var2 = this.getOwner() instanceof LivingEntity var3 ? var3 : null;
-         Entity var6 = var1.getEntity();
-         if (var2 != null) {
-            var2.setLastHurtMob(var6);
+      if (this.level() instanceof ServerLevel var2) {
+         LivingEntity var7 = this.getOwner() instanceof LivingEntity var4 ? var4 : null;
+         Entity var8 = var1.getEntity();
+         if (var7 != null) {
+            var7.setLastHurtMob(var8);
          }
 
-         DamageSource var7 = this.damageSources().windCharge(this, var2);
-         if (var6.hurt(var7, 1.0F) && var6 instanceof LivingEntity var5) {
-            EnchantmentHelper.doPostAttackEffects((ServerLevel)this.level(), var5, var7);
+         DamageSource var9 = this.damageSources().windCharge(this, var7);
+         if (var8.hurtServer(var2, var9, 1.0F) && var8 instanceof LivingEntity var6) {
+            EnchantmentHelper.doPostAttackEffects(var2, var6, var9);
          }
 
          this.explode(this.position());
@@ -155,10 +155,5 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
       } else {
          super.tick();
       }
-   }
-
-   @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      return false;
    }
 }

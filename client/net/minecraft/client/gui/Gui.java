@@ -21,7 +21,6 @@ import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
@@ -421,13 +420,9 @@ public class Gui {
 
    private void renderEffects(GuiGraphics var1, DeltaTracker var2) {
       Collection var3 = this.minecraft.player.getActiveEffects();
-      if (!var3.isEmpty()) {
-         if (this.minecraft.screen instanceof EffectRenderingInventoryScreen var4 && var4.canSeeEffects()) {
-            return;
-         }
-
-         int var18 = 0;
-         int var19 = 0;
+      if (!var3.isEmpty() && (this.minecraft.screen == null || !this.minecraft.screen.showsActiveEffects())) {
+         int var4 = 0;
+         int var5 = 0;
          MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
          ArrayList var7 = Lists.newArrayListWithExpectedSize(var3.size());
 
@@ -441,11 +436,11 @@ public class Gui {
                }
 
                if (((MobEffect)var10.value()).isBeneficial()) {
-                  var18++;
-                  var11 -= 25 * var18;
+                  var4++;
+                  var11 -= 25 * var4;
                } else {
-                  var19++;
-                  var11 -= 25 * var19;
+                  var5++;
+                  var11 -= 25 * var5;
                   var12 += 26;
                }
 
@@ -463,13 +458,13 @@ public class Gui {
                   }
                }
 
-               TextureAtlasSprite var22 = var6.get(var10);
-               int var23 = var11;
+               TextureAtlasSprite var20 = var6.get(var10);
+               int var21 = var11;
                byte var16 = var12;
                float var17 = var13;
                var7.add(() -> {
-                  int var5 = ARGB.white(var17);
-                  var1.blitSprite(RenderType::guiTextured, var22, var23 + 3, var16 + 3, 18, 18, var5);
+                  int var5x = ARGB.white(var17);
+                  var1.blitSprite(RenderType::guiTextured, var20, var21 + 3, var16 + 3, 18, 18, var5x);
                });
             }
          }

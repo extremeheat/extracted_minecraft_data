@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.goal.target;
 import java.util.EnumSet;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -26,16 +27,17 @@ public class DefendVillageTargetGoal extends TargetGoal {
    @Override
    public boolean canUse() {
       AABB var1 = this.golem.getBoundingBox().inflate(10.0, 8.0, 10.0);
-      List var2 = this.golem.level().getNearbyEntities(Villager.class, this.attackTargeting, this.golem, var1);
-      List var3 = this.golem.level().getNearbyPlayers(this.attackTargeting, this.golem, var1);
+      ServerLevel var2 = getServerLevel(this.golem);
+      List var3 = var2.getNearbyEntities(Villager.class, this.attackTargeting, this.golem, var1);
+      List var4 = var2.getNearbyPlayers(this.attackTargeting, this.golem, var1);
 
-      for (LivingEntity var5 : var2) {
-         Villager var6 = (Villager)var5;
+      for (LivingEntity var6 : var3) {
+         Villager var7 = (Villager)var6;
 
-         for (Player var8 : var3) {
-            int var9 = var6.getPlayerReputation(var8);
-            if (var9 <= -100) {
-               this.potentialTarget = var8;
+         for (Player var9 : var4) {
+            int var10 = var7.getPlayerReputation(var9);
+            if (var10 <= -100) {
+               this.potentialTarget = var9;
             }
          }
       }

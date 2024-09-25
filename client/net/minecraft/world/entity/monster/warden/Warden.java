@@ -154,8 +154,8 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    @Override
-   public boolean isInvulnerableTo(DamageSource var1) {
-      return this.isDiggingOrEmerging() && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) ? true : super.isInvulnerableTo(var1);
+   public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
+      return this.isDiggingOrEmerging() && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY) ? true : super.isInvulnerableTo(var1, var2);
    }
 
    boolean isDiggingOrEmerging() {
@@ -219,11 +219,11 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
-      this.level().broadcastEntityEvent(this, (byte)4);
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      var1.broadcastEntityEvent(this, (byte)4);
       this.playSound(SoundEvents.WARDEN_ATTACK_IMPACT, 10.0F, this.getVoicePitch());
       SonicBoom.setCooldown(this, 40);
-      return super.doHurtTarget(var1);
+      return super.doHurtTarget(var1, var2);
    }
 
    @Override
@@ -280,13 +280,12 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    @Override
-   protected void customServerAiStep() {
-      ServerLevel var1 = (ServerLevel)this.level();
+   protected void customServerAiStep(ServerLevel var1) {
       ProfilerFiller var2 = Profiler.get();
       var2.push("wardenBrain");
       this.getBrain().tick(var1, this);
       var2.pop();
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
       if ((this.tickCount + this.getId()) % 120 == 0) {
          applyDarknessAround(var1, this.position(), this, 20);
       }
@@ -513,19 +512,19 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      boolean var3 = super.hurt(var1, var2);
-      if (!this.level().isClientSide && !this.isNoAi() && !this.isDiggingOrEmerging()) {
-         Entity var4 = var1.getEntity();
-         this.increaseAngerAt(var4, AngerLevel.ANGRY.getMinimumAnger() + 20, false);
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      boolean var4 = super.hurtServer(var1, var2, var3);
+      if (!this.isNoAi() && !this.isDiggingOrEmerging()) {
+         Entity var5 = var2.getEntity();
+         this.increaseAngerAt(var5, AngerLevel.ANGRY.getMinimumAnger() + 20, false);
          if (this.brain.getMemory(MemoryModuleType.ATTACK_TARGET).isEmpty()
-            && var4 instanceof LivingEntity var5
-            && (var1.isDirect() || this.closerThan(var5, 5.0))) {
-            this.setAttackTarget(var5);
+            && var5 instanceof LivingEntity var6
+            && (var2.isDirect() || this.closerThan(var6, 5.0))) {
+            this.setAttackTarget(var6);
          }
       }
 
-      return var3;
+      return var4;
    }
 
    public void setAttackTarget(LivingEntity var1) {

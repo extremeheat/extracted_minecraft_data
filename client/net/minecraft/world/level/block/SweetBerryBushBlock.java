@@ -80,15 +80,17 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var4 instanceof LivingEntity && var4.getType() != EntityType.FOX && var4.getType() != EntityType.BEE) {
          var4.makeStuckInBlock(var1, new Vec3(0.800000011920929, 0.75, 0.800000011920929));
-         if (!var2.isClientSide && var1.getValue(AGE) != 0) {
-            Vec3 var5 = var4 instanceof ServerPlayer ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
-            if (var5.horizontalDistanceSqr() > 0.0) {
-               double var6 = Math.abs(var5.x());
-               double var8 = Math.abs(var5.z());
-               if (var6 >= 0.003000000026077032 || var8 >= 0.003000000026077032) {
-                  var4.hurt(var2.damageSources().sweetBerryBush(), 1.0F);
+         if (var2 instanceof ServerLevel var5 && var1.getValue(AGE) != 0) {
+            Vec3 var6 = var4 instanceof ServerPlayer ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
+            if (var6.horizontalDistanceSqr() > 0.0) {
+               double var7 = Math.abs(var6.x());
+               double var9 = Math.abs(var6.z());
+               if (var7 >= 0.003000000026077032 || var9 >= 0.003000000026077032) {
+                  var4.hurtServer(var5, var2.damageSources().sweetBerryBush(), 1.0F);
                }
             }
+
+            return;
          }
       }
    }

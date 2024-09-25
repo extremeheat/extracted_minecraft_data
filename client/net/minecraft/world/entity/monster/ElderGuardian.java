@@ -63,12 +63,12 @@ public class ElderGuardian extends Guardian {
    }
 
    @Override
-   protected void customServerAiStep() {
-      super.customServerAiStep();
+   protected void customServerAiStep(ServerLevel var1) {
+      super.customServerAiStep(var1);
       if ((this.tickCount + this.getId()) % 1200 == 0) {
-         MobEffectInstance var1 = new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 6000, 2);
-         List var2 = MobEffectUtil.addEffectToPlayersAround((ServerLevel)this.level(), this, this.position(), 50.0, var1, 1200);
-         var2.forEach(
+         MobEffectInstance var2 = new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 6000, 2);
+         List var3 = MobEffectUtil.addEffectToPlayersAround(var1, this, this.position(), 50.0, var2, 1200);
+         var3.forEach(
             var1x -> var1x.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.GUARDIAN_ELDER_EFFECT, this.isSilent() ? 0.0F : 1.0F))
          );
       }

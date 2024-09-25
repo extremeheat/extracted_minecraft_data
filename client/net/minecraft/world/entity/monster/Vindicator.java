@@ -71,13 +71,13 @@ public class Vindicator extends AbstractIllager {
    }
 
    @Override
-   protected void customServerAiStep() {
+   protected void customServerAiStep(ServerLevel var1) {
       if (!this.isNoAi() && GoalUtils.hasGroundPathNavigation(this)) {
-         boolean var1 = ((ServerLevel)this.level()).isRaided(this.blockPosition());
-         ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var1);
+         boolean var2 = var1.isRaided(this.blockPosition());
+         ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var2);
       }
 
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -201,7 +201,7 @@ public class Vindicator extends AbstractIllager {
 
    static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
       public VindicatorJohnnyAttackGoal(Vindicator var1) {
-         super(var1, LivingEntity.class, 0, true, true, LivingEntity::attackable);
+         super(var1, LivingEntity.class, 0, true, true, (var0, var1x) -> var0.attackable());
       }
 
       @Override

@@ -70,10 +70,8 @@ public class TurtleEggBlock extends Block {
    }
 
    private void destroyEgg(Level var1, BlockState var2, BlockPos var3, Entity var4, int var5) {
-      if (this.canDestroyEgg(var1, var4)) {
-         if (!var1.isClientSide && var1.random.nextInt(var5) == 0 && var2.is(Blocks.TURTLE_EGG)) {
-            this.decreaseEggs(var1, var3, var2);
-         }
+      if (var2.is(Blocks.TURTLE_EGG) && var1 instanceof ServerLevel var6 && this.canDestroyEgg(var6, var4) && var1.random.nextInt(var5) == 0) {
+         this.decreaseEggs(var6, var3, var2);
       }
    }
 
@@ -164,7 +162,7 @@ public class TurtleEggBlock extends Block {
       var1.add(HATCH, EGGS);
    }
 
-   private boolean canDestroyEgg(Level var1, Entity var2) {
+   private boolean canDestroyEgg(ServerLevel var1, Entity var2) {
       if (var2 instanceof Turtle || var2 instanceof Bat) {
          return false;
       } else {

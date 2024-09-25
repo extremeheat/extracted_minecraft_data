@@ -18,6 +18,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -134,7 +135,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
    @Override
    public boolean canCollideWith(Entity var1) {
-      return Boat.canVehicleCollide(this, var1);
+      return AbstractBoat.canVehicleCollide(this, var1);
    }
 
    @Override
@@ -285,8 +286,8 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return new BlockPos(var1, var2, var3);
    }
 
-   protected double getMaxSpeed() {
-      return this.behavior.getMaxSpeed();
+   protected double getMaxSpeed(ServerLevel var1) {
+      return this.behavior.getMaxSpeed(var1);
    }
 
    public void activateMinecart(int var1, int var2, int var3, boolean var4) {
@@ -352,14 +353,14 @@ public abstract class AbstractMinecart extends VehicleEntity {
       this.behavior.lerpMotion(var1, var3, var5);
    }
 
-   protected void moveAlongTrack() {
-      this.behavior.moveAlongTrack();
+   protected void moveAlongTrack(ServerLevel var1) {
+      this.behavior.moveAlongTrack(var1);
    }
 
-   protected void comeOffTrack() {
-      double var1 = this.getMaxSpeed();
-      Vec3 var3 = this.getDeltaMovement();
-      this.setDeltaMovement(Mth.clamp(var3.x, -var1, var1), var3.y, Mth.clamp(var3.z, -var1, var1));
+   protected void comeOffTrack(ServerLevel var1) {
+      double var2 = this.getMaxSpeed(var1);
+      Vec3 var4 = this.getDeltaMovement();
+      this.setDeltaMovement(Mth.clamp(var4.x, -var2, var2), var4.y, Mth.clamp(var4.z, -var2, var2));
       if (this.onGround()) {
          this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
       }

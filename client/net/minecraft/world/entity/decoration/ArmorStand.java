@@ -379,58 +379,56 @@ public class ArmorStand extends LivingEntity {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       if (this.isRemoved()) {
          return false;
-      } else if (!(this.level() instanceof ServerLevel var3)) {
+      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var2.getEntity() instanceof Mob) {
          return false;
-      } else if (!this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.getEntity() instanceof Mob) {
+      } else if (var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+         this.kill(var1);
          return false;
-      } else if (var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-         this.kill();
+      } else if (this.isInvulnerableTo(var1, var2) || this.invisible || this.isMarker()) {
          return false;
-      } else if (this.isInvulnerableTo(var1) || this.invisible || this.isMarker()) {
+      } else if (var2.is(DamageTypeTags.IS_EXPLOSION)) {
+         this.brokenByAnything(var1, var2);
+         this.kill(var1);
          return false;
-      } else if (var1.is(DamageTypeTags.IS_EXPLOSION)) {
-         this.brokenByAnything(var3, var1);
-         this.kill();
-         return false;
-      } else if (var1.is(DamageTypeTags.IGNITES_ARMOR_STANDS)) {
+      } else if (var2.is(DamageTypeTags.IGNITES_ARMOR_STANDS)) {
          if (this.isOnFire()) {
-            this.causeDamage(var3, var1, 0.15F);
+            this.causeDamage(var1, var2, 0.15F);
          } else {
             this.igniteForSeconds(5.0F);
          }
 
          return false;
-      } else if (var1.is(DamageTypeTags.BURNS_ARMOR_STANDS) && this.getHealth() > 0.5F) {
-         this.causeDamage(var3, var1, 4.0F);
+      } else if (var2.is(DamageTypeTags.BURNS_ARMOR_STANDS) && this.getHealth() > 0.5F) {
+         this.causeDamage(var1, var2, 4.0F);
          return false;
       } else {
-         boolean var8 = var1.is(DamageTypeTags.CAN_BREAK_ARMOR_STAND);
-         boolean var5 = var1.is(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS);
-         if (!var8 && !var5) {
+         boolean var4 = var2.is(DamageTypeTags.CAN_BREAK_ARMOR_STAND);
+         boolean var5 = var2.is(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS);
+         if (!var4 && !var5) {
             return false;
          } else {
-            if (var1.getEntity() instanceof Player var6 && !var6.getAbilities().mayBuild) {
+            if (var2.getEntity() instanceof Player var6 && !var6.getAbilities().mayBuild) {
                return false;
             }
 
-            if (var1.isCreativePlayer()) {
+            if (var2.isCreativePlayer()) {
                this.playBrokenSound();
                this.showBreakingParticles();
-               this.kill();
+               this.kill(var1);
                return true;
             } else {
-               long var9 = var3.getGameTime();
-               if (var9 - this.lastHit > 5L && !var5) {
-                  var3.broadcastEntityEvent(this, (byte)32);
-                  this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-                  this.lastHit = var9;
+               long var8 = var1.getGameTime();
+               if (var8 - this.lastHit > 5L && !var5) {
+                  var1.broadcastEntityEvent(this, (byte)32);
+                  this.gameEvent(GameEvent.ENTITY_DAMAGE, var2.getEntity());
+                  this.lastHit = var8;
                } else {
-                  this.brokenByPlayer(var3, var1);
+                  this.brokenByPlayer(var1, var2);
                   this.showBreakingParticles();
-                  this.kill();
+                  this.kill(var1);
                }
 
                return true;
@@ -484,7 +482,7 @@ public class ArmorStand extends LivingEntity {
       var4 -= var3;
       if (var4 <= 0.5F) {
          this.brokenByAnything(var1, var2);
-         this.kill();
+         this.kill(var1);
       } else {
          this.setHealth(var4);
          this.gameEvent(GameEvent.ENTITY_DAMAGE, var2.getEntity());
@@ -600,7 +598,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    @Override
-   public void kill() {
+   public void kill(ServerLevel var1) {
       this.remove(Entity.RemovalReason.KILLED);
       this.gameEvent(GameEvent.ENTITY_DIE);
    }

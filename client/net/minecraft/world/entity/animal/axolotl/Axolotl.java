@@ -299,17 +299,17 @@ public class Axolotl extends Animal implements VariantHolder<Axolotl.Variant>, B
    }
 
    @Override
-   protected void customServerAiStep() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("axolotlBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      var1.pop();
-      var1.push("axolotlActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("axolotlBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
+      var2.push("axolotlActivityUpdate");
       AxolotlAi.updateActivity(this);
-      var1.pop();
+      var2.pop();
       if (!this.isNoAi()) {
-         Optional var2 = this.getBrain().getMemory(MemoryModuleType.PLAY_DEAD_TICKS);
-         this.setPlayingDead(var2.isPresent() && (Integer)var2.get() > 0);
+         Optional var3 = this.getBrain().getMemory(MemoryModuleType.PLAY_DEAD_TICKS);
+         this.setPlayingDead(var3.isPresent() && (Integer)var3.get() > 0);
       }
    }
 
@@ -332,20 +332,19 @@ public class Axolotl extends Animal implements VariantHolder<Axolotl.Variant>, B
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      float var3 = this.getHealth();
-      if (!this.level().isClientSide
-         && !this.isNoAi()
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      float var4 = this.getHealth();
+      if (!this.isNoAi()
          && this.level().random.nextInt(3) == 0
-         && ((float)this.level().random.nextInt(3) < var2 || var3 / this.getMaxHealth() < 0.5F)
-         && var2 < var3
+         && ((float)this.level().random.nextInt(3) < var3 || var4 / this.getMaxHealth() < 0.5F)
+         && var3 < var4
          && this.isInWater()
-         && (var1.getEntity() != null || var1.getDirectEntity() != null)
+         && (var2.getEntity() != null || var2.getDirectEntity() != null)
          && !this.isPlayingDead()) {
          this.brain.setMemory(MemoryModuleType.PLAY_DEAD_TICKS, 200);
       }
 
-      return super.hurt(var1, var2);
+      return super.hurtServer(var1, var2, var3);
    }
 
    @Override
@@ -404,17 +403,16 @@ public class Axolotl extends Animal implements VariantHolder<Axolotl.Variant>, B
       return !this.isPlayingDead() && super.canBeSeenAsEnemy();
    }
 
-   public static void onStopAttacking(Axolotl var0, LivingEntity var1) {
-      Level var2 = var0.level();
-      if (var1.isDeadOrDying()) {
-         DamageSource var3 = var1.getLastDamageSource();
+   public static void onStopAttacking(ServerLevel var0, Axolotl var1, LivingEntity var2) {
+      if (var2.isDeadOrDying()) {
+         DamageSource var3 = var2.getLastDamageSource();
          if (var3 != null) {
             Entity var4 = var3.getEntity();
             if (var4 != null && var4.getType() == EntityType.PLAYER) {
                Player var5 = (Player)var4;
-               List var6 = var2.getEntitiesOfClass(Player.class, var0.getBoundingBox().inflate(20.0));
+               List var6 = var0.getEntitiesOfClass(Player.class, var1.getBoundingBox().inflate(20.0));
                if (var6.contains(var5)) {
-                  var0.applySupportingEffects(var5);
+                  var1.applySupportingEffects(var5);
                }
             }
          }

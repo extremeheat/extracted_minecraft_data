@@ -146,7 +146,12 @@ public abstract class AbstractArrow extends Projectile {
 
    @Override
    public void tick() {
-      boolean var1 = this.isNoPhysics();
+      boolean var1 = !this.isNoPhysics();
+      if (var1) {
+         this.applyGravity();
+      }
+
+      this.applyInertia();
       Vec3 var2 = this.getDeltaMovement();
       if (this.xRotO == 0.0F && this.yRotO == 0.0F) {
          double var3 = var2.horizontalDistance();
@@ -158,7 +163,7 @@ public abstract class AbstractArrow extends Projectile {
 
       BlockPos var9 = this.blockPosition();
       BlockState var4 = this.level().getBlockState(var9);
-      if (!var4.isAir() && !var1) {
+      if (!var4.isAir() && var1) {
          VoxelShape var5 = var4.getCollisionShape(this.level(), var9);
          if (!var5.isEmpty()) {
             Vec3 var6 = this.position();
@@ -180,7 +185,7 @@ public abstract class AbstractArrow extends Projectile {
          this.clearFire();
       }
 
-      if (this.inGround && !var1) {
+      if (this.inGround && var1) {
          if (this.lastState != var4 && this.shouldFall()) {
             this.startFalling();
          } else if (!this.level().isClientSide) {
@@ -207,7 +212,7 @@ public abstract class AbstractArrow extends Projectile {
          }
 
          float var12;
-         if (var1) {
+         if (!var1) {
             var12 = (float)(Mth.atan2(-var2.x, -var2.z) * 57.2957763671875);
          } else {
             var12 = (float)(Mth.atan2(var2.x, var2.z) * 57.2957763671875);
@@ -216,23 +221,16 @@ public abstract class AbstractArrow extends Projectile {
          float var13 = (float)(Mth.atan2(var2.y, var2.horizontalDistance()) * 57.2957763671875);
          this.setXRot(lerpRotation(this.getXRot(), var13));
          this.setYRot(lerpRotation(this.getYRot(), var12));
-         if (!var1) {
+         if (var1) {
             BlockHitResult var14 = this.level()
                .clipIncludingBorder(new ClipContext(var10, var10.add(var2), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             this.stepMoveAndHit(var14);
          } else {
             this.setPos(var10.add(var2));
             this.applyEffectsFromBlocks();
-            if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
-               this.handlePortal();
-            }
          }
 
          super.tick();
-         this.applyInertia();
-         if (!var1) {
-            this.applyGravity();
-         }
       }
    }
 
@@ -373,7 +371,7 @@ public abstract class AbstractArrow extends Projectile {
          var2.igniteForSeconds(5.0F);
       }
 
-      if (var2.hurt(var7, (float)var14)) {
+      if (var2.hurtOrSimulate(var7, (float)var14)) {
          if (var17) {
             return;
          }
@@ -397,11 +395,11 @@ public abstract class AbstractArrow extends Projectile {
                this.piercedAndKilledEntities.add(var11);
             }
 
-            if (!this.level().isClientSide && var6 instanceof ServerPlayer var18) {
+            if (!this.level().isClientSide && var6 instanceof ServerPlayer var19) {
                if (this.piercedAndKilledEntities != null) {
-                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var18, this.piercedAndKilledEntities, this.firedFromWeapon);
+                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var19, this.piercedAndKilledEntities, this.firedFromWeapon);
                } else if (!var2.isAlive()) {
-                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var18, List.of(var2), this.firedFromWeapon);
+                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var19, List.of(var2), this.firedFromWeapon);
                }
             }
          }
@@ -414,9 +412,9 @@ public abstract class AbstractArrow extends Projectile {
          var2.setRemainingFireTicks(var10);
          this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
          this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
-         if (!this.level().isClientSide && this.getDeltaMovement().lengthSqr() < 1.0E-7) {
+         if (this.level() instanceof ServerLevel var18 && this.getDeltaMovement().lengthSqr() < 1.0E-7) {
             if (this.pickup == AbstractArrow.Pickup.ALLOWED) {
-               this.spawnAtLocation(this.getPickupItem(), 0.1F);
+               this.spawnAtLocation(var18, this.getPickupItem(), 0.1F);
             }
 
             this.discard();

@@ -226,7 +226,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    @Override
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       BlockPos var5 = var3.getBlockPos();
-      if (!var1.isClientSide && var4.mayInteract(var1, var5) && var4.mayBreak(var1)) {
+      if (var1 instanceof ServerLevel var6 && var4.mayInteract(var6, var5) && var4.mayBreak(var6)) {
          var1.setBlock(var5, var2.setValue(CRACKED, Boolean.valueOf(true)), 4);
          var1.destroyBlock(var5, true, var4);
       }

@@ -10,6 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -148,11 +149,6 @@ public class Phantom extends FlyingMob implements Enemy {
    }
 
    @Override
-   protected void customServerAiStep() {
-      super.customServerAiStep();
-   }
-
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.anchorPoint = this.blockPosition().above(5);
       this.setPhantomSize(0);
@@ -220,6 +216,10 @@ public class Phantom extends FlyingMob implements Enemy {
       return var3.scale(1.0F + 0.15F * (float)var2);
    }
 
+   boolean canAttack(ServerLevel var1, LivingEntity var2, TargetingConditions var3) {
+      return var3.test(var1, this, var2);
+   }
+
    static enum AttackPhase {
       CIRCLE,
       SWOOP;
@@ -243,13 +243,14 @@ public class Phantom extends FlyingMob implements Enemy {
             return false;
          } else {
             this.nextScanTick = reducedTickDelay(60);
-            List var1 = Phantom.this.level().getNearbyPlayers(this.attackTargeting, Phantom.this, Phantom.this.getBoundingBox().inflate(16.0, 64.0, 16.0));
-            if (!var1.isEmpty()) {
-               var1.sort(Comparator.<Entity, Double>comparing(Entity::getY).reversed());
+            ServerLevel var1 = getServerLevel(Phantom.this.level());
+            List var2 = var1.getNearbyPlayers(this.attackTargeting, Phantom.this, Phantom.this.getBoundingBox().inflate(16.0, 64.0, 16.0));
+            if (!var2.isEmpty()) {
+               var2.sort(Comparator.<Entity, Double>comparing(Entity::getY).reversed());
 
-               for (Player var3 : var1) {
-                  if (Phantom.this.canAttack(var3, TargetingConditions.DEFAULT)) {
-                     Phantom.this.setTarget(var3);
+               for (Player var4 : var2) {
+                  if (Phantom.this.canAttack(var1, var4, TargetingConditions.DEFAULT)) {
+                     Phantom.this.setTarget(var4);
                      return true;
                   }
                }
@@ -262,7 +263,7 @@ public class Phantom extends FlyingMob implements Enemy {
       @Override
       public boolean canContinueToUse() {
          LivingEntity var1 = Phantom.this.getTarget();
-         return var1 != null ? Phantom.this.canAttack(var1, TargetingConditions.DEFAULT) : false;
+         return var1 != null ? Phantom.this.canAttack(getServerLevel(Phantom.this.level()), var1, TargetingConditions.DEFAULT) : false;
       }
    }
 
@@ -276,7 +277,7 @@ public class Phantom extends FlyingMob implements Enemy {
       @Override
       public boolean canUse() {
          LivingEntity var1 = Phantom.this.getTarget();
-         return var1 != null ? Phantom.this.canAttack(var1, TargetingConditions.DEFAULT) : false;
+         return var1 != null ? Phantom.this.canAttack(getServerLevel(Phantom.this.level()), var1, TargetingConditions.DEFAULT) : false;
       }
 
       @Override
@@ -525,7 +526,7 @@ public class Phantom extends FlyingMob implements Enemy {
          if (var1 != null) {
             Phantom.this.moveTargetPoint = new Vec3(var1.getX(), var1.getY(0.5), var1.getZ());
             if (Phantom.this.getBoundingBox().inflate(0.20000000298023224).intersects(var1.getBoundingBox())) {
-               Phantom.this.doHurtTarget(var1);
+               Phantom.this.doHurtTarget(getServerLevel(Phantom.this.level()), var1);
                Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
                if (!Phantom.this.isSilent()) {
                   Phantom.this.level().levelEvent(1039, Phantom.this.blockPosition(), 0);

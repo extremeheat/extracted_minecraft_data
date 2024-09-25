@@ -79,8 +79,8 @@ public class BreezeAi {
       var0.addActivity(
          Activity.IDLE,
          ImmutableList.of(
-            Pair.of(0, StartAttacking.create(var0x -> var0x.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
-            Pair.of(1, StartAttacking.create(Breeze::getHurtBy)),
+            Pair.of(0, StartAttacking.create((var0x, var1) -> var1.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
+            Pair.of(1, StartAttacking.create((var0x, var1) -> var1.getHurtBy())),
             Pair.of(2, new BreezeAi.SlideToTargetSink(20, 40)),
             Pair.of(3, new RunOne(ImmutableList.of(Pair.of(new DoNothing(20, 100), 1), Pair.of(RandomStroll.stroll(0.6F), 2))))
          )
@@ -91,7 +91,7 @@ public class BreezeAi {
       var1.addActivityWithConditions(
          Activity.FIGHT,
          ImmutableList.of(
-            Pair.of(0, StopAttackingIfTargetInvalid.create(Sensor.wasEntityAttackableLastNTicks(var0, 100).negate())),
+            Pair.of(0, StopAttackingIfTargetInvalid.create(Sensor.wasEntityAttackableLastNTicks(var0, 100).negate()::test)),
             Pair.of(1, new Shoot()),
             Pair.of(2, new LongJump()),
             Pair.of(3, new ShootWhenStuck()),

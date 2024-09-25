@@ -33,21 +33,21 @@ public class GhostSlots {
       this.ingredients.put(var2, new GhostSlots.GhostSlot(var1, false));
    }
 
-   public void render(GuiGraphics var1, Minecraft var2, int var3, int var4, boolean var5) {
-      this.ingredients.forEach((var6, var7) -> {
-         int var8 = var6.x + var3;
-         int var9 = var6.y + var4;
-         if (var7.isResultSlot && var5) {
-            var1.fill(var8 - 4, var9 - 4, var8 + 20, var9 + 20, 822018048);
+   public void render(GuiGraphics var1, Minecraft var2, boolean var3) {
+      this.ingredients.forEach((var4, var5) -> {
+         int var6 = var4.x;
+         int var7 = var4.y;
+         if (var5.isResultSlot && var3) {
+            var1.fill(var6 - 4, var7 - 4, var6 + 20, var7 + 20, 822018048);
          } else {
-            var1.fill(var8, var9, var8 + 16, var9 + 16, 822018048);
+            var1.fill(var6, var7, var6 + 16, var7 + 16, 822018048);
          }
 
-         ItemStack var10 = var7.getItem(this.slotSelectTime.currentIndex());
-         var1.renderFakeItem(var10, var8, var9);
-         var1.fill(RenderType.guiGhostRecipeOverlay(), var8, var9, var8 + 16, var9 + 16, 822083583);
-         if (var7.isResultSlot) {
-            var1.renderItemDecorations(var2.font, var10, var8, var9);
+         ItemStack var8 = var5.getItem(this.slotSelectTime.currentIndex());
+         var1.renderFakeItem(var8, var6, var7);
+         var1.fill(RenderType.guiGhostRecipeOverlay(), var6, var7, var6 + 16, var7 + 16, 822083583);
+         if (var5.isResultSlot) {
+            var1.renderItemDecorations(var2.font, var8, var6, var7);
          }
       });
    }

@@ -14,6 +14,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -209,7 +210,9 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    public boolean tick(LivingEntity var1, Runnable var2) {
       if (this.hasRemainingDuration()) {
          int var3 = this.isInfiniteDuration() ? var1.tickCount : this.duration;
-         if (this.effect.value().shouldApplyEffectTickThisTick(var3, this.amplifier) && !this.effect.value().applyEffectTick(var1, this.amplifier)) {
+         if (var1.level() instanceof ServerLevel var4
+            && this.effect.value().shouldApplyEffectTickThisTick(var3, this.amplifier)
+            && !this.effect.value().applyEffectTick(var4, var1, this.amplifier)) {
             var1.removeEffect(this.effect);
          }
 
@@ -241,12 +244,12 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       this.effect.value().onEffectStarted(var1, this.amplifier);
    }
 
-   public void onMobRemoved(LivingEntity var1, Entity.RemovalReason var2) {
-      this.effect.value().onMobRemoved(var1, this.amplifier, var2);
+   public void onMobRemoved(ServerLevel var1, LivingEntity var2, Entity.RemovalReason var3) {
+      this.effect.value().onMobRemoved(var1, var2, this.amplifier, var3);
    }
 
-   public void onMobHurt(LivingEntity var1, DamageSource var2, float var3) {
-      this.effect.value().onMobHurt(var1, this.amplifier, var2, var3);
+   public void onMobHurt(ServerLevel var1, LivingEntity var2, DamageSource var3, float var4) {
+      this.effect.value().onMobHurt(var1, var2, this.amplifier, var3, var4);
    }
 
    public String getDescriptionId() {

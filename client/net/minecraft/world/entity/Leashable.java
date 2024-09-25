@@ -96,7 +96,7 @@ public interface Leashable {
          }
 
          if (var0.tickCount > 100) {
-            var0.spawnAtLocation(Items.LEAD);
+            var0.spawnAtLocation(var2, Items.LEAD);
             ((Leashable)var0).setLeashData(null);
          }
       }
@@ -110,41 +110,43 @@ public interface Leashable {
       Leashable.LeashData var3 = ((Leashable)var0).getLeashData();
       if (var3 != null && var3.leashHolder != null) {
          ((Leashable)var0).setLeashData(null);
-         if (!var0.level().isClientSide && var2) {
-            var0.spawnAtLocation(Items.LEAD);
-         }
+         if (var0.level() instanceof ServerLevel var4) {
+            if (var2) {
+               var0.spawnAtLocation(var4, Items.LEAD);
+            }
 
-         if (var1 && var0.level() instanceof ServerLevel var4) {
-            var4.getChunkSource().broadcast(var0, new ClientboundSetEntityLinkPacket(var0, null));
+            if (var1) {
+               var4.getChunkSource().broadcast(var0, new ClientboundSetEntityLinkPacket(var0, null));
+            }
          }
       }
    }
 
-   static <E extends Entity & Leashable> void tickLeash(E var0) {
-      Leashable.LeashData var1 = ((Leashable)var0).getLeashData();
-      if (var1 != null && var1.delayedLeashInfo != null) {
-         restoreLeashFromSave((E)var0, var1);
+   static <E extends Entity & Leashable> void tickLeash(ServerLevel var0, E var1) {
+      Leashable.LeashData var2 = ((Leashable)var1).getLeashData();
+      if (var2 != null && var2.delayedLeashInfo != null) {
+         restoreLeashFromSave((E)var1, var2);
       }
 
-      if (var1 != null && var1.leashHolder != null) {
-         if (!var0.isAlive() || !var1.leashHolder.isAlive()) {
-            dropLeash((E)var0, true, var0.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS));
+      if (var2 != null && var2.leashHolder != null) {
+         if (!var1.isAlive() || !var2.leashHolder.isAlive()) {
+            dropLeash((E)var1, true, var0.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS));
          }
 
-         Entity var2 = ((Leashable)var0).getLeashHolder();
-         if (var2 != null && var2.level() == var0.level()) {
-            float var3 = var0.distanceTo(var2);
-            if (!((Leashable)var0).handleLeashAtDistance(var2, var3)) {
+         Entity var3 = ((Leashable)var1).getLeashHolder();
+         if (var3 != null && var3.level() == var1.level()) {
+            float var4 = var1.distanceTo(var3);
+            if (!((Leashable)var1).handleLeashAtDistance(var3, var4)) {
                return;
             }
 
-            if ((double)var3 > 10.0) {
-               ((Leashable)var0).leashTooFarBehaviour();
-            } else if ((double)var3 > 6.0) {
-               ((Leashable)var0).elasticRangeLeashBehaviour(var2, var3);
-               var0.checkSlowFallDistance();
+            if ((double)var4 > 10.0) {
+               ((Leashable)var1).leashTooFarBehaviour();
+            } else if ((double)var4 > 6.0) {
+               ((Leashable)var1).elasticRangeLeashBehaviour(var3, var4);
+               var1.checkSlowFallDistance();
             } else {
-               ((Leashable)var0).closeRangeLeashBehaviour(var2);
+               ((Leashable)var1).closeRangeLeashBehaviour(var3);
             }
          }
       }

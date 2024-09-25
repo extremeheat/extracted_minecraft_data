@@ -716,7 +716,7 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    public static Component getVersionComponent(String var0, int var1) {
-      return (Component)(StringUtils.isBlank(var0) ? CommonComponents.EMPTY : Component.translatable("mco.version", Component.literal(var0).withColor(var1)));
+      return (Component)(StringUtils.isBlank(var0) ? CommonComponents.EMPTY : Component.literal(var0).withColor(var1));
    }
 
    static boolean isSelfOwnedServer(RealmsServer var0) {

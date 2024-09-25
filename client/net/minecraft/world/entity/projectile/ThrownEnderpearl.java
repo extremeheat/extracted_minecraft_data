@@ -154,7 +154,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                   if (var13 != null) {
                      var13.resetFallDistance();
                      var13.resetCurrentImpulseContext();
-                     var13.hurt(this.damageSources().enderPearl(), 5.0F);
+                     var13.hurtServer(var11.serverLevel(), this.damageSources().enderPearl(), 5.0F);
                   }
 
                   this.playSound(var8, var10);
@@ -189,17 +189,23 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
    @Override
    public void tick() {
-      int var1 = SectionPos.blockToSectionCoord(this.position().x());
-      int var2 = SectionPos.blockToSectionCoord(this.position().z());
-      Entity var3 = this.getOwner();
-      if (var3 instanceof ServerPlayer && !var3.isAlive() && this.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
-         this.discard();
-      } else {
+      int var1;
+      int var2;
+      Entity var3;
+      label26: {
+         var1 = SectionPos.blockToSectionCoord(this.position().x());
+         var2 = SectionPos.blockToSectionCoord(this.position().z());
+         var3 = this.getOwner();
+         if (var3 instanceof ServerPlayer var4 && !var3.isAlive() && var4.serverLevel().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
+            this.discard();
+            break label26;
+         }
+
          super.tick();
       }
 
-      BlockPos var4 = BlockPos.containing(this.position());
-      if ((--this.ticketTimer <= 0L || var1 != SectionPos.blockToSectionCoord(var4.getX()) || var2 != SectionPos.blockToSectionCoord(var4.getZ()))
+      BlockPos var6 = BlockPos.containing(this.position());
+      if ((--this.ticketTimer <= 0L || var1 != SectionPos.blockToSectionCoord(var6.getX()) || var2 != SectionPos.blockToSectionCoord(var6.getZ()))
          && var3 instanceof ServerPlayer var5) {
          this.ticketTimer = var5.registerAndUpdateEnderPearlTicket(this);
       }

@@ -30,7 +30,6 @@ import net.minecraft.data.loot.packs.VanillaLootTableProvider;
 import net.minecraft.data.metadata.PackMetadataGenerator;
 import net.minecraft.data.models.EquipmentModelProvider;
 import net.minecraft.data.models.ModelProvider;
-import net.minecraft.data.recipes.packs.BundleRecipeProvider;
 import net.minecraft.data.recipes.packs.VanillaRecipeProvider;
 import net.minecraft.data.registries.RegistriesDatapackGenerator;
 import net.minecraft.data.registries.TradeRebalanceRegistries;
@@ -40,7 +39,6 @@ import net.minecraft.data.structures.SnbtToNbt;
 import net.minecraft.data.structures.StructureUpdater;
 import net.minecraft.data.tags.BannerPatternTagsProvider;
 import net.minecraft.data.tags.BiomeTagsProvider;
-import net.minecraft.data.tags.BundlesItemTagsProvider;
 import net.minecraft.data.tags.CatVariantTagsProvider;
 import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
@@ -154,14 +152,8 @@ public class Main {
       var16.addProvider(RegistryDumpReport::new);
       var16.addProvider(PacketReport::new);
       var16.addProvider(DatapackStructureReport::new);
-      var16 = var9.getBuiltinDatapack(var3, "bundle");
-      var16.addProvider(bindRegistries(BundleRecipeProvider.Runner::new, var19));
-      var16.addProvider(var3x -> new BundlesItemTagsProvider(var3x, var19, var12.contentsGetter(), var20.contentsGetter()));
-      var16.addProvider(
-         var0x -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.bundle.description"), FeatureFlagSet.of(FeatureFlags.BUNDLE))
-      );
-      CompletableFuture var24 = TradeRebalanceRegistries.createLookup(var19);
-      CompletableFuture var17 = var24.thenApply(RegistrySetBuilder.PatchedRegistries::patches);
+      CompletableFuture var23 = TradeRebalanceRegistries.createLookup(var19);
+      CompletableFuture var17 = var23.thenApply(RegistrySetBuilder.PatchedRegistries::patches);
       DataGenerator.PackGenerator var18 = var9.getBuiltinDatapack(var3, "trade_rebalance");
       var18.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var17));
       var18.addProvider(

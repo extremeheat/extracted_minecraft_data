@@ -196,13 +196,16 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    private void setUnderwaterMovement() {
-      Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x * 0.9900000095367432, var1.y + (double)(var1.y < 0.05999999865889549 ? 5.0E-4F : 0.0F), var1.z * 0.9900000095367432);
+      this.setFluidMovement(0.9900000095367432);
    }
 
    private void setUnderLavaMovement() {
-      Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x * 0.949999988079071, var1.y + (double)(var1.y < 0.05999999865889549 ? 5.0E-4F : 0.0F), var1.z * 0.949999988079071);
+      this.setFluidMovement(0.949999988079071);
+   }
+
+   private void setFluidMovement(double var1) {
+      Vec3 var3 = this.getDeltaMovement();
+      this.setDeltaMovement(var3.x * var1, var3.y + (double)(var3.y < 0.05999999865889549 ? 5.0E-4F : 0.0F), var3.z * var1);
    }
 
    private void mergeWithNeighbours() {
@@ -272,19 +275,22 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public final boolean hurtClient(DamageSource var1) {
+      return this.isInvulnerableToBase(var1) ? false : this.getItem().canBeHurtBy(var1);
+   }
+
+   @Override
+   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableToBase(var2)) {
          return false;
-      } else if (!this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.getEntity() instanceof Mob) {
+      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var2.getEntity() instanceof Mob) {
          return false;
-      } else if (!this.getItem().canBeHurtBy(var1)) {
+      } else if (!this.getItem().canBeHurtBy(var2)) {
          return false;
-      } else if (this.level().isClientSide) {
-         return true;
       } else {
          this.markHurt();
-         this.health = (int)((float)this.health - var2);
-         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
+         this.health = (int)((float)this.health - var3);
+         this.gameEvent(GameEvent.ENTITY_DAMAGE, var2.getEntity());
          if (this.health <= 0) {
             this.getItem().onDestroyed(this);
             this.discard();

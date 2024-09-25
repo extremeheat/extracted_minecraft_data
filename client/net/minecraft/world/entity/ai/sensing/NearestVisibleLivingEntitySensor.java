@@ -13,7 +13,7 @@ public abstract class NearestVisibleLivingEntitySensor extends Sensor<LivingEnti
       super();
    }
 
-   protected abstract boolean isMatchingEntity(LivingEntity var1, LivingEntity var2);
+   protected abstract boolean isMatchingEntity(ServerLevel var1, LivingEntity var2, LivingEntity var3);
 
    protected abstract MemoryModuleType<LivingEntity> getMemory();
 
@@ -24,11 +24,11 @@ public abstract class NearestVisibleLivingEntitySensor extends Sensor<LivingEnti
 
    @Override
    protected void doTick(ServerLevel var1, LivingEntity var2) {
-      var2.getBrain().setMemory(this.getMemory(), this.getNearestEntity(var2));
+      var2.getBrain().setMemory(this.getMemory(), this.getNearestEntity(var1, var2));
    }
 
-   private Optional<LivingEntity> getNearestEntity(LivingEntity var1) {
-      return this.getVisibleEntities(var1).flatMap(var2 -> var2.findClosest(var2x -> this.isMatchingEntity(var1, var2x)));
+   private Optional<LivingEntity> getNearestEntity(ServerLevel var1, LivingEntity var2) {
+      return this.getVisibleEntities(var2).flatMap(var3 -> var3.findClosest(var3x -> this.isMatchingEntity(var1, var2, var3x)));
    }
 
    protected Optional<NearestVisibleLivingEntities> getVisibleEntities(LivingEntity var1) {

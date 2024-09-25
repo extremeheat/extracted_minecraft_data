@@ -10,8 +10,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -38,7 +38,7 @@ public class HoneyBlock extends HalfTransparentBlock {
    }
 
    private static boolean doesEntityDoHoneyBlockSlideEffects(Entity var0) {
-      return var0 instanceof LivingEntity || var0 instanceof AbstractMinecart || var0 instanceof PrimedTnt || var0 instanceof Boat;
+      return var0 instanceof LivingEntity || var0 instanceof AbstractMinecart || var0 instanceof PrimedTnt || var0 instanceof AbstractBoat;
    }
 
    @Override

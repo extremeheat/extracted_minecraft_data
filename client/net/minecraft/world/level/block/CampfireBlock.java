@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -237,7 +238,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    @Override
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       BlockPos var5 = var3.getBlockPos();
-      if (!var1.isClientSide && var4.isOnFire() && var4.mayInteract(var1, var5) && !var2.getValue(LIT) && !var2.getValue(WATERLOGGED)) {
+      if (var1 instanceof ServerLevel var6 && var4.isOnFire() && var4.mayInteract(var6, var5) && !var2.getValue(LIT) && !var2.getValue(WATERLOGGED)) {
          var1.setBlock(var5, var2.setValue(BlockStateProperties.LIT, Boolean.valueOf(true)), 11);
       }
    }

@@ -360,7 +360,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    @Override
    public void removeComponentsFromTag(CompoundTag var1) {
       var1.remove("CustomName");
-      var1.remove("Lock");
+      var1.remove("lock");
    }
 
    @Override

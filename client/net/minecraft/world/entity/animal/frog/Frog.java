@@ -184,15 +184,15 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    @Override
-   protected void customServerAiStep() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("frogBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      var1.pop();
-      var1.push("frogActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("frogBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
+      var2.push("frogActivityUpdate");
       FrogAi.updateActivity(this);
-      var1.pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    @Override

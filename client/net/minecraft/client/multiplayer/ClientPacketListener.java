@@ -276,8 +276,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -412,7 +412,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       boolean var6 = var2.isDebug();
       boolean var7 = var2.isFlat();
       int var8 = var2.seaLevel();
-      ClientLevel.ClientLevelData var9 = new ClientLevel.ClientLevelData(this.enabledFeatures, Difficulty.NORMAL, var1.hardcore(), var7);
+      ClientLevel.ClientLevelData var9 = new ClientLevel.ClientLevelData(Difficulty.NORMAL, var1.hardcore(), var7);
       this.levelData = var9;
       this.level = new ClientLevel(
          this, var9, var4, var5, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var6, var2.seed(), var8
@@ -926,9 +926,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Override
    public void handleSetTime(ClientboundSetTimePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      this.minecraft.level.setGameTime(var1.getGameTime());
-      this.minecraft.level.setDayTime(var1.getDayTime());
-      this.telemetryManager.setTime(var1.getGameTime());
+      this.level.setTimeFromServer(var1.gameTime(), var1.dayTime(), var1.tickDayTime());
+      this.telemetryManager.setTime(var1.gameTime());
    }
 
    @Override
@@ -952,7 +951,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             if (var8 != null) {
                var8.startRiding(var2, true);
                if (var8 == this.minecraft.player && !var3) {
-                  if (var2 instanceof Boat) {
+                  if (var2 instanceof AbstractBoat) {
                      this.minecraft.player.yRotO = var2.getYRot();
                      this.minecraft.player.setYRot(var2.getYRot());
                      this.minecraft.player.setYHeadRot(var2.getYRot());
@@ -1050,9 +1049,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          boolean var10 = var2.isDebug();
          boolean var11 = var2.isFlat();
          int var12 = var2.seaLevel();
-         ClientLevel.ClientLevelData var13 = new ClientLevel.ClientLevelData(
-            this.enabledFeatures, this.levelData.getDifficulty(), this.levelData.isHardcore(), var11
-         );
+         ClientLevel.ClientLevelData var13 = new ClientLevel.ClientLevelData(this.levelData.getDifficulty(), this.levelData.isHardcore(), var11);
          this.levelData = var13;
          this.level = new ClientLevel(
             this, var13, var3, var4, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelRenderer, var10, var2.seed(), var12

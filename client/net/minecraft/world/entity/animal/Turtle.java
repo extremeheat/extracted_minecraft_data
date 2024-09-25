@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -28,7 +27,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -44,6 +42,7 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -74,7 +73,7 @@ public class Turtle extends Animal {
       .withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.TURTLE.getHeight(), -0.25F))
       .scale(0.3F);
    int layEggCounter;
-   public static final Predicate<LivingEntity> BABY_ON_LAND_SELECTOR = var0 -> var0.isBaby() && !var0.isInWater();
+   public static final TargetingConditions.Selector BABY_ON_LAND_SELECTOR = (var0, var1) -> var0.isBaby() && !var0.isInWater();
 
    public Turtle(EntityType<? extends Turtle> var1, Level var2) {
       super(var1, var2);
@@ -299,8 +298,8 @@ public class Turtle extends Animal {
    @Override
    protected void ageBoundaryReached() {
       super.ageBoundaryReached();
-      if (!this.isBaby() && this.level().getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-         this.spawnAtLocation(Items.TURTLE_SCUTE, 1);
+      if (!this.isBaby() && this.level() instanceof ServerLevel var1 && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         this.spawnAtLocation(var1, Items.TURTLE_SCUTE, 1);
       }
    }
 
@@ -325,7 +324,7 @@ public class Turtle extends Animal {
 
    @Override
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
-      this.hurt(this.damageSources().lightningBolt(), 3.4028235E38F);
+      this.hurtServer(var1, this.damageSources().lightningBolt(), 3.4028235E38F);
    }
 
    @Override
@@ -364,7 +363,7 @@ public class Turtle extends Animal {
          this.animal.resetLove();
          this.partner.resetLove();
          RandomSource var2 = this.animal.getRandom();
-         if (this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
             this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), var2.nextInt(7) + 1));
          }
       }

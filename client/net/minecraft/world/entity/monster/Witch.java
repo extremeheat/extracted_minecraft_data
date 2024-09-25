@@ -59,7 +59,7 @@ public class Witch extends Raider implements RangedAttackMob {
    protected void registerGoals() {
       super.registerGoals();
       this.healRaidersGoal = new NearestHealableRaiderTargetGoal<>(
-         this, Raider.class, true, var1 -> var1 != null && this.hasActiveRaid() && var1.getType() != EntityType.WITCH
+         this, Raider.class, true, (var1, var2) -> this.hasActiveRaid() && var1.getType() != EntityType.WITCH
       );
       this.attackPlayersGoal = new NearestAttackableWitchTargetGoal<>(this, Player.class, 10, true, false, null);
       this.goalSelector.addGoal(1, new FloatGoal(this));

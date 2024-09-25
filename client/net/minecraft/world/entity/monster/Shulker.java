@@ -13,6 +13,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -410,22 +411,22 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       if (this.isClosed()) {
-         Entity var3 = var1.getDirectEntity();
-         if (var3 instanceof AbstractArrow) {
+         Entity var4 = var2.getDirectEntity();
+         if (var4 instanceof AbstractArrow) {
             return false;
          }
       }
 
-      if (!super.hurt(var1, var2)) {
+      if (!super.hurtServer(var1, var2, var3)) {
          return false;
       } else {
          if ((double)this.getHealth() < (double)this.getMaxHealth() * 0.5 && this.random.nextInt(4) == 0) {
             this.teleportSomewhere();
-         } else if (var1.is(DamageTypeTags.IS_PROJECTILE)) {
-            Entity var4 = var1.getDirectEntity();
-            if (var4 != null && var4.getType() == EntityType.SHULKER_BULLET) {
+         } else if (var2.is(DamageTypeTags.IS_PROJECTILE)) {
+            Entity var5 = var2.getDirectEntity();
+            if (var5 != null && var5.getType() == EntityType.SHULKER_BULLET) {
                this.hitByShulkerBullet();
             }
          }
@@ -623,7 +624,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    static class ShulkerDefenseAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
       public ShulkerDefenseAttackGoal(Shulker var1) {
-         super(var1, LivingEntity.class, 10, true, false, var0 -> var0 instanceof Enemy);
+         super(var1, LivingEntity.class, 10, true, false, (var0, var1x) -> var0 instanceof Enemy);
       }
 
       @Override

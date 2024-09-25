@@ -12,6 +12,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -125,27 +126,39 @@ public class ItemFrame extends HangingEntity {
    }
 
    @Override
-   public void kill() {
+   public void kill(ServerLevel var1) {
       this.removeFramedMap(this.getItem());
-      super.kill();
+      super.kill(var1);
+   }
+
+   private boolean shouldDamageDropItem(DamageSource var1) {
+      return !var1.is(DamageTypeTags.IS_EXPLOSION) && !this.getItem().isEmpty();
+   }
+
+   private static boolean canHurtWhenFixed(DamageSource var0) {
+      return var0.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || var0.isCreativePlayer();
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.fixed) {
-         return !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !var1.isCreativePlayer() ? false : super.hurt(var1, var2);
-      } else if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else if (!var1.is(DamageTypeTags.IS_EXPLOSION) && !this.getItem().isEmpty()) {
-         if (!this.level().isClientSide) {
-            this.dropItem(var1.getEntity(), false);
-            this.gameEvent(GameEvent.BLOCK_CHANGE, var1.getEntity());
-            this.playSound(this.getRemoveItemSound(), 1.0F, 1.0F);
-         }
+   public boolean hurtClient(DamageSource var1) {
+      return this.fixed && !canHurtWhenFixed(var1) ? false : !this.isInvulnerableToBase(var1);
+   }
 
-         return true;
+   @Override
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (!this.fixed) {
+         if (this.isInvulnerableToBase(var2)) {
+            return false;
+         } else if (this.shouldDamageDropItem(var2)) {
+            this.dropItem(var1, var2.getEntity(), false);
+            this.gameEvent(GameEvent.BLOCK_CHANGE, var2.getEntity());
+            this.playSound(this.getRemoveItemSound(), 1.0F, 1.0F);
+            return true;
+         } else {
+            return super.hurtServer(var1, var2, var3);
+         }
       } else {
-         return super.hurt(var1, var2);
+         return canHurtWhenFixed(var2) && super.hurtServer(var1, var2, var3);
       }
    }
 
@@ -161,10 +174,10 @@ public class ItemFrame extends HangingEntity {
    }
 
    @Override
-   public void dropItem(@Nullable Entity var1) {
+   public void dropItem(ServerLevel var1, @Nullable Entity var2) {
       this.playSound(this.getBreakSound(), 1.0F, 1.0F);
-      this.dropItem(var1, true);
-      this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
+      this.dropItem(var1, var2, true);
+      this.gameEvent(GameEvent.BLOCK_CHANGE, var2);
    }
 
    public SoundEvent getBreakSound() {
@@ -180,29 +193,29 @@ public class ItemFrame extends HangingEntity {
       return SoundEvents.ITEM_FRAME_PLACE;
    }
 
-   private void dropItem(@Nullable Entity var1, boolean var2) {
+   private void dropItem(ServerLevel var1, @Nullable Entity var2, boolean var3) {
       if (!this.fixed) {
-         ItemStack var3 = this.getItem();
+         ItemStack var4 = this.getItem();
          this.setItem(ItemStack.EMPTY);
-         if (!this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-            if (var1 == null) {
-               this.removeFramedMap(var3);
+         if (!var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+            if (var2 == null) {
+               this.removeFramedMap(var4);
             }
          } else {
-            if (var1 instanceof Player var4 && var4.hasInfiniteMaterials()) {
-               this.removeFramedMap(var3);
+            if (var2 instanceof Player var5 && var5.hasInfiniteMaterials()) {
+               this.removeFramedMap(var4);
                return;
             }
 
-            if (var2) {
-               this.spawnAtLocation(this.getFrameItemStack());
+            if (var3) {
+               this.spawnAtLocation(var1, this.getFrameItemStack());
             }
 
-            if (!var3.isEmpty()) {
-               var3 = var3.copy();
-               this.removeFramedMap(var3);
+            if (!var4.isEmpty()) {
+               var4 = var4.copy();
+               this.removeFramedMap(var4);
                if (this.random.nextFloat() < this.dropChance) {
-                  this.spawnAtLocation(var3);
+                  this.spawnAtLocation(var1, var4);
                }
             }
          }

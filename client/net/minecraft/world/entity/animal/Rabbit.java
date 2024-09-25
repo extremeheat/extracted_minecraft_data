@@ -173,7 +173,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    }
 
    @Override
-   public void customServerAiStep() {
+   public void customServerAiStep(ServerLevel var1) {
       if (this.jumpDelayTicks > 0) {
          this.jumpDelayTicks--;
       }
@@ -192,28 +192,28 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
          }
 
          if (this.getVariant() == Rabbit.Variant.EVIL && this.jumpDelayTicks == 0) {
-            LivingEntity var1 = this.getTarget();
-            if (var1 != null && this.distanceToSqr(var1) < 16.0) {
-               this.facePoint(var1.getX(), var1.getZ());
-               this.moveControl.setWantedPosition(var1.getX(), var1.getY(), var1.getZ(), this.moveControl.getSpeedModifier());
+            LivingEntity var2 = this.getTarget();
+            if (var2 != null && this.distanceToSqr(var2) < 16.0) {
+               this.facePoint(var2.getX(), var2.getZ());
+               this.moveControl.setWantedPosition(var2.getX(), var2.getY(), var2.getZ(), this.moveControl.getSpeedModifier());
                this.startJumping();
                this.wasOnGround = true;
             }
          }
 
-         Rabbit.RabbitJumpControl var4 = (Rabbit.RabbitJumpControl)this.jumpControl;
-         if (!var4.wantJump()) {
+         Rabbit.RabbitJumpControl var5 = (Rabbit.RabbitJumpControl)this.jumpControl;
+         if (!var5.wantJump()) {
             if (this.moveControl.hasWanted() && this.jumpDelayTicks == 0) {
-               Path var2 = this.navigation.getPath();
-               Vec3 var3 = new Vec3(this.moveControl.getWantedX(), this.moveControl.getWantedY(), this.moveControl.getWantedZ());
-               if (var2 != null && !var2.isDone()) {
-                  var3 = var2.getNextEntityPos(this);
+               Path var3 = this.navigation.getPath();
+               Vec3 var4 = new Vec3(this.moveControl.getWantedX(), this.moveControl.getWantedY(), this.moveControl.getWantedZ());
+               if (var3 != null && !var3.isDone()) {
+                  var4 = var3.getNextEntityPos(this);
                }
 
-               this.facePoint(var3.x, var3.z);
+               this.facePoint(var4.x, var4.z);
                this.startJumping();
             }
-         } else if (!var4.canJump()) {
+         } else if (!var5.canJump()) {
             this.enableJumpControl();
          }
       }
@@ -529,7 +529,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       @Override
       public boolean canUse() {
          if (this.nextStartTick <= 0) {
-            if (!this.rabbit.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (!getServerLevel(this.rabbit).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                return false;
             }
 

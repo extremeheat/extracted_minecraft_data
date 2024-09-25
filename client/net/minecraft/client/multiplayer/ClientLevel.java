@@ -66,7 +66,6 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.ExplosionDamageCalculator;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -122,6 +121,7 @@ public class ClientLevel extends Level {
    private int serverSimulationDistance;
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
    private final int seaLevel;
+   private boolean tickDayTime;
    private static final Set<Item> MARKER_PARTICLE_ITEMS = Set.of(Items.BARRIER, Items.LIGHT);
 
    public void handleBlockChangedAck(int var1) {
@@ -229,25 +229,16 @@ public class ClientLevel extends Level {
    }
 
    private void tickTime() {
-      this.setGameTime(this.levelData.getGameTime() + 1L);
-      if (this.levelData.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
-         this.setDayTime(this.levelData.getDayTime() + 1L);
+      this.clientLevelData.setGameTime(this.clientLevelData.getGameTime() + 1L);
+      if (this.tickDayTime) {
+         this.clientLevelData.setDayTime(this.clientLevelData.getDayTime() + 1L);
       }
    }
 
-   public void setGameTime(long var1) {
+   public void setTimeFromServer(long var1, long var3, boolean var5) {
       this.clientLevelData.setGameTime(var1);
-   }
-
-   public void setDayTime(long var1) {
-      if (var1 < 0L) {
-         var1 = -var1;
-         this.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, null);
-      } else {
-         this.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(true, null);
-      }
-
-      this.clientLevelData.setDayTime(var1);
+      this.clientLevelData.setDayTime(var3);
+      this.tickDayTime = var5;
    }
 
    public Iterable<Entity> entitiesForRendering() {
@@ -875,7 +866,6 @@ public class ClientLevel extends Level {
 
    public static class ClientLevelData implements WritableLevelData {
       private final boolean hardcore;
-      private final GameRules gameRules;
       private final boolean isFlat;
       private BlockPos spawnPos;
       private float spawnAngle;
@@ -885,12 +875,11 @@ public class ClientLevel extends Level {
       private Difficulty difficulty;
       private boolean difficultyLocked;
 
-      public ClientLevelData(FeatureFlagSet var1, Difficulty var2, boolean var3, boolean var4) {
+      public ClientLevelData(Difficulty var1, boolean var2, boolean var3) {
          super();
-         this.difficulty = var2;
-         this.hardcore = var3;
-         this.isFlat = var4;
-         this.gameRules = new GameRules(var1);
+         this.difficulty = var1;
+         this.hardcore = var2;
+         this.isFlat = var3;
       }
 
       @Override
@@ -945,11 +934,6 @@ public class ClientLevel extends Level {
       @Override
       public boolean isHardcore() {
          return this.hardcore;
-      }
-
-      @Override
-      public GameRules getGameRules() {
-         return this.gameRules;
       }
 
       @Override

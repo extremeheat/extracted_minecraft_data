@@ -55,7 +55,7 @@ public class CraftingMenu extends AbstractCraftingMenu {
          if (var9.isPresent()) {
             RecipeHolder var10 = (RecipeHolder)var9.get();
             CraftingRecipe var11 = (CraftingRecipe)var10.value();
-            if (var4.setRecipeUsed(var1, var7, var10)) {
+            if (var4.setRecipeUsed(var7, var10)) {
                ItemStack var12 = var11.assemble(var6, var1.registryAccess());
                if (var12.isItemEnabled(var1.enabledFeatures())) {
                   var8 = var12;

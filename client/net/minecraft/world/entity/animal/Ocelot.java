@@ -104,13 +104,13 @@ public class Ocelot extends Animal {
    }
 
    @Override
-   public void customServerAiStep() {
+   public void customServerAiStep(ServerLevel var1) {
       if (this.getMoveControl().hasWanted()) {
-         double var1 = this.getMoveControl().getSpeedModifier();
-         if (var1 == 0.6) {
+         double var2 = this.getMoveControl().getSpeedModifier();
+         if (var2 == 0.6) {
             this.setPose(Pose.CROUCHING);
             this.setSprinting(false);
-         } else if (var1 == 1.33) {
+         } else if (var2 == 1.33) {
             this.setPose(Pose.STANDING);
             this.setSprinting(true);
          } else {

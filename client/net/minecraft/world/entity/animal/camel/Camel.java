@@ -142,16 +142,16 @@ public class Camel extends AbstractHorse {
    }
 
    @Override
-   protected void customServerAiStep() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("camelBrain");
-      Brain var2 = this.getBrain();
-      var2.tick((ServerLevel)this.level(), this);
-      var1.pop();
-      var1.push("camelActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("camelBrain");
+      Brain var3 = this.getBrain();
+      var3.tick(var1, this);
+      var2.pop();
+      var2.push("camelActivityUpdate");
       CamelAi.updateActivity(this);
-      var1.pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    @Override
@@ -452,9 +452,9 @@ public class Camel extends AbstractHorse {
    }
 
    @Override
-   protected void actuallyHurt(DamageSource var1, float var2) {
+   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
       this.standUpInstantly();
-      super.actuallyHurt(var1, var2);
+      super.actuallyHurt(var1, var2, var3);
    }
 
    @Override

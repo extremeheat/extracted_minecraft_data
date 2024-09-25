@@ -191,7 +191,7 @@ public class TrialSpawnerData {
          if (var1x != null) {
             var2.levelEvent(3012, var1x.blockPosition(), TrialSpawner.FlameParticle.NORMAL.encode());
             if (var1x instanceof Mob var2x) {
-               var2x.dropPreservedEquipment();
+               var2x.dropPreservedEquipment(var2);
             }
 
             var1x.remove(Entity.RemovalReason.DISCARDED);

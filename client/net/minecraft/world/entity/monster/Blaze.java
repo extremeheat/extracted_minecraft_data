@@ -5,6 +5,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
@@ -118,21 +119,21 @@ public class Blaze extends Monster {
    }
 
    @Override
-   protected void customServerAiStep() {
+   protected void customServerAiStep(ServerLevel var1) {
       this.nextHeightOffsetChangeTick--;
       if (this.nextHeightOffsetChangeTick <= 0) {
          this.nextHeightOffsetChangeTick = 100;
          this.allowedHeightOffset = (float)this.random.triangle(0.5, 6.891);
       }
 
-      LivingEntity var1 = this.getTarget();
-      if (var1 != null && var1.getEyeY() > this.getEyeY() + (double)this.allowedHeightOffset && this.canAttack(var1)) {
-         Vec3 var2 = this.getDeltaMovement();
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, (0.30000001192092896 - var2.y) * 0.30000001192092896, 0.0));
+      LivingEntity var2 = this.getTarget();
+      if (var2 != null && var2.getEyeY() > this.getEyeY() + (double)this.allowedHeightOffset && this.canAttack(var2)) {
+         Vec3 var3 = this.getDeltaMovement();
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, (0.30000001192092896 - var3.y) * 0.30000001192092896, 0.0));
          this.hasImpulse = true;
       }
 
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    @Override
@@ -209,7 +210,7 @@ public class Blaze extends Monster {
 
                if (this.attackTime <= 0) {
                   this.attackTime = 20;
-                  this.blaze.doHurtTarget(var1);
+                  this.blaze.doHurtTarget(getServerLevel(this.blaze), var1);
                }
 
                this.blaze.getMoveControl().setWantedPosition(var1.getX(), var1.getY(), var1.getZ(), 1.0);

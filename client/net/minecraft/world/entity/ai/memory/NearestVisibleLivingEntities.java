@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 
@@ -20,12 +21,12 @@ public class NearestVisibleLivingEntities {
       this.lineOfSightTest = var0 -> false;
    }
 
-   public NearestVisibleLivingEntities(LivingEntity var1, List<LivingEntity> var2) {
+   public NearestVisibleLivingEntities(ServerLevel var1, LivingEntity var2, List<LivingEntity> var3) {
       super();
-      this.nearbyEntities = var2;
-      Object2BooleanOpenHashMap var3 = new Object2BooleanOpenHashMap(var2.size());
-      Predicate var4 = var1x -> Sensor.isEntityTargetable(var1, var1x);
-      this.lineOfSightTest = var2x -> var3.computeIfAbsent(var2x, var4);
+      this.nearbyEntities = var3;
+      Object2BooleanOpenHashMap var4 = new Object2BooleanOpenHashMap(var3.size());
+      Predicate var5 = var2x -> Sensor.isEntityTargetable(var1, var2, var2x);
+      this.lineOfSightTest = var2x -> var4.computeIfAbsent(var2x, var5);
    }
 
    public static NearestVisibleLivingEntities empty() {

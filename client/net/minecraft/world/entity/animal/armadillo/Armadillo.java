@@ -132,16 +132,16 @@ public class Armadillo extends Animal {
    }
 
    @Override
-   protected void customServerAiStep() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("armadilloBrain");
-      ((Brain<Armadillo>)this.brain).tick((ServerLevel)this.level(), this);
-      var1.pop();
-      var1.push("armadilloActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("armadilloBrain");
+      ((Brain<Armadillo>)this.brain).tick(var1, this);
+      var2.pop();
+      var2.push("armadilloActivityUpdate");
       ArmadilloAi.updateActivity(this);
-      var1.pop();
+      var2.pop();
       if (this.isAlive() && !this.isBaby() && --this.scuteTime <= 0) {
-         if (this.dropFromGiftLootTable(BuiltInLootTables.ARMADILLO_SHED, this::spawnAtLocation)) {
+         if (this.dropFromGiftLootTable(var1, BuiltInLootTables.ARMADILLO_SHED, this::spawnAtLocation)) {
             this.playSound(SoundEvents.ARMADILLO_SCUTE_DROP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             this.gameEvent(GameEvent.ENTITY_PLACE);
          }
@@ -149,7 +149,7 @@ public class Armadillo extends Animal {
          this.scuteTime = this.pickNextScuteDropTime();
       }
 
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    private int pickNextScuteDropTime() {
@@ -277,24 +277,24 @@ public class Armadillo extends Animal {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       if (this.isScared()) {
-         var2 = (var2 - 1.0F) / 2.0F;
+         var3 = (var3 - 1.0F) / 2.0F;
       }
 
-      return super.hurt(var1, var2);
+      return super.hurtServer(var1, var2, var3);
    }
 
    @Override
-   protected void actuallyHurt(DamageSource var1, float var2) {
-      super.actuallyHurt(var1, var2);
+   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
+      super.actuallyHurt(var1, var2, var3);
       if (!this.isNoAi() && !this.isDeadOrDying()) {
-         if (var1.getEntity() instanceof LivingEntity) {
+         if (var2.getEntity() instanceof LivingEntity) {
             this.getBrain().setMemoryWithExpiry(MemoryModuleType.DANGER_DETECTED_RECENTLY, true, 80L);
             if (this.canStayRolledUp()) {
                this.rollUp();
             }
-         } else if (var1.is(DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES)) {
+         } else if (var2.is(DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES)) {
             this.rollOut();
          }
       }
@@ -315,9 +315,12 @@ public class Armadillo extends Animal {
       if (this.isBaby()) {
          return false;
       } else {
-         this.spawnAtLocation(new ItemStack(Items.ARMADILLO_SCUTE));
-         this.gameEvent(GameEvent.ENTITY_INTERACT);
-         this.playSound(SoundEvents.ARMADILLO_BRUSH);
+         if (this.level() instanceof ServerLevel var1) {
+            this.spawnAtLocation(var1, new ItemStack(Items.ARMADILLO_SCUTE));
+            this.gameEvent(GameEvent.ENTITY_INTERACT);
+            this.playSound(SoundEvents.ARMADILLO_BRUSH);
+         }
+
          return true;
       }
    }

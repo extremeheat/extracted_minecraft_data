@@ -80,7 +80,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       this.goalSelector.addGoal(6, new Drowned.DrownedSwimUpGoal(this, 1.0, this.level().getSeaLevel()));
       this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this, Drowned.class).setAlertOthers(ZombifiedPiglin.class));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::okTarget));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, (var1, var2) -> this.okTarget(var1)));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, false));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Axolotl.class, true, false));
@@ -106,12 +106,12 @@ public class Drowned extends Zombie implements RangedAttackMob {
          boolean var6 = var1.getDifficulty() != Difficulty.PEACEFUL
             && (EntitySpawnReason.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4))
             && (EntitySpawnReason.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER));
-         if (var6 && EntitySpawnReason.isSpawner(var2)) {
-            return true;
-         } else {
+         if (!var6 || !EntitySpawnReason.isSpawner(var2) && var2 != EntitySpawnReason.REINFORCEMENT) {
             return var5.is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)
                ? var4.nextInt(15) == 0 && var6
                : var4.nextInt(40) == 0 && isDeepEnoughToSpawn(var1, var3) && var6;
+         } else {
+            return true;
          }
       }
    }
@@ -143,6 +143,11 @@ public class Drowned extends Zombie implements RangedAttackMob {
    @Override
    protected SoundEvent getSwimSound() {
       return SoundEvents.DROWNED_SWIM;
+   }
+
+   @Override
+   protected boolean canSpawnInLiquids() {
+      return true;
    }
 
    @Override

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -42,20 +43,20 @@ public class NewMinecartBehavior extends MinecartBehavior {
 
    @Override
    public void tick() {
-      if (this.level().isClientSide) {
-         this.lerpClientPositionAndRotation();
-         boolean var3 = BaseRailBlock.isRail(this.level().getBlockState(this.minecart.getCurrentBlockPosOrRailBelow()));
-         this.minecart.setOnRails(var3);
-      } else {
-         BlockPos var1 = this.minecart.getCurrentBlockPosOrRailBelow();
-         BlockState var2 = this.level().getBlockState(var1);
+      if (this.level() instanceof ServerLevel var1) {
+         BlockPos var5 = this.minecart.getCurrentBlockPosOrRailBelow();
+         BlockState var3 = this.level().getBlockState(var5);
          if (this.minecart.isFirstTick()) {
-            this.minecart.setOnRails(BaseRailBlock.isRail(var2));
-            this.adjustToRails(var1, var2, true);
+            this.minecart.setOnRails(BaseRailBlock.isRail(var3));
+            this.adjustToRails(var5, var3, true);
          }
 
          this.minecart.applyGravity();
-         this.minecart.moveAlongTrack();
+         this.minecart.moveAlongTrack(var1);
+      } else {
+         this.lerpClientPositionAndRotation();
+         boolean var4 = BaseRailBlock.isRail(this.level().getBlockState(this.minecart.getCurrentBlockPosOrRailBelow()));
+         this.minecart.setOnRails(var4);
       }
    }
 
@@ -217,119 +218,119 @@ public class NewMinecartBehavior extends MinecartBehavior {
    }
 
    @Override
-   public void moveAlongTrack() {
-      for (NewMinecartBehavior.TrackIteration var1 = new NewMinecartBehavior.TrackIteration();
-         var1.shouldIterate() && this.minecart.isAlive();
-         var1.firstIteration = false
+   public void moveAlongTrack(ServerLevel var1) {
+      for (NewMinecartBehavior.TrackIteration var2 = new NewMinecartBehavior.TrackIteration();
+         var2.shouldIterate() && this.minecart.isAlive();
+         var2.firstIteration = false
       ) {
-         Vec3 var2 = this.getDeltaMovement();
-         BlockPos var3 = this.minecart.getCurrentBlockPosOrRailBelow();
-         BlockState var4 = this.level().getBlockState(var3);
-         boolean var5 = BaseRailBlock.isRail(var4);
-         if (this.minecart.isOnRails() != var5) {
-            this.minecart.setOnRails(var5);
-            this.adjustToRails(var3, var4, false);
+         Vec3 var3 = this.getDeltaMovement();
+         BlockPos var4 = this.minecart.getCurrentBlockPosOrRailBelow();
+         BlockState var5 = this.level().getBlockState(var4);
+         boolean var6 = BaseRailBlock.isRail(var5);
+         if (this.minecart.isOnRails() != var6) {
+            this.minecart.setOnRails(var6);
+            this.adjustToRails(var4, var5, false);
          }
 
-         if (var5) {
+         if (var6) {
             this.minecart.resetFallDistance();
             this.minecart.setOldPosAndRot();
-            if (var4.is(Blocks.ACTIVATOR_RAIL)) {
-               this.minecart.activateMinecart(var3.getX(), var3.getY(), var3.getZ(), var4.getValue(PoweredRailBlock.POWERED));
+            if (var5.is(Blocks.ACTIVATOR_RAIL)) {
+               this.minecart.activateMinecart(var4.getX(), var4.getY(), var4.getZ(), var5.getValue(PoweredRailBlock.POWERED));
             }
 
-            RailShape var6 = var4.getValue(((BaseRailBlock)var4.getBlock()).getShapeProperty());
-            Vec3 var7 = this.calculateTrackSpeed(var2.horizontal(), var1, var3, var4, var6);
-            if (var1.firstIteration) {
-               var1.movementLeft = var7.horizontalDistance();
+            RailShape var7 = var5.getValue(((BaseRailBlock)var5.getBlock()).getShapeProperty());
+            Vec3 var8 = this.calculateTrackSpeed(var1, var3.horizontal(), var2, var4, var5, var7);
+            if (var2.firstIteration) {
+               var2.movementLeft = var8.horizontalDistance();
             } else {
-               var1.movementLeft = var1.movementLeft + (var7.horizontalDistance() - var2.horizontalDistance());
+               var2.movementLeft = var2.movementLeft + (var8.horizontalDistance() - var3.horizontalDistance());
             }
 
-            this.setDeltaMovement(var7);
-            var1.movementLeft = this.minecart.makeStepAlongTrack(var3, var6, var1.movementLeft);
+            this.setDeltaMovement(var8);
+            var2.movementLeft = this.minecart.makeStepAlongTrack(var4, var7, var2.movementLeft);
          } else {
-            this.minecart.comeOffTrack();
-            var1.movementLeft = 0.0;
+            this.minecart.comeOffTrack(var1);
+            var2.movementLeft = 0.0;
          }
 
-         Vec3 var12 = this.position();
-         Vec3 var13 = var12.subtract(this.minecart.oldPosition());
-         double var8 = var13.length();
-         if (var8 > 9.999999747378752E-6) {
-            if (!(var13.horizontalDistanceSqr() > 9.999999747378752E-6)) {
+         Vec3 var13 = this.position();
+         Vec3 var14 = var13.subtract(this.minecart.oldPosition());
+         double var9 = var14.length();
+         if (var9 > 9.999999747378752E-6) {
+            if (!(var14.horizontalDistanceSqr() > 9.999999747378752E-6)) {
                if (!this.minecart.isOnRails()) {
                   this.setXRot(this.minecart.onGround() ? 0.0F : Mth.rotLerp(0.2F, this.getXRot(), 0.0F));
                }
             } else {
-               float var10 = 180.0F - (float)(Math.atan2(var13.z, var13.x) * 180.0 / 3.141592653589793);
-               float var11 = this.minecart.onGround() && !this.minecart.isOnRails()
+               float var11 = 180.0F - (float)(Math.atan2(var14.z, var14.x) * 180.0 / 3.141592653589793);
+               float var12 = this.minecart.onGround() && !this.minecart.isOnRails()
                   ? 0.0F
-                  : 90.0F - (float)(Math.atan2(var13.horizontalDistance(), var13.y) * 180.0 / 3.141592653589793);
-               var10 += this.minecart.isFlipped() ? 180.0F : 0.0F;
-               var11 *= this.minecart.isFlipped() ? -1.0F : 1.0F;
-               this.setRotation(var10, var11);
+                  : 90.0F - (float)(Math.atan2(var14.horizontalDistance(), var14.y) * 180.0 / 3.141592653589793);
+               var11 += this.minecart.isFlipped() ? 180.0F : 0.0F;
+               var12 *= this.minecart.isFlipped() ? -1.0F : 1.0F;
+               this.setRotation(var11, var12);
             }
 
             this.lerpSteps
                .add(
                   new NewMinecartBehavior.MinecartStep(
-                     var12, this.getDeltaMovement(), this.getYRot(), this.getXRot(), (float)Math.min(var8, this.getMaxSpeed())
+                     var13, this.getDeltaMovement(), this.getYRot(), this.getXRot(), (float)Math.min(var9, this.getMaxSpeed(var1))
                   )
                );
-         } else if (var2.horizontalDistanceSqr() > 0.0) {
-            this.lerpSteps.add(new NewMinecartBehavior.MinecartStep(var12, this.getDeltaMovement(), this.getYRot(), this.getXRot(), 1.0F));
+         } else if (var3.horizontalDistanceSqr() > 0.0) {
+            this.lerpSteps.add(new NewMinecartBehavior.MinecartStep(var13, this.getDeltaMovement(), this.getYRot(), this.getXRot(), 1.0F));
          }
 
-         if (var8 > 9.999999747378752E-6 || var1.firstIteration) {
+         if (var9 > 9.999999747378752E-6 || var2.firstIteration) {
             this.minecart.applyEffectsFromBlocks();
          }
       }
    }
 
-   private Vec3 calculateTrackSpeed(Vec3 var1, NewMinecartBehavior.TrackIteration var2, BlockPos var3, BlockState var4, RailShape var5) {
-      Vec3 var6 = var1;
-      if (!var2.hasGainedSlopeSpeed) {
-         Vec3 var7 = this.calculateSlopeSpeed(var1, var5);
-         if (var7.horizontalDistanceSqr() != var1.horizontalDistanceSqr()) {
-            var2.hasGainedSlopeSpeed = true;
-            var6 = var7;
+   private Vec3 calculateTrackSpeed(ServerLevel var1, Vec3 var2, NewMinecartBehavior.TrackIteration var3, BlockPos var4, BlockState var5, RailShape var6) {
+      Vec3 var7 = var2;
+      if (!var3.hasGainedSlopeSpeed) {
+         Vec3 var8 = this.calculateSlopeSpeed(var2, var6);
+         if (var8.horizontalDistanceSqr() != var2.horizontalDistanceSqr()) {
+            var3.hasGainedSlopeSpeed = true;
+            var7 = var8;
          }
       }
 
-      if (var2.firstIteration) {
-         Vec3 var9 = this.calculatePlayerInputSpeed(var6);
-         if (var9.horizontalDistanceSqr() != var6.horizontalDistanceSqr()) {
-            var2.hasHalted = true;
-            var6 = var9;
+      if (var3.firstIteration) {
+         Vec3 var10 = this.calculatePlayerInputSpeed(var7);
+         if (var10.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
+            var3.hasHalted = true;
+            var7 = var10;
          }
       }
 
-      if (!var2.hasHalted) {
-         Vec3 var10 = this.calculateHaltTrackSpeed(var6, var4);
-         if (var10.horizontalDistanceSqr() != var6.horizontalDistanceSqr()) {
-            var2.hasHalted = true;
-            var6 = var10;
+      if (!var3.hasHalted) {
+         Vec3 var11 = this.calculateHaltTrackSpeed(var7, var5);
+         if (var11.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
+            var3.hasHalted = true;
+            var7 = var11;
          }
       }
 
-      if (var2.firstIteration) {
-         var6 = this.minecart.applyNaturalSlowdown(var6);
-         if (var6.lengthSqr() > 0.0) {
-            double var11 = Math.min(var6.length(), this.minecart.getMaxSpeed());
-            var6 = var6.normalize().scale(var11);
+      if (var3.firstIteration) {
+         var7 = this.minecart.applyNaturalSlowdown(var7);
+         if (var7.lengthSqr() > 0.0) {
+            double var12 = Math.min(var7.length(), this.minecart.getMaxSpeed(var1));
+            var7 = var7.normalize().scale(var12);
          }
       }
 
-      if (!var2.hasBoosted) {
-         Vec3 var12 = this.calculateBoostTrackSpeed(var6, var3, var4);
-         if (var12.horizontalDistanceSqr() != var6.horizontalDistanceSqr()) {
-            var2.hasBoosted = true;
-            var6 = var12;
+      if (!var3.hasBoosted) {
+         Vec3 var13 = this.calculateBoostTrackSpeed(var7, var4, var5);
+         if (var13.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
+            var3.hasBoosted = true;
+            var7 = var13;
          }
       }
 
-      return var6;
+      return var7;
    }
 
    private Vec3 calculateSlopeSpeed(Vec3 var1, RailShape var2) {
@@ -461,8 +462,8 @@ public class NewMinecartBehavior extends MinecartBehavior {
    }
 
    @Override
-   public double getMaxSpeed() {
-      return (double)this.level().getGameRules().getInt(GameRules.RULE_MINECART_MAX_SPEED) * (this.minecart.isInWater() ? 0.5 : 1.0) / 20.0;
+   public double getMaxSpeed(ServerLevel var1) {
+      return (double)var1.getGameRules().getInt(GameRules.RULE_MINECART_MAX_SPEED) * (this.minecart.isInWater() ? 0.5 : 1.0) / 20.0;
    }
 
    private boolean isDecending(Vec3 var1, RailShape var2) {

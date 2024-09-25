@@ -194,14 +194,17 @@ public class ExperienceOrb extends Entity {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public final boolean hurtClient(DamageSource var1) {
+      return !this.isInvulnerableToBase(var1);
+   }
+
+   @Override
+   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableToBase(var2)) {
          return false;
-      } else if (this.level().isClientSide) {
-         return true;
       } else {
          this.markHurt();
-         this.health = (int)((float)this.health - var2);
+         this.health = (int)((float)this.health - var3);
          if (this.health <= 0) {
             this.discard();
          }

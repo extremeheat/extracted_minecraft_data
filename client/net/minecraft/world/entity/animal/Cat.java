@@ -174,13 +174,13 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
    }
 
    @Override
-   public void customServerAiStep() {
+   public void customServerAiStep(ServerLevel var1) {
       if (this.getMoveControl().hasWanted()) {
-         double var1 = this.getMoveControl().getSpeedModifier();
-         if (var1 == 0.6) {
+         double var2 = this.getMoveControl().getSpeedModifier();
+         if (var2 == 0.6) {
             this.setPose(Pose.CROUCHING);
             this.setSprinting(false);
-         } else if (var1 == 1.33) {
+         } else if (var2 == 1.33) {
             this.setPose(Pose.STANDING);
             this.setSprinting(true);
          } else {
@@ -565,18 +565,17 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
          var2.set(this.cat.blockPosition());
          this.cat
             .dropFromGiftLootTable(
+               getServerLevel(this.cat),
                BuiltInLootTables.CAT_MORNING_GIFT,
-               var2x -> this.cat
-                     .level()
-                     .addFreshEntity(
-                        new ItemEntity(
-                           this.cat.level(),
-                           (double)var2.getX() - (double)Mth.sin(this.cat.yBodyRot * 0.017453292F),
-                           (double)var2.getY(),
-                           (double)var2.getZ() + (double)Mth.cos(this.cat.yBodyRot * 0.017453292F),
-                           var2x
-                        )
+               (var2x, var3) -> var2x.addFreshEntity(
+                     new ItemEntity(
+                        var2x,
+                        (double)var2.getX() - (double)Mth.sin(this.cat.yBodyRot * 0.017453292F),
+                        (double)var2.getY(),
+                        (double)var2.getZ() + (double)Mth.cos(this.cat.yBodyRot * 0.017453292F),
+                        var3
                      )
+                  )
             );
       }
 

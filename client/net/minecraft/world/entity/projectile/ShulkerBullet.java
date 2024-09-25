@@ -224,6 +224,10 @@ public class ShulkerBullet extends Projectile {
       Vec3 var6 = this.getDeltaMovement();
       this.setPos(this.position().add(var6));
       this.applyEffectsFromBlocks();
+      if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
+         this.handlePortal();
+      }
+
       if (var1 != null && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
          this.hitTargetOrDeflectSelf(var1);
       }
@@ -283,7 +287,7 @@ public class ShulkerBullet extends Projectile {
       Entity var3 = this.getOwner();
       LivingEntity var4 = var3 instanceof LivingEntity ? (LivingEntity)var3 : null;
       DamageSource var5 = this.damageSources().mobProjectile(this, var4);
-      boolean var6 = var2.hurt(var5, 4.0F);
+      boolean var6 = var2.hurtOrSimulate(var5, 4.0F);
       if (var6) {
          if (this.level() instanceof ServerLevel var7) {
             EnchantmentHelper.doPostAttackEffects(var7, var2, var5);
@@ -319,13 +323,15 @@ public class ShulkerBullet extends Projectile {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (!this.level().isClientSide) {
-         this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
-         ((ServerLevel)this.level()).sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
-         this.destroy();
-      }
+   public boolean hurtClient(DamageSource var1) {
+      return true;
+   }
 
+   @Override
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
+      var1.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
+      this.destroy();
       return true;
    }
 

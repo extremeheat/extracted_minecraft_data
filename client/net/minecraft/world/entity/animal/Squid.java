@@ -172,12 +172,9 @@ public class Squid extends AgeableWaterCreature {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (super.hurt(var1, var2) && this.getLastHurtByMob() != null) {
-         if (!this.level().isClientSide) {
-            this.spawnInk();
-         }
-
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (super.hurtServer(var1, var2, var3) && this.getLastHurtByMob() != null) {
+         this.spawnInk();
          return true;
       } else {
          return false;

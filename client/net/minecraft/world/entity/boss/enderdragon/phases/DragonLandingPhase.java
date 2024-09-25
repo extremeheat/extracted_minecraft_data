@@ -2,6 +2,7 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -46,10 +47,10 @@ public class DragonLandingPhase extends AbstractDragonPhaseInstance {
    }
 
    @Override
-   public void doServerTick() {
+   public void doServerTick(ServerLevel var1) {
       if (this.targetLocation == null) {
          this.targetLocation = Vec3.atBottomCenterOf(
-            this.dragon.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()))
+            var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()))
          );
       }
 

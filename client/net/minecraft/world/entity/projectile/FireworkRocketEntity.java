@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -176,23 +177,23 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
             );
       }
 
-      if (!this.level().isClientSide && this.life > this.lifetime) {
-         this.explode();
+      if (this.life > this.lifetime && this.level() instanceof ServerLevel var11) {
+         this.explode(var11);
       }
    }
 
-   private void explode() {
-      this.level().broadcastEntityEvent(this, (byte)17);
+   private void explode(ServerLevel var1) {
+      var1.broadcastEntityEvent(this, (byte)17);
       this.gameEvent(GameEvent.EXPLODE, this.getOwner());
-      this.dealExplosionDamage();
+      this.dealExplosionDamage(var1);
       this.discard();
    }
 
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      if (!this.level().isClientSide) {
-         this.explode();
+      if (this.level() instanceof ServerLevel var2) {
+         this.explode(var2);
       }
    }
 
@@ -200,8 +201,8 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    protected void onHitBlock(BlockHitResult var1) {
       BlockPos var2 = new BlockPos(var1.getBlockPos());
       this.level().getBlockState(var2).entityInside(this.level(), var2, this);
-      if (!this.level().isClientSide() && this.hasExplosion()) {
-         this.explode();
+      if (this.level() instanceof ServerLevel var3 && this.hasExplosion()) {
+         this.explode(var3);
       }
 
       super.onHitBlock(var1);
@@ -211,37 +212,37 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       return !this.getExplosions().isEmpty();
    }
 
-   private void dealExplosionDamage() {
-      float var1 = 0.0F;
-      List var2 = this.getExplosions();
-      if (!var2.isEmpty()) {
-         var1 = 5.0F + (float)(var2.size() * 2);
+   private void dealExplosionDamage(ServerLevel var1) {
+      float var2 = 0.0F;
+      List var3 = this.getExplosions();
+      if (!var3.isEmpty()) {
+         var2 = 5.0F + (float)(var3.size() * 2);
       }
 
-      if (var1 > 0.0F) {
+      if (var2 > 0.0F) {
          if (this.attachedToEntity != null) {
-            this.attachedToEntity.hurt(this.damageSources().fireworks(this, this.getOwner()), 5.0F + (float)(var2.size() * 2));
+            this.attachedToEntity.hurtServer(var1, this.damageSources().fireworks(this, this.getOwner()), 5.0F + (float)(var3.size() * 2));
          }
 
-         double var3 = 5.0;
-         Vec3 var5 = this.position();
+         double var4 = 5.0;
+         Vec3 var6 = this.position();
 
-         for (LivingEntity var8 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0))) {
-            if (var8 != this.attachedToEntity && !(this.distanceToSqr(var8) > 25.0)) {
-               boolean var9 = false;
+         for (LivingEntity var9 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0))) {
+            if (var9 != this.attachedToEntity && !(this.distanceToSqr(var9) > 25.0)) {
+               boolean var10 = false;
 
-               for (int var10 = 0; var10 < 2; var10++) {
-                  Vec3 var11 = new Vec3(var8.getX(), var8.getY(0.5 * (double)var10), var8.getZ());
-                  BlockHitResult var12 = this.level().clip(new ClipContext(var5, var11, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-                  if (var12.getType() == HitResult.Type.MISS) {
-                     var9 = true;
+               for (int var11 = 0; var11 < 2; var11++) {
+                  Vec3 var12 = new Vec3(var9.getX(), var9.getY(0.5 * (double)var11), var9.getZ());
+                  BlockHitResult var13 = this.level().clip(new ClipContext(var6, var12, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+                  if (var13.getType() == HitResult.Type.MISS) {
+                     var10 = true;
                      break;
                   }
                }
 
-               if (var9) {
-                  float var13 = var1 * (float)Math.sqrt((5.0 - (double)this.distanceTo(var8)) / 5.0);
-                  var8.hurt(this.damageSources().fireworks(this, this.getOwner()), var13);
+               if (var10) {
+                  float var14 = var2 * (float)Math.sqrt((5.0 - (double)this.distanceTo(var9)) / 5.0);
+                  var9.hurtServer(var1, this.damageSources().fireworks(this, this.getOwner()), var14);
                }
             }
          }

@@ -11,6 +11,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
@@ -72,7 +73,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
       return false;
    }
 
-   public void tick(Level var1, BlockPos var2, BlockState var3) {
+   public void tick(ServerLevel var1, BlockPos var2, BlockState var3) {
       this.getType().tick(var1, var2, var3, this);
    }
 
@@ -84,7 +85,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
       return this.getType().isRandomlyTicking();
    }
 
-   public void randomTick(Level var1, BlockPos var2, RandomSource var3) {
+   public void randomTick(ServerLevel var1, BlockPos var2, RandomSource var3) {
       this.getType().randomTick(var1, var2, this, var3);
    }
 

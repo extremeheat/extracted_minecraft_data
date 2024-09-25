@@ -97,6 +97,15 @@ public class FallingBlockEntity extends Entity {
       return false;
    }
 
+   @Override
+   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (!this.isInvulnerableToBase(var2)) {
+         this.markHurt();
+      }
+
+      return false;
+   }
+
    public void setStartPos(BlockPos var1) {
       this.entityData.set(DATA_START_POS, var1);
    }
@@ -136,85 +145,86 @@ public class FallingBlockEntity extends Entity {
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.applyEffectsFromBlocks();
          this.handlePortal();
-         if (!this.level().isClientSide && (this.isAlive() || this.forceTickAfterTeleportToDuplicate)) {
-            BlockPos var2 = this.blockPosition();
-            boolean var3 = this.blockState.getBlock() instanceof ConcretePowderBlock;
-            boolean var4 = var3 && this.level().getFluidState(var2).is(FluidTags.WATER);
-            double var5 = this.getDeltaMovement().lengthSqr();
-            if (var3 && var5 > 1.0) {
-               BlockHitResult var7 = this.level()
+         if (this.level() instanceof ServerLevel var2 && (this.isAlive() || this.forceTickAfterTeleportToDuplicate)) {
+            BlockPos var17 = this.blockPosition();
+            boolean var4 = this.blockState.getBlock() instanceof ConcretePowderBlock;
+            boolean var5 = var4 && this.level().getFluidState(var17).is(FluidTags.WATER);
+            double var6 = this.getDeltaMovement().lengthSqr();
+            if (var4 && var6 > 1.0) {
+               BlockHitResult var8 = this.level()
                   .clip(new ClipContext(new Vec3(this.xo, this.yo, this.zo), this.position(), ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, this));
-               if (var7.getType() != HitResult.Type.MISS && this.level().getFluidState(var7.getBlockPos()).is(FluidTags.WATER)) {
-                  var2 = var7.getBlockPos();
-                  var4 = true;
+               if (var8.getType() != HitResult.Type.MISS && this.level().getFluidState(var8.getBlockPos()).is(FluidTags.WATER)) {
+                  var17 = var8.getBlockPos();
+                  var5 = true;
                }
             }
 
-            if (this.onGround() || var4) {
-               BlockState var16 = this.level().getBlockState(var2);
+            if (!this.onGround() && !var5) {
+               if (this.time > 100 && (var17.getY() <= this.level().getMinY() || var17.getY() > this.level().getMaxY()) || this.time > 600) {
+                  if (this.dropItem && var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                     this.spawnAtLocation(var2, var1);
+                  }
+
+                  this.discard();
+               }
+            } else {
+               BlockState var18 = this.level().getBlockState(var17);
                this.setDeltaMovement(this.getDeltaMovement().multiply(0.7, -0.5, 0.7));
-               if (!var16.is(Blocks.MOVING_PISTON)) {
+               if (!var18.is(Blocks.MOVING_PISTON)) {
                   if (!this.cancelDrop) {
-                     boolean var8 = var16.canBeReplaced(new DirectionalPlaceContext(this.level(), var2, Direction.DOWN, ItemStack.EMPTY, Direction.UP));
-                     boolean var9 = FallingBlock.isFree(this.level().getBlockState(var2.below())) && (!var3 || !var4);
-                     boolean var10 = this.blockState.canSurvive(this.level(), var2) && !var9;
-                     if (var8 && var10) {
-                        if (this.blockState.hasProperty(BlockStateProperties.WATERLOGGED) && this.level().getFluidState(var2).getType() == Fluids.WATER) {
+                     boolean var9 = var18.canBeReplaced(new DirectionalPlaceContext(this.level(), var17, Direction.DOWN, ItemStack.EMPTY, Direction.UP));
+                     boolean var10 = FallingBlock.isFree(this.level().getBlockState(var17.below())) && (!var4 || !var5);
+                     boolean var11 = this.blockState.canSurvive(this.level(), var17) && !var10;
+                     if (var9 && var11) {
+                        if (this.blockState.hasProperty(BlockStateProperties.WATERLOGGED) && this.level().getFluidState(var17).getType() == Fluids.WATER) {
                            this.blockState = this.blockState.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(true));
                         }
 
-                        if (this.level().setBlock(var2, this.blockState, 3)) {
+                        if (this.level().setBlock(var17, this.blockState, 3)) {
                            ((ServerLevel)this.level())
                               .getChunkSource()
                               .chunkMap
-                              .broadcast(this, new ClientboundBlockUpdatePacket(var2, this.level().getBlockState(var2)));
+                              .broadcast(this, new ClientboundBlockUpdatePacket(var17, this.level().getBlockState(var17)));
                            this.discard();
                            if (var1 instanceof Fallable) {
-                              ((Fallable)var1).onLand(this.level(), var2, this.blockState, var16, this);
+                              ((Fallable)var1).onLand(this.level(), var17, this.blockState, var18, this);
                            }
 
                            if (this.blockData != null && this.blockState.hasBlockEntity()) {
-                              BlockEntity var11 = this.level().getBlockEntity(var2);
-                              if (var11 != null) {
-                                 CompoundTag var12 = var11.saveWithoutMetadata(this.level().registryAccess());
+                              BlockEntity var12 = this.level().getBlockEntity(var17);
+                              if (var12 != null) {
+                                 CompoundTag var13 = var12.saveWithoutMetadata(this.level().registryAccess());
 
-                                 for (String var14 : this.blockData.getAllKeys()) {
-                                    var12.put(var14, this.blockData.get(var14).copy());
+                                 for (String var15 : this.blockData.getAllKeys()) {
+                                    var13.put(var15, this.blockData.get(var15).copy());
                                  }
 
                                  try {
-                                    var11.loadWithComponents(var12, this.level().registryAccess());
-                                 } catch (Exception var15) {
-                                    LOGGER.error("Failed to load block entity from falling block", var15);
+                                    var12.loadWithComponents(var13, this.level().registryAccess());
+                                 } catch (Exception var16) {
+                                    LOGGER.error("Failed to load block entity from falling block", var16);
                                  }
 
-                                 var11.setChanged();
+                                 var12.setChanged();
                               }
                            }
-                        } else if (this.dropItem && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                        } else if (this.dropItem && var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                            this.discard();
-                           this.callOnBrokenAfterFall(var1, var2);
-                           this.spawnAtLocation(var1);
+                           this.callOnBrokenAfterFall(var1, var17);
+                           this.spawnAtLocation(var2, var1);
                         }
                      } else {
                         this.discard();
-                        if (this.dropItem && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-                           this.callOnBrokenAfterFall(var1, var2);
-                           this.spawnAtLocation(var1);
+                        if (this.dropItem && var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                           this.callOnBrokenAfterFall(var1, var17);
+                           this.spawnAtLocation(var2, var1);
                         }
                      }
                   } else {
                      this.discard();
-                     this.callOnBrokenAfterFall(var1, var2);
+                     this.callOnBrokenAfterFall(var1, var17);
                   }
                }
-            } else if (!this.level().isClientSide
-               && (this.time > 100 && (var2.getY() <= this.level().getMinY() || var2.getY() > this.level().getMaxY()) || this.time > 600)) {
-               if (this.dropItem && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-                  this.spawnAtLocation(var1);
-               }
-
-               this.discard();
             }
          }
 

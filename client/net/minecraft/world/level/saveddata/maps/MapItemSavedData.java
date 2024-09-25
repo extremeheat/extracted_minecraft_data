@@ -27,8 +27,10 @@ import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -201,17 +203,20 @@ public class MapItemSavedData extends SavedData {
 
       for (int var4 = 0; var4 < this.carriedBy.size(); var4++) {
          MapItemSavedData.HoldingPlayer var5 = this.carriedBy.get(var4);
-         String var6 = var5.player.getName().getString();
-         if (!var5.player.isRemoved() && (var5.player.getInventory().contains(var8) || var2.isFramed())) {
-            if (!var2.isFramed() && var5.player.level().dimension() == this.dimension && this.trackingPosition) {
-               this.addDecoration(
-                  MapDecorationTypes.PLAYER, var5.player.level(), var6, var5.player.getX(), var5.player.getZ(), (double)var5.player.getYRot(), null
-               );
+         Player var6 = var5.player;
+         String var7 = var6.getName().getString();
+         if (!var6.isRemoved() && (var6.getInventory().contains(var8) || var2.isFramed())) {
+            if (!var2.isFramed() && var6.level().dimension() == this.dimension && this.trackingPosition) {
+               this.addDecoration(MapDecorationTypes.PLAYER, var6.level(), var7, var6.getX(), var6.getZ(), (double)var6.getYRot(), null);
             }
          } else {
-            this.carriedByPlayers.remove(var5.player);
+            this.carriedByPlayers.remove(var6);
             this.carriedBy.remove(var5);
-            this.removeDecoration(var6);
+            this.removeDecoration(var7);
+         }
+
+         if (!var6.equals(var1) && hasMapInvisibilityItemEquipped(var6)) {
+            this.removeDecoration(var7);
          }
       }
 
@@ -223,7 +228,7 @@ public class MapItemSavedData extends SavedData {
             this.removeDecoration(getFrameKey(var12.getEntityId()));
          }
 
-         MapFrame var7 = new MapFrame(var11, var9.getDirection().get2DDataValue() * 90, var9.getId());
+         MapFrame var13 = new MapFrame(var11, var9.getDirection().get2DDataValue() * 90, var9.getId());
          this.addDecoration(
             MapDecorationTypes.FRAME,
             var1.level(),
@@ -233,7 +238,7 @@ public class MapItemSavedData extends SavedData {
             (double)(var9.getDirection().get2DDataValue() * 90),
             null
          );
-         this.frameMarkers.put(var7.getId(), var7);
+         this.frameMarkers.put(var13.getId(), var13);
       }
 
       MapDecorations var10 = var2.getOrDefault(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY);
@@ -244,6 +249,16 @@ public class MapItemSavedData extends SavedData {
             }
          });
       }
+   }
+
+   private static boolean hasMapInvisibilityItemEquipped(Player var0) {
+      for (EquipmentSlot var4 : EquipmentSlot.values()) {
+         if (var4 != EquipmentSlot.MAINHAND && var4 != EquipmentSlot.OFFHAND && var0.getItemBySlot(var4).is(ItemTags.MAP_INVISIBILITY_EQUIPMENT)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    private void removeDecoration(String var1) {

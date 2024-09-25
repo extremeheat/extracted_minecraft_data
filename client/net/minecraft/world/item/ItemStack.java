@@ -394,7 +394,7 @@ public final class ItemStack implements DataComponentHolder {
       int var5 = var2.getCount();
       ItemStack var6 = this;
       if (var3 != null) {
-         var6 = var3.convertIntoRemainder(var1, this, var5);
+         var6 = var3.convertIntoRemainder(this, var5, var1.hasInfiniteMaterials(), var1::handleExtraItemsCreatedOnUse);
       }
 
       if (var4 != null) {

@@ -354,12 +354,12 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    @Override
-   public boolean mayInteract(Level var1, BlockPos var2) {
+   public boolean mayInteract(ServerLevel var1, BlockPos var2) {
       Entity var3 = this.getOwner();
       return var3 instanceof Player ? var3.mayInteract(var1, var2) : var3 == null || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
    }
 
-   public boolean mayBreak(Level var1) {
+   public boolean mayBreak(ServerLevel var1) {
       return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && var1.getGameRules().getBoolean(GameRules.RULE_PROJECTILESCANBREAKBLOCKS);
    }
 
@@ -382,6 +382,15 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    @Override
    public int getDimensionChangingDelay() {
       return 2;
+   }
+
+   @Override
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (!this.isInvulnerableToBase(var2)) {
+         this.markHurt();
+      }
+
+      return false;
    }
 
    @FunctionalInterface

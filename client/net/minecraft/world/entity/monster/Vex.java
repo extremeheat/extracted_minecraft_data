@@ -265,7 +265,7 @@ public class Vex extends Monster implements TraceableEntity {
          LivingEntity var1 = Vex.this.getTarget();
          if (var1 != null) {
             if (Vex.this.getBoundingBox().intersects(var1.getBoundingBox())) {
-               Vex.this.doHurtTarget(var1);
+               Vex.this.doHurtTarget(getServerLevel(Vex.this.level()), var1);
                Vex.this.setIsCharging(false);
             } else {
                double var2 = Vex.this.distanceToSqr(var1);

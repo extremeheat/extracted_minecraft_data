@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.targeting;
 
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -14,7 +14,7 @@ public class TargetingConditions {
    private boolean checkLineOfSight = true;
    private boolean testInvisible = true;
    @Nullable
-   private Predicate<LivingEntity> selector;
+   private TargetingConditions.Selector selector;
 
    private TargetingConditions(boolean var1) {
       super();
@@ -53,43 +53,48 @@ public class TargetingConditions {
       return this;
    }
 
-   public TargetingConditions selector(@Nullable Predicate<LivingEntity> var1) {
+   public TargetingConditions selector(@Nullable TargetingConditions.Selector var1) {
       this.selector = var1;
       return this;
    }
 
-   public boolean test(@Nullable LivingEntity var1, LivingEntity var2) {
-      if (var1 == var2) {
+   public boolean test(ServerLevel var1, @Nullable LivingEntity var2, LivingEntity var3) {
+      if (var2 == var3) {
          return false;
-      } else if (!var2.canBeSeenByAnyone()) {
+      } else if (!var3.canBeSeenByAnyone()) {
          return false;
-      } else if (this.selector != null && !this.selector.test(var2)) {
+      } else if (this.selector != null && !this.selector.test(var3, var1)) {
          return false;
       } else {
-         if (var1 == null) {
-            if (this.isCombat && (!var2.canBeSeenAsEnemy() || var2.level().getDifficulty() == Difficulty.PEACEFUL)) {
+         if (var2 == null) {
+            if (this.isCombat && (!var3.canBeSeenAsEnemy() || var1.getDifficulty() == Difficulty.PEACEFUL)) {
                return false;
             }
          } else {
-            if (this.isCombat && (!var1.canAttack(var2) || !var1.canAttackType(var2.getType()) || var1.isAlliedTo(var2))) {
+            if (this.isCombat && (!var2.canAttack(var3) || !var2.canAttackType(var3.getType()) || var2.isAlliedTo(var3))) {
                return false;
             }
 
             if (this.range > 0.0) {
-               double var3 = this.testInvisible ? var2.getVisibilityPercent(var1) : 1.0;
-               double var5 = Math.max(this.range * var3, 2.0);
-               double var7 = var1.distanceToSqr(var2.getX(), var2.getY(), var2.getZ());
-               if (var7 > var5 * var5) {
+               double var4 = this.testInvisible ? var3.getVisibilityPercent(var2) : 1.0;
+               double var6 = Math.max(this.range * var4, 2.0);
+               double var8 = var2.distanceToSqr(var3.getX(), var3.getY(), var3.getZ());
+               if (var8 > var6 * var6) {
                   return false;
                }
             }
 
-            if (this.checkLineOfSight && var1 instanceof Mob var9 && !var9.getSensing().hasLineOfSight(var2)) {
+            if (this.checkLineOfSight && var2 instanceof Mob var10 && !var10.getSensing().hasLineOfSight(var3)) {
                return false;
             }
          }
 
          return true;
       }
+   }
+
+   @FunctionalInterface
+   public interface Selector {
+      boolean test(LivingEntity var1, ServerLevel var2);
    }
 }

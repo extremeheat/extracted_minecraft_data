@@ -62,7 +62,7 @@ public class WitherSkeleton extends AbstractSkeleton {
       super.dropCustomDeathLoot(var1, var2, var3);
       if (var2.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          var5.increaseDroppedSkulls();
-         this.spawnAtLocation(Items.WITHER_SKELETON_SKULL);
+         this.spawnAtLocation(var1, Items.WITHER_SKELETON_SKULL);
       }
    }
 
@@ -85,12 +85,12 @@ public class WitherSkeleton extends AbstractSkeleton {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
-      if (!super.doHurtTarget(var1)) {
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      if (!super.doHurtTarget(var1, var2)) {
          return false;
       } else {
-         if (var1 instanceof LivingEntity) {
-            ((LivingEntity)var1).addEffect(new MobEffectInstance(MobEffects.WITHER, 200), this);
+         if (var2 instanceof LivingEntity) {
+            ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.WITHER, 200), this);
          }
 
          return true;

@@ -1,8 +1,6 @@
 package net.minecraft.world.item;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -16,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.BundleTooltip;
@@ -72,6 +71,7 @@ public class BundleItem extends Item {
             }
 
             var1.set(DataComponents.BUNDLE_CONTENTS, var7.toImmutable());
+            this.broadcastChangesOnContainerMenu(var4);
             return true;
          } else if (var3 == ClickAction.SECONDARY && var6.isEmpty()) {
             ItemStack var8 = var7.removeOne();
@@ -85,6 +85,7 @@ public class BundleItem extends Item {
             }
 
             var1.set(DataComponents.BUNDLE_CONTENTS, var7.toImmutable());
+            this.broadcastChangesOnContainerMenu(var4);
             return true;
          } else {
             return false;
@@ -111,6 +112,7 @@ public class BundleItem extends Item {
                }
 
                var1.set(DataComponents.BUNDLE_CONTENTS, var8.toImmutable());
+               this.broadcastChangesOnContainerMenu(var5);
                return true;
             } else if (var4 == ClickAction.SECONDARY && var2.isEmpty()) {
                if (var3.allowModification(var5)) {
@@ -122,6 +124,7 @@ public class BundleItem extends Item {
                }
 
                var1.set(DataComponents.BUNDLE_CONTENTS, var8.toImmutable());
+               this.broadcastChangesOnContainerMenu(var5);
                return true;
             } else {
                toggleSelectedItem(var1, -1);
@@ -254,30 +257,6 @@ public class BundleItem extends Item {
       }
    }
 
-   public static List<BundleItem> getAllBundleItemColors() {
-      return Stream.of(
-            Items.BUNDLE,
-            Items.WHITE_BUNDLE,
-            Items.ORANGE_BUNDLE,
-            Items.MAGENTA_BUNDLE,
-            Items.LIGHT_BLUE_BUNDLE,
-            Items.YELLOW_BUNDLE,
-            Items.LIME_BUNDLE,
-            Items.PINK_BUNDLE,
-            Items.GRAY_BUNDLE,
-            Items.LIGHT_GRAY_BUNDLE,
-            Items.CYAN_BUNDLE,
-            Items.BLACK_BUNDLE,
-            Items.BROWN_BUNDLE,
-            Items.GREEN_BUNDLE,
-            Items.RED_BUNDLE,
-            Items.BLUE_BUNDLE,
-            Items.PURPLE_BUNDLE
-         )
-         .map(var0 -> (BundleItem)var0)
-         .toList();
-   }
-
    public static Item getByColor(DyeColor var0) {
       return switch (var0) {
          case WHITE -> Items.WHITE_BUNDLE;
@@ -313,5 +292,12 @@ public class BundleItem extends Item {
 
    private static void playDropContentsSound(Entity var0) {
       var0.playSound(SoundEvents.BUNDLE_DROP_CONTENTS, 0.8F, 0.8F + var0.level().getRandom().nextFloat() * 0.4F);
+   }
+
+   private void broadcastChangesOnContainerMenu(Player var1) {
+      AbstractContainerMenu var2 = var1.containerMenu;
+      if (var2 != null) {
+         var2.slotsChanged(var1.getInventory());
+      }
    }
 }

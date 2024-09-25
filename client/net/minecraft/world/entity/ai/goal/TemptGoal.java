@@ -34,7 +34,7 @@ public class TemptGoal extends Goal {
       this.items = var4;
       this.canScare = var5;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      this.targetingConditions = TEMPT_TARGETING.copy().selector(this::shouldFollow);
+      this.targetingConditions = TEMPT_TARGETING.copy().selector((var1x, var2x) -> this.shouldFollow(var1x));
    }
 
    @Override
@@ -43,7 +43,7 @@ public class TemptGoal extends Goal {
          this.calmDown--;
          return false;
       } else {
-         this.player = this.mob.level().getNearestPlayer(this.targetingConditions.range(this.mob.getAttributeValue(Attributes.TEMPT_RANGE)), this.mob);
+         this.player = getServerLevel(this.mob).getNearestPlayer(this.targetingConditions.range(this.mob.getAttributeValue(Attributes.TEMPT_RANGE)), this.mob);
          return this.player != null;
       }
    }

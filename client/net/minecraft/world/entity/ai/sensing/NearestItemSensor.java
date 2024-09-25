@@ -30,7 +30,7 @@ public class NearestItemSensor extends Sensor<Mob> {
       List var4 = var1.getEntitiesOfClass(ItemEntity.class, var2.getBoundingBox().inflate(32.0, 16.0, 32.0), var0 -> true);
       var4.sort(Comparator.comparingDouble(var2::distanceToSqr));
       Optional var5 = var4.stream()
-         .filter(var1x -> var2.wantsToPickUp(var1x.getItem()))
+         .filter(var2x -> var2.wantsToPickUp(var1, var2x.getItem()))
          .filter(var1x -> var1x.closerThan(var2, 32.0))
          .filter(var2::hasLineOfSight)
          .findFirst();

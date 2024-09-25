@@ -4,6 +4,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -26,24 +27,39 @@ public abstract class VehicleEntity extends Entity {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.level().isClientSide || this.isRemoved()) {
+   public boolean hurtClient(DamageSource var1) {
+      return true;
+   }
+
+   @Override
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isRemoved()) {
          return true;
-      } else if (this.isInvulnerableTo(var1)) {
+      } else if (this.isInvulnerableToBase(var2)) {
          return false;
       } else {
-         this.setHurtDir(-this.getHurtDir());
-         this.setHurtTime(10);
-         this.markHurt();
-         this.setDamage(this.getDamage() + var2 * 10.0F);
-         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-         boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
-         if ((var3 || !(this.getDamage() > 40.0F)) && !this.shouldSourceDestroy(var1)) {
-            if (var3) {
+         boolean var10000;
+         label32: {
+            this.setHurtDir(-this.getHurtDir());
+            this.setHurtTime(10);
+            this.markHurt();
+            this.setDamage(this.getDamage() + var3 * 10.0F);
+            this.gameEvent(GameEvent.ENTITY_DAMAGE, var2.getEntity());
+            if (var2.getEntity() instanceof Player var5 && var5.getAbilities().instabuild) {
+               var10000 = true;
+               break label32;
+            }
+
+            var10000 = false;
+         }
+
+         boolean var4 = var10000;
+         if ((var4 || !(this.getDamage() > 40.0F)) && !this.shouldSourceDestroy(var2)) {
+            if (var4) {
                this.discard();
             }
          } else {
-            this.destroy(var1);
+            this.destroy(var1, var2);
          }
 
          return true;
@@ -56,15 +72,15 @@ public abstract class VehicleEntity extends Entity {
 
    @Override
    public boolean ignoreExplosion(Explosion var1) {
-      return var1.getIndirectSourceEntity() instanceof Mob && !this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+      return var1.getIndirectSourceEntity() instanceof Mob && !var1.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
    }
 
-   public void destroy(Item var1) {
-      this.kill();
-      if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-         ItemStack var2 = new ItemStack(var1);
-         var2.set(DataComponents.CUSTOM_NAME, this.getCustomName());
-         this.spawnAtLocation(var2);
+   public void destroy(ServerLevel var1, Item var2) {
+      this.kill(var1);
+      if (var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+         ItemStack var3 = new ItemStack(var2);
+         var3.set(DataComponents.CUSTOM_NAME, this.getCustomName());
+         this.spawnAtLocation(var1, var3);
       }
    }
 
@@ -99,8 +115,8 @@ public abstract class VehicleEntity extends Entity {
       return this.entityData.get(DATA_ID_HURTDIR);
    }
 
-   protected void destroy(DamageSource var1) {
-      this.destroy(this.getDropItem());
+   protected void destroy(ServerLevel var1, DamageSource var2) {
+      this.destroy(var1, this.getDropItem());
    }
 
    @Override
@@ -108,5 +124,5 @@ public abstract class VehicleEntity extends Entity {
       return 10;
    }
 
-   abstract Item getDropItem();
+   protected abstract Item getDropItem();
 }

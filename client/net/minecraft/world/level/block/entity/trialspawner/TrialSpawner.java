@@ -169,7 +169,7 @@ public final class TrialSpawner {
       return this.entitySelector;
    }
 
-   public boolean canSpawnInLevel(Level var1) {
+   public boolean canSpawnInLevel(ServerLevel var1) {
       if (this.overridePeacefulAndMobSpawnRule) {
          return true;
       } else {

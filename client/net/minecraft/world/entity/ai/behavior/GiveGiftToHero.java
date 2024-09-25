@@ -85,7 +85,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
       BehaviorUtils.lookAtEntity(var2, var5);
       if (this.isWithinThrowingDistance(var2, var5)) {
          if (var3 - this.timeSinceStart > 20L) {
-            this.throwGift(var2, var5);
+            this.throwGift(var1, var2, var5);
             this.giftGivenDuringThisRun = true;
          }
       } else {
@@ -100,8 +100,8 @@ public class GiveGiftToHero extends Behavior<Villager> {
       var2.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
    }
 
-   private void throwGift(Villager var1, LivingEntity var2) {
-      var1.dropFromGiftLootTable(getLootTableToThrow(var1), var2x -> BehaviorUtils.throwItem(var1, var2x, var2.position()));
+   private void throwGift(ServerLevel var1, Villager var2, LivingEntity var3) {
+      var2.dropFromGiftLootTable(var1, getLootTableToThrow(var2), (var2x, var3x) -> BehaviorUtils.throwItem(var2, var3x, var3.position()));
    }
 
    private static ResourceKey<LootTable> getLootTableToThrow(Villager var0) {

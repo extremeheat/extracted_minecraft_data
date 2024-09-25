@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -77,17 +78,17 @@ public abstract class HangingEntity extends BlockAttachedEntity {
    public abstract void playPlacementSound();
 
    @Override
-   public ItemEntity spawnAtLocation(ItemStack var1, float var2) {
-      ItemEntity var3 = new ItemEntity(
+   public ItemEntity spawnAtLocation(ServerLevel var1, ItemStack var2, float var3) {
+      ItemEntity var4 = new ItemEntity(
          this.level(),
          this.getX() + (double)((float)this.direction.getStepX() * 0.15F),
-         this.getY() + (double)var2,
+         this.getY() + (double)var3,
          this.getZ() + (double)((float)this.direction.getStepZ() * 0.15F),
-         var1
+         var2
       );
-      var3.setDefaultPickUpDelay();
-      this.level().addFreshEntity(var3);
-      return var3;
+      var4.setDefaultPickUpDelay();
+      this.level().addFreshEntity(var4);
+      return var4;
    }
 
    @Override

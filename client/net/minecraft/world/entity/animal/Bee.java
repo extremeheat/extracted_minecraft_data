@@ -219,25 +219,22 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
-      DamageSource var2 = this.damageSources().sting(this);
-      boolean var3 = var1.hurt(var2, (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
-      if (var3) {
-         if (this.level() instanceof ServerLevel var4) {
-            EnchantmentHelper.doPostAttackEffects(var4, var1, var2);
-         }
-
-         if (var1 instanceof LivingEntity var6) {
-            var6.setStingerCount(var6.getStingerCount() + 1);
-            byte var7 = 0;
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      DamageSource var3 = this.damageSources().sting(this);
+      boolean var4 = var2.hurtServer(var1, var3, (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
+      if (var4) {
+         EnchantmentHelper.doPostAttackEffects(var1, var2, var3);
+         if (var2 instanceof LivingEntity var5) {
+            var5.setStingerCount(var5.getStingerCount() + 1);
+            byte var6 = 0;
             if (this.level().getDifficulty() == Difficulty.NORMAL) {
-               var7 = 10;
+               var6 = 10;
             } else if (this.level().getDifficulty() == Difficulty.HARD) {
-               var7 = 18;
+               var6 = 18;
             }
 
-            if (var7 > 0) {
-               var6.addEffect(new MobEffectInstance(MobEffects.POISON, var7 * 20, 0), this);
+            if (var6 > 0) {
+               var5.addEffect(new MobEffectInstance(MobEffects.POISON, var6 * 20, 0), this);
             }
          }
 
@@ -246,7 +243,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
          this.playSound(SoundEvents.BEE_STING, 1.0F, 1.0F);
       }
 
-      return var3;
+      return var4;
    }
 
    @Override
@@ -367,8 +364,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    @Override
-   protected void customServerAiStep() {
-      boolean var1 = this.hasStung();
+   protected void customServerAiStep(ServerLevel var1) {
+      boolean var2 = this.hasStung();
       if (this.isInWaterOrBubble()) {
          this.underWaterTicks++;
       } else {
@@ -376,13 +373,13 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       }
 
       if (this.underWaterTicks > 20) {
-         this.hurt(this.damageSources().drown(), 1.0F);
+         this.hurtServer(var1, this.damageSources().drown(), 1.0F);
       }
 
-      if (var1) {
+      if (var2) {
          this.timeSinceSting++;
          if (this.timeSinceSting % 5 == 0 && this.random.nextInt(Mth.clamp(1200 - this.timeSinceSting, 1, 1200)) == 0) {
-            this.hurt(this.damageSources().generic(), this.getHealth());
+            this.hurtServer(var1, this.damageSources().generic(), this.getHealth());
          }
       }
 
@@ -390,9 +387,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
          this.ticksWithoutNectarSinceExitingHive++;
       }
 
-      if (!this.level().isClientSide) {
-         this.updatePersistentAnger((ServerLevel)this.level(), false);
-      }
+      this.updatePersistentAnger(var1, false);
    }
 
    public void resetTicksWithoutNectarSinceExitingHive() {
@@ -636,15 +631,12 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableTo(var1, var2)) {
          return false;
       } else {
-         if (!this.level().isClientSide) {
-            this.beePollinateGoal.stopPollinating();
-         }
-
-         return super.hurt(var1, var2);
+         this.beePollinateGoal.stopPollinating();
+         return super.hurtServer(var1, var2, var3);
       }
    }
 

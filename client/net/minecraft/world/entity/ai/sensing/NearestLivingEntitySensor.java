@@ -25,7 +25,7 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
       var6.sort(Comparator.comparingDouble(var2::distanceToSqr));
       Brain var7 = var2.getBrain();
       var7.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, var6);
-      var7.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(var2, var6));
+      var7.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(var1, var2, var6));
    }
 
    @Override

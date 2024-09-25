@@ -270,19 +270,19 @@ public class BeehiveBlock extends BaseEntityBlock {
 
    @Override
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide
+      if (var1 instanceof ServerLevel var5
          && var4.isCreative()
-         && var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)
-         && var1.getBlockEntity(var2) instanceof BeehiveBlockEntity var6) {
-         int var7 = var3.getValue(HONEY_LEVEL);
-         boolean var8 = !var6.isEmpty();
-         if (var8 || var7 > 0) {
-            ItemStack var9 = new ItemStack(this);
-            var9.applyComponents(var6.collectComponents());
-            var9.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var7));
-            ItemEntity var10 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var9);
-            var10.setDefaultPickUpDelay();
-            var1.addFreshEntity(var10);
+         && var5.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)
+         && var1.getBlockEntity(var2) instanceof BeehiveBlockEntity var7) {
+         int var8 = var3.getValue(HONEY_LEVEL);
+         boolean var9 = !var7.isEmpty();
+         if (var9 || var8 > 0) {
+            ItemStack var10 = new ItemStack(this);
+            var10.applyComponents(var7.collectComponents());
+            var10.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var8));
+            ItemEntity var11 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var10);
+            var11.setDefaultPickUpDelay();
+            var1.addFreshEntity(var11);
          }
       }
 

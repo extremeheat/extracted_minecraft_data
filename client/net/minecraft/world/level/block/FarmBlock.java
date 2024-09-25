@@ -99,10 +99,10 @@ public class FarmBlock extends Block {
 
    @Override
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
-      if (!var1.isClientSide
+      if (var1 instanceof ServerLevel var6
          && var1.random.nextFloat() < var5 - 0.5F
          && var4 instanceof LivingEntity
-         && (var4 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))
+         && (var4 instanceof Player || var6.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))
          && var4.getBbWidth() * var4.getBbWidth() * var4.getBbHeight() > 0.512F) {
          turnToDirt(var4, var2, var1, var3);
       }

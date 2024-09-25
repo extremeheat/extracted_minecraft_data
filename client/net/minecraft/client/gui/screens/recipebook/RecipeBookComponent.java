@@ -311,8 +311,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
 
    protected abstract Component getRecipeFilterName();
 
-   public void renderGhostRecipe(GuiGraphics var1, int var2, int var3, boolean var4) {
-      this.ghostSlots.render(var1, this.minecraft, var2, var3, var4);
+   public void renderGhostRecipe(GuiGraphics var1, boolean var2) {
+      this.ghostSlots.render(var1, this.minecraft, var2);
    }
 
    @Override

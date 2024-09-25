@@ -30,6 +30,7 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -96,7 +97,7 @@ public class GameTestHelper {
    public void killAllEntitiesOfClass(Class var1) {
       AABB var2 = this.getBounds();
       List var3 = this.getLevel().getEntitiesOfClass(var1, var2.inflate(1.0), var0 -> !(var0 instanceof Player));
-      var3.forEach(Entity::kill);
+      var3.forEach(var1x -> var1x.kill(this.getLevel()));
    }
 
    public ItemEntity spawnItem(Item var1, Vec3 var2) {
@@ -135,6 +136,14 @@ public class GameTestHelper {
          var3.addFreshEntity(var4);
          return (E)var4;
       }
+   }
+
+   public void hurt(Entity var1, DamageSource var2, float var3) {
+      var1.hurtServer(this.getLevel(), var2, var3);
+   }
+
+   public void kill(Entity var1) {
+      var1.kill(this.getLevel());
    }
 
    public <E extends Entity> E findOneEntity(EntityType<E> var1) {

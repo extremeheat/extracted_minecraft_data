@@ -29,7 +29,7 @@ import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raider;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -42,9 +42,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class Ravager extends Raider {
-   private static final Predicate<Entity> ROAR_TARGET = var0 -> var0.isAlive()
-         && !(var0 instanceof Ravager)
-         && (var0.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || !var0.getType().equals(EntityType.ARMOR_STAND));
+   private static final Predicate<Entity> ROAR_TARGET_WITH_GRIEFING = var0 -> !(var0 instanceof Ravager) && var0.isAlive();
+   private static final Predicate<Entity> ROAR_TARGET_WITHOUT_GRIEFING = var0 -> ROAR_TARGET_WITH_GRIEFING.test(var0)
+         && !var0.getType().equals(EntityType.ARMOR_STAND);
+   private static final Predicate<LivingEntity> ROAR_TARGET_ON_CLIENT = var0 -> !(var0 instanceof Ravager)
+         && var0.isAlive()
+         && var0.isControlledByLocalInstance();
    private static final double BASE_MOVEMENT_SPEED = 0.3;
    private static final double ATTACK_MOVEMENT_SPEED = 0.35;
    private static final int STUNNED_COLOR = 8356754;
@@ -73,14 +76,14 @@ public class Ravager extends Raider {
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
       this.targetSelector.addGoal(2, new HurtByTargetGoal(this, Raider.class).setAlertOthers());
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, true));
-      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true, var0 -> !var0.isBaby()));
+      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true, (var0, var1) -> !var0.isBaby()));
       this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
    }
 
    @Override
    protected void updateControlFlags() {
       boolean var1 = !(this.getControllingPassenger() instanceof Mob) || this.getControllingPassenger().getType().is(EntityTypeTags.RAIDERS);
-      boolean var2 = !(this.getVehicle() instanceof Boat);
+      boolean var2 = !(this.getVehicle() instanceof AbstractBoat);
       this.goalSelector.setControlFlag(Goal.Flag.MOVE, var1);
       this.goalSelector.setControlFlag(Goal.Flag.JUMP, var1 && var2);
       this.goalSelector.setControlFlag(Goal.Flag.LOOK, var1);
@@ -136,21 +139,21 @@ public class Ravager extends Raider {
             this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(Mth.lerp(0.1, var3, var1));
          }
 
-         if (this.horizontalCollision && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            boolean var7 = false;
-            AABB var2 = this.getBoundingBox().inflate(0.2);
+         if (this.level() instanceof ServerLevel var8 && this.horizontalCollision && var8.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            boolean var9 = false;
+            AABB var10 = this.getBoundingBox().inflate(0.2);
 
-            for (BlockPos var4 : BlockPos.betweenClosed(
-               Mth.floor(var2.minX), Mth.floor(var2.minY), Mth.floor(var2.minZ), Mth.floor(var2.maxX), Mth.floor(var2.maxY), Mth.floor(var2.maxZ)
+            for (BlockPos var5 : BlockPos.betweenClosed(
+               Mth.floor(var10.minX), Mth.floor(var10.minY), Mth.floor(var10.minZ), Mth.floor(var10.maxX), Mth.floor(var10.maxY), Mth.floor(var10.maxZ)
             )) {
-               BlockState var5 = this.level().getBlockState(var4);
-               Block var6 = var5.getBlock();
-               if (var6 instanceof LeavesBlock) {
-                  var7 = this.level().destroyBlock(var4, true, this) || var7;
+               BlockState var6 = var8.getBlockState(var5);
+               Block var7 = var6.getBlock();
+               if (var7 instanceof LeavesBlock) {
+                  var9 = var8.destroyBlock(var5, true, this) || var9;
                }
             }
 
-            if (!var7 && this.onGround()) {
+            if (!var9 && this.onGround()) {
                this.jumpFromGround();
             }
          }
@@ -215,24 +218,34 @@ public class Ravager extends Raider {
 
    private void roar() {
       if (this.isAlive()) {
-         for (LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), ROAR_TARGET)) {
-            if (!(var3 instanceof AbstractIllager)) {
-               var3.hurt(this.damageSources().mobAttack(this), 6.0F);
+         if (this.level() instanceof ServerLevel var1) {
+            Predicate var11 = var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? ROAR_TARGET_WITH_GRIEFING : ROAR_TARGET_WITHOUT_GRIEFING;
+
+            for (LivingEntity var5 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), var11)) {
+               if (!(var5 instanceof AbstractIllager)) {
+                  var5.hurtServer(var1, this.damageSources().mobAttack(this), 6.0F);
+               }
+
+               if (!(var5 instanceof Player)) {
+                  this.strongKnockback(var5);
+               }
             }
 
-            this.strongKnockback(var3);
+            this.gameEvent(GameEvent.ENTITY_ACTION);
+         } else {
+            for (LivingEntity var15 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0), ROAR_TARGET_ON_CLIENT)) {
+               this.strongKnockback(var15);
+            }
+
+            Vec3 var14 = this.getBoundingBox().getCenter();
+
+            for (int var16 = 0; var16 < 40; var16++) {
+               double var17 = this.random.nextGaussian() * 0.2;
+               double var7 = this.random.nextGaussian() * 0.2;
+               double var9 = this.random.nextGaussian() * 0.2;
+               this.level().addParticle(ParticleTypes.POOF, var14.x, var14.y, var14.z, var17, var7, var9);
+            }
          }
-
-         Vec3 var10 = this.getBoundingBox().getCenter();
-
-         for (int var11 = 0; var11 < 40; var11++) {
-            double var4 = this.random.nextGaussian() * 0.2;
-            double var6 = this.random.nextGaussian() * 0.2;
-            double var8 = this.random.nextGaussian() * 0.2;
-            this.level().addParticle(ParticleTypes.POOF, var10.x, var10.y, var10.z, var4, var6, var8);
-         }
-
-         this.gameEvent(GameEvent.ENTITY_ACTION);
       }
    }
 
@@ -268,11 +281,11 @@ public class Ravager extends Raider {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
       this.attackTick = 10;
-      this.level().broadcastEntityEvent(this, (byte)4);
+      var1.broadcastEntityEvent(this, (byte)4);
       this.playSound(SoundEvents.RAVAGER_ATTACK, 1.0F, 1.0F);
-      return super.doHurtTarget(var1);
+      return super.doHurtTarget(var1, var2);
    }
 
    @Nullable

@@ -7,7 +7,6 @@ import net.minecraft.resources.ResourceLocation;
 
 public class FeatureFlags {
    public static final FeatureFlag VANILLA;
-   public static final FeatureFlag BUNDLE;
    public static final FeatureFlag TRADE_REBALANCE;
    public static final FeatureFlag REDSTONE_EXPERIMENTS;
    public static final FeatureFlag MINECART_IMPROVEMENTS;
@@ -37,7 +36,6 @@ public class FeatureFlags {
    static {
       FeatureFlagRegistry.Builder var0 = new FeatureFlagRegistry.Builder("main");
       VANILLA = var0.createVanilla("vanilla");
-      BUNDLE = var0.createVanilla("bundle");
       TRADE_REBALANCE = var0.createVanilla("trade_rebalance");
       REDSTONE_EXPERIMENTS = var0.createVanilla("redstone_experiments");
       MINECART_IMPROVEMENTS = var0.createVanilla("minecart_improvements");

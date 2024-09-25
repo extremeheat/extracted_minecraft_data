@@ -35,7 +35,6 @@ import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.npc.VillagerDataHolder;
 import net.minecraft.world.entity.npc.VillagerType;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.phys.Vec3;
 
 public class EntitySubPredicates {
@@ -49,12 +48,6 @@ public class EntitySubPredicates {
       "axolotl",
       EntitySubPredicates.EntityVariantPredicateType.create(
          Axolotl.Variant.CODEC, var0 -> var0 instanceof Axolotl var1 ? Optional.of(var1.getVariant()) : Optional.empty()
-      )
-   );
-   public static final EntitySubPredicates.EntityVariantPredicateType<Boat.Type> BOAT = register(
-      "boat",
-      EntitySubPredicates.EntityVariantPredicateType.create(
-         Boat.Type.CODEC, var0 -> var0 instanceof Boat var1 ? Optional.of(var1.getVariant()) : Optional.empty()
       )
    );
    public static final EntitySubPredicates.EntityVariantPredicateType<Fox.Variant> FOX = register(

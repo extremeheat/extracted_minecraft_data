@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,9 +31,9 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    }
 
    @Override
-   public void destroy(DamageSource var1) {
-      super.destroy(var1);
-      this.chestVehicleDestroyed(var1, this.level(), this);
+   public void destroy(ServerLevel var1, DamageSource var2) {
+      super.destroy(var1, var2);
+      this.chestVehicleDestroyed(var2, var1, this);
    }
 
    @Override

@@ -21,6 +21,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
@@ -131,13 +132,17 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    @Override
    public void tick() {
       super.tick();
+      if (this.level() instanceof ServerLevel var1) {
+         this.serverTick(var1);
+      } else {
+         this.clientTick();
+      }
+   }
+
+   private void clientTick() {
       boolean var1 = this.isWaiting();
       float var2 = this.getRadius();
-      if (this.level().isClientSide) {
-         if (var1 && this.random.nextBoolean()) {
-            return;
-         }
-
+      if (!var1 || !this.random.nextBoolean()) {
          ParticleOptions var3 = this.getParticle();
          int var4;
          float var5;
@@ -170,81 +175,80 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
                   );
             }
          }
+      }
+   }
+
+   private void serverTick(ServerLevel var1) {
+      if (this.tickCount >= this.waitTime + this.duration) {
+         this.discard();
       } else {
-         if (this.tickCount >= this.waitTime + this.duration) {
-            this.discard();
-            return;
+         boolean var2 = this.isWaiting();
+         boolean var3 = this.tickCount < this.waitTime;
+         if (var2 != var3) {
+            this.setWaiting(var3);
          }
 
-         boolean var16 = this.tickCount < this.waitTime;
-         if (var1 != var16) {
-            this.setWaiting(var16);
-         }
-
-         if (var16) {
-            return;
-         }
-
-         if (this.radiusPerTick != 0.0F) {
-            var2 += this.radiusPerTick;
-            if (var2 < 0.5F) {
-               this.discard();
-               return;
-            }
-
-            this.setRadius(var2);
-         }
-
-         if (this.tickCount % 5 == 0) {
-            this.victims.entrySet().removeIf(var1x -> this.tickCount >= var1x.getValue());
-            if (!this.potionContents.hasEffects()) {
-               this.victims.clear();
-            } else {
-               ArrayList var17 = Lists.newArrayList();
-               if (this.potionContents.potion().isPresent()) {
-                  for (MobEffectInstance var20 : this.potionContents.potion().get().value().getEffects()) {
-                     var17.add(
-                        new MobEffectInstance(
-                           var20.getEffect(), var20.mapDuration(var0 -> var0 / 4), var20.getAmplifier(), var20.isAmbient(), var20.isVisible()
-                        )
-                     );
-                  }
+         if (!var3) {
+            float var4 = this.getRadius();
+            if (this.radiusPerTick != 0.0F) {
+               var4 += this.radiusPerTick;
+               if (var4 < 0.5F) {
+                  this.discard();
+                  return;
                }
 
-               var17.addAll(this.potionContents.customEffects());
-               List var19 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
-               if (!var19.isEmpty()) {
-                  for (LivingEntity var22 : var19) {
-                     if (!this.victims.containsKey(var22) && var22.isAffectedByPotions() && !var17.stream().noneMatch(var22::canBeAffected)) {
-                        double var23 = var22.getX() - this.getX();
-                        double var10 = var22.getZ() - this.getZ();
-                        double var12 = var23 * var23 + var10 * var10;
-                        if (var12 <= (double)(var2 * var2)) {
-                           this.victims.put(var22, this.tickCount + this.reapplicationDelay);
+               this.setRadius(var4);
+            }
 
-                           for (MobEffectInstance var15 : var17) {
-                              if (var15.getEffect().value().isInstantenous()) {
-                                 var15.getEffect().value().applyInstantenousEffect(this, this.getOwner(), var22, var15.getAmplifier(), 0.5);
-                              } else {
-                                 var22.addEffect(new MobEffectInstance(var15), this);
+            if (this.tickCount % 5 == 0) {
+               this.victims.entrySet().removeIf(var1x -> this.tickCount >= var1x.getValue());
+               if (!this.potionContents.hasEffects()) {
+                  this.victims.clear();
+               } else {
+                  ArrayList var5 = Lists.newArrayList();
+                  if (this.potionContents.potion().isPresent()) {
+                     for (MobEffectInstance var7 : this.potionContents.potion().get().value().getEffects()) {
+                        var5.add(
+                           new MobEffectInstance(var7.getEffect(), var7.mapDuration(var0 -> var0 / 4), var7.getAmplifier(), var7.isAmbient(), var7.isVisible())
+                        );
+                     }
+                  }
+
+                  var5.addAll(this.potionContents.customEffects());
+                  List var17 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
+                  if (!var17.isEmpty()) {
+                     for (LivingEntity var8 : var17) {
+                        if (!this.victims.containsKey(var8) && var8.isAffectedByPotions() && !var5.stream().noneMatch(var8::canBeAffected)) {
+                           double var9 = var8.getX() - this.getX();
+                           double var11 = var8.getZ() - this.getZ();
+                           double var13 = var9 * var9 + var11 * var11;
+                           if (var13 <= (double)(var4 * var4)) {
+                              this.victims.put(var8, this.tickCount + this.reapplicationDelay);
+
+                              for (MobEffectInstance var16 : var5) {
+                                 if (var16.getEffect().value().isInstantenous()) {
+                                    var16.getEffect().value().applyInstantenousEffect(var1, this, this.getOwner(), var8, var16.getAmplifier(), 0.5);
+                                 } else {
+                                    var8.addEffect(new MobEffectInstance(var16), this);
+                                 }
                               }
-                           }
 
-                           if (this.radiusOnUse != 0.0F) {
-                              var2 += this.radiusOnUse;
-                              if (var2 < 0.5F) {
-                                 this.discard();
-                                 return;
+                              if (this.radiusOnUse != 0.0F) {
+                                 var4 += this.radiusOnUse;
+                                 if (var4 < 0.5F) {
+                                    this.discard();
+                                    return;
+                                 }
+
+                                 this.setRadius(var4);
                               }
 
-                              this.setRadius(var2);
-                           }
-
-                           if (this.durationOnUse != 0) {
-                              this.duration = this.duration + this.durationOnUse;
-                              if (this.duration <= 0) {
-                                 this.discard();
-                                 return;
+                              if (this.durationOnUse != 0) {
+                                 this.duration = this.duration + this.durationOnUse;
+                                 if (this.duration <= 0) {
+                                    this.discard();
+                                    return;
+                                 }
                               }
                            }
                         }
@@ -374,5 +378,10 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    @Override
    public EntityDimensions getDimensions(Pose var1) {
       return EntityDimensions.scalable(this.getRadius() * 2.0F, 0.5F);
+   }
+
+   @Override
+   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      return false;
    }
 }

@@ -21,10 +21,12 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Brightness;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -124,6 +126,11 @@ public abstract class Display extends Entity {
       if (RENDER_STATE_IDS.contains(var1.id())) {
          this.updateRenderState = true;
       }
+   }
+
+   @Override
+   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      return false;
    }
 
    private static Transformation createTransformation(SynchedEntityData var0) {
@@ -950,15 +957,15 @@ public abstract class Display extends Entity {
 
             try {
                MutableComponent var5 = Component.Serializer.fromJson(var4, this.registryAccess());
-               if (var5 != null) {
-                  CommandSourceStack var6 = this.createCommandSourceStack().withPermission(2);
-                  MutableComponent var7 = ComponentUtils.updateForEntity(var6, var5, this, 0);
-                  this.setText(var7);
+               if (var5 != null && this.level() instanceof ServerLevel var6) {
+                  CommandSourceStack var12 = this.createCommandSourceStackForNameResolution(var6).withPermission(2);
+                  MutableComponent var8 = ComponentUtils.updateForEntity(var12, var5, this, 0);
+                  this.setText(var8);
                } else {
                   this.setText(Component.empty());
                }
-            } catch (Exception var8) {
-               Display.LOGGER.warn("Failed to parse display entity text {}", var4, var8);
+            } catch (Exception var9) {
+               Display.LOGGER.warn("Failed to parse display entity text {}", var4, var9);
             }
          }
       }

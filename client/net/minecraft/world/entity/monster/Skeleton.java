@@ -126,7 +126,7 @@ public class Skeleton extends AbstractSkeleton {
       super.dropCustomDeathLoot(var1, var2, var3);
       if (var2.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          var5.increaseDroppedSkulls();
-         this.spawnAtLocation(Items.SKELETON_SKULL);
+         this.spawnAtLocation(var1, Items.SKELETON_SKULL);
       }
    }
 }

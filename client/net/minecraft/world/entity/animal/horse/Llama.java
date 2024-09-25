@@ -405,9 +405,9 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   protected void followMommy() {
+   protected void followMommy(ServerLevel var1) {
       if (!this.inCaravan() && this.isBaby()) {
-         super.followMommy();
+         super.followMommy(var1);
       }
    }
 
@@ -438,7 +438,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    static class LlamaAttackWolfGoal extends NearestAttackableTargetGoal<Wolf> {
       public LlamaAttackWolfGoal(Llama var1) {
-         super(var1, Wolf.class, 16, false, true, var0 -> !((Wolf)var0).isTame());
+         super(var1, Wolf.class, 16, false, true, (var0, var1x) -> !((Wolf)var0).isTame());
       }
 
       @Override

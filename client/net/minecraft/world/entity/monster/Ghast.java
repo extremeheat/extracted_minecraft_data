@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -47,7 +48,7 @@ public class Ghast extends FlyingMob implements Enemy {
       this.goalSelector.addGoal(7, new Ghast.GhastLookGoal(this));
       this.goalSelector.addGoal(7, new Ghast.GhastShootFireballGoal(this));
       this.targetSelector
-         .addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, var1 -> Math.abs(var1.getY() - this.getY()) <= 4.0));
+         .addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, (var1, var2) -> Math.abs(var1.getY() - this.getY()) <= 4.0));
    }
 
    public boolean isCharging() {
@@ -72,17 +73,17 @@ public class Ghast extends FlyingMob implements Enemy {
    }
 
    @Override
-   public boolean isInvulnerableTo(DamageSource var1) {
-      return this.isInvulnerable() && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(var1) && super.isInvulnerableTo(var1);
+   public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
+      return this.isInvulnerable() && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(var2) && super.isInvulnerableTo(var1, var2);
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (isReflectedFireball(var1)) {
-         super.hurt(var1, 1000.0F);
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (isReflectedFireball(var2)) {
+         super.hurtServer(var1, var2, 1000.0F);
          return true;
       } else {
-         return this.isInvulnerableTo(var1) ? false : super.hurt(var1, var2);
+         return this.isInvulnerableTo(var1, var2) ? false : super.hurtServer(var1, var2, var3);
       }
    }
 

@@ -222,15 +222,15 @@ public class Dolphin extends AgeableWaterCreature {
    }
 
    @Override
-   protected void pickUpItem(ItemEntity var1) {
+   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
       if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) {
-         ItemStack var2 = var1.getItem();
-         if (this.canHoldItem(var2)) {
-            this.onItemPickup(var1);
-            this.setItemSlot(EquipmentSlot.MAINHAND, var2);
+         ItemStack var3 = var2.getItem();
+         if (this.canHoldItem(var3)) {
+            this.onItemPickup(var2);
+            this.setItemSlot(EquipmentSlot.MAINHAND, var3);
             this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
-            this.take(var1, var2.getCount());
-            var1.discard();
+            this.take(var2, var3.getCount());
+            var2.discard();
          }
       }
    }
@@ -482,7 +482,7 @@ public class Dolphin extends AgeableWaterCreature {
 
       @Override
       public boolean canUse() {
-         this.player = this.dolphin.level().getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
+         this.player = getServerLevel(this.dolphin).getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
          return this.player == null ? false : this.player.isSwimming() && this.dolphin.getTarget() != this.player;
       }
 

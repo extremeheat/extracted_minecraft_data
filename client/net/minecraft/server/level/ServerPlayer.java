@@ -21,6 +21,8 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -98,6 +100,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
@@ -131,8 +134,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownEnderpearl;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.ContainerSynchronizer;
@@ -293,6 +296,27 @@ public class ServerPlayer extends Player {
    private RemoteChatSession chatSession;
    @Nullable
    public final Object object;
+   private final CommandSource commandSource = new CommandSource() {
+      @Override
+      public boolean acceptsSuccess() {
+         return ServerPlayer.this.serverLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
+      }
+
+      @Override
+      public boolean acceptsFailure() {
+         return true;
+      }
+
+      @Override
+      public boolean shouldInformAdmins() {
+         return true;
+      }
+
+      @Override
+      public void sendSystemMessage(Component var1) {
+         ServerPlayer.this.sendSystemMessage(var1);
+      }
+   };
    private int containerCounter;
    public boolean wonGame;
 
@@ -754,6 +778,26 @@ public class ServerPlayer extends Player {
    }
 
    @Override
+   protected void tickRegeneration() {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.serverLevel().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
+         if (this.tickCount % 20 == 0) {
+            if (this.getHealth() < this.getMaxHealth()) {
+               this.heal(1.0F);
+            }
+
+            float var1 = this.foodData.getSaturationLevel();
+            if (var1 < 20.0F) {
+               this.foodData.setSaturation(var1 + 1.0F);
+            }
+         }
+
+         if (this.tickCount % 10 == 0 && this.foodData.needsFood()) {
+            this.foodData.setFoodLevel(this.foodData.getFoodLevel() + 1);
+         }
+      }
+   }
+
+   @Override
    public void resetFallDistance() {
       if (this.getHealth() > 0.0F && this.startingToFallPosition != null) {
          CriteriaTriggers.FALL_FROM_HEIGHT.trigger(this, this.startingToFallPosition);
@@ -793,7 +837,7 @@ public class ServerPlayer extends Player {
    @Override
    public void die(DamageSource var1) {
       this.gameEvent(GameEvent.ENTITY_DIE);
-      boolean var2 = this.level().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
+      boolean var2 = this.serverLevel().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
       if (var2) {
          Component var3 = this.getCombatTracker().getDeathMessage();
          this.connection
@@ -823,7 +867,7 @@ public class ServerPlayer extends Player {
       }
 
       this.removeEntitiesOnShoulder();
-      if (this.level().getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
+      if (this.serverLevel().getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS)) {
          this.tellNeutralMobsThatIDied();
       }
 
@@ -856,7 +900,7 @@ public class ServerPlayer extends Player {
          .getEntitiesOfClass(Mob.class, var1, EntitySelector.NO_SPECTATORS)
          .stream()
          .filter(var0 -> var0 instanceof NeutralMob)
-         .forEach(var1x -> ((NeutralMob)var1x).playerDied(this));
+         .forEach(var1x -> ((NeutralMob)var1x).playerDied(this.serverLevel(), this));
    }
 
    @Override
@@ -889,24 +933,24 @@ public class ServerPlayer extends Player {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableTo(var1, var2)) {
          return false;
       } else {
-         boolean var3 = this.server.isDedicatedServer() && this.isPvpAllowed() && var1.is(DamageTypeTags.IS_FALL);
-         if (!var3 && this.spawnInvulnerableTime > 0 && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+         boolean var4 = this.server.isDedicatedServer() && this.isPvpAllowed() && var2.is(DamageTypeTags.IS_FALL);
+         if (!var4 && this.spawnInvulnerableTime > 0 && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return false;
          } else {
-            Entity var4 = var1.getEntity();
-            if (var4 instanceof Player var5 && !this.canHarmPlayer(var5)) {
+            Entity var5 = var2.getEntity();
+            if (var5 instanceof Player var6 && !this.canHarmPlayer(var6)) {
                return false;
             }
 
-            if (var4 instanceof AbstractArrow var8 && var8.getOwner() instanceof Player var7 && !this.canHarmPlayer(var7)) {
+            if (var5 instanceof AbstractArrow var9 && var9.getOwner() instanceof Player var8 && !this.canHarmPlayer(var8)) {
                return false;
             }
 
-            return super.hurt(var1, var2);
+            return super.hurtServer(var1, var2, var3);
          }
       }
    }
@@ -987,7 +1031,6 @@ public class ServerPlayer extends Player {
          ResourceKey var4 = var3.dimension();
          this.stopRiding();
          if (var2.dimension() == var4) {
-            this.teleportSetPosition(var1);
             this.connection.teleport(PositionMoveRotation.of(var1), var1.relatives());
             this.connection.resetPosition();
             var1.postDimensionTransition().onTransition(this);
@@ -1007,7 +1050,6 @@ public class ServerPlayer extends Player {
                this.enteredNetherPosition = this.position();
             }
 
-            this.teleportSetPosition(var1);
             var7.pop();
             var7.push("placing");
             this.setServerLevel(var2);
@@ -1082,7 +1124,7 @@ public class ServerPlayer extends Player {
                   .getEntitiesOfClass(
                      Monster.class,
                      new AABB(var7.x() - 8.0, var7.y() - 5.0, var7.z() - 8.0, var7.x() + 8.0, var7.y() + 5.0, var7.z() + 8.0),
-                     var1x -> var1x.isPreventingPlayerRest(this)
+                     var1x -> var1x.isPreventingPlayerRest(this.serverLevel(), this)
                   );
                if (!var8.isEmpty()) {
                   return Either.left(Player.BedSleepingProblem.NOT_SAFE);
@@ -1142,8 +1184,8 @@ public class ServerPlayer extends Player {
    }
 
    @Override
-   public boolean isInvulnerableTo(DamageSource var1) {
-      return super.isInvulnerableTo(var1) || this.isChangingDimension() && !var1.is(DamageTypes.ENDER_PEARL);
+   public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
+      return super.isInvulnerableTo(var1, var2) || this.isChangingDimension() && !var2.is(DamageTypes.ENDER_PEARL);
    }
 
    @Override
@@ -1347,7 +1389,7 @@ public class ServerPlayer extends Player {
          Entity var8 = this.getVehicle();
          if (var8 instanceof AbstractMinecart) {
             this.awardStat(Stats.MINECART_ONE_CM, var7);
-         } else if (var8 instanceof Boat) {
+         } else if (var8 instanceof AbstractBoat) {
             this.awardStat(Stats.BOAT_ONE_CM, var7);
          } else if (var8 instanceof Pig) {
             this.awardStat(Stats.PIG_ONE_CM, var7);
@@ -1478,7 +1520,7 @@ public class ServerPlayer extends Player {
       } else {
          this.getAttributes().assignBaseValues(var1.getAttributes());
          this.setHealth(this.getMaxHealth());
-         if (this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
+         if (this.serverLevel().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
             this.getInventory().replaceWith(var1.getInventory());
             this.experienceLevel = var1.experienceLevel;
             this.totalExperience = var1.totalExperience;
@@ -1626,7 +1668,24 @@ public class ServerPlayer extends Player {
       return this.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
    }
 
-   @Override
+   public CommandSource commandSource() {
+      return this.commandSource;
+   }
+
+   public CommandSourceStack createCommandSourceStack() {
+      return new CommandSourceStack(
+         this.commandSource(),
+         this.position(),
+         this.getRotationVector(),
+         this.serverLevel(),
+         this.getPermissionLevel(),
+         this.getName().getString(),
+         this.getDisplayName(),
+         this.server,
+         this
+      );
+   }
+
    public void sendSystemMessage(Component var1) {
       this.sendSystemMessage(var1, false);
    }
@@ -1970,7 +2029,7 @@ public class ServerPlayer extends Player {
    }
 
    @Override
-   public boolean mayInteract(Level var1, BlockPos var2) {
+   public boolean mayInteract(ServerLevel var1, BlockPos var2) {
       return super.mayInteract(var1, var2) && var1.mayInteract(this, var2);
    }
 
@@ -1985,6 +2044,13 @@ public class ServerPlayer extends Player {
       ItemStack var3 = var2.removeFromSelected(var1);
       this.containerMenu.findSlot(var2, var2.selected).ifPresent(var2x -> this.containerMenu.setRemoteSlot(var2x, var2.getSelected()));
       return this.drop(var3, false, true) != null;
+   }
+
+   @Override
+   public void handleExtraItemsCreatedOnUse(ItemStack var1) {
+      if (!this.getInventory().add(var1)) {
+         this.drop(var1, false);
+      }
    }
 
    public boolean allowsListing() {

@@ -245,7 +245,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       }
    }
 
-   private void fetchServerData(long var1) {
+   public void fetchServerData(long var1) {
       new Thread(() -> {
          RealmsClient var3 = RealmsClient.create();
 
@@ -410,13 +410,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       }
 
       this.minecraft.setScreen(this);
-   }
-
-   public void saveSlotSettingsLocally(RealmsWorldOptions var1) {
-      RealmsWorldOptions var2 = this.serverData.slots.get(this.serverData.activeSlot);
-      var1.templateId = var2.templateId;
-      var1.templateImage = var2.templateImage;
-      this.serverData.slots.put(this.serverData.activeSlot, var1);
    }
 
    public void saveSettings(String var1, String var2) {

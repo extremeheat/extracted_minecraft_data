@@ -33,53 +33,53 @@ public class RealmsCreateWorldFlow {
       super();
    }
 
-   public static void createWorld(Minecraft var0, Screen var1, Screen var2, RealmsServer var3, @Nullable RealmCreationTask var4) {
+   public static void createWorld(Minecraft var0, Screen var1, Screen var2, int var3, RealmsServer var4, @Nullable RealmCreationTask var5) {
       CreateWorldScreen.openFresh(
          var0,
          var1,
-         (var5, var6, var7, var8) -> {
-            Path var9;
+         (var6, var7, var8, var9) -> {
+            Path var10;
             try {
-               var9 = createTemporaryWorldFolder(var6, var7, var8);
-            } catch (IOException var12) {
+               var10 = createTemporaryWorldFolder(var7, var8, var9);
+            } catch (IOException var13) {
                LOGGER.warn("Failed to create temporary world folder.");
                var0.setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), var2));
                return true;
             }
 
-            RealmsWorldOptions var10 = RealmsWorldOptions.createFromSettings(var7.getLevelSettings(), SharedConstants.getCurrentVersion().getName());
-            RealmsWorldUpload var11 = new RealmsWorldUpload(var9, var10, var0.getUser(), var3.id, var3.activeSlot, RealmsWorldUploadStatusTracker.noOp());
+            RealmsWorldOptions var11 = RealmsWorldOptions.createFromSettings(var8.getLevelSettings(), SharedConstants.getCurrentVersion().getName());
+            RealmsWorldUpload var12 = new RealmsWorldUpload(var10, var11, var0.getUser(), var4.id, var3, RealmsWorldUploadStatusTracker.noOp());
             var0.forceSetScreen(
-               new AlertScreen(var11::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false)
+               new AlertScreen(var12::cancel, Component.translatable("mco.create.world.reset.title"), Component.empty(), CommonComponents.GUI_CANCEL, false)
             );
-            if (var4 != null) {
-               var4.run();
+            if (var5 != null) {
+               var5.run();
             }
 
-            var11.packAndUpload().handleAsync((var6x, var7x) -> {
-               if (var7x != null) {
-                  if (var7x instanceof CompletionException var8x) {
-                     var7x = var8x.getCause();
+            var12.packAndUpload().handleAsync((var5xx, var6x) -> {
+               if (var6x != null) {
+                  if (var6x instanceof CompletionException var7x) {
+                     var6x = var7x.getCause();
                   }
 
-                  if (var7x instanceof RealmsUploadCanceledException) {
+                  if (var6x instanceof RealmsUploadCanceledException) {
                      var0.forceSetScreen(var2);
                   } else {
-                     if (var7x instanceof RealmsUploadFailedException var9x) {
-                        LOGGER.warn("Failed to create realms world {}", var9x.getStatusMessage());
+                     if (var6x instanceof RealmsUploadFailedException var8x) {
+                        LOGGER.warn("Failed to create realms world {}", var8x.getStatusMessage());
                      } else {
-                        LOGGER.warn("Failed to create realms world {}", var7x.getMessage());
+                        LOGGER.warn("Failed to create realms world {}", var6x.getMessage());
                      }
 
                      var0.forceSetScreen(new RealmsGenericErrorScreen(Component.translatable("mco.create.world.failed"), var2));
                   }
                } else {
-                  if (var1 instanceof RealmsConfigureWorldScreen var10x) {
-                     var10x.saveSlotSettingsLocally(var10);
+                  if (var1 instanceof RealmsConfigureWorldScreen var9x) {
+                     var9x.fetchServerData(var4.id);
                   }
 
-                  if (var4 != null) {
-                     RealmsMainScreen.play(var3, var1);
+                  if (var5 != null) {
+                     RealmsMainScreen.play(var4, var1, true);
                   } else {
                      var0.forceSetScreen(var1);
                   }

@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -81,72 +82,72 @@ public class ThrownPotion extends ThrowableItemProjectile {
    @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      if (!this.level().isClientSide) {
-         ItemStack var2 = this.getItem();
-         PotionContents var3 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-         if (var3.is(Potions.WATER)) {
-            this.applyWater();
-         } else if (var3.hasEffects()) {
+      if (this.level() instanceof ServerLevel var2) {
+         ItemStack var6 = this.getItem();
+         PotionContents var4 = var6.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+         if (var4.is(Potions.WATER)) {
+            this.applyWater(var2);
+         } else if (var4.hasEffects()) {
             if (this.isLingering()) {
-               this.makeAreaOfEffectCloud(var3);
+               this.makeAreaOfEffectCloud(var4);
             } else {
-               this.applySplash(var3.getAllEffects(), var1.getType() == HitResult.Type.ENTITY ? ((EntityHitResult)var1).getEntity() : null);
+               this.applySplash(var2, var4.getAllEffects(), var1.getType() == HitResult.Type.ENTITY ? ((EntityHitResult)var1).getEntity() : null);
             }
          }
 
-         int var4 = var3.potion().isPresent() && var3.potion().get().value().hasInstantEffects() ? 2007 : 2002;
-         this.level().levelEvent(var4, this.blockPosition(), var3.getColor());
+         int var5 = var4.potion().isPresent() && var4.potion().get().value().hasInstantEffects() ? 2007 : 2002;
+         var2.levelEvent(var5, this.blockPosition(), var4.getColor());
          this.discard();
       }
    }
 
-   private void applyWater() {
-      AABB var1 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
+   private void applyWater(ServerLevel var1) {
+      AABB var2 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
 
-      for (LivingEntity var4 : this.level().getEntitiesOfClass(LivingEntity.class, var1, WATER_SENSITIVE_OR_ON_FIRE)) {
-         double var5 = this.distanceToSqr(var4);
-         if (var5 < 16.0) {
-            if (var4.isSensitiveToWater()) {
-               var4.hurt(this.damageSources().indirectMagic(this, this.getOwner()), 1.0F);
+      for (LivingEntity var5 : this.level().getEntitiesOfClass(LivingEntity.class, var2, WATER_SENSITIVE_OR_ON_FIRE)) {
+         double var6 = this.distanceToSqr(var5);
+         if (var6 < 16.0) {
+            if (var5.isSensitiveToWater()) {
+               var5.hurtServer(var1, this.damageSources().indirectMagic(this, this.getOwner()), 1.0F);
             }
 
-            if (var4.isOnFire() && var4.isAlive()) {
-               var4.extinguishFire();
+            if (var5.isOnFire() && var5.isAlive()) {
+               var5.extinguishFire();
             }
          }
       }
 
-      for (Axolotl var9 : this.level().getEntitiesOfClass(Axolotl.class, var1)) {
-         var9.rehydrate();
+      for (Axolotl var10 : this.level().getEntitiesOfClass(Axolotl.class, var2)) {
+         var10.rehydrate();
       }
    }
 
-   private void applySplash(Iterable<MobEffectInstance> var1, @Nullable Entity var2) {
-      AABB var3 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
-      List var4 = this.level().getEntitiesOfClass(LivingEntity.class, var3);
-      if (!var4.isEmpty()) {
-         Entity var5 = this.getEffectSource();
+   private void applySplash(ServerLevel var1, Iterable<MobEffectInstance> var2, @Nullable Entity var3) {
+      AABB var4 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
+      List var5 = var1.getEntitiesOfClass(LivingEntity.class, var4);
+      if (!var5.isEmpty()) {
+         Entity var6 = this.getEffectSource();
 
-         for (LivingEntity var7 : var4) {
-            if (var7.isAffectedByPotions()) {
-               double var8 = this.distanceToSqr(var7);
-               if (var8 < 16.0) {
-                  double var10;
-                  if (var7 == var2) {
-                     var10 = 1.0;
+         for (LivingEntity var8 : var5) {
+            if (var8.isAffectedByPotions()) {
+               double var9 = this.distanceToSqr(var8);
+               if (var9 < 16.0) {
+                  double var11;
+                  if (var8 == var3) {
+                     var11 = 1.0;
                   } else {
-                     var10 = 1.0 - Math.sqrt(var8) / 4.0;
+                     var11 = 1.0 - Math.sqrt(var9) / 4.0;
                   }
 
-                  for (MobEffectInstance var13 : var1) {
-                     Holder var14 = var13.getEffect();
-                     if (((MobEffect)var14.value()).isInstantenous()) {
-                        ((MobEffect)var14.value()).applyInstantenousEffect(this, this.getOwner(), var7, var13.getAmplifier(), var10);
+                  for (MobEffectInstance var14 : var2) {
+                     Holder var15 = var14.getEffect();
+                     if (((MobEffect)var15.value()).isInstantenous()) {
+                        ((MobEffect)var15.value()).applyInstantenousEffect(var1, this, this.getOwner(), var8, var14.getAmplifier(), var11);
                      } else {
-                        int var15 = var13.mapDuration(var2x -> (int)(var10 * (double)var2x + 0.5));
-                        MobEffectInstance var16 = new MobEffectInstance(var14, var15, var13.getAmplifier(), var13.isAmbient(), var13.isVisible());
-                        if (!var16.endsWithin(20)) {
-                           var7.addEffect(var16, var5);
+                        int var16 = var14.mapDuration(var2x -> (int)(var11 * (double)var2x + 0.5));
+                        MobEffectInstance var17 = new MobEffectInstance(var15, var16, var14.getAmplifier(), var14.isAmbient(), var14.isVisible());
+                        if (!var17.endsWithin(20)) {
+                           var8.addEffect(var17, var6);
                         }
                      }
                   }

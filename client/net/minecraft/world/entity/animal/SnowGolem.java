@@ -55,7 +55,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0, 1.0000001E-5F));
       this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, false, var0 -> var0 instanceof Enemy));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, false, (var0, var1) -> var0 instanceof Enemy));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -90,25 +90,25 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    @Override
    public void aiStep() {
       super.aiStep();
-      if (!this.level().isClientSide) {
+      if (this.level() instanceof ServerLevel var1) {
          if (this.level().getBiome(this.blockPosition()).is(BiomeTags.SNOW_GOLEM_MELTS)) {
-            this.hurt(this.damageSources().onFire(), 1.0F);
+            this.hurtServer(var1, this.damageSources().onFire(), 1.0F);
          }
 
-         if (!this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
             return;
          }
 
-         BlockState var1 = Blocks.SNOW.defaultBlockState();
+         BlockState var8 = Blocks.SNOW.defaultBlockState();
 
-         for (int var2 = 0; var2 < 4; var2++) {
-            int var3 = Mth.floor(this.getX() + (double)((float)(var2 % 2 * 2 - 1) * 0.25F));
-            int var4 = Mth.floor(this.getY());
-            int var5 = Mth.floor(this.getZ() + (double)((float)(var2 / 2 % 2 * 2 - 1) * 0.25F));
-            BlockPos var6 = new BlockPos(var3, var4, var5);
-            if (this.level().getBlockState(var6).isAir() && var1.canSurvive(this.level(), var6)) {
-               this.level().setBlockAndUpdate(var6, var1);
-               this.level().gameEvent(GameEvent.BLOCK_PLACE, var6, GameEvent.Context.of(this, var1));
+         for (int var3 = 0; var3 < 4; var3++) {
+            int var4 = Mth.floor(this.getX() + (double)((float)(var3 % 2 * 2 - 1) * 0.25F));
+            int var5 = Mth.floor(this.getY());
+            int var6 = Mth.floor(this.getZ() + (double)((float)(var3 / 2 % 2 * 2 - 1) * 0.25F));
+            BlockPos var7 = new BlockPos(var4, var5, var6);
+            if (this.level().getBlockState(var7).isAir() && var8.canSurvive(this.level(), var7)) {
+               this.level().setBlockAndUpdate(var7, var8);
+               this.level().gameEvent(GameEvent.BLOCK_PLACE, var7, GameEvent.Context.of(this, var8));
             }
          }
       }
@@ -132,9 +132,9 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         this.shear(SoundSource.PLAYERS, var3);
-         this.gameEvent(GameEvent.SHEAR, var1);
-         if (!this.level().isClientSide) {
+         if (this.level() instanceof ServerLevel var4) {
+            this.shear(var4, SoundSource.PLAYERS, var3);
+            this.gameEvent(GameEvent.SHEAR, var1);
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
          }
 
@@ -145,12 +145,10 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    }
 
    @Override
-   public void shear(SoundSource var1, ItemStack var2) {
-      this.level().playSound(null, this, SoundEvents.SNOW_GOLEM_SHEAR, var1, 1.0F, 1.0F);
-      if (!this.level().isClientSide()) {
-         this.setPumpkin(false);
-         this.dropFromShearingLootTable(BuiltInLootTables.SHEAR_SNOW_GOLEM, var2, var1x -> this.spawnAtLocation(var1x, this.getEyeHeight()));
-      }
+   public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
+      var1.playSound(null, this, SoundEvents.SNOW_GOLEM_SHEAR, var2, 1.0F, 1.0F);
+      this.setPumpkin(false);
+      this.dropFromShearingLootTable(var1, BuiltInLootTables.SHEAR_SNOW_GOLEM, var3, (var1x, var2x) -> this.spawnAtLocation(var1x, var2x, this.getEyeHeight()));
    }
 
    @Override

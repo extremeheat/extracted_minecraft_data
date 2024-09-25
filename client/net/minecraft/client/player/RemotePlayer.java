@@ -1,9 +1,7 @@
 package net.minecraft.client.player;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
@@ -31,7 +29,7 @@ public class RemotePlayer extends AbstractClientPlayer {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
+   public boolean hurtClient(DamageSource var1) {
       return true;
    }
 
@@ -88,12 +86,6 @@ public class RemotePlayer extends AbstractClientPlayer {
 
    @Override
    protected void updatePlayerPose() {
-   }
-
-   @Override
-   public void sendSystemMessage(Component var1) {
-      Minecraft var2 = Minecraft.getInstance();
-      var2.gui.getChat().addMessage(var1);
    }
 
    @Override

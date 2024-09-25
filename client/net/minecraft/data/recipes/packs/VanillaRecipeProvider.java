@@ -23,6 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Items;
@@ -2743,6 +2744,14 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.trapdoorBuilder(Blocks.COPPER_TRAPDOOR, Ingredient.of(Items.COPPER_INGOT))
          .unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT))
          .save(this.output);
+      this.shaped(RecipeCategory.TOOLS, Items.BUNDLE)
+         .define('-', Items.STRING)
+         .define('#', Items.LEATHER)
+         .pattern("-")
+         .pattern("#")
+         .unlockedBy("has_string", this.has(Items.STRING))
+         .save(this.output);
+      this.bundleRecipes();
    }
 
    public static Stream<VanillaRecipeProvider.TrimTemplate> smithingTrims() {
@@ -2778,6 +2787,17 @@ public class VanillaRecipeProvider extends RecipeProvider {
             )
             .group("shulker_box_dye")
             .unlockedBy("has_shulker_box", this.has(ItemTags.SHULKER_BOXES))
+            .save(this.output);
+      }
+   }
+
+   private void bundleRecipes() {
+      Ingredient var1 = this.tag(ItemTags.BUNDLES);
+
+      for (DyeColor var5 : DyeColor.values()) {
+         TransmuteRecipeBuilder.transmute(RecipeCategory.TOOLS, var1, Ingredient.of(DyeItem.byColor(var5)), BundleItem.getByColor(var5))
+            .group("bundle_dye")
+            .unlockedBy("has_bundle", this.has(ItemTags.BUNDLES))
             .save(this.output);
       }
    }

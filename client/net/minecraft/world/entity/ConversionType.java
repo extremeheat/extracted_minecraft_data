@@ -4,6 +4,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.scores.Scoreboard;
 
@@ -84,23 +85,23 @@ public enum ConversionType {
       var2.setAbsorptionAmount(var1.getAbsorptionAmount());
 
       for (MobEffectInstance var5 : var1.getActiveEffects()) {
-         var2.addEffect(var5);
+         var2.addEffect(new MobEffectInstance(var5));
       }
 
       if (var1.isBaby()) {
          var2.setBaby(true);
       }
 
-      if (var1 instanceof AgeableMob var7 && var2 instanceof AgeableMob var9) {
-         var9.setAge(var7.getAge());
-         var9.forcedAge = var7.forcedAge;
-         var9.forcedAgeTimer = var7.forcedAgeTimer;
+      if (var1 instanceof AgeableMob var8 && var2 instanceof AgeableMob var10) {
+         var10.setAge(var8.getAge());
+         var10.forcedAge = var8.forcedAge;
+         var10.forcedAgeTimer = var8.forcedAgeTimer;
       }
 
-      Brain var8 = var1.getBrain();
-      Brain var10 = var2.getBrain();
-      if (var8.checkMemory(MemoryModuleType.ANGRY_AT, MemoryStatus.REGISTERED) && var8.hasMemoryValue(MemoryModuleType.ANGRY_AT)) {
-         var10.setMemory(MemoryModuleType.ANGRY_AT, var8.getMemory(MemoryModuleType.ANGRY_AT));
+      Brain var9 = var1.getBrain();
+      Brain var11 = var2.getBrain();
+      if (var9.checkMemory(MemoryModuleType.ANGRY_AT, MemoryStatus.REGISTERED) && var9.hasMemoryValue(MemoryModuleType.ANGRY_AT)) {
+         var11.setMemory(MemoryModuleType.ANGRY_AT, var9.getMemory(MemoryModuleType.ANGRY_AT));
       }
 
       if (var3.preserveCanPickUpLoot()) {
@@ -130,6 +131,10 @@ public enum ConversionType {
          if (var1.getTeam() != null && var1.getTeam() == var3.team()) {
             var6.removePlayerFromTeam(var1.getStringUUID(), var1.getTeam());
          }
+      }
+
+      if (var1 instanceof Zombie var12 && var12.canBreakDoors() && var2 instanceof Zombie var7) {
+         var7.setCanBreakDoors(true);
       }
    }
 }

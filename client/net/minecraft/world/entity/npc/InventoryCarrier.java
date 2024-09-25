@@ -2,6 +2,7 @@ package net.minecraft.world.entity.npc;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -12,23 +13,23 @@ public interface InventoryCarrier {
 
    SimpleContainer getInventory();
 
-   static void pickUpItem(Mob var0, InventoryCarrier var1, ItemEntity var2) {
-      ItemStack var3 = var2.getItem();
-      if (var0.wantsToPickUp(var3)) {
-         SimpleContainer var4 = var1.getInventory();
-         boolean var5 = var4.canAddItem(var3);
-         if (!var5) {
+   static void pickUpItem(ServerLevel var0, Mob var1, InventoryCarrier var2, ItemEntity var3) {
+      ItemStack var4 = var3.getItem();
+      if (var1.wantsToPickUp(var0, var4)) {
+         SimpleContainer var5 = var2.getInventory();
+         boolean var6 = var5.canAddItem(var4);
+         if (!var6) {
             return;
          }
 
-         var0.onItemPickup(var2);
-         int var6 = var3.getCount();
-         ItemStack var7 = var4.addItem(var3);
-         var0.take(var2, var6 - var7.getCount());
-         if (var7.isEmpty()) {
-            var2.discard();
+         var1.onItemPickup(var3);
+         int var7 = var4.getCount();
+         ItemStack var8 = var5.addItem(var4);
+         var1.take(var3, var7 - var8.getCount());
+         if (var8.isEmpty()) {
+            var3.discard();
          } else {
-            var3.setCount(var7.getCount());
+            var4.setCount(var8.getCount());
          }
       }
    }

@@ -100,9 +100,9 @@ public class Sheep extends Animal implements Shearable {
    }
 
    @Override
-   protected void customServerAiStep() {
+   protected void customServerAiStep(ServerLevel var1) {
       this.eatAnimationTick = this.eatBlockGoal.getEatAnimationTick();
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    @Override
@@ -156,31 +156,32 @@ public class Sheep extends Animal implements Shearable {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS)) {
-         if (!this.level().isClientSide && this.readyForShearing()) {
-            this.shear(SoundSource.PLAYERS, var3);
+         if (this.level() instanceof ServerLevel var4 && this.readyForShearing()) {
+            this.shear(var4, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
             return InteractionResult.SUCCESS_SERVER;
-         } else {
-            return InteractionResult.CONSUME;
          }
+
+         return InteractionResult.CONSUME;
       } else {
          return super.mobInteract(var1, var2);
       }
    }
 
    @Override
-   public void shear(SoundSource var1, ItemStack var2) {
-      this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, var1, 1.0F, 1.0F);
+   public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
+      var1.playSound(null, this, SoundEvents.SHEEP_SHEAR, var2, 1.0F, 1.0F);
       this.dropFromShearingLootTable(
+         var1,
          BuiltInLootTables.SHEAR_SHEEP,
-         var2,
-         var1x -> {
-            for (int var2x = 0; var2x < var1x.getCount(); var2x++) {
-               ItemEntity var3 = this.spawnAtLocation(var1x.copyWithCount(1), 1.0F);
-               if (var3 != null) {
-                  var3.setDeltaMovement(
-                     var3.getDeltaMovement()
+         var3,
+         (var1x, var2x) -> {
+            for (int var3x = 0; var3x < var2x.getCount(); var3x++) {
+               ItemEntity var4 = this.spawnAtLocation(var1x, var2x.copyWithCount(1), 1.0F);
+               if (var4 != null) {
+                  var4.setDeltaMovement(
+                     var4.getDeltaMovement()
                         .add(
                            (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F),
                            (double)(this.random.nextFloat() * 0.05F),

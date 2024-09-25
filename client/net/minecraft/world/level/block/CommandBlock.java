@@ -112,7 +112,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   private void execute(BlockState var1, Level var2, BlockPos var3, BaseCommandBlock var4, boolean var5) {
+   private void execute(BlockState var1, ServerLevel var2, BlockPos var3, BaseCommandBlock var4, boolean var5) {
       if (var5) {
          var4.performCommand(var2);
       } else {
@@ -148,14 +148,14 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
       if (var1.getBlockEntity(var2) instanceof CommandBlockEntity var7) {
          BaseCommandBlock var8 = var7.getCommandBlock();
-         if (!var1.isClientSide) {
+         if (var1 instanceof ServerLevel var9) {
             if (!var5.has(DataComponents.BLOCK_ENTITY_DATA)) {
-               var8.setTrackOutput(var1.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK));
+               var8.setTrackOutput(var9.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK));
                var7.setAutomatic(this.automatic);
             }
 
-            boolean var9 = var1.hasNeighborSignal(var2);
-            this.setPoweredAndUpdate(var1, var2, var7, var9);
+            boolean var10 = var1.hasNeighborSignal(var2);
+            this.setPoweredAndUpdate(var1, var2, var7, var10);
          }
       }
    }
@@ -185,7 +185,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       return this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
    }
 
-   private static void executeChain(Level var0, BlockPos var1, Direction var2) {
+   private static void executeChain(ServerLevel var0, BlockPos var1, Direction var2) {
       BlockPos.MutableBlockPos var3 = var1.mutable();
       GameRules var4 = var0.getGameRules();
       int var5 = var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH);

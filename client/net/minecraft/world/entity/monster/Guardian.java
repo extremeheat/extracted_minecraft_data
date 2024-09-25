@@ -1,13 +1,13 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -34,6 +34,7 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.player.Player;
@@ -312,23 +313,19 @@ public class Guardian extends Monster {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.level().isClientSide) {
-         return false;
-      } else {
-         if (!this.isMoving()
-            && !var1.is(DamageTypeTags.AVOIDS_GUARDIAN_THORNS)
-            && !var1.is(DamageTypes.THORNS)
-            && var1.getDirectEntity() instanceof LivingEntity var3) {
-            var3.hurt(this.damageSources().thorns(this), 2.0F);
-         }
-
-         if (this.randomStrollGoal != null) {
-            this.randomStrollGoal.trigger();
-         }
-
-         return super.hurt(var1, var2);
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (!this.isMoving()
+         && !var2.is(DamageTypeTags.AVOIDS_GUARDIAN_THORNS)
+         && !var2.is(DamageTypes.THORNS)
+         && var2.getDirectEntity() instanceof LivingEntity var4) {
+         var4.hurtServer(var1, this.damageSources().thorns(this), 2.0F);
       }
+
+      if (this.randomStrollGoal != null) {
+         this.randomStrollGoal.trigger();
+      }
+
+      return super.hurtServer(var1, var2, var3);
    }
 
    @Override
@@ -422,8 +419,9 @@ public class Guardian extends Monster {
                      var2 += 2.0F;
                   }
 
-                  var1.hurt(this.guardian.damageSources().indirectMagic(this.guardian, this.guardian), var2);
-                  this.guardian.doHurtTarget(var1);
+                  ServerLevel var3 = getServerLevel(this.guardian);
+                  var1.hurtServer(var3, this.guardian.damageSources().indirectMagic(this.guardian, this.guardian), var2);
+                  this.guardian.doHurtTarget(var3, var1);
                   this.guardian.setTarget(null);
                }
 
@@ -433,7 +431,7 @@ public class Guardian extends Monster {
       }
    }
 
-   static class GuardianAttackSelector implements Predicate<LivingEntity> {
+   static class GuardianAttackSelector implements TargetingConditions.Selector {
       private final Guardian guardian;
 
       public GuardianAttackSelector(Guardian var1) {
@@ -441,7 +439,8 @@ public class Guardian extends Monster {
          this.guardian = var1;
       }
 
-      public boolean test(@Nullable LivingEntity var1) {
+      @Override
+      public boolean test(@Nullable LivingEntity var1, ServerLevel var2) {
          return (var1 instanceof Player || var1 instanceof Squid || var1 instanceof Axolotl) && var1.distanceToSqr(this.guardian) > 9.0;
       }
    }

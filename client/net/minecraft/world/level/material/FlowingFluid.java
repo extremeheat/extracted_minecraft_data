@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -117,7 +118,7 @@ public abstract class FlowingFluid extends Fluid {
       }
    }
 
-   protected void spread(Level var1, BlockPos var2, BlockState var3, FluidState var4) {
+   protected void spread(ServerLevel var1, BlockPos var2, BlockState var3, FluidState var4) {
       if (!var4.isEmpty()) {
          BlockPos var5 = var2.below();
          BlockState var6 = var1.getBlockState(var5);
@@ -141,7 +142,7 @@ public abstract class FlowingFluid extends Fluid {
       }
    }
 
-   private void spreadToSides(Level var1, BlockPos var2, FluidState var3, BlockState var4) {
+   private void spreadToSides(ServerLevel var1, BlockPos var2, FluidState var3, BlockState var4) {
       int var5 = var3.getAmount() - this.getDropOff(var1);
       if (var3.getValue(FALLING)) {
          var5 = 7;
@@ -159,7 +160,7 @@ public abstract class FlowingFluid extends Fluid {
       }
    }
 
-   protected FluidState getNewLiquid(Level var1, BlockPos var2, BlockState var3) {
+   protected FluidState getNewLiquid(ServerLevel var1, BlockPos var2, BlockState var3) {
       int var4 = 0;
       int var5 = 0;
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
@@ -251,7 +252,7 @@ public abstract class FlowingFluid extends Fluid {
       return this.getSource().defaultFluidState().setValue(FALLING, Boolean.valueOf(var1));
    }
 
-   protected abstract boolean canConvertToSource(Level var1);
+   protected abstract boolean canConvertToSource(ServerLevel var1);
 
    protected void spreadTo(LevelAccessor var1, BlockPos var2, BlockState var3, Direction var4, FluidState var5) {
       if (var3.getBlock() instanceof LiquidBlockContainer var6) {
@@ -329,7 +330,7 @@ public abstract class FlowingFluid extends Fluid {
       return var3;
    }
 
-   protected Map<Direction, FluidState> getSpread(Level var1, BlockPos var2, BlockState var3) {
+   protected Map<Direction, FluidState> getSpread(ServerLevel var1, BlockPos var2, BlockState var3) {
       int var4 = 1000;
       EnumMap var5 = Maps.newEnumMap(Direction.class);
       FlowingFluid.SpreadContext var6 = null;
@@ -404,7 +405,7 @@ public abstract class FlowingFluid extends Fluid {
    }
 
    @Override
-   public void tick(Level var1, BlockPos var2, BlockState var3, FluidState var4) {
+   public void tick(ServerLevel var1, BlockPos var2, BlockState var3, FluidState var4) {
       if (!var4.isSource()) {
          FluidState var5 = this.getNewLiquid(var1, var2, var1.getBlockState(var2));
          int var6 = this.getSpreadDelay(var1, var2, var4, var5);

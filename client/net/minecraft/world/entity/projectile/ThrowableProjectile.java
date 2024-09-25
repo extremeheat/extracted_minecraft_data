@@ -41,6 +41,8 @@ public abstract class ThrowableProjectile extends Projectile {
    @Override
    public void tick() {
       HitResult var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+      this.applyGravity();
+      this.applyInertia();
       Vec3 var2;
       if (var1.getType() != HitResult.Type.MISS) {
          var2 = var1.getLocation();
@@ -55,9 +57,6 @@ public abstract class ThrowableProjectile extends Projectile {
       if (var1.getType() != HitResult.Type.MISS && this.isAlive()) {
          this.hitTargetOrDeflectSelf(var1);
       }
-
-      this.applyInertia();
-      this.applyGravity();
    }
 
    private void applyInertia() {

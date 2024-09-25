@@ -3,6 +3,7 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
@@ -38,15 +39,15 @@ public class DragonDeathPhase extends AbstractDragonPhaseInstance {
    }
 
    @Override
-   public void doServerTick() {
+   public void doServerTick(ServerLevel var1) {
       this.time++;
       if (this.targetLocation == null) {
-         BlockPos var1 = this.dragon.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
-         this.targetLocation = Vec3.atBottomCenterOf(var1);
+         BlockPos var2 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         this.targetLocation = Vec3.atBottomCenterOf(var2);
       }
 
-      double var3 = this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
-      if (!(var3 < 100.0) && !(var3 > 22500.0) && !this.dragon.horizontalCollision && !this.dragon.verticalCollision) {
+      double var4 = this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      if (!(var4 < 100.0) && !(var4 > 22500.0) && !this.dragon.horizontalCollision && !this.dragon.verticalCollision) {
          this.dragon.setHealth(1.0F);
       } else {
          this.dragon.setHealth(0.0F);

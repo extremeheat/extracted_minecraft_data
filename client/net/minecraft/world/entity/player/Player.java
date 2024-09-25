@@ -279,8 +279,8 @@ public abstract class Player extends LivingEntity {
       }
 
       this.moveCloak();
-      if (!this.level().isClientSide) {
-         this.foodData.tick(this);
+      if (this instanceof ServerPlayer var1) {
+         this.foodData.tick(var1);
          this.awardStat(Stats.PLAY_TIME);
          this.awardStat(Stats.TOTAL_WORLD_TIME);
          if (this.isAlive()) {
@@ -296,7 +296,7 @@ public abstract class Player extends LivingEntity {
          }
       }
 
-      int var1 = 29999999;
+      int var7 = 29999999;
       double var2 = Mth.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
       double var4 = Mth.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
       if (var2 != this.getX() || var4 != this.getZ()) {
@@ -540,20 +540,7 @@ public abstract class Player extends LivingEntity {
          this.jumpTriggerTime--;
       }
 
-      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
-         if (this.getHealth() < this.getMaxHealth() && this.tickCount % 20 == 0) {
-            this.heal(1.0F);
-         }
-
-         if (this.foodData.getSaturationLevel() < 20.0F && this.tickCount % 20 == 0) {
-            this.foodData.setSaturation(this.foodData.getSaturationLevel() + 1.0F);
-         }
-
-         if (this.foodData.needsFood() && this.tickCount % 10 == 0) {
-            this.foodData.setFoodLevel(this.foodData.getFoodLevel() + 1);
-         }
-      }
-
+      this.tickRegeneration();
       this.inventory.tick();
       this.oBob = this.bob;
       if (this.abilities.flying && !this.isPassenger()) {
@@ -599,6 +586,9 @@ public abstract class Player extends LivingEntity {
       if (!this.level().isClientSide && (this.fallDistance > 0.5F || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {
          this.removeEntitiesOnShoulder();
       }
+   }
+
+   protected void tickRegeneration() {
    }
 
    private void playShoulderEntityAmbientSound(@Nullable CompoundTag var1) {
@@ -686,9 +676,9 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
-   protected void dropEquipment() {
-      super.dropEquipment();
-      if (!this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+   protected void dropEquipment(ServerLevel var1) {
+      super.dropEquipment(var1);
+      if (!var1.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
          this.destroyVanishingCursedItems();
          this.inventory.dropAll();
       }
@@ -848,50 +838,47 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
-   public boolean isInvulnerableTo(DamageSource var1) {
-      if (super.isInvulnerableTo(var1)) {
+   public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
+      if (super.isInvulnerableTo(var1, var2)) {
          return true;
-      } else if (var1.is(DamageTypeTags.IS_DROWNING)) {
-         return !this.level().getGameRules().getBoolean(GameRules.RULE_DROWNING_DAMAGE);
-      } else if (var1.is(DamageTypeTags.IS_FALL)) {
-         return !this.level().getGameRules().getBoolean(GameRules.RULE_FALL_DAMAGE);
-      } else if (var1.is(DamageTypeTags.IS_FIRE)) {
-         return !this.level().getGameRules().getBoolean(GameRules.RULE_FIRE_DAMAGE);
+      } else if (var2.is(DamageTypeTags.IS_DROWNING)) {
+         return !var1.getGameRules().getBoolean(GameRules.RULE_DROWNING_DAMAGE);
+      } else if (var2.is(DamageTypeTags.IS_FALL)) {
+         return !var1.getGameRules().getBoolean(GameRules.RULE_FALL_DAMAGE);
+      } else if (var2.is(DamageTypeTags.IS_FIRE)) {
+         return !var1.getGameRules().getBoolean(GameRules.RULE_FIRE_DAMAGE);
       } else {
-         return var1.is(DamageTypeTags.IS_FREEZING) ? !this.level().getGameRules().getBoolean(GameRules.RULE_FREEZE_DAMAGE) : false;
+         return var2.is(DamageTypeTags.IS_FREEZING) ? !var1.getGameRules().getBoolean(GameRules.RULE_FREEZE_DAMAGE) : false;
       }
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableTo(var1, var2)) {
          return false;
-      } else if (this.abilities.invulnerable && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+      } else if (this.abilities.invulnerable && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          return false;
       } else {
          this.noActionTime = 0;
          if (this.isDeadOrDying()) {
             return false;
          } else {
-            if (!this.level().isClientSide) {
-               this.removeEntitiesOnShoulder();
-            }
-
-            if (var1.scalesWithDifficulty()) {
-               if (this.level().getDifficulty() == Difficulty.PEACEFUL) {
-                  var2 = 0.0F;
+            this.removeEntitiesOnShoulder();
+            if (var2.scalesWithDifficulty()) {
+               if (var1.getDifficulty() == Difficulty.PEACEFUL) {
+                  var3 = 0.0F;
                }
 
-               if (this.level().getDifficulty() == Difficulty.EASY) {
-                  var2 = Math.min(var2 / 2.0F + 1.0F, var2);
+               if (var1.getDifficulty() == Difficulty.EASY) {
+                  var3 = Math.min(var3 / 2.0F + 1.0F, var3);
                }
 
-               if (this.level().getDifficulty() == Difficulty.HARD) {
-                  var2 = var2 * 3.0F / 2.0F;
+               if (var1.getDifficulty() == Difficulty.HARD) {
+                  var3 = var3 * 3.0F / 2.0F;
                }
             }
 
-            return var2 == 0.0F ? false : super.hurt(var1, var2);
+            return var3 == 0.0F ? false : super.hurtServer(var1, var2, var3);
          }
       }
    }
@@ -956,23 +943,23 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
-   protected void actuallyHurt(DamageSource var1, float var2) {
-      if (!this.isInvulnerableTo(var1)) {
-         var2 = this.getDamageAfterArmorAbsorb(var1, var2);
-         var2 = this.getDamageAfterMagicAbsorb(var1, var2);
-         float var7 = Math.max(var2 - this.getAbsorptionAmount(), 0.0F);
-         this.setAbsorptionAmount(this.getAbsorptionAmount() - (var2 - var7));
-         float var4 = var2 - var7;
-         if (var4 > 0.0F && var4 < 3.4028235E37F) {
-            this.awardStat(Stats.DAMAGE_ABSORBED, Math.round(var4 * 10.0F));
+   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
+      if (!this.isInvulnerableTo(var1, var2)) {
+         var3 = this.getDamageAfterArmorAbsorb(var2, var3);
+         var3 = this.getDamageAfterMagicAbsorb(var2, var3);
+         float var8 = Math.max(var3 - this.getAbsorptionAmount(), 0.0F);
+         this.setAbsorptionAmount(this.getAbsorptionAmount() - (var3 - var8));
+         float var5 = var3 - var8;
+         if (var5 > 0.0F && var5 < 3.4028235E37F) {
+            this.awardStat(Stats.DAMAGE_ABSORBED, Math.round(var5 * 10.0F));
          }
 
-         if (var7 != 0.0F) {
-            this.causeFoodExhaustion(var1.getFoodExhaustion());
-            this.getCombatTracker().recordDamage(var1, var7);
-            this.setHealth(this.getHealth() - var7);
-            if (var7 < 3.4028235E37F) {
-               this.awardStat(Stats.DAMAGE_TAKEN, Math.round(var7 * 10.0F));
+         if (var8 != 0.0F) {
+            this.causeFoodExhaustion(var2.getFoodExhaustion());
+            this.getCombatTracker().recordDamage(var2, var8);
+            this.setHealth(this.getHealth() - var8);
+            if (var8 < 3.4028235E37F) {
+               this.awardStat(Stats.DAMAGE_TAKEN, Math.round(var8 * 10.0F));
             }
 
             this.gameEvent(GameEvent.ENTITY_DAMAGE);
@@ -1187,7 +1174,7 @@ public abstract class Player extends LivingEntity {
                }
 
                Vec3 var28 = var1.getDeltaMovement();
-               boolean var29 = var1.hurt(var4, var10);
+               boolean var29 = var1.hurtOrSimulate(var4, var10);
                if (var29) {
                   float var15 = this.getKnockback(var1, var4) + (var8 ? 1.0F : 0.0F);
                   if (var15 > 0.0F) {
@@ -1683,8 +1670,8 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
-   protected int getBaseExperienceReward() {
-      return !this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && !this.isSpectator() ? Math.min(this.experienceLevel * 7, 100) : 0;
+   protected int getBaseExperienceReward(ServerLevel var1) {
+      return !var1.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && !this.isSpectator() ? Math.min(this.experienceLevel * 7, 100) : 0;
    }
 
    @Override
@@ -1964,6 +1951,14 @@ public abstract class Player extends LivingEntity {
 
    public boolean canUseGameMasterBlocks() {
       return this.abilities.instabuild && this.getPermissionLevel() >= 2;
+   }
+
+   protected int getPermissionLevel() {
+      return 0;
+   }
+
+   public boolean hasPermissions(int var1) {
+      return this.getPermissionLevel() >= var1;
    }
 
    @Override

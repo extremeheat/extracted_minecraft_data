@@ -262,14 +262,15 @@ public class Sniffer extends Animal {
    }
 
    private void dropSeed() {
-      if (!this.level().isClientSide() && this.entityData.get(DATA_DROP_SEED_AT_TICK) == this.tickCount) {
-         BlockPos var1 = this.getHeadBlock();
-         this.dropFromGiftLootTable(BuiltInLootTables.SNIFFER_DIGGING, var2 -> {
-            ItemEntity var3 = new ItemEntity(this.level(), (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var2);
-            var3.setDefaultPickUpDelay();
-            this.level().addFreshEntity(var3);
+      if (this.level() instanceof ServerLevel var1 && this.entityData.get(DATA_DROP_SEED_AT_TICK) == this.tickCount) {
+         BlockPos var3 = this.getHeadBlock();
+         this.dropFromGiftLootTable(var1, BuiltInLootTables.SNIFFER_DIGGING, (var2, var3x) -> {
+            ItemEntity var4 = new ItemEntity(this.level(), (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var3x);
+            var4.setDefaultPickUpDelay();
+            var2.addFreshEntity(var4);
          });
          this.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
+         return;
       }
    }
 
@@ -438,14 +439,14 @@ public class Sniffer extends Animal {
    }
 
    @Override
-   protected void customServerAiStep() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("snifferBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      var1.popPush("snifferActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("snifferBrain");
+      this.getBrain().tick(var1, this);
+      var2.popPush("snifferActivityUpdate");
       SnifferAi.updateActivity(this);
-      var1.pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    @Override

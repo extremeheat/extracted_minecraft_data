@@ -110,51 +110,53 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       Slot var7 = this.hoveredSlot;
       this.hoveredSlot = this.getHoveredSlot((double)var2, (double)var3);
       this.renderSlotHighlightBack(var1);
-
-      for (Slot var9 : this.menu.slots) {
-         if (var9.isActive()) {
-            this.renderSlot(var1, var9);
-         }
-      }
-
+      this.renderSlots(var1);
       this.renderSlotHighlightFront(var1);
       if (var7 != null && var7 != this.hoveredSlot) {
          this.onStopHovering(var7);
       }
 
       this.renderLabels(var1, var2, var3);
-      ItemStack var14 = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
-      if (!var14.isEmpty()) {
-         byte var15 = 8;
+      ItemStack var8 = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
+      if (!var8.isEmpty()) {
+         byte var9 = 8;
          int var10 = this.draggingItem.isEmpty() ? 8 : 16;
          String var11 = null;
          if (!this.draggingItem.isEmpty() && this.isSplittingStack) {
-            var14 = var14.copyWithCount(Mth.ceil((float)var14.getCount() / 2.0F));
+            var8 = var8.copyWithCount(Mth.ceil((float)var8.getCount() / 2.0F));
          } else if (this.isQuickCrafting && this.quickCraftSlots.size() > 1) {
-            var14 = var14.copyWithCount(this.quickCraftingRemainder);
-            if (var14.isEmpty()) {
+            var8 = var8.copyWithCount(this.quickCraftingRemainder);
+            if (var8.isEmpty()) {
                var11 = ChatFormatting.YELLOW + "0";
             }
          }
 
-         this.renderFloatingItem(var1, var14, var2 - var5 - 8, var3 - var6 - var10, var11);
+         this.renderFloatingItem(var1, var8, var2 - var5 - 8, var3 - var6 - var10, var11);
       }
 
       if (!this.snapbackItem.isEmpty()) {
-         float var16 = (float)(Util.getMillis() - this.snapbackTime) / 100.0F;
-         if (var16 >= 1.0F) {
-            var16 = 1.0F;
+         float var14 = (float)(Util.getMillis() - this.snapbackTime) / 100.0F;
+         if (var14 >= 1.0F) {
+            var14 = 1.0F;
             this.snapbackItem = ItemStack.EMPTY;
          }
 
-         int var17 = this.snapbackEnd.x - this.snapbackStartX;
-         int var18 = this.snapbackEnd.y - this.snapbackStartY;
-         int var12 = this.snapbackStartX + (int)((float)var17 * var16);
-         int var13 = this.snapbackStartY + (int)((float)var18 * var16);
+         int var15 = this.snapbackEnd.x - this.snapbackStartX;
+         int var16 = this.snapbackEnd.y - this.snapbackStartY;
+         int var12 = this.snapbackStartX + (int)((float)var15 * var14);
+         int var13 = this.snapbackStartY + (int)((float)var16 * var14);
          this.renderFloatingItem(var1, this.snapbackItem, var12, var13, null);
       }
 
       var1.pose().popPose();
+   }
+
+   protected void renderSlots(GuiGraphics var1) {
+      for (Slot var3 : this.menu.slots) {
+         if (var3.isActive()) {
+            this.renderSlot(var1, var3);
+         }
+      }
    }
 
    @Override

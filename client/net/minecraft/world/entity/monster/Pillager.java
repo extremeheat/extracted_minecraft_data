@@ -190,17 +190,17 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    @Override
-   protected void pickUpItem(ItemEntity var1) {
-      ItemStack var2 = var1.getItem();
-      if (var2.getItem() instanceof BannerItem) {
-         super.pickUpItem(var1);
-      } else if (this.wantsItem(var2)) {
-         this.onItemPickup(var1);
-         ItemStack var3 = this.inventory.addItem(var2);
-         if (var3.isEmpty()) {
-            var1.discard();
+   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
+      ItemStack var3 = var2.getItem();
+      if (var3.getItem() instanceof BannerItem) {
+         super.pickUpItem(var1, var2);
+      } else if (this.wantsItem(var3)) {
+         this.onItemPickup(var2);
+         ItemStack var4 = this.inventory.addItem(var3);
+         if (var4.isEmpty()) {
+            var2.discard();
          } else {
-            var2.setCount(var3.getCount());
+            var3.setCount(var4.getCount());
          }
       }
    }

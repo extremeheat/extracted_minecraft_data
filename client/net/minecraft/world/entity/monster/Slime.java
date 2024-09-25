@@ -70,7 +70,7 @@ public class Slime extends Mob implements Enemy {
       this.goalSelector.addGoal(3, new Slime.SlimeRandomDirectionGoal(this));
       this.goalSelector.addGoal(5, new Slime.SlimeKeepOnJumpingGoal(this));
       this.targetSelector
-         .addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, var1 -> Math.abs(var1.getY() - this.getY()) <= 4.0));
+         .addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, (var1, var2) -> Math.abs(var1.getY() - this.getY()) <= 4.0));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
    }
 
@@ -234,13 +234,11 @@ public class Slime extends Mob implements Enemy {
    }
 
    protected void dealDamage(LivingEntity var1) {
-      if (this.isAlive() && this.isWithinMeleeAttackRange(var1) && this.hasLineOfSight(var1)) {
-         DamageSource var2 = this.damageSources().mobAttack(this);
-         if (var1.hurt(var2, this.getAttackDamage())) {
+      if (this.level() instanceof ServerLevel var2 && this.isAlive() && this.isWithinMeleeAttackRange(var1) && this.hasLineOfSight(var1)) {
+         DamageSource var4 = this.damageSources().mobAttack(this);
+         if (var1.hurtServer(var2, var4, this.getAttackDamage())) {
             this.playSound(SoundEvents.SLIME_ATTACK, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-            if (this.level() instanceof ServerLevel var3) {
-               EnchantmentHelper.doPostAttackEffects(var3, var1, var2);
-            }
+            EnchantmentHelper.doPostAttackEffects(var2, var1, var4);
          }
       }
    }

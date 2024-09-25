@@ -59,7 +59,8 @@ public class TraderLlama extends Llama {
       super.registerGoals();
       this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
       this.targetSelector.addGoal(1, new TraderLlama.TraderLlamaDefendWanderingTraderGoal(this));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Zombie.class, true, var0 -> var0.getType() != EntityType.ZOMBIFIED_PIGLIN));
+      this.targetSelector
+         .addGoal(2, new NearestAttackableTargetGoal<>(this, Zombie.class, true, (var0, var1) -> var0.getType() != EntityType.ZOMBIFIED_PIGLIN));
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, AbstractIllager.class, true));
    }
 

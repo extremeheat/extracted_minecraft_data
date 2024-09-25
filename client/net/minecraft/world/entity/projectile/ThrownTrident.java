@@ -62,17 +62,17 @@ public class ThrownTrident extends AbstractArrow {
       byte var2 = this.entityData.get(ID_LOYALTY);
       if (var2 > 0 && (this.dealtDamage || this.isNoPhysics()) && var1 != null) {
          if (!this.isAcceptibleReturnOwner()) {
-            if (!this.level().isClientSide && this.pickup == AbstractArrow.Pickup.ALLOWED) {
-               this.spawnAtLocation(this.getPickupItem(), 0.1F);
+            if (this.level() instanceof ServerLevel var3 && this.pickup == AbstractArrow.Pickup.ALLOWED) {
+               this.spawnAtLocation(var3, this.getPickupItem(), 0.1F);
             }
 
             this.discard();
          } else {
             this.setNoPhysics(true);
-            Vec3 var3 = var1.getEyePosition().subtract(this.position());
-            this.setPosRaw(this.getX(), this.getY() + var3.y * 0.015 * (double)var2, this.getZ());
-            double var4 = 0.05 * (double)var2;
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.95).add(var3.normalize().scale(var4)));
+            Vec3 var6 = var1.getEyePosition().subtract(this.position());
+            this.setPosRaw(this.getX(), this.getY() + var6.y * 0.015 * (double)var2, this.getZ());
+            double var7 = 0.05 * (double)var2;
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.95).add(var6.normalize().scale(var7)));
             if (this.clientSideReturnTridentTickCount == 0) {
                this.playSound(SoundEvents.TRIDENT_RETURN, 10.0F, 1.0F);
             }
@@ -110,13 +110,13 @@ public class ThrownTrident extends AbstractArrow {
       }
 
       this.dealtDamage = true;
-      if (var2.hurt(var5, var3)) {
+      if (var2.hurtOrSimulate(var5, var3)) {
          if (var2.getType() == EntityType.ENDERMAN) {
             return;
          }
 
          if (this.level() instanceof ServerLevel var8) {
-            EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak(var8, var2, var5, this.getWeaponItem(), var1x -> this.kill());
+            EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak(var8, var2, var5, this.getWeaponItem(), var2x -> this.kill(var8));
          }
 
          if (var2 instanceof LivingEntity var9) {
@@ -134,7 +134,14 @@ public class ThrownTrident extends AbstractArrow {
    protected void hitBlockEnchantmentEffects(ServerLevel var1, BlockHitResult var2, ItemStack var3) {
       Vec3 var4 = var2.getBlockPos().clampLocationWithin(var2.getLocation());
       EnchantmentHelper.onHitBlock(
-         var1, var3, this.getOwner() instanceof LivingEntity var5 ? var5 : null, this, null, var4, var1.getBlockState(var2.getBlockPos()), var1x -> this.kill()
+         var1,
+         var3,
+         this.getOwner() instanceof LivingEntity var5 ? var5 : null,
+         this,
+         null,
+         var4,
+         var1.getBlockState(var2.getBlockPos()),
+         var2x -> this.kill(var1)
       );
    }
 

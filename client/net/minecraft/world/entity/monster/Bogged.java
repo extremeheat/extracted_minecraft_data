@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -70,9 +71,9 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         this.shear(SoundSource.PLAYERS, var3);
-         this.gameEvent(GameEvent.SHEAR, var1);
-         if (!this.level().isClientSide) {
+         if (this.level() instanceof ServerLevel var4) {
+            this.shear(var4, SoundSource.PLAYERS, var3);
+            this.gameEvent(GameEvent.SHEAR, var1);
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
          }
 
@@ -123,14 +124,14 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    @Override
-   public void shear(SoundSource var1, ItemStack var2) {
-      this.level().playSound(null, this, SoundEvents.BOGGED_SHEAR, var1, 1.0F, 1.0F);
-      this.spawnShearedMushrooms(var2);
+   public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
+      var1.playSound(null, this, SoundEvents.BOGGED_SHEAR, var2, 1.0F, 1.0F);
+      this.spawnShearedMushrooms(var1, var3);
       this.setSheared(true);
    }
 
-   private void spawnShearedMushrooms(ItemStack var1) {
-      this.dropFromShearingLootTable(BuiltInLootTables.BOGGED_SHEAR, var1, var1x -> this.spawnAtLocation(var1x, this.getBbHeight()));
+   private void spawnShearedMushrooms(ServerLevel var1, ItemStack var2) {
+      this.dropFromShearingLootTable(var1, BuiltInLootTables.BOGGED_SHEAR, var2, (var1x, var2x) -> this.spawnAtLocation(var1x, var2x, this.getBbHeight()));
    }
 
    @Override

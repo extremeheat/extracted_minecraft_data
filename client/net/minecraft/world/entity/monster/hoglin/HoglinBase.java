@@ -13,28 +13,25 @@ public interface HoglinBase {
 
    int getAttackAnimationRemainingTicks();
 
-   static boolean hurtAndThrowTarget(LivingEntity var0, LivingEntity var1) {
-      float var3 = (float)var0.getAttributeValue(Attributes.ATTACK_DAMAGE);
-      float var2;
-      if (!var0.isBaby() && (int)var3 > 0) {
-         var2 = var3 / 2.0F + (float)var0.level().random.nextInt((int)var3);
+   static boolean hurtAndThrowTarget(ServerLevel var0, LivingEntity var1, LivingEntity var2) {
+      float var4 = (float)var1.getAttributeValue(Attributes.ATTACK_DAMAGE);
+      float var3;
+      if (!var1.isBaby() && (int)var4 > 0) {
+         var3 = var4 / 2.0F + (float)var0.random.nextInt((int)var4);
       } else {
-         var2 = var3;
+         var3 = var4;
       }
 
-      DamageSource var4 = var0.damageSources().mobAttack(var0);
-      boolean var5 = var1.hurt(var4, var2);
-      if (var5) {
-         if (var0.level() instanceof ServerLevel var6) {
-            EnchantmentHelper.doPostAttackEffects(var6, var1, var4);
-         }
-
-         if (!var0.isBaby()) {
-            throwTarget(var0, var1);
+      DamageSource var5 = var1.damageSources().mobAttack(var1);
+      boolean var6 = var2.hurtServer(var0, var5, var3);
+      if (var6) {
+         EnchantmentHelper.doPostAttackEffects(var0, var2, var5);
+         if (!var1.isBaby()) {
+            throwTarget(var1, var2);
          }
       }
 
-      return var5;
+      return var6;
    }
 
    static void throwTarget(LivingEntity var0, LivingEntity var1) {

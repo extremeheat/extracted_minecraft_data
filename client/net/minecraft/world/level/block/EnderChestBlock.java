@@ -86,11 +86,11 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
          if (var2.getBlockState(var9).isRedstoneConductor(var2, var9)) {
             return InteractionResult.SUCCESS;
          } else {
-            if (!var2.isClientSide) {
+            if (var2 instanceof ServerLevel var10) {
                var6.setActiveChest(var8);
                var4.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> ChestMenu.threeRows(var1x, var2x, var6), CONTAINER_TITLE));
                var4.awardStat(Stats.OPEN_ENDERCHEST);
-               PiglinAi.angerNearbyPiglins(var4, true);
+               PiglinAi.angerNearbyPiglins(var10, var4, true);
             }
 
             return InteractionResult.SUCCESS;

@@ -1,5 +1,6 @@
 package net.minecraft.world.effect;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 
 class AbsorptionMobEffect extends MobEffect {
@@ -8,8 +9,8 @@ class AbsorptionMobEffect extends MobEffect {
    }
 
    @Override
-   public boolean applyEffectTick(LivingEntity var1, int var2) {
-      return var1.getAbsorptionAmount() > 0.0F || var1.level().isClientSide;
+   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
+      return var2.getAbsorptionAmount() > 0.0F;
    }
 
    @Override

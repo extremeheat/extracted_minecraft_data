@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.sensing;
 
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -25,8 +26,8 @@ public class VillagerHostilesSensor extends NearestVisibleLivingEntitySensor {
    }
 
    @Override
-   protected boolean isMatchingEntity(LivingEntity var1, LivingEntity var2) {
-      return this.isHostile(var2) && this.isClose(var1, var2);
+   protected boolean isMatchingEntity(ServerLevel var1, LivingEntity var2, LivingEntity var3) {
+      return this.isHostile(var3) && this.isClose(var2, var3);
    }
 
    private boolean isClose(LivingEntity var1, LivingEntity var2) {

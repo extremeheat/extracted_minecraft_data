@@ -758,10 +758,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.levelData;
    }
 
-   public GameRules getGameRules() {
-      return this.levelData.getGameRules();
-   }
-
    public abstract TickRateManager tickRateManager();
 
    public float getThunderLevel(float var1) {

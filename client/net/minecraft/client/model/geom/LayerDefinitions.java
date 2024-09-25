@@ -109,7 +109,6 @@ import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.client.renderer.entity.WitherSkullRenderer;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class LayerDefinitions {
@@ -423,35 +422,40 @@ public class LayerDefinitions {
       var0.put(ModelLayers.ZOMBIFIED_PIGLIN_BABY, var19.apply(HumanoidModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.ZOMBIFIED_PIGLIN_BABY_INNER_ARMOR, var4.apply(HumanoidModel.BABY_TRANSFORMER));
       var0.put(ModelLayers.ZOMBIFIED_PIGLIN_BABY_OUTER_ARMOR, var3.apply(HumanoidModel.BABY_TRANSFORMER));
+      var0.put(ModelLayers.BAMBOO_RAFT, RaftModel.createRaftModel());
+      var0.put(ModelLayers.BAMBOO_CHEST_RAFT, RaftModel.createChestRaftModel());
       LayerDefinition var56 = BoatModel.createBoatModel();
       LayerDefinition var57 = BoatModel.createChestBoatModel();
-      LayerDefinition var58 = RaftModel.createRaftModel();
-      LayerDefinition var59 = RaftModel.createChestRaftModel();
-
-      for (Boat.Type var63 : Boat.Type.values()) {
-         if (var63 == Boat.Type.BAMBOO) {
-            var0.put(ModelLayers.createBoatModelName(var63), var58);
-            var0.put(ModelLayers.createChestBoatModelName(var63), var59);
-         } else {
-            var0.put(ModelLayers.createBoatModelName(var63), var56);
-            var0.put(ModelLayers.createChestBoatModelName(var63), var57);
-         }
-      }
-
-      LayerDefinition var65 = SignRenderer.createSignLayer(true);
-      LayerDefinition var66 = SignRenderer.createSignLayer(false);
-      LayerDefinition var67 = HangingSignRenderer.createHangingSignLayer();
+      var0.put(ModelLayers.OAK_BOAT, var56);
+      var0.put(ModelLayers.OAK_CHEST_BOAT, var57);
+      var0.put(ModelLayers.SPRUCE_BOAT, var56);
+      var0.put(ModelLayers.SPRUCE_CHEST_BOAT, var57);
+      var0.put(ModelLayers.BIRCH_BOAT, var56);
+      var0.put(ModelLayers.BIRCH_CHEST_BOAT, var57);
+      var0.put(ModelLayers.JUNGLE_BOAT, var56);
+      var0.put(ModelLayers.JUNGLE_CHEST_BOAT, var57);
+      var0.put(ModelLayers.ACACIA_BOAT, var56);
+      var0.put(ModelLayers.ACACIA_CHEST_BOAT, var57);
+      var0.put(ModelLayers.CHERRY_BOAT, var56);
+      var0.put(ModelLayers.CHERRY_CHEST_BOAT, var57);
+      var0.put(ModelLayers.DARK_OAK_BOAT, var56);
+      var0.put(ModelLayers.DARK_OAK_CHEST_BOAT, var57);
+      var0.put(ModelLayers.MANGROVE_BOAT, var56);
+      var0.put(ModelLayers.MANGROVE_CHEST_BOAT, var57);
+      LayerDefinition var58 = SignRenderer.createSignLayer(true);
+      LayerDefinition var59 = SignRenderer.createSignLayer(false);
+      LayerDefinition var60 = HangingSignRenderer.createHangingSignLayer();
       WoodType.values().forEach(var4x -> {
-         var0.put(ModelLayers.createStandingSignModelName(var4x), var65);
-         var0.put(ModelLayers.createWallSignModelName(var4x), var66);
-         var0.put(ModelLayers.createHangingSignModelName(var4x), var67);
+         var0.put(ModelLayers.createStandingSignModelName(var4x), var58);
+         var0.put(ModelLayers.createWallSignModelName(var4x), var59);
+         var0.put(ModelLayers.createHangingSignModelName(var4x), var60);
       });
-      ImmutableMap var68 = var0.build();
-      List var64 = ModelLayers.getKnownLocations().filter(var1x -> !var68.containsKey(var1x)).collect(Collectors.toList());
-      if (!var64.isEmpty()) {
-         throw new IllegalStateException("Missing layer definitions: " + var64);
+      ImmutableMap var61 = var0.build();
+      List var62 = ModelLayers.getKnownLocations().filter(var1x -> !var61.containsKey(var1x)).collect(Collectors.toList());
+      if (!var62.isEmpty()) {
+         throw new IllegalStateException("Missing layer definitions: " + var62);
       } else {
-         return var68;
+         return var61;
       }
    }
 }

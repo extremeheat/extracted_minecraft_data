@@ -256,11 +256,11 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    @Override
-   protected void customServerAiStep() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("villagerBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      var1.pop();
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("villagerBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
       if (this.assignProfessionWhenSpawned) {
          this.assignProfessionWhenSpawned = false;
       }
@@ -277,16 +277,16 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          }
       }
 
-      if (this.lastTradedPlayer != null && this.level() instanceof ServerLevel) {
-         ((ServerLevel)this.level()).onReputationEvent(ReputationEventType.TRADE, this.lastTradedPlayer, this);
-         this.level().broadcastEntityEvent(this, (byte)14);
+      if (this.lastTradedPlayer != null) {
+         var1.onReputationEvent(ReputationEventType.TRADE, this.lastTradedPlayer, this);
+         var1.broadcastEntityEvent(this, (byte)14);
          this.lastTradedPlayer = null;
       }
 
       if (!this.isNoAi() && this.random.nextInt(100) == 0) {
-         Raid var2 = ((ServerLevel)this.level()).getRaidAt(this.blockPosition());
-         if (var2 != null && var2.isActive() && !var2.isOver()) {
-            this.level().broadcastEntityEvent(this, (byte)42);
+         Raid var3 = var1.getRaidAt(this.blockPosition());
+         if (var3 != null && var3.isActive() && !var3.isOver()) {
+            var1.broadcastEntityEvent(this, (byte)42);
          }
       }
 
@@ -294,7 +294,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          this.stopTrading();
       }
 
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    @Override
@@ -787,15 +787,15 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    @Override
-   protected void pickUpItem(ItemEntity var1) {
-      InventoryCarrier.pickUpItem(this, this, var1);
+   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
+      InventoryCarrier.pickUpItem(var1, this, this, var2);
    }
 
    @Override
-   public boolean wantsToPickUp(ItemStack var1) {
-      Item var2 = var1.getItem();
-      return (var1.is(ItemTags.VILLAGER_PICKS_UP) || this.getVillagerData().getProfession().requestedItems().contains(var2))
-         && this.getInventory().canAddItem(var1);
+   public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
+      Item var3 = var2.getItem();
+      return (var2.is(ItemTags.VILLAGER_PICKS_UP) || this.getVillagerData().getProfession().requestedItems().contains(var3))
+         && this.getInventory().canAddItem(var2);
    }
 
    public boolean hasExcessFood() {

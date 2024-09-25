@@ -1,15 +1,15 @@
 package net.minecraft.world.entity.ai.goal.target;
 
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.raid.Raider;
 
 public class NearestHealableRaiderTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
    private static final int DEFAULT_COOLDOWN = 200;
    private int cooldown = 0;
 
-   public NearestHealableRaiderTargetGoal(Raider var1, Class<T> var2, boolean var3, @Nullable Predicate<LivingEntity> var4) {
+   public NearestHealableRaiderTargetGoal(Raider var1, Class<T> var2, boolean var3, @Nullable TargetingConditions.Selector var4) {
       super(var1, var2, 500, var3, false, var4);
    }
 

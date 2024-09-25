@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
@@ -127,31 +128,31 @@ public class Bat extends AmbientCreature {
    }
 
    @Override
-   protected void customServerAiStep() {
-      super.customServerAiStep();
-      BlockPos var1 = this.blockPosition();
-      BlockPos var2 = var1.above();
+   protected void customServerAiStep(ServerLevel var1) {
+      super.customServerAiStep(var1);
+      BlockPos var2 = this.blockPosition();
+      BlockPos var3 = var2.above();
       if (this.isResting()) {
-         boolean var3 = this.isSilent();
-         if (this.level().getBlockState(var2).isRedstoneConductor(this.level(), var1)) {
+         boolean var4 = this.isSilent();
+         if (var1.getBlockState(var3).isRedstoneConductor(var1, var2)) {
             if (this.random.nextInt(200) == 0) {
                this.yHeadRot = (float)this.random.nextInt(360);
             }
 
-            if (this.level().getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
+            if (var1.getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
                this.setResting(false);
-               if (!var3) {
-                  this.level().levelEvent(null, 1025, var1, 0);
+               if (!var4) {
+                  var1.levelEvent(null, 1025, var2, 0);
                }
             }
          } else {
             this.setResting(false);
-            if (!var3) {
-               this.level().levelEvent(null, 1025, var1, 0);
+            if (!var4) {
+               var1.levelEvent(null, 1025, var2, 0);
             }
          }
       } else {
-         if (this.targetPosition != null && (!this.level().isEmptyBlock(this.targetPosition) || this.targetPosition.getY() <= this.level().getMinY())) {
+         if (this.targetPosition != null && (!var1.isEmptyBlock(this.targetPosition) || this.targetPosition.getY() <= var1.getMinY())) {
             this.targetPosition = null;
          }
 
@@ -163,21 +164,21 @@ public class Bat extends AmbientCreature {
             );
          }
 
-         double var13 = (double)this.targetPosition.getX() + 0.5 - this.getX();
-         double var5 = (double)this.targetPosition.getY() + 0.1 - this.getY();
-         double var7 = (double)this.targetPosition.getZ() + 0.5 - this.getZ();
-         Vec3 var9 = this.getDeltaMovement();
-         Vec3 var10 = var9.add(
-            (Math.signum(var13) * 0.5 - var9.x) * 0.10000000149011612,
-            (Math.signum(var5) * 0.699999988079071 - var9.y) * 0.10000000149011612,
-            (Math.signum(var7) * 0.5 - var9.z) * 0.10000000149011612
+         double var14 = (double)this.targetPosition.getX() + 0.5 - this.getX();
+         double var6 = (double)this.targetPosition.getY() + 0.1 - this.getY();
+         double var8 = (double)this.targetPosition.getZ() + 0.5 - this.getZ();
+         Vec3 var10 = this.getDeltaMovement();
+         Vec3 var11 = var10.add(
+            (Math.signum(var14) * 0.5 - var10.x) * 0.10000000149011612,
+            (Math.signum(var6) * 0.699999988079071 - var10.y) * 0.10000000149011612,
+            (Math.signum(var8) * 0.5 - var10.z) * 0.10000000149011612
          );
-         this.setDeltaMovement(var10);
-         float var11 = (float)(Mth.atan2(var10.z, var10.x) * 57.2957763671875) - 90.0F;
-         float var12 = Mth.wrapDegrees(var11 - this.getYRot());
+         this.setDeltaMovement(var11);
+         float var12 = (float)(Mth.atan2(var11.z, var11.x) * 57.2957763671875) - 90.0F;
+         float var13 = Mth.wrapDegrees(var12 - this.getYRot());
          this.zza = 0.5F;
-         this.setYRot(this.getYRot() + var12);
-         if (this.random.nextInt(100) == 0 && this.level().getBlockState(var2).isRedstoneConductor(this.level(), var2)) {
+         this.setYRot(this.getYRot() + var13);
+         if (this.random.nextInt(100) == 0 && var1.getBlockState(var3).isRedstoneConductor(var1, var3)) {
             this.setResting(true);
          }
       }
@@ -198,15 +199,15 @@ public class Bat extends AmbientCreature {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableTo(var1, var2)) {
          return false;
       } else {
-         if (!this.level().isClientSide && this.isResting()) {
+         if (this.isResting()) {
             this.setResting(false);
          }
 
-         return super.hurt(var1, var2);
+         return super.hurtServer(var1, var2, var3);
       }
    }
 

@@ -6,10 +6,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.BoatRenderState;
-import net.minecraft.util.Mth;
 
-public class BoatModel extends EntityModel<BoatRenderState> {
+public class BoatModel extends AbstractBoatModel {
    private static final int BOTTOM_WIDTH = 28;
    private static final int WIDTH = 32;
    private static final int DEPTH = 6;
@@ -20,13 +18,9 @@ public class BoatModel extends EntityModel<BoatRenderState> {
    private static final String FRONT = "front";
    private static final String RIGHT = "right";
    private static final String LEFT = "left";
-   private final ModelPart leftPaddle;
-   private final ModelPart rightPaddle;
 
    public BoatModel(ModelPart var1) {
       super(var1);
-      this.leftPaddle = var1.getChild("left_paddle");
-      this.rightPaddle = var1.getChild("right_paddle");
    }
 
    private static void addCommonParts(PartDefinition var0) {
@@ -108,19 +102,5 @@ public class BoatModel extends EntityModel<BoatRenderState> {
          PartPose.offsetAndRotation(0.0F, -3.0F, 1.0F, 1.5707964F, 0.0F, 0.0F)
       );
       return LayerDefinition.create(var0, 0, 0);
-   }
-
-   public void setupAnim(BoatRenderState var1) {
-      super.setupAnim(var1);
-      animatePaddle(var1.rowingTimeLeft, 0, this.leftPaddle);
-      animatePaddle(var1.rowingTimeRight, 1, this.rightPaddle);
-   }
-
-   private static void animatePaddle(float var0, int var1, ModelPart var2) {
-      var2.xRot = Mth.clampedLerp(-1.0471976F, -0.2617994F, (Mth.sin(-var0) + 1.0F) / 2.0F);
-      var2.yRot = Mth.clampedLerp(-0.7853982F, 0.7853982F, (Mth.sin(-var0 + 1.0F) + 1.0F) / 2.0F);
-      if (var1 == 1) {
-         var2.yRot = 3.1415927F - var2.yRot;
-      }
    }
 }

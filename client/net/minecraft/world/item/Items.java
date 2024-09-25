@@ -19,8 +19,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.BundleContents;
@@ -945,43 +943,45 @@ public class Items {
          )
          .repairable(PHANTOM_MEMBRANE)
    );
-   public static final Item OAK_BOAT = registerItem("oak_boat", var0 -> new BoatItem(false, Boat.Type.OAK, var0), new Item.Properties().stacksTo(1));
-   public static final Item OAK_CHEST_BOAT = registerItem("oak_chest_boat", var0 -> new BoatItem(true, Boat.Type.OAK, var0), new Item.Properties().stacksTo(1));
-   public static final Item SPRUCE_BOAT = registerItem("spruce_boat", var0 -> new BoatItem(false, Boat.Type.SPRUCE, var0), new Item.Properties().stacksTo(1));
+   public static final Item OAK_BOAT = registerItem("oak_boat", var0 -> new BoatItem(EntityType.OAK_BOAT, var0), new Item.Properties().stacksTo(1));
+   public static final Item OAK_CHEST_BOAT = registerItem(
+      "oak_chest_boat", var0 -> new BoatItem(EntityType.OAK_CHEST_BOAT, var0), new Item.Properties().stacksTo(1)
+   );
+   public static final Item SPRUCE_BOAT = registerItem("spruce_boat", var0 -> new BoatItem(EntityType.SPRUCE_BOAT, var0), new Item.Properties().stacksTo(1));
    public static final Item SPRUCE_CHEST_BOAT = registerItem(
-      "spruce_chest_boat", var0 -> new BoatItem(true, Boat.Type.SPRUCE, var0), new Item.Properties().stacksTo(1)
+      "spruce_chest_boat", var0 -> new BoatItem(EntityType.SPRUCE_CHEST_BOAT, var0), new Item.Properties().stacksTo(1)
    );
-   public static final Item BIRCH_BOAT = registerItem("birch_boat", var0 -> new BoatItem(false, Boat.Type.BIRCH, var0), new Item.Properties().stacksTo(1));
+   public static final Item BIRCH_BOAT = registerItem("birch_boat", var0 -> new BoatItem(EntityType.BIRCH_BOAT, var0), new Item.Properties().stacksTo(1));
    public static final Item BIRCH_CHEST_BOAT = registerItem(
-      "birch_chest_boat", var0 -> new BoatItem(true, Boat.Type.BIRCH, var0), new Item.Properties().stacksTo(1)
+      "birch_chest_boat", var0 -> new BoatItem(EntityType.BIRCH_CHEST_BOAT, var0), new Item.Properties().stacksTo(1)
    );
-   public static final Item JUNGLE_BOAT = registerItem("jungle_boat", var0 -> new BoatItem(false, Boat.Type.JUNGLE, var0), new Item.Properties().stacksTo(1));
+   public static final Item JUNGLE_BOAT = registerItem("jungle_boat", var0 -> new BoatItem(EntityType.JUNGLE_BOAT, var0), new Item.Properties().stacksTo(1));
    public static final Item JUNGLE_CHEST_BOAT = registerItem(
-      "jungle_chest_boat", var0 -> new BoatItem(true, Boat.Type.JUNGLE, var0), new Item.Properties().stacksTo(1)
+      "jungle_chest_boat", var0 -> new BoatItem(EntityType.JUNGLE_CHEST_BOAT, var0), new Item.Properties().stacksTo(1)
    );
-   public static final Item ACACIA_BOAT = registerItem("acacia_boat", var0 -> new BoatItem(false, Boat.Type.ACACIA, var0), new Item.Properties().stacksTo(1));
+   public static final Item ACACIA_BOAT = registerItem("acacia_boat", var0 -> new BoatItem(EntityType.ACACIA_BOAT, var0), new Item.Properties().stacksTo(1));
    public static final Item ACACIA_CHEST_BOAT = registerItem(
-      "acacia_chest_boat", var0 -> new BoatItem(true, Boat.Type.ACACIA, var0), new Item.Properties().stacksTo(1)
+      "acacia_chest_boat", var0 -> new BoatItem(EntityType.ACACIA_CHEST_BOAT, var0), new Item.Properties().stacksTo(1)
    );
-   public static final Item CHERRY_BOAT = registerItem("cherry_boat", var0 -> new BoatItem(false, Boat.Type.CHERRY, var0), new Item.Properties().stacksTo(1));
+   public static final Item CHERRY_BOAT = registerItem("cherry_boat", var0 -> new BoatItem(EntityType.CHERRY_BOAT, var0), new Item.Properties().stacksTo(1));
    public static final Item CHERRY_CHEST_BOAT = registerItem(
-      "cherry_chest_boat", var0 -> new BoatItem(true, Boat.Type.CHERRY, var0), new Item.Properties().stacksTo(1)
+      "cherry_chest_boat", var0 -> new BoatItem(EntityType.CHERRY_CHEST_BOAT, var0), new Item.Properties().stacksTo(1)
    );
    public static final Item DARK_OAK_BOAT = registerItem(
-      "dark_oak_boat", var0 -> new BoatItem(false, Boat.Type.DARK_OAK, var0), new Item.Properties().stacksTo(1)
+      "dark_oak_boat", var0 -> new BoatItem(EntityType.DARK_OAK_BOAT, var0), new Item.Properties().stacksTo(1)
    );
    public static final Item DARK_OAK_CHEST_BOAT = registerItem(
-      "dark_oak_chest_boat", var0 -> new BoatItem(true, Boat.Type.DARK_OAK, var0), new Item.Properties().stacksTo(1)
+      "dark_oak_chest_boat", var0 -> new BoatItem(EntityType.DARK_OAK_CHEST_BOAT, var0), new Item.Properties().stacksTo(1)
    );
    public static final Item MANGROVE_BOAT = registerItem(
-      "mangrove_boat", var0 -> new BoatItem(false, Boat.Type.MANGROVE, var0), new Item.Properties().stacksTo(1)
+      "mangrove_boat", var0 -> new BoatItem(EntityType.MANGROVE_BOAT, var0), new Item.Properties().stacksTo(1)
    );
    public static final Item MANGROVE_CHEST_BOAT = registerItem(
-      "mangrove_chest_boat", var0 -> new BoatItem(true, Boat.Type.MANGROVE, var0), new Item.Properties().stacksTo(1)
+      "mangrove_chest_boat", var0 -> new BoatItem(EntityType.MANGROVE_CHEST_BOAT, var0), new Item.Properties().stacksTo(1)
    );
-   public static final Item BAMBOO_RAFT = registerItem("bamboo_raft", var0 -> new BoatItem(false, Boat.Type.BAMBOO, var0), new Item.Properties().stacksTo(1));
+   public static final Item BAMBOO_RAFT = registerItem("bamboo_raft", var0 -> new BoatItem(EntityType.BAMBOO_RAFT, var0), new Item.Properties().stacksTo(1));
    public static final Item BAMBOO_CHEST_RAFT = registerItem(
-      "bamboo_chest_raft", var0 -> new BoatItem(true, Boat.Type.BAMBOO, var0), new Item.Properties().stacksTo(1)
+      "bamboo_chest_raft", var0 -> new BoatItem(EntityType.BAMBOO_CHEST_RAFT, var0), new Item.Properties().stacksTo(1)
    );
    public static final Item STRUCTURE_BLOCK = registerBlock(Blocks.STRUCTURE_BLOCK, GameMasterBlockItem::new, new Item.Properties().rarity(Rarity.EPIC));
    public static final Item JIGSAW = registerBlock(Blocks.JIGSAW, GameMasterBlockItem::new, new Item.Properties().rarity(Rarity.EPIC));
@@ -1237,119 +1237,119 @@ public class Items {
    public static final Item BUNDLE = registerItem(
       "bundle",
       var0 -> new BundleItem(ResourceLocation.withDefaultNamespace("bundle_open_front"), ResourceLocation.withDefaultNamespace("bundle_open_back"), var0),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item WHITE_BUNDLE = registerItem(
       "white_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("white_bundle_open_front"), ResourceLocation.withDefaultNamespace("white_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item ORANGE_BUNDLE = registerItem(
       "orange_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("orange_bundle_open_front"), ResourceLocation.withDefaultNamespace("orange_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item MAGENTA_BUNDLE = registerItem(
       "magenta_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("magenta_bundle_open_front"), ResourceLocation.withDefaultNamespace("magenta_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item LIGHT_BLUE_BUNDLE = registerItem(
       "light_blue_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("light_blue_bundle_open_front"), ResourceLocation.withDefaultNamespace("light_blue_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item YELLOW_BUNDLE = registerItem(
       "yellow_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("yellow_bundle_open_front"), ResourceLocation.withDefaultNamespace("yellow_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item LIME_BUNDLE = registerItem(
       "lime_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("lime_bundle_open_front"), ResourceLocation.withDefaultNamespace("lime_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item PINK_BUNDLE = registerItem(
       "pink_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("pink_bundle_open_front"), ResourceLocation.withDefaultNamespace("pink_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item GRAY_BUNDLE = registerItem(
       "gray_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("gray_bundle_open_front"), ResourceLocation.withDefaultNamespace("gray_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item LIGHT_GRAY_BUNDLE = registerItem(
       "light_gray_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("light_gray_bundle_open_front"), ResourceLocation.withDefaultNamespace("light_gray_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item CYAN_BUNDLE = registerItem(
       "cyan_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("cyan_bundle_open_front"), ResourceLocation.withDefaultNamespace("cyan_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item PURPLE_BUNDLE = registerItem(
       "purple_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("purple_bundle_open_front"), ResourceLocation.withDefaultNamespace("purple_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item BLUE_BUNDLE = registerItem(
       "blue_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("blue_bundle_open_front"), ResourceLocation.withDefaultNamespace("blue_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item BROWN_BUNDLE = registerItem(
       "brown_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("brown_bundle_open_front"), ResourceLocation.withDefaultNamespace("brown_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item GREEN_BUNDLE = registerItem(
       "green_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("green_bundle_open_front"), ResourceLocation.withDefaultNamespace("green_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item RED_BUNDLE = registerItem(
       "red_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("red_bundle_open_front"), ResourceLocation.withDefaultNamespace("red_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item BLACK_BUNDLE = registerItem(
       "black_bundle",
       var0 -> new BundleItem(
             ResourceLocation.withDefaultNamespace("black_bundle_open_front"), ResourceLocation.withDefaultNamespace("black_bundle_open_back"), var0
          ),
-      new Item.Properties().stacksTo(1).requiredFeatures(FeatureFlags.BUNDLE).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
+      new Item.Properties().stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY)
    );
    public static final Item FISHING_ROD = registerItem("fishing_rod", FishingRodItem::new, new Item.Properties().durability(64).enchantable(1));
    public static final Item CLOCK = registerItem("clock");
@@ -1657,16 +1657,24 @@ public class Items {
    public static final Item RABBIT_HIDE = registerItem("rabbit_hide");
    public static final Item ARMOR_STAND = registerItem("armor_stand", ArmorStandItem::new, new Item.Properties().stacksTo(16));
    public static final Item IRON_HORSE_ARMOR = registerItem(
-      "iron_horse_armor", var0 -> new AnimalArmorItem(ArmorMaterials.IRON, AnimalArmorItem.BodyType.EQUESTRIAN, var0), new Item.Properties().stacksTo(1)
+      "iron_horse_armor",
+      var0 -> new AnimalArmorItem(ArmorMaterials.IRON, AnimalArmorItem.BodyType.EQUESTRIAN, SoundEvents.HORSE_ARMOR, var0),
+      new Item.Properties().stacksTo(1)
    );
    public static final Item GOLDEN_HORSE_ARMOR = registerItem(
-      "golden_horse_armor", var0 -> new AnimalArmorItem(ArmorMaterials.GOLD, AnimalArmorItem.BodyType.EQUESTRIAN, var0), new Item.Properties().stacksTo(1)
+      "golden_horse_armor",
+      var0 -> new AnimalArmorItem(ArmorMaterials.GOLD, AnimalArmorItem.BodyType.EQUESTRIAN, SoundEvents.HORSE_ARMOR, var0),
+      new Item.Properties().stacksTo(1)
    );
    public static final Item DIAMOND_HORSE_ARMOR = registerItem(
-      "diamond_horse_armor", var0 -> new AnimalArmorItem(ArmorMaterials.DIAMOND, AnimalArmorItem.BodyType.EQUESTRIAN, var0), new Item.Properties().stacksTo(1)
+      "diamond_horse_armor",
+      var0 -> new AnimalArmorItem(ArmorMaterials.DIAMOND, AnimalArmorItem.BodyType.EQUESTRIAN, SoundEvents.HORSE_ARMOR, var0),
+      new Item.Properties().stacksTo(1)
    );
    public static final Item LEATHER_HORSE_ARMOR = registerItem(
-      "leather_horse_armor", var0 -> new AnimalArmorItem(ArmorMaterials.LEATHER, AnimalArmorItem.BodyType.EQUESTRIAN, var0), new Item.Properties().stacksTo(1)
+      "leather_horse_armor",
+      var0 -> new AnimalArmorItem(ArmorMaterials.LEATHER, AnimalArmorItem.BodyType.EQUESTRIAN, SoundEvents.HORSE_ARMOR, var0),
+      new Item.Properties().stacksTo(1)
    );
    public static final Item LEAD = registerItem("lead", LeadItem::new);
    public static final Item NAME_TAG = registerItem("name_tag", NameTagItem::new);

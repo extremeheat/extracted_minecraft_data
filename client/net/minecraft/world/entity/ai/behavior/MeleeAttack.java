@@ -31,7 +31,7 @@ public class MeleeAttack {
                            && var1.<NearestVisibleLivingEntities>get(var5).contains(var10)) {
                            var2.set(new EntityTracker(var10, true));
                            var7.swing(InteractionHand.MAIN_HAND);
-                           var7.doHurtTarget(var10);
+                           var7.doHurtTarget(var6, var10);
                            var4.setWithExpiry(true, (long)var0);
                            return true;
                         } else {

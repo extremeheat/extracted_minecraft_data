@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -80,15 +81,15 @@ public class Silverfish extends Monster {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableTo(var1, var2)) {
          return false;
       } else {
-         if ((var1.getEntity() != null || var1.is(DamageTypeTags.ALWAYS_TRIGGERS_SILVERFISH)) && this.friendsGoal != null) {
+         if ((var2.getEntity() != null || var2.is(DamageTypeTags.ALWAYS_TRIGGERS_SILVERFISH)) && this.friendsGoal != null) {
             this.friendsGoal.notifyHurt();
          }
 
-         return super.hurt(var1, var2);
+         return super.hurtServer(var1, var2, var3);
       }
    }
 
@@ -138,7 +139,7 @@ public class Silverfish extends Monster {
             return false;
          } else {
             RandomSource var1 = this.mob.getRandom();
-            if (this.mob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.nextInt(reducedTickDelay(10)) == 0) {
+            if (getServerLevel(this.mob).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.nextInt(reducedTickDelay(10)) == 0) {
                this.selectedDirection = Direction.getRandom(var1);
                BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
                BlockState var3 = this.mob.level().getBlockState(var2);
@@ -210,7 +211,7 @@ public class Silverfish extends Monster {
                      BlockState var8 = var1.getBlockState(var7);
                      Block var9 = var8.getBlock();
                      if (var9 instanceof InfestedBlock) {
-                        if (var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                        if (getServerLevel(var1).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                            var1.destroyBlock(var7, true, this.silverfish);
                         } else {
                            var1.setBlock(var7, ((InfestedBlock)var9).hostStateByInfested(var1.getBlockState(var7)), 3);

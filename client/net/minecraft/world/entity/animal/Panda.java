@@ -314,12 +314,12 @@ public class Panda extends Animal {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
       if (!this.isAggressive()) {
          this.didBite = true;
       }
 
-      return super.doHurtTarget(var1);
+      return super.doHurtTarget(var1, var2);
    }
 
    @Override
@@ -514,30 +514,27 @@ public class Panda extends Animal {
          }
       }
 
-      if (!var2.isClientSide() && var2.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-         this.dropFromGiftLootTable(BuiltInLootTables.PANDA_SNEEZE, this::spawnAtLocation);
+      if (this.level() instanceof ServerLevel var6 && var6.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         this.dropFromGiftLootTable(var6, BuiltInLootTables.PANDA_SNEEZE, this::spawnAtLocation);
       }
    }
 
    @Override
-   protected void pickUpItem(ItemEntity var1) {
-      if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(var1)) {
-         this.onItemPickup(var1);
-         ItemStack var2 = var1.getItem();
-         this.setItemSlot(EquipmentSlot.MAINHAND, var2);
+   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
+      if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(var2)) {
+         this.onItemPickup(var2);
+         ItemStack var3 = var2.getItem();
+         this.setItemSlot(EquipmentSlot.MAINHAND, var3);
          this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
-         this.take(var1, var2.getCount());
-         var1.discard();
+         this.take(var2, var3.getCount());
+         var2.discard();
       }
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (!this.level().isClientSide) {
-         this.sit(false);
-      }
-
-      return super.hurt(var1, var2);
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      this.sit(false);
+      return super.hurtServer(var1, var2, var3);
    }
 
    @Nullable
@@ -622,15 +619,15 @@ public class Panda extends Animal {
             this.usePlayerItem(var1, var2, var3);
             this.setInLove(var1);
          } else {
-            if (this.level().isClientSide || this.isSitting() || this.isInWater()) {
+            if (!(this.level() instanceof ServerLevel var4) || this.isSitting() || this.isInWater()) {
                return InteractionResult.PASS;
             }
 
             this.tryToSit();
             this.eat(true);
-            ItemStack var4 = this.getItemBySlot(EquipmentSlot.MAINHAND);
-            if (!var4.isEmpty() && !var1.hasInfiniteMaterials()) {
-               this.spawnAtLocation(var4);
+            ItemStack var6 = this.getItemBySlot(EquipmentSlot.MAINHAND);
+            if (!var6.isEmpty() && !var1.hasInfiniteMaterials()) {
+               this.spawnAtLocation(var4, var6);
             }
 
             this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(var3.getItem(), 1));
@@ -921,23 +918,22 @@ public class Panda extends Animal {
             return false;
          } else {
             if (this.lookAt == null) {
+               ServerLevel var1 = getServerLevel(this.mob);
                if (this.lookAtType == Player.class) {
-                  this.lookAt = this.mob.level().getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+                  this.lookAt = var1.getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
                } else {
-                  this.lookAt = this.mob
-                     .level()
-                     .getNearestEntity(
-                        this.mob
-                           .level()
-                           .getEntitiesOfClass(
-                              this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0, (double)this.lookDistance), var0 -> true
-                           ),
-                        this.lookAtContext,
-                        this.mob,
-                        this.mob.getX(),
-                        this.mob.getEyeY(),
-                        this.mob.getZ()
-                     );
+                  this.lookAt = var1.getNearestEntity(
+                     this.mob
+                        .level()
+                        .getEntitiesOfClass(
+                           this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0, (double)this.lookDistance), var0 -> true
+                        ),
+                     this.lookAtContext,
+                     this.mob,
+                     this.mob.getX(),
+                     this.mob.getEyeY(),
+                     this.mob.getZ()
+                  );
                }
             }
 
@@ -1092,7 +1088,7 @@ public class Panda extends Animal {
       public void stop() {
          ItemStack var1 = Panda.this.getItemBySlot(EquipmentSlot.MAINHAND);
          if (!var1.isEmpty()) {
-            Panda.this.spawnAtLocation(var1);
+            Panda.this.spawnAtLocation(getServerLevel(Panda.this.level()), var1);
             Panda.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
             int var2 = Panda.this.isLazy() ? Panda.this.random.nextInt(50) + 10 : Panda.this.random.nextInt(150) + 10;
             this.cooldown = Panda.this.tickCount + var2 * 20;

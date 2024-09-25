@@ -92,11 +92,6 @@ public class Evoker extends SpellcasterIllager {
    }
 
    @Override
-   protected void customServerAiStep() {
-      super.customServerAiStep();
-   }
-
-   @Override
    protected boolean considersEntityAsAlly(Entity var1) {
       if (var1 == this) {
          return true;
@@ -256,7 +251,9 @@ public class Evoker extends SpellcasterIllager {
          if (!super.canUse()) {
             return false;
          } else {
-            int var1 = Evoker.this.level().getNearbyEntities(Vex.class, this.vexCountTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0)).size();
+            int var1 = getServerLevel(Evoker.this.level())
+               .getNearbyEntities(Vex.class, this.vexCountTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0))
+               .size();
             return Evoker.this.random.nextInt(8) + 1 > var1;
          }
       }
@@ -309,7 +306,7 @@ public class Evoker extends SpellcasterIllager {
    public class EvokerWololoSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
       private final TargetingConditions wololoTargeting = TargetingConditions.forNonCombat()
          .range(16.0)
-         .selector(var0 -> ((Sheep)var0).getColor() == DyeColor.BLUE);
+         .selector((var0, var1) -> ((Sheep)var0).getColor() == DyeColor.BLUE);
 
       public EvokerWololoSpellGoal() {
          super();
@@ -323,16 +320,18 @@ public class Evoker extends SpellcasterIllager {
             return false;
          } else if (Evoker.this.tickCount < this.nextAttackTickCount) {
             return false;
-         } else if (!Evoker.this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            return false;
          } else {
-            List var1 = Evoker.this.level()
-               .getNearbyEntities(Sheep.class, this.wololoTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0, 4.0, 16.0));
-            if (var1.isEmpty()) {
+            ServerLevel var1 = getServerLevel(Evoker.this.level());
+            if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                return false;
             } else {
-               Evoker.this.setWololoTarget((Sheep)var1.get(Evoker.this.random.nextInt(var1.size())));
-               return true;
+               List var2 = var1.getNearbyEntities(Sheep.class, this.wololoTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0, 4.0, 16.0));
+               if (var2.isEmpty()) {
+                  return false;
+               } else {
+                  Evoker.this.setWololoTarget((Sheep)var2.get(Evoker.this.random.nextInt(var2.size())));
+                  return true;
+               }
             }
          }
       }

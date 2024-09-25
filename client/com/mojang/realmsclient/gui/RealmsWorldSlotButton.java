@@ -28,6 +28,8 @@ public class RealmsWorldSlotButton extends Button {
    private static final Component SWITCH_TO_MINIGAME_SLOT_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip.minigame");
    private static final Component SWITCH_TO_WORLD_SLOT_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip");
    static final Component MINIGAME = Component.translatable("mco.worldSlot.minigame");
+   private static final int WORLD_NAME_MAX_WIDTH = 64;
+   private static final String DOTS = "...";
    private final int slotIndex;
    @Nullable
    private RealmsWorldSlotButton.State state;
@@ -115,7 +117,12 @@ public class RealmsWorldSlotButton extends Button {
          }
 
          Font var10 = Minecraft.getInstance().font;
-         var1.drawCenteredString(var10, this.state.slotName, var5 + 40, var6 + 66, -1);
+         String var11 = this.state.slotName;
+         if (var10.width(var11) > 64) {
+            var11 = var10.plainSubstrByWidth(var11, 64 - var10.width("...")) + "...";
+         }
+
+         var1.drawCenteredString(var10, var11, var5 + 40, var6 + 66, -1);
          var1.drawCenteredString(
             var10, RealmsMainScreen.getVersionComponent(this.state.slotVersion, this.state.compatibility.isCompatible()), var5 + 40, var6 + 80 + 2, -1
          );

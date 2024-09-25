@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.vehicle;
 
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -61,9 +62,9 @@ public class MinecartChest extends AbstractMinecartContainer {
    @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       InteractionResult var3 = this.interactWithContainerVehicle(var1);
-      if (var3.consumesAction()) {
+      if (var3.consumesAction() && var1.level() instanceof ServerLevel var4) {
          this.gameEvent(GameEvent.CONTAINER_OPEN, var1);
-         PiglinAi.angerNearbyPiglins(var1, true);
+         PiglinAi.angerNearbyPiglins(var4, var1, true);
       }
 
       return var3;

@@ -101,7 +101,7 @@ public class FrogAi {
             Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
             Pair.of(0, new AnimalMakeLove(EntityType.FROG)),
             Pair.of(1, new FollowTemptation(var0x -> 1.25F)),
-            Pair.of(2, StartAttacking.create(FrogAi::canAttack, var0x -> var0x.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
+            Pair.of(2, StartAttacking.create((var0x, var1) -> canAttack(var1), (var0x, var1) -> var1.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
             Pair.of(3, TryFindLand.create(6, 1.0F)),
             Pair.of(
                4,
@@ -128,7 +128,7 @@ public class FrogAi {
          ImmutableList.of(
             Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
             Pair.of(1, new FollowTemptation(var0x -> 1.25F)),
-            Pair.of(2, StartAttacking.create(FrogAi::canAttack, var0x -> var0x.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
+            Pair.of(2, StartAttacking.create((var0x, var1) -> canAttack(var1), (var0x, var1) -> var1.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
             Pair.of(3, TryFindLand.create(8, 1.5F)),
             Pair.of(
                5,
@@ -157,7 +157,7 @@ public class FrogAi {
          Activity.LAY_SPAWN,
          ImmutableList.of(
             Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
-            Pair.of(1, StartAttacking.create(FrogAi::canAttack, var0x -> var0x.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
+            Pair.of(1, StartAttacking.create((var0x, var1) -> canAttack(var1), (var0x, var1) -> var1.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))),
             Pair.of(2, TryFindLandNearWater.create(8, 1.0F)),
             Pair.of(3, TryLaySpawnOnWaterNearLand.create(Blocks.FROGSPAWN)),
             Pair.of(

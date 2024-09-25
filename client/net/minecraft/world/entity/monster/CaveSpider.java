@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -26,18 +27,18 @@ public class CaveSpider extends Spider {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
-      if (super.doHurtTarget(var1)) {
-         if (var1 instanceof LivingEntity) {
-            byte var2 = 0;
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      if (super.doHurtTarget(var1, var2)) {
+         if (var2 instanceof LivingEntity) {
+            byte var3 = 0;
             if (this.level().getDifficulty() == Difficulty.NORMAL) {
-               var2 = 7;
+               var3 = 7;
             } else if (this.level().getDifficulty() == Difficulty.HARD) {
-               var2 = 15;
+               var3 = 15;
             }
 
-            if (var2 > 0) {
-               ((LivingEntity)var1).addEffect(new MobEffectInstance(MobEffects.POISON, var2 * 20, 0), this);
+            if (var3 > 0) {
+               ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.POISON, var3 * 20, 0), this);
             }
          }
 

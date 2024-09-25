@@ -31,7 +31,7 @@ public class TemptingSensor extends Sensor<PathfinderMob> {
       List var5 = var1.players()
          .stream()
          .filter(EntitySelector.NO_SPECTATORS)
-         .filter(var2x -> var4.test(var2, var2x))
+         .filter(var3x -> var4.test(var1, var2, var3x))
          .filter(this::playerHoldingTemptation)
          .filter(var1x -> !var2.hasPassenger(var1x))
          .sorted(Comparator.comparingDouble(var2::distanceToSqr))

@@ -114,15 +114,15 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
-      if (!(var1 instanceof LivingEntity)) {
-         return false;
-      } else {
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      if (var2 instanceof LivingEntity var3) {
          this.attackAnimationRemainingTicks = 10;
          this.level().broadcastEntityEvent(this, (byte)4);
          this.makeSound(SoundEvents.HOGLIN_ATTACK);
-         HoglinAi.onHitTarget(this, (LivingEntity)var1);
-         return HoglinBase.hurtAndThrowTarget(this, (LivingEntity)var1);
+         HoglinAi.onHitTarget(this, var3);
+         return HoglinBase.hurtAndThrowTarget(var1, this, var3);
+      } else {
+         return false;
       }
    }
 
@@ -134,17 +134,13 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      boolean var3 = super.hurt(var1, var2);
-      if (this.level().isClientSide) {
-         return false;
-      } else {
-         if (var3 && var1.getEntity() instanceof LivingEntity) {
-            HoglinAi.wasHurtBy(this, (LivingEntity)var1.getEntity());
-         }
-
-         return var3;
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      boolean var4 = super.hurtServer(var1, var2, var3);
+      if (var4 && var2.getEntity() instanceof LivingEntity var5) {
+         HoglinAi.wasHurtBy(var1, this, var5);
       }
+
+      return var4;
    }
 
    @Override
@@ -163,11 +159,11 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Override
-   protected void customServerAiStep() {
-      ProfilerFiller var1 = Profiler.get();
-      var1.push("hoglinBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      var1.pop();
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("hoglinBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
       HoglinAi.updateActivity(this);
       if (this.isConverting()) {
          this.timeInOverworld++;
@@ -259,7 +255,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Override
-   protected int getBaseExperienceReward() {
+   protected int getBaseExperienceReward(ServerLevel var1) {
       return this.xpReward;
    }
 

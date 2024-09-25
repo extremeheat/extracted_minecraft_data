@@ -19,6 +19,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.world.entity.Entity;
@@ -144,14 +145,14 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    @Override
-   public void dropItem(@Nullable Entity var1) {
-      if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+   public void dropItem(ServerLevel var1, @Nullable Entity var2) {
+      if (var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
          this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
-         if (var1 instanceof Player var2 && var2.hasInfiniteMaterials()) {
+         if (var2 instanceof Player var3 && var3.hasInfiniteMaterials()) {
             return;
          }
 
-         this.spawnAtLocation(Items.PAINTING);
+         this.spawnAtLocation(var1, Items.PAINTING);
       }
    }
 

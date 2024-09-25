@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.tags.TagKey;
@@ -220,8 +221,10 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    @Override
    public void die(DamageSource var1) {
-      if (!this.level().isClientSide && this.level().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES) && this.getOwner() instanceof ServerPlayer) {
-         this.getOwner().sendSystemMessage(this.getCombatTracker().getDeathMessage());
+      if (this.level() instanceof ServerLevel var2
+         && var2.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)
+         && this.getOwner() instanceof ServerPlayer var5) {
+         var5.sendSystemMessage(this.getCombatTracker().getDeathMessage());
       }
 
       super.die(var1);

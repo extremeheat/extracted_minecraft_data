@@ -525,39 +525,39 @@ public class LevelChunk extends ChunkAccess {
       return this.blockEntities;
    }
 
-   public void postProcessGeneration() {
-      ChunkPos var1 = this.getPos();
+   public void postProcessGeneration(ServerLevel var1) {
+      ChunkPos var2 = this.getPos();
 
-      for (int var2 = 0; var2 < this.postProcessing.length; var2++) {
-         if (this.postProcessing[var2] != null) {
-            ShortListIterator var3 = this.postProcessing[var2].iterator();
+      for (int var3 = 0; var3 < this.postProcessing.length; var3++) {
+         if (this.postProcessing[var3] != null) {
+            ShortListIterator var4 = this.postProcessing[var3].iterator();
 
-            while (var3.hasNext()) {
-               Short var4 = (Short)var3.next();
-               BlockPos var5 = ProtoChunk.unpackOffsetCoordinates(var4, this.getSectionYFromSectionIndex(var2), var1);
-               BlockState var6 = this.getBlockState(var5);
-               FluidState var7 = var6.getFluidState();
-               if (!var7.isEmpty()) {
-                  var7.tick(this.level, var5, var6);
+            while (var4.hasNext()) {
+               Short var5 = (Short)var4.next();
+               BlockPos var6 = ProtoChunk.unpackOffsetCoordinates(var5, this.getSectionYFromSectionIndex(var3), var2);
+               BlockState var7 = this.getBlockState(var6);
+               FluidState var8 = var7.getFluidState();
+               if (!var8.isEmpty()) {
+                  var8.tick(var1, var6, var7);
                }
 
-               if (!(var6.getBlock() instanceof LiquidBlock)) {
-                  BlockState var8 = Block.updateFromNeighbourShapes(var6, this.level, var5);
-                  if (var8 != var6) {
-                     this.level.setBlock(var5, var8, 20);
+               if (!(var7.getBlock() instanceof LiquidBlock)) {
+                  BlockState var9 = Block.updateFromNeighbourShapes(var7, var1, var6);
+                  if (var9 != var7) {
+                     var1.setBlock(var6, var9, 20);
                   }
                }
             }
 
-            this.postProcessing[var2].clear();
+            this.postProcessing[var3].clear();
          }
       }
 
-      UnmodifiableIterator var9 = ImmutableList.copyOf(this.pendingBlockEntities.keySet()).iterator();
+      UnmodifiableIterator var10 = ImmutableList.copyOf(this.pendingBlockEntities.keySet()).iterator();
 
-      while (var9.hasNext()) {
-         BlockPos var10 = (BlockPos)var9.next();
-         this.getBlockEntity(var10);
+      while (var10.hasNext()) {
+         BlockPos var11 = (BlockPos)var10.next();
+         this.getBlockEntity(var11);
       }
 
       this.pendingBlockEntities.clear();

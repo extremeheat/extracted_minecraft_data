@@ -457,9 +457,8 @@ public class EndDragonFight {
          this.spawnExitPortal(true);
       } else {
          this.updateCrystalCount();
-         Entity var3 = this.level.getEntity(this.dragonUUID);
-         if (var3 instanceof EnderDragon) {
-            ((EnderDragon)var3).onCrystalDestroyed(var1, var1.blockPosition(), var2);
+         if (this.level.getEntity(this.dragonUUID) instanceof EnderDragon var4) {
+            var4.onCrystalDestroyed(this.level, var1, var1.blockPosition(), var2);
          }
       }
    }
